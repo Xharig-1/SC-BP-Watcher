@@ -1,0 +1,14 @@
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+
+# PyInstaller-Build-Artefakte (die EXE wird lokal/Release gebaut, nicht eingecheckt)
+build/
+dist/
+*.spec
+
+# Claude-Arbeitsordner
+.claude/
