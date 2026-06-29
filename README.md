@@ -4,7 +4,7 @@
 
 **Live-Overlay, das neue Star-Citizen-Baupläne anzeigt, sobald du sie freischaltest**
 
-[![Version](https://img.shields.io/badge/Version-1.0.0-47aa42)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-1.0.1-47aa42)](CHANGELOG.md)
 [![Lizenz](https://img.shields.io/badge/Lizenz-MIT-47aa42)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-0a4a7a?logo=python&logoColor=white)](https://www.python.org/)
 [![Star Citizen](https://img.shields.io/badge/Star%20Citizen-kompatibel-0a4a7a)](https://robertsspaceindustries.com/)
@@ -15,7 +15,7 @@
 
 Ein kleines, randloses Overlay, das im Hintergrund die Bauplan-Daten des **SC Deutsch Launcher** überwacht und dir **in Echtzeit** meldet, sobald ein neuer Bauplan (Blueprint) dazukommt — inklusive Name, Art und Uhrzeit. Ohne Account, ohne Cloud, ohne Installation.
 
-> ⚠️ **Wichtig:** Dieses Tool funktioniert **ausschließlich** zusammen mit dem **SC Deutsch Launcher** — es liest dessen Bauplan-Datei (`%APPDATA%\sc-deutsch-launcher\…`). Ohne diesen Launcher gibt es **keine Datenquelle** und das Overlay bleibt leer. Der normale RSI-Launcher allein reicht **nicht**.
+> ⚠️ **Wichtig:** Dieses Tool funktioniert **ausschließlich** zusammen mit dem **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** — es liest dessen Bauplan-Datei (`%APPDATA%\sc-deutsch-launcher\…`). Ohne diesen Launcher gibt es **keine Datenquelle** und das Overlay bleibt leer. Der normale RSI-Launcher allein reicht **nicht**.
 
 ## Features
 
@@ -88,6 +88,12 @@ Oben in `sc_bp_watcher.py` anpassbar:
 - **Als `.exe`:** die mit `EXE bauen.bat` erzeugte `dist\SC-BP-Watcher.exe` weitergeben — Empfänger braucht **nur** den SC Deutsch Launcher.
 
 > ℹ️ Windows SmartScreen meldet bei selbstgebauten, unsignierten `.exe` evtl. „unbekannter Herausgeber" → **Weitere Informationen → Trotzdem ausführen**. Wer das vermeiden will, gibt das `.py`-Skript weiter.
+
+## Danksagung & Credits
+
+Dieses Tool nutzt die Bauplan-Daten, die der **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** ausliest und bereitstellt (`sc_bp_erledigt.json`). Ohne dieses Projekt gäbe es keine Datenquelle — **vielen Dank** an das Team hinter dem SC Deutsch Launcher für die Arbeit! 🙏
+
+SC BP Watcher ist ein eigenständiges, inoffizielles Zusatz-Tool und steht in **keiner** offiziellen Verbindung zum SC Deutsch Launcher oder zu Cloud Imperium Games. Alle Marken- und Projektnamen gehören ihren jeweiligen Eigentümern.
 
 ## Author
 
