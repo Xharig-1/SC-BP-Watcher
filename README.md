@@ -6,7 +6,7 @@
 
 **Live-Overlay, das neue Star-Citizen-Baupläne anzeigt, sobald du sie freischaltest**
 
-[![Version](https://img.shields.io/badge/Version-1.0.2-47aa42)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-1.0.3-47aa42)](CHANGELOG.md)
 [![Lizenz](https://img.shields.io/badge/Lizenz-MIT-47aa42)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-0a4a7a?logo=python&logoColor=white)](https://www.python.org/)
 [![Star Citizen](https://img.shields.io/badge/Star%20Citizen-kompatibel-0a4a7a)](https://robertsspaceindustries.com/)
@@ -38,14 +38,19 @@ Ein kleines, randloses Overlay, das im Hintergrund die Bauplan-Daten des **SC De
 
 ## Start
 
-**Variante A — mit Python (zum Testen):**
+**Variante A — fertige `.exe` herunterladen (empfohlen, kein Python nötig):**
+
+1. Auf der **[Releases-Seite](../../releases)** die neueste **`SC-BP-Watcher.exe`** herunterladen.
+2. Doppelklick — fertig. Eine einzelne Datei, keine Installation, kein Python.
+
+**Variante B — mit Python (zum Testen / Anpassen):**
 
 1. Python 3.8+ installieren (falls nötig): https://www.python.org/downloads/ — beim Setup **„Add Python to PATH"** anhaken.
 2. Doppelklick auf **`SC-BP-Watcher starten.bat`**.
 
 Es sind **keine** Zusatzpakete nötig — das Tool nutzt nur die Python-Standardbibliothek (`tkinter`).
 
-**Variante B — als fertige `.exe` (zum Weitergeben, kein Python nötig):**
+**Variante C — `.exe` selbst bauen:**
 
 1. Doppelklick auf **`EXE bauen.bat`** — installiert einmalig PyInstaller und baut die EXE.
 2. Ergebnis: **`dist\SC-BP-Watcher.exe`** — eine einzelne Datei.
@@ -86,8 +91,8 @@ Oben in `sc_bp_watcher.py` anpassbar:
 
 > 🔒 **Offline & privat** — das Tool arbeitet komplett ohne Internet. Es liest nur die lokale Bauplan-Liste des Launchers, verändert nichts und sendet nichts.
 
+- **Als `.exe` (am einfachsten):** die fertige `SC-BP-Watcher.exe` von der **[Releases-Seite](../../releases)** weitergeben — Empfänger braucht **nur** den SC Deutsch Launcher, kein Python.
 - **Als Skript:** `sc_bp_watcher.py` + die `.bat`-Dateien weitergeben (Empfänger braucht Python).
-- **Als `.exe`:** die mit `EXE bauen.bat` erzeugte `dist\SC-BP-Watcher.exe` weitergeben — Empfänger braucht **nur** den SC Deutsch Launcher.
 
 > ℹ️ Windows SmartScreen meldet bei selbstgebauten, unsignierten `.exe` evtl. „unbekannter Herausgeber" → **Weitere Informationen → Trotzdem ausführen**. Wer das vermeiden will, gibt das `.py`-Skript weiter.
 

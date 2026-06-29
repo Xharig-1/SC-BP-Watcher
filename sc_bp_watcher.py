@@ -17,7 +17,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 
 # ---------------------------------------------------------------- Konfiguration
 BP_DIR   = os.path.join(os.environ.get('APPDATA', ''), 'sc-deutsch-launcher', 'blueprints')
