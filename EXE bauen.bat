@@ -8,7 +8,7 @@ python -m pip install --upgrade pyinstaller || goto :fehler
 
 echo.
 echo EXE wird gebaut...
-python -m PyInstaller --noconfirm --onefile --windowed --name "SC-BP-Watcher" sc_bp_watcher.py || goto :fehler
+python -m PyInstaller --noconfirm --onefile --windowed --name "SC-BP-Watcher" --icon "icon.ico" sc_bp_watcher.py || goto :fehler
 
 echo.
 echo Fertig! Die EXE liegt in:  %~dp0dist\SC-BP-Watcher.exe

@@ -4,6 +4,15 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v1.0.2 - 2026-06-29
+
+### Hinzugefügt
+
+- **App-Icon** im Xharig-Stil (dunkler Grund, Xharig-Grün, Scope-Ring mit „neu"-Punkt) — `icon.ico` für die EXE, `docs/icon.png` als Vorschau
+- EXE wird jetzt mit dem Icon gebaut (`EXE bauen.bat` → `--icon`)
+- Fenster-/Taskleisten-Icon wird auch beim Start als Skript gesetzt (falls `icon.ico` daneben liegt)
+- Icon-Generator `make_icon.py` (reproduzierbar; braucht nur Pillow, nicht fürs Tool selbst)
+
 ## v1.0.1 - 2026-06-29
 
 ### Hinzugefügt

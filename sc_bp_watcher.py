@@ -17,7 +17,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 # ---------------------------------------------------------------- Konfiguration
 BP_DIR   = os.path.join(os.environ.get('APPDATA', ''), 'sc-deutsch-launcher', 'blueprints')
@@ -97,6 +97,13 @@ class Overlay:
         self.root.attributes('-topmost', True)    # immer im Vordergrund
         self.root.attributes('-alpha', 0.93)      # leicht durchscheinend
         self.root.geometry('340x300+40+40')
+        # Fenster-/Taskleisten-Icon setzen, falls icon.ico daneben liegt
+        try:
+            ico = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'icon.ico')
+            if os.path.exists(ico):
+                self.root.iconbitmap(ico)
+        except Exception:
+            pass
         self.count = 0
 
         self.f_title = tkfont.Font(family='Segoe UI Semibold', size=10)
