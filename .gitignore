@@ -12,3 +12,7 @@ dist/
 
 # Claude-Arbeitsordner
 .claude/
+
+# Persönliches Verknüpfungs-Icon (Xharig-Avatar) — gehört nicht ins geteilte Tool
+avatar.ico
+_avatar_src.png

@@ -1,6 +1,6 @@
 # Roadmap
 
-Aktuelle Version: `v1.0.3`
+Aktuelle Version: `v1.1.0`
 
 ## Zielbild
 
@@ -13,8 +13,9 @@ SC BP Watcher ist ein kleines Windows-Overlay, das beim Spielen von Star Citizen
 | Phase 1 | Abgeschlossen | Live-Erkennung neuer BPs aus der Launcher-Datei + Overlay-Anzeige |
 | Phase 2 | Abgeschlossen | Signalton, verschiebbares/skalierbares Fenster, Liste leeren |
 | Phase 3 | Abgeschlossen | Weitergabe als `.exe` (PyInstaller) + Doku + GitHub-Release |
-| Phase 4 | Geplant | Optional: System-Tray-Icon statt/zusätzlich zum Overlay |
-| Phase 5 | Idee | Optional: Toast-Benachrichtigung + Verlauf der letzten Session speichern |
+| Phase 4 | Abgeschlossen | Size/Grade/Klasse-Kürzel (M/A/1) + gemerkte Fensterposition/-größe |
+| Phase 5 | Geplant | Optional: System-Tray-Icon statt/zusätzlich zum Overlay |
+| Phase 6 | Idee | Optional: Toast-Benachrichtigung + Verlauf der letzten Session speichern |
 
 ## Bewusst nicht geplant
 
