@@ -19,4 +19,4 @@ SC BP Watcher ist ein kleines Windows-Overlay, das beim Spielen von Star Citizen
 
 ## Bewusst nicht geplant
 
-- **Direktes Auslesen der SC `Game.log`:** Die Baupläne laufen über eine binäre gRPC-API (`BlueprintLibraryService`) und stehen **nicht** als Klartext im Log. Die Launcher-Datei `sc_bp_erledigt.json` ist die einzige saubere Quelle und wird daher genutzt.
+- **Standalone ohne den SC Deutsch Launcher:** Die BP-Namen **stehen** im Klartext im `Game.log` (`Added notification "Bauplan erhalten: <Name>: "`), Selbst-Auslesen wäre also machbar. Verworfen (Prüfung 19.07.2026): Eine eigene Werte-Datenbank (Typ/Size/Grade/Klasse) müsste jede SC-Patch nachgezogen werden — diese Pflege übernimmt der Launcher, darum bleibt seine Datei `sc_bp_erledigt.json` die Quelle. (Früher stand hier fälschlich, der Log enthalte keine lesbaren Namen.)
