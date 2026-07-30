@@ -4,6 +4,7 @@ SC BP Watcher — zeigt live an, sobald im SC Deutsch Launcher ein neuer
 Bauplan (Blueprint) freigeschaltet wird.
 
 Überwacht:  %APPDATA%\\sc-deutsch-launcher\\blueprints\\sc_bp_erledigt.json
+            + (ab v1.2.0) die Star-Citizen-Game.log für die Sofort-Meldung
 Anzeige:    kleines, immer-im-Vordergrund Overlay-Fenster (verschiebbar).
 
 Reines Python-Standardbibliothek-Tool (tkinter) — keine Zusatzpakete nötig.
@@ -17,15 +18,17 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 
 # ---------------------------------------------------------------- Konfiguration
 BP_DIR   = os.path.join(os.environ.get('APPDATA', ''), 'sc-deutsch-launcher', 'blueprints')
 BP_FILE  = os.path.join(BP_DIR, 'sc_bp_erledigt.json')
 TYPE_FILE = os.path.join(BP_DIR, 'bp_item_types.json')
 CAT_DIR  = os.path.join(BP_DIR, 'catalog')                       # Launcher-Katalog (Size/Grade/Klasse)
+SCDL_SETTINGS = os.path.join(BP_DIR, 'scdl-settings.json')       # kennt den SC-Installationsordner
+SCAN_STATE    = os.path.join(BP_DIR, 'scan-state.json')          # kennt die zuletzt gelesene Game.log
 OVERRIDES_FILE = r'%APPDATA%\sc-bp-watcher\bp-overrides.json'     # manuelle Korrekturen (Skill „BP-Daten"), Vorrang vor Katalog
-POLL_SEC = 3            # wie oft die Datei geprüft wird (Sekunden)
+POLL_SEC = 3            # wie oft die Dateien geprüft werden (Sekunden)
 MAX_ROWS = 200          # so viele Neuzugänge max. in der Liste behalten
 
 # Fensterposition/-größe. Standard = dort, wo Xharig es haben will: oberer Monitor
@@ -37,6 +40,7 @@ SETTINGS_FILE = os.path.join(os.environ.get('APPDATA', ''), 'sc-bp-watcher', 'wa
 
 # Farben (dunkles Overlay)
 BG, FG, ACCENT, SUB, BAR = '#10141c', '#e6edf3', '#47aa42', '#8b98a5', '#1b2230'
+PROV = '#d8a03a'        # Gelb für „vorläufig" (aus der Game.log, noch nicht vom Launcher bestätigt)
 
 
 # ---------------------------------------------------------------- Daten-Helfer
@@ -60,7 +64,14 @@ def load_types():
 
 TYPES = load_types()
 def art_of(key):
-    return TYPES.get(key.lower().replace('\xa0', ' ')) or '—'
+    global TYPES
+    k = key.lower().replace('\xa0', ' ')
+    art = TYPES.get(k)
+    if art is None:
+        # Frisch freigeschaltetes Item kann neu im Katalog sein -> einmal nachladen
+        TYPES = load_types()
+        art = TYPES.get(k)
+    return art or '—'
 
 
 # ------------------------------------------------ Size / Grade / Klasse (M/A/1)
@@ -75,7 +86,7 @@ _CLASS_SHORT = {v: k for k, v in _CLASS_FULL.items()}
 
 
 def _norm(s):
-    return s.lower().replace('\xa0', ' ').replace('�', ' ')
+    return s.lower().replace('\xa0', ' ').replace('�', ' ').strip()
 
 
 def load_meta():
@@ -140,6 +151,113 @@ def meta_of(key):
     return f'{c}/{gr or "–"}/{sz or "–"}'
 
 
+# ------------------------------------------------------- Game.log (Sofort-Meldung)
+# Das Spiel schreibt beim Freischalten eine Notification im Klartext, z. B.:
+#   <SHUDEvent_OnNotification> Added notification "Bauplan erhalten: Attrition-5 Repeater: " [136] …
+# Der SC Deutsch Launcher liest dieselbe Log, exportiert seine Datei aber nur alle
+# paar Minuten — deshalb lesen wir den Namen zusätzlich selbst mit und zeigen ihn
+# sofort als „vorläufig" (gelb) an. Sobald der Launcher nachzieht, wird die Zeile
+# bestätigt (grün). Size/Grade/Klasse/Art kommen weiterhin aus dem Launcher-Katalog.
+#
+# Nur die deutsche Meldung ist verifiziert (Xharigs Client, Translation "de"). Bei
+# anderer Spielsprache greift der Log-Weg einfach nicht — dann bleibt es beim
+# bisherigen Verhalten (Meldung erst, wenn der Launcher exportiert hat).
+LOG_PHRASES = ['Bauplan erhalten']
+LOG_RE = re.compile(r'Added notification "(?:%s):\s*(.+?)\s*:\s*"'
+                    % '|'.join(re.escape(p) for p in LOG_PHRASES))
+
+# Schiffskomponenten stehen im Log MIT Zusatz „(Klasse/Size/Grade)", z. B.
+# „7CA 'Nargun' (Civ/3/A)" — der Launcher-Schlüssel ist aber „7CA 'Nargun'".
+# Ohne Abschneiden würde die Bestätigung nie greifen (Zeile bliebe gelb + Dublette).
+# Bewusst eng gefasst (nur die bekannten Klassen-Kürzel), damit echte Namens-Klammern
+# wie „(30 cap)" oder „Singe Cannon (S2)" unangetastet bleiben.
+LOG_SUFFIX_RE = re.compile(r'\s*\((Civ|Mil|Ind|Sth|Cmp)/(\d+)/([A-D])\)\s*$', re.I)
+
+
+def clean_log_name(name):
+    """('7CA 'Nargun'', 'C/A/3')  aus  \"7CA 'Nargun' (Civ/3/A)\".
+    Zweiter Wert = Kürzel aus dem Log-Zusatz (None, wenn keiner da war)."""
+    m = LOG_SUFFIX_RE.search(name)
+    if not m:
+        return name.strip(), None
+    cl, sz, gr = m.group(1).title(), m.group(2), m.group(3).upper()
+    letter = CLASS_LETTER.get(_CLASS_FULL.get(cl, cl), '–')
+    return name[:m.start()].strip(), f'{letter}/{gr}/{sz}'
+
+
+def _loose(name):
+    """Name ohne Klammer-Zusatz am Ende — für den Notfall-Abgleich, wenn Log und
+    Launcher unterschiedlich übersetzt sind (gesehen: „Scalpel Sniper Rifle Magazine
+    (12 Schuss)" im Log vs. „… (12 cap)" beim Launcher)."""
+    return re.sub(r'\s*\([^()]*\)\s*$', '', _norm(name)).strip()
+
+
+def find_game_log():
+    """Pfad zur aktiven Game.log — 1. aus den Launcher-Einstellungen (Installfolder),
+    2. aus dem Lesestand des Launchers (scan-state.json), 3. Standard-Installpfad."""
+    cands = []
+    try:
+        for s in json.load(open(SCDL_SETTINGS, encoding='utf-8')).get('Settings', []):
+            f = s.get('Installfolder')
+            if f: cands.append(os.path.join(f, 'Game.log'))
+    except Exception:
+        pass
+    try:
+        for p in json.load(open(SCAN_STATE, encoding='utf-8')).get('files', {}):
+            if os.path.basename(p).lower() == 'game.log' and 'logbackups' not in p.lower():
+                cands.append(p)
+    except Exception:
+        pass
+    cands.append(r'C:\Program Files\Roberts Space Industries\StarCitizen\LIVE\Game.log')
+    for p in cands:
+        try:
+            if os.path.isfile(p): return p
+        except Exception:
+            pass
+    return None
+
+
+class LogTail:
+    """Liest die Game.log fortlaufend ab dem Startzeitpunkt (Historie wird ignoriert).
+    Erkennt einen Spiel-Neustart daran, dass die Datei kürzer wird als der Lesestand —
+    dann wird von vorn gelesen (frische Log = nur die laufende Session)."""
+
+    def __init__(self):
+        self.path, self.offset = None, 0
+
+    def _locate(self):
+        p = find_game_log()
+        if p and p != self.path:
+            self.path = p
+            try: self.offset = os.path.getsize(p)   # ab jetzt mitlesen, nicht die Historie
+            except OSError: self.offset = 0
+        elif not p:
+            self.path = None
+        return self.path
+
+    def new_names(self):
+        """Neue Bauplan-Namen seit dem letzten Aufruf (Liste, evtl. leer)."""
+        if not self._locate():
+            return []
+        try:
+            size = os.path.getsize(self.path)
+            if size < self.offset:      # Log rotiert -> neue Spiel-Session
+                self.offset = 0
+            if size == self.offset:
+                return []
+            with open(self.path, 'rb') as f:
+                f.seek(self.offset)
+                chunk = f.read()
+        except OSError:
+            return []
+        cut = chunk.rfind(b'\n')        # angefangene letzte Zeile stehen lassen
+        if cut < 0:
+            return []
+        self.offset += cut + 1
+        text = chunk[:cut].decode('utf-8', 'ignore')
+        return [clean_log_name(m.group(1)) for m in LOG_RE.finditer(text)]
+
+
 # ------------------------------------------------ Fensterposition merken/laden
 def load_geometry():
     try:
@@ -162,8 +280,29 @@ class Watcher(threading.Thread):
     def __init__(self, out_queue):
         super().__init__(daemon=True)
         self.q = out_queue
-        self.known = None
+        self.known = None       # BP-Namen aus der Launcher-Datei
+        self.seen = set()       # schon angezeigte Namen (normalisiert) — gegen Dubletten
+        self.prov = {}          # noch unbestätigt: norm(Log-Name) -> Log-Name
+        self.tail = LogTail()
         self.running = True
+
+    def _emit(self, key, provisional, log_meta=None):
+        # log_meta = Kürzel aus dem Log-Zusatz; wird nur genommen, wenn der
+        # Launcher-Katalog nichts hergibt (brandneues Item nach einem SC-Patch).
+        self.q.put(('new', key, art_of(key), meta_of(key) or log_meta or '',
+                    time.strftime('%H:%M:%S'), provisional))
+
+    def _match_prov(self, key):
+        """Zeile suchen, die diesen Launcher-Schlüssel vorläufig schon anzeigt.
+        Erst exakt, dann (nur bei Eindeutigkeit) ohne Klammer-Zusatz."""
+        row = self.prov.pop(_norm(key), None)
+        if row:
+            return row
+        hits = [v for k, v in self.prov.items() if _loose(k) == _loose(key)]
+        if len(hits) == 1:
+            self.prov.pop(_norm(hits[0]), None)
+            return hits[0]
+        return None
 
     def run(self):
         # Basisstand setzen (nicht alle vorhandenen BPs als "neu" melden)
@@ -171,20 +310,37 @@ class Watcher(threading.Thread):
             self.known = load_keys()
             if self.known is None:
                 time.sleep(POLL_SEC)
+        self.seen = {_norm(k) for k in self.known}
+        self.tail.new_names()          # Lesestand der Game.log auf „jetzt" setzen
         self.q.put(('status', f'Überwache {len(self.known)} BPs …'))
         while self.running:
             time.sleep(POLL_SEC)
+
+            # 1) Game.log: sofortige, aber noch unbestätigte Meldung
+            for name, log_meta in self.tail.new_names():
+                nk = _norm(name)
+                if nk in self.seen:
+                    continue
+                self.seen.add(nk)
+                self.prov[nk] = name
+                self._emit(name, True, log_meta)
+
+            # 2) Launcher-Datei: die verbindliche Quelle (bestätigt bzw. meldet nach)
             cur = load_keys()
             if cur is None:
                 continue
-            new = cur - self.known
-            if new:
-                for k in sorted(new):
-                    self.q.put(('new', k, art_of(k), meta_of(k), time.strftime('%H:%M:%S')))
-            gone = self.known - cur
+            for k in sorted(cur - self.known):
+                row = self._match_prov(k)
+                dup = _norm(k) in self.seen      # steht schon in der Liste
+                self.seen.add(_norm(k))
+                if row:
+                    self.q.put(('confirm', row, k, art_of(k), meta_of(k)))
+                elif not dup:
+                    self._emit(k, False)
             self.known = cur
-            self.q.put(('status', f'Überwache {len(cur)} BPs … '
-                                  f'(zuletzt geprüft {time.strftime("%H:%M:%S")})'))
+            log_state = '✓' if self.tail.path else '–'
+            self.q.put(('status', f'Überwache {len(cur)} BPs · Log {log_state} · '
+                                  f'geprüft {time.strftime("%H:%M:%S")}'))
 
     def stop(self):
         self.running = False
@@ -208,6 +364,7 @@ class Overlay:
         except Exception:
             pass
         self.count = 0
+        self.rows = {}          # normalisierter Name -> Zeilen-Widgets (für die Bestätigung)
 
         self.f_title = tkfont.Font(family='Segoe UI Semibold', size=10)
         self.f_item  = tkfont.Font(family='Consolas', size=9)
@@ -280,28 +437,69 @@ class Overlay:
     def clear(self):
         for w in self.list.winfo_children():
             w.destroy()
+        self.rows.clear()
         self.count = 0
         self._placeholder()
 
-    def add_new(self, key, art, meta, ts):
+    @staticmethod
+    def _sub_text(art, meta, ts, provisional):
+        parts = [p for p in (art, meta) if p]
+        parts.append(ts)
+        if provisional:
+            parts.append('vorläufig')
+        return ' · '.join(parts)
+
+    def add_new(self, key, art, meta, ts, provisional):
         if self.count == 0 and hasattr(self, '_ph') and self._ph.winfo_exists():
             self._ph.destroy()
         self.count += 1
+        nk = _norm(key)
+        top = self.list.pack_slaves()          # aktuell oberste Zeile (Reihenfolge im Fenster!)
         row = tk.Frame(self.list, bg=BG)
         row.pack(fill='x', anchor='w', padx=2, pady=1)
-        tk.Label(row, text='🟢', bg=BG, font=self.f_item).pack(side='left')
+        dot = tk.Label(row, text='🟡' if provisional else '🟢', bg=BG, font=self.f_item)
+        dot.pack(side='left')
         txt = tk.Frame(row, bg=BG); txt.pack(side='left', fill='x', expand=True)
-        tk.Label(txt, text=key, bg=BG, fg=FG, font=self.f_item,
-                 anchor='w', justify='left').pack(fill='x', anchor='w')
-        sub = f'{art} · {meta} · {ts}' if meta else f'{art} · {ts}'
-        tk.Label(txt, text=sub, bg=BG, fg=SUB, font=self.f_sub,
-                 anchor='w').pack(fill='x', anchor='w')
-        # neueste oben einsortieren
-        row.pack_configure(before=self.list.winfo_children()[0] if self.count > 1 else None)
+        name = tk.Label(txt, text=key, bg=BG, fg=FG, font=self.f_item,
+                        anchor='w', justify='left')
+        name.pack(fill='x', anchor='w')
+        sub = tk.Label(txt, text=self._sub_text(art, meta, ts, provisional), bg=BG,
+                       fg=PROV if provisional else SUB, font=self.f_sub, anchor='w')
+        sub.pack(fill='x', anchor='w')
+        row._bpkey = nk
+        self.rows[nk] = {'frame': row, 'dot': dot, 'name': name, 'sub': sub, 'ts': ts}
+        # neueste oben einsortieren. WICHTIG: pack_slaves() (= Reihenfolge im Fenster),
+        # nicht winfo_children() (= Reihenfolge der Erzeugung) — sonst landen neue
+        # Zeilen unter den älteren (Fehler bis v1.1.0).
+        if top:
+            row.pack_configure(before=top[0])
+        self._trim()
         self.canvas.yview_moveto(0)
         if winsound:
             try: winsound.MessageBeep(winsound.MB_ICONASTERISK)
             except Exception: pass
+
+    def confirm(self, row_key, key, art, meta):
+        """Der Launcher hat den vorläufig (aus der Game.log) gemeldeten BP bestätigt:
+        Punkt auf Grün, „vorläufig" raus, Name/Art/Kürzel mit den Launcher-Daten
+        auffrischen (`row_key` = angezeigter Log-Name, `key` = Launcher-Schlüssel)."""
+        r = self.rows.pop(_norm(row_key), None)
+        if not r or not r['frame'].winfo_exists():
+            return
+        r['dot'].config(text='🟢')
+        r['name'].config(text=key)
+        r['sub'].config(text=self._sub_text(art, meta, r['ts'], False), fg=SUB)
+        r['frame']._bpkey = _norm(key)
+        self.rows[_norm(key)] = r
+
+    def _trim(self):
+        """Nur MAX_ROWS Zeilen behalten — älteste (unten im Fenster) fliegen raus."""
+        rows = self.list.pack_slaves()
+        while len(rows) > MAX_ROWS:
+            old = rows.pop()
+            self.rows.pop(getattr(old, '_bpkey', None), None)
+            old.destroy()
+            self.count -= 1
 
     # ---- Queue vom Watcher abarbeiten ----
     def _poll_queue(self):
@@ -311,7 +509,9 @@ class Overlay:
                 if msg[0] == 'status':
                     self.status.config(text=msg[1])
                 elif msg[0] == 'new':
-                    self.add_new(msg[1], msg[2], msg[3], msg[4])
+                    self.add_new(msg[1], msg[2], msg[3], msg[4], msg[5])
+                elif msg[0] == 'confirm':
+                    self.confirm(msg[1], msg[2], msg[3], msg[4])
         except queue.Empty:
             pass
         self.root.after(300, self._poll_queue)

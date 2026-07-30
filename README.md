@@ -6,7 +6,7 @@
 
 **Live-Overlay, das neue Star-Citizen-Baupläne anzeigt, sobald du sie freischaltest**
 
-[![Version](https://img.shields.io/badge/Version-1.1.0-5fa522)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-1.2.0-5fa522)](CHANGELOG.md)
 [![Lizenz](https://img.shields.io/badge/Lizenz-MIT-5fa522)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-0a4a7a?logo=python&logoColor=white)](https://www.python.org/)
 [![Star Citizen](https://img.shields.io/badge/Star%20Citizen-kompatibel-0a4a7a)](https://robertsspaceindustries.com/)
@@ -23,13 +23,15 @@ Ein kleines, randloses Overlay, das im Hintergrund die Bauplan-Daten des **SC De
 
 | | |
 |---|---|
-| 🟢 **Live-Erkennung** | Prüft alle 3 Sekunden die Launcher-Datei; neue Baupläne erscheinen sofort oben in der Liste |
+| ⚡ **Sofort-Meldung** | Liest die Star-Citizen-`Game.log` mit → der Bauplan steht **in Sekunden** in der Liste, statt erst nach dem nächsten Launcher-Export (das dauert mehrere Minuten) |
+| 🟡 → 🟢 **Zwei Stufen** | Frisch aus der Log gelesen = 🟡 *vorläufig*; sobald der Launcher nachzieht = 🟢 bestätigt und mit dessen Daten aufgefrischt |
+| 🟢 **Live-Erkennung** | Prüft alle 3 Sekunden die Launcher-Datei; neue Baupläne erscheinen oben in der Liste |
 | 🏷️ **Size · Grade · Klasse** | Kompakt-Kürzel `Klasse/Grade/Size` je Bauplan, z. B. `M/A/1` (Military · Grade A · Size 1) — gleiche Daten wie die Vault-Liste |
 | 🔔 **Signalton** | Kurzer Ton bei jedem Neuzugang — du musst nicht aufs Fenster schauen |
 | 🧷 **Immer im Vordergrund** | Randloses, leicht durchscheinendes Overlay über dem Spiel |
 | 🖱️ **Verschiebbar & skalierbar** | An der Titelleiste ziehen, Größe am Griff ◢ unten rechts — **Position & Größe werden gemerkt** |
 | 🌐 **Zweisprachig** | Zeigt die Art genau so an, wie der Launcher sie liefert (deutsch oder englisch) |
-| 🔒 **Nur lesend** | Verändert oder sendet nichts — liest ausschließlich die Launcher-Dateien |
+| 🔒 **Nur lesend** | Verändert oder sendet nichts — liest ausschließlich die Launcher-Dateien und die `Game.log` |
 
 ## Voraussetzungen
 
@@ -67,16 +69,25 @@ Es sind **keine** Zusatzpakete nötig — das Tool nutzt nur die Python-Standard
 
 ## Wie es funktioniert
 
-1. **Beim Start** liest das Tool einmal alle aktuell freigeschalteten Baupläne ein und merkt sie sich als Basis — diese werden **nicht** gemeldet.
-2. **Im Hintergrund** (eigener Thread) wird `sc_bp_erledigt.json` alle 3 Sekunden neu eingelesen und mit der Basis verglichen.
-3. **Taucht ein neuer Name auf**, wird er oben in die Liste geschoben (🟢 Name · Art · `M/A/1` · Uhrzeit) und ein kurzer Ton gespielt.
+1. **Beim Start** liest das Tool einmal alle aktuell freigeschalteten Baupläne ein und merkt sie sich als Basis — diese werden **nicht** gemeldet. Auch die `Game.log` wird ab dem Startzeitpunkt mitgelesen, nicht rückwirkend.
+2. **Im Hintergrund** (eigener Thread) laufen alle 3 Sekunden zwei Prüfungen:
+   - **`Game.log`** — schreibt das Spiel beim Freischalten `Added notification "Bauplan erhalten: <Name>: "`, erscheint der Bauplan **sofort** als 🟡 *vorläufig*.
+   - **`sc_bp_erledigt.json`** — die Datei des Launchers ist die verbindliche Quelle. Taucht der Name dort auf, wird die Zeile auf 🟢 bestätigt. Baupläne, die nur dort stehen (andere Spielsprache, Import aus alten Logs), landen direkt als 🟢 in der Liste.
+3. Jede neue Zeile wird oben eingefügt (Name · Art · `M/A/1` · Uhrzeit) und ein kurzer Ton gespielt.
 4. Die **Art** kommt aus `bp_item_types.json`; **Size/Grade/Klasse** aus dem Launcher-Katalog (`catalog\components.ini` + `items_raw.ini`) plus manuellen Korrekturen aus `bp-overrides.json` (Vorrang) — dieselbe Datenbasis wie der Skill „SC BP", die Anzeige stimmt daher mit der Vault-Liste überein.
 
-Überwachte Datei (Pfad wird automatisch über `%APPDATA%` gefunden):
+> **Warum zwei Quellen?** Der Launcher liest dieselbe `Game.log`, exportiert seine Datei aber nur alle paar Minuten. Gemessen am 30.07.2026: Freischaltung im Spiel **21:23:49** → Launcher-Export **21:26:24** = **2,5 Minuten** Verzug. Die Log-Mitlesung schließt diese Lücke, die gepflegten Werte kommen weiter vom Launcher.
+
+Überwachte Dateien:
 
 ```text
-%APPDATA%\sc-deutsch-launcher\blueprints\sc_bp_erledigt.json
+%APPDATA%\sc-deutsch-launcher\blueprints\sc_bp_erledigt.json     (Launcher, verbindlich)
+…\StarCitizen\LIVE\Game.log                                      (Spiel, Sofort-Meldung)
 ```
+
+Der Launcher-Pfad wird über `%APPDATA%` gefunden, der Spiel-Pfad über den `Installfolder` aus `scdl-settings.json` (ersatzweise `scan-state.json` oder der Standard-Installationspfad). Ein Spiel-Neustart (neue, kürzere Log) wird erkannt.
+
+> ℹ️ Die Sofort-Meldung erkennt die **deutsche** Spielmeldung. Läuft dein Client in einer anderen Sprache, greift sie nicht — dann meldet das Tool wie bisher, sobald der Launcher exportiert hat. Weitere Sprachen kannst du in `LOG_PHRASES` ergänzen.
 
 ## Einstellungen
 
@@ -84,8 +95,9 @@ Oben in `sc_bp_watcher.py` anpassbar:
 
 | Variable | Bedeutung | Standard |
 |----------|-----------|----------|
-| `POLL_SEC` | Prüf-Intervall in Sekunden | `3` |
-| `MAX_ROWS` | max. Einträge in der Liste | `200` |
+| `POLL_SEC` | Prüf-Intervall in Sekunden (Launcher-Datei **und** Game.log) | `3` |
+| `MAX_ROWS` | max. Einträge in der Liste (ältere fliegen unten raus) | `200` |
+| `LOG_PHRASES` | Spielmeldung(en), an denen ein neuer Bauplan erkannt wird | `Bauplan erhalten` |
 | `DEFAULT_GEOM` | Start-Position/-Größe beim allerersten Start (danach wird die gemerkte Lage genutzt) | oberer Monitor |
 | `CLASS_LETTER` | Kürzel je Klasse (M/S/I/C/K) | Military/Stealth/Industrial/Civilian/Competition |
 | `BG / FG / ACCENT / …` | Farben des Overlays | dunkel + Xharig-Grün |
