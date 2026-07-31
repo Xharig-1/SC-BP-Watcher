@@ -20,7 +20,8 @@ SC BP Watcher ist ein kleines Windows-Overlay, das beim Spielen von Star Citizen
 | Phase 8 | **Als Nächstes** | **Unabhängigkeit vom SC Deutsch Launcher**, Schritt 1: Name/Art/Size/Grade/Klasse aus der `global.ini` statt aus dem Launcher-Katalog → [`docs/datenquellen-ohne-launcher.md`](docs/datenquellen-ohne-launcher.md) |
 | Phase 9 | Geplant | Autostart + System-Tray (sinnvoll erst zusammen: dauerhaft laufendes Overlay ohne Tray nervt) |
 | Phase 10 | Geplant | **Zweisprachig (de/en)** — Oberfläche umschaltbar + Doku in beiden Sprachen. Dazu: Spielsprache automatisch erkennen, Log-Phrase aus `global.ini` ableiten (`crafting_hud_notification_received_blueprint`) statt fest verdrahteter `LOG_PHRASES`. ⚠️ Oberflächensprache und Spielsprache **nicht** koppeln |
-| Phase 11 | Idee | Optional: Toast-Benachrichtigung + Verlauf der letzten Session speichern |
+| Phase 11 | Idee | **Bauplan-Anzeige im Spiel** — Häkchen `[x]`/`[  ]` in den Missions-Beschreibungen der `global.ini`, so wie es der SC Deutsch Launcher macht. Reizvoll, weil der **ohne** Übersetzung nicht zu haben ist: „nur die Häkchen, Sprache unangetastet" wäre ein Alleinstellungsmerkmal. Daten liegen im scmdb-Dump bereit. Offen: Teildatei oder ganze `global.ini`? Konflikt mit dem Launcher abfangen |
+| Phase 12 | Idee | Optional: Toast-Benachrichtigung + Verlauf der letzten Session speichern |
 
 ## Bewusst nicht geplant
 
