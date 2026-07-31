@@ -6,7 +6,7 @@
 
 **Live-Overlay, das neue Star-Citizen-Baupläne anzeigt, sobald du sie freischaltest**
 
-[![Version](https://img.shields.io/badge/Version-1.2.0-5fa522)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-1.3.0-5fa522)](CHANGELOG.md)
 [![Lizenz](https://img.shields.io/badge/Lizenz-MIT-5fa522)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-0a4a7a?logo=python&logoColor=white)](https://www.python.org/)
 [![Star Citizen](https://img.shields.io/badge/Star%20Citizen-kompatibel-0a4a7a)](https://robertsspaceindustries.com/)
@@ -26,6 +26,8 @@ Ein kleines, randloses Overlay, das im Hintergrund die Bauplan-Daten des **SC De
 | ⚡ **Sofort-Meldung** | Liest die Star-Citizen-`Game.log` mit → der Bauplan steht **in Sekunden** in der Liste, statt erst nach dem nächsten Launcher-Export (das dauert mehrere Minuten) |
 | 🟡 → 🟢 **Zwei Stufen** | Frisch aus der Log gelesen = 🟡 *vorläufig*; sobald der Launcher nachzieht = 🟢 bestätigt und mit dessen Daten aufgefrischt |
 | 🟢 **Live-Erkennung** | Prüft alle 3 Sekunden die Launcher-Datei; neue Baupläne erscheinen oben in der Liste |
+| 🔵 **Katalog-Wache** | Meldet auch, wenn im **Spiel** etwas neu craftbar wird — also wenn CIG einen Bauplan nachreicht, den es vorher gar nicht gab (nicht nur, was du selbst freischaltest) |
+| ⭐ **Beobachtungsliste** | Gegenstände, auf die du wartest, werden bei ihrem Auftauchen auffällig in Gold gemeldet — optionale `watchlist.json` |
 | 🏷️ **Size · Grade · Klasse** | Kompakt-Kürzel `Klasse/Grade/Size` je Bauplan, z. B. `M/A/1` (Military · Grade A · Size 1) — gleiche Daten wie die Vault-Liste |
 | 🔔 **Signalton** | Kurzer Ton bei jedem Neuzugang — du musst nicht aufs Fenster schauen |
 | 🧷 **Immer im Vordergrund** | Randloses, leicht durchscheinendes Overlay über dem Spiel |
@@ -74,6 +76,7 @@ Es sind **keine** Zusatzpakete nötig — das Tool nutzt nur die Python-Standard
    - **`Game.log`** — schreibt das Spiel beim Freischalten `Added notification "Bauplan erhalten: <Name>: "`, erscheint der Bauplan **sofort** als 🟡 *vorläufig*.
    - **`sc_bp_erledigt.json`** — die Datei des Launchers ist die verbindliche Quelle. Taucht der Name dort auf, wird die Zeile auf 🟢 bestätigt. Baupläne, die nur dort stehen (andere Spielsprache, Import aus alten Logs), landen direkt als 🟢 in der Liste.
 3. Jede neue Zeile wird oben eingefügt (Name · Art · `M/A/1` · Uhrzeit) und ein kurzer Ton gespielt.
+   - **Einmal pro Minute** kommt eine dritte Prüfung dazu: Ist `bp_item_types.json` gewachsen, ist im Spiel etwas **neu craftbar** geworden → 🔵-Zeile. Das hat nichts mit deinem Freischalt-Stand zu tun; solche Zeilen werden deshalb nie auf 🟢 bestätigt. Der Vergleichsstand liegt in `%APPDATA%\sc-bp-watcher\catalog-seen.json` und überlebt Neustarts; beim allerersten Start wird nur die Basis gesetzt.
 4. Die **Art** kommt aus `bp_item_types.json`; **Size/Grade/Klasse** aus dem Launcher-Katalog (`catalog\components.ini` + `items_raw.ini`) plus manuellen Korrekturen aus `bp-overrides.json` (Vorrang) — dieselbe Datenbasis wie der Skill „SC BP", die Anzeige stimmt daher mit der Vault-Liste überein.
 
 > **Warum zwei Quellen?** Der Launcher liest dieselbe `Game.log`, exportiert seine Datei aber nur alle paar Minuten. Gemessen am 30.07.2026: Freischaltung im Spiel **21:23:49** → Launcher-Export **21:26:24** = **2,5 Minuten** Verzug. Die Log-Mitlesung schließt diese Lücke, die gepflegten Werte kommen weiter vom Launcher.
@@ -83,7 +86,25 @@ Es sind **keine** Zusatzpakete nötig — das Tool nutzt nur die Python-Standard
 ```text
 %APPDATA%\sc-deutsch-launcher\blueprints\sc_bp_erledigt.json     (Launcher, verbindlich)
 …\StarCitizen\LIVE\Game.log                                      (Spiel, Sofort-Meldung)
+%APPDATA%\sc-deutsch-launcher\blueprints\bp_item_types.json      (Katalog-Wache, ab v1.3.0)
 ```
+
+### Auf bestimmte Gegenstände warten
+
+Wartest du auf einen ganz bestimmten Bauplan, den es noch gar nicht gibt, leg dir
+`%APPDATA%\sc-bp-watcher\watchlist.json` an:
+
+```json
+{
+  "eintraege": [
+    { "titel": "Mamba-Rüstung: Rucksack", "muster": ["arden-cl backpack", "morozov-ch backpack"] }
+  ]
+}
+```
+
+Die Muster werden **kleingeschrieben** als Teilstring gegen jeden neuen Katalog-Eintrag geprüft.
+Ein Treffer wird auffällig in Gold mit ⭐ und eigenem Signalton gemeldet (`<Titel> — jetzt craftbar!`).
+Ohne die Datei meldet der Watcher einfach jeden Zuwachs.
 
 Der Launcher-Pfad wird über `%APPDATA%` gefunden, der Spiel-Pfad über den `Installfolder` aus `scdl-settings.json` (ersatzweise `scan-state.json` oder der Standard-Installationspfad). Ein Spiel-Neustart (neue, kürzere Log) wird erkannt.
 
@@ -96,13 +117,16 @@ Oben in `sc_bp_watcher.py` anpassbar:
 | Variable | Bedeutung | Standard |
 |----------|-----------|----------|
 | `POLL_SEC` | Prüf-Intervall in Sekunden (Launcher-Datei **und** Game.log) | `3` |
+| `CAT_POLL` | Prüf-Intervall in Sekunden für den Craftbar-Katalog (ändert sich nur bei Patches) | `60` |
 | `MAX_ROWS` | max. Einträge in der Liste (ältere fliegen unten raus) | `200` |
 | `LOG_PHRASES` | Spielmeldung(en), an denen ein neuer Bauplan erkannt wird | `Bauplan erhalten` |
-| `DEFAULT_GEOM` | Start-Position/-Größe beim allerersten Start (danach wird die gemerkte Lage genutzt) | oberer Monitor |
+| `DEFAULT_GEOM` | Start-Position/-Größe beim allerersten Start (danach wird die gemerkte Lage genutzt) | `440x1098`, oberer Monitor |
 | `CLASS_LETTER` | Kürzel je Klasse (M/S/I/C/K) | Military/Stealth/Industrial/Civilian/Competition |
 | `BG / FG / ACCENT / …` | Farben des Overlays | dunkel + Xharig-Grün |
 
 > Position & Größe werden beim Verschieben/Beenden in `%APPDATA%\sc-bp-watcher\watcher.json` gespeichert. Zum Zurücksetzen einfach diese Datei löschen — dann greift wieder `DEFAULT_GEOM`.
+>
+> Im selben Ordner liegen `catalog-seen.json` (Vergleichsstand der Katalog-Wache) und optional `watchlist.json`. Löschst du `catalog-seen.json`, wird beim nächsten Start nur die Basis neu gesetzt — es kommt also keine Meldungsflut.
 
 ## Weitergeben
 

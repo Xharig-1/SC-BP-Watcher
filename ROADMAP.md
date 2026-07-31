@@ -1,6 +1,6 @@
 # Roadmap
 
-Aktuelle Version: `v1.2.0`
+Aktuelle Version: `v1.3.0`
 
 ## Zielbild
 
@@ -15,9 +15,10 @@ SC BP Watcher ist ein kleines Windows-Overlay, das beim Spielen von Star Citizen
 | Phase 3 | Abgeschlossen | Weitergabe als `.exe` (PyInstaller) + Doku + GitHub-Release |
 | Phase 4 | Abgeschlossen | Size/Grade/Klasse-Kürzel (M/A/1) + gemerkte Fensterposition/-größe |
 | Phase 5 | Abgeschlossen | Sofort-Meldung aus der `Game.log` (🟡 vorläufig → 🟢 bestätigt durch den Launcher) |
-| Phase 6 | Geplant | Optional: System-Tray-Icon statt/zusätzlich zum Overlay |
-| Phase 7 | Idee | Optional: Toast-Benachrichtigung + Verlauf der letzten Session speichern |
-| Phase 8 | Idee | Weitere Spielsprachen in `LOG_PHRASES` (bisher nur die deutsche Meldung verifiziert) |
+| Phase 6 | Abgeschlossen | Katalog-Wache: meldet, was im Spiel **neu craftbar** wurde (🔵), Wunsch-Gegenstände aus der Beobachtungsliste auffällig (⭐) |
+| Phase 7 | Geplant | Optional: System-Tray-Icon statt/zusätzlich zum Overlay |
+| Phase 8 | Idee | Optional: Toast-Benachrichtigung + Verlauf der letzten Session speichern |
+| Phase 9 | Idee | Weitere Spielsprachen in `LOG_PHRASES` (bisher nur die deutsche Meldung verifiziert) |
 
 ## Bewusst nicht geplant
 

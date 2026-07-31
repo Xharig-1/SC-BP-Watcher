@@ -5,6 +5,7 @@ Bauplan (Blueprint) freigeschaltet wird.
 
 Überwacht:  %APPDATA%\\sc-deutsch-launcher\\blueprints\\sc_bp_erledigt.json
             + (ab v1.2.0) die Star-Citizen-Game.log für die Sofort-Meldung
+            + (ab v1.3.0) bp_item_types.json — meldet, was im Spiel NEU craftbar wurde
 Anzeige:    kleines, immer-im-Vordergrund Overlay-Fenster (verschiebbar).
 
 Reines Python-Standardbibliothek-Tool (tkinter) — keine Zusatzpakete nötig.
@@ -18,7 +19,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '1.2.0'
+__version__ = '1.3.0'
 
 # ---------------------------------------------------------------- Konfiguration
 BP_DIR   = os.path.join(os.environ.get('APPDATA', ''), 'sc-deutsch-launcher', 'blueprints')
@@ -31,16 +32,32 @@ OVERRIDES_FILE = r'%APPDATA%\sc-bp-watcher\bp-overrides.json'     # manuelle Kor
 POLL_SEC = 3            # wie oft die Dateien geprüft werden (Sekunden)
 MAX_ROWS = 200          # so viele Neuzugänge max. in der Liste behalten
 
+# --- Katalog-Wache (ab v1.3.0) ---------------------------------------------
+# `bp_item_types.json` listet, was im Spiel überhaupt craftbar ist. Der Launcher
+# frischt sie mit den SC-Patches auf. Wächst sie, ist etwas NEU craftbar geworden —
+# unabhängig davon, ob man es freigeschaltet hat. Der Stand liegt bewusst in einer
+# eigenen Datei (nicht der des sc-bp-Skills), damit beide Werkzeuge unabhängig
+# voneinander melden und keins dem anderen die Meldung wegnimmt.
+APP_DIR    = os.path.join(os.environ.get('APPDATA', ''), 'sc-bp-watcher')
+CAT_SEEN   = os.path.join(APP_DIR, 'catalog-seen.json')
+# Optionale Beobachtungsliste: Gegenstände, auf die man besonders wartet.
+# Format: {"eintraege": [{"titel": "…", "muster": ["teilstring", …]}, …]} — Muster
+# kleingeschrieben, Treffer per Teilstring. Fehlt die Datei, meldet der Watcher
+# einfach jeden Katalog-Zuwachs. Der Claude-Skill „SC BP" schreibt sie automatisch.
+WATCHLIST  = os.path.join(APP_DIR, 'watchlist.json')
+CAT_POLL   = 60         # Katalogdatei nur jede Minute prüfen (ändert sich nur bei Patches)
+
 # Fensterposition/-größe. Standard = dort, wo Xharig es haben will: oberer Monitor
 # (nicht der Spiel-Monitor) → man tabbt nicht mehr versehentlich aus dem Spiel.
 # Wird beim Beenden/Verschieben in SETTINGS_FILE gespeichert und beim nächsten Start
 # von dort wiederhergestellt. Format: BxH+X+Y (negatives Y als „+-1439" = absolut).
-DEFAULT_GEOM  = '341x1098+3752+-1439'
+DEFAULT_GEOM  = '440x1098+3656+-1439'
 SETTINGS_FILE = os.path.join(os.environ.get('APPDATA', ''), 'sc-bp-watcher', 'watcher.json')
 
 # Farben (dunkles Overlay)
 BG, FG, ACCENT, SUB, BAR = '#10141c', '#e6edf3', '#47aa42', '#8b98a5', '#1b2230'
 PROV = '#d8a03a'        # Gelb für „vorläufig" (aus der Game.log, noch nicht vom Launcher bestätigt)
+CATA = '#4aa3d8'        # Blau für „neu im Spiel craftbar" (Katalog-Zuwachs, kein eigener Fund)
 
 
 # ---------------------------------------------------------------- Daten-Helfer
@@ -60,6 +77,17 @@ def load_types():
             return json.load(f)
     except Exception:
         return {}
+
+
+def load_watchlist():
+    """Optionale Beobachtungsliste -> [(Titel, [Muster, …]), …]. Fehlt sie, ist sie leer."""
+    try:
+        with open(WATCHLIST, encoding='utf-8') as f:
+            eintraege = json.load(f).get('eintraege', [])
+        return [(e['titel'], [m.lower() for m in e.get('muster', [])])
+                for e in eintraege if e.get('muster')]
+    except Exception:
+        return []
 
 
 TYPES = load_types()
@@ -87,6 +115,30 @@ _CLASS_SHORT = {v: k for k, v in _CLASS_FULL.items()}
 
 def _norm(s):
     return s.lower().replace('\xa0', ' ').replace('�', ' ').strip()
+
+
+def load_display():
+    """Kleingeschriebener Katalog-Schlüssel -> Schreibweise wie im Spiel.
+    `bp_item_types.json` führt alles klein; für die Anzeige holen wir den echten
+    Namen aus dem Launcher-Katalog. Wird nur bei einem Katalog-Zuwachs gebraucht."""
+    d = {}
+    try:
+        for line in open(os.path.join(CAT_DIR, 'components.ini'), encoding='utf-8'):
+            if '=' not in line: continue
+            v = line.strip().split('=', 1)[1]
+            m = re.match(r'(.*?)\s*\([^/]+/[^/]+/[^)]+\)', v)
+            if m: d.setdefault(_norm(m.group(1)), m.group(1).strip())
+    except Exception:
+        pass
+    try:
+        for line in open(os.path.join(CAT_DIR, 'items_raw.ini'), encoding='utf-8'):
+            if '=' not in line: continue
+            k, v = line.split('=', 1); v = v.strip()
+            if k.endswith('_short') or not v: continue
+            d.setdefault(_norm(v), v)
+    except Exception:
+        pass
+    return d
 
 
 def load_meta():
@@ -285,6 +337,51 @@ class Watcher(threading.Thread):
         self.prov = {}          # noch unbestätigt: norm(Log-Name) -> Log-Name
         self.tail = LogTail()
         self.running = True
+        self.cat_next = 0.0     # nächster Katalog-Check (Zeitstempel)
+        self.cat_mtime = None   # letzter gesehener Änderungszeitpunkt der Katalogdatei
+
+    # ---- Katalog-Wache: was ist NEU craftbar im Spiel? ----
+    def _catalog_tick(self):
+        """Prüft, ob der Craftbar-Katalog gewachsen ist. Der Vergleichsstand überlebt
+        Neustarts (CAT_SEEN), sonst käme nach jedem Programmstart alles doppelt."""
+        try:
+            mt = os.path.getmtime(TYPE_FILE)
+        except OSError:
+            return
+        if mt == self.cat_mtime:
+            return
+        self.cat_mtime = mt
+        jetzt = load_types()
+        if not jetzt:
+            return
+        try:
+            with open(CAT_SEEN, encoding='utf-8') as f:
+                bekannt = set(json.load(f).get('namen', []))
+        except Exception:
+            bekannt = set()
+        if not bekannt:                       # erster Lauf: nur Basis setzen, nichts melden
+            self._save_catalog(jetzt)
+            return
+        neu = sorted(n for n in jetzt if n not in bekannt)
+        if not neu:
+            self._save_catalog(jetzt)
+            return
+        muster, anzeige = load_watchlist(), load_display()
+        for name in neu:
+            titel = next((t for t, muss in muster if any(m in name for m in muss)), None)
+            self.q.put(('catalog', anzeige.get(_norm(name)) or name.title(),
+                        jetzt.get(name) or '—', time.strftime('%H:%M:%S'), titel))
+        self._save_catalog(jetzt)
+
+    @staticmethod
+    def _save_catalog(jetzt):
+        try:
+            os.makedirs(APP_DIR, exist_ok=True)
+            with open(CAT_SEEN, 'w', encoding='utf-8') as f:
+                json.dump({'stand': time.strftime('%Y-%m-%d %H:%M:%S'),
+                           'namen': sorted(jetzt)}, f, ensure_ascii=False, indent=1)
+        except Exception:
+            pass
 
     def _emit(self, key, provisional, log_meta=None):
         # log_meta = Kürzel aus dem Log-Zusatz; wird nur genommen, wenn der
@@ -338,6 +435,12 @@ class Watcher(threading.Thread):
                 elif not dup:
                     self._emit(k, False)
             self.known = cur
+
+            # 3) Katalog-Wache (selten, die Datei ändert sich nur bei SC-Patches)
+            if time.time() >= self.cat_next:
+                self.cat_next = time.time() + CAT_POLL
+                self._catalog_tick()
+
             log_state = '✓' if self.tail.path else '–'
             self.q.put(('status', f'Überwache {len(cur)} BPs · Log {log_state} · '
                                   f'geprüft {time.strftime("%H:%M:%S")}'))
@@ -400,7 +503,12 @@ class Overlay:
         self.list = tk.Frame(self.canvas, bg=BG)
         self.list.bind('<Configure>',
                        lambda e: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
-        self.canvas.create_window((0, 0), window=self.list, anchor='nw', width=312)
+        # Die Liste muss so breit sein wie das Fenster. Bis v1.2.0 stand hier ein fester
+        # Wert (312 px) — dadurch wurden lange Namen abgeschnitten und Breiterziehen
+        # brachte nichts. Jetzt wird die Breite bei jeder Größenänderung nachgezogen.
+        self._list_id = self.canvas.create_window((0, 0), window=self.list, anchor='nw', width=312)
+        self._wrap_labels = []          # Untertitel, die umbrechen dürfen
+        self.canvas.bind('<Configure>', self._fit_width)
         self.canvas.configure(yscrollcommand=sb.set)
         self.canvas.pack(side='left', fill='both', expand=True)
         sb.pack(side='right', fill='y')
@@ -429,6 +537,16 @@ class Overlay:
         self.root.geometry(f'{w}x{h}')
 
     # ---- Liste ----
+    def _fit_width(self, e=None):
+        """Listenbreite an die Fensterbreite koppeln und lange Untertitel neu umbrechen."""
+        w = e.width if e is not None else self.canvas.winfo_width()
+        if w < 2:
+            return
+        self.canvas.itemconfigure(self._list_id, width=w)
+        self._wrap_labels = [lb for lb in self._wrap_labels if lb.winfo_exists()]
+        for lb in self._wrap_labels:
+            lb.config(wraplength=max(160, w - 40))
+
     def _placeholder(self):
         self._ph = tk.Label(self.list, text='Warte auf neue Baupläne …',
                             bg=BG, fg=SUB, font=self.f_sub)
@@ -479,6 +597,38 @@ class Overlay:
             try: winsound.MessageBeep(winsound.MB_ICONASTERISK)
             except Exception: pass
 
+    def add_catalog(self, name, art, ts, titel):
+        """Katalog-Zuwachs: im Spiel ist etwas NEU craftbar (nicht: selbst freigeschaltet).
+        `titel` gesetzt = Treffer aus der Beobachtungsliste → auffällig in Gold."""
+        if self.count == 0 and hasattr(self, '_ph') and self._ph.winfo_exists():
+            self._ph.destroy()
+        self.count += 1
+        top = self.list.pack_slaves()
+        row = tk.Frame(self.list, bg=BG)
+        row.pack(fill='x', anchor='w', padx=2, pady=1)
+        tk.Label(row, text='⭐' if titel else '🔵', bg=BG, font=self.f_item).pack(side='left')
+        txt = tk.Frame(row, bg=BG); txt.pack(side='left', fill='x', expand=True)
+        tk.Label(txt, text=name, bg=BG, fg=PROV if titel else FG, font=self.f_item,
+                 anchor='w', justify='left').pack(fill='x', anchor='w')
+        unten = f'{titel} — jetzt craftbar!' if titel else 'neu im Spiel craftbar'
+        # Titel aus der Beobachtungsliste können lang sein -> umbrechen statt abschneiden
+        sub = tk.Label(txt, text=' · '.join(x for x in (unten, art, ts) if x), bg=BG,
+                       fg=PROV if titel else CATA, font=self.f_sub, anchor='w', justify='left')
+        sub.pack(fill='x', anchor='w')
+        self._wrap_labels.append(sub)
+        self._fit_width()
+        row._bpkey = None                      # kein BP-Schlüssel: nie „bestätigen"
+        if top:
+            row.pack_configure(before=top[0])
+        self._trim()
+        self.canvas.yview_moveto(0)
+        if winsound:
+            try:
+                winsound.MessageBeep(winsound.MB_ICONEXCLAMATION if titel
+                                     else winsound.MB_ICONASTERISK)
+            except Exception:
+                pass
+
     def confirm(self, row_key, key, art, meta):
         """Der Launcher hat den vorläufig (aus der Game.log) gemeldeten BP bestätigt:
         Punkt auf Grün, „vorläufig" raus, Name/Art/Kürzel mit den Launcher-Daten
@@ -512,6 +662,8 @@ class Overlay:
                     self.add_new(msg[1], msg[2], msg[3], msg[4], msg[5])
                 elif msg[0] == 'confirm':
                     self.confirm(msg[1], msg[2], msg[3], msg[4])
+                elif msg[0] == 'catalog':
+                    self.add_catalog(msg[1], msg[2], msg[3], msg[4])
         except queue.Empty:
             pass
         self.root.after(300, self._poll_queue)
