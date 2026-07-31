@@ -18,6 +18,8 @@
 Ein kleines, randloses Overlay, das im Hintergrund die Bauplan-Daten des **SC Deutsch Launcher** überwacht und dir **in Echtzeit** meldet, sobald ein neuer Bauplan (Blueprint) dazukommt — inklusive Name, Art und Uhrzeit. Ohne Account, ohne Cloud, ohne Installation.
 
 > ⚠️ **Wichtig:** Dieses Tool funktioniert **ausschließlich** zusammen mit dem **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** — es liest dessen Bauplan-Datei (`%APPDATA%\sc-deutsch-launcher\…`). Ohne diesen Launcher gibt es **keine Datenquelle** und das Overlay bleibt leer. Der normale RSI-Launcher allein reicht **nicht**.
+>
+> Woher dieselben Daten **ohne** den Launcher kämen (Spieldateien, `global.ini` aus dem `Data.p4k`, scmdb) und was einer Loslösung wirklich im Weg steht, ist recherchiert und dokumentiert: [`docs/datenquellen-ohne-launcher.md`](docs/datenquellen-ohne-launcher.md).
 
 ## Features
 
