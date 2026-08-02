@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/icon.png" alt="SC BP Watcher Icon" width="128">
+<img src="assets/icon.png" alt="SC BP Watcher Icon" width="128">
 
 # SC BP Watcher
 
@@ -19,7 +19,7 @@ Ein kleines, randloses Overlay, das im Hintergrund die Bauplan-Daten des **SC De
 
 > ⚠️ **Wichtig:** Dieses Tool funktioniert **ausschließlich** zusammen mit dem **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** — es liest dessen Bauplan-Datei (`%APPDATA%\sc-deutsch-launcher\…`). Ohne diesen Launcher gibt es **keine Datenquelle** und das Overlay bleibt leer. Der normale RSI-Launcher allein reicht **nicht**.
 >
-> Woher dieselben Daten **ohne** den Launcher kämen (Spieldateien, `global.ini` aus dem `Data.p4k`, scmdb) und was einer Loslösung wirklich im Weg steht, ist recherchiert und dokumentiert: [`docs/datenquellen-ohne-launcher.md`](docs/datenquellen-ohne-launcher.md).
+> Ob und wie sich das Tool vom Launcher lösen lässt, ist untersucht — siehe [`ROADMAP.md`](ROADMAP.md), Phase 8.
 
 ## Features
 
