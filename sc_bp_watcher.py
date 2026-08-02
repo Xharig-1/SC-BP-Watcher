@@ -45,7 +45,13 @@ TYPE_FILE = os.path.join(BP_DIR, 'bp_item_types.json')
 CAT_DIR  = os.path.join(BP_DIR, 'catalog')                       # Launcher-Katalog (Size/Grade/Klasse)
 SCDL_SETTINGS = os.path.join(BP_DIR, 'scdl-settings.json')       # kennt den SC-Installationsordner
 SCAN_STATE    = os.path.join(BP_DIR, 'scan-state.json')          # kennt die zuletzt gelesene Game.log
-OVERRIDES_FILE = r'%APPDATA%\sc-bp-watcher\bp-overrides.json'     # manuelle Korrekturen (Skill „BP-Daten"), Vorrang vor Katalog
+# Manuelle Korrekturen an Size/Grade/Klasse, Vorrang vor dem Launcher-Katalog.
+# Standard: neben den eigenen Einstellungen in %APPDATA%\sc-bp-watcher\.
+# Wer die Datei woanders pflegt (z. B. beim Claude-Skill „BP-Daten"), setzt die
+# Umgebungsvariable SC_BP_OVERRIDES auf den vollen Pfad. Fehlt beides, gilt der
+# Katalog unverändert — die Datei ist optional.
+OVERRIDES_FILE = os.environ.get('SC_BP_OVERRIDES') or os.path.join(
+    os.environ.get('APPDATA', ''), 'sc-bp-watcher', 'bp-overrides.json')
 POLL_SEC = 3            # wie oft die Dateien geprüft werden (Sekunden)
 MAX_ROWS = 200          # so viele Neuzugänge max. in der Liste behalten
 
