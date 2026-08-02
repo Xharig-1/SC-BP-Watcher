@@ -5,7 +5,7 @@ Motiv: Scope/Watcher-Ring mit grünem „neu"-Punkt.
 
 Ausgabe:
   icon.ico        — Multi-Size-Icon für die EXE (16…256)
-  docs/icon.png   — 256er-Vorschau (für README)
+  assets/icon.png — 256er-Vorschau (für README)
 
 Aufruf:  python make_icon.py   (braucht Pillow; nur zum Icon-Bauen)
 """
@@ -78,8 +78,8 @@ draw.ellipse([cx - dot*0.45 - hl, cy - dot*0.45 - hl, cx - dot*0.45 + hl, cy - d
 # --- Herunterskalieren (Anti-Aliasing) ---
 base = img.resize((256, 256), Image.LANCZOS)
 
-os.makedirs('docs', exist_ok=True)
-base.save('docs/icon.png')
+os.makedirs('assets', exist_ok=True)
+base.save('assets/icon.png')
 sizes = [(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)]
 base.save('icon.ico', sizes=sizes)
-print('Icon erzeugt: icon.ico  +  docs/icon.png')
+print('Icon erzeugt: icon.ico  +  assets/icon.png')
