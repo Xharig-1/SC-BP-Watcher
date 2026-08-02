@@ -7,7 +7,7 @@
 **Live-Overlay, das neue Star-Citizen-Baupläne anzeigt, sobald du sie freischaltest**
 
 [![Version](https://img.shields.io/badge/Version-1.3.0-5fa522)](CHANGELOG.md)
-[![Lizenz](https://img.shields.io/badge/Lizenz-MIT-5fa522)](LICENSE)
+[![Lizenz](https://img.shields.io/badge/Lizenz-GPL--3.0-5fa522)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-0a4a7a?logo=python&logoColor=white)](https://www.python.org/)
 [![Star Citizen](https://img.shields.io/badge/Star%20Citizen-kompatibel-0a4a7a)](https://robertsspaceindustries.com/)
 
@@ -152,6 +152,22 @@ SC BP Watcher ist ein eigenständiges, inoffizielles Zusatz-Tool und steht in **
 
 If you fork this project, please keep the credit in the footer or mention the original source.
 
+## Star Citizen Fan Content
+
+> This is an unofficial Star Citizen fan site, not affiliated with the Cloud Imperium group of
+> companies. All content on this site not authored by its host or users are property of their
+> respective owners.
+
+SC BP Watcher ist ein inoffizielles, nicht-kommerzielles Fan-Projekt für die Star-Citizen-Gemeinschaft.
+Star Citizen®, Roberts Space Industries® und Cloud Imperium® sind eingetragene Marken der
+Cloud Imperium Rights LLC. Alle übrigen Star-Citizen-Inhalte, Grafiken, Namen, Logos und Marken
+gehören ihren jeweiligen Eigentümern. © Cloud Imperium Rights LLC und Cloud Imperium Rights Ltd.
+
+Offizielle Seite: **[robertsspaceindustries.com](https://robertsspaceindustries.com)**
+
 ## Lizenz
 
-MIT License. Details stehen in [LICENSE](LICENSE).
+**GNU General Public License v3.0** — Volltext in [LICENSE](LICENSE).
+
+Kurz: Du darfst das Programm nutzen, verändern und weitergeben. Wer es weitergibt — verändert
+oder nicht —, muss den Quellcode unter derselben Lizenz mitliefern. Es gibt keine Garantie.
