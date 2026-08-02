@@ -17,6 +17,5 @@ dist/
 avatar.ico
 _avatar_src.png
 
-# Interne Planung und Analysen gehören nicht ins öffentliche Repo (02.08.2026)
-# Inhalte liegen in der Obsidian-Vault + E:\GitHub\Projekte\SC-BP-Watcher-docs-privat\
+# Interne Planung und Notizen gehören nicht ins Repo
 docs/

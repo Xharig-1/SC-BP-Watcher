@@ -47,7 +47,7 @@ SCDL_SETTINGS = os.path.join(BP_DIR, 'scdl-settings.json')       # kennt den SC-
 SCAN_STATE    = os.path.join(BP_DIR, 'scan-state.json')          # kennt die zuletzt gelesene Game.log
 # Manuelle Korrekturen an Size/Grade/Klasse, Vorrang vor dem Launcher-Katalog.
 # Standard: neben den eigenen Einstellungen in %APPDATA%\sc-bp-watcher\.
-# Wer die Datei woanders pflegt (z. B. beim Claude-Skill „BP-Daten"), setzt die
+# Wer die Datei woanders pflegt, setzt die
 # Umgebungsvariable SC_BP_OVERRIDES auf den vollen Pfad. Fehlt beides, gilt der
 # Katalog unverändert — die Datei ist optional.
 OVERRIDES_FILE = os.environ.get('SC_BP_OVERRIDES') or os.path.join(
@@ -59,14 +59,14 @@ MAX_ROWS = 200          # so viele Neuzugänge max. in der Liste behalten
 # `bp_item_types.json` listet, was im Spiel überhaupt craftbar ist. Der Launcher
 # frischt sie mit den SC-Patches auf. Wächst sie, ist etwas NEU craftbar geworden —
 # unabhängig davon, ob man es freigeschaltet hat. Der Stand liegt bewusst in einer
-# eigenen Datei (nicht der des sc-bp-Skills), damit beide Werkzeuge unabhängig
-# voneinander melden und keins dem anderen die Meldung wegnimmt.
+# eigenen Datei, damit ein zweites Werkzeug auf denselben Daten dem Watcher
+# nicht die Meldung wegnimmt.
 APP_DIR    = os.path.join(os.environ.get('APPDATA', ''), 'sc-bp-watcher')
 CAT_SEEN   = os.path.join(APP_DIR, 'catalog-seen.json')
 # Optionale Beobachtungsliste: Gegenstände, auf die man besonders wartet.
 # Format: {"eintraege": [{"titel": "…", "muster": ["teilstring", …]}, …]} — Muster
 # kleingeschrieben, Treffer per Teilstring. Fehlt die Datei, meldet der Watcher
-# einfach jeden Katalog-Zuwachs. Der Claude-Skill „SC BP" schreibt sie automatisch.
+# einfach jeden Katalog-Zuwachs.
 WATCHLIST  = os.path.join(APP_DIR, 'watchlist.json')
 CAT_POLL   = 60         # Katalogdatei nur jede Minute prüfen (ändert sich nur bei Patches)
 
@@ -126,7 +126,7 @@ def art_of(key):
 
 
 # ------------------------------------------------ Size / Grade / Klasse (M/A/1)
-# Gleiche Ableitung wie der Skill „SC BP" (update_bp.py): Launcher-Katalog +
+# Ableitung: Launcher-Katalog +
 # manuelle Overrides (bp-overrides.json, Vorrang). Ausgabe-Kürzel: Klasse/Grade/Size,
 # z. B. Military / Grade A / Size 1  ->  "M/A/1". Nur Size (Waffen) -> "–/–/2".
 CLASS_LETTER = {'Military': 'M', 'Stealth': 'S', 'Industrial': 'I',

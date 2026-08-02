@@ -4,27 +4,40 @@ Aktuelle Version: `v1.4.0`
 
 ## Zielbild
 
-SC BP Watcher ist ein kleines Windows-Overlay, das beim Spielen von Star Citizen live anzeigt, sobald ein neuer Bauplan freigeschaltet wird. Datenquelle ist die Bauplan-Liste des SC Deutsch Launcher. Fokus: zuverlässig, leichtgewichtig, ohne Abhängigkeiten, einfach weitergebbar.
+SC BP Watcher ist ein kleines Windows-Overlay, das beim Spielen von Star Citizen live anzeigt, sobald ein neuer Bauplan freigeschaltet wird. Fokus: zuverlässig, leichtgewichtig, ohne Zusatzpakete, einfach weiterzugeben.
 
-## Phasen
+Reihenfolge und Umfang können sich ändern — **Termine gibt es hier bewusst keine.**
 
-| Phase | Status | Inhalt |
-|---|---|---|
-| Phase 1 | Abgeschlossen | Live-Erkennung neuer BPs aus der Launcher-Datei + Overlay-Anzeige |
-| Phase 2 | Abgeschlossen | Signalton, verschiebbares/skalierbares Fenster, Liste leeren |
-| Phase 3 | Abgeschlossen | Weitergabe als `.exe` (PyInstaller) + Doku + GitHub-Release |
-| Phase 4 | Abgeschlossen | Size/Grade/Klasse-Kürzel (M/A/1) + gemerkte Fensterposition/-größe |
-| Phase 5 | Abgeschlossen | Sofort-Meldung aus der `Game.log` (🟡 vorläufig → 🟢 bestätigt durch den Launcher) |
-| Phase 6 | Abgeschlossen | Katalog-Wache: meldet, was im Spiel **neu craftbar** wurde (🔵), Wunsch-Gegenstände aus der Beobachtungsliste auffällig (⭐) |
-| Phase 7 | **Als Nächstes** | **Umbau zur App** — Einstellungs-/Status-Fenster, `settings.json`, **Export des eigenen Bauplan-Bestands** (Format geklärt: `{"blueprints":[{"productName","receivedAt"}]}` — nimmt sowohl das KRT Profit Basetool als auch scmdb.net), **Fan-Content-Hinweis + Lizenztext** für die Veröffentlichung, automatisch gebaute `.exe` je Release, Verteilweg ohne Quellcode. Strukturiert das Projekt komplett um → Start **immer mit „grill mich"** |
-| Phase 8 | **Als Nächstes** | **Unabhängigkeit vom SC Deutsch Launcher**, Schritt 1: Name/Art/Size/Grade/Klasse aus der `global.ini` statt aus dem Launcher-Katalog |
-| Phase 9 | Geplant | Autostart + System-Tray (sinnvoll erst zusammen: dauerhaft laufendes Overlay ohne Tray nervt) |
-| Phase 10 | Geplant | **Zweisprachig (de/en)** — Oberfläche umschaltbar + Doku in beiden Sprachen. Dazu: Spielsprache automatisch erkennen, Log-Phrase aus `global.ini` ableiten (`crafting_hud_notification_received_blueprint`) statt fest verdrahteter `LOG_PHRASES`. ⚠️ Oberflächensprache und Spielsprache **nicht** koppeln |
-| Phase 11 | Idee | **Bauplan-Anzeige im Spiel** — Häkchen `[x]`/`[  ]` in den Missions-Beschreibungen der `global.ini`, so wie es der SC Deutsch Launcher macht (Daten liegen im scmdb-Dump bereit). Kein Alleinstellungsmerkmal: Der Launcher bietet die Anzeige auch mit **englischen** Originaltexten an — ohne seine Sprachverwaltung gibt es sie aber gar nicht. Nutzen wäre also „ohne zweites Werkzeug". Hängt an der p4k-Extraktion, weil die Localization-Datei vollständig geschrieben werden muss; Konflikt mit dem Launcher abfangen |
-| Phase 12 | Idee | Optional: Toast-Benachrichtigung + Verlauf der letzten Session speichern |
+## Was schon läuft
+
+| | Inhalt |
+|---|---|
+| ✅ | Live-Erkennung neuer Baupläne aus der Launcher-Datei, Anzeige im Overlay |
+| ✅ | Signalton, verschiebbares und skalierbares Fenster, Liste leeren |
+| ✅ | Weitergabe als `.exe` (kein Python beim Empfänger nötig) |
+| ✅ | Kürzel für Klasse, Gütegrad und Größe (`M/A/1`), gemerkte Fensterlage |
+| ✅ | Sofort-Meldung aus der Spiel-Log (🟡 vorläufig → 🟢 bestätigt) |
+| ✅ | Katalog-Wache: meldet, was im Spiel **neu craftbar** wird (🔵) — dazu die Beobachtungsliste für Wunsch-Gegenstände (⭐) |
+
+## Was noch kommt
+
+| | Inhalt |
+|---|---|
+| Als Nächstes | **Einstellungs- und Statusfenster** — Prüfintervall, Signalton, Pfade und Fensterlage im Fenster einstellen statt im Code |
+| Als Nächstes | **Merkliste per Klick pflegen** — gewünschten Gegenstand suchen und auswählen, statt die `watchlist.json` von Hand zu schreiben. Die Liste aller craftbaren Dinge liegt dem Tool bereits vor |
+| Als Nächstes | **Export des eigenen Bauplan-Bestands** als Datei, zum Hochladen bei Diensten, die Baupläne verwalten (scmdb.net, KRT Profit Basetool) |
+| Als Nächstes | **Weniger Abhängigkeit vom SC Deutsch Launcher** — Art, Größe, Gütegrad und Klasse direkt aus den Spieldateien lesen |
+| Geplant | **Autostart und Ablage-Symbol** (Tray) — sinnvoll nur zusammen: ein dauerhaft laufendes Overlay ohne Ablage nervt |
+| Geplant | **Englische Oberfläche** und englischsprachige Anleitung. Die Erkennung im Log soll dabei die Spielsprache automatisch berücksichtigen |
+| Idee | **Bauplan-Häkchen direkt im Spiel**, in den Missions-Beschreibungen |
+| Idee | Kurzmeldung über die Windows-Benachrichtigungen, Verlauf der letzten Sitzung speichern |
 
 ## Bewusst nicht geplant
 
-- **Vollständiger Ersatz des Launchers.** Der **Freischalt-Bestand** ist kontospezifisch — keine externe Quelle kann ihn liefern, `sc_bp_erledigt.json` bleibt dafür konkurrenzlos. Ein eigener Bestand ließe sich nur „ab heute" fortschreiben und driftet still, sobald jemand ohne laufenden Watcher spielt. **Ziel ist deshalb nicht Ersatz, sondern Wahlfreiheit:** ohne Launcher soll das Tool nutzbar sein (Phase 8), mit Launcher bleibt es genauer.
+**Kein Ersatz für den SC Deutsch Launcher.** Welche Baupläne *du* freigeschaltet hast, hängt an deinem Konto — diese Liste kann kein externes Werkzeug herbeizaubern, sie kommt vom Launcher. Ein selbst geführter Bestand ließe sich nur „ab heute" fortschreiben und würde still ungenau, sobald jemand ohne laufenden Watcher spielt.
 
-- **Standalone ohne den SC Deutsch Launcher:** weiterhin **nicht umgesetzt**, aber die Begründung von damals ist überholt. Die BP-Namen **stehen** im Klartext im `Game.log` — seit v1.2.0 liest der Watcher sie für die **Sofort-Meldung** selbst mit. Am 19.07.2026 wurde eine komplette Loslösung verworfen, weil eine eigene Werte-Datenbank (Typ/Size/Grade/Klasse) jeden Patch nachgezogen werden müsste. **Das stimmt nicht:** Diese Werte stehen vollständig und patchaktuell in der `global.ini` des Spiels (`Data.p4k → Data/Localization/english/global.ini`), zusammen mit den Item-Namen und sogar der Log-Erkennungsphrase je Sprache. Was wirklich im Weg steht, ist das **Extrahieren aus dem p4k** (Fremdwerkzeug wie `unp4k` oder eigener Parser — kollidiert mit „reine Standardbibliothek") und der **nicht rekonstruierbare Altbestand** (die Log-Backups reichen nur ein paar Wochen zurück, den vollen Freischalt-Stand liefert nur `sc_bp_erledigt.json`).
+Das Ziel ist deshalb **Wahlfreiheit, nicht Ersatz**: ohne Launcher soll der Watcher benutzbar sein, mit Launcher bleibt er genauer.
+
+## Mitreden
+
+Wünsche, Fehlermeldungen und Ideen gern als [Issue](../../issues).

@@ -19,7 +19,7 @@ Ein kleines, randloses Overlay, das im Hintergrund die Bauplan-Daten des **SC De
 
 > ⚠️ **Wichtig:** Dieses Tool funktioniert **ausschließlich** zusammen mit dem **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** — es liest dessen Bauplan-Datei (`%APPDATA%\sc-deutsch-launcher\…`). Ohne diesen Launcher gibt es **keine Datenquelle** und das Overlay bleibt leer. Der normale RSI-Launcher allein reicht **nicht**.
 >
-> Ob und wie sich das Tool vom Launcher lösen lässt, ist untersucht — siehe [`ROADMAP.md`](ROADMAP.md), Phase 8.
+> Ob und wie sich das Tool vom Launcher lösen lässt, ist untersucht — siehe [`ROADMAP.md`](ROADMAP.md).
 
 ## Warum dieses Tool
 
@@ -41,7 +41,7 @@ Dazu: Klasse, Gütegrad und Größe stehen direkt in der Zeile (`M/A/1`), und da
 | 🟢 **Live-Erkennung** | Prüft alle 3 Sekunden die Launcher-Datei; neue Baupläne erscheinen oben in der Liste |
 | 🔵 **Katalog-Wache** | Meldet auch, wenn im **Spiel** etwas neu craftbar wird — also wenn CIG einen Bauplan nachreicht, den es vorher gar nicht gab (nicht nur, was du selbst freischaltest) |
 | ⭐ **Beobachtungsliste** | Gegenstände, auf die du wartest, werden bei ihrem Auftauchen auffällig in Gold gemeldet — optionale `watchlist.json` |
-| 🏷️ **Size · Grade · Klasse** | Kompakt-Kürzel `Klasse/Grade/Size` je Bauplan, z. B. `M/A/1` (Military · Grade A · Size 1) — gleiche Daten wie die Vault-Liste |
+| 🏷️ **Size · Grade · Klasse** | Kompakt-Kürzel `Klasse/Grade/Size` je Bauplan, z. B. `M/A/1` (Military · Grade A · Size 1) |
 | 🔔 **Signalton** | Kurzer Ton bei jedem Neuzugang — du musst nicht aufs Fenster schauen |
 | 🧷 **Immer im Vordergrund** | Randloses, leicht durchscheinendes Overlay über dem Spiel |
 | 🖱️ **Verschiebbar & skalierbar** | An der Titelleiste ziehen, Größe am Griff ◢ unten rechts — **Position & Größe werden gemerkt** |
@@ -90,7 +90,7 @@ Es sind **keine** Zusatzpakete nötig — das Tool nutzt nur die Python-Standard
    - **`sc_bp_erledigt.json`** — die Datei des Launchers ist die verbindliche Quelle. Taucht der Name dort auf, wird die Zeile auf 🟢 bestätigt. Baupläne, die nur dort stehen (andere Spielsprache, Import aus alten Logs), landen direkt als 🟢 in der Liste.
 3. Jede neue Zeile wird oben eingefügt (Name · Art · `M/A/1` · Uhrzeit) und ein kurzer Ton gespielt.
    - **Einmal pro Minute** kommt eine dritte Prüfung dazu: Ist `bp_item_types.json` gewachsen, ist im Spiel etwas **neu craftbar** geworden → 🔵-Zeile. Das hat nichts mit deinem Freischalt-Stand zu tun; solche Zeilen werden deshalb nie auf 🟢 bestätigt. Der Vergleichsstand liegt in `%APPDATA%\sc-bp-watcher\catalog-seen.json` und überlebt Neustarts; beim allerersten Start wird nur die Basis gesetzt.
-4. Die **Art** kommt aus `bp_item_types.json`; **Size/Grade/Klasse** aus dem Launcher-Katalog (`catalog\components.ini` + `items_raw.ini`) plus manuellen Korrekturen aus `bp-overrides.json` (Vorrang) — dieselbe Datenbasis wie der Skill „SC BP", die Anzeige stimmt daher mit der Vault-Liste überein.
+4. Die **Art** kommt aus `bp_item_types.json`; **Size/Grade/Klasse** aus dem Launcher-Katalog (`catalog\components.ini` + `items_raw.ini`), bei Bedarf überschrieben durch die eigene `bp-overrides.json`.
 
 > **Warum zwei Quellen?** Der Launcher liest dieselbe `Game.log`, exportiert seine Datei aber nur alle paar Minuten. Gemessen am 30.07.2026: Freischaltung im Spiel **21:23:49** → Launcher-Export **21:26:24** = **2,5 Minuten** Verzug. Die Log-Mitlesung schließt diese Lücke, die gepflegten Werte kommen weiter vom Launcher.
 
@@ -110,14 +110,23 @@ Wartest du auf einen ganz bestimmten Bauplan, den es noch gar nicht gibt, leg di
 ```json
 {
   "eintraege": [
-    { "titel": "Mamba-Rüstung: Rucksack", "muster": ["arden-cl backpack", "morozov-ch backpack"] }
+    { "titel": "Helm für den schweren Anzug", "muster": ["manticore helmet"] },
+    { "titel": "Kühler, egal welcher", "muster": ["cooler"] }
   ]
 }
 ```
 
-Die Muster werden **kleingeschrieben** als Teilstring gegen jeden neuen Katalog-Eintrag geprüft.
-Ein Treffer wird auffällig in Gold mit ⭐ und eigenem Signalton gemeldet (`<Titel> — jetzt craftbar!`).
-Ohne die Datei meldet der Watcher einfach jeden Zuwachs.
+Ein Eintrag besteht aus einem frei gewählten **Titel** (der steht später in der Meldung) und
+beliebig vielen **Mustern**. Die Muster werden **kleingeschrieben** als Teilstring gegen jeden
+neuen Katalog-Eintrag geprüft — `cooler` trifft also auf jeden Kühler, `manticore helmet` nur
+auf diesen einen. Ein Treffer wird auffällig in Gold mit ⭐ und eigenem Signalton gemeldet
+(`<Titel> — jetzt craftbar!`).
+
+Ohne die Datei meldet der Watcher einfach jeden Zuwachs — sie ist rein optional.
+
+> 🔜 Das von Hand zu schreiben ist umständlich, das ist uns bewusst. Geplant ist ein Fenster, in
+> dem man den gewünschten Gegenstand sucht und per Klick auf die Merkliste setzt — die Liste
+> aller craftbaren Dinge kennt das Tool ohnehin schon.
 
 Der Launcher-Pfad wird über `%APPDATA%` gefunden, der Spiel-Pfad über den `Installfolder` aus `scdl-settings.json` (ersatzweise `scan-state.json` oder der Standard-Installationspfad). Ein Spiel-Neustart (neue, kürzere Log) wird erkannt.
 
