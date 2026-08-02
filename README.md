@@ -152,6 +152,19 @@ SC BP Watcher ist ein eigenständiges, inoffizielles Zusatz-Tool und steht in **
 
 If you fork this project, please keep the credit in the footer or mention the original source.
 
+## Was noch kommt
+
+Ideen für die nächsten Fassungen — **ohne Zeitplan**, in loser Reihenfolge:
+
+- **Einstellungsfenster** statt Werte im Code: Prüfintervall, Signalton, Pfade, Fensterlage
+- **Beobachtungsliste im Fenster pflegen**, statt die `watchlist.json` von Hand zu bearbeiten
+- **Export des eigenen Bauplan-Bestands** als Datei — zum Hochladen bei Diensten, die Baupläne verwalten (scmdb.net, KRT Profit Basetool)
+- **Autostart und Ablage-Symbol** (Tray), damit das Overlay nicht dauernd im Weg ist
+- **Englische Oberfläche** und englischsprachige Anleitung
+- **Weniger Abhängigkeit vom SC Deutsch Launcher** — Typ, Größe, Gütegrad und Klasse direkt aus den Spieldateien lesen
+
+Ausführlich mit Begründungen: [`ROADMAP.md`](ROADMAP.md). Wünsche und Fehlermeldungen gern als [Issue](../../issues).
+
 ## Star Citizen Fan Content
 
 > This is an unofficial Star Citizen fan site, not affiliated with the Cloud Imperium group of
