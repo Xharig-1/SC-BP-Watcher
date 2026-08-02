@@ -21,6 +21,17 @@ Ein kleines, randloses Overlay, das im Hintergrund die Bauplan-Daten des **SC De
 >
 > Ob und wie sich das Tool vom Launcher lösen lässt, ist untersucht — siehe [`ROADMAP.md`](ROADMAP.md), Phase 8.
 
+## Warum dieses Tool
+
+Bauplan-Listen gibt es mehrere. Vier Dinge machen den Unterschied im Alltag:
+
+- **Du musst nicht aus dem Spiel.** Das Overlay liegt über Star Citizen. Kein zweites Fenster, kein Alt-Tab, kein Nachschlagen im Browser — der neue Bauplan steht einfach da, während du weiterspielst.
+- **Sofort *und* verlässlich.** Zwei Quellen laufen parallel: die Spiel-Log meldet den Fund in **Sekunden** (🟡), die Launcher-Datei bestätigt ihn kurz darauf mit den vollständigen Daten (🟢). Du wartest weder auf den nächsten Export, noch musst du dich auf eine Momentaufnahme verlassen.
+- **Es meldet auch, was du noch gar nicht haben kannst.** Die Katalog-Wache erkennt, wenn CIG mit einem Patch etwas **neu craftbar** macht — unabhängig von deinem eigenen Freischalt-Stand (🔵). Wer auf ein bestimmtes Teil wartet, trägt es in die Beobachtungsliste ein und wird beim Auftauchen auffällig darauf gestoßen (⭐).
+- **Nichts verlässt deinen Rechner.** Kein Konto, keine Anmeldung, keine Cloud, keine Installation. Das Tool liest ausschließlich Dateien, die ohnehin auf deiner Platte liegen, und schreibt nichts zurück ins Spiel.
+
+Dazu: Klasse, Gütegrad und Größe stehen direkt in der Zeile (`M/A/1`), und das Ganze läuft mit reiner Python-Standardbibliothek — keine Zusatzpakete, keine Abhängigkeiten, die morgen zerbrechen.
+
 ## Features
 
 | | |
