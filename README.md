@@ -6,7 +6,7 @@
 
 **Live-Overlay, das neue Star-Citizen-Baupläne anzeigt, sobald du sie freischaltest**
 
-[![Version](https://img.shields.io/badge/Version-1.3.0-5fa522)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-1.4.0-5fa522)](CHANGELOG.md)
 [![Lizenz](https://img.shields.io/badge/Lizenz-GPL--3.0-5fa522)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-0a4a7a?logo=python&logoColor=white)](https://www.python.org/)
 [![Star Citizen](https://img.shields.io/badge/Star%20Citizen-kompatibel-0a4a7a)](https://robertsspaceindustries.com/)
@@ -129,6 +129,8 @@ Oben in `sc_bp_watcher.py` anpassbar:
 > Position & Größe werden beim Verschieben/Beenden in `%APPDATA%\sc-bp-watcher\watcher.json` gespeichert. Zum Zurücksetzen einfach diese Datei löschen — dann greift wieder `DEFAULT_GEOM`.
 >
 > Im selben Ordner liegen `catalog-seen.json` (Vergleichsstand der Katalog-Wache) und optional `watchlist.json`. Löschst du `catalog-seen.json`, wird beim nächsten Start nur die Basis neu gesetzt — es kommt also keine Meldungsflut.
+>
+> **Eigene Korrekturen (ab v1.4.0):** Stimmt bei einem Bauplan die Angabe zu Klasse, Größe oder Gütegrad nicht, kannst du sie in `%APPDATA%\sc-bp-watcher\bp-overrides.json` überschreiben — sie hat Vorrang vor dem Launcher-Katalog. Liegt die Datei woanders, gib den Pfad über die Umgebungsvariable `SC_BP_OVERRIDES` an. Ohne die Datei ändert sich nichts.
 
 ## Weitergeben
 
