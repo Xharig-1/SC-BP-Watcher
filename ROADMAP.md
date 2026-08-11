@@ -32,6 +32,7 @@ Reihenfolge und Umfang können sich ändern — **Termine gibt es hier bewusst k
 | Geplant | **Autostart und Ablage-Symbol** (Tray) — sinnvoll nur zusammen: ein dauerhaft laufendes Overlay ohne Ablage nervt |
 | Geplant | **Englische Oberfläche** und englischsprachige Anleitung. Die Erkennung im Log soll dabei die Spielsprache automatisch berücksichtigen |
 | Idee | **Bauplan-Häkchen direkt im Spiel**, in den Missions-Beschreibungen |
+| Idee | **Herkunft je Bauplan einblendbar** — ein Klick zeigt Fraktion, Auftrag, Belohnung, Annahmeort und nötigen Ruf. Bewusst **nicht** dauerhaft in der Zeile und **nicht** als Einspielung in die Spieldateien: Die `global.ini` gehört dem SC Deutsch Launcher, und der Watcher soll lesen statt die Installation zu verändern |
 | Idee | Kurzmeldung über die Windows-Benachrichtigungen, Verlauf der letzten Sitzung speichern |
 
 ## Bewusst nicht geplant
