@@ -23,20 +23,26 @@ Bauplan (Blueprint) freigeschaltet wird.
 Überwacht:  %APPDATA%\\sc-deutsch-launcher\\blueprints\\sc_bp_erledigt.json
             + (ab v1.2.0) die Star-Citizen-Game.log für die Sofort-Meldung
             + (ab v1.3.0) bp_item_types.json — meldet, was im Spiel NEU craftbar wurde
+Werte:      Art/Größe/Gütegrad/Klasse aus dem Launcher-Katalog, ab v1.5.0 mit
+            scmdb.net als Rückfall für alles, was der Katalog nicht kennt.
 Anzeige:    kleines, immer-im-Vordergrund Overlay-Fenster (verschiebbar).
 
 Reines Python-Standardbibliothek-Tool (tkinter) — keine Zusatzpakete nötig.
 Läuft unter Windows mit dem normalen Python.
 """
-import os, re, json, time, threading, queue
+import os, re, sys, json, time, threading, queue
 import tkinter as tk
 from tkinter import font as tkfont
 try:
     import winsound
 except ImportError:
     winsound = None
+try:
+    import winreg
+except ImportError:
+    winreg = None
 
-__version__ = '1.4.0'
+__version__ = '1.5.0'
 
 # ---------------------------------------------------------------- Konfiguration
 BP_DIR   = os.path.join(os.environ.get('APPDATA', ''), 'sc-deutsch-launcher', 'blueprints')
@@ -69,6 +75,33 @@ CAT_SEEN   = os.path.join(APP_DIR, 'catalog-seen.json')
 # einfach jeden Katalog-Zuwachs.
 WATCHLIST  = os.path.join(APP_DIR, 'watchlist.json')
 CAT_POLL   = 60         # Katalogdatei nur jede Minute prüfen (ändert sich nur bei Patches)
+
+# --- scmdb-Craftdaten (ab v1.5.0) ------------------------------------------
+# Woher Art, Größe, Gütegrad und Klasse kommen, wenn der Launcher-Katalog sie
+# nicht kennt (oder gar nicht da ist). scmdb.net liefert je Spielversion eine
+# fertige Datei mit genau diesen Werten — kein Entpacken von `Data.p4k` nötig,
+# reines urllib aus der Standardbibliothek.
+#
+#   versions.json                        -> welche Spielversion ist aktuell
+#   crafting_items-<version>.json        -> name, attachType, size, grade,
+#                                           componentClass, manufacturer
+#
+# RANGFOLGE (wichtig): bp-overrides.json  >  Launcher-Katalog/Spieldaten  >  scmdb.
+# scmdb füllt nur Lücken und überschreibt nie. Grund: Am 11.08.2026 verglichen —
+# 55 von 56 Werten stimmen exakt mit dem überein, was das Spiel selbst in die
+# Log schreibt, aber beim Kühler „Elsen" nennt scmdb Grad A, während Log UND
+# `components.ini` übereinstimmend B sagen (auch der Hersteller ist dort falsch).
+# Eine sehr gute Quelle, aber keine unfehlbare.
+SCMDB_BASE     = 'https://scmdb.net/data'
+SCMDB_CACHE    = os.path.join(APP_DIR, 'scmdb-items.json')   # aufbereitet, klein
+SCMDB_POLL_SEC = 6 * 3600    # nur alle 6 Stunden nach einer neuen Spielversion sehen
+SCMDB_TIMEOUT  = 30
+# Wer die Netzabfrage nicht will, setzt SC_BP_NO_NET=1 — dann bleibt alles beim
+# Launcher-Katalog wie bisher.
+SCMDB_AUS      = os.environ.get('SC_BP_NO_NET', '') not in ('', '0')
+# Gütegrad steht bei scmdb als Zahl. Zuordnung am 11.08.2026 gegen 56 Log-Zeilen
+# geprüft: A=1 (21x), B=2 (20x), C=3 (7x), D=4 (7x).
+GRADE_LETTER = {1: 'A', 2: 'B', 3: 'C', 4: 'D'}
 
 # Fensterposition/-größe. Standard = dort, wo Xharig es haben will: oberer Monitor
 # (nicht der Spiel-Monitor) → man tabbt nicht mehr versehentlich aus dem Spiel.
@@ -122,7 +155,47 @@ def art_of(key):
         # Frisch freigeschaltetes Item kann neu im Katalog sein -> einmal nachladen
         TYPES = load_types()
         art = TYPES.get(k)
+    if art is None:
+        art = scmdb_art(key)      # ab v1.5.0: Rückfall auf die scmdb-Craftdaten
     return art or '—'
+
+
+# Rüstungs-Slots von scmdb -> die des Autors: Begriffe. Die Gewichtsklasse (Heavy/Medium/
+# Light) steht bei scmdb getrennt in `attachSubType`, beim Launcher steckt sie im
+# Begriff selbst („Heavy Armor"). Beides wird hier wieder zusammengesetzt.
+_SCMDB_SLOT = {
+    'Char_Armor_Helmet':    'Helmet',
+    'Char_Armor_Torso':     'Armor',
+    'Char_Armor_Legs':      'Armor',
+    'Char_Armor_Arms':      'Armor',
+    'Char_Armor_Backpack':  'Backpack',
+    'Char_Armor_Undersuit': 'Undersuit',
+}
+# Reine Umbenennungen, wo scmdb zusammenschreibt und der Launcher trennt.
+_SCMDB_ART = {
+    'QuantumDrive':   'Quantum Drive',
+    'PowerPlant':     'Power Plant',
+    'WeaponGun':      'Ship Weapon',
+    'WeaponPersonal': 'FPS Weapon',
+    'WeaponMining':   'Mining Laser',
+    'SalvageModifier': 'Salvage Modifier',
+}
+
+
+def scmdb_art(key):
+    """Art aus den scmdb-Craftdaten, auf die Begriffe des Launchers gebracht.
+    Nur Rückfall — der Launcher-Katalog ist bei Schiffswaffen feiner (er kennt
+    `Laser Cannon`, scmdb nur `WeaponGun`)."""
+    e = scmdb_of(key)
+    if not e or not e.get('a'):
+        return None
+    a = e['a']
+    slot = _SCMDB_SLOT.get(a)
+    if slot:
+        gewicht = (e.get('sub') or '').strip()
+        return ('%s %s' % (gewicht, slot)).strip() if gewicht in (
+            'Heavy', 'Medium', 'Light') else slot
+    return _SCMDB_ART.get(a, a)
 
 
 # ------------------------------------------------ Size / Grade / Klasse (M/A/1)
@@ -204,6 +277,90 @@ def load_meta():
 COMP, SIZE_BY_NAME = load_meta()
 
 
+# ------------------------------------------------------- scmdb-Craftdaten (v1.5.0)
+def _scmdb_key(s):
+    """Vergleichsschlüssel: nur Buchstaben und Ziffern. Fängt typografische
+    Anführungszeichen und geschützte Leerzeichen mit ab, an denen ein reiner
+    Kleinschreib-Vergleich sonst scheitert."""
+    return re.sub(r'[^a-z0-9]', '', ' '.join(str(s or '').split()).lower())
+
+
+def _scmdb_hole(url, timeout=SCMDB_TIMEOUT):
+    # Ehrliche Kennung mit Projektadresse: Der Betreiber von scmdb.net soll im
+    # Protokoll sehen können, welches Werkzeug da abruft und wo er nachfragen
+    # kann. Kostet nichts und ist schlicht anständig.
+    import urllib.request
+    kennung = 'SC-BP-Watcher/%s (+https://github.com/Xharig-1/SC-BP-Watcher)' % __version__
+    req = urllib.request.Request(url, headers={'User-Agent': kennung})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return json.loads(r.read().decode('utf-8'))
+
+
+def load_scmdb():
+    """Liest den aufbereiteten Zwischenspeicher. Gibt (items, version) zurück."""
+    try:
+        with open(SCMDB_CACHE, encoding='utf-8') as f:
+            d = json.load(f)
+        return d.get('items', {}), d.get('version', '')
+    except Exception:
+        return {}, ''
+
+
+def scmdb_aktualisieren():
+    """Holt die Craftdaten, wenn eine neue Spielversion da ist. Gibt True zurück,
+    wenn der Zwischenspeicher erneuert wurde. Wirft nie — ohne Netz bleibt der
+    letzte Stand gültig, ohne Zwischenspeicher läuft alles wie vor v1.5.0."""
+    if SCMDB_AUS:
+        return False
+    try:
+        versionen = _scmdb_hole(SCMDB_BASE + '/versions.json', timeout=10)
+        live = next((v for v in versionen
+                     if 'ptu' not in (v.get('version') or '').lower()), None)
+        if not live:
+            return False
+        version = live.get('version') or ''
+        if not version or version == load_scmdb()[1]:
+            return False          # schon aktuell
+        roh = _scmdb_hole('%s/crafting_items-%s.json' % (SCMDB_BASE, version))
+        items = {}
+        for e in roh.get('items', []):
+            name = e.get('name')
+            if not name:
+                continue
+            items.setdefault(_scmdb_key(name), {
+                'n': name,
+                'a': e.get('attachType') or e.get('cgItemType'),
+                'sub': e.get('attachSubType'),   # Heavy/Medium/Light bei Rüstung
+                's': e.get('size'),
+                'g': e.get('grade'),
+                'c': e.get('componentClass'),
+                'm': e.get('manufacturer'),
+            })
+        os.makedirs(APP_DIR, exist_ok=True)
+        with open(SCMDB_CACHE, 'w', encoding='utf-8') as f:
+            json.dump({'version': version, 'geholt': time.strftime('%Y-%m-%d %H:%M'),
+                       'items': items}, f, ensure_ascii=False)
+        return True
+    except Exception:
+        return False
+
+
+SCMDB, SCMDB_VERSION = load_scmdb()
+
+
+def scmdb_of(key):
+    """Eintrag aus den scmdb-Craftdaten oder None. Skin-/Sondervarianten mit
+    Zusatzname in "…" fallen auf den Grundnamen zurück (wie beim Katalog)."""
+    if not SCMDB:
+        return None
+    e = SCMDB.get(_scmdb_key(key))
+    if e is None:
+        basis = re.sub(r'\s*"[^"]*"\s*', ' ', str(key))
+        if basis != key:
+            e = SCMDB.get(_scmdb_key(basis))
+    return e
+
+
 def _size_grade_class(key):
     lk = _norm(key)
     if lk in COMP:
@@ -213,6 +370,24 @@ def _size_grade_class(key):
     if s is None:  # Skin-/Sondervariante (Zusatz in "…") erbt die Size der Basis
         base = re.sub(r'\s+', ' ', re.sub(r'\s*"[^"]*"\s*', ' ', lk)).strip()
         if base != lk: s = SIZE_BY_NAME.get(base)
+    # Rückfall auf scmdb — füllt nur, was die Spieldaten nicht hergeben.
+    #
+    # ACHTUNG: scmdb vergibt `size` und `grade` an JEDEN Gegenstand, auch an
+    # Rüstung und FPS-Waffen, wo beides bedeutungslos ist (ein Helm als „Grade A,
+    # Size 1"). Ungefiltert übernommen stünde hinter jedem Rüstungsteil ein
+    # erfundenes Kürzel. Deshalb:
+    #   * Klasse/Gütegrad nur, wenn scmdb eine `componentClass` führt — das sind
+    #     genau die echten Schiffskomponenten (489 von 1591).
+    #   * Größe zusätzlich für Schiffswaffen, die haben eine, aber keinen Grad.
+    #   * Rüstung, FPS-Waffen, Kleidung: nichts.
+    e = scmdb_of(key)
+    if e:
+        if e.get('c'):                                   # echte Schiffskomponente
+            if s is None and e.get('s') is not None:
+                s = str(e['s'])
+            return s, GRADE_LETTER.get(e.get('g')), e.get('c')
+        if e.get('a') == 'WeaponGun' and s is None and e.get('s') is not None:
+            s = str(e['s'])                              # Schiffswaffe: nur Größe
     return s, None, None
 
 
@@ -350,6 +525,59 @@ def save_geometry(geom):
         pass
 
 
+# ------------------------------------------------ Mit Windows starten (ab v1.5.0)
+# Eintrag unter HKCU\…\CurrentVersion\Run. Bewusst **freiwillig**: Der Watcher
+# schaltet sich nicht selbst ein, es gibt einen Schalter in der Titelleiste, und
+# der Zustand steht ausschließlich in der Registry — es gibt keine zweite Wahrheit,
+# die damit auseinanderlaufen könnte.
+AUTOSTART_KEY  = r'Software\Microsoft\Windows\CurrentVersion\Run'
+AUTOSTART_NAME = 'SC BP Watcher'
+
+
+def autostart_befehl():
+    """Womit Windows den Watcher starten soll. Als `.exe` sie selbst, aus dem
+    Quellcode heraus `pythonw.exe` — ohne w bliebe bei jedem Anmelden ein
+    Konsolenfenster offen, das im Spiel den Fokus klaut."""
+    if getattr(sys, 'frozen', False):
+        return '"%s"' % sys.executable
+    pyw = os.path.join(os.path.dirname(sys.executable), 'pythonw.exe')
+    if not os.path.exists(pyw):
+        pyw = sys.executable
+    return '"%s" "%s"' % (pyw, os.path.abspath(__file__))
+
+
+def autostart_an():
+    """Steht der Eintrag in der Registry? Fehler gelten als „aus"."""
+    if winreg is None:
+        return False
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, AUTOSTART_KEY) as k:
+            wert, _ = winreg.QueryValueEx(k, AUTOSTART_NAME)
+        return bool(wert)
+    except Exception:
+        return False
+
+
+def autostart_setzen(an):
+    """Schaltet den Autostart ein oder aus. Gibt zurück, ob es geklappt hat."""
+    if winreg is None:
+        return False
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, AUTOSTART_KEY, 0,
+                            winreg.KEY_SET_VALUE) as k:
+            if an:
+                winreg.SetValueEx(k, AUTOSTART_NAME, 0, winreg.REG_SZ,
+                                  autostart_befehl())
+            else:
+                try:
+                    winreg.DeleteValue(k, AUTOSTART_NAME)
+                except FileNotFoundError:
+                    pass          # war schon aus
+        return True
+    except Exception:
+        return False
+
+
 # ---------------------------------------------------------------- Watcher-Thread
 class Watcher(threading.Thread):
     def __init__(self, out_queue):
@@ -362,6 +590,21 @@ class Watcher(threading.Thread):
         self.running = True
         self.cat_next = 0.0     # nächster Katalog-Check (Zeitstempel)
         self.cat_mtime = None   # letzter gesehener Änderungszeitpunkt der Katalogdatei
+        self.scmdb_next = 0.0   # nächster Blick auf die scmdb-Craftdaten
+
+    # ---- scmdb-Craftdaten frisch halten (ab v1.5.0) ----
+    def _scmdb_tick(self):
+        """Sieht selten nach, ob eine neue Spielversion vorliegt, und lädt dann die
+        Werte-Datei neu. Läuft im Hintergrund-Thread, damit die Oberfläche nicht
+        hängt, und schluckt jeden Fehler — ohne Netz bleibt der letzte Stand."""
+        global SCMDB, SCMDB_VERSION
+        if time.time() < self.scmdb_next:
+            return
+        self.scmdb_next = time.time() + SCMDB_POLL_SEC
+        if scmdb_aktualisieren():
+            SCMDB, SCMDB_VERSION = load_scmdb()
+            self.q.put(('status', 'scmdb-Craftdaten aktualisiert (%s, %d Gegenstände)'
+                        % (SCMDB_VERSION, len(SCMDB))))
 
     # ---- Katalog-Wache: was ist NEU craftbar im Spiel? ----
     def _catalog_tick(self):
@@ -436,6 +679,9 @@ class Watcher(threading.Thread):
         while self.running:
             time.sleep(POLL_SEC)
 
+            # 0) Werte-Daten frisch halten (selten, nur bei neuer Spielversion)
+            self._scmdb_tick()
+
             # 1) Game.log: sofortige, aber noch unbestätigte Meldung
             for name, log_meta in self.tail.new_names():
                 nk = _norm(name)
@@ -508,6 +754,12 @@ class Overlay:
         tk.Label(bar, text='🗑', bg=BAR, fg=SUB, font=self.f_title,
                  cursor='hand2').pack(side='right')
         bar.winfo_children()[-1].bind('<Button-1>', lambda e: self.clear())
+        # Schalter „mit Windows starten" — grün = an, grau = aus.
+        self.as_lbl = tk.Label(bar, text='⏻', bg=BAR, fg=SUB, font=self.f_title,
+                               cursor='hand2')
+        self.as_lbl.pack(side='right', padx=(0, 6))
+        self.as_lbl.bind('<Button-1>', lambda e: self._toggle_autostart())
+        self._show_autostart()
         for w in (bar, bar.winfo_children()[0]):
             w.bind('<Button-1>', self._drag_start)
             w.bind('<B1-Motion>', self._drag_move)
@@ -551,6 +803,23 @@ class Overlay:
         self.root.after(200, self._poll_queue)
 
     # ---- Drag & Resize ----
+    # ---- Schalter „mit Windows starten" ----
+    def _show_autostart(self):
+        an = autostart_an()
+        self.as_lbl.config(fg=ACCENT if an else SUB)
+        # Kein echtes Kurzinfo-Fenster in der Standardbibliothek — der Text in der
+        # Statuszeile beim Umschalten reicht, und die Farbe zeigt den Zustand.
+        return an
+
+    def _toggle_autostart(self):
+        neu = not autostart_an()
+        if autostart_setzen(neu):
+            self._show_autostart()
+            self.status.config(text='Mit Windows starten: %s'
+                               % ('an' if neu else 'aus'))
+        else:
+            self.status.config(text='Autostart ließ sich nicht ändern (Registry).')
+
     def _drag_start(self, e): self._dx, self._dy = e.x, e.y
     def _drag_move(self, e):
         self.root.geometry(f'+{self.root.winfo_x()+e.x-self._dx}+{self.root.winfo_y()+e.y-self._dy}')

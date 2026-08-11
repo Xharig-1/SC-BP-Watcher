@@ -6,7 +6,7 @@
 
 **Live-Overlay, das neue Star-Citizen-Baupläne anzeigt, sobald du sie freischaltest**
 
-[![Version](https://img.shields.io/badge/Version-1.4.0-5fa522)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-1.5.0-5fa522)](CHANGELOG.md)
 [![Lizenz](https://img.shields.io/badge/Lizenz-GPL--3.0-5fa522)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-0a4a7a?logo=python&logoColor=white)](https://www.python.org/)
 [![Star Citizen](https://img.shields.io/badge/Star%20Citizen-kompatibel-0a4a7a)](https://robertsspaceindustries.com/)
@@ -152,6 +152,12 @@ Oben in `sc_bp_watcher.py` anpassbar:
 >
 > **Eigene Korrekturen (ab v1.4.0):** Stimmt bei einem Bauplan die Angabe zu Klasse, Größe oder Gütegrad nicht, kannst du sie in `%APPDATA%\sc-bp-watcher\bp-overrides.json` überschreiben — sie hat Vorrang vor dem Launcher-Katalog. Liegt die Datei woanders, gib den Pfad über die Umgebungsvariable `SC_BP_OVERRIDES` an. Ohne die Datei ändert sich nichts.
 
+> **Werte aus dem Netz (ab v1.5.0):** Kennt der Launcher-Katalog einen Bauplan nicht, holt der Watcher Art, Größe, Gütegrad und Klasse von [scmdb.net](https://scmdb.net). Nachgeladen wird nur bei einer **neuen Spielversion**; der Stand liegt in `%APPDATA%\sc-bp-watcher\scmdb-items.json`. Ohne Internet gilt der letzte Stand — der Watcher läuft normal weiter. Wer gar keine Netzabfrage möchte, setzt die Umgebungsvariable `SC_BP_NO_NET=1`.
+>
+> Die Rangfolge ist bewusst so: **eigene Korrekturen → Launcher-Katalog → scmdb**. scmdb füllt nur Lücken und überschreibt nie — ein Abgleich gegen 56 Meldungen aus der Spiel-Log ergab 55 exakte Treffer und eine Abweichung.
+
+> **Mit Windows starten (ab v1.5.0):** Der Schalter `⏻` in der Titelleiste schaltet den Autostart ein und aus — grün heißt an, grau aus. Er ist standardmäßig **aus**; der Watcher trägt sich nie von selbst ein. Technisch ist es ein Eintrag unter `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, den du dort auch von Hand wieder löschen kannst.
+
 ## Weitergeben
 
 > 🔒 **Offline & privat** — das Tool arbeitet komplett ohne Internet. Es liest nur die lokale Bauplan-Liste des Launchers, verändert nichts und sendet nichts.
@@ -164,6 +170,10 @@ Oben in `sc_bp_watcher.py` anpassbar:
 ## Danksagung & Credits
 
 Dieses Tool nutzt die Bauplan-Daten, die der **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** ausliest und bereitstellt (`sc_bp_erledigt.json`). Ohne dieses Projekt gäbe es keine Datenquelle — **vielen Dank** an das Team hinter dem SC Deutsch Launcher für die Arbeit! 🙏
+
+Die Werte zu Art, Größe, Gütegrad und Klasse stammen ab v1.5.0 aus der **[Star Citizen Mission DataBase (scmdb.net)](https://scmdb.net)** — ein Hobbyprojekt, das die Spieldaten aufbereitet und frei zugänglich macht. **Herzlichen Dank** dafür! 🙏
+
+> Der Watcher **liefert diese Daten nicht mit**, sondern lädt sie auf deinem Rechner direkt bei scmdb.net — so wie es ein Browser täte. scmdb steht unter [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/); eine mitgelieferte Kopie wäre eine Weitergabe und würde sowohl dieser Lizenz als auch der GPL dieses Projekts widersprechen. Abgerufen wird sparsam: nur, wenn eine **neue Spielversion** vorliegt.
 
 SC BP Watcher ist ein eigenständiges, inoffizielles Zusatz-Tool und steht in **keiner** offiziellen Verbindung zum SC Deutsch Launcher oder zu Cloud Imperium Games. Alle Marken- und Projektnamen gehören ihren jeweiligen Eigentümern.
 
