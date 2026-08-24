@@ -43,8 +43,8 @@ from tkinter import font as tkfont
 # unterscheidet — der Rest dieser Datei muss das Betriebssystem nicht kennen.
 from scbp import sprache
 from scbp import (aktualisierung, assistent, autostart,
-                  bestand as bestand_datei, logquelle, merkliste,
-                  pfade, phrasen)
+                  bestand as bestand_datei, katalog as katalog_modul,
+                  logquelle, merkliste, pfade, phrasen)
 
 try:
     import winsound                      # nur Windows; unter Linux übernimmt tkinter
@@ -569,6 +569,8 @@ class Watcher(threading.Thread):
         self.cat_next = 0.0     # nächster Katalog-Check (Zeitstempel)
         self.cat_mtime = None   # letzter gesehener Änderungszeitpunkt der Katalogdatei
         self.scmdb_next = 0.0   # nächster Blick auf die scmdb-Craftdaten
+        self.kat_next = 0.0     # nächster Blick auf den Bauplan-Katalog
+        self.kat_laeuft = False  # holt gerade ein Nebenthread den Katalog?
 
     # ---- scmdb-Craftdaten frisch halten (ab v1.5.0) ----
     def _scmdb_tick(self):
@@ -583,6 +585,42 @@ class Watcher(threading.Thread):
             SCMDB, SCMDB_VERSION = load_scmdb()
             self.q.put(('status', 'scmdb-Craftdaten aktualisiert (%s, %d Gegenstände)'
                         % (SCMDB_VERSION, len(SCMDB))))
+
+    # ---- Bauplan-Katalog holen und frisch halten ----
+    def _katalog_tick(self):
+        """Holt den Bauplan-Katalog von scmdb, wenn er fehlt oder veraltet ist.
+
+        Bis v2.0.0-rc1 wurde `katalog.aktualisieren()` von **nirgendwo** aufgerufen:
+        Der Katalog kam nie an, das Bauplan-Fenster blieb bei jedem Nutzer leer und
+        der Hinweistext versprach etwas, das nicht geschah.
+
+        Der Abruf läuft in einem **eigenen** Thread, nicht hier im Watcher-Takt:
+        Es sind rund 12 MB, und die Log-Erkennung ist die Kernaufgabe — sie darf
+        dafür keine Sekunde stehenbleiben. `kat_laeuft` verhindert, dass bei einer
+        langsamen Leitung mehrere Abrufe übereinander laufen."""
+        if SCMDB_AUS or self.kat_laeuft or time.time() < self.kat_next:
+            return
+        self.kat_next = time.time() + SCMDB_POLL_SEC
+        self.kat_laeuft = True
+
+        def holen():
+            try:
+                gab_es_schon = bool(katalog_modul.laden()['bauplaene'])
+                if not gab_es_schon:
+                    self.q.put(('status', sprache.t('katalog_holt')))
+                neu, anzahl, version = katalog_modul.aktualisieren()
+                if neu:
+                    self.q.put(('status', sprache.t('katalog_geholt', anzahl, version)))
+                else:
+                    # Nichts zu tun heißt: schon aktuell — oder kein Netz. Im
+                    # zweiten Fall bald noch einmal versuchen statt sechs Stunden
+                    # warten, sonst bleibt ein kurzer Aussetzer den ganzen Tag hängen.
+                    if not gab_es_schon and not katalog_modul.laden()['bauplaene']:
+                        self.kat_next = time.time() + 300
+            finally:
+                self.kat_laeuft = False
+
+        threading.Thread(target=holen, daemon=True).start()
 
     # ---- Katalog-Wache: was ist NEU craftbar im Spiel? ----
     def _catalog_tick(self):
@@ -665,7 +703,6 @@ class Watcher(threading.Thread):
         try:
             if phrasen.bestaetigt():
                 return
-            from scbp import katalog as katalog_modul
             namen = [e['n'] for e in katalog_modul.laden()['bauplaene'].values()]
             if not namen:
                 return
@@ -713,15 +750,45 @@ class Watcher(threading.Thread):
             bestand_datei.speichern(self.bestand)
         return neu
 
+    def _katalog_beim_start(self):
+        """Fehlt der Katalog ganz, wird er **vor** allem anderen geholt — hier
+        ausnahmsweise im Watcher-Takt, nicht nebenher.
+
+        Grund: `_sprache_erschliessen()` braucht die Bauplan-Namen, um aus den
+        Logs die Formulierung dieses Clients abzuleiten, und die Nachlese braucht
+        diese Formulierung. Käme der Katalog nebenher, liefe beim allerersten
+        Start beides ins Leere — bei einem englischen Client hieße das: kein
+        einziger Bauplan gefunden, ohne dass jemand den Grund sähe.
+
+        Nur beim ersten Mal. Ist der Katalog da, hält ihn `_katalog_tick()`
+        frisch, ohne den Start aufzuhalten."""
+        if SCMDB_AUS or katalog_modul.laden()['bauplaene']:
+            return
+        self.q.put(('status', sprache.t('katalog_holt')))
+        try:
+            neu, anzahl, version = katalog_modul.aktualisieren()
+            if neu:
+                self.q.put(('status', sprache.t('katalog_geholt', anzahl, version)))
+                self.kat_next = time.time() + SCMDB_POLL_SEC
+            else:
+                # Kein Netz: bald noch einmal versuchen, statt sechs Stunden warten.
+                self.kat_next = time.time() + 300
+        except Exception:
+            self.kat_next = time.time() + 300
+
     def run(self):
-        # 0) Erst klären, wonach überhaupt gesucht wird — sonst liest die
+        # 0) Ohne Bauplan-Namen lässt sich die Spielsprache nicht erschließen —
+        #    also zuerst den Katalog, falls er noch gar nicht da ist.
+        self._katalog_beim_start()
+
+        # 1) Klären, wonach überhaupt gesucht wird — sonst liest die
         #    Nachlese mit der falschen Formulierung und findet nichts.
         self._sprache_erschliessen()
 
-        # 1) Vergangenes nachlesen (still, nur in den Bestand)
+        # 2) Vergangenes nachlesen (still, nur in den Bestand)
         self._nachlese()
 
-        # 2) Launcher-Stand holen — wenn es ihn gibt. Ohne ihn wird nicht mehr
+        # 3) Launcher-Stand holen — wenn es ihn gibt. Ohne ihn wird nicht mehr
         #    gewartet: Bis v1.5.0 hing der Watcher hier in einer Endlosschleife,
         #    wenn die Launcher-Datei fehlte. Unter Linux wäre er nie gestartet.
         if HAT_LAUNCHER:
@@ -735,7 +802,7 @@ class Watcher(threading.Thread):
             if self.known:
                 self._launcher_uebernehmen(self.known)
 
-        # 3) Alles, was schon im Bestand steht, gilt als bekannt — es wird nicht
+        # 4) Alles, was schon im Bestand steht, gilt als bekannt — es wird nicht
         #    als „neu" gemeldet.
         self.seen = set(bestand_datei.schluessel(self.bestand))
         self.tail.new_names()          # Lesestand der Game.log setzen/fortführen
@@ -743,8 +810,10 @@ class Watcher(threading.Thread):
         while self.running:
             time.sleep(POLL_SEC)
 
-            # 0) Werte-Daten frisch halten (selten, nur bei neuer Spielversion)
+            # 0) Werte-Daten und Bauplan-Katalog frisch halten
+            #    (selten, nur bei neuer Spielversion)
             self._scmdb_tick()
+            self._katalog_tick()
 
             # 1) Game.log: die eigentliche Quelle. Ohne Launcher ist die Meldung
             #    endgültig, mit Launcher zunächst vorläufig (er bestätigt gleich).

@@ -6,6 +6,26 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## Unveröffentlicht
+
+### Behoben
+
+- **Der Bauplan-Katalog wurde nie geholt.** Die Funktion dafür gab es, aufgerufen
+  hat sie niemand — `katalog.laden()` gab bei fehlender Datei stillschweigend einen
+  leeren Katalog zurück. Folge: Die Bauplan-Liste blieb bei **jedem** Nutzer leer,
+  während der Hinweis darin versprach, der Katalog werde beim Start geholt.
+  Gefunden beim ersten Lauf an einer echten Linux-Installation.
+  - Der Katalog wird jetzt **vor** der Spracherschließung geholt, wenn er ganz fehlt.
+    Das ist keine Kosmetik: `phrasen.selbst_finden()` braucht die Bauplan-Namen, um
+    aus den Logs die Formulierung dieses Clients abzuleiten, und die Nachlese braucht
+    diese Formulierung. Ohne Katalog lief beim allerersten Start beides ins Leere —
+    bei einem englischen Client hieß das: kein einziger Bauplan gefunden, ohne dass
+    der Grund sichtbar wurde.
+  - Danach hält ihn ein eigener Nebenthread frisch. Rund 12 MB dürfen den Watcher-Takt
+    nicht anhalten — die Log-Erkennung ist die Kernaufgabe.
+  - Schlägt der Abruf fehl (kein Netz), wird nach 5 Minuten erneut versucht statt nach
+    6 Stunden. Ein kurzer Aussetzer beim Start soll nicht den ganzen Tag nachwirken.
+
 ## v2.0.0-rc1 - 2026-08-24
 
 > **Vorabversion zum Ausprobieren.** Der Umbau ist inhaltlich fertig und gründlich

@@ -6,6 +6,26 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Fixed
+
+- **The blueprint catalogue was never fetched.** The function existed, but nothing
+  ever called it — `katalog.laden()` quietly returned an empty catalogue when the
+  file was missing. As a result the blueprint list stayed empty for **every** user,
+  while the notice inside it promised the catalogue would be fetched on startup.
+  Found during the first run against a real Linux installation.
+  - The catalogue is now fetched **before** the game language is worked out, if it is
+    missing entirely. That ordering matters: `phrasen.selbst_finden()` needs the
+    blueprint names to derive this client's wording from the logs, and the backlog
+    scan needs that wording. Without a catalogue both came up empty on the very first
+    run — on an English client that meant not a single blueprint found, with no
+    visible reason why.
+  - After that a separate background thread keeps it current. Roughly 12 MB must not
+    stall the watcher loop — log detection is the core job.
+  - If the fetch fails (no network), it is retried after 5 minutes instead of 6 hours.
+    A brief hiccup at startup should not linger all day.
+
 ## v2.0.0-rc1 - 2026-08-24
 
 > **A pre-release for testing.** Feature-complete and thoroughly tested, but never

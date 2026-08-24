@@ -71,6 +71,10 @@ TEXTE = {
         'It is fetched from scmdb.net on startup (about 12 MB,\n'
         'once per game version). Without it detection still works,\n'
         'only this list is missing.'),
+    'katalog_holt':      ('Bauplan-Katalog wird geholt …',
+                          'Fetching blueprint catalogue …'),
+    'katalog_geholt':    ('Bauplan-Katalog geholt: %d Baupläne (%s)',
+                          'Blueprint catalogue fetched: %d blueprints (%s)'),
     'ab_rang':           ('ab %s', 'from %s'),
     'ruf_punkte':        ('(%s Ruf)', '(%s rep)'),
     'ruf_gewinn':        ('+%d Ruf', '+%d rep'),
