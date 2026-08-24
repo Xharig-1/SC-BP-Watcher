@@ -41,7 +41,8 @@ from tkinter import font as tkfont
 
 # Eigene Bausteine. Sie kapseln alles, was sich zwischen Windows und Linux
 # unterscheidet — der Rest dieser Datei muss das Betriebssystem nicht kennen.
-from scbp import autostart, bestand as bestand_datei, logquelle, pfade, phrasen
+from scbp import (assistent, autostart, bestand as bestand_datei,
+                  logquelle, pfade, phrasen)
 
 try:
     import winsound                      # nur Windows; unter Linux übernimmt tkinter
@@ -829,6 +830,19 @@ class Overlay:
         self.as_lbl = tk.Label(bar, text='⏻', bg=BAR, fg=SUB, font=self.f_title,
                                cursor='hand2')
         self.as_lbl.pack(side='right', padx=(0, 6))
+        # Zwei Ansichten, ein Programm: die schmale Melde-Leiste bleibt, das
+        # Verwaltungsfenster kommt auf Klick dazu.
+        self.liste_lbl = tk.Label(bar, text='☰', bg=BAR, fg=SUB,
+                                  font=self.f_title, cursor='hand2')
+        self.liste_lbl.pack(side='right', padx=(0, 6))
+        self.liste_lbl.bind('<Button-1>', lambda e: self.liste_oeffnen())
+        # Einrichtung erneut — bewusst als eigener Knopf und nicht in einem
+        # Einstellungsmenü versteckt: Wer sich nicht auskennt, soll etwas
+        # nachstellen können, ohne zu wissen, wo es steckt.
+        self.assi_lbl = tk.Label(bar, text='⟳', bg=BAR, fg=SUB,
+                                 font=self.f_title, cursor='hand2')
+        self.assi_lbl.pack(side='right', padx=(0, 6))
+        self.assi_lbl.bind('<Button-1>', lambda e: self.einrichtung_erneut())
         self.as_lbl.bind('<Button-1>', lambda e: self._toggle_autostart())
         self._show_autostart()
         for w in (bar, bar.winfo_children()[0]):
@@ -1054,6 +1068,32 @@ class Overlay:
             pass
         self.root.after(300, self._poll_queue)
 
+    def einrichtung_erneut(self):
+        """Den Assistenten noch einmal durchlaufen lassen."""
+        fertig, zeige_liste = assistent.starten(self.root)
+        if fertig and zeige_liste:
+            self.liste_oeffnen()
+
+    def liste_oeffnen(self):
+        """Das Verwaltungsfenster zeigen. Ein zweiter Klick holt es nach vorn,
+        statt ein zweites Fenster aufzumachen."""
+        from scbp.bestandsfenster import Bestandsfenster
+        vorhanden = getattr(self, '_liste', None)
+        if vorhanden is not None:
+            try:
+                vorhanden.root.lift()
+                vorhanden.root.focus_force()
+                return
+            except Exception:
+                pass                       # war schon zu
+        self._liste = Bestandsfenster(self.root,
+                                      beim_schliessen=self._liste_zu)
+        self.liste_lbl.config(fg=ACCENT)
+
+    def _liste_zu(self):
+        self._liste = None
+        self.liste_lbl.config(fg=SUB)
+
     def _current_geom(self):
         # Aus winfo bauen (nicht root.geometry()): so bleibt negatives Y als absolute
         # Position erhalten ('+-1439') statt als „vom unteren Rand" missverstanden zu werden.
@@ -1072,47 +1112,23 @@ class Overlay:
         self.root.mainloop()
 
 
-def _startfehler(text, orte=(), fuss=''):
-    """Wenn gar nichts gefunden wird: sagen warum — und wo gesucht wurde.
-
-    Die durchsuchten Orte stehen ausgegraut darunter. Ohne sie weiß niemand,
-    wonach er suchen soll, und der Pfad, den er selbst eintragen soll, wäre
-    ohne Vorbild schwer zu erraten."""
-    r = tk.Tk()
-    r.title('SC BP Watcher')
-    r.configure(bg=BG)
-    rahmen = tk.Frame(r, bg=BG, padx=22, pady=18)
-    rahmen.pack(fill='both', expand=True)
-    tk.Label(rahmen, text=text, justify='left', bg=BG, fg=FG,
-             anchor='w').pack(fill='x', anchor='w')
-    if orte:
-        tk.Label(rahmen, text='\nGesucht wurde hier:', justify='left', bg=BG,
-                 fg=SUB, anchor='w').pack(fill='x', anchor='w')
-        for ort in orte:
-            tk.Label(rahmen, text='   ' + ort, justify='left', bg=BG, fg=SUB,
-                     anchor='w', font=('Consolas' if pfade.WINDOWS else 'monospace',
-                                       9)).pack(fill='x', anchor='w')
-    if fuss:
-        tk.Label(rahmen, text='\n' + fuss, justify='left', bg=BG, fg=FG,
-                 anchor='w').pack(fill='x', anchor='w')
-    r.mainloop()
-
-
 if __name__ == '__main__':
-    # Der SC Deutsch Launcher ist seit v1.6 **nicht** mehr Voraussetzung — nur
-    # Star Citizen selbst muss gefunden werden, denn die Game.log ist die Quelle.
-    if not pfade.spiel_ordner():
-        # Die Einstellungsdatei gleich mit anlegen: Wer hier landet, braucht sie —
-        # sie soll dastehen und nicht erst nach Anleitung erzeugt werden müssen.
-        datei = pfade.vorlage_anlegen()
-        _startfehler(
-            'Star Citizen wurde nicht gefunden.\n\n'
-            'Gesucht wird der Ordner, in dem die Game.log liegt — meist "LIVE".',
-            orte=pfade.gesuchte_spielorte(),
-            fuss='Liegt das Spiel woanders, trag den Ordner in dieser Datei ein\n'
-                 'und starte den Watcher neu:\n\n'
-                 '    %s\n\n'
-                 'Das Feld heißt "spiel_ordner". Die Datei nennt die Orte oben\n'
-                 'noch einmal als Vorlage.' % datei)
-    else:
-        Overlay().run()
+    # Ablauf beim Start — in dieser Reihenfolge mit Absicht:
+    #
+    #   1. Spielordner beschaffen. Wird er nicht gefunden, FRAGEN wir danach,
+    #      statt eine Meldung hinzuwerfen und uns zu beenden. Ohne die Game.log
+    #      kann das Programm nichts, also ist das die eine Angabe, die es
+    #      wirklich braucht.
+    #   2. Beim allerersten Mal die alten Logs nachlesen — sichtbar, denn hier
+    #      bekommt der Spieler seinen ganzen bisherigen Bestand geschenkt.
+    #   3. Erst danach darf von Hand nachgetragen werden, und nur das, was
+    #      wirklich keine Logdatei mehr hergibt.
+    zeige_liste = False
+    if assistent.noetig():
+        fertig, zeige_liste = assistent.starten()
+        if not fertig:
+            sys.exit(0)                 # Nutzer hat abgebrochen
+    fenster = Overlay()
+    if zeige_liste:
+        fenster.liste_oeffnen()
+    fenster.run()

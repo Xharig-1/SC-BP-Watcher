@@ -113,6 +113,87 @@ TEXTE = {
     'speichern':         ('Speichern', 'Save'),
     'abbrechen':         ('Abbrechen', 'Cancel'),
 
+    # -- Erster Start --
+    'einrichtung_erklaerung': (
+        'Der Watcher liest die Game.log von Star Citizen — dort steht jeder '
+        'freigeschaltete Bauplan. Ohne diese Datei kann er nichts anzeigen. '
+        'Bitte such den Ordner heraus, in dem sie liegt (meist „LIVE"). Der '
+        'Ordner darüber genügt auch, der Rest wird gefunden.',
+        'The watcher reads Star Citizen\'s Game.log — every unlocked blueprint '
+        'is written there. Without that file it cannot show anything. Please '
+        'pick the folder it lives in (usually "LIVE"). The folder above works '
+        'too, the rest is found automatically.'),
+    'log_gefunden':      ('✔ Game.log gefunden', '✔ Game.log found'),
+    'keine_log_darin':   ('Dort liegt keine Game.log — auch nicht in den '
+                          'Unterordnern.',
+                          'No Game.log there — not in the subfolders either.'),
+    'ordner_gedeutet':   ('Genommen wird: %s', 'Using: %s'),
+    'weiter':            ('Weiter', 'Continue'),
+    'willkommen':        ('Willkommen', 'Welcome'),
+    'lese_logs_n':       ('%d aufgehobene Spielsitzungen werden gelesen …',
+                          'Reading %d stored play sessions …'),
+    'lese_logs':         ('Deine bisherigen Spielsitzungen werden gelesen …',
+                          'Reading your previous play sessions …'),
+    'nachgelesen_gross': ('%d Baupläne aus %d früheren Sitzungen übernommen.',
+                          '%d blueprints taken from %d earlier sessions.'),
+    'nachtragen_hinweis': (
+        'Was älter ist, kannst du in der Liste von Hand abhaken — '
+        'alles andere hat der Watcher schon erledigt.',
+        'Anything older can be ticked off by hand in the list — '
+        'the watcher has already done the rest.'),
+    'liste_oeffnen':     ('Liste öffnen', 'Open list'),
+    'loslegen':          ('Los geht\'s', 'Get started'),
+
+    # -- Einrichtungsassistent --
+    'assistent':         ('Einrichtung', 'Setup'),
+    'schritt_von':       ('Schritt %d von %d', 'Step %d of %d'),
+    'zurueck':           ('Zurück', 'Back'),
+    'fertig':            ('Fertig', 'Done'),
+    'ueberspringen':     ('Überspringen', 'Skip'),
+    'assistent_erneut':  ('Einrichtung erneut durchgehen',
+                          'Run setup again'),
+
+    'schritt_sprache':   ('Sprache', 'Language'),
+    'schritt_sprache_text': (
+        'In welcher Sprache soll das Fenster mit dir reden?',
+        'Which language should this window speak?'),
+
+    'schritt_spiel':     ('Star Citizen finden', 'Find Star Citizen'),
+    'schritt_spiel_ok':  ('Star Citizen wurde gefunden. Passt das?',
+                          'Star Citizen was found. Is this right?'),
+    'schritt_spiel_text': (
+        'Der Watcher liest die Game.log von Star Citizen — dort schreibt das '
+        'Spiel jeden freigeschalteten Bauplan hinein. Ohne diese Datei kann er '
+        'nichts anzeigen.',
+        'The watcher reads Star Citizen\'s Game.log — the game writes every '
+        'unlocked blueprint into it. Without that file it cannot show anything.'),
+    'schritt_spiel_hilfe': (
+        'Such den Ordner heraus, in dem die Game.log liegt (meist „LIVE"). '
+        'Der Ordner darüber genügt auch — der Rest wird gefunden.',
+        'Pick the folder containing Game.log (usually "LIVE"). The folder above '
+        'works too — the rest is found automatically.'),
+
+    'schritt_lesen':     ('Bisherige Baupläne holen', 'Collect past blueprints'),
+    'schritt_lesen_text': (
+        'Star Citizen hebt die Protokolle vergangener Spielsitzungen auf. Daraus '
+        'holt sich der Watcher deinen bisherigen Bestand — du musst nichts '
+        'eintippen.',
+        'Star Citizen keeps logs of past play sessions. The watcher collects '
+        'your existing blueprints from them — nothing to type in.'),
+
+    'schritt_fertig':    ('Fertig', 'All set'),
+    'schritt_fertig_text': (
+        'Der Watcher läuft jetzt mit. Neue Baupläne erscheinen in der schmalen '
+        'Leiste, sobald du sie im Spiel freischaltest.',
+        'The watcher is running. New blueprints appear in the narrow bar as soon '
+        'as you unlock them in the game.'),
+    'tipp_liste':        ('Mit ☰ öffnest du jederzeit die Bauplan-Liste.',
+                          'Use ☰ to open the blueprint list at any time.'),
+    'tipp_erneut':       ('Diese Einrichtung kannst du jederzeit wiederholen — '
+                          'du musst dich durch keine Menüs klicken.',
+                          'You can run this setup again at any time — no need to '
+                          'dig through menus.'),
+
     # -- Statuszeilen und Meldungen --
     'ueberwache':        ('%d Baupläne · Log %s · %s · geprüft %s',
                           '%d blueprints · log %s · %s · checked %s'),

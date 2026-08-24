@@ -176,7 +176,49 @@ def main():
         pruefe('_spiel_ordner_gesucht_wird_hier' in d2,
                'die Vorlage nennt die Suchorte beim Feld')
 
-        print('\n6. Sprache')
+        print('\n6. Erster Start nimmt dem Spieler die Arbeit ab')
+        from scbp import assistent as assi, pfade as pf2
+        # Frischer Ordner, damit "erster Start" wirklich zutrifft
+        frisch = os.path.join(basis, 'frisch')
+        os.makedirs(frisch)
+        os.environ['SC_BP_HOME'] = frisch
+        os.environ.pop('SC_INSTALL_DIR', None)
+        pruefe(assi.noetig(), 'Assistent meldet sich beim ersten Start')
+        pruefe(pf2.spiel_ordner() is None, 'ohne Angabe wird nichts gefunden')
+        # Der Spieler wählt irgendeine Ebene — auch die falsche muss reichen
+        gedeutet = pf2.spielordner_deuten(os.path.dirname(live))
+        pruefe(gedeutet == live,
+               'Elternordner wird zum richtigen Ordner gedeutet')
+        pf2.einstellung_setzen('spiel_ordner', gedeutet)
+        pruefe(pf2.spiel_ordner() == live, 'Angabe wirkt sofort, ohne Neustart')
+        # Und jetzt der Punkt: Der Bestand füllt sich von allein
+        from scbp import logquelle as lq
+        funde, _ = lq.nachlesen(lq.Lesestand())
+        frischer_bestand = bd.leer()
+        for n, _z in funde:
+            bd.hinzufuegen(frischer_bestand, n, 'nachlese')
+        # +1, weil Schritt 3 dem laufenden Log noch einen Bauplan angehängt hat
+        pruefe(bd.anzahl(frischer_bestand) == len(ERWARTET) + 1,
+               'Bestand kommt aus den Logs, ohne dass jemand etwas eintippt (%d)'
+               % bd.anzahl(frischer_bestand))
+        pruefe(not assi.noetig(),
+               'beim nächsten Mal läuft der Assistent nicht mehr von allein')
+
+        # Der Assistent muss sich wiederholen lassen — für Leute, die sich nicht
+        # durch Menüs klicken wollen. Vier Schritte, ohne Absturz durchgereicht.
+        a = assi.Assistent()
+        a.root.withdraw()
+        titel = []
+        for _ in range(assi.SCHRITTE):
+            titel.append(a.titel.cget('text'))
+            if a.schritt == 2:
+                a.pfad.set(live)
+            a._weiter()
+        pruefe(len(set(titel)) == assi.SCHRITTE,
+               'Assistent hat %d unterschiedliche Schritte' % len(set(titel)))
+        pruefe(assi.noetig() is False, 'nach dem Durchlauf ist alles gesetzt')
+
+        print('\n7. Sprache')
         from scbp import sprache
         luecken = [k for k, v in sprache.TEXTE.items()
                    if len(v) != 2 or not all(v)]
@@ -204,7 +246,7 @@ def main():
             print('  [--]   Katalog nicht vorhanden, Arten nicht prüfbar')
         sprache.setzen('de')
 
-        print('\n7. Fensterlage von einem fremden Rechner')
+        print('\n8. Fensterlage von einem fremden Rechner')
         kaputt = w.geometrie_pruefen('440x1098+999999+-999999', _wurzel())
         pruefe('+999999' not in kaputt, 'unsinnige Position verworfen (%s)' % kaputt)
 

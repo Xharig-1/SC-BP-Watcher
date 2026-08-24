@@ -8,6 +8,16 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Einrichtungsassistent** (`scbp/assistent.py`) — vier Schritte, **jederzeit wiederholbar** über ⟳ in der Titelleiste. Läuft beim ersten Start von allein und immer dann, wenn Star Citizen nicht gefunden wird.
+  1. **Sprache** — zuerst, damit der Rest lesbar ist
+  2. **Star Citizen finden** — mit Auswahlknopf und Prüfung *beim Tippen*, nicht erst beim Speichern. Der Spieler darf jede Ebene treffen: den LIVE-Ordner, den darüber, den Programme-Ordner oder gleich das Wine-Präfix — sogar die `Game.log` selbst. Es wird daraus der richtige Ordner gemacht und angezeigt, welcher genommen wird.
+  3. **Bisherige Baupläne holen** — läuft von selbst, hier bekommt der Spieler seinen ganzen Bestand aus den aufgehobenen Logs geschenkt
+  4. **Fertig** — was jetzt passiert und wo die Liste steckt
+  - Wiederholbar ist Absicht: Wer sich mit Rechnern nicht auskennt, soll etwas nachstellen können, ohne zu wissen, in welchem Menü es steckt. Ein Assistent führt; ein Einstellungsfenster setzt voraus, dass man weiß, wonach man sucht.
+- **Verwaltungsfenster aus der Melde-Leiste** — ☰ in der Titelleiste öffnet die Bauplan-Liste, ein zweiter Klick holt sie nach vorn statt ein zweites Fenster aufzumachen.
+
+**Was sich am Verhalten ändert:** Wird Star Citizen nicht gefunden, zeigte das Programm bisher eine Meldung und **beendete sich** — der Spieler hätte eine JSON-Datei von Hand bearbeiten und neu starten müssen. Das macht niemand. Jetzt wird gefragt, und die Angabe wirkt sofort.
+
 - **Bauplan-Katalog mit Herkunft** (`scbp/katalog.py`). 714 Baupläne, für 655 davon (92 %) steht dabei, **woher man sie bekommt**: Fraktion, Auftrag, nötiger Rang samt Rufpunkten, Belohnung in aUEC und Rufgewinn. Das kann der SC Deutsch Launcher nicht — „mir fehlt X" ist die halbe Information, „X droppt bei Fraktion Y ab Rang Z" die ganze.
   - Die Kette durch die scmdb-Daten: `contracts[].blueprintRewards[].blueprintPool` → `blueprintPools[…].blueprints[].name`, dazu `factions`, `minStanding` und `factionRewardsPools`.
   - Bezugsquellen sind nach **leichtestem Weg** sortiert (niedrigste Ruf-Anforderung zuerst), höchstens drei je Bauplan.

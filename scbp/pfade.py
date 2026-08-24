@@ -185,6 +185,25 @@ def einstellung(name):
     return os.path.expanduser(wert) if wert else None
 
 
+def einstellung_setzen(name, wert):
+    """Einen Pfad dauerhaft merken — ohne die Erklärzeilen zu verlieren.
+
+    Gelesen wird die vorhandene Datei (oder die Vorlage), geändert nur das eine
+    Feld. So bleiben die Hinweise mit den Suchorten stehen, auch wenn das
+    Programm die Datei schreibt."""
+    daten = einstellungen() or _vorlage()
+    daten[name] = wert
+    ziel = app_datei(EINSTELLUNGEN)
+    temp = ziel + '.tmp'
+    try:
+        with open(temp, 'w', encoding='utf-8') as f:
+            json.dump(daten, f, ensure_ascii=False, indent=2)
+        os.replace(temp, ziel)
+        return True
+    except OSError:
+        return False
+
+
 def vorlage_anlegen():
     """Legt `einstellungen.json` zum Ausfüllen an, falls sie noch fehlt.
 
@@ -274,6 +293,38 @@ def spiel_ordner():
             p = os.path.join(basis, k)
             if os.path.isfile(os.path.join(p, 'Game.log')):
                 return p
+    return None
+
+
+def spielordner_deuten(gewaehlt):
+    """Aus einem vom Nutzer gewählten Ordner den tatsächlichen Spielordner machen.
+
+    Nimmt ihm die Sucherei ab: Er darf den LIVE-Ordner treffen, den darüber
+    (`StarCitizen`), den Programme-Ordner oder gleich das ganze Wine-Präfix —
+    solange irgendwo darunter eine `Game.log` liegt, wird sie gefunden.
+    Gibt den Ordner mit der Game.log zurück oder None."""
+    if not gewaehlt:
+        return None
+    gewaehlt = os.path.expanduser(gewaehlt.strip().rstrip(os.sep)) or os.sep
+    if os.path.isfile(gewaehlt):                 # jemand hat die Game.log selbst gewählt
+        gewaehlt = os.path.dirname(gewaehlt)
+    if os.path.isfile(os.path.join(gewaehlt, 'Game.log')):
+        return gewaehlt
+    # Eine Ebene tiefer: der Kanal (LIVE/PTU/…)
+    for k in KANAELE:
+        p = os.path.join(gewaehlt, k)
+        if os.path.isfile(os.path.join(p, 'Game.log')):
+            return p
+    # Tiefer suchen, aber begrenzt — ein ganzes Laufwerk durchzugehen wäre
+    # unhöflich. Vier Ebenen decken Wine-Präfix -> drive_c -> Programme ->
+    # Roberts Space Industries -> StarCitizen -> LIVE ab.
+    wurzel_tiefe = gewaehlt.rstrip(os.sep).count(os.sep)
+    for basis, ordner, dateien in os.walk(gewaehlt):
+        if basis.count(os.sep) - wurzel_tiefe > 5:
+            ordner[:] = []
+            continue
+        if 'Game.log' in dateien:
+            return basis
     return None
 
 
