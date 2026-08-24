@@ -6,6 +6,24 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc9 - 2026-08-24
+
+Both from tester feedback.
+
+### Added
+
+- **Where the contract is available.** Until now it said where a blueprint *comes
+  from*, but not where to *find* the mission — leaving you to look the mission name up
+  elsewhere. Now the line is there: "Available in Stanton: Hurston, Crusader, ArcCorp,
+  microTech and 12 more".
+  - Planets and moons first, everything else after. A planet name is an answer you can
+    act on; "HUR L2" only helps if you already know where you are.
+- **Search by class, manufacturer and grade.** `military`, `stealth`, `civilian`,
+  `industrial`, `energy`, `ballistic` — the class is shown on every row but could not
+  be searched. Manufacturer names (`aegis`) and `grade a` to `grade d` as well.
+  - Grade is stored as a **number** and displayed as a letter. Anyone searching
+    "Grade A" types the letter — without conversion the search never matched.
+
 ## v2.0.0-rc8 - 2026-08-24
 
 ### Added

@@ -52,7 +52,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '2.0.0-rc8'
+__version__ = '2.0.0-rc9'
 
 # ---------------------------------------------------------------- Konfiguration
 # Wo die Dateien liegen, entscheidet `scbp/pfade.py` je nach Betriebssystem.

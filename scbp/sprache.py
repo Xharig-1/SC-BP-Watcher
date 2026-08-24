@@ -76,6 +76,8 @@ TEXTE = {
     'katalog_geholt':    ('Bauplan-Katalog geholt: %d Baupläne (%s)',
                           'Blueprint catalogue fetched: %d blueprints (%s)'),
     'ab_rang':           ('ab %s', 'from %s'),
+    'annehmen_in':       ('Annehmen in', 'Available in'),
+    'und_weitere':       (' und %d weiteren', ' and %d more'),
     'ruf_punkte':        ('(%s Ruf)', '(%s rep)'),
     'ruf_gewinn':        ('+%d Ruf', '+%d rep'),
 

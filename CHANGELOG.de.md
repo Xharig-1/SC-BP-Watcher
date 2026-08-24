@@ -6,6 +6,24 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc9 - 2026-08-24
+
+Beides aus Rückmeldungen von Testern.
+
+### Hinzugefügt
+
+- **Wo der Auftrag angenommen wird.** Bisher stand da, *woher* ein Bauplan kommt, aber
+  nicht, *wo* man die Mission findet — und damit musste man den Missionsnamen anderswo
+  nachschlagen. Jetzt steht die Zeile dabei: „Annehmen in Stanton: Hurston, Crusader,
+  ArcCorp, microTech und 12 weiteren".
+  - Planeten und Monde zuerst, danach der Rest. Ein Planetenname ist die Auskunft, mit
+    der man etwas anfangen kann; „HUR L2" hilft nur, wer ohnehin weiß, wo er ist.
+- **Suche nach Klasse, Hersteller und Gütegrad.** `military`, `stealth`, `civilian`,
+  `industrial`, `energy`, `ballistic` — die Klasse steht in jeder Zeile, war aber nicht
+  auffindbar. Dazu Herstellernamen (`aegis`) und `grade a` bis `grade d`.
+  - Der Gütegrad steht in den Daten als **Zahl**, angezeigt wird ein Buchstabe. Wer
+    „Grade A" sucht, tippt den Buchstaben — ohne Umrechnung fand die Suche nie etwas.
+
 ## v2.0.0-rc8 - 2026-08-24
 
 ### Hinzugefügt

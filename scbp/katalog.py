@@ -129,6 +129,53 @@ def _werte(rohe_items):
     return werte
 
 
+# So viele Annahmeorte werden genannt. Mehr hilft niemandem: Wer den Auftrag
+# sucht, fliegt den nächsten an — eine Aufzählung von fünfzehn Lagrange-Punkten
+# beantwortet die Frage „wo hole ich den?" schlechter als drei Planeten.
+ORTE_JE_AUFTRAG = 4
+
+
+def _annahmeorte(vertrag, orte_pool):
+    """Wo sich der Auftrag annehmen lässt — System und die größeren Orte.
+
+    Von der Orga gemeldet: „Man sieht, wo es den Bauplan gibt, aber nicht, wo
+    man die Mission annehmen muss." Die Angabe steckt in `locations` als
+    Kennungen; aufgelöst werden sie über `locationPools`.
+
+    Planeten zuerst, danach der Rest — ein Planetenname ist die Auskunft, mit
+    der ein Spieler etwas anfangen kann; „HUR L2" hilft nur, wenn man ohnehin
+    schon weiß, wo man ist."""
+    kennungen = vertrag.get('locations') or []
+    planeten, sonstige = [], []
+    for kennung in kennungen:
+        ort = orte_pool.get(kennung)
+        if not isinstance(ort, dict):
+            continue
+        name = ort.get('name')
+        if not name:
+            continue
+        art = (ort.get('type') or '').lower()
+        if art == 'star':
+            continue                       # das System steht ohnehin dabei
+        (planeten if art in ('planet', 'moon') else sonstige).append(name)
+
+    def sauber(liste):
+        gesehen, raus = set(), []
+        for n in liste:
+            if n not in gesehen:
+                gesehen.add(n)
+                raus.append(n)
+        return raus
+
+    namen = sauber(planeten) or sauber(sonstige)
+    systeme = vertrag.get('availableSystems') or vertrag.get('systems') or []
+    if not namen and not systeme:
+        return None
+    return {'system': ', '.join(systeme) or None,
+            'orte': namen[:ORTE_JE_AUFTRAG],
+            'mehr': max(0, len(namen) - ORTE_JE_AUFTRAG)}
+
+
 def _herkunft(merged):
     """Bauplan-Name -> Liste von Bezugsquellen, leichteste zuerst."""
     pools = {}
@@ -137,6 +184,7 @@ def _herkunft(merged):
                        if b.get('name')]
     factions = merged.get('factions') or {}
     belohnungen = merged.get('factionRewardsPools') or []
+    orte_pool = merged.get('locationPools') or {}
 
     quellen = {}
     for vertrag in ((merged.get('contracts') or [])
@@ -159,6 +207,7 @@ def _herkunft(merged):
             'ruf': rufgewinn,
             'rang': rang.get('name'),
             'rep': rang.get('minReputation'),
+            'wo': _annahmeorte(vertrag, orte_pool),
         }
         for guid in ziele:
             for name in pools.get(guid, []):

@@ -94,7 +94,59 @@ def quelle_text(q):
         unten.append('%s aUEC' % f"{q['uec']:,}".replace(',', '.'))
     if q.get('ruf'):
         unten.append(t('ruf_gewinn', q['ruf']))
-    return kopf, (q.get('auftrag') or ''), ' · '.join(unten)
+    return kopf, (q.get('auftrag') or ''), ' · '.join(unten), ort_text(q.get('wo'))
+
+
+def ort_text(wo):
+    """Wo der Auftrag angenommen wird — „Stanton: Hurston, Crusader, …".
+
+    Von Nutzern gemeldet: Es stand da, *woher* ein Bauplan kommt, aber nicht,
+    *wo* man den Auftrag findet. Ohne diese Zeile muss man den Missionsnamen
+    anderswo nachschlagen, und damit ist der halbe Nutzen der Liste dahin."""
+    if not wo:
+        return ''
+    orte = ', '.join(wo.get('orte') or [])
+    if wo.get('mehr'):
+        orte += t('und_weitere', wo['mehr'])
+    system = wo.get('system')
+    if system and orte:
+        return '%s %s: %s' % (t('annehmen_in'), system, orte)
+    return '%s %s' % (t('annehmen_in'), system or orte)
+
+
+# Was die Suche außer dem Namen noch durchsucht. Von einem Nutzer gewünscht:
+# nach „military", „civilian", „stealth" suchen können — die Klasse steht in
+# jeder Zeile, war aber bis dahin nicht auffindbar. Hersteller und Gütegrad
+# kommen mit, aus demselben Grund.
+#
+# Tatsächlich vorhandene Klassen (gemessen am Katalog 4.9.0): Civilian 72,
+# Energy 45, Military 38, Ballistic 30, Industrial 25, Stealth 22, Electron 6,
+# Laser 2. „Competition" kommt in den Daten nicht vor — es steht trotzdem in
+# der Kürzel-Tabelle des Overlays, schadet aber nicht.
+#
+# Der Gütegrad steht als **Zahl** (1–4), angezeigt wird ein Buchstabe. Wer
+# „Grade A" sucht, tippt den Buchstaben — also muss hier umgerechnet werden,
+# sonst findet die Suche nie etwas.
+GRAD_BUCHSTABE = {1: 'a', 2: 'b', 3: 'c', 4: 'd'}
+
+
+def _passt(eintrag, text):
+    """Trifft der Suchbegriff diesen Bauplan — Name, Klasse, Hersteller, Grad?"""
+    if text in eintrag['n'].lower():
+        return True
+    klasse = (eintrag.get('c') or '').lower()
+    if klasse and text in klasse:
+        return True
+    hersteller = (eintrag.get('m') or '').lower()
+    if hersteller and text in hersteller:
+        return True
+    # „grade a" und „size 2" — so, wie es in der Zeile steht
+    grad = GRAD_BUCHSTABE.get(eintrag.get('g'))
+    if grad and text in ('grade %s' % grad, 'grad %s' % grad, grad):
+        return True
+    if eintrag.get('s') and text in ('size %s' % eintrag['s']).lower():
+        return True
+    return False
 
 
 class Bestandsfenster:
@@ -261,7 +313,7 @@ class Bestandsfenster:
                     continue
                 if self.filter == 'merk' and k not in beobachtet:
                     continue
-                if text and not art_passt and text not in e['n'].lower():
+                if text and not art_passt and not _passt(e, text):
                     continue
                 treffer.append((e, drin))
             if treffer:
@@ -405,7 +457,7 @@ class Bestandsfenster:
         kasten = tk.Frame(self.inhalt, bg=BG)
         kasten.pack(fill='x', padx=(34, 0), pady=(0, 6))
         for q in eintrag.get('q') or []:
-            kopf, auftrag, unten = quelle_text(q)
+            kopf, auftrag, unten, wo = quelle_text(q)
             block = tk.Frame(kasten, bg=BG)
             block.pack(fill='x', pady=3)
             tk.Label(block, text=kopf, bg=BG, fg=GELB, font=schrift(10),
@@ -417,6 +469,10 @@ class Bestandsfenster:
             if unten:
                 tk.Label(block, text=unten, bg=BG, fg=SUB, font=schrift(9),
                          anchor='w').pack(fill='x')
+            if wo:
+                tk.Label(block, text=wo, bg=BG, fg=ACCENT, font=schrift(9),
+                         anchor='w', wraplength=600,
+                         justify='left').pack(fill='x')
 
     # ------------------------------------------------------------------ Aktion
     def _umschalten(self, name):
