@@ -1036,6 +1036,22 @@ def sicherer_cursor(name):
 
 class Overlay:
     def __init__(self):
+        # ⚠ Vor allem anderen: Liegen die Dateien noch am alten Ort (bis v2.x
+        # versteckt in %APPDATA% bzw. ~/.config), werden sie in den sichtbaren
+        # Ordner unter Dokumente **kopiert**. Erst danach darf irgendetwas
+        # gelesen werden — sonst startet der Spieler mit leerer Liste, obwohl
+        # sein Bestand nur woanders liegt.
+        self.umzug_meldung = ''
+        try:
+            if pfade.umzug_noetig():
+                anzahl = pfade.umziehen()
+                if anzahl:
+                    self.umzug_meldung = t('umzug_fertig', anzahl,
+                                           pfade.app_ordner())
+                    sys.stdout.write(self.umzug_meldung + '\n')
+        except Exception as ausnahme:
+            fehler.merken('start.umzug', ausnahme)
+
         self.root = tk.Tk()
         # Ab hier werden auch Fehler in Rückrufen der Oberfläche festgehalten.
         # Ohne diesen Haken schreibt Tk sie auf die Standardausgabe — und die

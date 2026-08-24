@@ -334,6 +334,12 @@ TEXTE = {
                           '100 = solid, 30 = strongly see-through. With a single '
                           'screen this lets you see the game underneath. Takes '
                           'effect immediately.'),
+    'umzug_fertig':      ('%s Dateien in den neuen Ordner kopiert: %s',
+                          '%s files copied to the new folder: %s'),
+    'umzug_hinweis':     ('Deine Dateien liegen jetzt hier — der alte Ordner bleibt '
+                          'als Sicherheitsnetz liegen.',
+                          'Your files now live here — the old folder stays as a '
+                          'safety net.'),
     # --- Hauptfenster: Reiter und Rahmen (ab v3.0.0) ---
     'hf_titel':          ('SC BP Watcher', 'SC BP Watcher'),
     'hf_gruppe_bp':      ('Baupläne', 'Blueprints'),

@@ -71,17 +71,105 @@ SC_UNTERPFAD = os.path.join('Roberts Space Industries', 'StarCitizen')
 
 
 # ------------------------------------------------------------ 1. Eigene Dateien
-def app_ordner():
-    """Ordner für unsere eigenen Dateien. Wird bei Bedarf angelegt."""
-    eigen = os.environ.get('SC_BP_HOME')
-    if eigen:
-        p = os.path.expanduser(eigen)
-    elif WINDOWS:
-        p = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')),
-                         'sc-bp-watcher')
+# Wohin welche Datei gehört. Zweck: Wer den Ordner öffnet, soll sehen, was
+# seins ist — Baupläne und Ausgaben getrennt vom technischen Kleinkram.
+# Was hier nicht steht, landet in „Intern"; das sind Zwischenspeicher und
+# Lesestände, die niemanden interessieren.
+UNTERORDNER = {
+    'bestand.json':      'Bauplaene',
+    'bestand.bak.json':  'Bauplaene',
+    'merkliste.json':    'Bauplaene',
+    'watchlist.json':    'Bauplaene',
+    'catalog-seen.json': 'Bauplaene',
+    'bp-overrides.json': 'Bauplaene',
+    'einstellungen.json': 'Einstellungen',
+    'phrasen.json':       'Einstellungen',
+    'gesehen.json':       'Einstellungen',
+    'fehler.json':        'Diagnose',
+    'bericht.txt':        'Diagnose',
+}
+ORDNERNAME = 'SC BP Watcher'
+EINSTELLUNGEN = 'einstellungen.json'
+
+
+def _dokumente():
+    """Der Dokumente-Ordner des Nutzers — oder das Heimatverzeichnis."""
+    heim = os.path.expanduser('~')
+    if WINDOWS:
+        # Der Ordner kann umbenannt oder verschoben sein; die Registry weiß es.
+        try:
+            import winreg
+            schluessel = (r'Software\Microsoft\Windows\CurrentVersion'
+                          r'\Explorer\Shell Folders')
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, schluessel) as k:
+                wert = winreg.QueryValueEx(k, 'Personal')[0]
+                if wert and os.path.isdir(os.path.expandvars(wert)):
+                    return os.path.expandvars(wert)
+        except Exception:
+            pass
     else:
-        basis = os.environ.get('XDG_CONFIG_HOME') or os.path.expanduser('~/.config')
-        p = os.path.join(basis, 'sc-bp-watcher')
+        # Unter Linux sagt es die XDG-Angabe; sie ist übersetzt („Dokumente“).
+        try:
+            konfig = os.path.join(os.environ.get('XDG_CONFIG_HOME')
+                                  or os.path.join(heim, '.config'),
+                                  'user-dirs.dirs')
+            with open(konfig, encoding='utf-8') as f:
+                for zeile in f:
+                    if zeile.startswith('XDG_DOCUMENTS_DIR'):
+                        wert = zeile.split('=', 1)[1].strip().strip('"')
+                        wert = wert.replace('$HOME', heim)
+                        if os.path.isdir(wert):
+                            return wert
+        except Exception:
+            pass
+    for name in ('Documents', 'Dokumente'):
+        p = os.path.join(heim, name)
+        if os.path.isdir(p):
+            return p
+    return heim
+
+
+def alter_app_ordner():
+    """Wo die Dateien bis v2.x lagen — Rückfall und Quelle für den Umzug."""
+    if WINDOWS:
+        return os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')),
+                            'sc-bp-watcher')
+    basis = os.environ.get('XDG_CONFIG_HOME') or os.path.expanduser('~/.config')
+    return os.path.join(basis, 'sc-bp-watcher')
+
+
+def _ablage_aus_datei():
+    """Einen selbst gewählten Ablage-Ort lesen — **ohne** `einstellung()`.
+
+    ⚠ Hier lauert eine Schleife: `einstellung()` liest ihre Datei über
+    `app_datei()`, und das fragt wieder `app_ordner()`. Wer an dieser Stelle die
+    normale Einstellungs-Funktion benutzt, baut eine Endlosrekursion — die
+    obendrein unsichtbar bleibt, weil ringsherum `try/except` steht. Deshalb
+    wird die Datei hier am Standardort direkt gelesen.
+    """
+    try:
+        standard = os.path.join(_dokumente(), ORDNERNAME, 'Einstellungen',
+                                EINSTELLUNGEN)
+        if not os.path.isfile(standard):
+            return None
+        with open(standard, encoding='utf-8') as f:
+            wert = json.load(f).get('ablage_ordner')
+        return wert.strip() if isinstance(wert, str) and wert.strip() else None
+    except Exception:
+        return None
+
+
+def app_ordner():
+    """Ordner für unsere eigenen Dateien. Wird bei Bedarf angelegt.
+
+    Seit v3.0.0 liegt er **sichtbar** unter Dokumente statt versteckt in
+    `%APPDATA%` bzw. `~/.config` — dort sucht kein normaler Spieler, und seinen
+    Bauplan-Bestand sollte er finden können. Ein eigener Ort geht weiterhin über
+    `SC_BP_HOME` oder die Einstellung `ablage_ordner`.
+    """
+    eigen = os.environ.get('SC_BP_HOME') or _ablage_aus_datei()
+    p = (os.path.expanduser(eigen) if eigen
+         else os.path.join(_dokumente(), ORDNERNAME))
     try:
         os.makedirs(p, exist_ok=True)
     except OSError:
@@ -90,12 +178,73 @@ def app_ordner():
 
 
 def app_datei(name):
-    """Voller Pfad zu einer eigenen Datei, z. B. app_datei('bestand.json')."""
-    return os.path.join(app_ordner(), name)
+    """Voller Pfad zu einer eigenen Datei, z. B. app_datei('bestand.json').
+
+    Sortiert nach `UNTERORDNER` in Unterordner ein. Wer ein `SC_BP_HOME` gesetzt
+    hat (Selbsttest, Sonderfälle), bekommt den flachen Ordner von früher — dort
+    geht es um Wegwerf-Ordner, nicht um Übersicht.
+    """
+    basis = app_ordner()
+    if os.environ.get('SC_BP_HOME'):
+        return os.path.join(basis, name)
+    unter = UNTERORDNER.get(name, 'Intern')
+    ziel = os.path.join(basis, unter)
+    try:
+        os.makedirs(ziel, exist_ok=True)
+    except OSError:
+        return os.path.join(basis, name)
+    return os.path.join(ziel, name)
+
+
+def umzug_noetig():
+    """Liegen im alten Ordner Dateien, die im neuen fehlen?"""
+    alt = alter_app_ordner()
+    if not os.path.isdir(alt) or os.environ.get('SC_BP_HOME'):
+        return False
+    try:
+        vorhanden = [n for n in os.listdir(alt) if n.endswith(('.json', '.txt'))]
+    except OSError:
+        return False
+    if not vorhanden:
+        return False
+    # Schon umgezogen? Dann liegt der Bestand am neuen Ort.
+    return not os.path.exists(app_datei('bestand.json'))
+
+
+def umziehen():
+    """Die Dateien aus dem alten Ordner in den neuen **kopieren**.
+
+    Kopieren, nicht verschieben: Geht beim Umzug etwas schief — Rechte, ein
+    Virenscanner, ein abgebrochener Start — ist der mühsam gesammelte
+    Bauplan-Bestand sonst weg. Der alte Ordner bleibt unangetastet liegen; er
+    kostet ein paar Kilobyte und ist der Rückweg.
+
+    Gibt die Zahl der kopierten Dateien zurück.
+    """
+    import shutil
+    alt = alter_app_ordner()
+    kopiert = 0
+    try:
+        namen = sorted(os.listdir(alt))
+    except OSError:
+        return 0
+    for name in namen:
+        quelle = os.path.join(alt, name)
+        if not os.path.isfile(quelle):
+            continue
+        ziel = app_datei(name)
+        if os.path.exists(ziel):
+            continue                     # nichts überschreiben
+        try:
+            os.makedirs(os.path.dirname(ziel), exist_ok=True)
+            shutil.copy2(quelle, ziel)
+            kopiert += 1
+        except OSError:
+            pass
+    return kopiert
 
 
 # ------------------------------------------------------- Selbst gesetzte Pfade
-EINSTELLUNGEN = 'einstellungen.json'
 
 def gesuchte_spielorte(hoechstens=6):
     """Die Orte, an denen tatsächlich nach Star Citizen gesucht wird.

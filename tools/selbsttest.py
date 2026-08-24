@@ -493,6 +493,61 @@ def main():
         pruefe(not neuheiten.ist_neu('bestand', '2.0.0'),
                'was es in der eigenen Fassung noch nicht gibt, wird nicht markiert')
 
+        # ------------------------------------------------------------------ 15
+        # Umzug in den sichtbaren Ordner. Hier hängt der Bauplan-Bestand dran —
+        # geht das schief, steht ein Nutzer nach dem Update vor einer leeren
+        # Liste, obwohl er nichts verloren hat.
+        print()
+        print('15. Umzug in den sichtbaren Ordner')
+        import json as _json
+        from scbp import pfade as pf3
+        importlib.reload(pf3)
+
+        alt_ordner = os.path.join(basis, 'alt-appdata')
+        neu_ordner = os.path.join(basis, 'Dokumente')
+        os.makedirs(alt_ordner, exist_ok=True)
+        os.makedirs(neu_ordner, exist_ok=True)
+        os.environ.pop('SC_BP_HOME', None)
+        echte_alt, echte_dok = pf3.alter_app_ordner, pf3._dokumente
+        pf3.alter_app_ordner = lambda: alt_ordner
+        pf3._dokumente = lambda: neu_ordner
+        try:
+            with open(os.path.join(alt_ordner, 'bestand.json'), 'w',
+                      encoding='utf-8') as f:
+                _json.dump({'bauplaene': {'xl-1': {'name': 'XL-1'}}}, f)
+            with open(os.path.join(alt_ordner, 'katalog-cache.json'), 'w',
+                      encoding='utf-8') as f:
+                _json.dump({'x': 1}, f)
+
+            pruefe(pf3.umzug_noetig(), 'ein alter Ordner wird erkannt')
+            anzahl = pf3.umziehen()
+            pruefe(anzahl == 2, 'beide Dateien wandern mit')
+            pruefe(os.path.exists(os.path.join(neu_ordner, 'SC BP Watcher',
+                                               'Bauplaene', 'bestand.json')),
+                   'der Bestand landet unter „Bauplaene"')
+            pruefe(os.path.exists(os.path.join(neu_ordner, 'SC BP Watcher',
+                                               'Intern', 'katalog-cache.json')),
+                   'technischer Kleinkram landet unter „Intern"')
+            pruefe(os.path.exists(os.path.join(alt_ordner, 'bestand.json')),
+                   'der alte Ordner bleibt unangetastet liegen')
+            pruefe(not pf3.umzug_noetig(), 'ein zweiter Umzug ist nicht nötig')
+            pruefe(pf3.umziehen() == 0, 'und überschreibt nichts')
+
+            # ⚠ Die Ablage-Einstellung darf `app_ordner()` nicht in eine Schleife
+            # schicken. Ein scharfes Rekursionslimit macht das sofort sichtbar.
+            grenze = sys.getrecursionlimit()
+            sys.setrecursionlimit(120)
+            try:
+                pf3.app_datei('bestand.json')
+                pruefe(True, 'kein Kreisverkehr zwischen Ordner und Einstellungen')
+            except RecursionError:
+                pruefe(False, 'kein Kreisverkehr zwischen Ordner und Einstellungen')
+            finally:
+                sys.setrecursionlimit(grenze)
+        finally:
+            pf3.alter_app_ordner, pf3._dokumente = echte_alt, echte_dok
+            os.environ['SC_BP_HOME'] = os.path.join(basis, 'eigene')
+
         # Der Klammer-Abgleich: (12 Schuss) gegen (12 cap) — derselbe Bauplan.
         v2 = importieren.vorschau(
             [{'name': 'Scalpel Sniper Rifle Magazine (12 Schuss)', 'zeit': None}],
