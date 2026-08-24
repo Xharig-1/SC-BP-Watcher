@@ -6,6 +6,26 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+> Collecting until the next release day (Wednesdays).
+
+### Added
+
+- **Collapse the overlay** (▾ in the title bar). It shrinks to just the title bar and
+  frees up the view — meant for anyone on a **single** screen, where the window
+  inevitably sits on top of the game and opacity alone is not enough.
+  - The height **before** collapsing is remembered rather than a fixed number: if you
+    dragged the window to 900 pixels, that is what you get back.
+  - The state survives a restart.
+  - This settles the long-planned **tray icon**: that would need `pystray` and `Pillow`,
+    breaking the project's "standard library only" rule — a collapsed strip does the
+    same job with no extra package.
+- **Blueprints with no known source are marked as such** (`?` instead of `ⓘ`). 59 of the
+  714 cannot be obtained from any contract — mostly event rewards ("Purgatory Camo",
+  "SecondWind"). Without a marker the row looked like someone had forgotten to fill in
+  the source.
+
 ## v2.0.0 - 2026-08-24
 
 **The Windows overlay has become a standalone tool for Windows and Linux — and on

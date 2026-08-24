@@ -434,6 +434,16 @@ class Bestandsfenster:
             info.pack(side='right')
             info.bind('<Button-1>', lambda e, n=name: self._herkunft_umschalten(n))
             hinweis.anhaengen(info, lambda: t('hinweis_quellen'))
+        else:
+            # 59 Baupläne haben in den Daten keine Bezugsquelle — überwiegend
+            # Event-Belohnungen („Purgatory Camo", „SecondWind"). Ohne Zeichen
+            # sähe die Zeile aus, als hätte jemand vergessen, die Herkunft
+            # einzutragen; mit ? steht da, was Sache ist: Es gibt keinen Auftrag,
+            # über den man da herankommt.
+            leer = tk.Label(zeile, text='?', bg=FLAECHE, fg=SUB,
+                            font=schrift(11), padx=12)
+            leer.pack(side='right')
+            hinweis.anhaengen(leer, lambda: t('hinweis_ohne_quelle'))
 
         # Stern: worauf man wartet, wird auffällig gemeldet, sobald es auftaucht.
         # Bei schon vorhandenen Bauplänen wäre das sinnlos — dort kein Stern.

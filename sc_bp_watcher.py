@@ -1034,6 +1034,16 @@ class Overlay:
         leeren_lbl.pack(side='right')
         leeren_lbl.bind('<Button-1>', lambda e: self.clear())
         hinweis.anhaengen(leeren_lbl, lambda: sprache.t('hinweis_leeren'))
+        # Einklappen: nur die Titelleiste bleibt stehen. Für alle mit **einem**
+        # Bildschirm — dort liegt das Overlay zwangsläufig über dem Spiel, und
+        # Durchsichtigkeit allein reicht nicht, wenn man gerade freie Sicht
+        # braucht. Ersetzt zugleich das nie gebaute Ablage-Symbol (Tray): Das
+        # bräuchte Zusatzpakete, ein eingeklappter Streifen nicht.
+        self.klapp_lbl = tk.Label(bar, text='▾', bg=BAR, fg=SUB,
+                                  font=self.f_title, cursor='hand2')
+        self.klapp_lbl.pack(side='right', padx=(0, 6))
+        self.klapp_lbl.bind('<Button-1>', lambda e: self.umklappen())
+        hinweis.anhaengen(self.klapp_lbl, self._hinweis_klappen)
         # Schalter „mit Windows starten" — grün = an, grau = aus.
         self.as_lbl = tk.Label(bar, text='⏻', bg=BAR, fg=SUB, font=self.f_title,
                                cursor='hand2')
@@ -1111,6 +1121,11 @@ class Overlay:
         hinweis.anhaengen(grip, lambda: sprache.t('hinweis_groesse'))
 
         # Watcher starten
+        self.eingeklappt = False
+        self.hoehe_offen = None      # Fensterhöhe vor dem Einklappen
+        if pfade.einstellung_wahrheit('eingeklappt', False):
+            self.root.after(120, self.umklappen)
+
         self.q = queue.Queue()
         self.watcher = Watcher(self.q)
         self.watcher.start()
@@ -1347,6 +1362,39 @@ class Overlay:
                         % (sprache.t('neue_version_da', neu['version']),
                            sprache.t('was_ist_neu'))))
         except Exception:
+            pass
+
+    def _hinweis_klappen(self):
+        return sprache.t('hinweis_ausklappen' if self.eingeklappt
+                         else 'hinweis_einklappen')
+
+    def umklappen(self):
+        """Auf die Titelleiste zusammenschieben — oder wieder aufmachen.
+
+        Gemerkt wird die Höhe **vor** dem Einklappen, nicht eine feste Zahl:
+        Wer sich das Fenster auf 900 Pixel gezogen hat, will es beim Aufklappen
+        auch wieder so haben."""
+        try:
+            if self.eingeklappt:
+                hoehe = self.hoehe_offen or 400
+                self.root.geometry('%dx%d+%d+%d' % (
+                    self.root.winfo_width(), hoehe,
+                    self.root.winfo_x(), self.root.winfo_y()))
+                self.klapp_lbl.configure(text='▾')
+                self.eingeklappt = False
+            else:
+                self.hoehe_offen = self.root.winfo_height()
+                # Die Höhe der Titelleiste, nicht geraten: Ein fester Wert säße
+                # bei anderer Schriftgröße daneben.
+                leiste = self.root.winfo_children()[0]
+                hoehe = max(leiste.winfo_height(), 26)
+                self.root.geometry('%dx%d+%d+%d' % (
+                    self.root.winfo_width(), hoehe,
+                    self.root.winfo_x(), self.root.winfo_y()))
+                self.klapp_lbl.configure(text='▸')
+                self.eingeklappt = True
+            pfade.einstellung_setzen('eingeklappt', self.eingeklappt)
+        except tk.TclError:
             pass
 
     def einstellungen_oeffnen(self):

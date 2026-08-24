@@ -6,6 +6,26 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## Unveröffentlicht
+
+> Sammelt sich bis zum nächsten Veröffentlichungstag (mittwochs).
+
+### Hinzugefügt
+
+- **Overlay einklappen** (▾ in der Titelleiste). Es schiebt sich auf die Titelleiste
+  zusammen und gibt die Sicht frei — gedacht für alle mit **einem** Bildschirm, wo das
+  Fenster zwangsläufig über dem Spiel liegt und Durchsichtigkeit allein nicht reicht.
+  - Die Höhe **vor** dem Einklappen wird gemerkt, nicht eine feste Zahl: Wer sich das
+    Fenster auf 900 Pixel gezogen hat, bekommt es auch so zurück.
+  - Der Zustand überlebt einen Neustart.
+  - Damit erledigt sich das lange geplante **Ablage-Symbol (Tray)**: Das bräuchte
+    `pystray` und `Pillow` und würde die Projektregel „reine Standardbibliothek"
+    brechen — ein eingeklappter Streifen erfüllt denselben Zweck ohne Zusatzpaket.
+- **Baupläne ohne bekannte Bezugsquelle sind als solche gekennzeichnet** (`?` statt `ⓘ`).
+  59 der 714 lassen sich über keinen Auftrag beziehen — überwiegend Event-Belohnungen
+  („Purgatory Camo", „SecondWind"). Ohne Zeichen sah die Zeile aus, als hätte jemand
+  vergessen, die Herkunft einzutragen.
+
 ## v2.0.0 - 2026-08-24
 
 **Aus dem Windows-Overlay ist ein eigenständiges Werkzeug für Windows und Linux
