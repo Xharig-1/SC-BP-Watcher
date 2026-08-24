@@ -70,9 +70,18 @@ def art_lesbar(roh):
     return sprache.art(roh)
 
 
-# So viele Bezugsquellen je Bauplan werden behalten. Mehr blähen die Datei auf,
-# ohne zu helfen: Wer einen Bauplan sucht, nimmt ohnehin den leichtesten Weg.
-QUELLEN_JE_BP = 3
+# So viele Bezugsquellen je Bauplan werden behalten.
+#
+# Stand 24.08.2026 **gemessen** am Dump 4.9.0-live.12344265 (655 Baupläne mit
+# Quelle): Median 4 Wege, Mittelwert 5,8, Höchstwert 73. Die frühere Grenze von
+# 3 hat damit **54 %** aller Baupläne Wege abgeschnitten — die Annahme „einer
+# reicht, man nimmt ohnehin den leichtesten" war falsch. Sie stimmt nur, solange
+# man den leichtesten auch fliegen *will*: Wer gerade bei einer anderen Fraktion
+# Ruf sammelt, braucht den zweiten oder dritten Weg.
+#
+# Bei 12 verliert genau **ein** Bauplan etwas (der mit 73 Vorkommen). Angezeigt
+# wird trotzdem nur der leichteste; der Rest steht hinter „weitere Wege".
+QUELLEN_JE_BP = 12
 
 
 # ------------------------------------------------------------------ Netz
