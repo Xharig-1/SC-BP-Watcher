@@ -45,6 +45,45 @@ def zusammensetzen(englisch, deutsch):
             % (englisch, deutsch))
 
 
+# Fester Anhang unter jeder Release-Notiz.
+#
+# Warum bei **jedem** Release und nicht nur einmal: Die SmartScreen-Meldung
+# kommt bei jeder neuen Fassung wieder — jede Datei ist neu und damit wieder
+# „unbekannt". Auch beim Selbst-Update aus dem Werkzeug heraus. Ohne den Hinweis
+# an der Stelle, wo die Leute die Datei holen, ist das jede Woche dieselbe Frage.
+#
+# Ein Tester hielt die Meldung für einen Virenfund und schickte ein
+# „Downloading Virus"-Bild in den Discord — verständlich, wenn Windows sagt
+# „Der Computer wurde durch Windows geschützt".
+HINWEIS = """
+---
+
+### ⚠️ Windows: "Windows protected your PC" / „Der Computer wurde durch Windows geschützt"
+
+**This is not a virus detection.** Click **More info → Run anyway** — it will not ask again.
+
+SmartScreen does not check whether a program is harmful, only whether it is *known*. That
+takes a paid code-signing certificate or a great many downloads; a free fan tool has
+neither, and every new version starts from zero. The source is open, the file is built by
+**GitHub Actions** from exactly that source, and every asset above carries its SHA-256
+checksum. On Linux this message does not exist.
+
+<details>
+<summary><b>Deutsch</b></summary>
+
+**Das ist kein Virenfund.** **Weitere Informationen → Trotzdem ausführen** — danach kommt
+die Meldung nicht wieder.
+
+SmartScreen prüft nicht, *ob* ein Programm schädlich ist, sondern ob es **bekannt** ist.
+Bekannt wird eine Datei durch eine gekaufte Code-Signatur oder sehr viele Downloads — ein
+kostenloses Fan-Werkzeug hat beides nicht, und jede neue Fassung fängt wieder bei null an.
+Der Quellcode ist offen, die Datei wird **nicht von mir** gebaut, sondern von GitHub
+Actions aus genau diesem Quellcode, und jede Datei oben trägt ihre SHA-256-Prüfsumme.
+Unter Linux gibt es diese Meldung nicht.
+
+</details>"""
+
+
 def main():
     tag = sys.argv[1] if len(sys.argv) > 1 else os.environ.get('GITHUB_REF_NAME', '')
     text = zusammensetzen(abschnitt(DATEIEN['en'], tag),
@@ -52,7 +91,7 @@ def main():
     if not text:
         text = ('See the [changelog](../blob/main/CHANGELOG.md) for what this '
                 'release brought.')
-    print(text)
+    print(text + HINWEIS)
 
 
 if __name__ == '__main__':
