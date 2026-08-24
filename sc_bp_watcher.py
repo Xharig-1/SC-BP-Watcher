@@ -56,6 +56,21 @@ except ImportError:
 
 __version__ = '2.1.0'
 
+
+def _mitgeliefert(name):
+    """Pfad zu einer mitgelieferten Datei — im Quellcode wie im fertigen Paket.
+
+    PyInstaller entpackt alles nach `sys._MEIPASS`; daneben zu suchen geht dort
+    ins Leere. Beim Start aus dem Quellcode gibt es das Attribut nicht, dann
+    gilt der Ordner dieser Datei.
+    """
+    try:
+        basis = getattr(sys, '_MEIPASS', None) or os.path.dirname(
+            os.path.abspath(__file__))
+        return os.path.join(basis, name)
+    except Exception:
+        return None
+
 # ---------------------------------------------------------------- Konfiguration
 # Wo die Dateien liegen, entscheidet `scbp/pfade.py` je nach Betriebssystem.
 # Der SC Deutsch Launcher ist ab jetzt **optional**: Ist er da, wird er genutzt;
@@ -1036,13 +1051,7 @@ class Overlay:
         # können. 93 % bleibt der Standard, das ist auf zwei Bildschirmen richtig.
         self.root.attributes('-alpha', DECKKRAFT / 100.0)
         self.root.geometry(geometrie_pruefen(load_geometry(), self.root))
-        # Fenster-/Taskleisten-Icon setzen, falls icon.ico daneben liegt
-        try:
-            ico = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'icon.ico')
-            if os.path.exists(ico):
-                self.root.iconbitmap(ico)
-        except Exception:
-            pass
+        self._icon_setzen()
         self.count = 0
         self.rows = {}          # normalisierter Name -> Zeilen-Widgets (für die Bestätigung)
 
@@ -1172,6 +1181,41 @@ class Overlay:
     # ---- Drag & Resize ----
     # ---- Schalter „mit dem Rechner starten" ----
     # ---- Erklärtexte, die ihren Zustand kennen ----
+    def _icon_setzen(self):
+        """Fenster- und Taskleisten-Icon — auf beiden Systemen und für alle Fenster.
+
+        Vorher stand hier nur `iconbitmap('icon.ico')`. Das hatte zwei Löcher:
+        `iconbitmap` mit einer `.ico` ist **Windows-only**, unter Linux blieb das
+        Fenster ohne Icon. Und die Datei lag zur Laufzeit gar nicht daneben —
+        PyInstallers `--icon` setzt nur das Symbol der `.exe` selbst, es packt
+        die Datei nicht mit ein. In der fertigen Fassung gab es das Icon also
+        nirgends, auch unter Windows nicht.
+
+        `iconphoto(True, …)` mit dem PNG kann Tk auf beiden Systemen, und das
+        `True` vererbt es an **alle** weiteren Fenster (Liste, Einstellungen,
+        Assistent) — sonst müsste jedes es selbst setzen.
+        """
+        try:
+            png = _mitgeliefert(os.path.join('assets', 'icon.png'))
+            if png and os.path.exists(png):
+                # ⚠ Die Referenz muss am Objekt hängen bleiben. Eine lokale
+                # Variable wird nach der Methode aufgeräumt, und Tk zeigt dann
+                # ein leeres Icon — das Bild ist weg, bevor es gebraucht wird.
+                self._icon_bild = tk.PhotoImage(file=png)
+                self.root.iconphoto(True, self._icon_bild)
+        except Exception as ausnahme:
+            fehler.merken('oberflaeche.icon', ausnahme)
+
+        if sys.platform.startswith('win'):
+            # Zusätzlich unter Windows: Die .ico bringt mehrere Auflösungen mit
+            # und sieht in der Taskleiste schärfer aus als ein skaliertes PNG.
+            try:
+                ico = _mitgeliefert('icon.ico')
+                if ico and os.path.exists(ico):
+                    self.root.iconbitmap(ico)
+            except Exception:
+                pass
+
     def _hinweis_autostart(self):
         """⏻ sagt an, was ein Klick bewirkt — nicht nur, was das Zeichen bedeutet.
 
