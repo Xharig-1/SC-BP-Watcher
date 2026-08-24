@@ -228,6 +228,44 @@ def _changelog_datei():
     return None
 
 
+# Welche Überschrift im CHANGELOG bedeutet was. Die Zuordnung ist bewusst
+# großzügig — englische wie deutsche Fassung, und wer eine neue Überschrift
+# erfindet, landet unter „neu" statt im Nichts.
+_ARTEN = (
+    ('fix',  ('behoben', 'fixed', 'korrigiert', 'bugfix')),
+    ('bess', ('geändert', 'changed', 'verbessert', 'improved', 'entfernt',
+              'removed', 'bedienung')),
+    ('neu',  ('hinzugefügt', 'added', 'neu', 'new')),
+)
+
+
+def punkte_nach_art(text):
+    """Zerlegt einen Änderungstext in (art, zeile) — für Filter und Marken.
+
+    Der Text ist Markdown mit Zwischenüberschriften (`### Behoben`). Alles
+    darunter gilt als diese Art, bis die nächste Überschrift kommt. Ohne
+    Überschrift gilt „neu": Lieber falsch einsortiert als unsichtbar.
+    """
+    art = 'neu'
+    heraus = []
+    for zeile in (text or '').split('\n'):
+        # ⚠ Die Einrückung muss VOR dem Abschneiden geprüft werden — sonst sind
+        # Unterpunkte nicht mehr von Hauptpunkten zu unterscheiden und die Liste
+        # zerfällt in doppelt so viele Zeilen.
+        eingerueckt = zeile[:1].isspace()
+        blank = zeile.strip()
+        if blank.startswith('#'):
+            klein = blank.lstrip('#').strip().lower()
+            for kennung, woerter in _ARTEN:
+                if any(w in klein for w in woerter):
+                    art = kennung
+                    break
+            continue
+        if not eingerueckt and blank.startswith(('- ', '* ')):
+            heraus.append((art, blank[2:].strip()))
+    return heraus
+
+
 def protokoll():
     """Die Versionsgeschichte als Liste, neueste zuerst.
 

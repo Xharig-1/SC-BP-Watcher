@@ -311,31 +311,121 @@ def _bestand(fenster, rahmen):
 
 
 def _wasistneu(fenster, rahmen):
-    """Die Änderungen — als Reiter, nicht als Fenster über dem Fenster."""
+    """Die Änderungen — als Reiter, nicht als Fenster über dem Fenster.
+
+    Zwei Dinge halten die Seite kurz, auch wenn zwanzig Fassungen zusammenkommen:
+    Nur die **neueste** ist aufgeklappt, und ein Filter zeigt bei Bedarf nur
+    Behobenes. Wer einen Fehler gemeldet hat, sucht genau danach.
+    """
     _ueberschrift(fenster, rahmen, t('hf_wasistneu'),
-                  'Was diese und ältere Fassungen gebracht haben.')
-    innen = _rollflaeche(rahmen)
+                  'Neu ist dazugekommen · Verbessert kann jetzt mehr · '
+                  'Behoben hat vorher geklemmt.')
+
     from . import aktualisierung
     try:
         eintraege = aktualisierung.protokoll()
     except Exception as ausnahme:
         fehler.merken('seiten.wasistneu', ausnahme)
         eintraege = []
-    if not eintraege:
-        tk.Label(innen, text='—', bg=BG, fg=SUB, font=fenster.f_grund).pack(
-            padx=24, pady=10, anchor='w')
-        return
-    for e in eintraege[:12]:
-        kopf = tk.Frame(innen, bg=BG)
-        kopf.pack(fill='x', padx=24, pady=(14, 2))
-        tk.Label(kopf, text=e.get('version') or '—', bg=BG, fg=ACCENT,
-                 font=fenster.f_fett).pack(side='left')
-        if e.get('datum'):
-            tk.Label(kopf, text='  ' + e['datum'], bg=BG, fg=SUB,
-                     font=fenster.f_klein).pack(side='left')
-        tk.Label(innen, text=(e.get('text') or '').strip(), bg=BG, fg=SUB,
+
+    stand = {'art': 'alle'}
+    chips = {}
+    leiste = tk.Frame(rahmen, bg=BG)
+    leiste.pack(fill='x', padx=24, pady=(0, 10))
+    innen = _rollflaeche(rahmen)
+    behaelter = tk.Frame(innen, bg=BG)
+    behaelter.pack(fill='both', expand=True)
+
+    def zeichnen():
+        for kind in behaelter.winfo_children():
+            kind.destroy()
+        gezeigt = 0
+        for nummer, e in enumerate(eintraege[:15]):
+            punkte = aktualisierung.punkte_nach_art(e.get('text') or '')
+            if stand['art'] != 'alle':
+                punkte = [p for p in punkte if p[0] == stand['art']]
+            if not punkte:
+                continue
+            gezeigt += 1
+            # Nur die neueste Fassung offen; ältere sind einen Klick entfernt.
+            offen = (nummer == 0) or stand['art'] != 'alle'
+            _fassung(fenster, behaelter, e, punkte, offen)
+        if not gezeigt:
+            tk.Label(behaelter, text='Nichts in dieser Auswahl.', bg=BG, fg=SUB,
+                     font=fenster.f_klein).pack(anchor='w', padx=24, pady=12)
+
+    def waehlen(art):
+        stand['art'] = art
+        for kennung, k in chips.items():
+            an = (kennung == art)
+            k.configure(fg=ACCENT if an else SUB)
+        zeichnen()
+
+    for kennung, text in (('alle', 'Alles'), ('neu', 'Neu'),
+                          ('bess', 'Verbessert'), ('fix', 'Behoben')):
+        k = tk.Label(leiste, text=' %s ' % text, bg=FLAECHE,
+                     fg=ACCENT if kennung == 'alle' else SUB,
+                     font=fenster.f_klein, cursor='hand2', padx=9, pady=4)
+        k.pack(side='left', padx=(0, 6))
+        k.bind('<Button-1>', lambda ev, s=kennung: waehlen(s))
+        chips[kennung] = k
+
+    zeichnen()
+
+
+_ART_FARBE = {'neu': ACCENT, 'bess': '#7db8e8', 'fix': GOLD}
+_ART_WORT = {'neu': 'Neu', 'bess': 'Verbessert', 'fix': 'Behoben'}
+
+
+def _fassung(fenster, eltern, eintrag, punkte, offen):
+    """Eine Fassung mit Kopfzeile zum Auf- und Zuklappen."""
+    zustand = {'offen': offen}
+    kopf = tk.Frame(eltern, bg=BG, cursor='hand2')
+    kopf.pack(fill='x', padx=24, pady=(12, 2))
+    pfeil = tk.Label(kopf, text='▼' if offen else '▶', bg=BG, fg=SUB,
+                     font=fenster.f_klein)
+    pfeil.pack(side='left', padx=(0, 8))
+    tk.Label(kopf, text=eintrag.get('version') or '—', bg=BG, fg=ACCENT,
+             font=fenster.f_fett).pack(side='left')
+    if eintrag.get('datum'):
+        tk.Label(kopf, text='  ' + eintrag['datum'], bg=BG, fg=SUB,
+                 font=fenster.f_klein).pack(side='left')
+    tk.Label(kopf, text='  %d Änderungen' % len(punkte), bg=BG, fg=SUB,
+             font=fenster.f_klein).pack(side='right')
+
+    koerper = tk.Frame(eltern, bg=BG)
+    if offen:
+        koerper.pack(fill='x', padx=24)
+
+    for art, zeile in punkte:
+        z = tk.Frame(koerper, bg=BG)
+        z.pack(fill='x', pady=1)
+        tk.Label(z, text=_ART_WORT.get(art, ''), bg=BG,
+                 fg=_ART_FARBE.get(art, SUB), font=fenster.f_klein,
+                 width=11, anchor='w').pack(side='left')
+        tk.Label(z, text=_saubere_zeile(zeile), bg=BG, fg=FG,
                  font=fenster.f_klein, anchor='w', justify='left',
-                 wraplength=640).pack(fill='x', padx=24)
+                 wraplength=560).pack(side='left', fill='x', expand=True)
+
+    def umschalten(*_):
+        zustand['offen'] = not zustand['offen']
+        pfeil.configure(text='▼' if zustand['offen'] else '▶')
+        if zustand['offen']:
+            koerper.pack(fill='x', padx=24)
+        else:
+            koerper.pack_forget()
+
+    for teil in (kopf, pfeil):
+        teil.bind('<Button-1>', umschalten)
+
+
+def _saubere_zeile(zeile):
+    """Markdown-Auszeichnung raus — Tk zeigt sie sonst als Sternchen."""
+    import re
+    zeile = re.sub(r'\*\*(.+?)\*\*', r'\1', zeile)
+    zeile = re.sub(r'`([^`]+)`', r'\1', zeile)
+    zeile = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', zeile)
+    return zeile.strip()
 
 
 def _ueber(fenster, rahmen):
