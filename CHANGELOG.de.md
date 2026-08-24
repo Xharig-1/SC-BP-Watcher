@@ -12,6 +12,18 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Startbaupläne werden erkannt und eingetragen.** Acht Baupläne hat jeder Spieler von
+  Anfang an — P4-AR Rifle und S-38 Pistol samt Magazinen, dazu der Field Recon Suit
+  (vier Teile). Sie standen bisher **nirgends**: nicht im Katalog, nicht im Bestand.
+  - Der Grund: Der Katalog entsteht aus den Belohnungs-Töpfen der Missionen, und ein
+    Startbauplan steht in keinem davon — man bekommt ihn ja nie als Belohnung. Der
+    Fortschritt zeigte dadurch weniger an, als man tatsächlich hat.
+  - Erkannt am Feld `isDefault` in `crafting_blueprints-<version>.json` — **nicht** in
+    `crafting_items`, dort gibt es das Feld nicht.
+  - Der Katalog wächst damit von **714 auf 722**, der Bestand um acht Einträge.
+  - In der Liste mit ◆ gekennzeichnet, damit niemand nach einem Auftrag sucht, den es
+    nicht gibt. Wer sie selbst abgehakt hat, behält seinen Eintrag (Rang `hand` schlägt
+    `start`).
 - **Bestand als Datei ausgeben** (`scbp/export.py`) — **drei Formate**, zwei Knöpfe:
   - **„In die Ablage"** schreibt alle drei auf einmal in einen festen Ordner und öffnet
     ihn. Wer regelmäßig hochlädt, klickt nicht dreimal durch einen Speichern-Dialog.

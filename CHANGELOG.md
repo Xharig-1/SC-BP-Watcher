@@ -12,6 +12,18 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **Starter blueprints are recognised and added.** Every player has eight from the
+  start — P4-AR Rifle and S-38 Pistol with their magazines, plus the Field Recon Suit
+  (four pieces). Until now they appeared **nowhere**: not in the catalogue, not in your
+  collection.
+  - The reason: the catalogue is built from mission reward pools, and a starter
+    blueprint is in none of them — you never receive it as a reward. Progress therefore
+    showed less than you actually own.
+  - Detected via the `isDefault` field in `crafting_blueprints-<version>.json` — **not**
+    in `crafting_items`, which has no such field.
+  - The catalogue grows from **714 to 722**, your collection by eight entries.
+  - Marked with ◆ in the list, so nobody hunts for a contract that does not exist. If
+    you ticked them off yourself, your entry stands (`hand` outranks `start`).
 - **Export your collection to a file** (`scbp/export.py`) — **three formats**, two buttons:
   - **"To the export folder"** writes all three at once into a fixed folder and opens it.
     If you upload regularly, you should not have to click through a save dialog three times.

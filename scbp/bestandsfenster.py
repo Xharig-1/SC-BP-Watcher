@@ -499,6 +499,14 @@ class Bestandsfenster:
             info.pack(side='right')
             info.bind('<Button-1>', lambda e, n=name: self._herkunft_umschalten(n))
             hinweis.anhaengen(info, lambda: t('hinweis_quellen'))
+        elif eintrag.get('start'):
+            # Startbaupläne: hat jeder von Anfang an, stehen in keinem Pool und
+            # in keinem Log. Eigenes Zeichen, damit niemand nach einem Auftrag
+            # sucht, den es nicht gibt.
+            std = tk.Label(zeile, text='◆', bg=FLAECHE, fg=ACCENT,
+                           font=schrift(10), padx=12)
+            std.pack(side='right')
+            hinweis.anhaengen(std, lambda: t('hinweis_startbauplan'))
         else:
             # 59 Baupläne haben in den Daten keine Bezugsquelle — überwiegend
             # Event-Belohnungen („Purgatory Camo", „SecondWind"). Ohne Zeichen

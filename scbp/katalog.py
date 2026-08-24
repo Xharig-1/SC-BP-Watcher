@@ -229,6 +229,37 @@ def _herkunft(merged):
     return pools, quellen
 
 
+def _startbauplaene(version):
+    """Die Baupläne, die jeder Spieler von Anfang an hat.
+
+    **Warum die extra geholt werden müssen:** Der Katalog entsteht aus den
+    `blueprintPools` — also aus dem, was Missionen ausschütten. Startbaupläne
+    stehen in **keinem** Pool, weil man sie nie als Belohnung bekommt. Sie
+    fehlten dadurch vollständig: nicht in der Liste, nicht im Bestand, und wer
+    danach suchte, fand nichts.
+
+    Zu erkennen sind sie am Feld `isDefault` in `crafting_blueprints-<version>.json`
+    — **nicht** in `crafting_items`, dort gibt es das Feld nicht. Es sind acht:
+    P4-AR Rifle und S-38 Pistol samt Magazinen, dazu der Field Recon Suit
+    (vier Teile).
+
+    Die Datei ist mit 4,2 MB die größte der drei, wird aber nur beim Neubau des
+    Katalogs geholt — also einmal je Spielversion."""
+    try:
+        roh = _hole('%s/crafting_blueprints-%s.json' % (BASIS, version))
+    except Exception:
+        return []
+    liste = roh.get('blueprints') if isinstance(roh, dict) else roh
+    ergebnis = []
+    for e in liste or []:
+        if not e.get('isDefault'):
+            continue
+        name = e.get('productName')
+        if name:
+            ergebnis.append({'n': name, 'a': e.get('type'), 'start': True})
+    return ergebnis
+
+
 def _missionen(merged):
     """Missionen, die Baupläne ausschütten — für die Auszeichnung im Spiel.
 
@@ -337,6 +368,19 @@ def erzeugen(version=None, fortschritt=None, aus_datei=None):
             eintrag['q'] = q
         bauplaene[k] = eintrag
 
+    # Startbaupläne dazu — sie stehen in keinem Belohnungs-Pool und würden
+    # sonst fehlen. Vorhandene Einträge werden nicht überschrieben.
+    melde('Startbaupläne werden geholt …')
+    for e in _startbauplaene(version):
+        k = _norm(e['n'])
+        if k in bauplaene:
+            bauplaene[k]['start'] = True
+        else:
+            eintrag = {'n': e['n'], 'start': True}
+            if e.get('a'):
+                eintrag['a'] = e['a']
+            bauplaene[k] = eintrag
+
     daten = {'version': version, 'geholt': time.strftime('%Y-%m-%d %H:%M'),
              'bauplaene': bauplaene, 'missionen': _missionen(merged)}
     ziel = pfade.app_datei(CACHE)
@@ -377,6 +421,11 @@ def aktualisieren(fortschritt=None):
         return bool(anzahl), anzahl, version
     except Exception:
         return False, 0, ''
+
+
+def startbauplaene(daten=None):
+    """Die Vergleichsformen der Baupläne, die jeder von Anfang an hat."""
+    return {k for k, e in (daten or laden())['bauplaene'].items() if e.get('start')}
 
 
 def namen(daten=None):

@@ -833,6 +833,28 @@ class Watcher(threading.Thread):
             bestand_datei.speichern(self.bestand)
         return neu
 
+    def _startbauplaene_eintragen(self):
+        """Die acht Startbaupläne in den Bestand — falls noch nicht drin.
+
+        Quelle `start` (Rang 2): höher als ein Log-Fund, niedriger als ein von
+        Hand gesetztes Häkchen oder der Launcher. Wer sie also selbst abgehakt
+        hat, behält seinen Eintrag."""
+        try:
+            std = katalog_modul.startbauplaene()
+            if not std:
+                return
+            katalog = katalog_modul.laden()['bauplaene']
+            neu = 0
+            for schluessel in std:
+                name = (katalog.get(schluessel) or {}).get('n')
+                if name and bestand_datei.hinzufuegen(self.bestand, name, 'start'):
+                    neu += 1
+            if neu:
+                bestand_datei.speichern(self.bestand)
+                self.q.put(('status', sprache.t('start_eingetragen', neu)))
+        except Exception:
+            pass          # ein Fehler hier darf den Start nicht aufhalten
+
     def _katalog_beim_start(self):
         """Fehlt der Katalog ganz, wird er **vor** allem anderen geholt — hier
         ausnahmsweise im Watcher-Takt, nicht nebenher.
@@ -868,10 +890,16 @@ class Watcher(threading.Thread):
         #    Nachlese mit der falschen Formulierung und findet nichts.
         self._sprache_erschliessen()
 
-        # 2) Vergangenes nachlesen (still, nur in den Bestand)
+        # 2) Startbaupläne eintragen — die hat jeder Spieler von Anfang an,
+        #    sie stehen deshalb in **keinem** Log und in keinem Belohnungs-Pool.
+        #    Ohne diesen Schritt fehlen sie dauerhaft im Bestand, und der
+        #    Fortschritt zeigt weniger an, als man tatsächlich hat.
+        self._startbauplaene_eintragen()
+
+        # 3) Vergangenes nachlesen (still, nur in den Bestand)
         self._nachlese()
 
-        # 3) Launcher-Stand holen — wenn es ihn gibt. Ohne ihn wird nicht mehr
+        # 4) Launcher-Stand holen — wenn es ihn gibt. Ohne ihn wird nicht mehr
         #    gewartet: Bis v1.5.0 hing der Watcher hier in einer Endlosschleife,
         #    wenn die Launcher-Datei fehlte. Unter Linux wäre er nie gestartet.
         if HAT_LAUNCHER:
@@ -885,7 +913,7 @@ class Watcher(threading.Thread):
             if self.known:
                 self._launcher_uebernehmen(self.known)
 
-        # 4) Alles, was schon im Bestand steht, gilt als bekannt — es wird nicht
+        # 5) Alles, was schon im Bestand steht, gilt als bekannt — es wird nicht
         #    als „neu" gemeldet.
         self.seen = set(bestand_datei.schluessel(self.bestand))
         self.tail.new_names()          # Lesestand der Game.log setzen/fortführen
