@@ -31,6 +31,7 @@ Codes nicht sieht und die schon einmal Fehler verursacht haben — abgeschnitten
 Namensklammern, doppelt gezählte Meldungen, verlorene Lesestände. Sie stehen
 hier als Fälle drin, damit ein Umbau sie nicht unbemerkt wieder einreißt.
 """
+import importlib
 import os
 import shutil
 import sys
@@ -340,6 +341,49 @@ def main():
                    'unsinnige Position verworfen (%s)' % kaputt)
         else:
             uebersprungen('Fensterlage von einem fremden Rechner')
+
+        # ------------------------------------------------------------------ 12
+        # Fehler mitschreiben. Der Sinn der Sache ist, dass ein Nutzer den
+        # Bericht in ein **öffentliches** Issue kopieren kann — deshalb wird
+        # hier vor allem geprüft, dass kein Benutzername durchrutscht.
+        print()
+        print('12. Fehler werden mitgeschrieben')
+        os.environ['SC_BP_HOME'] = os.path.join(basis, 'fehlerbuch')
+        os.makedirs(os.environ['SC_BP_HOME'], exist_ok=True)
+        from scbp import fehler as fehlerbuch, bericht
+        importlib.reload(fehlerbuch)
+
+        fehlerbuch.leeren()
+        with fehlerbuch.gefangen('probe.stelle'):
+            raise ValueError('etwas ging schief in %s'
+                             % os.path.expanduser('~/geheim/pfad'))
+        eintraege = fehlerbuch.letzte(1)
+        pruefe(len(eintraege) == 1, 'ein gefangener Fehler wird festgehalten')
+        pruefe(eintraege and eintraege[0].get('stelle') == 'probe.stelle',
+               'die Stelle steht dabei')
+        pruefe(eintraege and eintraege[0].get('art') == 'ValueError',
+               'die Art des Fehlers steht dabei')
+
+        name = os.path.basename(os.path.expanduser('~').rstrip('/\\'))
+        roh = json.dumps(eintraege, ensure_ascii=False)
+        pruefe(len(name) < 3 or name.lower() not in roh.lower(),
+               'kein Benutzername im Protokoll')
+        pruefe('<heim>' in roh, 'der Heimatpfad ist ersetzt')
+
+        # Der Ringpuffer darf die Datei nicht wachsen lassen.
+        for i in range(fehlerbuch.HOECHSTENS + 12):
+            fehlerbuch.merken('probe.viele', ValueError('Nummer %d' % i))
+        pruefe(fehlerbuch.anzahl() == fehlerbuch.HOECHSTENS,
+               'es bleiben höchstens %d Einträge liegen' % fehlerbuch.HOECHSTENS)
+
+        text = bericht.bauen(version='0.0.0-test')
+        pruefe(bool(text) and 'SC BP Watcher' in text, 'der Bericht wird gebaut')
+        pruefe(len(name) < 3 or name.lower() not in text.lower(),
+               'kein Benutzername im Bericht')
+        pruefe('Letzte Fehler' in text, 'die letzten Fehler stehen im Bericht')
+
+        fehlerbuch.leeren()
+        pruefe(fehlerbuch.anzahl() == 0, 'das Protokoll lässt sich leeren')
 
     finally:
         shutil.rmtree(basis, ignore_errors=True)

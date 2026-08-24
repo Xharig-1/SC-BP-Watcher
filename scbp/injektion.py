@@ -61,7 +61,7 @@ import os
 import re
 import urllib.request
 
-from . import bestand as bestand_datei
+from . import fehler, bestand as bestand_datei
 from . import katalog as katalog_modul
 from . import pfade
 
@@ -444,7 +444,8 @@ def scdl_update_da(sprachkuerzel):
                                      headers={'User-Agent': 'SC-BP-Watcher'})
         with urllib.request.urlopen(req, timeout=60) as r:
             roh = json.loads(r.read().decode('utf-8'))
-    except Exception:
+    except Exception as ausnahme:
+        fehler.merken('injektion.scdl_holen', ausnahme, datei)
         return False, None
     neu_kennung = (roh.get('_meta') or {}).get('version')
     if not roh.get('entries') or neu_kennung == alt:

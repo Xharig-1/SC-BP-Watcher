@@ -57,6 +57,7 @@ Rangfolge, wenn mehrere Angaben da sind:
 import glob
 import json
 import os
+import re
 import sys
 
 WINDOWS = sys.platform.startswith('win')
@@ -474,6 +475,32 @@ def launcher_datei(name, ordner=None):
 
 
 # ------------------------------------------------------------------ Übersicht
+def kuerzen(text):
+    """Persönliches aus einem Text nehmen — für Fehlerprotokoll und Bericht.
+
+    Pfade verraten den Benutzernamen (`C:\\Users\\der Autor\\…`,
+    `/home/spieler/…`), und genau solche Texte landen in einem **öffentlichen**
+    Issue. Ersetzt werden das Heimatverzeichnis und danach jedes weitere
+    Vorkommen des Benutzernamens.
+
+    Lieber einmal zu viel ersetzt als ein Name zu viel im Netz.
+    """
+    try:
+        text = str(text)
+        heim = os.path.expanduser('~')
+        name = os.path.basename(heim.rstrip('\\/'))
+
+        for was in (heim, heim.replace('\\', '/'), heim.replace('/', '\\')):
+            if was and len(was) > 3:
+                text = text.replace(was, '<heim>')
+
+        if name and len(name) > 2:
+            text = re.sub(re.escape(name), '<benutzer>', text, flags=re.I)
+        return text
+    except Exception:
+        return str(text)
+
+
 def uebersicht():
     """Was wurde gefunden — für Statusanzeige und Fehlersuche."""
     spiel = spiel_ordner()

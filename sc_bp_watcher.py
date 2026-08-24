@@ -42,6 +42,7 @@ from tkinter import font as tkfont
 # Eigene Bausteine. Sie kapseln alles, was sich zwischen Windows und Linux
 # unterscheidet — der Rest dieser Datei muss das Betriebssystem nicht kennen.
 from scbp import sprache
+from scbp import fehler
 from scbp import (aktualisierung, assistent, autostart,
                   bestand as bestand_datei, bestandsfenster as bestandsfenster_modul,
                   einstellungsfenster, hinweis, injektion,
@@ -1021,6 +1022,10 @@ def sicherer_cursor(name):
 class Overlay:
     def __init__(self):
         self.root = tk.Tk()
+        # Ab hier werden auch Fehler in Rückrufen der Oberfläche festgehalten.
+        # Ohne diesen Haken schreibt Tk sie auf die Standardausgabe — und die
+        # sieht in einer .exe oder einem AppImage niemand.
+        fehler.haken_setzen(self.root)
         _WURZEL[0] = self.root                    # damit signalton() klingeln kann
         self.root.title('SC BP Watcher')
         self.root.configure(bg=BG)
