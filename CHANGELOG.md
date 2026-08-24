@@ -6,10 +6,34 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## Unreleased
+## v2.0.0-rc2 - 2026-08-24
+
+Both found during the first run against a real Linux installation.
+
+### Added
+
+- **Hover explanations for the icons** (`scbp/hinweis.py`). The title bar is seven
+  symbols — ⟳ ⓘ ☰ ⏻ 🗑 ✕ and the resize grip ◢. Anyone who did not build it had to
+  guess, and trying things out is a poor idea with ✕ and 🗑. Labels next to them are
+  out of the question: the overlay is deliberately narrow and sits on top of the game.
+  - The ones with a **state** say what the click will do, not just what the symbol
+    means: ⏻ depending on autostart, ⓘ depending on whether a new version is waiting,
+    the star depending on whether the blueprint is already being watched.
+  - The blueprint list's ✕ explicitly says "the watcher keeps running" — it looks
+    exactly like the overlay's ✕, which quits the program.
+  - `merken` and `nicht_mehr_merken` had been in the language module since
+    v2.0.0-rc1 without either ever being wired up.
 
 ### Fixed
 
+- **Search looked like it found nothing.** Anyone who had scrolled down the
+  blueprint list and then typed something was left staring at **empty space** —
+  the view kept its old scroll position while 714 rows turned into five. The
+  matches were there, just far above. Search and filters now jump back to the
+  top; ticking off, watching and expanding keep the position, where jumping
+  would only lose your place.
+  - Reported as "typing *xl* leaves the list empty" — `XL-1` had been in the
+    results the whole time.
 - **The blueprint catalogue was never fetched.** The function existed, but nothing
   ever called it — `katalog.laden()` quietly returned an empty catalogue when the
   file was missing. As a result the blueprint list stayed empty for **every** user,

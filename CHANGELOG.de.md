@@ -6,10 +6,35 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## Unveröffentlicht
+## v2.0.0-rc2 - 2026-08-24
+
+Beides beim ersten Lauf an einer echten Linux-Installation gefunden.
+
+### Hinzugefügt
+
+- **Erklärtexte beim Überfahren der Zeichen mit der Maus** (`scbp/hinweis.py`). Die
+  Titelleiste besteht aus sieben Zeichen — ⟳ ⓘ ☰ ⏻ 🗑 ✕ und der Griff ◢. Wer sie
+  nicht selbst gebaut hat, musste raten, und Ausprobieren ist bei ✕ und 🗑 eine
+  schlechte Idee. Eine Beschriftung daneben scheidet aus: Das Overlay ist absichtlich
+  schmal und liegt über dem Spiel.
+  - Die Texte, die einen **Zustand** haben, sagen an, was der Klick bewirkt — nicht
+    nur, was das Zeichen bedeutet: ⏻ je nach Autostart, ⓘ je nachdem, ob eine neue
+    Fassung vorliegt, der Stern je nachdem, ob der Bauplan schon beobachtet wird.
+  - Das ✕ der Bauplan-Liste sagt ausdrücklich „der Watcher läuft weiter" — es sieht
+    aus wie das ✕ des Overlays, das das Programm beendet.
+  - `merken` und `nicht_mehr_merken` gab es seit v2.0.0-rc1 im Sprachmodul,
+    angeschlossen war nie einer der beiden.
 
 ### Behoben
 
+- **Die Suche sah aus, als fände sie nichts.** Wer in der Bauplan-Liste nach unten
+  gescrollt hatte und dann etwas eintippte, blickte auf **leere Fläche** — die
+  Ansicht behielt ihre alte Scrollposition, während aus 714 Zeilen fünf wurden.
+  Die Treffer waren da, nur weit darüber. Suche und Filter springen jetzt an den
+  Anfang; beim Abhaken, Merken und Ausklappen bleibt die Position stehen, dort
+  wäre ein Sprung ein Verlust.
+  - Gemeldet als „gebe ich *xl* ein, ist die Liste leer" — `XL-1` stand die ganze
+    Zeit im Ergebnis.
 - **Der Bauplan-Katalog wurde nie geholt.** Die Funktion dafür gab es, aufgerufen
   hat sie niemand — `katalog.laden()` gab bei fehlender Datei stillschweigend einen
   leeren Katalog zurück. Folge: Die Bauplan-Liste blieb bei **jedem** Nutzer leer,

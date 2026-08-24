@@ -37,6 +37,7 @@ Klick auf ⓘ klappt die Bezugsquellen aus.
 import tkinter as tk
 
 from . import bestand as bestand_datei
+from . import hinweis
 from . import katalog as katalog_modul
 from . import merkliste as merk
 from . import pfade
@@ -110,7 +111,7 @@ class Bestandsfenster:
         self.katalog = katalog_modul.laden()
         self.filter = 'alle'
         self.suche = tk.StringVar()
-        self.suche.trace_add('write', lambda *_: self._zeichnen())
+        self.suche.trace_add('write', lambda *_: self._zeichnen(nach_oben=True))
         self.offen = set()          # Namen, deren Herkunft ausgeklappt ist
         self.alle_zeigen = False
 
@@ -130,6 +131,7 @@ class Bestandsfenster:
         zu = tk.Label(bar, text='✕', bg=BAR, fg=SUB, font=schrift(12), cursor='hand2')
         zu.pack(side='right', padx=14)
         zu.bind('<Button-1>', lambda e: self.schliessen())
+        hinweis.anhaengen(zu, lambda: t('hinweis_schliessen_liste'))
 
     def _werkzeugleiste(self):
         leiste = tk.Frame(self.root, bg=BG)
@@ -178,7 +180,7 @@ class Bestandsfenster:
     def _filter_setzen(self, welcher):
         self.filter = welcher
         self.alle_zeigen = False
-        self._zeichnen()
+        self._zeichnen(nach_oben=True)
 
     def _auswahl(self):
         """Die Baupläne, die gerade angezeigt werden sollen."""
@@ -204,7 +206,18 @@ class Bestandsfenster:
                 ergebnis.append((art, treffer))
         return ergebnis
 
-    def _zeichnen(self):
+    def _zeichnen(self, nach_oben=False):
+        """Die Liste neu aufbauen.
+
+        `nach_oben` springt an den Anfang. Nötig bei Suche und Filter: Die
+        Ansicht behält sonst ihre alte Scrollposition, und wenn aus 714 Zeilen
+        plötzlich fünf werden, steht man vor **leerer Fläche** und hält die Suche
+        für kaputt. Genau so gemeldet: „gebe ich xl ein, ist die Liste leer" —
+        die fünf Treffer waren da, nur weit über dem sichtbaren Ausschnitt.
+
+        Beim Abhaken, Merken und Ausklappen bleibt die Position dagegen stehen —
+        dort wäre ein Sprung nach oben ein Verlust, man arbeitet ja an einer
+        bestimmten Stelle."""
         for kind in self.inhalt.winfo_children():
             kind.destroy()
 
@@ -247,6 +260,11 @@ class Bestandsfenster:
                     else t('nichts_gefunden'))
             tk.Label(self.inhalt, text=leer, bg=BG, fg=SUB, font=schrift(11),
                      pady=20, wraplength=520, justify='center').pack()
+
+        if nach_oben:
+            # Erst wenn Tk die neue Höhe kennt — sonst bezieht sich der Sprung
+            # noch auf die Scrollfläche von vorher und landet daneben.
+            self.root.after_idle(lambda: self.leinwand.yview_moveto(0))
 
     def _alle(self):
         self.alle_zeigen = True
@@ -294,6 +312,7 @@ class Bestandsfenster:
                             font=schrift(11), cursor='hand2', padx=12)
             info.pack(side='right')
             info.bind('<Button-1>', lambda e, n=name: self._herkunft_umschalten(n))
+            hinweis.anhaengen(info, lambda: t('hinweis_quellen'))
 
         # Stern: worauf man wartet, wird auffällig gemeldet, sobald es auftaucht.
         # Bei schon vorhandenen Bauplänen wäre das sinnlos — dort kein Stern.
@@ -304,6 +323,8 @@ class Bestandsfenster:
                              cursor='hand2', padx=6)
             stern.pack(side='right')
             stern.bind('<Button-1>', lambda e, n=name: self._merken(n))
+            hinweis.anhaengen(stern, lambda n=name: t('nicht_mehr_merken')
+                              if merk.enthaelt(n) else t('merken'))
 
         if name in self.offen:
             self._herkunft(eintrag)

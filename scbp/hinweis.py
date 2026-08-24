@@ -1,0 +1,128 @@
+# -*- coding: utf-8 -*-
+#
+# SC BP Watcher — zeigt live neue Star-Citizen-Baupläne an.
+# Copyright (C) 2026 Xharig
+#
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+Erklärtexte beim Überfahren mit der Maus.
+
+Die Titelleiste besteht aus sieben Zeichen — ⟳ ⓘ ☰ ⏻ 🗑 ✕ ◢. Wer sie nicht
+selbst gebaut hat, muss raten, was sie tun, und ausprobieren ist bei ✕ und 🗑
+eine schlechte Idee. Eine Beschriftung daneben scheidet aus: Das Overlay ist
+absichtlich schmal und liegt über dem Spiel.
+
+Benutzung:
+
+    from .hinweis import anhaengen
+    anhaengen(knopf, lambda: t('hinweis_schliessen'))
+    anhaengen(knopf, 'fester Text')
+
+Der Text darf eine **Funktion** sein statt einer Zeichenkette. Nötig für alles,
+was seinen Zustand wechselt (Autostart an/aus, Stern gesetzt/nicht) — sonst
+stünde dort für immer, was beim Programmstart zutraf. Und für die Sprache: Wer
+im laufenden Betrieb umschaltet, soll nicht die alten Texte behalten.
+
+Bewusst schlicht gehalten:
+
+* **Ein** Fenster für alle Hinweise, nicht eines je Element. Bei einem Dutzend
+  Knöpfen wären das ein Dutzend Fenster, die bei jedem Sprachwechsel und jedem
+  Beenden mitgezogen werden müssten.
+* `topmost`, weil das Overlay selbst `topmost` ist — ohne das erscheint der
+  Hinweis **hinter** dem Fenster, zu dem er gehört.
+* Verzögerung von einer knappen halben Sekunde. Ohne sie flackert es beim
+  bloßen Überqueren der Leiste.
+* Der Hinweis verschwindet auch beim **Klick**. Sonst bliebe er über einem
+  Fenster stehen, das gerade zugegangen ist.
+"""
+import tkinter as tk
+
+VERZOEGERUNG_MS = 450          # bis der Hinweis kommt
+ABSTAND_X, ABSTAND_Y = 12, 22  # neben und unter dem Mauszeiger
+
+BG   = '#1b1b1b'
+FG   = '#e8e8e8'
+RAND = '#3a3a3a'
+
+
+class _Fenster:
+    """Das eine Hinweisfenster. Wird beim ersten Bedarf angelegt."""
+
+    def __init__(self):
+        self.top = None
+        self.label = None
+
+    def zeigen(self, eltern, text, x, y):
+        if not text:
+            return
+        try:
+            if self.top is None or not self.top.winfo_exists():
+                self.top = tk.Toplevel(eltern)
+                self.top.overrideredirect(True)      # keine Fensterdekoration
+                self.top.attributes('-topmost', True)
+                self.label = tk.Label(self.top, text=text, bg=BG, fg=FG,
+                                      font=('Segoe UI', 9), justify='left',
+                                      padx=8, pady=4,
+                                      highlightbackground=RAND,
+                                      highlightthickness=1)
+                self.label.pack()
+            else:
+                self.label.configure(text=text)
+            self.top.wm_geometry('+%d+%d' % (x, y))
+            self.top.deiconify()
+        except tk.TclError:
+            # Fenster ging zwischendurch zu — ein Hinweis ist nichts, wofür
+            # das Programm stehenbleiben darf.
+            self.top = None
+
+    def verstecken(self):
+        try:
+            if self.top is not None and self.top.winfo_exists():
+                self.top.withdraw()
+        except tk.TclError:
+            self.top = None
+
+
+_fenster = _Fenster()
+
+
+def anhaengen(widget, text):
+    """Einem Element einen Erklärtext geben. `text` ist Zeichenkette oder Funktion."""
+    daten = {'job': None}
+
+    def hole_text():
+        return text() if callable(text) else text
+
+    def betreten(ereignis):
+        abbrechen()
+        daten['job'] = widget.after(
+            VERZOEGERUNG_MS,
+            lambda: _fenster.zeigen(widget, hole_text(),
+                                    ereignis.x_root + ABSTAND_X,
+                                    ereignis.y_root + ABSTAND_Y))
+
+    def abbrechen(ereignis=None):
+        if daten['job'] is not None:
+            try:
+                widget.after_cancel(daten['job'])
+            except tk.TclError:
+                pass
+            daten['job'] = None
+        _fenster.verstecken()
+
+    widget.bind('<Enter>', betreten, add='+')
+    widget.bind('<Leave>', abbrechen, add='+')
+    widget.bind('<Button-1>', abbrechen, add='+')
+    widget.bind('<Destroy>', abbrechen, add='+')

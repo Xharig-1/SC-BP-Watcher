@@ -43,7 +43,7 @@ from tkinter import font as tkfont
 # unterscheidet — der Rest dieser Datei muss das Betriebssystem nicht kennen.
 from scbp import sprache
 from scbp import (aktualisierung, assistent, autostart,
-                  bestand as bestand_datei, katalog as katalog_modul,
+                  bestand as bestand_datei, hinweis, katalog as katalog_modul,
                   logquelle, merkliste, pfade, phrasen)
 
 try:
@@ -51,7 +51,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '2.0.0-rc1'
+__version__ = '2.0.0-rc2'
 
 # ---------------------------------------------------------------- Konfiguration
 # Wo die Dateien liegen, entscheidet `scbp/pfade.py` je nach Betriebssystem.
@@ -934,14 +934,20 @@ class Overlay:
         bar = tk.Frame(self.root, bg=BAR, height=26)
         bar.pack(fill='x', side='top')
         bar.pack_propagate(False)
-        tk.Label(bar, text=f'● SC BP Watcher v{__version__}', bg=BAR, fg=ACCENT,
-                 font=self.f_title).pack(side='left', padx=8)
-        tk.Label(bar, text='✕', bg=BAR, fg=SUB, font=self.f_title,
-                 cursor='hand2').pack(side='right', padx=8)
-        bar.winfo_children()[-1].bind('<Button-1>', lambda e: self.quit())
-        tk.Label(bar, text='🗑', bg=BAR, fg=SUB, font=self.f_title,
-                 cursor='hand2').pack(side='right')
-        bar.winfo_children()[-1].bind('<Button-1>', lambda e: self.clear())
+        titel_lbl = tk.Label(bar, text=f'● SC BP Watcher v{__version__}', bg=BAR,
+                             fg=ACCENT, font=self.f_title)
+        titel_lbl.pack(side='left', padx=8)
+        hinweis.anhaengen(titel_lbl, lambda: sprache.t('hinweis_ziehen'))
+        zu_lbl = tk.Label(bar, text='✕', bg=BAR, fg=SUB, font=self.f_title,
+                          cursor='hand2')
+        zu_lbl.pack(side='right', padx=8)
+        zu_lbl.bind('<Button-1>', lambda e: self.quit())
+        hinweis.anhaengen(zu_lbl, lambda: sprache.t('hinweis_schliessen'))
+        leeren_lbl = tk.Label(bar, text='🗑', bg=BAR, fg=SUB, font=self.f_title,
+                              cursor='hand2')
+        leeren_lbl.pack(side='right')
+        leeren_lbl.bind('<Button-1>', lambda e: self.clear())
+        hinweis.anhaengen(leeren_lbl, lambda: sprache.t('hinweis_leeren'))
         # Schalter „mit Windows starten" — grün = an, grau = aus.
         self.as_lbl = tk.Label(bar, text='⏻', bg=BAR, fg=SUB, font=self.f_title,
                                cursor='hand2')
@@ -952,6 +958,7 @@ class Overlay:
                                   font=self.f_title, cursor='hand2')
         self.liste_lbl.pack(side='right', padx=(0, 6))
         self.liste_lbl.bind('<Button-1>', lambda e: self.liste_oeffnen())
+        hinweis.anhaengen(self.liste_lbl, lambda: sprache.t('hinweis_liste'))
         # Einrichtung erneut — bewusst als eigener Knopf und nicht in einem
         # Einstellungsmenü versteckt: Wer sich nicht auskennt, soll etwas
         # nachstellen können, ohne zu wissen, wo es steckt.
@@ -959,12 +966,15 @@ class Overlay:
                                  font=self.f_title, cursor='hand2')
         self.assi_lbl.pack(side='right', padx=(0, 6))
         self.assi_lbl.bind('<Button-1>', lambda e: self.einrichtung_erneut())
+        hinweis.anhaengen(self.assi_lbl, lambda: sprache.t('hinweis_assistent'))
         # „Was ist neu" — färbt sich grün, sobald es eine neuere Fassung gibt.
         self.info_lbl = tk.Label(bar, text='ⓘ', bg=BAR, fg=SUB,
                                  font=self.f_title, cursor='hand2')
         self.info_lbl.pack(side='right', padx=(0, 6))
         self.info_lbl.bind('<Button-1>', lambda e: self.versionen_zeigen())
+        hinweis.anhaengen(self.info_lbl, self._hinweis_info)
         self.as_lbl.bind('<Button-1>', lambda e: self._toggle_autostart())
+        hinweis.anhaengen(self.as_lbl, self._hinweis_autostart)
         self._show_autostart()
         for w in (bar, bar.winfo_children()[0]):
             w.bind('<Button-1>', self._drag_start)
@@ -1002,6 +1012,7 @@ class Overlay:
         grip.place(relx=1.0, rely=1.0, anchor='se')
         grip.bind('<B1-Motion>', self._resize)
         grip.bind('<ButtonRelease-1>', self._save_geo)    # Größe nach dem Skalieren merken
+        hinweis.anhaengen(grip, lambda: sprache.t('hinweis_groesse'))
 
         # Watcher starten
         self.q = queue.Queue()
@@ -1012,6 +1023,20 @@ class Overlay:
 
     # ---- Drag & Resize ----
     # ---- Schalter „mit dem Rechner starten" ----
+    # ---- Erklärtexte, die ihren Zustand kennen ----
+    def _hinweis_autostart(self):
+        """⏻ sagt an, was ein Klick bewirkt — nicht nur, was das Zeichen bedeutet.
+
+        Die Farbe zeigt den Zustand, aber nur wer das Programm kennt, weiß das.
+        Also ausschreiben: was gerade gilt und was der Klick daraus macht."""
+        return sprache.t('hinweis_autostart_an' if autostart.ist_an()
+                         else 'hinweis_autostart_aus')
+
+    def _hinweis_info(self):
+        """ⓘ heißt zweierlei — Versionsgeschichte, und bei Grün: „es gibt Neues"."""
+        grün = str(self.info_lbl.cget('fg')).lower() == ACCENT.lower()
+        return sprache.t('hinweis_neue_version' if grün else 'hinweis_versionen')
+
     def _show_autostart(self):
         an = autostart.ist_an()
         self.as_lbl.config(fg=ACCENT if an else SUB)
