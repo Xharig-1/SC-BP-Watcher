@@ -345,6 +345,7 @@ TEXTE = {
     'hf_gruppe_bp':      ('Baupläne', 'Blueprints'),
     'hf_gruppe_einst':   ('Einstellungen', 'Settings'),
     'hf_fortgeschritten':('Für Fortgeschrittene', 'For advanced users'),
+    'hf_gruppe_info':    ('Info', 'Info'),
     'hf_liste':          ('Bauplan-Liste', 'Blueprint list'),
     'hf_fortschritt':    ('Fortschritt', 'Progress'),
     'hf_allgemein':      ('Allgemein', 'General'),

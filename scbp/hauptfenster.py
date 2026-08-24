@@ -198,6 +198,10 @@ class Hauptfenster:
         self._reiter('ordner', '❒', t('hf_ordner'))
         self._reiter('spiel', '✎', t('hf_spiel'))
         self._reiter('bestand', '↕', t('hf_bestand'))
+
+        # „Was ist neu" und „Über" stellen nichts ein — sie erzählen etwas.
+        # Unter der Überschrift „Einstellungen" waren sie falsch einsortiert.
+        self._gruppe(t('hf_gruppe_info'))
         self._reiter('wasistneu', '✦', t('hf_wasistneu'))
         self._reiter('ueber', 'ⓘ', t('hf_ueber'))
 
