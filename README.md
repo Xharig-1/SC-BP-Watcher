@@ -1,277 +1,234 @@
 <div align="center">
 
-<img src="assets/icon.png" alt="SC BP Watcher Icon" width="128">
+<img src="assets/icon.png" alt="SC BP Watcher icon" width="128">
 
 # SC BP Watcher
 
-**Live-Overlay, das neue Star-Citizen-Baupläne anzeigt, sobald du sie freischaltest**
+**Live overlay that shows new Star Citizen blueprints the moment you unlock them**
 
-<sub>Windows · Linux · ohne Konto, ohne Cloud, ohne Installation</sub>
+<sub>Windows · Linux · no account, no cloud, no installation</sub>
 
 [![Version](https://img.shields.io/github/v/release/Xharig-1/SC-BP-Watcher?label=Version&color=5fa522)](../../releases)
-[![Lizenz](https://img.shields.io/badge/Lizenz-GPL--3.0-5fa522)](LICENSE)
+[![License](https://img.shields.io/badge/License-GPL--3.0-5fa522)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-0a4a7a?logo=python&logoColor=white)](https://www.python.org/)
-[![System](https://img.shields.io/badge/System-Windows%20%C2%B7%20Linux-0a4a7a)](#voraussetzungen)
-[![Star Citizen](https://img.shields.io/badge/Star%20Citizen-kompatibel-0a4a7a)](https://robertsspaceindustries.com/)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%C2%B7%20Linux-0a4a7a)](#requirements)
+[![Star Citizen](https://img.shields.io/badge/Star%20Citizen-compatible-0a4a7a)](https://robertsspaceindustries.com/)
 
-**Deutsch** · [English](README.en.md)
+**English** · [Deutsch](README.de.md)
 
 </div>
 
 ---
 
-Ein kleines, randloses Overlay, das beim Spielen **in Echtzeit** meldet, sobald ein neuer Bauplan (Blueprint) dazukommt — inklusive Name, Art und Uhrzeit. Ohne Account, ohne Cloud, ohne Installation. Läuft unter **Windows und Linux**.
+A small, borderless overlay that tells you **in real time** when a new blueprint drops — name, type and time. No account, no cloud, no installation. Runs on **Windows and Linux**.
 
-> ℹ️ **Der SC Deutsch Launcher ist nicht mehr Voraussetzung.** Die eigentliche Quelle ist die `Game.log` von Star Citizen — dort steht jeder freigeschaltete Bauplan im Klartext. Ist der Launcher da, wird er weiter genutzt: Er bestätigt die Funde und liefert deutsche Bezeichnungen. Ist er nicht da (unter Linux immer), läuft der Watcher trotzdem.
+> ℹ️ **The SC Deutsch Launcher is no longer required.** The actual source is Star Citizen's own `Game.log` — every unlocked blueprint is written there in plain text. If the launcher is installed it is still used: it confirms finds and supplies German names. If it isn't (always the case on Linux), the watcher works anyway.
 
-## Warum dieses Tool
+## Why this tool
 
-Bauplan-Listen gibt es mehrere. Vier Dinge machen den Unterschied im Alltag:
+There are several blueprint lists. Four things make the difference day to day:
 
-- **Du musst nicht aus dem Spiel.** Das Overlay liegt über Star Citizen. Kein zweites Fenster, kein Alt-Tab, kein Nachschlagen im Browser — der neue Bauplan steht einfach da, während du weiterspielst.
-- **Es weiß, was du schon hast.** Der Watcher führt deinen Bauplan-Bestand selbst und liest beim ersten Start die aufgehobenen Spielprotokolle nach — du bekommst deinen bisherigen Stand geschenkt, ohne etwas einzutippen. Bleibt trotzdem eine Lücke, sagt er das, statt eine unvollständige Liste als vollständig auszugeben.
-- **Es sagt dir, woher du das Fehlende bekommst.** Für **655 der 714** Baupläne steht dabei, welche Fraktion sie auslobt, in welchem Auftrag, ab welchem Rang und was er einbringt — sortiert nach dem leichtesten Weg. „Mir fehlt X" ist die halbe Information; die ganze ist „X gibt es bei Foxwell ab Veteran Contractor".
-- **Es meldet auch, was du noch gar nicht haben kannst.** Die Katalog-Wache erkennt, wenn CIG mit einem Patch etwas **neu craftbar** macht — unabhängig von deinem eigenen Freischalt-Stand (🔵). Wer auf ein bestimmtes Teil wartet, trägt es in die Beobachtungsliste ein und wird beim Auftauchen auffällig darauf gestoßen (⭐).
-- **Nichts verlässt deinen Rechner.** Kein Konto, keine Anmeldung, keine Cloud, keine Installation. Das Tool liest ausschließlich Dateien, die ohnehin auf deiner Platte liegen, und schreibt nichts zurück ins Spiel.
+- **You never leave the game.** The overlay sits on top of Star Citizen. No second window, no alt-tab, no browser — the new blueprint is simply there while you keep playing.
+- **It knows what you already have.** The watcher keeps your blueprint inventory itself and reads Star Citizen's stored session logs on first start — you get your existing collection for free, without typing anything. If a gap remains anyway, it says so instead of passing off an incomplete list as complete.
+- **It tells you where to get what's missing.** For **655 of the 714** blueprints it shows which faction offers it, in which contract, from which standing, and what it pays — sorted by the easiest route. "I'm missing X" is half the information; "X drops at Foxwell from Veteran Contractor" is all of it.
+- **Nothing leaves your machine.** No account, no sign-in, no cloud. It reads files that are already on your disk and writes nothing back into the game.
 
-Dazu: Klasse, Gütegrad und Größe stehen direkt in der Zeile (`M/A/1`), die Oberfläche gibt es auf Deutsch und Englisch, und das Ganze läuft mit reiner Python-Standardbibliothek — keine Zusatzpakete, keine Abhängigkeiten, die morgen zerbrechen.
+On top of that: class, grade and size are right there in the line (`M/A/1`), the interface speaks German and English, and the whole thing runs on the plain Python standard library — no extra packages, no dependencies that break tomorrow.
 
 ## Features
 
 | | |
 |---|---|
-| ⚡ **Sofort-Meldung** | Liest die Star-Citizen-`Game.log` mit → der Bauplan steht **in Sekunden** in der Liste |
-| 📋 **Bauplan-Liste** | Alle Baupläne durchsuchen, nach Art gruppiert, Filter *alle / habe ich / fehlt mir*, mit Fortschrittsanzeige. Häkchen per Klick |
-| 🧭 **Herkunft je Bauplan** | Ein Klick zeigt Fraktion, Auftrag, nötigen Rang und Belohnung — für **655 von 714** Bauplänen, sortiert nach dem leichtesten Weg |
-| 🧙 **Einrichtungsassistent** | Vier Schritte beim ersten Start — und **jederzeit wiederholbar**, ohne sich durch Menüs zu klicken |
-| 🔵 **Katalog-Wache** | Meldet auch, wenn im **Spiel** etwas neu craftbar wird — also wenn CIG einen Bauplan nachreicht, den es vorher gar nicht gab (nicht nur, was du selbst freischaltest) |
-| ⭐ **Merkliste** | Klick auf den Stern in der Liste — taucht der Bauplan auf, wird er auffällig gemeldet und **verschwindet danach von selbst** von der Merkliste |
-| 🏷️ **Size · Grade · Klasse** | Kompakt-Kürzel `Klasse/Grade/Size` je Bauplan, z. B. `M/A/1` (Military · Grade A · Size 1) |
-| 🔔 **Signalton** | Kurzer Ton bei jedem Neuzugang — du musst nicht aufs Fenster schauen |
-| 🧷 **Immer im Vordergrund** | Randloses, leicht durchscheinendes Overlay über dem Spiel |
-| 🖱️ **Verschiebbar & skalierbar** | An der Titelleiste ziehen, Größe am Griff ◢ unten rechts — **Position & Größe werden gemerkt** |
-| 🌐 **Deutsch und Englisch** | Oberfläche umschaltbar. Die Bauplan-Meldung im Log erkennt der Watcher **in jeder Spielsprache** — er findet die Formulierung selbst heraus |
-| 🆕 **Sagt Bescheid** | Merkt selbst, wenn es eine neue Fassung gibt — mit „Was ist neu" zum Nachlesen, auch für ältere Versionen |
-| 🔒 **Nur lesend** | Verändert am Spiel nichts — liest die `Game.log` und, falls vorhanden, die Launcher-Dateien |
-| 📒 **Eigener Bestand** | Führt selbst Buch, welche Baupläne du hast — auch ohne den SC Deutsch Launcher |
-| 🕓 **Nachlese** | Liest beim Start die aufgehobenen Logs früherer Sitzungen und holt nach, was ohne laufenden Watcher freigeschaltet wurde |
-| 🐧 **Windows und Linux** | Eine Fassung für beide Systeme, inklusive Autostart und Spracherkennung im Log |
+| ⚡ **Instant** | Reads Star Citizen's `Game.log` → the blueprint is in the list **within seconds** |
+| 📋 **Blueprint list** | Search everything, grouped by type, filters *all / owned / missing*, with progress. Tick items with one click |
+| 🧭 **Where it drops** | One click shows faction, contract, required standing and payout — for **655 of 714** blueprints, sorted by the easiest route |
+| 🧙 **Setup wizard** | Four steps on first start — and **repeatable any time**, no digging through menus |
+| 🔵 **Catalogue watch** | Also reports when something becomes **newly craftable in the game** — a blueprint CIG added that did not exist before |
+| ⭐ **Watchlist** | Click the star next to anything you are waiting for. When it shows up it is announced in gold — and **removed from the watchlist by itself** |
+| 🏷️ **Size · grade · class** | Compact tag `class/grade/size` per blueprint, e.g. `M/A/1` (Military · Grade A · Size 1) |
+| 🔔 **Sound** | A short beep on every find — you don't have to watch the window |
+| 🧷 **Always on top** | Borderless, slightly translucent overlay above the game |
+| 🖱️ **Movable & resizable** | Drag the title bar, resize at the ◢ handle — **position and size are remembered** |
+| 🌐 **German and English** | Interface switchable; the in-game blueprint message is recognised in both languages |
+| 🆕 **Tells you about updates** | Notices new versions by itself — with „What's new" to read up on, including older releases |
+| 🔒 **Read only** | Changes nothing in the game — reads `Game.log` and, if present, the launcher files |
+| 📒 **Own inventory** | Keeps track of which blueprints you have — without the SC Deutsch Launcher |
+| 🕓 **Catch-up** | Reads stored logs of earlier sessions on start and picks up what was unlocked while it wasn't running |
+| 🐧 **Windows and Linux** | One build for both systems, including autostart and log language detection |
 
-## Voraussetzungen
+## Requirements
 
-- **Windows oder Linux**
-- **Star Citizen** installiert — gesucht wird der Ordner mit der `Game.log` darin. Unter Linux werden die üblichen Wine-Präfixe abgesucht (lug-helper, Lutris, Bottles, Heroic). Wird nichts gefunden, fragt der Assistent danach.
+- **Windows or Linux**
+- **Star Citizen** installed — the folder containing `Game.log` is what's looked for. On Linux the usual Wine prefixes are searched (lug-helper, Lutris, Bottles, Heroic). If nothing is found, the wizard asks.
 
-Sonst nichts. Kein Python, kein Konto, keine Installation.
+Nothing else. No Python, no account, no installation.
 
-**Optional:** der **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** (nur Windows). Mit ihm werden Funde zusätzlich bestätigt und die Bezeichnungen kommen auf Deutsch.
+**Optional:** the **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** (Windows only). With it, finds are additionally confirmed and names come in German.
 
-## Start
+## Getting started
 
-1. Auf der **[Releases-Seite](../../releases)** die Datei für dein System herunterladen:
+1. Download the file for your system from the **[releases page](../../releases)**:
 
-   | System | Datei |
+   | System | File |
    |---|---|
    | Windows | `SC-BP-Watcher.exe` |
    | Linux | `SC-BP-Watcher-x86_64.AppImage` |
 
-2. Starten. Fertig.
+2. Run it. Done.
 
-Kein Python, keine Installation, keine Zusatzpakete — eine einzelne Datei, die man auch wieder löschen kann. Unter Linux muss sie einmalig ausführbar gemacht werden (Rechtsklick → Eigenschaften → *Als Programm ausführbar*, oder `chmod +x SC-BP-Watcher-x86_64.AppImage`).
+No Python, no installation, no extra packages — a single file you can also just delete again. On Linux, make it executable once (right click → Properties → *Executable as program*, or `chmod +x SC-BP-Watcher-x86_64.AppImage`).
 
-Beim ersten Start führt dich ein **Assistent** durch die Einrichtung: Sprache, Star Citizen finden, bisherige Baupläne holen. Das dauert eine Minute, danach steht dein Bestand.
+On first start a **wizard** walks you through setup: language, finding Star Citizen, collecting your existing blueprints. It takes a minute, and then your inventory is there.
 
-> ℹ️ Die aktuelle Fassung ist als **Vorabversion** (`-rc`) da: inhaltlich fertig und gründlich geprüft, aber noch nicht an einer echten Star-Citizen-Installation gelaufen. Wer sie ausprobiert, hilft genau dabei — Rückmeldungen gern als [Issue](../../issues).
+> ℹ️ The current build is available as a **pre-release** (`-rc`): feature-complete and thoroughly tested, but not yet run against a real Star Citizen installation. Trying it helps with exactly that — feedback welcome as an [issue](../../issues).
 
 <details>
-<summary>Aus dem Quellcode starten (für Neugierige und Entwickler)</summary>
+<summary>Running from source (for the curious and for developers)</summary>
 
-Dafür brauchst du [Python 3.8+](https://www.python.org/downloads/) — unter Windows beim Setup **„Add Python to PATH"** anhaken. Zusatzpakete sind keine nötig.
+You need [Python 3.8+](https://www.python.org/downloads/) — on Windows tick **„Add Python to PATH"** during setup. No extra packages required.
 
 ```bash
 git clone https://github.com/Xharig-1/SC-BP-Watcher.git
 ```
 
-| System | Starten mit |
+| System | Start with |
 |---|---|
 | Windows | `SC-BP-Watcher starten.bat` |
 | Linux | `SC-BP-Watcher starten.sh` |
 
-Unter Linux fehlt oft das Paket `tk` (die Fenster-Bibliothek von Python). Das Startskript sagt dir, wie es auf deiner Distribution heißt — bei Arch etwa `sudo pacman -S tk`, bei Debian und Ubuntu `sudo apt install python3-tk`.
+On Linux the `tk` package (Python's window library) is often missing. The start script tells you what it is called on your distribution — on Arch `sudo pacman -S tk`, on Debian and Ubuntu `sudo apt install python3-tk`.
 
-Die fertigen Dateien baut **GitHub** bei jedem Versions-Tag automatisch ([`.github/workflows/release.yml`](.github/workflows/release.yml)) — von Hand muss das niemand, auch der Autor nicht.
+The finished files are built by **GitHub** on every version tag ([`.github/workflows/release.yml`](.github/workflows/release.yml)) — nobody has to build by hand, not even the author.
 
 </details>
 
-## Bedienung
+## Using it
 
-Die schmale Leiste liegt über dem Spiel und meldet Neuzugänge. Alles Weitere steckt hinter den Zeichen in ihrer Titelleiste:
+The narrow bar sits above the game and reports new finds. Everything else is behind the symbols in its title bar:
 
-| Zeichen | Was es tut |
+| Symbol | What it does |
 |---|---|
-| **☰** | Bauplan-Liste öffnen — durchsuchen, filtern, abhaken, Herkunft nachschlagen |
-| **ⓘ** | „Was ist neu" — Versionsgeschichte; leuchtet grün, wenn es eine neue Fassung gibt |
-| **⟳** | Einrichtung noch einmal durchgehen |
-| **⏻** | Mit dem Rechner starten (an/aus) |
-| **🗑** | Liste leeren |
-| **✕** | Schließen |
+| **☰** | Open the blueprint list — search, filter, tick off, look up where things drop |
+| **ⓘ** | „What's new" — version history; turns green when a new build is available |
+| **⟳** | Run the setup wizard again |
+| **⏻** | Start with the computer (on/off) |
+| **🗑** | Clear the list |
+| **✕** | Close |
 
-| Aktion | Wie |
+| Action | How |
 |---|---|
-| Fenster verschieben | Oben an der Leiste ziehen |
-| Größe ändern | Griff **◢** unten rechts ziehen |
+| Move the window | Drag the bar at the top |
+| Resize | Drag the **◢** handle at the bottom right |
 
-## Wie es funktioniert
+## How it works
 
-Was die Farbpunkte in der Liste bedeuten:
+What the coloured dots mean:
 
 | | |
 |---|---|
-| 🟢 | Bauplan freigeschaltet — steht in deinem Bestand |
-| 🟡 | aus der Spiel-Log gelesen, wartet auf Bestätigung durch den SC Deutsch Launcher (nur mit ihm) |
-| 🔵 | im **Spiel** neu craftbar geworden — noch nichts, was *du* hast |
-| ⭐ | etwas von deiner Merkliste ist aufgetaucht |
-| ℹ | ein Hinweis, keine Freischaltung (z. B. eine Lücke im Bestand) |
+| 🟢 | Blueprint unlocked — it's in your inventory |
+| 🟡 | Read from the game log, waiting for confirmation by the SC Deutsch Launcher (only with it) |
+| 🔵 | Became newly craftable **in the game** — not something *you* have yet |
+| ⭐ | Something from your watchlist has appeared |
+| ℹ | A note, not an unlock (e.g. a gap in your inventory) |
 
+1. **On start** the tool goes through the stored logs of earlier sessions (`logbackups/`) and quietly adds everything it finds to your inventory — nothing is lost if you played without the watcher running. Those blueprints are **not** reported as new. If the stored logs don't reach far enough back, the watcher says so as an ℹ line instead of passing off an incomplete list as complete.
+2. **In the background** the **`Game.log`** is read — every 3 seconds, adjustable. *(The wording of the blueprint message depends on your game language — the watcher works it out by itself, see below.)* When the game writes `Added notification "Blueprint Received: <name>: "` on unlock, the blueprint is in the list **immediately** (🟢) and in your inventory.
+   - **If the SC Deutsch Launcher is installed as well**, reporting is two-stage: first 🟡 *provisional* from the log, then 🟢 *confirmed* once the launcher catches up and supplies its data. Without the launcher there is no intermediate stage — the log message is the answer.
+3. Every new line is inserted at the top (name · type · `M/A/1` · time) and a short sound plays.
+   - **Once a minute** the craftable catalogue is checked. If it grew, CIG made something **newly craftable** with a patch → 🔵 line. This has nothing to do with your own unlocks.
+4. **Type, size, grade and class** come from scmdb.net's crafting data and from the bundled game data. If the SC Deutsch Launcher is present, its maintained catalogue takes precedence (German names). Above all of it are your own corrections from `bp-overrides.json`.
+5. **Your inventory** grows along and stays in `bestand.json` — with a note where each blueprint came from (log, catch-up, launcher).
 
-1. **Beim Start** sieht das Tool die aufgehobenen Logs vergangener Sitzungen durch (`logbackups/`) und übernimmt alles Gefundene still in deinen Bestand — wer ohne laufenden Watcher gespielt hat, verliert nichts. Diese Baupläne werden **nicht** als neu gemeldet. Reichen die Sicherungen nicht weit genug zurück, sagt der Watcher das als ℹ-Zeile, statt eine unvollständige Liste als vollständig auszugeben.
-2. **Im Hintergrund** (eigener Thread) wird die **`Game.log`** gelesen — alle 3 Sekunden, einstellbar. Schreibt das Spiel beim Freischalten `Added notification "Bauplan erhalten: <Name>: "`, steht der Bauplan **sofort** in der Liste (🟢) und im Bestand.
-   - **Ist zusätzlich der SC Deutsch Launcher installiert**, wird zweistufig gemeldet: erst 🟡 *vorläufig* aus dem Log, dann 🟢 *bestätigt*, sobald der Launcher nachzieht und seine Angaben liefert. Ohne Launcher gibt es diese Zwischenstufe nicht — dann ist die Log-Meldung die Auskunft.
-3. Jede neue Zeile wird oben eingefügt (Name · Art · `M/A/1` · Uhrzeit) und ein kurzer Ton gespielt.
-   - **Einmal pro Minute** wird der Craftbar-Katalog geprüft. Ist er gewachsen, hat CIG mit einem Patch etwas **neu craftbar** gemacht → 🔵-Zeile. Das hat nichts mit deinem Freischalt-Stand zu tun. Der Vergleichsstand liegt als `catalog-seen.json` im eigenen Ordner und überlebt Neustarts; beim allerersten Start wird nur die Basis gesetzt.
-4. **Art, Größe, Gütegrad und Klasse** kommen aus den Craftdaten von scmdb.net und aus den mitgelieferten Spieldaten. Ist der SC Deutsch Launcher da, hat sein gepflegter Katalog Vorrang (deutsche Bezeichnungen). Über allem stehen deine eigenen Korrekturen aus `bp-overrides.json`.
-5. **Dein Bestand** wächst dabei mit und bleibt in `bestand.json` erhalten — mit Vermerk, woher jeder Bauplan stammt (Log, Nachlese, Launcher). Das ist die Liste „welche habe ich", die bisher allein vom Launcher kam.
+> **Why read the log directly?** The SC Deutsch Launcher reads the same file but only exports its own every few minutes. Measured on 2026-07-30: unlock in game **21:23:49** → launcher export **21:26:24** = **2.5 minutes** of delay. Reading it yourself gets you there in seconds — with nobody in between.
 
-> **Warum direkt aus der Log?** Der SC Deutsch Launcher liest dieselbe Datei, exportiert seine eigene aber nur alle paar Minuten. Gemessen am 30.07.2026: Freischaltung im Spiel **21:23:49** → Launcher-Export **21:26:24** = **2,5 Minuten** Verzug. Wer selbst mitliest, ist in Sekunden dran — und braucht dafür niemanden dazwischen.
-
-Überwachte Dateien:
+Files watched:
 
 ```text
-…\StarCitizen\LIVE\Game.log                 (Spiel — die eigentliche Quelle)
-…\StarCitizen\LIVE\logbackups\             (frühere Sitzungen, beim Start nachgelesen)
-…\sc-deutsch-launcher\blueprints\           (optional: bestätigt und liefert deutsche Namen)
+…\StarCitizen\LIVE\Game.log                 (the game — the actual source)
+…\StarCitizen\LIVE\logbackups\              (earlier sessions, read on start)
+…\sc-deutsch-launcher\blueprints\           (optional: confirms, supplies German names)
 ```
 
-Eigene Dateien (Bestand, Einstellungen, Zwischenspeicher) liegen hier:
+Its own files (inventory, settings, cache) live here:
 
-| System | Ordner |
+| System | Folder |
 |---|---|
 | Windows | `%APPDATA%\sc-bp-watcher\` |
 | Linux | `~/.config/sc-bp-watcher/` |
 
-Beides lässt sich mit der Umgebungsvariablen `SC_BP_HOME` verlegen.
+Both can be moved with the `SC_BP_HOME` environment variable.
 
-### Spielsprache
+### Game language
 
-Die Bauplan-Meldung im Log ist übersetzt — und der Watcher **findet selbst heraus**, wie sie in deinem Client lautet. Er kennt über 700 Bauplan-Namen; steht in einer Logzeile einer davon, ist der Text davor die gesuchte Formulierung. Das klappt auch bei Sprachen, die niemand vorgesehen hat: Französisch und Spanisch genauso wie Englisch.
+The blueprint message in the log is translated, and the watcher **works out by itself** how it reads in your client. It knows over 700 blueprint names; if a log line contains one of them, the text in front of it is the phrase it was looking for. That works for languages nobody planned for — French and Spanish just as well as English.
 
-Deutsch und Englisch sind zusätzlich fest hinterlegt, und wer möchte, trägt eigene in `phrasen.json` im eigenen Ordner ein:
+German and English are additionally built in, and you can add your own in `phrasen.json` in its own folder:
 
 ```json
 { "phrasen": ["Blueprint Received"] }
 ```
 
-### Eigene Pfade eintragen
+### Setting your own paths
 
-Liegt Star Citizen (oder der SC Deutsch Launcher) nicht an einer der üblichen Stellen, trägst du den Ordner selbst ein — in `einstellungen.json` im Ordner oben:
+If Star Citizen (or the SC Deutsch Launcher) isn't in one of the usual places, you enter the folder yourself — in `einstellungen.json` in the folder above:
 
 ```json
 {
-  "spiel_ordner": "D:\\Spiele\\StarCitizen\\LIVE",
+  "spiel_ordner": "D:\\Games\\StarCitizen\\LIVE",
   "launcher_ordner": ""
 }
 ```
 
-In `spiel_ordner` gehört der Ordner, in dem die `Game.log` liegt (meist `LIVE`). Ein leeres Feld heißt „bitte suchen". Nach dem Ändern den Watcher neu starten.
+`spiel_ordner` is the folder containing `Game.log` (usually `LIVE`). An empty field means „search automatically". Restart the watcher after changing it.
 
-> Findet der Watcher das Spiel nicht, legt er diese Datei beim Start **von selbst** an und sagt dir, wo sie liegt — du musst sie nicht von Hand erzeugen. In der Datei stehen bei jedem Feld die Orte, an denen gesucht wurde; dieselben nennt auch das Fenster. So siehst du, wie so ein Pfad auf deinem System aussieht, statt ihn raten zu müssen.
+> If the watcher can't find the game, it creates this file **by itself** on start and tells you where it is — you don't have to create it by hand. The file lists the places that were searched next to each field, as does the window. So you can see what such a path looks like on your system instead of guessing.
 
-### Auf bestimmte Gegenstände warten
+### Waiting for specific items
 
-Wartest du auf einen ganz bestimmten Bauplan, klick in der Liste (**☰**) auf den **Stern** neben seinem Namen. Über das Suchfeld findest du ihn in Sekunden, und der Filter **⭐ beobachtet** zeigt dir, worauf du gerade wartest.
+Waiting for one particular blueprint? Click the **star** next to its name in the list (**☰**). The search box finds it in seconds, and the **⭐ watching** filter shows what you're waiting for.
 
-Taucht ein beobachteter Bauplan auf, meldet ihn der Watcher auffällig in Gold mit ⭐ und eigenem Signalton — und **nimmt ihn danach von selbst von der Merkliste**. Was du hast, muss dort nicht mehr stehen.
+When a watched blueprint appears, the watcher announces it in gold with ⭐ and its own sound — and then **removes it from the watchlist by itself**. What you have doesn't need to be on there.
 
-<details>
-<summary>Für Fortgeschrittene: Muster statt Namen</summary>
+## Settings
 
-Manchmal wartet man auf etwas, dessen genauen Namen es noch gar nicht gibt — „irgendein Helm für den schweren Anzug". Dafür kennt die `watchlist.json` im eigenen Ordner neben den angeklickten Namen auch **Muster**:
+In `einstellungen.json` in its own folder — a text file, not code. Restart the watcher after changing it. The file is created on first start and explains every field itself.
 
-```json
-{
-  "namen": ["Attrition-5 Repeater"],
-  "eintraege": [
-    { "titel": "Helm für den schweren Anzug", "muster": ["manticore helmet"] },
-    { "titel": "Kühler, egal welcher", "muster": ["cooler"] }
-  ]
-}
-```
-
-Ein Muster-Eintrag hat einen frei gewählten **Titel** (der steht später in der Meldung) und beliebig viele **Muster**, die kleingeschrieben als Teilstück gegen jeden neuen Katalog-Eintrag geprüft werden — `cooler` trifft also jeden Kühler, `manticore helmet` nur diesen einen.
-
-Von Hand nötig ist das nicht: Für einen bestimmten Bauplan genügt der Stern in der Liste.
-
-</details>
-
-## Einstellungen
-
-In `einstellungen.json` im eigenen Ordner — eine Textdatei, kein Code. Nach dem Ändern den Watcher neu starten. Die Datei wird beim ersten Start angelegt und erklärt jedes Feld selbst.
-
-| Feld | Bedeutung | Standard |
+| Field | Meaning | Default |
 |---|---|---|
-| `sprache` | Oberflächensprache: `auto`, `de` oder `en` | `auto` |
-| `spiel_ordner` | Wo Star Citizen liegt (leer = automatisch suchen) | leer |
-| `launcher_ordner` | Wo der SC Deutsch Launcher liegt (leer = automatisch suchen) | leer |
-| `pruefintervall_sekunden` | Wie oft die `Game.log` angesehen wird — erlaubt 1 bis 60 | `3` |
-| `signalton` | Kurzer Ton bei einem Fund | `true` |
+| `sprache` | Interface language: `auto`, `de` or `en` | `auto` |
+| `spiel_ordner` | Where Star Citizen is (empty = search automatically) | empty |
+| `launcher_ordner` | Where the SC Deutsch Launcher is (empty = search automatically) | empty |
+| `pruefintervall_sekunden` | How often `Game.log` is checked — 1 to 60 allowed | `3` |
+| `signalton` | Short sound on a find | `true` |
 
-> Position und Größe des Fensters merkt sich der Watcher beim Verschieben und Beenden (`watcher.json` im selben Ordner) — zieh es einfach dorthin, wo du es haben willst. Eine feste Startlage gibt das Programm bewusst **nicht** vor: Wo ein Overlay gut sitzt, hängt am Monitoraufbau. Zum Zurücksetzen die Datei löschen.
+**Environment variables** — for a one-off case, without changing anything permanently:
 
-> **Eigene Korrekturen:** Stimmt bei einem Bauplan die Angabe zu Klasse, Größe oder Gütegrad nicht, kannst du sie in `bp-overrides.json` im eigenen Ordner überschreiben — sie hat Vorrang vor allen anderen Quellen. Liegt die Datei woanders, gib den Pfad über die Umgebungsvariable `SC_BP_OVERRIDES` an.
-
-**Umgebungsvariablen** — für einen einmaligen Sonderfall, ohne etwas dauerhaft zu ändern:
-
-| Variable | Wirkung |
+| Variable | Effect |
 |---|---|
-| `SC_BP_HOME` | anderer Ordner für Bestand und Einstellungen |
-| `SC_INSTALL_DIR` | anderer Spielordner |
-| `SC_BP_LAUNCHER` | anderer Launcher-Ordner |
-| `SC_BP_NO_NET=1` | **keine** Netzabfragen — weder Craftdaten noch Versionsprüfung |
-| `SC_BP_SPRACHE` | Sprache für diesen Start (`de` / `en`) |
+| `SC_BP_HOME` | different folder for inventory and settings |
+| `SC_INSTALL_DIR` | different game folder |
+| `SC_BP_LAUNCHER` | different launcher folder |
+| `SC_BP_NO_NET=1` | **no** network access — neither crafting data nor update check |
+| `SC_BP_SPRACHE` | language for this run (`de` / `en`) |
 
-<details>
-<summary>Für Bastler: Werte im Quellcode</summary>
+## Passing it on
 
-Oben in `sc_bp_watcher.py` stehen weitere Konstanten — sie sind Vorgabewerte und werden von der `einstellungen.json` gestochen, wo es dort ein Feld gibt.
+> 🔒 **It's yours.** No account, no sign-in, no cloud. The tool reads files that are on your disk anyway and changes nothing about the game installation. It only reaches out to the network for two things: the value and origin data from scmdb.net (once per game version) and the question of whether there is a new build. Both can be switched off with `SC_BP_NO_NET=1`.
 
-| Konstante | Bedeutung | Standard |
-|---|---|---|
-| `CAT_POLL` | Prüf-Intervall für den Craftbar-Katalog (ändert sich nur bei Patches) | `60` |
-| `MAX_ROWS` | Höchstzahl Zeilen in der Melde-Liste (ältere fallen unten raus) | `200` |
-| `CLASS_LETTER` | Kürzel je Klasse (M/S/I/C/K) | Military/Stealth/Industrial/Civilian/Competition |
-| `BG / FG / ACCENT / …` | Farben des Overlays | dunkel + Xharig-Grün |
+Just pass on the file from the [releases page](../../releases) — the recipient needs neither Python nor a launcher, only Star Citizen.
 
-Die Formulierungen, an denen ein Bauplan im Log erkannt wird, stehen nicht mehr im Code, sondern in `scbp/sprache.py` beziehungsweise in deiner eigenen `phrasen.json`.
+> ℹ️ Windows SmartScreen reports „unknown publisher" for unsigned files → **More info → Run anyway**.
 
-</details>
+## Thanks & credits
 
-## Weitergeben
+This tool grew up with the **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)**: it was the only data source in the beginning, and without it this project would not exist. If it is installed, it is still used — it confirms finds and supplies German names. **Many thanks** to the team behind it! 🙏
 
-> 🔒 **Es gehört dir.** Kein Konto, keine Anmeldung, keine Cloud. Das Werkzeug liest Dateien, die ohnehin auf deiner Platte liegen, und verändert an der Spielinstallation nichts. Ins Netz greift es nur für zwei Dinge: die Werte- und Herkunftsdaten von scmdb.net (einmal je Spielversion) und die Frage, ob es eine neue Fassung gibt. Beides lässt sich mit `SC_BP_NO_NET=1` abschalten.
+The values for type, size, grade and class as well as the origin of each blueprint come from the **[Star Citizen Mission DataBase (scmdb.net)](https://scmdb.net)** — a hobby project that prepares the game data and makes it freely available. **Thank you** for that! 🙏
 
-Gib einfach die Datei von der [Releases-Seite](../../releases) weiter — der Empfänger braucht weder Python noch einen Launcher, nur Star Citizen.
+> The watcher **does not ship this data**; it fetches it on your machine directly from scmdb.net, the way a browser would. scmdb is licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/); a bundled copy would be redistribution and would conflict with that licence as well as with this project's GPL. Fetching is sparing: only when a **new game version** is out.
 
-> ℹ️ Windows SmartScreen meldet bei unsignierten Dateien „unbekannter Herausgeber" → **Weitere Informationen → Trotzdem ausführen**.
-
-## Danksagung & Credits
-
-Dieses Werkzeug ist mit dem **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** groß geworden: Er war anfangs die einzige Datenquelle, und ohne ihn gäbe es dieses Projekt nicht. Ist er installiert, wird er weiter genutzt — er bestätigt die Funde und liefert deutsche Bezeichnungen. **Vielen Dank** an das Team dahinter! 🙏
-
-Die Werte zu Art, Größe, Gütegrad und Klasse sowie die Herkunft je Bauplan stammen aus der **[Star Citizen Mission DataBase (scmdb.net)](https://scmdb.net)** — ein Hobbyprojekt, das die Spieldaten aufbereitet und frei zugänglich macht. **Herzlichen Dank** dafür! 🙏
-
-> Der Watcher **liefert diese Daten nicht mit**, sondern lädt sie auf deinem Rechner direkt bei scmdb.net — so wie es ein Browser täte. scmdb steht unter [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/); eine mitgelieferte Kopie wäre eine Weitergabe und würde sowohl dieser Lizenz als auch der GPL dieses Projekts widersprechen. Abgerufen wird sparsam: nur, wenn eine **neue Spielversion** vorliegt.
-
-SC BP Watcher ist ein eigenständiges, inoffizielles Zusatz-Tool und steht in **keiner** offiziellen Verbindung zum SC Deutsch Launcher oder zu Cloud Imperium Games. Alle Marken- und Projektnamen gehören ihren jeweiligen Eigentümern.
+SC BP Watcher is an independent, unofficial companion tool with **no** official connection to the SC Deutsch Launcher or Cloud Imperium Games. All brand and project names belong to their respective owners.
 
 ## Author
 
@@ -280,11 +237,11 @@ SC BP Watcher ist ein eigenständiges, inoffizielles Zusatz-Tool und steht in **
 
 If you fork this project, please keep the credit in the footer or mention the original source.
 
-## Was noch kommt
+## What's next
 
-Es wird weitergebaut — was genau, steht in keiner Liste. Was eine Fassung gebracht hat, liest du im [`CHANGELOG.md`](CHANGELOG.md) oder direkt im Werkzeug unter **ⓘ „Was ist neu"**.
+Work continues — what exactly is not on a list. What a build brought you can read in [`CHANGELOG.md`](CHANGELOG.md) or right in the tool under **ⓘ „What's new"**.
 
-Wünsche und Fehlermeldungen gern als [Issue](../../issues) — Vorschläge landen eher im nächsten Bau als Gedankenlesen.
+Wishes and bug reports are welcome as an [issue](../../issues) — suggestions make it into the next build more reliably than mind reading.
 
 ## Star Citizen Fan Content
 
@@ -292,16 +249,6 @@ Wünsche und Fehlermeldungen gern als [Issue](../../issues) — Vorschläge land
 > companies. All content on this site not authored by its host or users are property of their
 > respective owners.
 
-SC BP Watcher ist ein inoffizielles, nicht-kommerzielles Fan-Projekt für die Star-Citizen-Gemeinschaft.
-Star Citizen®, Roberts Space Industries® und Cloud Imperium® sind eingetragene Marken der
-Cloud Imperium Rights LLC. Alle übrigen Star-Citizen-Inhalte, Grafiken, Namen, Logos und Marken
-gehören ihren jeweiligen Eigentümern. © Cloud Imperium Rights LLC und Cloud Imperium Rights Ltd.
+## License
 
-Offizielle Seite: **[robertsspaceindustries.com](https://robertsspaceindustries.com)**
-
-## Lizenz
-
-**GNU General Public License v3.0** — Volltext in [LICENSE](LICENSE).
-
-Kurz: Du darfst das Programm nutzen, verändern und weitergeben. Wer es weitergibt — verändert
-oder nicht —, muss den Quellcode unter derselben Lizenz mitliefern. Es gibt keine Garantie.
+[GNU GPL v3.0](LICENSE) — free to use and modify; if you distribute it, the source has to come along under the same licence.

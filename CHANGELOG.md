@@ -22,7 +22,7 @@ selbst geführt, und zu den meisten Bauplänen steht dabei, woher man sie bekomm
   - Verlangt werden **zwei** verschiedene Treffer für dieselbe Formulierung. Bei einem könnte es Zufall sein (ein Bauplan-Name taucht auch in anderen Meldungen auf).
   - Gefundenes landet in `phrasen.json` — derselben Datei, die man auch von Hand pflegen kann. Keine zweite, versteckte Wahrheit.
   - Damit ist das Werkzeug nicht mehr auf die Sprachen angewiesen, die jemand vorher eingetragen hat.
-- **Englische Projektseite** (`README.en.md`), verlinkt über einen Umschalter oben in beiden Fassungen. Das Werkzeug spricht Englisch, die Beschreibung tat es nicht — wer aus der Linux-Ecke kommt, wo die meisten den englischen Client fahren, stand vor einer rein deutschen Seite.
+- **Projektseite auf Englisch und Deutsch**, mit Umschalter oben in beiden Fassungen. **Englisch ist die Hauptseite** (`README.md`), Deutsch liegt daneben (`README.de.md`) — auf GitHub ist das Publikum international, und wer über die Star-Citizen-Foren kommt, sollte nicht erst einen Umschalter suchen müssen. Deutschsprachige Spieler kommen mit Englisch zurecht; umgekehrt gilt das seltener.
 - **Merkliste per Klick** (`scbp/merkliste.py`). In der Bauplan-Liste macht ein Klick auf den Stern aus jedem Eintrag einen Wunsch — taucht er auf, meldet ihn der Watcher auffällig in Gold. Dafür muss niemand mehr eine `watchlist.json` von Hand anlegen.
   - Eigener Filter **⭐ beobachtet** zeigt, worauf man gerade wartet.
   - **Erfüllte Wünsche verschwinden von selbst.** Landet ein beobachteter Bauplan im Bestand, sagt der Watcher einmal Bescheid und trägt ihn aus — eine Liste voller längst erledigter Wünsche wäre keine Merkliste, sondern ein Archiv.
@@ -110,6 +110,7 @@ what testers help with. Feedback welcome as an [issue](../../issues).*
 - **German and English**, switchable. The tool also **works out the in-game message wording by itself** from your logs, so it is not limited to languages someone entered in advance.
 - **Update notice with a version history** you can read inside the tool, older releases included.
 - **Ready-made files for both systems**, built by GitHub on every version tag — nobody builds anything by hand.
+- **Project page in English and German** — English is the default page, German is one click away at the top.
 - Check interval and sound are configurable; own paths can be entered when the game is somewhere unusual.
 
 ## v1.5.0 - 2026-08-11
