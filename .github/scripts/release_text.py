@@ -31,10 +31,17 @@ def zweisprachig(text):
     Abschnitt `### English`. Auf der Release-Seite lesen aber überwiegend
     Menschen, die kein Deutsch können — also steht dort Englisch zuerst. Ohne
     englischen Abschnitt bleibt alles, wie es ist."""
-    teile = re.split(r'^### English\s*$', text, maxsplit=1, flags=re.M)
-    if len(teile) != 2:
+    m = re.search(r'^### English\s*$', text, flags=re.M)
+    if not m:
         return text
-    deutsch, englisch = teile[0].strip(), teile[1].strip()
+    rest = text[m.end():]
+    # Der englische Block endet bei der nächsten deutschen Abschnittsüberschrift.
+    # Ohne diese Grenze rutschen „### Hinzugefügt" & Co. mit in den englischen
+    # Teil, und der Text kippt mittendrin die Sprache — genau das ist einmal
+    # veröffentlicht worden.
+    ende = re.search(r'^### (?!English)', rest, flags=re.M)
+    englisch = (rest[:ende.start()] if ende else rest).strip()
+    deutsch = (text[:m.start()] + (rest[ende.start():] if ende else '')).strip()
     return ('%s\n\n---\n\n<details>\n<summary><b>Deutsch</b></summary>\n\n%s\n\n</details>'
             % (englisch, deutsch))
 
