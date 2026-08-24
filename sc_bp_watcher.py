@@ -1070,11 +1070,29 @@ class Overlay:
         self.root.mainloop()
 
 
-def _startfehler(text):
-    """Letzte Rettung: Wenn gar nichts gefunden wird, wenigstens sagen warum."""
+def _startfehler(text, orte=(), fuss=''):
+    """Wenn gar nichts gefunden wird: sagen warum — und wo gesucht wurde.
+
+    Die durchsuchten Orte stehen ausgegraut darunter. Ohne sie weiß niemand,
+    wonach er suchen soll, und der Pfad, den er selbst eintragen soll, wäre
+    ohne Vorbild schwer zu erraten."""
     r = tk.Tk()
     r.title('SC BP Watcher')
-    tk.Label(r, text=text, justify='left', padx=20, pady=20).pack()
+    r.configure(bg=BG)
+    rahmen = tk.Frame(r, bg=BG, padx=22, pady=18)
+    rahmen.pack(fill='both', expand=True)
+    tk.Label(rahmen, text=text, justify='left', bg=BG, fg=FG,
+             anchor='w').pack(fill='x', anchor='w')
+    if orte:
+        tk.Label(rahmen, text='\nGesucht wurde hier:', justify='left', bg=BG,
+                 fg=SUB, anchor='w').pack(fill='x', anchor='w')
+        for ort in orte:
+            tk.Label(rahmen, text='   ' + ort, justify='left', bg=BG, fg=SUB,
+                     anchor='w', font=('Consolas' if pfade.WINDOWS else 'monospace',
+                                       9)).pack(fill='x', anchor='w')
+    if fuss:
+        tk.Label(rahmen, text='\n' + fuss, justify='left', bg=BG, fg=FG,
+                 anchor='w').pack(fill='x', anchor='w')
     r.mainloop()
 
 
@@ -1087,13 +1105,12 @@ if __name__ == '__main__':
         datei = pfade.vorlage_anlegen()
         _startfehler(
             'Star Citizen wurde nicht gefunden.\n\n'
-            'Gesucht wurde nach dem Ordner mit der Game.log darin, an den\n'
-            'üblichen Stellen%s.\n\n'
-            'Liegt das Spiel woanders, trag den Ordner hier ein:\n\n'
-            '    %s\n\n'
-            'In das Feld "spiel_ordner" gehört der Ordner, in dem die Game.log\n'
-            'liegt (meist "LIVE"). Danach den Watcher neu starten.'
-            % ('' if pfade.WINDOWS else ' (auch in den gängigen Wine-Präfixen)',
-               datei))
+            'Gesucht wird der Ordner, in dem die Game.log liegt — meist "LIVE".',
+            orte=pfade.gesuchte_spielorte(),
+            fuss='Liegt das Spiel woanders, trag den Ordner in dieser Datei ein\n'
+                 'und starte den Watcher neu:\n\n'
+                 '    %s\n\n'
+                 'Das Feld heißt "spiel_ordner". Die Datei nennt die Orte oben\n'
+                 'noch einmal als Vorlage.' % datei)
     else:
         Overlay().run()

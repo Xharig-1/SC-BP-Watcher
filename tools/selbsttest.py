@@ -170,6 +170,11 @@ def main():
         d['spiel_ordner'] = anders
         json.dump(d, open(datei, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
         pruefe(pf.spiel_ordner() == anders, 'selbst eingetragener Pfad wird genommen')
+        orte = pf.gesuchte_spielorte()
+        pruefe(bool(orte), 'Suchorte werden genannt, auch wenn nichts gefunden wurde')
+        d2 = json.load(open(datei, encoding='utf-8'))
+        pruefe('_spiel_ordner_gesucht_wird_hier' in d2,
+               'die Vorlage nennt die Suchorte beim Feld')
 
         print('\n6. Fensterlage von einem fremden Rechner')
         kaputt = w.geometrie_pruefen('440x1098+999999+-999999', _wurzel())

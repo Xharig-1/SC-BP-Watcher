@@ -96,17 +96,77 @@ def app_datei(name):
 # ------------------------------------------------------- Selbst gesetzte Pfade
 EINSTELLUNGEN = 'einstellungen.json'
 
-VORLAGE = {
-    '_hinweis': 'Hier koennen eigene Pfade eingetragen werden, wenn Star Citizen '
-                'oder der SC Deutsch Launcher nicht an den ueblichen Stellen '
-                'liegen. Leeres Feld = automatisch suchen. Nach dem Aendern den '
-                'Watcher neu starten.',
-    '_beispiel_windows': 'D:\\Spiele\\StarCitizen\\LIVE',
-    '_beispiel_linux': '/mnt/spiele/star-citizen/drive_c/Program Files/'
-                       'Roberts Space Industries/StarCitizen/LIVE',
-    'spiel_ordner': '',
-    'launcher_ordner': '',
-}
+def gesuchte_spielorte(hoechstens=6):
+    """Die Orte, an denen tatsächlich nach Star Citizen gesucht wird.
+
+    Wird dem Nutzer angezeigt, wenn nichts gefunden wurde. Ohne diese Angabe
+    weiß er nicht, wonach er suchen soll — und ein Pfad, den er selbst eintragen
+    soll, ist ohne Vorbild schwer zu erraten. Vorhandene Ordner kommen zuerst:
+    Wer seine Installation dort halb wiederfindet, sieht sofort, wie der Rest
+    aussehen muss."""
+    kandidaten = []
+    for wurzel in _spiel_wurzeln():
+        p = os.path.join(wurzel, SC_UNTERPFAD, KANAELE[0])
+        if p not in kandidaten:
+            kandidaten.append(p)
+    # Wenn gar nichts zusammenkommt, sind auf diesem Rechner weder Wine-Präfixe
+    # noch Programmordner da — und ausgerechnet dann braucht der Nutzer das
+    # Vorbild am dringendsten. Also die typischen Orte zeigen, auch wenn es sie
+    # hier nicht gibt.
+    if not kandidaten:
+        heim = os.path.expanduser('~')
+        if WINDOWS:
+            kandidaten = [os.path.join('C:\\Program Files', SC_UNTERPFAD,
+                                       KANAELE[0])]
+        else:
+            for praefix in (os.path.join(heim, 'Games', 'star-citizen'),
+                            os.path.join(heim, '.wine')):
+                kandidaten.append(os.path.join(praefix, 'drive_c', 'Program Files',
+                                               SC_UNTERPFAD, KANAELE[0]))
+            kandidaten.append(os.path.join(
+                heim, '.local', 'share', 'lutris', 'prefixes', '<Name>', 'drive_c',
+                'Program Files', SC_UNTERPFAD, KANAELE[0]))
+    # existierende zuerst, Reihenfolge sonst beibehalten
+    da = [p for p in kandidaten if os.path.isdir(os.path.dirname(p))]
+    rest = [p for p in kandidaten if p not in da]
+    return (da + rest)[:hoechstens]
+
+
+def gesuchte_launcherorte(hoechstens=3):
+    """Dasselbe für den Blueprint-Ordner des SC Deutsch Launchers."""
+    if WINDOWS:
+        return [os.path.join(os.environ.get('APPDATA', '%APPDATA%'),
+                             'sc-deutsch-launcher', 'blueprints')]
+    orte = []
+    for praefix in _wine_praefixe()[:hoechstens]:
+        orte.append(os.path.join(praefix, 'drive_c', 'users', '<Benutzer>',
+                                 'AppData', 'Roaming', 'sc-deutsch-launcher',
+                                 'blueprints'))
+    return orte[:hoechstens]
+
+
+def _vorlage():
+    """Der Inhalt der Einstellungsdatei — mit den echten Suchorten dieses Rechners.
+
+    Die Hinweiszeilen stehen bewusst **direkt unter** dem jeweiligen Feld: In
+    einer JSON-Datei gibt es keine ausgegraute Beschriftung, das Nächstliegende
+    ist ein Feld daneben, das man beim Ausfüllen zwangsläufig liest. Sie werden
+    nicht ausgewertet — was drinsteht, ändert nichts."""
+    return {
+        '_hinweis': 'Eigene Pfade eintragen, wenn Star Citizen oder der '
+                    'SC Deutsch Launcher nicht an den ueblichen Stellen liegen. '
+                    'Leeres Feld = automatisch suchen. Nach dem Aendern den '
+                    'Watcher neu starten. Zeilen mit _ sind nur Erklaerung.',
+        'spiel_ordner': '',
+        '_spiel_ordner_gemeint_ist': 'Der Ordner, in dem die Game.log liegt — '
+                                     'meist "LIVE".',
+        '_spiel_ordner_gesucht_wird_hier': gesuchte_spielorte(),
+        'launcher_ordner': '',
+        '_launcher_ordner_gemeint_ist': 'Optional. Der Ordner "blueprints" des '
+                                        'SC Deutsch Launchers. Ohne ihn laeuft '
+                                        'der Watcher trotzdem.',
+        '_launcher_ordner_gesucht_wird_hier': gesuchte_launcherorte(),
+    }
 
 
 def einstellungen():
@@ -136,7 +196,7 @@ def vorlage_anlegen():
         return ziel
     try:
         with open(ziel, 'w', encoding='utf-8') as f:
-            json.dump(VORLAGE, f, ensure_ascii=False, indent=2)
+            json.dump(_vorlage(), f, ensure_ascii=False, indent=2)
     except OSError:
         pass
     return ziel
