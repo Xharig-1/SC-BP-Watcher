@@ -6,9 +6,12 @@
 
 **Live-Overlay, das neue Star-Citizen-Baupläne anzeigt, sobald du sie freischaltest**
 
-[![Version](https://img.shields.io/badge/Version-1.5.0-5fa522)](CHANGELOG.md)
+<sub>Windows · Linux · ohne Konto, ohne Cloud, ohne Installation</sub>
+
+[![Version](https://img.shields.io/github/v/release/Xharig-1/SC-BP-Watcher?label=Version&color=5fa522)](../../releases)
 [![Lizenz](https://img.shields.io/badge/Lizenz-GPL--3.0-5fa522)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-0a4a7a?logo=python&logoColor=white)](https://www.python.org/)
+[![System](https://img.shields.io/badge/System-Windows%20%C2%B7%20Linux-0a4a7a)](#voraussetzungen)
 [![Star Citizen](https://img.shields.io/badge/Star%20Citizen-kompatibel-0a4a7a)](https://robertsspaceindustries.com/)
 
 </div>
@@ -24,26 +27,29 @@ Ein kleines, randloses Overlay, das beim Spielen **in Echtzeit** meldet, sobald 
 Bauplan-Listen gibt es mehrere. Vier Dinge machen den Unterschied im Alltag:
 
 - **Du musst nicht aus dem Spiel.** Das Overlay liegt über Star Citizen. Kein zweites Fenster, kein Alt-Tab, kein Nachschlagen im Browser — der neue Bauplan steht einfach da, während du weiterspielst.
-- **Sofort *und* verlässlich.** Zwei Quellen laufen parallel: die Spiel-Log meldet den Fund in **Sekunden** (🟡), die Launcher-Datei bestätigt ihn kurz darauf mit den vollständigen Daten (🟢). Du wartest weder auf den nächsten Export, noch musst du dich auf eine Momentaufnahme verlassen.
+- **Es weiß, was du schon hast.** Der Watcher führt deinen Bauplan-Bestand selbst und liest beim ersten Start die aufgehobenen Spielprotokolle nach — du bekommst deinen bisherigen Stand geschenkt, ohne etwas einzutippen. Bleibt trotzdem eine Lücke, sagt er das, statt eine unvollständige Liste als vollständig auszugeben.
+- **Es sagt dir, woher du das Fehlende bekommst.** Zu den meisten Bauplänen steht dabei, welche Fraktion sie auslobt, in welchem Auftrag, ab welchem Rang und was er einbringt. „Mir fehlt X" ist die halbe Information — die ganze ist „X gibt es bei Y ab Rang Z".
 - **Es meldet auch, was du noch gar nicht haben kannst.** Die Katalog-Wache erkennt, wenn CIG mit einem Patch etwas **neu craftbar** macht — unabhängig von deinem eigenen Freischalt-Stand (🔵). Wer auf ein bestimmtes Teil wartet, trägt es in die Beobachtungsliste ein und wird beim Auftauchen auffällig darauf gestoßen (⭐).
 - **Nichts verlässt deinen Rechner.** Kein Konto, keine Anmeldung, keine Cloud, keine Installation. Das Tool liest ausschließlich Dateien, die ohnehin auf deiner Platte liegen, und schreibt nichts zurück ins Spiel.
 
-Dazu: Klasse, Gütegrad und Größe stehen direkt in der Zeile (`M/A/1`), und das Ganze läuft mit reiner Python-Standardbibliothek — keine Zusatzpakete, keine Abhängigkeiten, die morgen zerbrechen.
+Dazu: Klasse, Gütegrad und Größe stehen direkt in der Zeile (`M/A/1`), die Oberfläche gibt es auf Deutsch und Englisch, und das Ganze läuft mit reiner Python-Standardbibliothek — keine Zusatzpakete, keine Abhängigkeiten, die morgen zerbrechen.
 
 ## Features
 
 | | |
 |---|---|
-| ⚡ **Sofort-Meldung** | Liest die Star-Citizen-`Game.log` mit → der Bauplan steht **in Sekunden** in der Liste, statt erst nach dem nächsten Launcher-Export (das dauert mehrere Minuten) |
-| 🟡 → 🟢 **Zwei Stufen** | Frisch aus der Log gelesen = 🟡 *vorläufig*; sobald der Launcher nachzieht = 🟢 bestätigt und mit dessen Daten aufgefrischt |
-| 🟢 **Live-Erkennung** | Prüft alle 3 Sekunden die Launcher-Datei; neue Baupläne erscheinen oben in der Liste |
+| ⚡ **Sofort-Meldung** | Liest die Star-Citizen-`Game.log` mit → der Bauplan steht **in Sekunden** in der Liste |
+| 📋 **Bauplan-Liste** | Alle Baupläne durchsuchen, nach Art gruppiert, Filter *alle / habe ich / fehlt mir*, mit Fortschrittsanzeige. Häkchen per Klick |
+| 🧭 **Herkunft je Bauplan** | Ein Klick zeigt Fraktion, Auftrag, nötigen Rang und Belohnung — sortiert nach dem leichtesten Weg |
+| 🧙 **Einrichtungsassistent** | Vier Schritte beim ersten Start — und **jederzeit wiederholbar**, ohne sich durch Menüs zu klicken |
 | 🔵 **Katalog-Wache** | Meldet auch, wenn im **Spiel** etwas neu craftbar wird — also wenn CIG einen Bauplan nachreicht, den es vorher gar nicht gab (nicht nur, was du selbst freischaltest) |
 | ⭐ **Beobachtungsliste** | Gegenstände, auf die du wartest, werden bei ihrem Auftauchen auffällig in Gold gemeldet — optionale `watchlist.json` |
 | 🏷️ **Size · Grade · Klasse** | Kompakt-Kürzel `Klasse/Grade/Size` je Bauplan, z. B. `M/A/1` (Military · Grade A · Size 1) |
 | 🔔 **Signalton** | Kurzer Ton bei jedem Neuzugang — du musst nicht aufs Fenster schauen |
 | 🧷 **Immer im Vordergrund** | Randloses, leicht durchscheinendes Overlay über dem Spiel |
 | 🖱️ **Verschiebbar & skalierbar** | An der Titelleiste ziehen, Größe am Griff ◢ unten rechts — **Position & Größe werden gemerkt** |
-| 🌐 **Zweisprachig** | Zeigt die Art genau so an, wie der Launcher sie liefert (deutsch oder englisch) |
+| 🌐 **Deutsch und Englisch** | Oberfläche umschaltbar; die Bauplan-Meldung im Log wird in beiden Spielsprachen erkannt |
+| 🆕 **Sagt Bescheid** | Merkt selbst, wenn es eine neue Fassung gibt — mit „Was ist neu" zum Nachlesen, auch für ältere Versionen |
 | 🔒 **Nur lesend** | Verändert am Spiel nichts — liest die `Game.log` und, falls vorhanden, die Launcher-Dateien |
 | 📒 **Eigener Bestand** | Führt selbst Buch, welche Baupläne du hast — auch ohne den SC Deutsch Launcher |
 | 🕓 **Nachlese** | Liest beim Start die aufgehobenen Logs früherer Sitzungen und holt nach, was ohne laufenden Watcher freigeschaltet wurde |
@@ -59,31 +65,48 @@ Dazu: Klasse, Gütegrad und Größe stehen direkt in der Zeile (`M/A/1`), und da
 
 ## Start
 
-**Variante A — fertige `.exe` herunterladen (empfohlen, kein Python nötig):**
+> ⚠️ **Stand der Dinge:** Der Quellcode ist offen und aktuell, die fertigen Pakete auf der Releases-Seite sind es **noch nicht** — die dort liegende `.exe` ist älter und kennt weder Linux noch die Bauplan-Liste. Bis die nächste Fassung fertig ist, startest du am besten aus dem Quellcode (unten). Es sind keine Zusatzpakete nötig.
 
-1. Auf der **[Releases-Seite](../../releases)** die neueste **`SC-BP-Watcher.exe`** herunterladen.
-2. Doppelklick — fertig. Eine einzelne Datei, keine Installation, kein Python.
+**Aus dem Quellcode (funktioniert überall):**
 
-**Variante B — mit Python (zum Testen / Anpassen):**
+1. [Python 3.8+](https://www.python.org/downloads/) installieren, falls noch nicht vorhanden. Unter Windows beim Setup **„Add Python to PATH"** anhaken.
+2. Dieses Repository herunterladen (grüner Knopf **Code → Download ZIP**) und entpacken — oder klonen:
 
-1. Python 3.8+ installieren (falls nötig): https://www.python.org/downloads/ — beim Setup **„Add Python to PATH"** anhaken.
-2. Doppelklick auf **`SC-BP-Watcher starten.bat`**.
+   ```bash
+   git clone https://github.com/Xharig-1/SC-BP-Watcher.git
+   ```
+3. Starten:
 
-Es sind **keine** Zusatzpakete nötig — das Tool nutzt nur die Python-Standardbibliothek (`tkinter`).
+   | System | Wie |
+   |---|---|
+   | Windows | Doppelklick auf **`SC-BP-Watcher starten.bat`** |
+   | Linux | **`SC-BP-Watcher starten.sh`** ausführen |
 
-**Variante C — `.exe` selbst bauen:**
+   Unter Linux fehlt oft das Paket `tk` (die Fenster-Bibliothek von Python). Das Startskript sagt dir, wie es auf deiner Distribution heißt — bei Arch etwa `sudo pacman -S tk`, bei Debian und Ubuntu `sudo apt install python3-tk`.
 
-1. Doppelklick auf **`EXE bauen.bat`** — installiert einmalig PyInstaller und baut die EXE.
-2. Ergebnis: **`dist\SC-BP-Watcher.exe`** — eine einzelne Datei.
+Beim ersten Start führt dich ein **Assistent** durch die Einrichtung: Sprache, Star Citizen finden, bisherige Baupläne holen. Das dauert eine Minute, und danach steht dein Bestand.
+
+**Fertige Datei (sobald verfügbar):** auf der **[Releases-Seite](../../releases)** herunterladen und starten. Kein Python nötig, keine Installation — eine Datei, die man auch wieder löschen kann.
+
+**Selbst bauen (Windows):** Doppelklick auf **`EXE bauen.bat`** — installiert einmalig PyInstaller und legt `dist\SC-BP-Watcher.exe` an.
 
 ## Bedienung
+
+Die schmale Leiste liegt über dem Spiel und meldet Neuzugänge. Alles Weitere steckt hinter den Zeichen in ihrer Titelleiste:
+
+| Zeichen | Was es tut |
+|---|---|
+| **☰** | Bauplan-Liste öffnen — durchsuchen, filtern, abhaken, Herkunft nachschlagen |
+| **ⓘ** | „Was ist neu" — Versionsgeschichte; leuchtet grün, wenn es eine neue Fassung gibt |
+| **⟳** | Einrichtung noch einmal durchgehen |
+| **⏻** | Mit dem Rechner starten (an/aus) |
+| **🗑** | Liste leeren |
+| **✕** | Schließen |
 
 | Aktion | Wie |
 |---|---|
 | Fenster verschieben | Oben an der Leiste ziehen |
 | Größe ändern | Griff **◢** unten rechts ziehen |
-| Liste leeren | **🗑** in der Titelleiste |
-| Schließen | **✕** in der Titelleiste |
 
 ## Wie es funktioniert
 
@@ -92,11 +115,11 @@ Es sind **keine** Zusatzpakete nötig — das Tool nutzt nur die Python-Standard
    - **`Game.log`** — schreibt das Spiel beim Freischalten `Added notification "Bauplan erhalten: <Name>: "`, erscheint der Bauplan **sofort** als 🟡 *vorläufig*.
    - **`sc_bp_erledigt.json`** — *sofern der SC Deutsch Launcher vorhanden ist.* Taucht der Name dort auf, wird die Zeile auf 🟢 bestätigt. Baupläne, die nur dort stehen, landen direkt als 🟢 in der Liste. Ohne Launcher entfällt dieser Schritt und die Meldung aus dem Log ist endgültig.
 3. Jede neue Zeile wird oben eingefügt (Name · Art · `M/A/1` · Uhrzeit) und ein kurzer Ton gespielt.
-   - **Einmal pro Minute** kommt eine dritte Prüfung dazu: Ist `bp_item_types.json` gewachsen, ist im Spiel etwas **neu craftbar** geworden → 🔵-Zeile. Das hat nichts mit deinem Freischalt-Stand zu tun; solche Zeilen werden deshalb nie auf 🟢 bestätigt. Der Vergleichsstand liegt in `%APPDATA%\sc-bp-watcher\catalog-seen.json` und überlebt Neustarts; beim allerersten Start wird nur die Basis gesetzt.
+   - **Einmal pro Minute** kommt eine dritte Prüfung dazu: Ist `bp_item_types.json` gewachsen, ist im Spiel etwas **neu craftbar** geworden → 🔵-Zeile. Das hat nichts mit deinem Freischalt-Stand zu tun; solche Zeilen werden deshalb nie auf 🟢 bestätigt. Der Vergleichsstand liegt als `catalog-seen.json` im eigenen Ordner und überlebt Neustarts; beim allerersten Start wird nur die Basis gesetzt.
 4. Die **Art** kommt aus `bp_item_types.json` (oder von scmdb, wenn kein Launcher da ist); **Size/Grade/Klasse** aus dem Launcher-Katalog (`catalog\components.ini` + `items_raw.ini`), bei Bedarf überschrieben durch die eigene `bp-overrides.json`.
 5. **Dein Bestand** wächst dabei mit und bleibt in `bestand.json` erhalten — mit Vermerk, woher jeder Bauplan stammt (Log, Nachlese, Launcher). Das ist die Liste „welche habe ich", die bisher allein vom Launcher kam.
 
-> **Warum zwei Quellen?** Der Launcher liest dieselbe `Game.log`, exportiert seine Datei aber nur alle paar Minuten. Gemessen am 30.07.2026: Freischaltung im Spiel **21:23:49** → Launcher-Export **21:26:24** = **2,5 Minuten** Verzug. Die Log-Mitlesung schließt diese Lücke, die gepflegten Werte kommen weiter vom Launcher.
+> **Warum direkt aus der Log?** Der SC Deutsch Launcher liest dieselbe Datei, exportiert seine eigene aber nur alle paar Minuten. Gemessen am 30.07.2026: Freischaltung im Spiel **21:23:49** → Launcher-Export **21:26:24** = **2,5 Minuten** Verzug. Wer selbst mitliest, ist in Sekunden dran — und braucht dafür niemanden dazwischen.
 
 Überwachte Dateien:
 
@@ -133,7 +156,7 @@ In `spiel_ordner` gehört der Ordner, in dem die `Game.log` liegt (meist `LIVE`)
 ### Auf bestimmte Gegenstände warten
 
 Wartest du auf einen ganz bestimmten Bauplan, den es noch gar nicht gibt, leg dir
-`%APPDATA%\sc-bp-watcher\watchlist.json` an:
+`watchlist.json` im eigenen Ordner an:
 
 ```json
 {
@@ -156,7 +179,7 @@ Ohne die Datei meldet der Watcher einfach jeden Zuwachs — sie ist rein optiona
 > dem man den gewünschten Gegenstand sucht und per Klick auf die Merkliste setzt — die Liste
 > aller craftbaren Dinge kennt das Tool ohnehin schon.
 
-Der Launcher-Pfad wird über `%APPDATA%` gefunden, der Spiel-Pfad über den `Installfolder` aus `scdl-settings.json` (ersatzweise `scan-state.json` oder der Standard-Installationspfad). Ein Spiel-Neustart (neue, kürzere Log) wird erkannt.
+Der Spielordner wird an den üblichen Stellen gesucht — unter Windows in den Programme-Ordnern, unter Linux in den gängigen Wine-Präfixen (lug-helper, Lutris, Bottles, Heroic). Wird nichts gefunden, fragt der Assistent danach. Ein Spiel-Neustart (neue, kürzere Log) wird erkannt, und der Lesestand übersteht auch einen Neustart des Watchers.
 
 > ℹ️ **Spielsprache:** Die Meldung im Log ist übersetzt. Der Watcher sucht nach deutschen und englischen Formulierungen; liegt eine entpackte `global.ini` deiner Installation vor, nimmt er den Wortlaut exakt daraus. Fehlt deine Formulierung, trag sie in `phrasen.json` im eigenen Ordner ein: `{"phrasen": ["Blueprint Received"]}`.
 
@@ -178,28 +201,28 @@ Oben in `sc_bp_watcher.py` anpassbar:
 >
 > Im selben Ordner liegen `catalog-seen.json` (Vergleichsstand der Katalog-Wache) und optional `watchlist.json`. Löschst du `catalog-seen.json`, wird beim nächsten Start nur die Basis neu gesetzt — es kommt also keine Meldungsflut.
 >
-> **Eigene Korrekturen (ab v1.4.0):** Stimmt bei einem Bauplan die Angabe zu Klasse, Größe oder Gütegrad nicht, kannst du sie in `%APPDATA%\sc-bp-watcher\bp-overrides.json` überschreiben — sie hat Vorrang vor dem Launcher-Katalog. Liegt die Datei woanders, gib den Pfad über die Umgebungsvariable `SC_BP_OVERRIDES` an. Ohne die Datei ändert sich nichts.
+> **Eigene Korrekturen:** Stimmt bei einem Bauplan die Angabe zu Klasse, Größe oder Gütegrad nicht, kannst du sie in `bp-overrides.json` im eigenen Ordner überschreiben — sie hat Vorrang vor dem Launcher-Katalog. Liegt die Datei woanders, gib den Pfad über die Umgebungsvariable `SC_BP_OVERRIDES` an. Ohne die Datei ändert sich nichts.
 
-> **Werte aus dem Netz (ab v1.5.0):** Kennt der Launcher-Katalog einen Bauplan nicht, holt der Watcher Art, Größe, Gütegrad und Klasse von [scmdb.net](https://scmdb.net). Nachgeladen wird nur bei einer **neuen Spielversion**; der Stand liegt in `%APPDATA%\sc-bp-watcher\scmdb-items.json`. Ohne Internet gilt der letzte Stand — der Watcher läuft normal weiter. Wer gar keine Netzabfrage möchte, setzt die Umgebungsvariable `SC_BP_NO_NET=1`.
+> **Werte aus dem Netz:** Kennt der Launcher-Katalog einen Bauplan nicht, holt der Watcher Art, Größe, Gütegrad und Klasse von [scmdb.net](https://scmdb.net). Nachgeladen wird nur bei einer **neuen Spielversion**; der Stand liegt im eigenen Ordner (siehe oben). Ohne Internet gilt der letzte Stand — der Watcher läuft normal weiter. Wer gar keine Netzabfrage möchte, setzt die Umgebungsvariable `SC_BP_NO_NET=1`.
 >
 > Die Rangfolge ist bewusst so: **eigene Korrekturen → Launcher-Katalog → scmdb**. scmdb füllt nur Lücken und überschreibt nie — ein Abgleich gegen 56 Meldungen aus der Spiel-Log ergab 55 exakte Treffer und eine Abweichung.
 
-> **Mit dem Rechner starten (ab v1.5.0):** Der Schalter `⏻` in der Titelleiste schaltet den Autostart ein und aus — grün heißt an, grau aus. Er ist standardmäßig **aus**; der Watcher trägt sich nie von selbst ein. Unter Windows ist es ein Eintrag unter `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, unter Linux die Datei `~/.config/autostart/sc-bp-watcher.desktop` — beides kannst du auch von Hand wieder löschen.
+> **Mit dem Rechner starten:** Der Schalter `⏻` in der Titelleiste schaltet den Autostart ein und aus — grün heißt an, grau aus. Er ist standardmäßig **aus**; der Watcher trägt sich nie von selbst ein. Unter Windows ist es ein Eintrag unter `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, unter Linux die Datei `~/.config/autostart/sc-bp-watcher.desktop` — beides kannst du auch von Hand wieder löschen.
 
 ## Weitergeben
 
-> 🔒 **Offline & privat** — das Tool arbeitet komplett ohne Internet. Es liest nur die lokale Bauplan-Liste des Launchers, verändert nichts und sendet nichts.
+> 🔒 **Es gehört dir.** Kein Konto, keine Anmeldung, keine Cloud. Das Werkzeug liest Dateien, die ohnehin auf deiner Platte liegen, und verändert an der Spielinstallation nichts. Ins Netz greift es nur für zwei Dinge: die Werte- und Herkunftsdaten von scmdb.net (einmal je Spielversion) und die Frage, ob es eine neue Fassung gibt. Beides lässt sich mit `SC_BP_NO_NET=1` abschalten.
 
-- **Als `.exe` (am einfachsten):** die fertige `SC-BP-Watcher.exe` von der **[Releases-Seite](../../releases)** weitergeben — Empfänger braucht **nur** den SC Deutsch Launcher, kein Python.
-- **Als Skript:** `sc_bp_watcher.py` + die `.bat`-Dateien weitergeben (Empfänger braucht Python).
+- **Als fertige Datei:** von der [Releases-Seite](../../releases) weitergeben — der Empfänger braucht kein Python und keinen Launcher.
+- **Als Quellcode:** den ganzen Ordner weitergeben (Empfänger braucht Python).
 
-> ℹ️ Windows SmartScreen meldet bei selbstgebauten, unsignierten `.exe` evtl. „unbekannter Herausgeber" → **Weitere Informationen → Trotzdem ausführen**. Wer das vermeiden will, gibt das `.py`-Skript weiter.
+> ℹ️ Windows SmartScreen meldet bei unsignierten Dateien „unbekannter Herausgeber" → **Weitere Informationen → Trotzdem ausführen**.
 
 ## Danksagung & Credits
 
-Dieses Tool nutzt die Bauplan-Daten, die der **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** ausliest und bereitstellt (`sc_bp_erledigt.json`). Ohne dieses Projekt gäbe es keine Datenquelle — **vielen Dank** an das Team hinter dem SC Deutsch Launcher für die Arbeit! 🙏
+Dieses Werkzeug ist mit dem **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** groß geworden: Er war anfangs die einzige Datenquelle, und ohne ihn gäbe es dieses Projekt nicht. Ist er installiert, wird er weiter genutzt — er bestätigt die Funde und liefert deutsche Bezeichnungen. **Vielen Dank** an das Team dahinter! 🙏
 
-Die Werte zu Art, Größe, Gütegrad und Klasse stammen ab v1.5.0 aus der **[Star Citizen Mission DataBase (scmdb.net)](https://scmdb.net)** — ein Hobbyprojekt, das die Spieldaten aufbereitet und frei zugänglich macht. **Herzlichen Dank** dafür! 🙏
+Die Werte zu Art, Größe, Gütegrad und Klasse sowie die Herkunft je Bauplan stammen aus der **[Star Citizen Mission DataBase (scmdb.net)](https://scmdb.net)** — ein Hobbyprojekt, das die Spieldaten aufbereitet und frei zugänglich macht. **Herzlichen Dank** dafür! 🙏
 
 > Der Watcher **liefert diese Daten nicht mit**, sondern lädt sie auf deinem Rechner direkt bei scmdb.net — so wie es ein Browser täte. scmdb steht unter [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/); eine mitgelieferte Kopie wäre eine Weitergabe und würde sowohl dieser Lizenz als auch der GPL dieses Projekts widersprechen. Abgerufen wird sparsam: nur, wenn eine **neue Spielversion** vorliegt.
 
@@ -214,16 +237,9 @@ If you fork this project, please keep the credit in the footer or mention the or
 
 ## Was noch kommt
 
-Ideen für die nächsten Fassungen — **ohne Zeitplan**, in loser Reihenfolge:
+Es wird weitergebaut — was genau, steht in keiner Liste. Was eine Fassung gebracht hat, liest du im [`CHANGELOG.md`](CHANGELOG.md) oder direkt im Werkzeug unter **ⓘ „Was ist neu"**.
 
-- **Einstellungsfenster** statt Werte im Code: Prüfintervall, Signalton, Pfade, Fensterlage
-- **Beobachtungsliste im Fenster pflegen**, statt die `watchlist.json` von Hand zu bearbeiten
-- **Export des eigenen Bauplan-Bestands** als Datei — zum Hochladen bei Diensten, die Baupläne verwalten (scmdb.net, KRT Profit Basetool)
-- **Autostart und Ablage-Symbol** (Tray), damit das Overlay nicht dauernd im Weg ist
-- **Englische Oberfläche** und englischsprachige Anleitung
-- **Weniger Abhängigkeit vom SC Deutsch Launcher** — Typ, Größe, Gütegrad und Klasse direkt aus den Spieldateien lesen
-
-Ausführlich mit Begründungen: [`ROADMAP.md`](ROADMAP.md). Wünsche und Fehlermeldungen gern als [Issue](../../issues).
+Wünsche und Fehlermeldungen gern als [Issue](../../issues) — Vorschläge landen eher im nächsten Bau als Gedankenlesen.
 
 ## Star Citizen Fan Content
 

@@ -41,8 +41,9 @@ from tkinter import font as tkfont
 
 # Eigene Bausteine. Sie kapseln alles, was sich zwischen Windows und Linux
 # unterscheidet — der Rest dieser Datei muss das Betriebssystem nicht kennen.
-from scbp import (assistent, autostart, bestand as bestand_datei,
-                  logquelle, pfade, phrasen)
+from scbp import sprache
+from scbp import (aktualisierung, assistent, autostart,
+                  bestand as bestand_datei, logquelle, pfade, phrasen)
 
 try:
     import winsound                      # nur Windows; unter Linux übernimmt tkinter
@@ -843,6 +844,11 @@ class Overlay:
                                  font=self.f_title, cursor='hand2')
         self.assi_lbl.pack(side='right', padx=(0, 6))
         self.assi_lbl.bind('<Button-1>', lambda e: self.einrichtung_erneut())
+        # „Was ist neu" — färbt sich grün, sobald es eine neuere Fassung gibt.
+        self.info_lbl = tk.Label(bar, text='ⓘ', bg=BAR, fg=SUB,
+                                 font=self.f_title, cursor='hand2')
+        self.info_lbl.pack(side='right', padx=(0, 6))
+        self.info_lbl.bind('<Button-1>', lambda e: self.versionen_zeigen())
         self.as_lbl.bind('<Button-1>', lambda e: self._toggle_autostart())
         self._show_autostart()
         for w in (bar, bar.winfo_children()[0]):
@@ -887,6 +893,7 @@ class Overlay:
         self.watcher = Watcher(self.q)
         self.watcher.start()
         self.root.after(200, self._poll_queue)
+        self.root.after(2000, self._nach_version_sehen)   # nicht beim Start drängeln
 
     # ---- Drag & Resize ----
     # ---- Schalter „mit dem Rechner starten" ----
@@ -1067,6 +1074,44 @@ class Overlay:
         except queue.Empty:
             pass
         self.root.after(300, self._poll_queue)
+
+    def versionen_zeigen(self):
+        """Das Fenster „Was ist neu" öffnen."""
+        from scbp.versionsfenster import Versionsfenster
+        vorhanden = getattr(self, '_versionen', None)
+        if vorhanden is not None:
+            try:
+                vorhanden.root.lift()
+                return
+            except Exception:
+                pass
+        self._versionen = Versionsfenster(
+            self.root, eigene_version=__version__,
+            beim_schliessen=lambda: setattr(self, '_versionen', None))
+
+    def _nach_version_sehen(self):
+        """Im Hintergrund nachsehen, ob es etwas Neues gibt.
+
+        Im Nebenläufer, damit der Start nicht auf das Netz wartet — und still,
+        wenn nichts da ist. Ein Werkzeug, das beim Spielen im Vordergrund liegt,
+        soll nicht ungefragt Fenster aufreißen; der Knopf färbt sich, mehr nicht."""
+        def arbeit():
+            try:
+                neu = aktualisierung.nachsehen(__version__)
+            except Exception:
+                return
+            if neu:
+                self.root.after(0, lambda: self._version_melden(neu))
+        threading.Thread(target=arbeit, daemon=True).start()
+
+    def _version_melden(self, neu):
+        try:
+            self.info_lbl.config(fg=ACCENT)
+            self.q.put(('hinweis', '%s — %s'
+                        % (sprache.t('neue_version_da', neu['version']),
+                           sprache.t('was_ist_neu'))))
+        except Exception:
+            pass
 
     def einrichtung_erneut(self):
         """Den Assistenten noch einmal durchlaufen lassen."""

@@ -19,3 +19,6 @@ _avatar_src.png
 
 # Interne Planung und Notizen gehören nicht ins Repo
 docs/
+
+# Entwuerfe fuer kommende Fassungen — bleiben lokal, damit sie nichts vorwegnehmen
+tools/entwurf_*.py

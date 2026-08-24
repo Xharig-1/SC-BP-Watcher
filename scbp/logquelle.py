@@ -24,7 +24,7 @@ Zwei Aufgaben:
   **Mitlesen.** Wie bisher: ab dem Startzeitpunkt die laufende Game.log
   verfolgen und neue Baupläne sofort melden.
 
-  **Nachlesen.** Neu ab Phase 1: Beim Start werden die aufgehobenen Logs
+  **Nachlesen.** Beim Start werden die aufgehobenen Logs
   vergangener Sitzungen (`logbackups/`) durchgesehen. Wer ohne laufenden
   Watcher gespielt hat, verliert dadurch nichts mehr. Was schon gelesen wurde,
   merkt sich der Lesestand — beim nächsten Start wird nicht alles erneut

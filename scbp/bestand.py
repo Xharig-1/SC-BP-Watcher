@@ -144,7 +144,7 @@ def hinzufuegen(daten, name, quelle='log', zeit=None):
 
 
 def entfernen(daten, name):
-    """Häkchen wieder wegnehmen (Phase 2, Verwaltungsfenster)."""
+    """Häkchen wieder wegnehmen (Verwaltungsfenster)."""
     return daten['bauplaene'].pop(norm(name), None) is not None
 
 

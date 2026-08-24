@@ -33,7 +33,7 @@ Drei Sorten Pfade:
      Linux:    im Wine-Präfix, z. B. ~/Games/star-citizen/drive_c/Program Files/…
 
   3. **SC Deutsch Launcher** (optional, nur wenn vorhanden)
-     Er ist ab Phase 1 kein Muss mehr — wenn er da ist, wird er weiter genutzt,
+     Er ist kein Muss — wenn er da ist, wird er weiter genutzt,
      weil er den vollständigen Bestand und einen gepflegten Katalog liefert.
 
 **Wer die Sachen woanders liegen hat, trägt die Pfade selbst ein.** Dafür gibt es

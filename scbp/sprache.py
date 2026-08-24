@@ -23,8 +23,8 @@ Warum von Anfang an und nicht später: Unter Linux fahren die meisten
 Star-Citizen-Spieler den englischen Client, und Windows-Spieler ohne den
 SC Deutsch Launcher ebenso. Eine nur deutsche Oberfläche würde einen großen
 Teil derer aussperren, für die dieses Werkzeug überhaupt gebaut wird. Und je
-später man anfängt, desto mehr Textstellen sind es — beim Bauen von Phase 2
-waren es rund 40, das ist ein Nachmittag; bei dreimal so vielen eine Plage.
+später man anfängt, desto mehr Textstellen sind es — hier waren es rund 40,
+das ist ein Nachmittag; bei dreimal so vielen wäre es eine Plage.
 
 **Der Spieler kann umschalten.** Standard ist `auto` (nach Systemsprache), aber
 in `einstellungen.json` steht das Feld `sprache` — `de`, `en` oder `auto`.
@@ -193,6 +193,33 @@ TEXTE = {
                           'du musst dich durch keine Menüs klicken.',
                           'You can run this setup again at any time — no need to '
                           'dig through menus.'),
+
+    # -- Neue Fassungen --
+    'was_ist_neu':       ('Was ist neu', 'What\'s new'),
+    'neue_version_da':   ('Version %s ist da', 'Version %s is available'),
+    'du_hast':           ('Du hast %s', 'You have %s'),
+    'jetzt_holen':       ('Jetzt holen', 'Get it now'),
+    'spaeter':           ('Später', 'Later'),
+    'wird_geladen':      ('Wird geladen … %d %%', 'Downloading … %d %%'),
+    'neustart_noetig':   ('Fertig. Beim nächsten Start läuft die neue Fassung.',
+                          'Done. The new version runs on next start.'),
+    'jetzt_neustarten':  ('Jetzt neu starten', 'Restart now'),
+    'update_fehler':     ('Das hat nicht geklappt: %s',
+                          'That did not work: %s'),
+    'selbst_holen':      ('Bitte hol die neue Fassung selbst von der '
+                          'Releases-Seite.',
+                          'Please download the new version yourself from the '
+                          'releases page.'),
+    'update_quellcode':  ('Du startest aus dem Quellcode — hier ist „git pull" '
+                          'der richtige Weg, sonst gingen deine Änderungen '
+                          'verloren.',
+                          'You are running from source — use "git pull" here, '
+                          'otherwise your changes would be overwritten.'),
+    'keine_versionen':   ('Noch keine Versionsangaben vorhanden.',
+                          'No version information yet.'),
+    'aktuelle_fassung':  ('Du hast die neueste Fassung.',
+                          'You have the latest version.'),
+    'suche_neue':        ('Nach neuer Fassung sehen', 'Check for updates'),
 
     # -- Statuszeilen und Meldungen --
     'ueberwache':        ('%d Baupläne · Log %s · %s · geprüft %s',
