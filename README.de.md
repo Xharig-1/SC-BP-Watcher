@@ -24,6 +24,19 @@ Ein kleines, randloses Overlay, das beim Spielen **in Echtzeit** meldet, sobald 
 
 > ℹ️ **Der SC Deutsch Launcher ist nicht mehr Voraussetzung.** Die eigentliche Quelle ist die `Game.log` von Star Citizen — dort steht jeder freigeschaltete Bauplan im Klartext. Ist der Launcher da, wird er weiter genutzt: Er bestätigt die Funde und liefert deutsche Bezeichnungen. Ist er nicht da (unter Linux immer), läuft der Watcher trotzdem.
 
+<table>
+<tr>
+<td width="45%" valign="top" align="center">
+<img src="assets/screenshot-overlay.png" alt="Das Overlay beim Spielen" width="100%"><br>
+<sub>Das Overlay — schmal, immer im Vordergrund, Durchsichtigkeit einstellbar</sub>
+</td>
+<td width="55%" valign="top" align="center">
+<img src="assets/screenshot-liste.png" alt="Die Bauplan-Liste" width="100%"><br>
+<sub>Die Bauplan-Liste — Filter, Bereiche und wo man den Auftrag annimmt</sub>
+</td>
+</tr>
+</table>
+
 ## Warum dieses Tool
 
 Bauplan-Listen gibt es mehrere. Vier Dinge machen den Unterschied im Alltag:

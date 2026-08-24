@@ -24,6 +24,19 @@ A small, borderless overlay that tells you **in real time** when a new blueprint
 
 > ℹ️ **The SC Deutsch Launcher is no longer required.** The actual source is Star Citizen's own `Game.log` — every unlocked blueprint is written there in plain text. If the launcher is installed it is still used: it confirms finds and supplies German names. If it isn't (always the case on Linux), the watcher works anyway.
 
+<table>
+<tr>
+<td width="45%" valign="top" align="center">
+<img src="assets/screenshot-overlay.png" alt="The overlay while playing" width="100%"><br>
+<sub>The overlay — narrow, always on top, opacity adjustable</sub>
+</td>
+<td width="55%" valign="top" align="center">
+<img src="assets/screenshot-liste.png" alt="The blueprint list" width="100%"><br>
+<sub>The blueprint list — filters, sections, and where each contract is available</sub>
+</td>
+</tr>
+</table>
+
 ## Why this tool
 
 There are several blueprint lists. Four things make the difference day to day:
