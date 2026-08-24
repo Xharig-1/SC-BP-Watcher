@@ -15,6 +15,26 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 geworden.** Der SC Deutsch Launcher ist nicht mehr nötig, der Bauplan-Bestand wird
 selbst geführt, und zu den meisten Bauplänen steht dabei, woher man sie bekommt.
 
+### English
+
+*A pre-release for testing. Feature-complete and thoroughly tested, but never yet
+run against a real Star Citizen installation other than the author's — that is
+what testers help with. Feedback welcome as an [issue](../../issues).*
+
+**The Windows overlay has become a standalone tool for Windows and Linux.**
+
+- **Runs without the SC Deutsch Launcher.** Star Citizen's own `Game.log` is the source; if the launcher is installed it still confirms finds and supplies German names.
+- **Your collection fills itself.** On first start the stored session logs are read, so nothing has to be typed in. If they do not reach far enough back, the tool says so instead of presenting an incomplete list as complete.
+- **Where each blueprint drops** — faction, contract, required standing and payout for 655 of 714 blueprints, sorted by the easiest route. Data from scmdb.net.
+- **Blueprint list** with search, *owned / missing* filters, grouping by type and a progress count. Tick entries off by hand where no log survives.
+- **Watchlist by click** — the star marks what you are waiting for; it is announced loudly and removes itself once you have it.
+- **Setup wizard**, repeatable at any time from the title bar.
+- **German and English**, switchable. The tool also **works out the in-game message wording by itself** from your logs, so it is not limited to languages someone entered in advance.
+- **Update notice with a version history** you can read inside the tool, older releases included.
+- **Ready-made files for both systems**, built by GitHub on every version tag — nobody builds anything by hand.
+- Check interval and sound are configurable; own paths can be entered when the game is somewhere unusual.
+
+
 ### Hinzugefügt
 
 

@@ -24,6 +24,21 @@ def abschnitt(changelog, tag):
     return ''
 
 
+def zweisprachig(text):
+    """Englisch nach oben, Deutsch darunter.
+
+    Der CHANGELOG ist auf Deutsch geschrieben und enthält je Version einen
+    Abschnitt `### English`. Auf der Release-Seite lesen aber überwiegend
+    Menschen, die kein Deutsch können — also steht dort Englisch zuerst. Ohne
+    englischen Abschnitt bleibt alles, wie es ist."""
+    teile = re.split(r'^### English\s*$', text, maxsplit=1, flags=re.M)
+    if len(teile) != 2:
+        return text
+    deutsch, englisch = teile[0].strip(), teile[1].strip()
+    return ('%s\n\n---\n\n<details>\n<summary><b>Deutsch</b></summary>\n\n%s\n\n</details>'
+            % (englisch, deutsch))
+
+
 def main():
     tag = sys.argv[1] if len(sys.argv) > 1 else os.environ.get('GITHUB_REF_NAME', '')
     try:
@@ -31,7 +46,7 @@ def main():
             changelog = f.read()
     except OSError:
         changelog = ''
-    text = abschnitt(changelog, tag)
+    text = zweisprachig(abschnitt(changelog, tag))
     if not text:
         text = ('Was diese Fassung bringt, steht im '
                 '[CHANGELOG](../blob/main/CHANGELOG.md).')

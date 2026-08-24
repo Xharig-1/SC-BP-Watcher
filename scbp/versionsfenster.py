@@ -30,7 +30,9 @@ Darunter die Geschichte, neueste zuerst.
 import threading
 import tkinter as tk
 
-from . import aktualisierung, pfade
+import re
+
+from . import aktualisierung, pfade, sprache
 from .sprache import t
 
 BG      = '#10141c'
@@ -45,6 +47,25 @@ GELB    = '#d8a03a'
 def schrift(groesse, fett=False):
     fam = 'Segoe UI' if pfade.WINDOWS else 'Helvetica'
     return (fam, groesse, 'bold' if fett else 'normal')
+
+
+def sprachteil(text):
+    """Aus einem zweisprachigen Release-Text den passenden Teil holen.
+
+    Die Release-Texte tragen Englisch oben und Deutsch in einem aufklappbaren
+    Block darunter — auf GitHub ist das richtig, im Fenster wäre es doppelt.
+    Hier bekommt jeder nur seine Sprache zu sehen; fehlt sie, bleibt alles
+    stehen, denn eine unvollständige Auskunft ist schlechter als eine
+    fremdsprachige."""
+    m = re.search(r'<details>\s*<summary>.*?</summary>(.*?)</details>', text,
+                  re.S | re.I)
+    if not m:
+        return text
+    deutsch = m.group(1).strip()
+    englisch = text[:m.start()].strip().rstrip('-').strip()
+    if sprache.aktuelle() == 'de':
+        return deutsch or englisch
+    return englisch or deutsch
 
 
 def aufbereiten(text):
@@ -203,7 +224,7 @@ class Versionsfenster:
             tk.Label(kopf, text=rechts, bg=BG, fg=SUB, font=schrift(9),
                      anchor='e').pack(side='right')
         tk.Frame(block, bg=FLAECHE, height=1).pack(fill='x', pady=(4, 8))
-        tk.Label(block, text=aufbereiten(e['text']) or '—', bg=BG, fg=SUB,
+        tk.Label(block, text=aufbereiten(sprachteil(e['text'])) or '—', bg=BG, fg=SUB,
                  font=schrift(10), anchor='w', justify='left',
                  wraplength=630).pack(fill='x')
 
