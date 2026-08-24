@@ -71,6 +71,19 @@ def _teile(version):
     return tuple(int(x) for x in m.groups()) if m else (0, 0, 0)
 
 
+def _vorab(version):
+    """Trägt die Version einen Vorab-Zusatz (-dev, -rc1, -beta, -alpha)?"""
+    return bool(re.search(r'-(rc|beta|alpha|dev)', str(version or '')))
+
+
+def _vorab_nummer(version):
+    """Die Zahl hinter dem Zusatz: aus '2.0.0-rc2' wird 2, aus '-dev' wird 0."""
+    m = re.search(r'-(?:rc|beta|alpha|dev)\.?(\d*)', str(version or ''))
+    if not m:
+        return 0
+    return int(m.group(1)) if m.group(1) else 0
+
+
 def ist_neuer(fremd, eigen):
     """Ist `fremd` eine höhere Version als `eigen`?
 
@@ -79,7 +92,15 @@ def ist_neuer(fremd, eigen):
     a, b = _teile(fremd), _teile(eigen)
     if a != b:
         return a > b
-    return '-dev' in str(eigen) and '-dev' not in str(fremd)
+    # Gleiche Zahl: Eine Fassung mit Zusatz (-dev, -rc1, -beta) gilt als älter
+    # als dieselbe Zahl ohne. Wer 2.0.0-rc1 fährt, soll 2.0.0 angeboten bekommen.
+    va, vb = _vorab(fremd), _vorab(eigen)
+    if va != vb:
+        return vb           # nur die fertige Fassung ist neuer
+    if not va:
+        return False        # beide fertig und gleiche Zahl
+    # Beide Vorabversionen: nach der Nummer dahinter (rc1 < rc2 < rc10)
+    return _vorab_nummer(fremd) > _vorab_nummer(eigen)
 
 
 # ------------------------------------------------------------------- Nachsehen
@@ -125,6 +146,7 @@ def nachsehen(eigene_version, erzwingen=False):
                     'name': f.get('name'),
                     'datum': (f.get('published_at') or '')[:10],
                     'text': f.get('body') or '',
+                    'vorab': bool(f.get('prerelease')),
                     'dateien': [{'name': a.get('name'), 'url':
                                  a.get('browser_download_url'),
                                  'groesse': a.get('size')}
@@ -135,8 +157,17 @@ def nachsehen(eigene_version, erzwingen=False):
         except Exception:
             pass                      # ohne Netz bleibt der letzte Stand
 
+    # Vorabversionen werden **nicht** angeboten. Wer sie ausprobieren will, holt
+    # sie bewusst von der Releases-Seite; ungefragt vorgeschlagen bekommt sie
+    # niemand — eine Vorabfassung ist zum Prüfen da, nicht zum Verteilen.
+    # Ausnahme: Wer selbst schon eine fährt, darf auch die nächste sehen.
+    eigene_ist_vorab = bool(re.search(r'-(rc|beta|alpha|dev)', str(eigene_version)))
     for f in zwischen.get('freigaben') or []:
-        if f.get('version') and ist_neuer(f['version'], eigene_version):
+        if not f.get('version'):
+            continue
+        if f.get('vorab') and not eigene_ist_vorab:
+            continue
+        if ist_neuer(f['version'], eigene_version):
             return f
     return None
 

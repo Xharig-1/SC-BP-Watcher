@@ -81,7 +81,7 @@ Kein Python, keine Installation, keine Zusatzpakete — eine einzelne Datei, die
 
 Beim ersten Start führt dich ein **Assistent** durch die Einrichtung: Sprache, Star Citizen finden, bisherige Baupläne holen. Das dauert eine Minute, danach steht dein Bestand.
 
-> ℹ️ Die aktuelle Fassung wird gerade gebaut. Bis sie auf der Releases-Seite liegt, ist die dortige Datei ein älterer Stand ohne Linux-Unterstützung.
+> ℹ️ Die aktuelle Fassung ist als **Vorabversion** (`-rc`) da: inhaltlich fertig und gründlich geprüft, aber noch nicht an einer echten Star-Citizen-Installation gelaufen. Wer sie ausprobiert, hilft genau dabei — Rückmeldungen gern als [Issue](../../issues).
 
 <details>
 <summary>Aus dem Quellcode starten (für Neugierige und Entwickler)</summary>

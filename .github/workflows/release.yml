@@ -137,8 +137,20 @@ jobs:
           python3 .github/scripts/release_text.py ${{ github.ref_name }}
           > release-text.md
 
+      - name: Vorabversion?
+        id: art
+        # Ein Tag mit -rc, -beta oder -alpha wird auf GitHub als Vorabversion
+        # gekennzeichnet. Das Werkzeug bietet solche Fassungen niemandem
+        # ungefragt als Update an — sie sind zum Pruefen da, nicht zum Verteilen.
+        run: |
+          case "${{ github.ref_name }}" in
+            *-rc*|*-beta*|*-alpha*) echo "vorab=true"  >> "$GITHUB_OUTPUT" ;;
+            *)                      echo "vorab=false" >> "$GITHUB_OUTPUT" ;;
+          esac
+
       - uses: softprops/action-gh-release@v2
         with:
+          prerelease: ${{ steps.art.outputs.vorab }}
           body_path: release-text.md
           files: |
             dateien/windows/SC-BP-Watcher.exe

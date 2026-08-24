@@ -4,7 +4,16 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## Unveröffentlicht
+## v2.0.0-rc1 - 2026-08-24
+
+> **Vorabversion zum Ausprobieren.** Der Umbau ist inhaltlich fertig und gründlich
+> geprüft — aber noch nie an einer echten Star-Citizen-Installation gelaufen, nur
+> an nachgebauten Logs. Wer sie testet, hilft genau dabei. Rückmeldungen gern als
+> [Issue](../../issues).
+
+**Aus dem Windows-Overlay ist ein eigenständiges Werkzeug für Windows und Linux
+geworden.** Der SC Deutsch Launcher ist nicht mehr nötig, der Bauplan-Bestand wird
+selbst geführt, und zu den meisten Bauplänen steht dabei, woher man sie bekommt.
 
 ### Hinzugefügt
 

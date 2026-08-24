@@ -80,7 +80,7 @@ No Python, no installation, no extra packages — a single file you can also jus
 
 On first start a **wizard** walks you through setup: language, finding Star Citizen, collecting your existing blueprints. It takes a minute, and then your inventory is there.
 
-> ℹ️ The current build is on its way. Until it reaches the releases page, the file there is an older state without Linux support.
+> ℹ️ The current build is available as a **pre-release** (`-rc`): feature-complete and thoroughly tested, but not yet run against a real Star Citizen installation. Trying it helps with exactly that — feedback welcome as an [issue](../../issues).
 
 <details>
 <summary>Running from source (for the curious and for developers)</summary>
