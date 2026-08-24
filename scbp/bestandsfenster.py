@@ -157,12 +157,22 @@ def _passt(eintrag, text):
 class Bestandsfenster:
     """Eigenständiges Fenster. Wird von der Melde-Leiste aus geöffnet."""
 
-    def __init__(self, eltern=None, beim_schliessen=None):
+    def __init__(self, eltern=None, beim_schliessen=None, rahmen=None):
+        """Ohne `rahmen` ein eigenes Fenster, mit `rahmen` eine Seite im Hauptfenster.
+
+        Seit v3.0.0 liegt die Liste im Hauptfenster; der eigenständige Modus
+        bleibt, weil er sich einzeln starten und prüfen lässt.
+        """
         self.beim_schliessen = beim_schliessen
-        self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
-        self.root.title(t('titel_bauplaene'))
-        self.root.configure(bg=BG)
-        self.root.geometry('720x780')
+        self.eingebettet = rahmen is not None
+        if self.eingebettet:
+            self.root = rahmen
+            self.root.configure(bg=BG)
+        else:
+            self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
+            self.root.title(t('titel_bauplaene'))
+            self.root.configure(bg=BG)
+            self.root.geometry('720x780')
 
         self.bestand = bestand_datei.laden()
         self.katalog = katalog_modul.laden()
@@ -577,6 +587,8 @@ class Bestandsfenster:
         self._zeichnen()
 
     def schliessen(self):
+        if getattr(self, 'eingebettet', False):
+            return                     # eine Seite schließt sich nicht selbst
         if self.beim_schliessen:
             self.beim_schliessen()
         self.root.destroy()

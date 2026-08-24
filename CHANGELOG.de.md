@@ -10,7 +10,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (mittwochs).
 
-## v2.1.0 - 2026-08-26
+## v3.0.0 - 2026-08-29
 
 ### Hinzugefügt
 

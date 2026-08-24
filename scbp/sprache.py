@@ -334,6 +334,58 @@ TEXTE = {
                           '100 = solid, 30 = strongly see-through. With a single '
                           'screen this lets you see the game underneath. Takes '
                           'effect immediately.'),
+    # --- Hauptfenster: Reiter und Rahmen (ab v3.0.0) ---
+    'hf_titel':          ('SC BP Watcher', 'SC BP Watcher'),
+    'hf_gruppe_bp':      ('Baupläne', 'Blueprints'),
+    'hf_gruppe_einst':   ('Einstellungen', 'Settings'),
+    'hf_fortgeschritten':('Für Fortgeschrittene', 'For advanced users'),
+    'hf_liste':          ('Bauplan-Liste', 'Blueprint list'),
+    'hf_fortschritt':    ('Fortschritt', 'Progress'),
+    'hf_allgemein':      ('Allgemein', 'General'),
+    'hf_anzeige':        ('Anzeige', 'Display'),
+    'hf_ordner':         ('Ordner', 'Folders'),
+    'hf_spiel':          ('Angaben im Spiel', 'In-game details'),
+    'hf_bestand':        ('Bestand', 'Inventory'),
+    'hf_ueber':          ('Über', 'About'),
+    'hf_erkennung':      ('Erkennung', 'Detection'),
+    'hf_diagnose':       ('Diagnose', 'Diagnostics'),
+    'hf_neu':            ('neu', 'new'),
+    'hf_sofort':         ('Änderungen werden sofort gespeichert',
+                          'Changes are saved right away'),
+    'hf_schliessen':     ('Schließen', 'Close'),
+    'hf_einrichtung':    ('Einrichtung', 'Setup'),
+    'hf_wasistneu':      ('Was ist neu', "What's new"),
+    'hf_hinweis_einr':   ('Einrichtung wiederholen — führt dich noch einmal durch '
+                          'Sprache, Spielordner und Bestand',
+                          'Repeat setup — walks you through language, game folder '
+                          'and inventory again'),
+    'hf_hinweis_neu':    ('Was ist neu — die Änderungen dieser und älterer Fassungen',
+                          "What's new — the changes in this and earlier versions"),
+    'hf_schrift':        ('Schriftgröße', 'Text size'),
+    'hf_schrift_hilfe':  ('Vergrößert Schrift, Symbole und Knöpfe im ganzen Fenster. '
+                          'Wirkt sofort.',
+                          'Enlarges text, icons and buttons throughout the window. '
+                          'Takes effect immediately.'),
+    'hf_s_klein':        ('Klein', 'Small'),
+    'hf_s_normal':       ('Normal', 'Normal'),
+    'hf_s_gross':        ('Groß', 'Large'),
+    'hf_s_sehrgross':    ('Sehr groß', 'Very large'),
+    'hf_wer':            ('Wer das gebaut hat', 'Who built this'),
+    'hf_dank':           ('Ohne diese Daten gäbe es das Werkzeug nicht',
+                          'Without this data the tool would not exist'),
+    'hf_nichts_dabei':   ('Alles wird zur Laufzeit von der Originaladresse geholt — '
+                          'mitgeliefert wird nichts.',
+                          'Everything is fetched from the original address at '
+                          'runtime — nothing is bundled.'),
+    'hf_fancontent':     ('Dies ist ein inoffizielles Star-Citizen-Fanprojekt und steht '
+                          'in keiner Verbindung zur Cloud Imperium Games Corporation '
+                          'oder ihren Tochterunternehmen. Alle Inhalte dieses '
+                          'Werkzeugs, die nicht von Xharig stammen, sind Eigentum '
+                          'ihrer jeweiligen Inhaber.',
+                          'This is an unofficial Star Citizen fan project, not '
+                          'affiliated with the Cloud Imperium Games Corporation or '
+                          'its subsidiaries. All content of this tool that is not '
+                          'by Xharig belongs to its respective owners.'),
     'e_vorab':           ('Auch Testfassungen anbieten',
                           'Offer test versions too'),
     'e_vorab_hilfe':     ('Testfassungen (rc) kommen vor den fertigen Fassungen und '

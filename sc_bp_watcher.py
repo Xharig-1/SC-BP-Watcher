@@ -54,7 +54,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '2.1.0'
+__version__ = '3.0.0'
 
 
 def _mitgeliefert(name):
@@ -1479,7 +1479,10 @@ class Overlay:
             pass
 
     def einstellungen_oeffnen(self):
-        einstellungsfenster.oeffnen(self.root)
+        """Seit v3.0.0 führen beide Wege ins **eine** Fenster — nur auf eine
+        andere Seite. Zwei getrennte Fenster hießen: raten, in welchem etwas
+        steckt."""
+        self.fenster_oeffnen('allgemein')
 
     def einrichtung_erneut(self):
         """Den Assistenten noch einmal durchlaufen lassen."""
@@ -1488,23 +1491,32 @@ class Overlay:
             self.liste_oeffnen()
 
     def liste_oeffnen(self):
-        """Das Verwaltungsfenster zeigen. Ein zweiter Klick holt es nach vorn,
-        statt ein zweites Fenster aufzumachen."""
-        from scbp.bestandsfenster import Bestandsfenster
-        vorhanden = getattr(self, '_liste', None)
+        """Das große Fenster auf der Bauplan-Liste öffnen."""
+        self.fenster_oeffnen('liste')
+
+    def fenster_oeffnen(self, seite='liste'):
+        """Das Hauptfenster zeigen — und darin die gewünschte Seite.
+
+        Ein zweiter Klick holt das vorhandene Fenster nach vorn und wechselt die
+        Seite, statt ein zweites aufzumachen. Zwei gleiche Fenster nebeneinander
+        sind für niemanden nachvollziehbar."""
+        from scbp.hauptfenster import Hauptfenster
+        vorhanden = getattr(self, '_fenster', None)
         if vorhanden is not None:
             try:
                 vorhanden.root.lift()
                 vorhanden.root.focus_force()
+                vorhanden.oeffnen(seite)
                 return
             except Exception:
                 pass                       # war schon zu
-        self._liste = Bestandsfenster(self.root,
-                                      beim_schliessen=self._liste_zu)
+        self._fenster = Hauptfenster(self.root, beim_schliessen=self._liste_zu,
+                                     version=__version__)
+        self._fenster.oeffnen(seite)
         self.liste_lbl.config(fg=ACCENT)
 
     def _liste_zu(self):
-        self._liste = None
+        self._fenster = None
         self.liste_lbl.config(fg=SUB)
 
     def _current_geom(self):

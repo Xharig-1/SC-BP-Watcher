@@ -10,7 +10,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collecting until the next release day (Wednesdays).
 
-## v2.1.0 - 2026-08-26
+## v3.0.0 - 2026-08-29
 
 ### Added
 

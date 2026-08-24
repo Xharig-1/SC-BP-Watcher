@@ -44,9 +44,12 @@ DATEI = 'gesehen.json'
 # Welcher Bereich kam mit welcher Fassung? Beim Bauen eines neuen Bereichs hier
 # **eine Zeile ergänzen** — mehr ist nicht zu tun.
 NEU_SEIT = {
-    'bestand':   '2.2.0',      # Bestand einlesen
-    'ueber':     '2.2.0',      # Fassung, Testkanal, Update-Prüfung
-    'diagnose':  '2.2.0',      # Fehlerbericht und Melden
+    'liste':       '3.0.0',    # Bauplan-Liste im neuen Fenster
+    'fortschritt': '3.0.0',    # Fortschritt je Art
+    'bestand':     '3.0.0',    # Bestand einlesen und ausgeben
+    'wasistneu':   '3.0.0',    # Änderungen als eigener Reiter
+    'ueber':       '3.0.0',    # Fassung, Testkanal, Autor
+    'diagnose':    '3.0.0',    # Fehlerbericht und Melden
 }
 
 

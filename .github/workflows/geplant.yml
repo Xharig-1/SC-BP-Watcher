@@ -1,4 +1,4 @@
-# Veroeffentlicht mittwochs um 12 Uhr deutscher Zeit — aber nur, wenn wirklich
+# Veroeffentlicht samstags um 12 Uhr deutscher Zeit — aber nur, wenn wirklich
 # eine Fassung fertig ist.
 #
 # Warum es diesen Ablauf ueberhaupt gibt:
@@ -8,7 +8,7 @@
 #   Ablauf den Bau selbst auf — release.yml kann das seit dem Umbau (workflow_call).
 #
 # Woran es NICHT scheitern soll:
-#   Jeden Mittwoch blind zu taggen waere schlimmer als gar keine Automatik. Ueber
+#   Jeden Samstag blind zu taggen waere schlimmer als gar keine Automatik. Ueber
 #   die Freigabe entscheidet `release_faellig.py`: Es muss eine neue Nummer in
 #   `__version__` stehen, dazu in BEIDEN CHANGELOG-Dateien ein Abschnitt mit einem
 #   Datum, das erreicht ist. Fehlt eines davon, passiert nichts.
@@ -22,8 +22,8 @@ on:
   schedule:
     # GitHub rechnet in UTC. Deutschland wechselt zweimal im Jahr, deshalb zwei
     # Zeiten — die falsche steigt unten bei der Uhrzeitpruefung wieder aus.
-    - cron: '0 10 * * 3'      # Sommerzeit: 12:00 in Deutschland
-    - cron: '0 11 * * 3'      # Winterzeit: 12:00 in Deutschland
+    - cron: '0 10 * * 6'      # Sommerzeit: samstags 12:00 in Deutschland
+    - cron: '0 11 * * 6'      # Winterzeit: samstags 12:00 in Deutschland
   workflow_dispatch:
     inputs:
       trockenlauf:

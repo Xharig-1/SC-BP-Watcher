@@ -65,11 +65,18 @@ def schrift(groesse, fett=False):
 class Einstellungsfenster:
     """Ein Fenster, kein Dauerzustand — beim Schließen ist es weg."""
 
-    def __init__(self, eltern=None):
-        self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
-        self.root.title(t('titel_einstellungen'))
-        self.root.configure(bg=BG)
-        self.root.geometry('660x900')
+    def __init__(self, eltern=None, rahmen=None):
+        """Ohne `rahmen` ein eigenes Fenster; mit `rahmen` liefert es nur seine
+        Bausteine, die das Hauptfenster auf die Reiter verteilt."""
+        self.eingebettet = rahmen is not None
+        if self.eingebettet:
+            self.root = rahmen
+            self.root.configure(bg=BG)
+        else:
+            self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
+            self.root.title(t('titel_einstellungen'))
+            self.root.configure(bg=BG)
+            self.root.geometry('660x900')
 
         # Werte laden. Leere Felder heißen „selbst suchen" — das bleibt so,
         # ein leeres Feld ist hier kein Fehler.
@@ -84,6 +91,9 @@ class Einstellungsfenster:
         self.ton = tk.BooleanVar(value=pfade.einstellung_wahrheit('signalton', True))
         self.deckkraft = tk.IntVar(
             value=pfade.einstellung_zahl('deckkraft_prozent', 93, 30, 100))
+
+        if self.eingebettet:
+            return                     # die Bausteine holt sich `seiten.py`
 
         self._kopf()
         # ⚠ Reihenfolge ist entscheidend: Der Fuß mit dem Speichern-Knopf wird

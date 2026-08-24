@@ -475,22 +475,22 @@ def main():
         from scbp import neuheiten
         importlib.reload(neuheiten)
 
-        neuheiten.erster_start('2.2.0')
-        pruefe(neuheiten.offene('2.2.0') == [],
+        neuheiten.erster_start('3.0.0')
+        pruefe(neuheiten.offene('3.0.0') == [],
                'frische Installation bekommt keine Marken')
 
         os.environ['SC_BP_HOME'] = os.path.join(basis, 'neu2')
         os.makedirs(os.environ['SC_BP_HOME'], exist_ok=True)
-        neuheiten.erster_start('2.1.0')
-        offen = sorted(neuheiten.offene('2.2.0'))
+        neuheiten.erster_start('2.0.0')
+        offen = sorted(neuheiten.offene('3.0.0'))
         pruefe(offen == sorted(neuheiten.NEU_SEIT),
-               'wer von 2.1.0 kommt, sieht die neuen Bereiche')
-        neuheiten.gesehen('bestand', '2.2.0')
-        pruefe('bestand' not in neuheiten.offene('2.2.0'),
+               'wer von 2.0.0 kommt, sieht die neuen Bereiche')
+        neuheiten.gesehen('bestand', '3.0.0')
+        pruefe('bestand' not in neuheiten.offene('3.0.0'),
                'die Marke verschwindet, sobald der Bereich offen war')
-        pruefe(len(neuheiten.offene('2.2.0')) == len(offen) - 1,
+        pruefe(len(neuheiten.offene('3.0.0')) == len(offen) - 1,
                'die übrigen Marken bleiben stehen')
-        pruefe(not neuheiten.ist_neu('bestand', '2.1.0'),
+        pruefe(not neuheiten.ist_neu('bestand', '2.0.0'),
                'was es in der eigenen Fassung noch nicht gibt, wird nicht markiert')
 
         # Der Klammer-Abgleich: (12 Schuss) gegen (12 cap) — derselbe Bauplan.
