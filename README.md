@@ -58,37 +58,48 @@ Dazu: Klasse, Gütegrad und Größe stehen direkt in der Zeile (`M/A/1`), die Ob
 ## Voraussetzungen
 
 - **Windows oder Linux**
-- **Star Citizen** installiert — gesucht wird der Ordner mit der `Game.log` darin. Unter Linux werden die üblichen Wine-Präfixe abgesucht (lug-helper, Lutris, Bottles, Heroic). Liegt das Spiel woanders, hilft die Umgebungsvariable `SC_INSTALL_DIR`.
-- Zum Start als Skript: **Python 3.8+** (für die fertigen Pakete nicht nötig). Unter Linux zusätzlich das Paket `tk` — `SC-BP-Watcher starten.sh` sagt dir, wie es heißt, falls es fehlt.
+- **Star Citizen** installiert — gesucht wird der Ordner mit der `Game.log` darin. Unter Linux werden die üblichen Wine-Präfixe abgesucht (lug-helper, Lutris, Bottles, Heroic). Wird nichts gefunden, fragt der Assistent danach.
 
-**Optional, aber nützlich:** der **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** (nur Windows). Mit ihm werden Funde zusätzlich bestätigt und die Bezeichnungen kommen auf Deutsch.
+Sonst nichts. Kein Python, kein Konto, keine Installation.
+
+**Optional:** der **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** (nur Windows). Mit ihm werden Funde zusätzlich bestätigt und die Bezeichnungen kommen auf Deutsch.
 
 ## Start
 
-> ⚠️ **Stand der Dinge:** Der Quellcode ist offen und aktuell, die fertigen Pakete auf der Releases-Seite sind es **noch nicht** — die dort liegende `.exe` ist älter und kennt weder Linux noch die Bauplan-Liste. Bis die nächste Fassung fertig ist, startest du am besten aus dem Quellcode (unten). Es sind keine Zusatzpakete nötig.
+1. Auf der **[Releases-Seite](../../releases)** die Datei für dein System herunterladen:
 
-**Aus dem Quellcode (funktioniert überall):**
-
-1. [Python 3.8+](https://www.python.org/downloads/) installieren, falls noch nicht vorhanden. Unter Windows beim Setup **„Add Python to PATH"** anhaken.
-2. Dieses Repository herunterladen (grüner Knopf **Code → Download ZIP**) und entpacken — oder klonen:
-
-   ```bash
-   git clone https://github.com/Xharig-1/SC-BP-Watcher.git
-   ```
-3. Starten:
-
-   | System | Wie |
+   | System | Datei |
    |---|---|
-   | Windows | Doppelklick auf **`SC-BP-Watcher starten.bat`** |
-   | Linux | **`SC-BP-Watcher starten.sh`** ausführen |
+   | Windows | `SC-BP-Watcher.exe` |
+   | Linux | `SC-BP-Watcher-x86_64.AppImage` |
 
-   Unter Linux fehlt oft das Paket `tk` (die Fenster-Bibliothek von Python). Das Startskript sagt dir, wie es auf deiner Distribution heißt — bei Arch etwa `sudo pacman -S tk`, bei Debian und Ubuntu `sudo apt install python3-tk`.
+2. Starten. Fertig.
 
-Beim ersten Start führt dich ein **Assistent** durch die Einrichtung: Sprache, Star Citizen finden, bisherige Baupläne holen. Das dauert eine Minute, und danach steht dein Bestand.
+Kein Python, keine Installation, keine Zusatzpakete — eine einzelne Datei, die man auch wieder löschen kann. Unter Linux muss sie einmalig ausführbar gemacht werden (Rechtsklick → Eigenschaften → *Als Programm ausführbar*, oder `chmod +x SC-BP-Watcher-x86_64.AppImage`).
 
-**Fertige Datei (sobald verfügbar):** auf der **[Releases-Seite](../../releases)** herunterladen und starten. Kein Python nötig, keine Installation — eine Datei, die man auch wieder löschen kann.
+Beim ersten Start führt dich ein **Assistent** durch die Einrichtung: Sprache, Star Citizen finden, bisherige Baupläne holen. Das dauert eine Minute, danach steht dein Bestand.
 
-**Selbst bauen (Windows):** Doppelklick auf **`EXE bauen.bat`** — installiert einmalig PyInstaller und legt `dist\SC-BP-Watcher.exe` an.
+> ℹ️ Die aktuelle Fassung wird gerade gebaut. Bis sie auf der Releases-Seite liegt, ist die dortige Datei ein älterer Stand ohne Linux-Unterstützung.
+
+<details>
+<summary>Aus dem Quellcode starten (für Neugierige und Entwickler)</summary>
+
+Dafür brauchst du [Python 3.8+](https://www.python.org/downloads/) — unter Windows beim Setup **„Add Python to PATH"** anhaken. Zusatzpakete sind keine nötig.
+
+```bash
+git clone https://github.com/Xharig-1/SC-BP-Watcher.git
+```
+
+| System | Starten mit |
+|---|---|
+| Windows | `SC-BP-Watcher starten.bat` |
+| Linux | `SC-BP-Watcher starten.sh` |
+
+Unter Linux fehlt oft das Paket `tk` (die Fenster-Bibliothek von Python). Das Startskript sagt dir, wie es auf deiner Distribution heißt — bei Arch etwa `sudo pacman -S tk`, bei Debian und Ubuntu `sudo apt install python3-tk`.
+
+Die fertigen Dateien baut **GitHub** bei jedem Versions-Tag automatisch ([`.github/workflows/release.yml`](.github/workflows/release.yml)) — von Hand muss das niemand, auch der Autor nicht.
+
+</details>
 
 ## Bedienung
 
@@ -239,8 +250,7 @@ Die Formulierungen, an denen ein Bauplan im Log erkannt wird, stehen nicht mehr 
 
 > 🔒 **Es gehört dir.** Kein Konto, keine Anmeldung, keine Cloud. Das Werkzeug liest Dateien, die ohnehin auf deiner Platte liegen, und verändert an der Spielinstallation nichts. Ins Netz greift es nur für zwei Dinge: die Werte- und Herkunftsdaten von scmdb.net (einmal je Spielversion) und die Frage, ob es eine neue Fassung gibt. Beides lässt sich mit `SC_BP_NO_NET=1` abschalten.
 
-- **Als fertige Datei:** von der [Releases-Seite](../../releases) weitergeben — der Empfänger braucht kein Python und keinen Launcher.
-- **Als Quellcode:** den ganzen Ordner weitergeben (Empfänger braucht Python).
+Gib einfach die Datei von der [Releases-Seite](../../releases) weiter — der Empfänger braucht weder Python noch einen Launcher, nur Star Citizen.
 
 > ℹ️ Windows SmartScreen meldet bei unsignierten Dateien „unbekannter Herausgeber" → **Weitere Informationen → Trotzdem ausführen**.
 
