@@ -52,7 +52,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '2.0.0-rc5'
+__version__ = '2.0.0-rc6'
 
 # ---------------------------------------------------------------- Konfiguration
 # Wo die Dateien liegen, entscheidet `scbp/pfade.py` je nach Betriebssystem.
@@ -78,6 +78,7 @@ OVERRIDES_FILE = os.environ.get('SC_BP_OVERRIDES') or pfade.app_datei(
 POLL_SEC = pfade.einstellung_zahl('pruefintervall_sekunden', 3, 1, 60)
 # Signalton bei einem Fund — manche wollen im Spiel keinen zusätzlichen Ton.
 TON_AN = pfade.einstellung_wahrheit('signalton', True)
+DECKKRAFT = pfade.einstellung_zahl('deckkraft_prozent', 93, 30, 100)
 MAX_ROWS = 200          # so viele Neuzugänge max. in der Liste behalten
 
 # --- Katalog-Wache (ab v1.3.0) ---------------------------------------------
@@ -920,7 +921,10 @@ class Overlay:
         self.root.configure(bg=BG)
         self.root.overrideredirect(True)          # randloses Overlay
         self.root.attributes('-topmost', True)    # immer im Vordergrund
-        self.root.attributes('-alpha', 0.93)      # leicht durchscheinend
+        # Durchsichtigkeit einstellbar (30–100 %). Wer nur **einen** Monitor hat,
+        # legt das Overlay zwangsläufig übers Spiel — dann muss man hindurchsehen
+        # können. 93 % bleibt der Standard, das ist auf zwei Bildschirmen richtig.
+        self.root.attributes('-alpha', DECKKRAFT / 100.0)
         self.root.geometry(geometrie_pruefen(load_geometry(), self.root))
         # Fenster-/Taskleisten-Icon setzen, falls icon.ico daneben liegt
         try:

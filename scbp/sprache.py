@@ -306,6 +306,13 @@ TEXTE = {
     'e_intervall_hilfe': ('Sekunden zwischen zwei Blicken in die Game.log. '
                           'Erlaubt 1 bis 60.',
                           'Seconds between two looks at Game.log. 1 to 60 allowed.'),
+    'e_deckkraft':       ('Durchsichtigkeit des Fensters', 'Window opacity'),
+    'e_deckkraft_hilfe': ('100 = blickdicht, 30 = stark durchscheinend. Wer nur '
+                          'einen Bildschirm hat, sieht so hindurch aufs Spiel. '
+                          'Wirkt sofort.',
+                          '100 = solid, 30 = strongly see-through. With a single '
+                          'screen this lets you see the game underneath. Takes '
+                          'effect immediately.'),
     'e_ton':             ('Signalton', 'Sound'),
     'e_ton_hilfe':       ('Kurzer Ton, wenn ein Bauplan erscheint.',
                           'A short sound when a blueprint shows up.'),

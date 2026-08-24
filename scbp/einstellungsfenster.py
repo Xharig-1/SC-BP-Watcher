@@ -68,7 +68,7 @@ class Einstellungsfenster:
         self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
         self.root.title(t('titel_einstellungen'))
         self.root.configure(bg=BG)
-        self.root.geometry('660x780')
+        self.root.geometry('660x900')
 
         # Werte laden. Leere Felder heißen „selbst suchen" — das bleibt so,
         # ein leeres Feld ist hier kein Fehler.
@@ -81,6 +81,8 @@ class Einstellungsfenster:
             value=str(pfade.einstellung_zahl('pruefintervall_sekunden', 3,
                                              INTERVALL_MIN, INTERVALL_MAX)))
         self.ton = tk.BooleanVar(value=pfade.einstellung_wahrheit('signalton', True))
+        self.deckkraft = tk.IntVar(
+            value=pfade.einstellung_zahl('deckkraft_prozent', 93, 30, 100))
 
         self._kopf()
         flaeche = tk.Frame(self.root, bg=BG)
@@ -92,6 +94,7 @@ class Einstellungsfenster:
                          self.launcher)
         self._intervallfeld(flaeche)
         self._tonfeld(flaeche)
+        self._deckkraftfeld(flaeche)
         self._injektionsfeld(flaeche)
 
         self._fuss()
@@ -185,6 +188,31 @@ class Einstellungsfenster:
         self.ton_lbl.configure(text=' %s ' % (t('e_an') if an else t('e_aus')),
                                fg=BG if an else SUB,
                                bg=ACCENT if an else FLAECHE)
+
+    def _deckkraftfeld(self, eltern):
+        """Schieberegler — und die Wirkung sofort sichtbar.
+
+        Eine Zahl einzutippen und dann zu speichern, um zu sehen, ob es passt,
+        wäre hier unbrauchbar: Durchsichtigkeit beurteilt man mit dem Auge, nicht
+        mit einem Wert. Deshalb wird das Overlay beim Ziehen mitgeführt."""
+        self._titel(eltern, t('e_deckkraft'), t('e_deckkraft_hilfe'))
+        regler = tk.Scale(eltern, from_=30, to=100, orient='horizontal',
+                          variable=self.deckkraft, bg=BG, fg=FG,
+                          troughcolor=FLAECHE, highlightthickness=0,
+                          activebackground=ACCENT, font=schrift(9),
+                          length=300, command=self._deckkraft_vorfuehren)
+        regler.pack(anchor='w')
+
+    def _deckkraft_vorfuehren(self, _wert=None):
+        """Das Overlay sofort mitziehen, damit man sieht, was man einstellt."""
+        try:
+            haupt = self.root.master
+            while haupt is not None and not isinstance(haupt, tk.Tk):
+                haupt = haupt.master
+            if haupt is not None:
+                haupt.attributes('-alpha', self.deckkraft.get() / 100.0)
+        except tk.TclError:
+            pass
 
     def _injektionsfeld(self, eltern):
         """Bauplan-Angaben im Spiel: Zustand, Auffrischen, Entfernen, Update.
@@ -286,13 +314,13 @@ class Einstellungsfenster:
         """Nach einem Sprachwechsel alles neu aufbauen — einfacher und
         verlässlicher, als zwanzig Beschriftungen einzeln nachzuziehen."""
         werte = (self.sprache_wahl.get(), self.spiel.get(), self.launcher.get(),
-                 self.intervall.get(), self.ton.get())
+                 self.intervall.get(), self.ton.get(), self.deckkraft.get())
         eltern = self.root.master
         self.root.destroy()
         neu = Einstellungsfenster(eltern)
         (neu.sprache_wahl.set(werte[0]), neu.spiel.set(werte[1]),
          neu.launcher.set(werte[2]), neu.intervall.set(werte[3]),
-         neu.ton.set(werte[4]))
+         neu.ton.set(werte[4]), neu.deckkraft.set(werte[5]))
         neu._sprach_knoepfe_faerben()
         neu._ton_beschriften()
 
@@ -321,6 +349,7 @@ class Einstellungsfenster:
         pfade.einstellung_setzen('launcher_ordner', self.launcher.get().strip())
         pfade.einstellung_setzen('pruefintervall_sekunden', takt)
         pfade.einstellung_setzen('signalton', bool(self.ton.get()))
+        pfade.einstellung_setzen('deckkraft_prozent', int(self.deckkraft.get()))
 
         # Ehrlich sagen, was sofort gilt und was nicht: Die Sprache schaltet
         # dieses Fenster gerade selbst um, Ordner und Takt liest der laufende

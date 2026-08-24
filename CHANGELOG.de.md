@@ -6,6 +6,16 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc6 - 2026-08-24
+
+### Hinzugefügt
+
+- **Durchsichtigkeit des Overlays einstellbar** (30–100 %, Standard bleibt 93 %). Wer nur
+  **einen** Bildschirm hat, legt das Fenster zwangsläufig übers Spiel — dann muss man
+  hindurchsehen können. Der Regler im Einstellungsfenster zieht das Fenster **sofort**
+  mit: Durchsichtigkeit beurteilt man mit dem Auge, nicht an einer Zahl, die erst nach
+  dem Speichern wirkt.
+
 ## v2.0.0-rc5 - 2026-08-24
 
 Die Bauplan-Angaben stehen jetzt **im Spiel** — in der Missionsbeschreibung, mit

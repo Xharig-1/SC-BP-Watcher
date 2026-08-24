@@ -168,6 +168,10 @@ def _vorlage():
                                        'Erlaubt 1 bis 60.',
         'signalton': True,
         '_signalton_gemeint_ist': 'Kurzer Ton, wenn ein Bauplan erscheint.',
+        'deckkraft_prozent': 93,
+        '_deckkraft_gemeint_ist': 'Wie undurchsichtig das Fenster ist. 100 = '
+                                  'blickdicht, 30 = stark durchscheinend. '
+                                  'Erlaubt 30 bis 100.',
         'launcher_ordner': '',
         '_launcher_ordner_gemeint_ist': 'Optional. Der Ordner "blueprints" des '
                                         'SC Deutsch Launchers. Ohne ihn laeuft '

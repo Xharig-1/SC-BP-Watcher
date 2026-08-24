@@ -6,6 +6,15 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc6 - 2026-08-24
+
+### Added
+
+- **Adjustable overlay opacity** (30–100 %, still 93 % by default). With a **single**
+  screen the window inevitably sits on top of the game — you need to see through it.
+  The slider in the settings window updates the window **immediately**: opacity is
+  something you judge by eye, not by a number that only takes effect after saving.
+
 ## v2.0.0-rc5 - 2026-08-24
 
 Blueprint details now show up **in the game** — inside the mission text, with tick
