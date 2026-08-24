@@ -493,6 +493,48 @@ def main():
         pruefe(not neuheiten.ist_neu('bestand', '2.0.0'),
                'was es in der eigenen Fassung noch nicht gibt, wird nicht markiert')
 
+        # ------------------------------------------------------------------ 14b
+        # Sprachwechsel im Hauptfenster. Es darf dabei KEIN zweites Fenster
+        # aufgehen — das alte Einstellungsfenster baute sich bei einem Wechsel
+        # komplett neu auf, und als Seite im Hauptfenster wurde daraus ein
+        # eigenes Fenster mit halbem Inhalt.
+        if ANZEIGE:
+            print()
+            print('14b. Sprachwechsel im Hauptfenster')
+            from scbp import hauptfenster, seiten as seitenmodul, sprache as spr
+            import tkinter as _tk
+            spr.setzen('de')
+            hf = hauptfenster.Hauptfenster(version='3.0.0')
+            hf.root.withdraw()
+            try:
+                hf.oeffnen('allgemein')
+                hf.root.update()
+                vorher = hf.knoepfe['allgemein'][3].cget('text')
+
+                def fenster_zaehlen(w):
+                    n = 0
+                    for k in w.winfo_children():
+                        if isinstance(k, (_tk.Toplevel, _tk.Tk)):
+                            n += 1
+                        n += fenster_zaehlen(k)
+                    return n
+
+                seitenmodul._einstellungen(hf)._sprache_waehlen('en')
+                hf.root.update()
+                pruefe(fenster_zaehlen(hf.root) == 0,
+                       'kein zweites Fenster beim Sprachwechsel')
+                pruefe(vorher == 'Allgemein'
+                       and hf.knoepfe['allgemein'][3].cget('text') == 'General',
+                       'die Reiter sind übersetzt')
+                pruefe(hf.aktuell == 'allgemein',
+                       'die geöffnete Seite bleibt geöffnet')
+                pruefe(len(hf.knoepfe) == 9, 'alle Reiter sind wieder da')
+            finally:
+                spr.setzen('de')
+                hf.root.destroy()
+        else:
+            uebersprungen('Sprachwechsel im Hauptfenster')
+
         # ------------------------------------------------------------------ 15
         # Umzug in den sichtbaren Ordner. Hier hängt der Bauplan-Bestand dran —
         # geht das schief, steht ein Nutzer nach dem Update vor einer leeren

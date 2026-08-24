@@ -198,6 +198,8 @@ def _einstellungen(fenster):
         from . import einstellungsfenster
         leer = tk.Frame(fenster.root, bg=BG)     # nur als Halter, wird nie gepackt
         fenster._einst = einstellungsfenster.Einstellungsfenster(rahmen=leer)
+        # Ohne diesen Rückruf öffnet ein Sprachwechsel ein zweites Fenster.
+        fenster._einst.beim_sprachwechsel = fenster.neu_aufbauen
     return fenster._einst
 
 

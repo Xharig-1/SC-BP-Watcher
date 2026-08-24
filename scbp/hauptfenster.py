@@ -307,6 +307,29 @@ class Hauptfenster:
             b.configure(fg=FG if an else SUB, font=self.f_fett if an else self.f_grund)
             strich.configure(bg=ACCENT if an else FLAECHE)
 
+    def neu_aufbauen(self):
+        """Alles neu zeichnen — nach einem Sprachwechsel.
+
+        Texte stehen in der Reiterleiste, in der Titelleiste, in der Fußzeile
+        und auf jeder Seite. Einzeln nachzuziehen wäre zwanzig Stellen, die man
+        vergessen kann; einmal neu aufbauen ist verlässlicher.
+        """
+        merker = self.aktuell
+        offen = self.fortgeschritten_offen
+        for kind in self.root.winfo_children():
+            kind.destroy()
+        self.seiten, self.gezeichnet, self.knoepfe = {}, set(), {}
+        self.aktuell = None
+        self._einst = None            # das geliehene Einstellungsfenster ist weg
+        self.fortgeschritten_offen = False
+
+        self._titelleiste()
+        self._fusszeile()
+        self._korpus()
+        if offen:
+            self._klapp_umschalten()
+        self.oeffnen(merker or 'liste')
+
     def _seite_fuellen(self, kennung, rahmen):
         """Hier hängen die Seiten ein — geliefert von `seiten.py`."""
         from . import seiten

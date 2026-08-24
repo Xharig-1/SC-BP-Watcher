@@ -69,6 +69,7 @@ class Einstellungsfenster:
         """Ohne `rahmen` ein eigenes Fenster; mit `rahmen` liefert es nur seine
         Bausteine, die das Hauptfenster auf die Reiter verteilt."""
         self.eingebettet = rahmen is not None
+        self.beim_sprachwechsel = None      # setzt das Hauptfenster
         if self.eingebettet:
             self.root = rahmen
             self.root.configure(bg=BG)
@@ -424,7 +425,20 @@ class Einstellungsfenster:
 
     def _neu_beschriften(self):
         """Nach einem Sprachwechsel alles neu aufbauen — einfacher und
-        verlässlicher, als zwanzig Beschriftungen einzeln nachzuziehen."""
+        verlässlicher, als zwanzig Beschriftungen einzeln nachzuziehen.
+
+        ⚠ Im **eingebetteten** Zustand (als Seite im Hauptfenster) darf hier
+        nichts neu erzeugt werden: `self.root` ist dann ein Rahmen im großen
+        Fenster, und ein neues `Einstellungsfenster` daneben ginge als eigenes
+        Fenster auf. Genau das ist passiert. Stattdessen sagt das Modul dem
+        Hauptfenster Bescheid, und **das** zeichnet seine Seiten neu — dort
+        stehen ja ebenfalls überall Texte.
+        """
+        if getattr(self, 'eingebettet', False):
+            if callable(getattr(self, 'beim_sprachwechsel', None)):
+                self.beim_sprachwechsel()
+            return
+
         werte = (self.sprache_wahl.get(), self.spiel.get(), self.launcher.get(),
                  self.intervall.get(), self.ton.get(), self.deckkraft.get())
         eltern = self.root.master
