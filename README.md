@@ -243,6 +243,27 @@ In `einstellungen.json` in its own folder — a text file, not code. Restart the
 | `SC_BP_NO_NET=1` | **no** network access — neither crafting data nor update check |
 | `SC_BP_SPRACHE` | language for this run (`de` / `en`) |
 
+## Helping to test
+
+New versions appear **on Wednesdays**. If you would rather not wait, you can get them earlier:
+
+**Settings → About → "Offer test versions too"**
+
+From then on the tool also reports test versions (recognisable by the `rc` in the number)
+— through the same update notice as always. Nothing to download by hand, nothing to hunt for.
+
+- **Test versions are fully built and runnable**, but have not been proven for long.
+  Something may act up — that is exactly what they are for.
+- **The way back is always open.** Switch it off again and you will be offered the next
+  finished version: a finished version always counts as newer than any test version of
+  the same number. So nobody gets stuck on the test channel by accident.
+- **Without this setting you never see a test version.** If you want peace and quiet,
+  do nothing — that is the default.
+
+Found something? An [issue](../../issues) helps more than any guess. Under
+**Settings → Diagnostics** there is "Copy details" — that block holds everything needed
+to track a problem down, without any personal information.
+
 ## Passing it on
 
 > 🔒 **It's yours.** No account, no sign-in, no cloud. The tool reads files that are on your disk anyway and changes nothing about the game installation. It only reaches out to the network for two things: the value and origin data from scmdb.net (once per game version) and the question of whether there is a new build. Both can be switched off with `SC_BP_NO_NET=1`.

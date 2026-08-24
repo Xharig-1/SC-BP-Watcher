@@ -286,6 +286,27 @@ Die Formulierungen, an denen ein Bauplan im Log erkannt wird, stehen nicht mehr 
 
 </details>
 
+## Beim Testen mithelfen
+
+Neue Fassungen erscheinen **mittwochs**. Wer nicht warten will, bekommt sie vorher:
+
+**Einstellungen → Über → „Auch Testfassungen"**
+
+Danach meldet das Werkzeug auch Testfassungen (erkennbar am `rc` in der Nummer) — über
+dieselbe Update-Meldung wie sonst. Nichts von Hand herunterladen, nichts suchen.
+
+- **Testfassungen sind fertig gebaut und lauffähig**, aber noch nicht lange erprobt.
+  Es kann etwas klemmen — genau dafür sind sie da.
+- **Der Rückweg steht immer offen.** Schaltest du wieder um, bekommst du die nächste
+  fertige Fassung angeboten: Eine fertige gilt immer als neuer als jede Testfassung
+  derselben Nummer. Man bleibt also nicht versehentlich im Testkanal hängen.
+- **Ohne diese Einstellung merkst du von Testfassungen nichts.** Wer Ruhe will, muss
+  nichts tun — das ist die Voreinstellung.
+
+Etwas gefunden? Ein [Issue](../../issues) hilft mehr als jede Vermutung. Unter
+**Einstellungen → Diagnose** gibt es „Angaben kopieren" — der Textblock enthält alles,
+was zur Fehlersuche gebraucht wird, ohne persönliche Angaben.
+
 ## Weitergeben
 
 > 🔒 **Es gehört dir.** Kein Konto, keine Anmeldung, keine Cloud. Das Werkzeug liest Dateien, die ohnehin auf deiner Platte liegen, und verändert an der Spielinstallation nichts. Ins Netz greift es nur für zwei Dinge: die Werte- und Herkunftsdaten von scmdb.net (einmal je Spielversion) und die Frage, ob es eine neue Fassung gibt. Beides lässt sich mit `SC_BP_NO_NET=1` abschalten.
