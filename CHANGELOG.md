@@ -6,6 +6,50 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc4 - 2026-08-24
+
+The first real blueprint drop on an **English** client — and what it turned up.
+
+### Added
+
+- **A settings window** (`scbp/einstellungsfenster.py`), reachable via ⚙ in the title bar.
+  All five fields in one place: language, Star Citizen folder, launcher folder, check
+  interval and sound — each with one line of explanation below it.
+  - Previously only language and game folder could be changed, and only through the
+    **setup wizard**. The other three required editing `einstellungen.json` by hand.
+    Reported as "I can't find the settings button at all" — rightly so, there wasn't one.
+  - **The wizard stays.** Two paths on purpose: it walks you through first-time setup for
+    anyone who does not know how this works, while the gear is the direct grip for anyone
+    who knows exactly what they want to change.
+  - Language switches **immediately**, not on save — if you pick a language you want to
+    see whether it is the right one.
+  - A folder that does not exist is **not** saved. Otherwise the watcher would look in a
+    place the player believes is correct, and report nothing.
+
+### Fixed
+
+- **No sound on Linux.** The watcher called `tkinter.bell()` — that is the **X11 system
+  bell**, which is off almost everywhere on modern desktops and effectively gone under
+  Wayland. The code explicitly considered this "not a fault". On the first real drop it
+  stayed silent, and that made it one: a sound that fails exactly when it is needed is
+  worse than none, because you rely on it and miss the blueprint.
+  - `scbp/ton.py` now plays a **system sound** via `canberra-gtk-play`, `paplay` or
+    `pw-play` — all common on Linux, none a new dependency. `bell()` remains the last
+    fallback.
+  - `aplay` is deliberately absent: it cannot play Ogg and would fail silently.
+- **The watchlist star was too small** to hit. It is the one glyph in a row you click
+  rather than read — now noticeably larger, with a wider click area.
+
+### Changed
+
+- ⭐ **The English blueprint message has been measured.** Until now five guessed wordings
+  sat side by side, none confirmed against a real English client. The client writes:
+
+        Added notification "Received Blueprint: Aves Shrike Helmet: "
+
+  `Received Blueprint` now comes first. The four remaining candidates stay as a fallback —
+  they cost nothing, and should CIG change the wording, one of them might fit.
+
 ## v2.0.0-rc3 - 2026-08-24
 
 The blueprint list, sharpened up by actually using it.

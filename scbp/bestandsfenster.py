@@ -385,9 +385,12 @@ class Bestandsfenster:
         # Bei schon vorhandenen Bauplänen wäre das sinnlos — dort kein Stern.
         if not drin:
             gemerkt = merk.enthaelt(name)
+            # Größer als der Rest: Der Stern ist das einzige Zeichen in der
+            # Zeile, das man *trifft* statt liest — in Zeilenschrift war er zu
+            # klein zum Klicken und ging neben dem Namen unter.
             stern = tk.Label(zeile, text='⭐' if gemerkt else '☆', bg=FLAECHE,
-                             fg=GELB if gemerkt else SUB, font=schrift(11),
-                             cursor='hand2', padx=6)
+                             fg=GELB if gemerkt else SUB, font=schrift(16),
+                             cursor='hand2', padx=10)
             stern.pack(side='right')
             stern.bind('<Button-1>', lambda e, n=name: self._merken(n))
             hinweis.anhaengen(stern, lambda n=name: t('nicht_mehr_merken')

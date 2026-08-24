@@ -81,7 +81,7 @@ Kein Python, keine Installation, keine Zusatzpakete — eine einzelne Datei, die
 
 Beim ersten Start führt dich ein **Assistent** durch die Einrichtung: Sprache, Star Citizen finden, bisherige Baupläne holen. Das dauert eine Minute, danach steht dein Bestand.
 
-> ℹ️ Die aktuelle Fassung ist als **Vorabversion** (`-rc`) da: inhaltlich fertig und inzwischen an einer echten Star-Citizen-Installation unter Linux gelaufen — an einem **englischen** Spiel-Client aber noch nicht. Die Bauplan-Meldung im Log ist übersetzt; das Werkzeug erschließt den Wortlaut selbst aus deinen Logs, geprüft ist das an einem englischen Client noch nicht. Wer es ausprobiert, hilft genau dabei — Rückmeldungen gern als [Issue](../../issues).
+> ℹ️ Die aktuelle Fassung ist als **Vorabversion** (`-rc`) da. Sie ist inzwischen an einer echten Star-Citizen-Installation gelaufen, unter Linux und mit **deutschem wie englischem** Spiel-Client — ein Bauplan-Drop wurde in beiden Sprachen erkannt. Was noch fehlt, sind Rückmeldungen von anderen Rechnern: andere Installationsorte, andere Bildschirmaufbauten, Windows. Gern als [Issue](../../issues).
 
 <details>
 <summary>Aus dem Quellcode starten (für Neugierige und Entwickler)</summary>

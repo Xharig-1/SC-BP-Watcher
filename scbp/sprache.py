@@ -279,6 +279,48 @@ TEXTE = {
     'hinweis_bereich':   ('Diesen Bereich ein- und ausblenden',
                           'Show or hide this section'),
 
+    # -- Einstellungsfenster --
+    'titel_einstellungen': ('SC BP Watcher — Einstellungen',
+                            'SC BP Watcher — Settings'),
+    'einstellungen':     ('Einstellungen', 'Settings'),
+    'hinweis_einstellungen': ('Einstellungen öffnen', 'Open settings'),
+    'e_sprache':         ('Sprache', 'Language'),
+    'e_sprache_hilfe':   ('Sprache dieses Fensters und aller Meldungen. Nicht zu '
+                          'verwechseln mit der Sprache im Spiel — die findet der '
+                          'Watcher selbst heraus.',
+                          'Language of this window and all messages. Not the same '
+                          'as your game language — the watcher works that one out '
+                          'by itself.'),
+    'e_sprache_auto':    ('Wie das System', 'Follow the system'),
+    'e_spiel':           ('Star-Citizen-Ordner', 'Star Citizen folder'),
+    'e_spiel_hilfe':     ('Der Ordner, in dem die Game.log liegt — meist „LIVE". '
+                          'Leer lassen heißt: selbst suchen.',
+                          'The folder holding Game.log — usually "LIVE". Leave '
+                          'empty to search automatically.'),
+    'e_launcher':        ('SC Deutsch Launcher', 'SC Deutsch Launcher'),
+    'e_launcher_hilfe':  ('Optional, nur für Nutzer des Launchers: dessen Ordner '
+                          '„blueprints". Ohne ihn läuft der Watcher genauso.',
+                          'Optional, only for launcher users: its "blueprints" '
+                          'folder. The watcher works just as well without it.'),
+    'e_intervall':       ('Wie oft nachsehen', 'How often to check'),
+    'e_intervall_hilfe': ('Sekunden zwischen zwei Blicken in die Game.log. '
+                          'Erlaubt 1 bis 60.',
+                          'Seconds between two looks at Game.log. 1 to 60 allowed.'),
+    'e_ton':             ('Signalton', 'Sound'),
+    'e_ton_hilfe':       ('Kurzer Ton, wenn ein Bauplan erscheint.',
+                          'A short sound when a blueprint shows up.'),
+    'e_an':              ('an', 'on'),
+    'e_aus':             ('aus', 'off'),
+    'e_durchsuchen':     ('Suchen …', 'Browse …'),
+    'e_speichern':       ('Speichern', 'Save'),
+    'e_gespeichert':     ('Gespeichert.', 'Saved.'),
+    'e_neustart_noetig': ('Gespeichert — für Ordner und Prüfintervall den Watcher '
+                          'einmal neu starten.',
+                          'Saved — restart the watcher for folder and interval '
+                          'changes to take effect.'),
+    'e_pfad_fehlt':      ('Diesen Ordner gibt es nicht — bitte prüfen.',
+                          'That folder does not exist — please check.'),
+
     # -- Bereiche (Obergruppen der Kategorien) --
     'gruppe_schiff':     ('Schiffsteile', 'Ship parts'),
     'gruppe_fps':        ('FPS-Waffen', 'FPS weapons'),

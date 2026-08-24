@@ -6,6 +6,53 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc4 - 2026-08-24
+
+Der erste echte Bauplan-Drop an einem **englischen** Client — und was dabei auffiel.
+
+### Hinzugefügt
+
+- **Einstellungsfenster** (`scbp/einstellungsfenster.py`), erreichbar über ⚙ in der
+  Titelleiste. Alle fünf Felder auf einmal: Sprache, Star-Citizen-Ordner, Launcher-Ordner,
+  Prüfintervall und Signalton — jedes mit einem Satz Erklärung darunter.
+  - Vorher ließen sich nur Sprache und Spielordner ändern, und das ausgerechnet über den
+    **Einrichtungsassistenten**. Auf die drei übrigen kam man nur, indem man
+    `einstellungen.json` von Hand bearbeitete. Gemeldet als „ich finde den
+    Einstellungs-Button gar nicht" — zu Recht, es gab keinen.
+  - **Der Assistent bleibt daneben bestehen.** Zwei Wege mit Absicht: Er führt Schritt für
+    Schritt durch die Ersteinrichtung, für alle, die nicht wissen, wie so etwas geht. Das
+    Zahnrad ist der direkte Griff für alle, die genau wissen, was sie ändern wollen.
+  - Die Sprache schaltet **sofort** um, nicht erst beim Speichern — wer eine Sprache
+    wählt, will sehen, ob es die richtige ist.
+  - Ein Ordner, den es nicht gibt, wird **nicht** gespeichert. Sonst sucht der Watcher
+    beim nächsten Start an einem Ort, den der Spieler für richtig hält, und meldet nichts.
+
+### Behoben
+
+- **Unter Linux kam kein Signalton.** Der Watcher rief `tkinter.bell()` auf — das ist die
+  **X11-Systemglocke**, und die ist auf modernen Arbeitsplätzen praktisch überall aus;
+  unter Wayland gibt es sie faktisch nicht mehr. Der Code hielt das ausdrücklich für „kein
+  Fehler". Beim ersten echten Drop blieb es still, und damit war es einer: Auf einen Ton,
+  der ausgerechnet dann nicht kommt, verlässt man sich und verpasst den Bauplan.
+  - Jetzt spielt `scbp/ton.py` einen **Systemklang** über `canberra-gtk-play`, `paplay`
+    oder `pw-play` — alle drei auf verbreiteten Systemen vorhanden, keines ein Zusatzpaket.
+    `bell()` bleibt letzter Rückfall.
+  - `aplay` steht bewusst nicht in der Liste: Es kann kein Ogg und würde stumm scheitern.
+- **Der Merkstern war zu klein** zum Treffen. Er ist das einzige Zeichen in der Zeile, das
+  man anklickt statt liest — jetzt deutlich größer, mit breiterer Klickfläche.
+
+### Geändert
+
+- ⭐ **Die englische Bauplan-Meldung ist gemessen.** Bis hierher standen fünf geratene
+  Formulierungen nebeneinander, keine an einem echten englischen Client geprüft. Der
+  Client schreibt:
+
+        Added notification "Received Blueprint: Aves Shrike Helmet: "
+
+  `Received Blueprint` steht jetzt vorn. Die vier übrigen Kandidaten bleiben als Rückfall
+  stehen — sie kosten nichts, und sollte CIG die Formulierung ändern, trifft vielleicht
+  eine davon zu.
+
 ## v2.0.0-rc3 - 2026-08-24
 
 Die Bauplan-Liste, nachgeschärft aus dem ersten echten Gebrauch.

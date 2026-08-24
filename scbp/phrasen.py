@@ -41,12 +41,17 @@ Drei Quellen, in dieser Rangfolge:
      SC Deutsch Launcher) — sonst steckt sie in `Data.p4k`.
   3. **Die mitgelieferte Tabelle** unten — greift immer.
 
-> Stand: **Deutsch ist gemessen** (an 127 Log-Sicherungen gegengeprüft). Die
-> englischen Formulierungen sind bislang **nicht** an einem echten englischen
-> Log bestätigt; deshalb stehen dort mehrere Kandidaten nebeneinander. Sobald
-> eine echte englische Zeile vorliegt, bleibt die zutreffende stehen.
-> Mit `tools/extract_global_ini.py --sprache english` lässt sich der Wortlaut
-> aus der eigenen Installation holen, ohne auf einen fremden Log zu warten.
+> Stand: **Deutsch und Englisch sind beide gemessen.** Deutsch an 127
+> Log-Sicherungen gegengeprüft; Englisch am 24.08.2026 an einem echten
+> englischen Client bestätigt — der Client schreibt:
+>
+>     Added notification "Received Blueprint: Aves Shrike Helmet: "
+>
+> Damit ist die Rateliste erledigt: `Received Blueprint` steht vorn, die vier
+> übrigen Kandidaten bleiben als Rückfall stehen. Andere Sprachen erschließt
+> der Watcher sich selbst aus den Logs (siehe `selbst_finden`); wer nachhelfen
+> will, holt den Wortlaut mit `tools/extract_global_ini.py --sprache <name>`
+> aus der eigenen Installation.
 """
 import json
 import os
@@ -62,9 +67,15 @@ INI_SCHLUESSEL = 'crafting_hud_notification_received_blueprint'
 # Zeilenform drumherum ist zu eigen, als dass sie zufällig entstünde.
 TABELLE = {
     'de': ['Bauplan erhalten'],                     # gemessen
-    'en': ['Blueprint Received', 'Received Blueprint',
-           'Blueprint Acquired', 'Blueprint Obtained',
-           'Blueprint Unlocked'],                   # Kandidaten, s. o.
+    # 'Received Blueprint' ist seit 24.08.2026 **gemessen** — an einem echten
+    # englischen Client, Zeile:
+    #   Added notification "Received Blueprint: Aves Shrike Helmet: "
+    # Deshalb steht es vorn. Die vier dahinter waren die übrigen Kandidaten und
+    # bleiben stehen: Sie kosten nichts, und sollte CIG die Formulierung einmal
+    # ändern, ist die Chance nicht schlecht, dass eine davon dann zutrifft.
+    'en': ['Received Blueprint',                    # gemessen
+           'Blueprint Received', 'Blueprint Acquired',
+           'Blueprint Obtained', 'Blueprint Unlocked'],   # weitere Kandidaten
 }
 
 # Nur diese Zeilen zählen. Die anderen Notification-Zeilen sind Ein- und

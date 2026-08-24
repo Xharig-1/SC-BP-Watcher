@@ -43,15 +43,16 @@ from tkinter import font as tkfont
 # unterscheidet — der Rest dieser Datei muss das Betriebssystem nicht kennen.
 from scbp import sprache
 from scbp import (aktualisierung, assistent, autostart,
-                  bestand as bestand_datei, hinweis, katalog as katalog_modul,
-                  logquelle, merkliste, pfade, phrasen)
+                  bestand as bestand_datei, einstellungsfenster, hinweis,
+                  katalog as katalog_modul, logquelle, merkliste, pfade,
+                  phrasen, ton)
 
 try:
     import winsound                      # nur Windows; unter Linux übernimmt tkinter
 except ImportError:
     winsound = None
 
-__version__ = '2.0.0-rc3'
+__version__ = '2.0.0-rc4'
 
 # ---------------------------------------------------------------- Konfiguration
 # Wo die Dateien liegen, entscheidet `scbp/pfade.py` je nach Betriebssystem.
@@ -530,10 +531,13 @@ AUTOSTART_TEXT = ('Mit Windows starten' if pfade.WINDOWS
 def signalton(auffaellig=False):
     """Kurzer Ton bei einem Fund.
 
-    Unter Windows über `winsound` wie bisher. Unter Linux gibt es das nicht —
-    dort übernimmt tkinter selbst (`bell()`), das ist Teil der Standard-
-    bibliothek und braucht kein Zusatzpaket. Bleibt es still, weil das System
-    keinen Systemton hat, ist das kein Fehler: Die Meldung steht ja im Fenster."""
+    Unter Windows `winsound`, unter Linux ein Systemklang über `scbp/ton.py`.
+
+    Bis v2.0.0-rc3 stand hier für Linux nur `bell()` mit der Begründung
+    „bleibt es still, ist das kein Fehler". Beim ersten echten Bauplan blieb
+    es still, und das **war** ein Fehler: `bell()` ist die X11-Systemglocke,
+    die auf modernen Arbeitsplätzen praktisch überall aus ist. `bell()` bleibt
+    als letzter Rückfall — schaden kann es nicht."""
     if not TON_AN:
         return
     if winsound:
@@ -542,6 +546,8 @@ def signalton(auffaellig=False):
                                  else winsound.MB_ICONASTERISK)
         except Exception:
             pass
+        return
+    if ton.abspielen('auffaellig' if auffaellig else 'normal'):
         return
     try:
         _WURZEL[0].bell()
@@ -967,6 +973,16 @@ class Overlay:
         self.assi_lbl.pack(side='right', padx=(0, 6))
         self.assi_lbl.bind('<Button-1>', lambda e: self.einrichtung_erneut())
         hinweis.anhaengen(self.assi_lbl, lambda: sprache.t('hinweis_assistent'))
+        # Zwei Wege zum selben Ziel, absichtlich beide da: der Assistent führt
+        # Schritt für Schritt (wer nicht weiß, dass es das gibt), das Zahnrad
+        # ist der direkte Griff für alle fünf Felder auf einmal (wer genau
+        # weiß, was er ändern will). Bis hierher gab es nur den Assistenten —
+        # gemeldet als „ich finde den Einstellungs-Button gar nicht".
+        self.einst_lbl = tk.Label(bar, text='⚙', bg=BAR, fg=SUB,
+                                  font=self.f_title, cursor='hand2')
+        self.einst_lbl.pack(side='right', padx=(0, 6))
+        self.einst_lbl.bind('<Button-1>', lambda e: self.einstellungen_oeffnen())
+        hinweis.anhaengen(self.einst_lbl, lambda: sprache.t('hinweis_einstellungen'))
         # „Was ist neu" — färbt sich grün, sobald es eine neuere Fassung gibt.
         self.info_lbl = tk.Label(bar, text='ⓘ', bg=BAR, fg=SUB,
                                  font=self.f_title, cursor='hand2')
@@ -1252,6 +1268,9 @@ class Overlay:
                            sprache.t('was_ist_neu'))))
         except Exception:
             pass
+
+    def einstellungen_oeffnen(self):
+        einstellungsfenster.oeffnen(self.root)
 
     def einrichtung_erneut(self):
         """Den Assistenten noch einmal durchlaufen lassen."""

@@ -80,7 +80,7 @@ No Python, no installation, no extra packages — a single file you can also jus
 
 On first start a **wizard** walks you through setup: language, finding Star Citizen, collecting your existing blueprints. It takes a minute, and then your inventory is there.
 
-> ℹ️ The current build is available as a **pre-release** (`-rc`): feature-complete and by now run against a real Star Citizen installation on Linux — but not yet against an **English** game client. The in-game blueprint message is localised; the tool works the wording out from your own logs, and that has not been confirmed against an English client. Trying it helps with exactly that — feedback welcome as an [issue](../../issues).
+> ℹ️ The current build is available as a **pre-release** (`-rc`). It has now been run against a real Star Citizen installation on Linux, with both a **German and an English** game client — a blueprint drop was detected in either language. What is still missing is feedback from other machines: different install locations, different screen setups, Windows. Welcome as an [issue](../../issues).
 
 <details>
 <summary>Running from source (for the curious and for developers)</summary>
