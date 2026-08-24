@@ -69,7 +69,13 @@ HAT_LAUNCHER = bool(BP_DIR) and os.path.isdir(BP_DIR)
 # Katalog unverändert — die Datei ist optional.
 OVERRIDES_FILE = os.environ.get('SC_BP_OVERRIDES') or pfade.app_datei(
     'bp-overrides.json')
-POLL_SEC = 3            # wie oft die Dateien geprüft werden (Sekunden)
+# Wie oft die Game.log angesehen wird. Einstellbar über `pruefintervall_sekunden`
+# in der `einstellungen.json`; 3 Sekunden sind ein guter Mittelweg zwischen
+# „steht sofort da" und „liest dauernd die Platte". Grenzen 1–60, damit eine
+# vertippte 0 keine Dauerschleife wird.
+POLL_SEC = pfade.einstellung_zahl('pruefintervall_sekunden', 3, 1, 60)
+# Signalton bei einem Fund — manche wollen im Spiel keinen zusätzlichen Ton.
+TON_AN = pfade.einstellung_wahrheit('signalton', True)
 MAX_ROWS = 200          # so viele Neuzugänge max. in der Liste behalten
 
 # --- Katalog-Wache (ab v1.3.0) ---------------------------------------------
@@ -534,6 +540,8 @@ def signalton(auffaellig=False):
     dort übernimmt tkinter selbst (`bell()`), das ist Teil der Standard-
     bibliothek und braucht kein Zusatzpaket. Bleibt es still, weil das System
     keinen Systemton hat, ist das kein Fehler: Die Meldung steht ja im Fenster."""
+    if not TON_AN:
+        return
     if winsound:
         try:
             winsound.MessageBeep(winsound.MB_ICONEXCLAMATION if auffaellig

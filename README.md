@@ -122,7 +122,7 @@ Was die Farbpunkte in der Liste bedeuten:
 
 
 1. **Beim Start** sieht das Tool die aufgehobenen Logs vergangener Sitzungen durch (`logbackups/`) und übernimmt alles Gefundene still in deinen Bestand — wer ohne laufenden Watcher gespielt hat, verliert nichts. Diese Baupläne werden **nicht** als neu gemeldet. Reichen die Sicherungen nicht weit genug zurück, sagt der Watcher das als ℹ-Zeile, statt eine unvollständige Liste als vollständig auszugeben.
-2. **Im Hintergrund** (eigener Thread) wird alle 3 Sekunden die **`Game.log`** gelesen. Schreibt das Spiel beim Freischalten `Added notification "Bauplan erhalten: <Name>: "`, steht der Bauplan **sofort** in der Liste (🟢) und im Bestand.
+2. **Im Hintergrund** (eigener Thread) wird die **`Game.log`** gelesen — alle 3 Sekunden, einstellbar. Schreibt das Spiel beim Freischalten `Added notification "Bauplan erhalten: <Name>: "`, steht der Bauplan **sofort** in der Liste (🟢) und im Bestand.
    - **Ist zusätzlich der SC Deutsch Launcher installiert**, wird zweistufig gemeldet: erst 🟡 *vorläufig* aus dem Log, dann 🟢 *bestätigt*, sobald der Launcher nachzieht und seine Angaben liefert. Ohne Launcher gibt es diese Zwischenstufe nicht — dann ist die Log-Meldung die Auskunft.
 3. Jede neue Zeile wird oben eingefügt (Name · Art · `M/A/1` · Uhrzeit) und ein kurzer Ton gespielt.
    - **Einmal pro Minute** wird der Craftbar-Katalog geprüft. Ist er gewachsen, hat CIG mit einem Patch etwas **neu craftbar** gemacht → 🔵-Zeile. Das hat nichts mit deinem Freischalt-Stand zu tun. Der Vergleichsstand liegt als `catalog-seen.json` im eigenen Ordner und überlebt Neustarts; beim allerersten Start wird nur die Basis gesetzt.
@@ -195,29 +195,45 @@ Der Spielordner wird an den üblichen Stellen gesucht — unter Windows in den P
 
 ## Einstellungen
 
-Oben in `sc_bp_watcher.py` anpassbar:
+In `einstellungen.json` im eigenen Ordner — eine Textdatei, kein Code. Nach dem Ändern den Watcher neu starten. Die Datei wird beim ersten Start angelegt und erklärt jedes Feld selbst.
 
-| Variable | Bedeutung | Standard |
-|----------|-----------|----------|
-| `POLL_SEC` | Prüf-Intervall in Sekunden (Launcher-Datei **und** Game.log) | `3` |
-| `CAT_POLL` | Prüf-Intervall in Sekunden für den Craftbar-Katalog (ändert sich nur bei Patches) | `60` |
-| `MAX_ROWS` | max. Einträge in der Liste (ältere fliegen unten raus) | `200` |
-| `LOG_PHRASES` | Spielmeldung(en), an denen ein neuer Bauplan erkannt wird | `Bauplan erhalten` |
-| `DEFAULT_GEOM` | Start-Position/-Größe beim allerersten Start (danach wird die gemerkte Lage genutzt) | `440x1098`, oberer Monitor |
+| Feld | Bedeutung | Standard |
+|---|---|---|
+| `sprache` | Oberflächensprache: `auto`, `de` oder `en` | `auto` |
+| `spiel_ordner` | Wo Star Citizen liegt (leer = automatisch suchen) | leer |
+| `launcher_ordner` | Wo der SC Deutsch Launcher liegt (leer = automatisch suchen) | leer |
+| `pruefintervall_sekunden` | Wie oft die `Game.log` angesehen wird — erlaubt 1 bis 60 | `3` |
+| `signalton` | Kurzer Ton bei einem Fund | `true` |
+
+> Position und Größe des Fensters merkt sich der Watcher beim Verschieben und Beenden (`watcher.json` im selben Ordner) — zieh es einfach dorthin, wo du es haben willst. Eine feste Startlage gibt das Programm bewusst **nicht** vor: Wo ein Overlay gut sitzt, hängt am Monitoraufbau. Zum Zurücksetzen die Datei löschen.
+
+> **Eigene Korrekturen:** Stimmt bei einem Bauplan die Angabe zu Klasse, Größe oder Gütegrad nicht, kannst du sie in `bp-overrides.json` im eigenen Ordner überschreiben — sie hat Vorrang vor allen anderen Quellen. Liegt die Datei woanders, gib den Pfad über die Umgebungsvariable `SC_BP_OVERRIDES` an.
+
+**Umgebungsvariablen** — für einen einmaligen Sonderfall, ohne etwas dauerhaft zu ändern:
+
+| Variable | Wirkung |
+|---|---|
+| `SC_BP_HOME` | anderer Ordner für Bestand und Einstellungen |
+| `SC_INSTALL_DIR` | anderer Spielordner |
+| `SC_BP_LAUNCHER` | anderer Launcher-Ordner |
+| `SC_BP_NO_NET=1` | **keine** Netzabfragen — weder Craftdaten noch Versionsprüfung |
+| `SC_BP_SPRACHE` | Sprache für diesen Start (`de` / `en`) |
+
+<details>
+<summary>Für Bastler: Werte im Quellcode</summary>
+
+Oben in `sc_bp_watcher.py` stehen weitere Konstanten — sie sind Vorgabewerte und werden von der `einstellungen.json` gestochen, wo es dort ein Feld gibt.
+
+| Konstante | Bedeutung | Standard |
+|---|---|---|
+| `CAT_POLL` | Prüf-Intervall für den Craftbar-Katalog (ändert sich nur bei Patches) | `60` |
+| `MAX_ROWS` | Höchstzahl Zeilen in der Melde-Liste (ältere fallen unten raus) | `200` |
 | `CLASS_LETTER` | Kürzel je Klasse (M/S/I/C/K) | Military/Stealth/Industrial/Civilian/Competition |
 | `BG / FG / ACCENT / …` | Farben des Overlays | dunkel + Xharig-Grün |
 
-> Position & Größe merkt sich der Watcher beim Verschieben und Beenden (`watcher.json` im eigenen Ordner) — zieh das Fenster einfach dorthin, wo du es haben willst. Eine feste Startposition gibt das Programm bewusst **nicht** vor: Wo ein Overlay gut sitzt, hängt am Monitoraufbau. Zum Zurücksetzen die Datei löschen.
->
-> Im selben Ordner liegen `catalog-seen.json` (Vergleichsstand der Katalog-Wache) und optional `watchlist.json`. Löschst du `catalog-seen.json`, wird beim nächsten Start nur die Basis neu gesetzt — es kommt also keine Meldungsflut.
->
-> **Eigene Korrekturen:** Stimmt bei einem Bauplan die Angabe zu Klasse, Größe oder Gütegrad nicht, kannst du sie in `bp-overrides.json` im eigenen Ordner überschreiben — sie hat Vorrang vor dem Launcher-Katalog. Liegt die Datei woanders, gib den Pfad über die Umgebungsvariable `SC_BP_OVERRIDES` an. Ohne die Datei ändert sich nichts.
+Die Formulierungen, an denen ein Bauplan im Log erkannt wird, stehen nicht mehr im Code, sondern in `scbp/sprache.py` beziehungsweise in deiner eigenen `phrasen.json`.
 
-> **Werte aus dem Netz:** Kennt der Launcher-Katalog einen Bauplan nicht, holt der Watcher Art, Größe, Gütegrad und Klasse von [scmdb.net](https://scmdb.net). Nachgeladen wird nur bei einer **neuen Spielversion**; der Stand liegt im eigenen Ordner (siehe oben). Ohne Internet gilt der letzte Stand — der Watcher läuft normal weiter. Wer gar keine Netzabfrage möchte, setzt die Umgebungsvariable `SC_BP_NO_NET=1`.
->
-> Die Rangfolge ist bewusst so: **eigene Korrekturen → Launcher-Katalog → scmdb**. scmdb füllt nur Lücken und überschreibt nie — ein Abgleich gegen 56 Meldungen aus der Spiel-Log ergab 55 exakte Treffer und eine Abweichung.
-
-> **Mit dem Rechner starten:** Der Schalter `⏻` in der Titelleiste schaltet den Autostart ein und aus — grün heißt an, grau aus. Er ist standardmäßig **aus**; der Watcher trägt sich nie von selbst ein. Unter Windows ist es ein Eintrag unter `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, unter Linux die Datei `~/.config/autostart/sc-bp-watcher.desktop` — beides kannst du auch von Hand wieder löschen.
+</details>
 
 ## Weitergeben
 

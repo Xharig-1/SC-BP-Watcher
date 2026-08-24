@@ -161,6 +161,13 @@ def _vorlage():
         '_spiel_ordner_gemeint_ist': 'Der Ordner, in dem die Game.log liegt — '
                                      'meist "LIVE".',
         '_spiel_ordner_gesucht_wird_hier': gesuchte_spielorte(),
+        'sprache': 'auto',
+        '_sprache_moeglich': 'auto (Systemsprache), de, en',
+        'pruefintervall_sekunden': 3,
+        '_pruefintervall_gemeint_ist': 'Wie oft die Game.log angesehen wird. '
+                                       'Erlaubt 1 bis 60.',
+        'signalton': True,
+        '_signalton_gemeint_ist': 'Kurzer Ton, wenn ein Bauplan erscheint.',
         'launcher_ordner': '',
         '_launcher_ordner_gemeint_ist': 'Optional. Der Ordner "blueprints" des '
                                         'SC Deutsch Launchers. Ohne ihn laeuft '
@@ -202,6 +209,34 @@ def einstellung_setzen(name, wert):
         return True
     except OSError:
         return False
+
+
+def einstellung_zahl(name, standard, kleinstes=None, groesstes=None):
+    """Eine Zahl aus den Einstellungen, mit Grenzen.
+
+    Unsinnige Werte werden auf den erlaubten Bereich gezogen statt abgelehnt:
+    Wer 0 einträgt, meint „so oft wie möglich" und soll kein Programm bekommen,
+    das die Platte durchdreht — aber auch keine Fehlermeldung."""
+    wert = einstellungen().get(name)
+    try:
+        zahl = int(wert)
+    except (TypeError, ValueError):
+        return standard
+    if kleinstes is not None:
+        zahl = max(kleinstes, zahl)
+    if groesstes is not None:
+        zahl = min(groesstes, zahl)
+    return zahl
+
+
+def einstellung_wahrheit(name, standard):
+    """Ein Ja/Nein aus den Einstellungen. Fehlt es, gilt der Standard."""
+    wert = einstellungen().get(name)
+    if isinstance(wert, bool):
+        return wert
+    if isinstance(wert, str):
+        return wert.strip().lower() in ('ja', 'yes', 'true', '1', 'an', 'on')
+    return standard
 
 
 def vorlage_anlegen():
