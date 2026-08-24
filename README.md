@@ -50,7 +50,7 @@ Dazu: Klasse, Gütegrad und Größe stehen direkt in der Zeile (`M/A/1`), die Ob
 | 🔔 **Signalton** | Kurzer Ton bei jedem Neuzugang — du musst nicht aufs Fenster schauen |
 | 🧷 **Immer im Vordergrund** | Randloses, leicht durchscheinendes Overlay über dem Spiel |
 | 🖱️ **Verschiebbar & skalierbar** | An der Titelleiste ziehen, Größe am Griff ◢ unten rechts — **Position & Größe werden gemerkt** |
-| 🌐 **Deutsch und Englisch** | Oberfläche umschaltbar; die Bauplan-Meldung im Log wird in beiden Spielsprachen erkannt |
+| 🌐 **Deutsch und Englisch** | Oberfläche umschaltbar. Die Bauplan-Meldung im Log erkennt der Watcher **in jeder Spielsprache** — er findet die Formulierung selbst heraus |
 | 🆕 **Sagt Bescheid** | Merkt selbst, wenn es eine neue Fassung gibt — mit „Was ist neu" zum Nachlesen, auch für ältere Versionen |
 | 🔒 **Nur lesend** | Verändert am Spiel nichts — liest die `Game.log` und, falls vorhanden, die Launcher-Dateien |
 | 📒 **Eigener Bestand** | Führt selbst Buch, welche Baupläne du hast — auch ohne den SC Deutsch Launcher |
@@ -160,6 +160,16 @@ Eigene Dateien (Bestand, Einstellungen, Zwischenspeicher) liegen hier:
 | Linux | `~/.config/sc-bp-watcher/` |
 
 Beides lässt sich mit der Umgebungsvariablen `SC_BP_HOME` verlegen.
+
+### Spielsprache
+
+Die Bauplan-Meldung im Log ist übersetzt — und der Watcher **findet selbst heraus**, wie sie in deinem Client lautet. Er kennt über 700 Bauplan-Namen; steht in einer Logzeile einer davon, ist der Text davor die gesuchte Formulierung. Das klappt auch bei Sprachen, die niemand vorgesehen hat: Französisch und Spanisch genauso wie Englisch.
+
+Deutsch und Englisch sind zusätzlich fest hinterlegt, und wer möchte, trägt eigene in `phrasen.json` im eigenen Ordner ein:
+
+```json
+{ "phrasen": ["Blueprint Received"] }
+```
 
 ### Eigene Pfade eintragen
 
