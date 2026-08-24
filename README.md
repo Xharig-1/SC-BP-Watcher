@@ -93,6 +93,24 @@ No Python, no installation, no extra packages — a single file you can also jus
 
 On first start a **wizard** walks you through setup: language, finding Star Citizen, collecting your existing blueprints. It takes a minute, and then your inventory is there.
 
+### ⚠️ Windows says "Windows protected your PC"
+
+This appears on the first launch, and it is **not a virus detection**:
+
+> Microsoft Defender SmartScreen prevented an unrecognised app from starting.
+
+**To run it anyway:** click **More info** → **Run anyway**. It will not ask again.
+
+**Why this happens:** SmartScreen does not check whether a program is harmful — it checks whether it is **known**. A file becomes known through a purchased code-signing certificate (several hundred euros a year) or by being downloaded by very many people. A free fan tool has neither, and every new version starts from zero again.
+
+**If you would rather not take my word for it — you don't have to:**
+
+- The **source is open** ([here](../../)), and the file is not built by me but by **GitHub Actions** from exactly that source. The build is there to read: [`.github/workflows/release.yml`](.github/workflows/release.yml)
+- Every file on the releases page carries its **SHA-256 checksum** — GitHub shows it directly
+- Upload it to **[VirusTotal](https://www.virustotal.com)** if you like. Individual scanners are known to flag PyInstaller executables; that is a classic false positive
+
+On **Linux** this message does not exist — the file just needs to be made executable once.
+
 > ℹ️ Verified against a real Star Citizen installation, with both a **German and an English** game client. Feedback from other machines is still welcome — different install locations, different screen setups, Windows. As an [issue](../../issues).
 
 <details>
