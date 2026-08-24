@@ -1,0 +1,88 @@
+# -*- coding: utf-8 -*-
+"""Legt einen Wegwerf-Katalog und einen Beispielbestand an.
+
+Wozu: Wer die Oberfläche auf einem Rechner ohne Star Citizen ansehen will (Mac,
+Zweitrechner), bekommt sonst eine leere Liste und kann nichts beurteilen. Die
+Daten landen in dem Ordner, der als Argument kommt — **nie** in der echten
+Ablage.
+
+    python3 tools/probe_daten.py /pfad/zum/wegwerf-ordner
+"""
+import json
+import os
+import sys
+
+# Ein kleiner, aber echter Ausschnitt: verschiedene Arten, Klassen, Größen,
+# mit und ohne Bezugsquelle. Genug, um Liste, Filter und Herkunft zu beurteilen.
+BEISPIELE = [
+    ("7CA 'Nargun'", 'Cooler', 'Military', 'A', '1', True,
+     [('Foxwell Enforcement', 'Red Lvl. Contract: Protect Fuel Tanks',
+       'Veteran Contractor', 15000, 48000, 'Stanton')]),
+    ('Aufeis', 'Cooler', 'Civilian', 'B', '2', True,
+     [('Covalex', 'Hauling: Priority Freight', 'Associate', 6000, 18000, 'Stanton')]),
+    ('Blizzard', 'Cooler', 'Military', 'A', '3', False,
+     [('Headhunters', 'Bounty: Hostile Gunship', 'Enforcer', 24000, 61000, 'Pyro')]),
+    ('Attrition-5 Repeater', 'Ship weapon', None, None, '3', True,
+     [('Bit-Zeros', 'Salvage: Derelict Sweep', 'Trusted Hand', 9000, 32000, 'Pyro')]),
+    ('Singe Cannon (S2)', 'Ship weapon', None, None, '2', False,
+     [('Foxwell Enforcement', 'Red Lvl. Contract: Hold the Line',
+       'Contractor', 11000, 38000, 'Stanton')]),
+    ('P4-AR Rifle', 'FPS weapon', None, None, None, True, []),
+    ('S-38 Pistol', 'FPS weapon', None, None, None, True, []),
+    ('Manticore Helmet', 'Helmet', None, None, None, True,
+     [('Headhunters', 'Bounty: Vanduul Scout Party', 'Enforcer', 22500, 55000, 'Pyro')]),
+    ('Aves Shrike Helmet', 'Helmet', None, None, None, False,
+     [('Bit-Zeros', 'Mercenary: Clear the Outpost',
+       'Veteran Contractor', 15000, 44000, 'Pyro'),
+      ('Covalex', 'Hauling: Priority Freight', 'Associate', 6000, 18000, 'Stanton')]),
+    ('BUL-H4 Armor', 'Torso', None, None, None, False, []),      # XenoThreat
+    ('Purgatory Camo', 'Pattern', None, None, None, False, []),  # RedWind
+    ('XL-1', 'Power Plant', 'Industrial', 'B', '2', False,
+     [('Rayari', 'Research: Sample Retrieval', 'Associate', 7500, 21000, 'Stanton')]),
+    ('Breton Shield', 'Shield', 'Military', 'A', '2', False,
+     [('Headhunters', 'Bounty: Marked Target', 'Contractor', 12000, 30000, 'Pyro')]),
+]
+TOPF = {'BUL-H4 Armor': 'XenoThreat', 'Purgatory Camo': 'RedWind'}
+
+
+def main():
+    ziel = sys.argv[1] if len(sys.argv) > 1 else None
+    if not ziel:
+        print(__doc__.strip())
+        return 2
+    os.makedirs(ziel, exist_ok=True)
+
+    bauplaene, bestand = {}, {}
+    for name, art, klasse, grad, groesse, habe, quellen in BEISPIELE:
+        k = name.lower().strip()
+        e = {'n': name, 'a': art}
+        if klasse:
+            e['c'] = klasse
+        if grad:
+            e['g'] = grad
+        if groesse:
+            e['s'] = groesse
+        if quellen:
+            e['q'] = [{'fraktion': f, 'auftrag': a, 'rang': r, 'rep': rep,
+                       'uec': uec, 'wo': {'system': wo, 'orte': []}}
+                      for f, a, r, rep, uec, wo in quellen]
+        elif name in TOPF:
+            e['topf'] = TOPF[name]
+        bauplaene[k] = e
+        if habe:
+            bestand[k] = {'name': name, 'quelle': 'log',
+                          'zeit': '2026-08-25 01:14:03'}
+
+    with open(os.path.join(ziel, 'katalog-cache.json'), 'w', encoding='utf-8') as f:
+        json.dump({'version': 'probe', 'geholt': '2026-08-25',
+                   'bauplaene': bauplaene, 'missionen': {}}, f, ensure_ascii=False)
+    with open(os.path.join(ziel, 'bestand.json'), 'w', encoding='utf-8') as f:
+        json.dump({'version': 1, 'stand': '2026-08-25 01:14:03',
+                   'bauplaene': bestand}, f, ensure_ascii=False)
+    print('Probedaten: %d Baupläne, davon %d im Bestand'
+          % (len(bauplaene), len(bestand)))
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
