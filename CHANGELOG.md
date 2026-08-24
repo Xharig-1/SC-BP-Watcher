@@ -6,6 +6,36 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc3 - 2026-08-24
+
+The blueprint list, sharpened up by actually using it.
+
+### Added
+
+- **Sections you can show and hide** — four buttons above the list: ship parts,
+  FPS weapons, armor & clothing, other. Looking for armor? Hide the ship and 714
+  rows become 316. Individual buttons for all 25 categories would not have helped;
+  that is a second list on top of the list.
+  - The **last** visible section cannot be hidden as well. An empty list with no
+    visible reason is not a setting, it is a riddle.
+  - Hidden sections are dimmed, not removed — you need to see that you clicked
+    something away yourself.
+- **A ✕ in the search box.** It only appears once there is something to clear: a
+  clear icon on an empty field is just an icon that does nothing.
+- **German search terms for the English category names.** Four categories are
+  deliberately English because that is what the game calls them — "Cooler",
+  "Power Plant", "Quantum Drive", "Radar". Anyone thinking in German types
+  "Kühler" and found nothing. Now both work, without changing the wording players
+  know from the game.
+
+### Changed
+
+- **A sensible order instead of the alphabet.** Ship parts first, then FPS
+  weapons, then armor and clothing. Alphabetically "Docking collar" came first
+  and armor sat in the middle — 25 categories in letter order are not an
+  overview. Within a section it stays alphabetical: that is predictable, and
+  everyone would order the ship parts differently in their head.
+
 ## v2.0.0-rc2 - 2026-08-24
 
 Both found during the first run against a real Linux installation.

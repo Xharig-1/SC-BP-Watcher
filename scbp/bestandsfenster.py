@@ -114,6 +114,7 @@ class Bestandsfenster:
         self.suche.trace_add('write', lambda *_: self._zeichnen(nach_oben=True))
         self.offen = set()          # Namen, deren Herkunft ausgeklappt ist
         self.alle_zeigen = False
+        self.bereiche_aus = set()   # ausgeblendete Bereiche (Schiff, FPS, …)
 
         self._kopf()
         self._werkzeugleiste()
@@ -135,12 +136,23 @@ class Bestandsfenster:
 
     def _werkzeugleiste(self):
         leiste = tk.Frame(self.root, bg=BG)
-        leiste.pack(fill='x', padx=14, pady=(12, 8))
+        leiste.pack(fill='x', padx=14, pady=(12, 4))
 
-        feld = tk.Entry(leiste, textvariable=self.suche, bg=FLAECHE, fg=FG,
+        # Suchfeld mit Löschkreuz: Das ✕ liegt im selben Kasten wie das Feld,
+        # damit es dazugehörig aussieht und nicht wie ein weiterer Knopf.
+        kasten = tk.Frame(leiste, bg=FLAECHE)
+        kasten.pack(side='left', fill='x', expand=True, padx=(0, 10))
+        feld = tk.Entry(kasten, textvariable=self.suche, bg=FLAECHE, fg=FG,
                         insertbackground=FG, relief='flat', font=schrift(11))
-        feld.pack(side='left', fill='x', expand=True, ipady=6, padx=(0, 10))
+        feld.pack(side='left', fill='x', expand=True, ipady=6, padx=(8, 0))
         feld.focus_set()
+        self.loeschen_lbl = tk.Label(kasten, text='✕', bg=FLAECHE, fg=SUB,
+                                     font=schrift(10), cursor='hand2', padx=8)
+        self.loeschen_lbl.bind('<Button-1>', lambda e: self._suche_leeren())
+        hinweis.anhaengen(self.loeschen_lbl, lambda: t('hinweis_suche_leeren'))
+        # Erscheint erst, wenn etwas drinsteht — ein ✕ an einem leeren Feld ist
+        # nur ein Zeichen, das nichts tut.
+        self._loeschkreuz_zeigen()
 
         self.knoepfe = {}
         for schluessel, text in (('alle', t('filter_alle')),
@@ -152,6 +164,42 @@ class Bestandsfenster:
             k.pack(side='left', padx=2)
             k.bind('<Button-1>', lambda e, s=schluessel: self._filter_setzen(s))
             self.knoepfe[schluessel] = k
+
+        # Zweite Reihe: die Bereiche. 25 Kategorien einzeln wären keine Hilfe —
+        # vier Knöpfe schon: Wer Rüstung sucht, blendet das Schiff weg und hat
+        # statt 714 Zeilen noch 316.
+        bereiche = tk.Frame(self.root, bg=BG)
+        bereiche.pack(fill='x', padx=14, pady=(0, 8))
+        self.bereich_knoepfe = {}
+        for og in katalog_modul.OBERGRUPPEN:
+            k = tk.Label(bereiche, text=' %s ' % t('gruppe_%s' % og), bg=FLAECHE,
+                         fg=SUB, font=schrift(10), cursor='hand2', padx=8, pady=5)
+            k.pack(side='left', padx=(0, 4))
+            k.bind('<Button-1>', lambda e, g=og: self._bereich_umschalten(g))
+            hinweis.anhaengen(k, lambda: t('hinweis_bereich'))
+            self.bereich_knoepfe[og] = k
+
+    def _suche_leeren(self):
+        self.suche.set('')
+
+    def _loeschkreuz_zeigen(self):
+        """Das ✕ nur zeigen, wenn es etwas zu löschen gibt."""
+        if self.suche.get():
+            self.loeschen_lbl.pack(side='right')
+        else:
+            self.loeschen_lbl.pack_forget()
+
+    def _bereich_umschalten(self, gruppe):
+        """Einen Bereich ein- oder ausblenden.
+
+        Der letzte sichtbare lässt sich nicht auch noch ausblenden — eine leere
+        Liste ohne erkennbaren Grund ist keine Einstellung, sondern ein Rätsel."""
+        if gruppe in self.bereiche_aus:
+            self.bereiche_aus.discard(gruppe)
+        elif len(self.bereiche_aus) < len(katalog_modul.OBERGRUPPEN) - 1:
+            self.bereiche_aus.add(gruppe)
+        self.alle_zeigen = False
+        self._zeichnen(nach_oben=True)
 
     def _liste(self):
         rahmen = tk.Frame(self.root, bg=BG)
@@ -183,12 +231,24 @@ class Bestandsfenster:
         self._zeichnen(nach_oben=True)
 
     def _auswahl(self):
-        """Die Baupläne, die gerade angezeigt werden sollen."""
+        """Die Baupläne, die gerade angezeigt werden sollen.
+
+        Die Reihenfolge kommt aus `katalog.gruppen_geordnet()`: erst die
+        Schiffsteile, dann die FPS-Waffen, dann Rüstung und Kleidung. Nach
+        Alphabet stand vorher „Andockkragen" ganz oben und die Rüstung
+        mittendrin."""
         text = self.suche.get().strip().lower()
         habe = bestand_datei.schluessel(self.bestand)
         beobachtet = merk.namen()
         ergebnis = []
-        for art, liste in sorted(katalog_modul.nach_art(self.katalog).items()):
+        for og, art, liste in katalog_modul.gruppen_geordnet(self.katalog):
+            if og in self.bereiche_aus:
+                continue
+            # Suchwörter der Art: „Kühler" soll die Cooler finden, obwohl die
+            # Kategorie im Spiel englisch heißt.
+            wortliste = katalog_modul.suchworte(liste[0].get('a')) if liste else ()
+            art_passt = bool(text) and (text in art.lower()
+                                        or any(text in w for w in wortliste))
             treffer = []
             for e in liste:
                 k = katalog_modul._norm(e['n'])
@@ -197,9 +257,9 @@ class Bestandsfenster:
                     continue
                 if self.filter == 'fehlt' and drin:
                     continue
-                if self.filter == 'merk' and katalog_modul._norm(e['n']) not in beobachtet:
+                if self.filter == 'merk' and k not in beobachtet:
                     continue
-                if text and text not in e['n'].lower() and text not in art.lower():
+                if text and not art_passt and text not in e['n'].lower():
                     continue
                 treffer.append((e, drin))
             if treffer:
@@ -224,6 +284,13 @@ class Bestandsfenster:
         for schluessel, knopf in self.knoepfe.items():
             an = schluessel == self.filter
             knopf.configure(fg=BG if an else SUB, bg=ACCENT if an else FLAECHE)
+
+        # Ausgeblendete Bereiche werden abgedunkelt, nicht entfernt — man muss
+        # sehen, dass man selbst etwas weggeklickt hat.
+        for og, knopf in self.bereich_knoepfe.items():
+            aus = og in self.bereiche_aus
+            knopf.configure(fg=SUB if aus else FG, bg=BG if aus else FLAECHE)
+        self._loeschkreuz_zeigen()
 
         gruppen = self._auswahl()
         habe = bestand_datei.schluessel(self.bestand)

@@ -6,6 +6,37 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc3 - 2026-08-24
+
+Die Bauplan-Liste, nachgeschärft aus dem ersten echten Gebrauch.
+
+### Hinzugefügt
+
+- **Bereiche zum Ein- und Ausblenden** — vier Knöpfe über der Liste: Schiffsteile,
+  FPS-Waffen, Rüstung & Kleidung, Sonstiges. Wer Rüstung sucht, blendet das Schiff
+  weg und hat statt 714 Zeilen noch 316. Einzelne Knöpfe für alle 25 Kategorien
+  wären keine Hilfe gewesen, sondern eine zweite Liste über der Liste.
+  - Der **letzte** sichtbare Bereich lässt sich nicht auch noch ausblenden. Eine
+    leere Liste ohne erkennbaren Grund ist keine Einstellung, sondern ein Rätsel.
+  - Ausgeblendetes wird abgedunkelt, nicht entfernt — man muss sehen, dass man
+    selbst etwas weggeklickt hat.
+- **✕ im Suchfeld.** Erscheint erst, wenn etwas drinsteht: Ein Löschzeichen an
+  einem leeren Feld ist nur ein Zeichen, das nichts tut.
+- **Deutsche Suchwörter für die englischen Kategorien.** Vier Kategorien heißen
+  bewusst englisch, weil das Spiel sie so nennt — „Cooler", „Power Plant",
+  „Quantum Drive", „Radar". Wer deutsch denkt, tippt „Kühler" und fand nichts.
+  Jetzt findet beides, ohne die im Spiel gebräuchliche Beschriftung zu ändern.
+  Ebenso „Generator", „Sprungantrieb", „Kanone", „Scanner" und weitere.
+
+### Geändert
+
+- **Sinnvolle Reihenfolge statt Alphabet.** Erst die Schiffsteile, dann die
+  FPS-Waffen, dann Rüstung und Kleidung. Alphabetisch stand „Andockkragen" ganz
+  oben und die Rüstung mittendrin — 25 Kategorien in Buchstabenreihenfolge sind
+  kein Überblick. Innerhalb eines Bereichs bleibt es alphabetisch: Das ist
+  vorhersagbar, und eine „sinnvolle" Reihenfolge innerhalb der Schiffsteile hätte
+  jeder anders im Kopf.
+
 ## v2.0.0-rc2 - 2026-08-24
 
 Beides beim ersten Lauf an einer echten Linux-Installation gefunden.

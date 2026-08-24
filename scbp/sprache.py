@@ -275,6 +275,15 @@ TEXTE = {
                               'Does not start by itself — click to turn on'),
     'hinweis_quellen':   ('Zeigt, woher es diesen Bauplan gibt',
                           'Shows where this blueprint comes from'),
+    'hinweis_suche_leeren': ('Sucheingabe löschen', 'Clear the search'),
+    'hinweis_bereich':   ('Diesen Bereich ein- und ausblenden',
+                          'Show or hide this section'),
+
+    # -- Bereiche (Obergruppen der Kategorien) --
+    'gruppe_schiff':     ('Schiffsteile', 'Ship parts'),
+    'gruppe_fps':        ('FPS-Waffen', 'FPS weapons'),
+    'gruppe_ruestung':   ('Rüstung & Kleidung', 'Armor & clothing'),
+    'gruppe_sonstiges':  ('Sonstiges', 'Other'),
     'hinweis_schliessen_liste': ('Liste schließen — der Watcher läuft weiter',
                                  'Close the list — the watcher keeps running'),
     'sc_nicht_gefunden': ('Star Citizen wurde nicht gefunden.',

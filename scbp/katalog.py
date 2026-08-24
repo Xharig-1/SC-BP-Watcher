@@ -274,6 +274,76 @@ def nach_art(daten=None):
     return gruppen
 
 
+# ------------------------------------------------------- Obergruppen
+# Alphabetisch sortiert stand „Andockkragen" vor „Schiffswaffe" und die Rüstung
+# mittendrin — 25 Kategorien in Buchstabenreihenfolge sind kein Überblick.
+# Wer sucht, denkt in Bereichen: erst das Schiff, dann was man am Mann trägt.
+OBERGRUPPEN = ('schiff', 'fps', 'ruestung', 'sonstiges')
+
+ART_GRUPPE = {
+    # Alles, was am Schiff verbaut wird
+    'Cooler': 'schiff', 'PowerPlant': 'schiff', 'QuantumDrive': 'schiff',
+    'Shield': 'schiff', 'Radar': 'schiff', 'WeaponGun': 'schiff',
+    'WeaponMining': 'schiff', 'SalvageModifier': 'schiff',
+    'SalvageHead': 'schiff', 'TractorBeam': 'schiff',
+    'DockingCollar': 'schiff', 'Cargo': 'schiff',
+    # Was man in die Hand nimmt
+    'WeaponPersonal': 'fps', 'WeaponAttachment': 'fps',
+    # Was man am Körper trägt
+    'Char_Armor_Helmet': 'ruestung', 'Char_Armor_Torso': 'ruestung',
+    'Char_Armor_Legs': 'ruestung', 'Char_Armor_Arms': 'ruestung',
+    'Char_Armor_Backpack': 'ruestung', 'Char_Armor_Undersuit': 'ruestung',
+    'Char_Clothing_Torso_0': 'ruestung', 'Char_Clothing_Torso_1': 'ruestung',
+    'Char_Clothing_Legs': 'ruestung', 'Char_Clothing_Feet': 'ruestung',
+}
+
+
+# Zusätzliche Suchwörter je Art. Vier Kategorien heißen bewusst englisch, weil
+# das Spiel sie so nennt — „Cooler", „Power Plant", „Quantum Drive", „Radar".
+# Wer deutsch denkt, tippt trotzdem „Kühler" und findet dann nichts. Beides
+# soll gehen, ohne die im Spiel gebräuchliche Beschriftung zu ändern.
+ART_SUCHWORTE = {
+    'Cooler':        ('kühler', 'kuehler', 'kuhler'),
+    'PowerPlant':    ('generator', 'kraftwerk', 'energie'),
+    'QuantumDrive':  ('sprungantrieb', 'quantenantrieb', 'qd'),
+    'Radar':         ('scanner', 'ortung'),
+    'Shield':        ('schild', 'schilde'),
+    'WeaponGun':     ('kanone', 'geschütz', 'geschuetz'),
+    'WeaponPersonal': ('gewehr', 'pistole', 'fps'),
+    'TractorBeam':   ('traktor', 'schlepper'),
+    'Cargo':         ('fracht', 'ladung'),
+}
+
+
+def suchworte(roh):
+    """Weitere Begriffe, unter denen diese Art gefunden werden soll."""
+    return ART_SUCHWORTE.get(roh, ())
+
+
+def obergruppe(roh):
+    """Zu welchem Bereich gehört diese Art? Unbekanntes landet bei 'sonstiges'."""
+    return ART_GRUPPE.get(roh, 'sonstiges')
+
+
+def gruppen_geordnet(daten=None):
+    """[(obergruppe, art_lesbar, [Einträge]), …] — in der Reihenfolge, in der
+    sie angezeigt werden sollen.
+
+    Innerhalb eines Bereichs alphabetisch: Das ist vorhersagbar, und eine
+    „sinnvolle" Reihenfolge innerhalb der Schiffsteile hätte jeder anders
+    im Kopf."""
+    gruppen = {}
+    for e in (daten or laden())['bauplaene'].values():
+        roh = e.get('a')
+        gruppen.setdefault((obergruppe(roh), art_lesbar(roh)), []).append(e)
+    for liste in gruppen.values():
+        liste.sort(key=lambda e: e['n'].lower())
+    return [(og, art, gruppen[(og, art)])
+            for og, art in sorted(gruppen,
+                                  key=lambda p: (OBERGRUPPEN.index(p[0]),
+                                                 p[1].lower()))]
+
+
 if __name__ == '__main__':
     import sys
     d = laden()
