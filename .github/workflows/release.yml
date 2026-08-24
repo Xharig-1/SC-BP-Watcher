@@ -15,6 +15,17 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:          # zum Ausprobieren auch von Hand startbar
+  workflow_call:              # aufgerufen von "geplant.yml" (Release nach Zeitplan)
+    inputs:
+      tag:
+        description: 'Welcher Tag gebaut werden soll, z. B. v2.1.0'
+        required: true
+        type: string
+
+# Der Tag steht je nach Ausloeser woanders: beim Push in github.ref_name,
+# beim Aufruf aus geplant.yml in inputs.tag. Ab hier gilt nur noch TAG.
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
 
 permissions:
   contents: write             # noetig, um das Release anzulegen
@@ -32,8 +43,8 @@ jobs:
           python-version: '3.12'
 
       - name: Version gegen den Tag pruefen
-        if: github.ref_type == 'tag'
-        run: python .github/scripts/version_pruefen.py ${{ github.ref_name }}
+        if: inputs.tag != '' || github.ref_type == 'tag'
+        run: python .github/scripts/version_pruefen.py ${{ env.TAG }}
 
       - name: Selbsttest
         run: python tools/selbsttest.py
@@ -123,7 +134,7 @@ jobs:
   # ------------------------------------------------------------------ Release
   release:
     needs: [windows, linux]
-    if: github.ref_type == 'tag'
+    if: inputs.tag != '' || github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -134,7 +145,7 @@ jobs:
         # Der Abschnitt zur getaggten Version wird zum Release-Text — dadurch
         # steht im Werkzeug unter "Was ist neu" dasselbe wie auf GitHub.
         run: >
-          python3 .github/scripts/release_text.py ${{ github.ref_name }}
+          python3 .github/scripts/release_text.py ${{ env.TAG }}
           > release-text.md
 
       - name: Vorabversion?
@@ -143,7 +154,7 @@ jobs:
         # gekennzeichnet. Das Werkzeug bietet solche Fassungen niemandem
         # ungefragt als Update an — sie sind zum Pruefen da, nicht zum Verteilen.
         run: |
-          case "${{ github.ref_name }}" in
+          case "${{ env.TAG }}" in
             *-rc*|*-beta*|*-alpha*) echo "vorab=true"  >> "$GITHUB_OUTPUT" ;;
             *)                      echo "vorab=false" >> "$GITHUB_OUTPUT" ;;
           esac

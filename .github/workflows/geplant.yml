@@ -1,0 +1,102 @@
+# Veroeffentlicht mittwochs um 12 Uhr deutscher Zeit — aber nur, wenn wirklich
+# eine Fassung fertig ist.
+#
+# Warum es diesen Ablauf ueberhaupt gibt:
+#   Ein Tag, den ein Ablauf mit dem Standard-Token setzt, loest KEINEN weiteren
+#   Ablauf aus (GitHub verhindert damit Endlosschleifen). "Tag pushen und hoffen,
+#   dass release.yml anspringt" funktioniert also nicht. Deshalb ruft dieser
+#   Ablauf den Bau selbst auf — release.yml kann das seit dem Umbau (workflow_call).
+#
+# Woran es NICHT scheitern soll:
+#   Jeden Mittwoch blind zu taggen waere schlimmer als gar keine Automatik. Ueber
+#   die Freigabe entscheidet `release_faellig.py`: Es muss eine neue Nummer in
+#   `__version__` stehen, dazu in BEIDEN CHANGELOG-Dateien ein Abschnitt mit einem
+#   Datum, das erreicht ist. Fehlt eines davon, passiert nichts.
+#
+# Von Hand ausprobieren: Actions -> "Release nach Zeitplan" -> Run workflow.
+# Der Trockenlauf ist dabei voreingestellt und veroeffentlicht nichts.
+
+name: Release nach Zeitplan
+
+on:
+  schedule:
+    # GitHub rechnet in UTC. Deutschland wechselt zweimal im Jahr, deshalb zwei
+    # Zeiten — die falsche steigt unten bei der Uhrzeitpruefung wieder aus.
+    - cron: '0 10 * * 3'      # Sommerzeit: 12:00 in Deutschland
+    - cron: '0 11 * * 3'      # Winterzeit: 12:00 in Deutschland
+  workflow_dispatch:
+    inputs:
+      trockenlauf:
+        description: 'Nur nachsehen, nichts veroeffentlichen'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write             # noetig, um den Tag zu setzen
+
+jobs:
+
+  pruefen:
+    runs-on: ubuntu-latest
+    outputs:
+      faellig: ${{ steps.pruefung.outputs.faellig }}
+      tag:     ${{ steps.pruefung.outputs.tag }}
+      grund:   ${{ steps.pruefung.outputs.grund }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # ohne die Tags kann nicht geprueft werden, was schon draussen ist
+
+      - name: Ist es in Deutschland gerade 12 Uhr?
+        # Nur fuer die geplanten Laeufe. Von Hand gestartet wird nicht auf die Uhr gesehen.
+        if: github.event_name == 'schedule'
+        run: |
+          python3 - <<'PY'
+          import sys
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          jetzt = datetime.now(ZoneInfo('Europe/Berlin'))
+          print('In Deutschland ist es %s Uhr.' % jetzt.strftime('%H:%M'))
+          if jetzt.hour != 12:
+              print('Das ist der Lauf fuer die andere Jahreszeit — hier ist nichts zu tun.')
+              sys.exit(78)
+          PY
+
+      - name: Faellig?
+        id: pruefung
+        run: python3 .github/scripts/release_faellig.py
+
+      - name: Ergebnis in die Zusammenfassung
+        run: |
+          {
+            echo "### Release nach Zeitplan"
+            echo ""
+            if [ "${{ steps.pruefung.outputs.faellig }}" = "true" ]; then
+              echo "**${{ steps.pruefung.outputs.tag }}** ist faellig — ${{ steps.pruefung.outputs.grund }}."
+            else
+              echo "Nichts veroeffentlicht: ${{ steps.pruefung.outputs.grund }}."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  taggen:
+    needs: pruefen
+    if: needs.pruefen.outputs.faellig == 'true' && inputs.trockenlauf != true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Tag setzen und hochladen
+        run: |
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git tag "${{ needs.pruefen.outputs.tag }}"
+          git push origin "${{ needs.pruefen.outputs.tag }}"
+
+  bauen:
+    needs: [pruefen, taggen]
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{ needs.pruefen.outputs.tag }}
+    permissions:
+      contents: write
