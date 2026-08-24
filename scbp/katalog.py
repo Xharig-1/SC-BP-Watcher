@@ -180,6 +180,76 @@ def _herkunft(merged):
     return pools, quellen
 
 
+def _missionen(merged):
+    """Missionen, die Baupläne ausschütten — für die Auszeichnung im Spiel.
+
+    Das ist die **Gegenrichtung** zu `_herkunft()`: dort „welcher Bauplan kommt
+    woher", hier „welche Baupläne gibt diese Mission". Gebraucht wird sie von
+    `scbp/injektion.py`, das die Angaben in die Textdatei des Spiels schreibt.
+
+    Angehängt wird an den **Textschlüssel** (`descriptionLocKey`,
+    `titleLocKey`), nicht an den Missionsnamen: Der Schlüssel ist in jeder
+    Sprache derselbe, der Name nicht. Dadurch funktioniert dieselbe Zuordnung
+    für die deutsche Übersetzung wie für die englische Fassung — und für die
+    neun weiteren Sprachen im Spiel gleich mit."""
+    pools = {}
+    for guid, pool in (merged.get('blueprintPools') or {}).items():
+        pools[guid] = [b.get('name') for b in (pool.get('blueprints') or [])
+                       if b.get('name')]
+    belohnungen_pools = merged.get('factionRewardsPools') or []
+    ergebnis = {}
+    for vertrag in ((merged.get('contracts') or [])
+                    + (merged.get('legacyContracts') or [])):
+        belohnungen = vertrag.get('blueprintRewards') or []
+        if not belohnungen:
+            continue
+        titel_key = vertrag.get('titleLocKey')
+        text_key = vertrag.get('descriptionLocKey')
+        if not (titel_key or text_key):
+            continue
+        namen, sicher = [], False
+        for r in belohnungen:
+            namen.extend(pools.get(r.get('blueprintPool'), []))
+            if r.get('chance') == 1:
+                sicher = True
+        if not namen:
+            continue
+        rang = vertrag.get('minStanding') or {}
+        hoechst = vertrag.get('maxStanding') or {}
+        # Die Angaben, die der SC Deutsch Launcher auch zeigt — sie stehen
+        # vollständig in scmdb, es muss sie nur jemand einsammeln.
+        i = vertrag.get('factionRewardsIndex')
+        rufgewinn = None
+        if isinstance(i, int) and 0 <= i < len(belohnungen_pools):
+            rufgewinn = sum(e.get('amount', 0) for e in belohnungen_pools[i])
+        chance = max((r.get('chance') or 0) for r in belohnungen)
+        eintrag = {
+            'bp': sorted(set(namen)),
+            'sicher': sicher,
+            'chance': chance,
+            'rep': rang.get('minReputation'),
+            'rang': rang.get('name'),
+            'rep_max': hoechst.get('minReputation'),
+            'rang_max': hoechst.get('name'),
+            'uec': vertrag.get('rewardUEC'),
+            'ruf': rufgewinn,
+            'teilbar': vertrag.get('canBeShared'),
+            'cooldown': (vertrag.get('personalCooldownTime')
+                         if vertrag.get('hasPersonalCooldown') else None),
+        }
+        eintrag = {k: v for k, v in eintrag.items() if v not in (None, '', [])}
+        eintrag['bp'] = sorted(set(namen))
+        eintrag['sicher'] = sicher
+        if titel_key:
+            eintrag['titel_key'] = titel_key
+        if text_key:
+            eintrag['text_key'] = text_key
+        # Schlüssel ist der Titel-Key, weil die Auszeichnung im Titel steht;
+        # fehlt er, tut es der Beschreibungs-Key auch.
+        ergebnis[titel_key or text_key] = eintrag
+    return ergebnis
+
+
 def erzeugen(version=None, fortschritt=None, aus_datei=None):
     """Holt die Daten und legt den eigenen Katalog an. Gibt (anzahl, version) zurück.
 
@@ -219,7 +289,7 @@ def erzeugen(version=None, fortschritt=None, aus_datei=None):
         bauplaene[k] = eintrag
 
     daten = {'version': version, 'geholt': time.strftime('%Y-%m-%d %H:%M'),
-             'bauplaene': bauplaene}
+             'bauplaene': bauplaene, 'missionen': _missionen(merged)}
     ziel = pfade.app_datei(CACHE)
     temp = ziel + '.tmp'
     with open(temp, 'w', encoding='utf-8') as f:
@@ -235,10 +305,11 @@ def laden():
         with open(pfade.app_datei(CACHE), encoding='utf-8') as f:
             d = json.load(f)
         if isinstance(d.get('bauplaene'), dict):
+            d.setdefault('missionen', {})    # Kataloge vor v2.0.0-rc5
             return d
     except Exception:
         pass
-    return {'version': '', 'geholt': '', 'bauplaene': {}}
+    return {'version': '', 'geholt': '', 'bauplaene': {}, 'missionen': {}}
 
 
 def aktualisieren(fortschritt=None):

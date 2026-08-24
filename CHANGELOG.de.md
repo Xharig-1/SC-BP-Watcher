@@ -6,6 +6,56 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc5 - 2026-08-24
+
+Die Bauplan-Angaben stehen jetzt **im Spiel** — in der Missionsbeschreibung, mit
+Kästchen für das, was man schon hat.
+
+### Hinzugefügt
+
+- **Bauplan-Angaben in den Missionstexten** (`scbp/injektion.py`). An jeden Auftrag, der
+  Baupläne ausschüttet, kommt die Liste — angehakt, was im eigenen Bestand liegt, leer,
+  was fehlt. Dazu ein Kürzel im Titel (`[BP 2/3]`), damit man es schon in der
+  Auftragsliste sieht, ohne jede Mission zu öffnen. **668 Textstellen.**
+  - Dazu die Eckdaten, die vor dem Annehmen zählen: Chance auf den Bauplan,
+    Mindest- und Höchst-Reputation, Belohnung, Rufpunkte, Wartezeit, teilbar ja/nein.
+  - Angehängt wird am **Textschlüssel**, nicht am Missionsnamen. Der ist in jeder
+    Sprache derselbe — dieselbe Auszeichnung greift für Deutsch, Englisch und die
+    neun weiteren Sprachen des Spiels.
+  - **Rückgängig auf den Buchstaben genau.** Alles Eingefügte steht zwischen Marken;
+    `entfernen()` stellt die Ausgangsdatei zeichengleich wieder her.
+- **Die Bauplan-Daten kommen vom SCDL-Team.** Das Übersetzungsprojekt veröffentlicht
+  seine aufbereiteten Vertragsdaten offen mit — **813 Verträge**, deutsch **und**
+  englisch, mit Angaben, die es sonst nirgends gibt (Region, Gefahrenstufe, Wartezeit
+  in Worten). Aus scmdb allein kämen 349 zusammen.
+  - Die Arbeitsteilung ist die sinnvolle: Das SCDL-Team pflegt, was es ohnehin pflegt.
+    Dieses Werkzeug steuert bei, was nur es kann — das **Kästchen**. In den Rohdaten
+    stehen die Baupläne neutral als `- Name`; daraus wird `[x]` oder `[  ]`.
+  - Geholt zur Laufzeit von der Original-Adresse, Herkunft im eingefügten Text genannt.
+    Sind die Daten nicht erreichbar, greift der eigene Aufbau aus scmdb.
+- **Textquellen holen und aktuell halten** (`scbp/uebersetzung.py`): die deutsche
+  Übersetzung von `rjcncpt/StarCitizen-Deutsch-INI`, StarStrings von
+  `MrKraken/StarStrings` oder die englischen Originaltexte aus dem eigenen `Data.p4k`.
+  Mit Update-Prüfung, denn jedes Update der Übersetzung überschreibt die Bauplan-Angaben.
+  - **Nichts davon wird mitgeliefert.** Beide Fremdprojekte behalten ihre Rechte; geholt
+    wird zur Laufzeit von deren eigener Adresse, auf Wunsch des Nutzers.
+  - Wer StarStrings nutzt, behält es: Dessen Auszeichnungen bleiben stehen, die eigenen
+    kommen dahinter — und füllen seine Lücken.
+- **Schritt im Einrichtungsassistenten**, der danach fragt. Voreingestellt ist nichts:
+  Wer weiterklickt, ohne zu wählen, behält seine Installation unverändert. Es ist die
+  einzige Stelle, an der dieses Werkzeug etwas am Spiel ändert.
+- **Abschnitt im Einstellungsfenster**: Zustand, Auffrischen, Entfernen, Update-Prüfung.
+
+### Behoben
+
+- **Der SC Deutsch Launcher wurde bei Dual-Boot nicht gefunden.** Gesucht wurde nur in
+  Wine-Präfixen — die Daten liegen bei umgestiegenen Spielern aber auf der
+  **Windows-Platte**, die unter Linux meist eingehängt ist. Ein ganzer Bauplan-Stand
+  blieb dadurch ungenutzt, obwohl er zwei Ordner weiter vollständig vorlag.
+- **Ein eingetragener Launcher-Pfad gilt jetzt allein.** Vorher fiel das Programm bei
+  einem Pfad, den es nicht gab, stillschweigend auf die Suche zurück und nahm womöglich
+  einen ganz anderen Stand her als den angegebenen.
+
 ## v2.0.0-rc4 - 2026-08-24
 
 Der erste echte Bauplan-Drop an einem **englischen** Client — und was dabei auffiel.

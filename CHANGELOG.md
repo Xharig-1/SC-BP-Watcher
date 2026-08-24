@@ -6,6 +6,54 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc5 - 2026-08-24
+
+Blueprint details now show up **in the game** — inside the mission text, with tick
+boxes for the ones you already own.
+
+### Added
+
+- **Blueprint details in mission texts** (`scbp/injektion.py`). Every contract that
+  awards blueprints gets the list — ticked for what is in your collection, empty for
+  what is missing. Plus a marker in the title (`[BP 2/3]`), so you can see it in the
+  contract list without opening each one. **668 text spots.**
+  - Along with the figures that matter before accepting: blueprint chance, minimum and
+    maximum reputation, payout, reputation gain, cooldown, shareable yes/no.
+  - Attached to the **text key**, not the mission name. That key is identical in every
+    language — the same markup works for German, English and the game's nine others.
+  - **Undo is byte-exact.** Everything inserted sits between markers; `entfernen()`
+    restores the original file character for character.
+- **Blueprint data comes from the SCDL team.** The translation project publishes its
+  prepared contract data openly — **813 contracts**, German **and** English, with
+  details available nowhere else (region, danger rating, cooldown in words). scmdb
+  alone yields 349.
+  - The division of labour is the sensible one: the SCDL team maintains what it
+    maintains anyway. This tool adds the one thing only it can — the **tick box**. In
+    the raw data blueprints are listed neutrally as `- Name`; that becomes `[x]` or `[  ]`.
+  - Fetched at runtime from the original address, with attribution in the inserted
+    text. If the data is unreachable, the tool's own scmdb-based layout takes over.
+- **Fetching and updating text sources** (`scbp/uebersetzung.py`): the German
+  translation from `rjcncpt/StarCitizen-Deutsch-INI`, StarStrings from
+  `MrKraken/StarStrings`, or the English originals from your own `Data.p4k`. With an
+  update check, because every translation update overwrites the blueprint notes.
+  - **None of it is bundled.** Both third-party projects keep their rights; everything
+    is fetched at runtime from their own pages, at the user's request.
+  - StarStrings users keep it: its markup stays, ours goes after it — filling its gaps.
+- **A step in the setup wizard** that asks. Nothing is preselected: clicking past it
+  leaves your installation untouched. It is the only place where this tool changes
+  anything about the game.
+- **A section in the settings window**: state, refresh, remove, check for updates.
+
+### Fixed
+
+- **The SC Deutsch Launcher was not found on dual-boot systems.** Only Wine prefixes
+  were searched — but for players who moved over, the data sits on the **Windows
+  drive**, usually mounted under Linux. An entire blueprint collection went unused
+  while sitting two folders away.
+- **A configured launcher path now stands on its own.** Previously, if the folder did
+  not exist, the program quietly fell back to searching and might use a different
+  collection than the one specified.
+
 ## v2.0.0-rc4 - 2026-08-24
 
 The first real blueprint drop on an **English** client — and what it turned up.

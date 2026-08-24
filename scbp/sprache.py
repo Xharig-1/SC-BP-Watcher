@@ -321,6 +321,50 @@ TEXTE = {
     'e_pfad_fehlt':      ('Diesen Ordner gibt es nicht — bitte prüfen.',
                           'That folder does not exist — please check.'),
 
+    # -- Bauplan-Angaben im Spiel (Injektion) --
+    'schritt_spiel_texte': ('Bauplan-Angaben im Spiel', 'Blueprint notes in game'),
+    'inj_text':          ('Der Watcher kann die Bauplan-Angaben direkt in die '
+                          'Missionstexte des Spiels schreiben: welche Baupläne '
+                          'ein Auftrag ausschüttet, mit Kästchen für die, die du '
+                          'schon hast.',
+                          'The watcher can write blueprint details straight into '
+                          'the game\'s mission texts: which blueprints a contract '
+                          'awards, with a tick box for the ones you already have.'),
+    'inj_wie':           ('Dafür wird die Textdatei des Spiels verändert '
+                          '(`global.ini`). Am Spiel selbst ändert sich sonst '
+                          'nichts, und der Schritt lässt sich jederzeit '
+                          'zurücknehmen.',
+                          'This modifies the game\'s text file (`global.ini`). '
+                          'Nothing else about the game changes, and it can be '
+                          'undone at any time.'),
+    'inj_quelle_de':     ('Deutsch — Übersetzung von rjcncpt laden',
+                          'German — fetch the rjcncpt translation'),
+    'inj_quelle_ss':     ('Englisch — StarStrings von MrKraken laden',
+                          'English — fetch StarStrings by MrKraken'),
+    'inj_quelle_orig':   ('Englisch — Originaltexte aus dem Spiel',
+                          'English — original texts from the game'),
+    'inj_quelle_aus':    ('Jetzt nicht', 'Not now'),
+    'inj_fremd':         ('Übersetzung und StarStrings sind fremde Projekte. Sie '
+                          'werden beim Klick von deren eigener Adresse geladen, '
+                          'nicht mitgeliefert.',
+                          'The translation and StarStrings are separate projects. '
+                          'They are fetched from their own pages on click, not '
+                          'bundled with this tool.'),
+    'inj_laeuft':        ('wird eingerichtet …', 'setting up …'),
+    'inj_fertig':        ('Fertig: %s', 'Done: %s'),
+    'inj_fehler':        ('Hat nicht geklappt: %s', 'Did not work: %s'),
+    'inj_aktiv':         ('Bauplan-Angaben sind eingetragen (%d Stellen)',
+                          'Blueprint notes are in place (%d spots)'),
+    'inj_steht':         ('Bauplan-Angaben sind eingetragen',
+                          'Blueprint notes are in place'),
+    'inj_steht_nicht':   ('Bauplan-Angaben sind nicht eingetragen',
+                          'Blueprint notes are not in place'),
+    'inj_entfernen':     ('Angaben wieder entfernen', 'Remove the notes again'),
+    'inj_erneuern':      ('Angaben auffrischen', 'Refresh the notes'),
+    'inj_update_da':     ('Neue Fassung verfügbar: %s', 'New version available: %s'),
+    'inj_aktuell':       ('Ist auf dem neuesten Stand', 'Up to date'),
+    'inj_pruefen':       ('Auf Updates prüfen', 'Check for updates'),
+
     # -- Bereiche (Obergruppen der Kategorien) --
     'gruppe_schiff':     ('Schiffsteile', 'Ship parts'),
     'gruppe_fps':        ('FPS-Waffen', 'FPS weapons'),

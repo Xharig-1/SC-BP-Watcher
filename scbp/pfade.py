@@ -137,7 +137,7 @@ def gesuchte_launcherorte(hoechstens=3):
     if WINDOWS:
         return [os.path.join(os.environ.get('APPDATA', '%APPDATA%'),
                              'sc-deutsch-launcher', 'blueprints')]
-    orte = []
+    orte = list(_windows_launcher())
     for praefix in _wine_praefixe()[:hoechstens]:
         orte.append(os.path.join(praefix, 'drive_c', 'users', '<Benutzer>',
                                  'AppData', 'Roaming', 'sc-deutsch-launcher',
@@ -416,11 +416,17 @@ def launcher_ordner():
 
     Unter Windows liegt er in %APPDATA%. Unter Linux nur dann, wenn jemand den
     Launcher unter Wine betreibt — dann steckt dasselbe AppData im Wine-Präfix."""
+    # Eine **gesetzte** Angabe gilt allein — auch wenn der Ordner dort nicht
+    # existiert. Wer einen Pfad einträgt, will keine Suche woanders; sonst
+    # nimmt das Programm klammheimlich einen anderen Launcher-Stand her als den
+    # angegebenen. (Fiel im Selbsttest auf: Der baut eine Installation ohne
+    # Launcher nach, bekam aber den echten von der Windows-Platte untergeschoben.)
     for eigen in (os.environ.get('SC_BP_LAUNCHER'), einstellung('launcher_ordner')):
-        if eigen:
+        if eigen is not None and eigen != '':
             eigen = os.path.expanduser(eigen)
-            if os.path.isdir(eigen):
-                return eigen
+            return eigen if os.path.isdir(eigen) else None
+    if os.environ.get('SC_BP_LAUNCHER') == '':
+        return None                    # ausdrücklich abgeschaltet
     if WINDOWS:
         p = os.path.join(os.environ.get('APPDATA', ''), 'sc-deutsch-launcher',
                          'blueprints')
@@ -431,7 +437,26 @@ def launcher_ordner():
         for p in sorted(glob.glob(muster)):
             if os.path.isdir(p):
                 return p
+    # Dual-Boot: Der Launcher läuft unter Windows, seine Daten liegen auf der
+    # Windows-Platte — die unter Linux meist eingehängt ist. Ohne diesen Blick
+    # steht ein umgestiegener Spieler ohne seinen alten Bauplan-Stand da,
+    # obwohl der zwei Ordner weiter vollständig vorliegt. Genau so passiert.
+    for p in _windows_launcher():
+        return p
     return None
+
+
+def _windows_launcher():
+    """Launcher-Daten auf einer eingehängten Windows-Platte."""
+    heim = os.path.expanduser('~')
+    orte = ['/run/media/*/*', '/media/*/*', '/mnt/*',
+            os.path.join(heim, '.local', 'share', '*')]
+    for ort in orte:
+        muster = os.path.join(ort, 'Users', '*', 'AppData', 'Roaming',
+                              'sc-deutsch-launcher', 'blueprints')
+        for p in sorted(glob.glob(muster)):
+            if os.path.isdir(p):
+                yield p
 
 
 def launcher_datei(name, ordner=None):

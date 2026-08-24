@@ -49,7 +49,7 @@ SUB     = '#8b98a5'
 ACCENT  = '#9ce430'
 GELB    = '#d8a03a'
 
-SCHRITTE = 4
+SCHRITTE = 5
 
 
 def schrift(groesse, fett=False):
@@ -126,7 +126,8 @@ class Assistent:
                                                else t('weiter')),
                               bg=ACCENT, fg=BG, cursor='hand2')
         {1: self._schritt_sprache, 2: self._schritt_spiel,
-         3: self._schritt_lesen, 4: self._schritt_fertig}[self.schritt]()
+         3: self._schritt_lesen, 4: self._schritt_texte,
+         5: self._schritt_fertig}[self.schritt]()
 
     # ------------------------------------------------------- 1. Sprache
     def _schritt_sprache(self):
@@ -246,7 +247,72 @@ class Assistent:
             # läuft auch ohne Vorgeschichte weiter.
             self.ergebnis.configure(text=t('nachgelesen_gross', 0, 0), fg=SUB)
 
-    # -------------------------------------------------------- 4. Fertig
+    # ------------------------------------------- 4. Bauplan-Angaben im Spiel
+    def _schritt_texte(self):
+        """Die einzige Stelle, an der dieses Werkzeug etwas am Spiel verändert —
+        deshalb wird hier **gefragt**, nicht stillschweigend gemacht.
+
+        Drei Wege plus „jetzt nicht". Voreingestellt ist nichts: Wer weiterklickt,
+        ohne etwas zu wählen, behält seine Installation unverändert."""
+        self.titel.configure(text=t('schritt_spiel_texte'))
+        f = self._flaeche()
+        self._absatz(f, t('inj_text'), FG, 11)
+        self._absatz(f, t('inj_wie'), SUB, 10, oben=10)
+
+        self.inj_meldung = tk.Label(f, text='', bg=BG, fg=SUB, font=schrift(10),
+                                    anchor='w', justify='left', wraplength=560)
+
+        for schluessel, quelle in (('inj_quelle_de', 'deutsch'),
+                                   ('inj_quelle_ss', 'starstrings'),
+                                   ('inj_quelle_orig', 'original')):
+            k = tk.Label(f, text='  %s  ' % t(schluessel), bg=FLAECHE, fg=FG,
+                         font=schrift(11), cursor='hand2', padx=10, pady=8)
+            k.pack(anchor='w', pady=(14 if schluessel.endswith('_de') else 6, 0))
+            k.bind('<Button-1>', lambda e, q=quelle: self._texte_holen(q))
+
+        self._absatz(f, t('inj_fremd'), SUB, 9, oben=16)
+        self.inj_meldung.pack(fill='x', pady=(14, 0))
+
+    def _texte_holen(self, quelle):
+        """Herunterladen, einsetzen, Bauplan-Angaben eintragen — in einem Zug."""
+        from . import injektion, uebersetzung
+        self.inj_meldung.configure(text=t('inj_laeuft'), fg=SUB)
+        self.root.update()
+        try:
+            if quelle == 'original':
+                # Kein Download: Die englische Fassung liegt im Data.p4k des
+                # Spielers. Sie wird nur gebraucht, wenn dort noch keine Datei
+                # liegt — eine vorhandene wird nicht ersetzt.
+                sprache_ordner = 'english'
+                ziel = uebersetzung.ziel_ini(sprache_ordner)
+                if not (ziel and os.path.isfile(ziel)):
+                    self.inj_meldung.configure(
+                        text=t('inj_fehler', 'global.ini fehlt'), fg=GELB)
+                    return
+                uebersetzung.user_cfg_setzen(sprache_ordner)
+            else:
+                ok, meldung = uebersetzung.holen(
+                    quelle, fortschritt=lambda x: (
+                        self.inj_meldung.configure(text=x), self.root.update()))
+                if not ok:
+                    self.inj_meldung.configure(text=t('inj_fehler', meldung),
+                                               fg=GELB)
+                    return
+                sprache_ordner = uebersetzung.QUELLEN[quelle]['sprache']
+                ziel = uebersetzung.ziel_ini(sprache_ordner)
+
+            ok, anzahl, meldung = injektion.einrichten(
+                ziel, sprache_ordner,
+                fortschritt=lambda x: (self.inj_meldung.configure(text=x),
+                                       self.root.update()))
+            if ok:
+                self.inj_meldung.configure(text=t('inj_aktiv', anzahl), fg=ACCENT)
+            else:
+                self.inj_meldung.configure(text=t('inj_fehler', meldung), fg=GELB)
+        except Exception as e:
+            self.inj_meldung.configure(text=t('inj_fehler', e), fg=GELB)
+
+    # -------------------------------------------------------- 5. Fertig
     def _schritt_fertig(self):
         self.titel.configure(text=t('schritt_fertig'))
         f = self._flaeche()

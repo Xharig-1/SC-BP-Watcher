@@ -40,8 +40,10 @@ import os
 import tkinter as tk
 from tkinter import filedialog
 
+from . import injektion
 from . import pfade
 from . import sprache
+from . import uebersetzung
 from .sprache import t
 
 BG      = '#10141c'
@@ -66,7 +68,7 @@ class Einstellungsfenster:
         self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
         self.root.title(t('titel_einstellungen'))
         self.root.configure(bg=BG)
-        self.root.geometry('640x620')
+        self.root.geometry('660x780')
 
         # Werte laden. Leere Felder heißen „selbst suchen" — das bleibt so,
         # ein leeres Feld ist hier kein Fehler.
@@ -90,6 +92,7 @@ class Einstellungsfenster:
                          self.launcher)
         self._intervallfeld(flaeche)
         self._tonfeld(flaeche)
+        self._injektionsfeld(flaeche)
 
         self._fuss()
 
@@ -182,6 +185,90 @@ class Einstellungsfenster:
         self.ton_lbl.configure(text=' %s ' % (t('e_an') if an else t('e_aus')),
                                fg=BG if an else SUB,
                                bg=ACCENT if an else FLAECHE)
+
+    def _injektionsfeld(self, eltern):
+        """Bauplan-Angaben im Spiel: Zustand, Auffrischen, Entfernen, Update.
+
+        Auffrischen ist kein Luxus, sondern nötig: Jedes Übersetzungs-Update und
+        jeder Spiel-Patch schreibt die `global.ini` neu — die Angaben sind dann
+        stillschweigend weg. Deshalb steht hier immer, ob sie gerade drin sind."""
+        self._titel(eltern, t('schritt_spiel_texte'), t('inj_wie'))
+        self.inj_lage = tk.Label(eltern, text='', bg=BG, fg=SUB,
+                                 font=schrift(10), anchor='w', justify='left',
+                                 wraplength=600)
+        self.inj_lage.pack(fill='x', pady=(0, 8))
+
+        reihe = tk.Frame(eltern, bg=BG)
+        reihe.pack(fill='x')
+        for text, tat in ((t('inj_erneuern'), self._inj_erneuern),
+                          (t('inj_entfernen'), self._inj_entfernen),
+                          (t('inj_pruefen'), self._inj_pruefen)):
+            k = tk.Label(reihe, text=' %s ' % text, bg=FLAECHE, fg=FG,
+                         font=schrift(10), cursor='hand2', padx=10, pady=6)
+            k.pack(side='left', padx=(0, 6))
+            k.bind('<Button-1>', lambda e, f=tat: f())
+        self._inj_lage_zeigen()
+
+    def _inj_ini(self):
+        """Die global.ini, um die es geht — nach der eingestellten Sprache."""
+        for quelle in ('deutsch', 'starstrings'):
+            if uebersetzung.installiert(quelle):
+                sprache_ordner = uebersetzung.QUELLEN[quelle]['sprache']
+                return uebersetzung.ziel_ini(sprache_ordner), sprache_ordner, quelle
+        # Nichts vermerkt: dann die Datei nehmen, die tatsächlich daliegt.
+        for sprache_ordner in ('german_(germany)', 'english'):
+            p = uebersetzung.ziel_ini(sprache_ordner)
+            if p and os.path.isfile(p):
+                return p, sprache_ordner, None
+        return None, 'english', None
+
+    def _inj_lage_zeigen(self):
+        pfad, _, quelle = self._inj_ini()
+        if not pfad or not os.path.isfile(pfad):
+            self.inj_lage.configure(text='—', fg=SUB)
+            return
+        drin = injektion.ist_drin(pfad)
+        stand = uebersetzung.installiert(quelle) if quelle else None
+        text = t('inj_steht') if drin else t('inj_steht_nicht')
+        if stand:
+            text += ' · %s' % stand
+        self.inj_lage.configure(text=text, fg=ACCENT if drin else SUB)
+
+    def _inj_erneuern(self):
+        pfad, sprache_ordner, _ = self._inj_ini()
+        if not pfad:
+            self.meldung.configure(text=t('inj_fehler', 'global.ini'), fg=ROT)
+            return
+        self.meldung.configure(text=t('inj_laeuft'), fg=SUB)
+        self.root.update()
+        ok, n, meldung = injektion.aktualisieren(
+            pfad, sprache_ordner,
+            fortschritt=lambda x: (self.meldung.configure(text=x),
+                                   self.root.update()))
+        self.meldung.configure(text=t('inj_aktiv', n) if ok
+                               else t('inj_fehler', meldung),
+                               fg=SUB if ok else ROT)
+        self._inj_lage_zeigen()
+
+    def _inj_entfernen(self):
+        pfad, sprache_ordner, _ = self._inj_ini()
+        if not pfad:
+            return
+        ok, n, meldung = injektion.entfernen(pfad, sprache_ordner)
+        self.meldung.configure(text=meldung, fg=SUB if ok else ROT)
+        self._inj_lage_zeigen()
+
+    def _inj_pruefen(self):
+        """Gibt es bei der benutzten Quelle etwas Neues?"""
+        _, _, quelle = self._inj_ini()
+        if not quelle:
+            self.meldung.configure(text=t('inj_aktuell'), fg=SUB)
+            return
+        self.meldung.configure(text=t('inj_laeuft'), fg=SUB)
+        self.root.update()
+        neu, kennung = uebersetzung.update_da(quelle)
+        self.meldung.configure(
+            text=t('inj_update_da', kennung) if neu else t('inj_aktuell'), fg=SUB)
 
     def _fuss(self):
         fuss = tk.Frame(self.root, bg=BG)

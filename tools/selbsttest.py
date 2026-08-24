@@ -129,7 +129,10 @@ def main():
     os.environ['SC_INSTALL_DIR'] = live
     os.environ['SC_BP_HOME'] = os.path.join(basis, 'eigene')
     os.environ['SC_BP_NO_NET'] = '1'
-    os.environ.pop('SC_BP_LAUNCHER', None)
+    # Leer heisst ausdruecklich 'kein Launcher' - nur zu loeschen reicht
+    # nicht: dann sucht pfade.py weiter und findet womoeglich einen
+    # echten Launcher-Stand auf einer eingehaengten Windows-Platte.
+    os.environ['SC_BP_LAUNCHER'] = ''
     os.environ.pop('SC_BP_OVERRIDES', None)
 
     try:
