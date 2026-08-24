@@ -31,7 +31,7 @@ Ein kleines, randloses Overlay, das beim Spielen **in Echtzeit** meldet, sobald 
 <sub>Das Overlay — schmal, immer im Vordergrund, Durchsichtigkeit einstellbar</sub>
 </td>
 <td width="55%" valign="top" align="center">
-<img src="assets/screenshot-liste.png" alt="Die Bauplan-Liste" width="100%"><br>
+<img src="assets/screenshot-fenster.png" alt="Das Fenster mit der Bauplan-Liste" width="100%"><br>
 <sub>Die Bauplan-Liste — Filter, Bereiche und wo man den Auftrag annimmt</sub>
 </td>
 </tr>

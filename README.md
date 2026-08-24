@@ -31,7 +31,7 @@ A small, borderless overlay that tells you **in real time** when a new blueprint
 <sub>The overlay — narrow, always on top, opacity adjustable</sub>
 </td>
 <td width="55%" valign="top" align="center">
-<img src="assets/screenshot-liste.png" alt="The blueprint list" width="100%"><br>
+<img src="assets/screenshot-fenster.png" alt="The window with the blueprint list" width="100%"><br>
 <sub>The blueprint list — filters, sections, and where each contract is available</sub>
 </td>
 </tr>

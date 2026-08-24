@@ -195,9 +195,9 @@ class Hauptfenster:
         self._gruppe(t('hf_gruppe_einst'))
         self._reiter('allgemein', '⚙', t('hf_allgemein'))
         self._reiter('anzeige', '▭', t('hf_anzeige'))
-        self._reiter('ordner', '🗀', t('hf_ordner'))
+        self._reiter('ordner', '❒', t('hf_ordner'))
         self._reiter('spiel', '✎', t('hf_spiel'))
-        self._reiter('bestand', '⇅', t('hf_bestand'))
+        self._reiter('bestand', '↕', t('hf_bestand'))
         self._reiter('wasistneu', '✦', t('hf_wasistneu'))
         self._reiter('ueber', 'ⓘ', t('hf_ueber'))
 
@@ -218,6 +218,11 @@ class Hauptfenster:
                  font=self.f_klein, anchor='w', padx=16,
                  pady=6).pack(fill='x', pady=(10, 0))
 
+    # ⚠ Nur Zeichen aus der Grundebene benutzen. `🗀` und `⇅` liegen darüber und
+    # fehlen in der Oberflächenschrift — im Fenster stand statt des Symbols ein
+    # Fragezeichen. Auffallen tut das erst im laufenden Fenster, nicht im Code.
+    # Prüfen lässt es sich mit `tkfont.Font.measure`: Ein fehlendes Zeichen ist
+    # genauso breit wie das amtliche Ersatzzeichen `￿`.
     def _reiter(self, kennung, zeichen, text, wohin=None):
         ziel = wohin if wohin is not None else self.leiste
         zeile = tk.Frame(ziel, bg=FLAECHE, cursor='hand2')

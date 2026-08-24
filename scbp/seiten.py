@@ -72,11 +72,16 @@ def _ueberschrift(fenster, rahmen, titel, lead=''):
                      fill='x', padx=24, pady=(0, 14))
 
 
-def _rollflaeche(rahmen):
+def _rollflaeche(rahmen, rand=24):
     """Ein Bereich, der rollt. Leinwand + Balken, wie im Einstellungsfenster.
 
     ⚠ Die Fläche wird **zuletzt** gepackt und bekommt `expand=True` — alles,
     was fest bleiben soll, muss vorher gepackt sein.
+
+    `rand` rückt den Inhalt ein. Das gehört hierher und nicht in jeden Baustein:
+    Die Bausteine stammen aus dem alten Einstellungsfenster und packen sich ohne
+    Rand — neben eingerückten Überschriften sahen sie aus, als wären sie
+    verrutscht.
     """
     aussen = tk.Frame(rahmen, bg=BG)
     aussen.pack(fill='both', expand=True)
@@ -92,14 +97,21 @@ def _rollflaeche(rahmen):
     balken.pack(side='right', fill='y')
     leinwand.pack(side='left', fill='both', expand=True)
 
+    if rand:
+        polster = tk.Frame(innen, bg=BG)
+        polster.pack(fill='both', expand=True, padx=rand)
+        innen_ziel = polster
+    else:
+        innen_ziel = innen
+
     def rollen(e):
         leinwand.yview_scroll(int(-1 * (e.delta or (120 if e.num == 4 else -120)) / 120),
                               'units')
-    for ziel in (leinwand, innen):
+    for ziel in (leinwand, innen, innen_ziel):
         ziel.bind('<MouseWheel>', rollen)
         ziel.bind('<Button-4>', rollen)
         ziel.bind('<Button-5>', rollen)
-    return innen
+    return innen_ziel
 
 
 def _knopf(fenster, eltern, text, tat, stark=False):
@@ -113,7 +125,7 @@ def _knopf(fenster, eltern, text, tat, stark=False):
 def _feld(fenster, eltern, bezeichnung, hilfe):
     """Eine Einstellungszeile: Bezeichnung, Erklärung, Platz für das Bedienelement."""
     zeile = tk.Frame(eltern, bg=BG)
-    zeile.pack(fill='x', padx=24, pady=(12, 0))
+    zeile.pack(fill='x', pady=(12, 0))
     links = tk.Frame(zeile, bg=BG)
     links.pack(side='left', fill='x', expand=True)
     tk.Label(links, text=bezeichnung, bg=BG, fg=FG, font=fenster.f_fett,
@@ -123,7 +135,7 @@ def _feld(fenster, eltern, bezeichnung, hilfe):
                  anchor='w', justify='left', wraplength=520).pack(fill='x')
     rechts = tk.Frame(zeile, bg=BG)
     rechts.pack(side='right', padx=(16, 0))
-    tk.Frame(eltern, bg=LINIE, height=1).pack(fill='x', padx=24, pady=(12, 0))
+    tk.Frame(eltern, bg=LINIE, height=1).pack(fill='x', pady=(12, 0))
     return rechts
 
 
@@ -156,7 +168,7 @@ def _fortschritt(fenster, rahmen):
     gesamt_alle = sum(g for g, _ in nach_art.values()) or 1
     meine_alle = sum(m for _, m in nach_art.values())
     kopf = tk.Frame(innen, bg=BG)
-    kopf.pack(fill='x', padx=24, pady=(0, 4))
+    kopf.pack(fill='x', pady=(0, 4))
     tk.Label(kopf, text=str(meine_alle), bg=BG, fg=ACCENT,
              font=fenster.f_titel).pack(side='left')
     tk.Label(kopf, text='  von %d Bauplänen · %.0f %%'
@@ -166,7 +178,7 @@ def _fortschritt(fenster, rahmen):
     for art, (gesamt, meine) in sorted(nach_art.items(),
                                        key=lambda x: -x[1][0]):
         zeile = tk.Frame(innen, bg=BG)
-        zeile.pack(fill='x', padx=24, pady=3)
+        zeile.pack(fill='x', pady=3)
         tk.Label(zeile, text=art, bg=BG, fg=FG, font=fenster.f_klein,
                  width=22, anchor='w').pack(side='left')
         balken = tk.Frame(zeile, bg='#222b3b', height=7, width=260)
@@ -331,7 +343,7 @@ def _wasistneu(fenster, rahmen):
     stand = {'art': 'alle'}
     chips = {}
     leiste = tk.Frame(rahmen, bg=BG)
-    leiste.pack(fill='x', padx=24, pady=(0, 10))
+    leiste.pack(fill='x', pady=(0, 10))
     innen = _rollflaeche(rahmen)
     behaelter = tk.Frame(innen, bg=BG)
     behaelter.pack(fill='both', expand=True)
@@ -352,7 +364,7 @@ def _wasistneu(fenster, rahmen):
             _fassung(fenster, behaelter, e, punkte, offen)
         if not gezeigt:
             tk.Label(behaelter, text='Nichts in dieser Auswahl.', bg=BG, fg=SUB,
-                     font=fenster.f_klein).pack(anchor='w', padx=24, pady=12)
+                     font=fenster.f_klein).pack(anchor='w', pady=12)
 
     def waehlen(art):
         stand['art'] = art
@@ -395,7 +407,7 @@ def _fassung(fenster, eltern, eintrag, punkte, offen):
 
     koerper = tk.Frame(eltern, bg=BG)
     if offen:
-        koerper.pack(fill='x', padx=24)
+        koerper.pack(fill='x')
 
     for art, zeile in punkte:
         z = tk.Frame(koerper, bg=BG)
@@ -411,7 +423,7 @@ def _fassung(fenster, eltern, eintrag, punkte, offen):
         zustand['offen'] = not zustand['offen']
         pfeil.configure(text='▼' if zustand['offen'] else '▶')
         if zustand['offen']:
-            koerper.pack(fill='x', padx=24)
+            koerper.pack(fill='x')
         else:
             koerper.pack_forget()
 
@@ -470,27 +482,27 @@ def _ueber(fenster, rahmen):
     zeichnen()
 
     tk.Label(innen, text=t('hf_wer'), bg=BG, fg=FG, font=fenster.f_fett,
-             anchor='w').pack(fill='x', padx=24, pady=(22, 6))
+             anchor='w').pack(fill='x', pady=(22, 6))
     tk.Label(innen, text='Xharig', bg=BG, fg=ACCENT, font=fenster.f_titel,
-             anchor='w').pack(fill='x', padx=24)
+             anchor='w').pack(fill='x')
     tk.Label(innen, text='SC BP Watcher · GPL-3.0-only\n'
                          'github.com/Xharig-1/SC-BP-Watcher',
              bg=BG, fg=SUB, font=fenster.f_klein, anchor='w',
-             justify='left').pack(fill='x', padx=24, pady=(2, 12))
+             justify='left').pack(fill='x', pady=(2, 12))
 
     tk.Label(innen, text=t('hf_dank'), bg=BG, fg=FG, font=fenster.f_klein,
-             anchor='w').pack(fill='x', padx=24)
+             anchor='w').pack(fill='x')
     tk.Label(innen, text='· scmdb.net — Bauplan-Katalog und Herkunft\n'
                          '· rjcncpt / SC Deutsch Launcher — Übersetzung und Verträge\n'
                          '· MrKraken · StarStrings — Vorbild für die Einspielung',
              bg=BG, fg=SUB, font=fenster.f_klein, anchor='w',
-             justify='left').pack(fill='x', padx=24, pady=(2, 8))
+             justify='left').pack(fill='x', pady=(2, 8))
     tk.Label(innen, text=t('hf_nichts_dabei'), bg=BG, fg=SUB,
              font=fenster.f_klein, anchor='w', justify='left',
-             wraplength=620).pack(fill='x', padx=24)
+             wraplength=620).pack(fill='x')
     tk.Label(innen, text=t('hf_fancontent'), bg=BG, fg=SUB, font=fenster.f_klein,
              anchor='w', justify='left', wraplength=620).pack(
-                 fill='x', padx=24, pady=(14, 20))
+                 fill='x', pady=(14, 20))
 
 
 def _erkennung(fenster, rahmen):
@@ -520,12 +532,12 @@ def _diagnose(fenster, rahmen):
     kasten = tk.Text(innen, bg='#0c1017', fg=FG, font=('Consolas', 9),
                      height=18, wrap='none', relief='flat',
                      insertbackground=FG, padx=12, pady=10)
-    kasten.pack(fill='both', expand=True, padx=24, pady=(0, 10))
+    kasten.pack(fill='both', expand=True, pady=(0, 10))
     kasten.insert('1.0', text)
     kasten.configure(state='disabled')
 
     reihe = tk.Frame(innen, bg=BG)
-    reihe.pack(fill='x', padx=24, pady=(0, 16))
+    reihe.pack(fill='x', pady=(0, 16))
 
     def melden():
         if bericht.issue_oeffnen(text):
