@@ -228,6 +228,11 @@ def topf_lesbar(roh):
         return ''
     kern = re.sub(r'(_\d+)+$', '', kern)          # `_15_06` und Verwandte weg
     kern = re.sub(r'[_\-]+', ' ', kern).strip()
+    # Zweite Schranke: Eine Quelle heißt kurz („RedWind", „RDC Boss"). Wo eine
+    # ganze Gegenstandsbeschreibung steht („Carryable 2H FL MissionItem
+    # Microsatellite a"), ist es wieder keine Herkunft, sondern das Ding selbst.
+    if len(kern.split()) > 2:
+        return ''
     return kern or ''
 
 
