@@ -1,0 +1,292 @@
+# -*- coding: utf-8 -*-
+#
+# SC BP Watcher — zeigt live neue Star-Citizen-Baupläne an.
+# Copyright (C) 2026 Xharig
+#
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+Der Bauplan-Katalog: welche Baupläne es gibt — und woher sie kommen.
+
+Zwei Fragen beantwortet dieses Modul:
+
+  **Was gibt es überhaupt?** 714 Baupläne (Stand 4.9.0). Das ist etwas anderes
+  als „was ist craftbar": Die Datei `crafting_items` zählt 1573 Gegenstände,
+  aber für die meisten davon droppt nie ein Bauplan. Für eine Liste zum Abhaken
+  wäre die große Zahl irreführend.
+
+  **Woher bekomme ich einen bestimmten?** Fraktion, Auftrag, nötiger Ruf,
+  Belohnung. Für 655 der 714 (92 %) ist das auflösbar. **Genau das kann der
+  SC Deutsch Launcher nicht** — „mir fehlt X" ist die halbe Information,
+  „X droppt bei Fraktion Y ab Rang Z" ist die ganze.
+
+Die Kette durch die Daten von scmdb.net:
+
+    contracts[].blueprintRewards[].blueprintPool   (GUID)
+        -> blueprintPools[GUID].blueprints[].name  = der Bauplan
+    contracts[].factionGuid  -> factions[GUID].name
+    contracts[].minStanding  -> Rang und nötige Rufpunkte
+    contracts[].factionRewardsIndex -> factionRewardsPools[i] = Ruf-Gewinn
+
+> **Die Daten werden NICHT mitgeliefert.** scmdb steht unter CC BY-NC-ND 4.0;
+> eine Kopie im Repo wäre eine Weitergabe und verstieße gegen diese Lizenz wie
+> gegen die GPL dieses Projekts. Geholt wird auf dem Rechner des Nutzers, so wie
+> es ein Browser täte, mit ehrlicher Kennung — und nur einmal je Spielversion.
+> `SC_BP_NO_NET=1` schaltet es ab.
+
+Der Sammel-Dump ist rund 12 MB. Deshalb wird er **nicht** aufgehoben, sondern
+sofort zu einer kleinen eigenen Datei eingedampft (`katalog-cache.json`, etwa
+ein Zwanzigstel davon).
+"""
+import json
+import os
+import time
+import urllib.request
+
+from . import pfade, sprache
+
+BASIS = 'https://scmdb.net/data'
+CACHE = 'katalog-cache.json'
+KENNUNG = 'SC-BP-Watcher/2.0 (+https://github.com/Xharig-1/SC-BP-Watcher)'
+ZEITLIMIT = 120
+AUS = os.environ.get('SC_BP_NO_NET', '') not in ('', '0')
+
+# Die Bezeichnungen der Arten stehen im Sprachmodul — sie sind Oberflächentext
+# und müssen mit umschalten. „Char_Armor_Helmet" ist nichts, was ein Mensch
+# lesen sollte, und „Helm" nichts, was in einer englischen Liste stehen darf.
+def art_lesbar(roh):
+    """Aus 'Char_Armor_Helmet' wird 'Helm' bzw. 'Helmet'."""
+    return sprache.art(roh)
+
+
+# So viele Bezugsquellen je Bauplan werden behalten. Mehr blähen die Datei auf,
+# ohne zu helfen: Wer einen Bauplan sucht, nimmt ohnehin den leichtesten Weg.
+QUELLEN_JE_BP = 3
+
+
+# ------------------------------------------------------------------ Netz
+VERSUCHE = 3
+
+
+def _hole(url, zeitlimit=ZEITLIMIT, versuche=VERSUCHE):
+    """Eine JSON-Datei holen — mit Wiederholung.
+
+    Der Sammel-Dump ist rund 12 MB, und genau bei der Größe reißt die Leitung
+    gern mitten drin ab (hier beim Bauen zweimal passiert). Ein einzelner
+    Fehlversuch darf deshalb nicht heißen, dass es den Katalog nicht gibt."""
+    letzter = None
+    for versuch in range(versuche):
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': KENNUNG})
+            with urllib.request.urlopen(req, timeout=zeitlimit) as r:
+                return json.loads(r.read().decode('utf-8'))
+        except Exception as fehler:
+            letzter = fehler
+            if versuch + 1 < versuche:
+                time.sleep(2 * (versuch + 1))
+    raise letzter
+
+
+def aktuelle_version():
+    """Die laufende Spielversion laut scmdb (PTU wird übersprungen)."""
+    for v in _hole(BASIS + '/versions.json', zeitlimit=15):
+        name = (v.get('version') or '')
+        if name and 'ptu' not in name.lower():
+            return name
+    return None
+
+
+# ------------------------------------------------------------ Aufbereitung
+def _norm(s):
+    return str(s).lower().replace('\xa0', ' ').strip()
+
+
+def _werte(rohe_items):
+    """Name -> Art, Größe, Gütegrad, Klasse, Hersteller."""
+    werte = {}
+    for e in rohe_items.get('items', []):
+        name = e.get('name')
+        if name:
+            werte.setdefault(_norm(name), {
+                'a': e.get('attachType') or e.get('cgItemType'),
+                'sub': e.get('attachSubType'),
+                's': e.get('size'),
+                'g': e.get('grade'),
+                'c': e.get('componentClass'),
+                'm': e.get('manufacturer'),
+            })
+    return werte
+
+
+def _herkunft(merged):
+    """Bauplan-Name -> Liste von Bezugsquellen, leichteste zuerst."""
+    pools = {}
+    for guid, pool in (merged.get('blueprintPools') or {}).items():
+        pools[guid] = [b.get('name') for b in (pool.get('blueprints') or [])
+                       if b.get('name')]
+    factions = merged.get('factions') or {}
+    belohnungen = merged.get('factionRewardsPools') or []
+
+    quellen = {}
+    for vertrag in ((merged.get('contracts') or [])
+                    + (merged.get('legacyContracts') or [])):
+        ziele = [r.get('blueprintPool')
+                 for r in (vertrag.get('blueprintRewards') or [])]
+        if not ziele:
+            continue
+        fraktion = factions.get(vertrag.get('factionGuid')) or {}
+        i = vertrag.get('factionRewardsIndex')
+        rufgewinn = None
+        if isinstance(i, int) and 0 <= i < len(belohnungen):
+            rufgewinn = sum(e.get('amount', 0) for e in belohnungen[i])
+        rang = vertrag.get('minStanding') or {}
+        eintrag = {
+            'auftrag': vertrag.get('title'),
+            'typ': vertrag.get('missionType'),
+            'fraktion': fraktion.get('name') if isinstance(fraktion, dict) else None,
+            'uec': vertrag.get('rewardUEC'),
+            'ruf': rufgewinn,
+            'rang': rang.get('name'),
+            'rep': rang.get('minReputation'),
+        }
+        for guid in ziele:
+            for name in pools.get(guid, []):
+                quellen.setdefault(_norm(name), []).append(eintrag)
+
+    # Leichtesten Weg zuerst: niedrigste Ruf-Anforderung, bei Gleichstand die
+    # höhere Bezahlung. Dubletten (derselbe Auftrag über mehrere Pools) raus.
+    for name, liste in quellen.items():
+        gesehen, sauber = set(), []
+        for e in sorted(liste, key=lambda x: ((x['rep'] if x['rep'] is not None
+                                               else 10 ** 9),
+                                              -(x['uec'] or 0))):
+            schluessel = (e['auftrag'], e['fraktion'])
+            if schluessel in gesehen:
+                continue
+            gesehen.add(schluessel)
+            sauber.append(e)
+        quellen[name] = sauber[:QUELLEN_JE_BP]
+    return pools, quellen
+
+
+def erzeugen(version=None, fortschritt=None, aus_datei=None):
+    """Holt die Daten und legt den eigenen Katalog an. Gibt (anzahl, version) zurück.
+
+    `fortschritt` ist eine Funktion für Zwischenmeldungen — das Holen dauert
+    ein paar Sekunden, und ein stummes Programm sieht dabei aus wie ein hängendes."""
+    def melde(text):
+        if fortschritt:
+            fortschritt(text)
+
+    version = version or aktuelle_version()
+    if not version:
+        return 0, ''
+
+    melde('Werte werden geholt …')
+    werte = _werte(_hole('%s/crafting_items-%s.json' % (BASIS, version)))
+
+    if aus_datei:                       # nur für Entwicklung und Selbsttest
+        melde('Bauplan-Herkunft wird aus %s gelesen …' % os.path.basename(aus_datei))
+        with open(aus_datei, encoding='utf-8') as f:
+            merged = json.load(f)
+    else:
+        melde('Bauplan-Herkunft wird geholt (etwa 12 MB) …')
+        merged = _hole('%s/merged-%s.json' % (BASIS, version))
+
+    melde('Wird ausgewertet …')
+    pools, quellen = _herkunft(merged)
+    namen = {n for liste in pools.values() for n in liste}
+
+    bauplaene = {}
+    for name in sorted(namen):
+        k = _norm(name)
+        eintrag = {'n': name}
+        eintrag.update({s: w for s, w in (werte.get(k) or {}).items() if w})
+        q = quellen.get(k)
+        if q:
+            eintrag['q'] = q
+        bauplaene[k] = eintrag
+
+    daten = {'version': version, 'geholt': time.strftime('%Y-%m-%d %H:%M'),
+             'bauplaene': bauplaene}
+    ziel = pfade.app_datei(CACHE)
+    temp = ziel + '.tmp'
+    with open(temp, 'w', encoding='utf-8') as f:
+        json.dump(daten, f, ensure_ascii=False)
+    os.replace(temp, ziel)
+    return len(bauplaene), version
+
+
+# ------------------------------------------------------------------ Lesen
+def laden():
+    """Der eigene Katalog von der Platte. Fehlt er, ist er leer."""
+    try:
+        with open(pfade.app_datei(CACHE), encoding='utf-8') as f:
+            d = json.load(f)
+        if isinstance(d.get('bauplaene'), dict):
+            return d
+    except Exception:
+        pass
+    return {'version': '', 'geholt': '', 'bauplaene': {}}
+
+
+def aktualisieren(fortschritt=None):
+    """Erneuert den Katalog, falls eine neue Spielversion vorliegt.
+
+    Gibt (True, Anzahl, Version) zurück, wenn etwas passiert ist. Wirft nie —
+    ohne Netz gilt der letzte Stand, und der Watcher läuft ohne Katalog weiter
+    (dann fehlt nur die Liste, nicht die Erkennung)."""
+    if AUS:
+        return False, 0, ''
+    try:
+        version = aktuelle_version()
+        if not version or version == laden().get('version'):
+            return False, 0, version or ''
+        anzahl, version = erzeugen(version, fortschritt)
+        return bool(anzahl), anzahl, version
+    except Exception:
+        return False, 0, ''
+
+
+def namen(daten=None):
+    """Alle Bauplan-Namen in Vergleichsform."""
+    return set((daten or laden())['bauplaene'])
+
+
+def nach_art(daten=None):
+    """Baupläne nach Art gruppiert: {'Cooler': [Eintrag, …], …}."""
+    gruppen = {}
+    for k, e in (daten or laden())['bauplaene'].items():
+        gruppen.setdefault(art_lesbar(e.get('a')), []).append(e)
+    for liste in gruppen.values():
+        liste.sort(key=lambda e: e['n'].lower())
+    return gruppen
+
+
+if __name__ == '__main__':
+    import sys
+    d = laden()
+    if '--holen' in sys.argv or not d['bauplaene']:
+        datei = next((a.split('=', 1)[1] for a in sys.argv
+                      if a.startswith('--datei=')), None)
+        n, v = erzeugen(fortschritt=lambda t: print(' ', t), aus_datei=datei)
+        print('Katalog angelegt: %d Baupläne, Version %s' % (n, v))
+        d = laden()
+    mit = sum(1 for e in d['bauplaene'].values() if e.get('q'))
+    print('Version %s · %d Baupläne · %d mit Herkunft'
+          % (d['version'], len(d['bauplaene']), mit))
+    print('Datei  :', pfade.app_datei(CACHE),
+          '(%.0f KB)' % (os.path.getsize(pfade.app_datei(CACHE)) / 1024))
+    for art, liste in sorted(nach_art(d).items(), key=lambda x: -len(x[1]))[:8]:
+        print('   %4d  %s' % (len(liste), art))

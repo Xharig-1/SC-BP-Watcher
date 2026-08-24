@@ -176,7 +176,35 @@ def main():
         pruefe('_spiel_ordner_gesucht_wird_hier' in d2,
                'die Vorlage nennt die Suchorte beim Feld')
 
-        print('\n6. Fensterlage von einem fremden Rechner')
+        print('\n6. Sprache')
+        from scbp import sprache
+        luecken = [k for k, v in sprache.TEXTE.items()
+                   if len(v) != 2 or not all(v)]
+        pruefe(not luecken, 'jeder Text hat beide Sprachen (%d Einträge)'
+               % len(sprache.TEXTE))
+        for k in luecken[:5]:
+            print('         unvollständig:', k)
+        sprache.setzen('de'); deutsch = sprache.t('filter_fehlt')
+        sprache.setzen('en'); englisch = sprache.t('filter_fehlt')
+        pruefe(deutsch != englisch,
+               'Umschalten wirkt (%s / %s)' % (deutsch, englisch))
+        pruefe(sprache.t('gibtesnicht') == 'gibtesnicht',
+               'fehlender Schlüssel stürzt nicht ab, sondern fällt auf')
+        # Arten aus dem Katalog müssen alle eine Übersetzung haben — nach einem
+        # SC-Patch können neue dazukommen, und dann steht sonst „Char_Armor_…"
+        # mitten in der Liste.
+        from scbp import katalog
+        kat = katalog.laden()
+        if kat['bauplaene']:
+            roh = {e.get('a') for e in kat['bauplaene'].values()}
+            offen = [r for r in roh if ('art_%s' % r) not in sprache.TEXTE]
+            pruefe(not offen, 'alle %d Bauplan-Arten übersetzt %s'
+                   % (len(roh), offen or ''))
+        else:
+            print('  [--]   Katalog nicht vorhanden, Arten nicht prüfbar')
+        sprache.setzen('de')
+
+        print('\n7. Fensterlage von einem fremden Rechner')
         kaputt = w.geometrie_pruefen('440x1098+999999+-999999', _wurzel())
         pruefe('+999999' not in kaputt, 'unsinnige Position verworfen (%s)' % kaputt)
 
