@@ -228,4 +228,4 @@ def speichern(text, pfad_=None):
 
 
 if __name__ == '__main__':
-    sys.stdout.write(bauen(version='2.2.0-dev') + '\n')
+    sys.stdout.write(bauen(version='3.0.0-dev') + '\n')
