@@ -1,6 +1,6 @@
 # Baut bei jedem Versions-Tag die fertigen Dateien und haengt sie an ein Release.
 #
-# Warum das hier laeuft und nicht auf einem Rechner:
+# Warum das hier laeuft und nicht auf dem Entwicklungsrechner:
 #   * Niemand soll etwas selbst bauen muessen — weder die Nutzer noch der Autor.
 #   * Die .exe braucht Windows, das AppImage braucht Linux. Kein Rechner hat beides.
 #   * Frueher hing die veroeffentlichte .exe vier Versionen hinter dem Code, weil

@@ -159,7 +159,7 @@ selbst geführt, und zu den meisten Bauplänen steht dabei, woher man sie bekomm
 - **Merkliste per Klick** (`scbp/merkliste.py`). In der Bauplan-Liste macht ein Klick auf den Stern aus jedem Eintrag einen Wunsch — taucht er auf, meldet ihn der Watcher auffällig in Gold. Dafür muss niemand mehr eine `watchlist.json` von Hand anlegen.
   - Eigener Filter **⭐ beobachtet** zeigt, worauf man gerade wartet.
   - **Erfüllte Wünsche verschwinden von selbst.** Landet ein beobachteter Bauplan im Bestand, sagt der Watcher einmal Bescheid und trägt ihn aus — eine Liste voller längst erledigter Wünsche wäre keine Merkliste, sondern ein Archiv.
-  - Von außen eingetragene **Muster** funktionieren weiter (die des Autors: Skill „SC BP" schreibt dort die Teile der Staffelrüstung hinein, deren endgültige Namen noch niemand kennt).
+  - Von außen eingetragene **Muster** funktionieren weiter (ein eigenes Werkzeug des Autors schreibt dort Teile einer Rüstung hinein, deren endgültige Namen noch niemand kennt).
 - **Fertige Dateien für beide Systeme, gebaut von GitHub.** Ein Versions-Tag löst den Bau aus: ein Windows-Rechner baut die `.exe`, ein Linux-Rechner das AppImage, beide werden ans Release gehängt — samt Beschreibung aus dem CHANGELOG, damit im Werkzeug unter „Was ist neu" dasselbe steht wie auf GitHub.
   - Das AppImage wird **in einem Ubuntu-22.04-Container** gebaut (glibc 2.35). Auf neuerem glibc gebaut, würde es auf verbreiteten Systemen gar nicht erst starten.
   - Der Bau bricht ab, wenn Tag und `__version__` nicht zusammenpassen. Wer „v2.0.0" lädt, soll im Fenster nicht etwas anderes lesen.

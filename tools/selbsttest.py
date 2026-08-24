@@ -341,7 +341,7 @@ def main():
         pruefe(mk.enthaelt('wunschteil'), 'Groß- und Kleinschreibung egal')
         pruefe(mk.umschalten('Wunschteil') is False, 'zweiter Klick trägt aus')
         mk.umschalten('Wunschteil')
-        # Muster-Einträge von außen (die des Autors: Skill „SC BP" schreibt so)
+        # Muster-Einträge von außen (ein eigenes Werkzeug des Autors schreibt so)
         d = mk.laden()
         d['eintraege'].append({'titel': 'Staffelrüstung',
                                'muster': ['adp-mk4', 'woodland']})

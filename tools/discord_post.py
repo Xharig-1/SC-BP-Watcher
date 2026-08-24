@@ -2,7 +2,7 @@
 """
 Baut aus dem CHANGELOG die **Versionsmeldung fürs Discord**.
 
-der Autor betreibt ein eigenes Discord, das wie ein Forum aufgebaut ist: ein Kanal
+Zum Projekt gehoert ein eigenes Discord, das wie ein Forum aufgebaut ist: ein Kanal
 nur für Versionsmeldungen, daneben Kanäle für Fragen und Fehlermeldungen. Der
 Meldungs-Kanal soll sauber bleiben — eine Nachricht je Fassung, immer gleich
 aufgebaut, ohne Diskussion dazwischen.

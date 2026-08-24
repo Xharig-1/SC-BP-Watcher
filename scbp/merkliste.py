@@ -25,7 +25,7 @@ raus, denn eine Merkliste voller längst erledigter Wünsche ist keine.
 
 Gepflegt wird sie **im Fenster mit einem Klick** — niemand soll dafür eine
 Datei bearbeiten müssen. Die Datei (`watchlist.json`) bleibt trotzdem lesbar
-und von Hand änderbar, denn die des Autors: Skill „SC BP" schreibt dort die Teile der
+und von Hand änderbar, denn ein eigenes Werkzeug des Autors schreibt dort Teile der
 Staffelrüstung hinein.
 
 Zwei Arten von Einträgen leben nebeneinander:

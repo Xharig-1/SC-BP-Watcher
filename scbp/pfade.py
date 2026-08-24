@@ -478,7 +478,7 @@ def launcher_datei(name, ordner=None):
 def kuerzen(text):
     """Persönliches aus einem Text nehmen — für Fehlerprotokoll und Bericht.
 
-    Pfade verraten den Benutzernamen (`C:\\Users\\der Autor\\…`,
+    Pfade verraten den Benutzernamen (`C:\\Users\\Spieler\\…`,
     `/home/spieler/…`), und genau solche Texte landen in einem **öffentlichen**
     Issue. Ersetzt werden das Heimatverzeichnis und danach jedes weitere
     Vorkommen des Benutzernamens.

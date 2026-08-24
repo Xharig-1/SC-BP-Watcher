@@ -211,7 +211,7 @@ def art_of(key):
     return art or '—'
 
 
-# Rüstungs-Slots von scmdb -> die des Autors: Begriffe. Die Gewichtsklasse (Heavy/Medium/
+# Rüstungs-Slots von scmdb -> die hier verwendeten Begriffe. Die Gewichtsklasse (Heavy/Medium/
 # Light) steht bei scmdb getrennt in `attachSubType`, beim Launcher steckt sie im
 # Begriff selbst („Heavy Armor"). Beides wird hier wieder zusammengesetzt.
 _SCMDB_SLOT = {
@@ -499,7 +499,7 @@ def geometrie_pruefen(geom, root):
     """Liegt die gemerkte Fensterlage auf diesem Rechner überhaupt im Bild?
 
     Der Watcher speichert seine Lage, damit er beim nächsten Mal wieder dort
-    steht — bei der Autor auf dem oberen von drei Monitoren, also bei X≈3656 und
+    steht — beim Autor auf dem oberen von drei Monitoren, also bei X≈3656 und
     negativem Y. Auf einem Rechner mit einem einzigen Bildschirm zeigt dieselbe
     Angabe ins Nichts: Das Fenster ist unsichtbar, unter macOS reißt Tk sogar
     das ganze Programm mit. Sobald die Fassung öffentlich wird, landet sie auf
