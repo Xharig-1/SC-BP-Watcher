@@ -1,0 +1,5 @@
+#!/bin/sh
+# Einstiegspunkt des AppImage. Liegt als eigene Datei im Repo statt im Workflow —
+# so lässt sie sich lesen und ändern, ohne YAML anzufassen.
+HIER="$(dirname "$(readlink -f "$0")")"
+exec "$HIER/usr/bin/SC-BP-Watcher" "$@"

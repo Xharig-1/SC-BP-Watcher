@@ -1,0 +1,132 @@
+# Baut bei jedem Versions-Tag die fertigen Dateien und haengt sie an ein Release.
+#
+# Warum das hier laeuft und nicht auf einem Rechner:
+#   * Niemand soll etwas selbst bauen muessen — weder die Nutzer noch der Autor.
+#   * Die .exe braucht Windows, das AppImage braucht Linux. Kein Rechner hat beides.
+#   * Frueher hing die veroeffentlichte .exe vier Versionen hinter dem Code, weil
+#     "Tag pushen" und "Release anlegen" zwei verschiedene Dinge sind. Jetzt ist es
+#     eines.
+#
+# Ausloesen:  git tag v2.0.0 && git push origin v2.0.0
+
+name: Release bauen
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:          # zum Ausprobieren auch von Hand startbar
+
+permissions:
+  contents: write             # noetig, um das Release anzulegen
+
+jobs:
+
+  # ------------------------------------------------------------------ Windows
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Version gegen den Tag pruefen
+        if: github.ref_type == 'tag'
+        run: python .github/scripts/version_pruefen.py ${{ github.ref_name }}
+
+      - name: Selbsttest
+        run: python tools/selbsttest.py
+
+      - name: PyInstaller
+        run: pip install --upgrade pyinstaller
+
+      - name: EXE bauen
+        run: >
+          python -m PyInstaller --noconfirm --onefile --windowed
+          --name "SC-BP-Watcher" --icon "icon.ico"
+          --add-data "CHANGELOG.md;."
+          --add-data "daten;daten"
+          sc_bp_watcher.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/SC-BP-Watcher.exe
+
+  # -------------------------------------------------------------------- Linux
+  linux:
+    runs-on: ubuntu-latest
+    # Gebaut wird IM Container mit Ubuntu 22.04 (glibc 2.35), nicht auf dem
+    # Runner: Ein auf neuerem glibc gebautes AppImage startet auf aelteren
+    # Systemen gar nicht — und die sind verbreiteter als das neueste.
+    container: ubuntu:22.04
+    steps:
+      - name: Werkzeuge
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            python3 python3-pip python3-tk binutils file wget ca-certificates git
+          python3 -m pip install --upgrade pip pyinstaller
+
+      - uses: actions/checkout@v4
+
+      - name: Selbsttest
+        run: python3 tools/selbsttest.py
+
+      - name: Binaerdatei bauen
+        run: >
+          python3 -m PyInstaller --noconfirm --onefile --windowed
+          --name "SC-BP-Watcher"
+          --add-data "CHANGELOG.md:."
+          --add-data "daten:daten"
+          sc_bp_watcher.py
+
+      - name: AppImage schnueren
+        run: |
+          set -e
+          APPDIR=SC-BP-Watcher.AppDir
+          mkdir -p "$APPDIR/usr/bin"
+          cp dist/SC-BP-Watcher "$APPDIR/usr/bin/"
+          cp assets/icon.png "$APPDIR/sc-bp-watcher.png"
+
+          # Beide Dateien liegen als echte Dateien im Repo (packaging/) — so
+          # lassen sie sich lesen und aendern, ohne YAML anzufassen.
+          cp packaging/sc-bp-watcher.desktop "$APPDIR/"
+          cp packaging/AppRun "$APPDIR/AppRun"
+          chmod +x "$APPDIR/AppRun"
+
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+          # --appimage-extract-and-run, weil im Container kein FUSE zur Verfuegung steht
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage --appimage-extract-and-run \
+            "$APPDIR" SC-BP-Watcher-x86_64.AppImage
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: SC-BP-Watcher-x86_64.AppImage
+
+  # ------------------------------------------------------------------ Release
+  release:
+    needs: [windows, linux]
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: dateien }
+
+      - name: Beschreibung aus dem CHANGELOG holen
+        # Der Abschnitt zur getaggten Version wird zum Release-Text — dadurch
+        # steht im Werkzeug unter "Was ist neu" dasselbe wie auf GitHub.
+        run: >
+          python3 .github/scripts/release_text.py ${{ github.ref_name }}
+          > release-text.md
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-text.md
+          files: |
+            dateien/windows/SC-BP-Watcher.exe
+            dateien/linux/SC-BP-Watcher-x86_64.AppImage

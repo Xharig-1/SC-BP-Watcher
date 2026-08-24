@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=SC BP Watcher
+Comment=Zeigt neue Star-Citizen-Baupläne an
+Comment[en]=Shows new Star Citizen blueprints
+Exec=SC-BP-Watcher
+Icon=sc-bp-watcher
+Categories=Game;Utility;
+Terminal=false
