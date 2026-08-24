@@ -85,8 +85,13 @@ class Einstellungsfenster:
             value=pfade.einstellung_zahl('deckkraft_prozent', 93, 30, 100))
 
         self._kopf()
-        flaeche = tk.Frame(self.root, bg=BG)
-        flaeche.pack(fill='both', expand=True, padx=20, pady=(4, 0))
+        # ⚠ Reihenfolge ist entscheidend: Der Fuß mit dem Speichern-Knopf wird
+        # **vor** dem Inhalt gepackt. Sonst schiebt ein zu langer Inhalt ihn aus
+        # dem Fenster — genau das ist passiert: Der Knopf war unsichtbar, bis man
+        # das Fenster von Hand größer zog, und niemand kam auf die Idee, dass
+        # unten noch etwas fehlt.
+        self._fuss()
+        flaeche = self._rollflaeche()
 
         self._sprachwahl(flaeche)
         self._ordnerfeld(flaeche, t('e_spiel'), t('e_spiel_hilfe'), self.spiel)
@@ -96,8 +101,6 @@ class Einstellungsfenster:
         self._tonfeld(flaeche)
         self._deckkraftfeld(flaeche)
         self._injektionsfeld(flaeche)
-
-        self._fuss()
 
     # ------------------------------------------------------------- Bausteine
     def _kopf(self):
@@ -109,6 +112,49 @@ class Einstellungsfenster:
                       cursor='hand2')
         zu.pack(side='right', padx=16)
         zu.bind('<Button-1>', lambda e: self.schliessen())
+
+    def _rollflaeche(self):
+        """Der scrollbare Innenbereich.
+
+        Das Fenster ist in der Höhe begrenzt, der Inhalt wächst mit jeder neuen
+        Einstellung. Ohne Rollbalken wäre die letzte Einstellung irgendwann
+        unerreichbar — und man merkt es nicht, weil nichts darauf hinweist."""
+        rahmen = tk.Frame(self.root, bg=BG)
+        rahmen.pack(fill='both', expand=True)
+        self.leinwand = tk.Canvas(rahmen, bg=BG, highlightthickness=0)
+        rolle = tk.Scrollbar(rahmen, orient='vertical',
+                             command=self.leinwand.yview)
+        innen = tk.Frame(self.leinwand, bg=BG)
+        innen.bind('<Configure>', lambda e: self.leinwand.configure(
+            scrollregion=self.leinwand.bbox('all')))
+        self._innen_id = self.leinwand.create_window((0, 0), window=innen,
+                                                     anchor='nw')
+        # Die Innenfläche muss so breit sein wie das Fenster, sonst kleben die
+        # Beschriftungen links und der Umbruch stimmt nicht.
+        self.leinwand.bind('<Configure>', lambda e: self.leinwand.itemconfigure(
+            self._innen_id, width=e.width))
+        self.leinwand.configure(yscrollcommand=rolle.set)
+        self.leinwand.pack(side='left', fill='both', expand=True, padx=(20, 0))
+        rolle.pack(side='right', fill='y')
+
+        for ziel in (self.root, self.leinwand, innen):
+            ziel.bind_all('<Button-4>', self._rollen, add='+')
+            ziel.bind_all('<Button-5>', self._rollen, add='+')
+            ziel.bind_all('<MouseWheel>', self._rollen, add='+')
+        return innen
+
+    def _rollen(self, ereignis):
+        """Mausrad — unter Linux kommen 4/5, unter Windows ein Delta."""
+        try:
+            if getattr(ereignis, 'num', None) == 4:
+                richtung = -1
+            elif getattr(ereignis, 'num', None) == 5:
+                richtung = 1
+            else:
+                richtung = -1 if ereignis.delta > 0 else 1
+            self.leinwand.yview_scroll(richtung, 'units')
+        except tk.TclError:
+            pass
 
     def _titel(self, eltern, text, hilfe):
         tk.Label(eltern, text=text, bg=BG, fg=FG, font=schrift(11, True),
@@ -301,6 +347,9 @@ class Einstellungsfenster:
     def _fuss(self):
         fuss = tk.Frame(self.root, bg=BG)
         fuss.pack(fill='x', side='bottom', padx=20, pady=16)
+        # Trennlinie, damit der Fuß sich vom rollenden Inhalt absetzt
+        tk.Frame(self.root, bg=BAR, height=1).pack(
+            fill='x', side='bottom')
         self.meldung = tk.Label(fuss, text='', bg=BG, fg=SUB, font=schrift(9),
                                 anchor='w', justify='left', wraplength=420)
         self.meldung.pack(side='left', fill='x', expand=True)

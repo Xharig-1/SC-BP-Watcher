@@ -6,6 +6,18 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc7 - 2026-08-24
+
+### Fixed
+
+- **The save button in the settings window was invisible.** Once the content grew
+  taller than the window, it simply pushed the button out — visible only after
+  resizing the window by hand. Nothing hinted that something was missing below, so
+  users would have discarded their changes without noticing.
+  - The content now scrolls (scrollbar and mouse wheel) while **header and footer stay
+    put**. The footer is placed before the content, so no amount of future settings
+    can ever push it out again.
+
 ## v2.0.0-rc6 - 2026-08-24
 
 ### Added

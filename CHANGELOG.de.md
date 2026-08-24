@@ -6,6 +6,18 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc7 - 2026-08-24
+
+### Behoben
+
+- **Der Speichern-Knopf im Einstellungsfenster war nicht zu sehen.** Wurde der Inhalt
+  höher als das Fenster, schob er den Knopf einfach hinaus — sichtbar erst, wenn man
+  das Fenster von Hand größer zog. Nichts wies darauf hin, dass unten noch etwas
+  fehlt, also hätten Nutzer ihre Änderungen verworfen, ohne es zu merken.
+  - Der Inhalt rollt jetzt (Rollbalken und Mausrad), **Kopf und Fuß stehen fest**. Der
+    Fuß wird vor dem Inhalt gesetzt — dadurch kann kein Inhalt ihn je verdrängen,
+    egal wie viele Einstellungen noch dazukommen.
+
 ## v2.0.0-rc6 - 2026-08-24
 
 ### Hinzugefügt
