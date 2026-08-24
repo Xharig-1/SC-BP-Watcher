@@ -27,12 +27,14 @@ Vier Dinge sind Absicht und bleiben so:
 | ✅ | Einrichtungsassistent, jederzeit wiederholbar |
 | ✅ | Deutsch und Englisch, umschaltbar |
 | ✅ | Windows und Linux, mit Autostart auf beiden |
+| ✅ | Bestand ausgeben — für das KRT Profit Basetool, für scmdb.net und als vollständige Sicherung |
+| ✅ | Overlay einklappen, für alle mit einem Bildschirm |
 
 ## Woran gearbeitet wird
 
 Ohne Zeitplan und ohne feste Reihenfolge — Stand der Dinge steht im [`CHANGELOG.de.md`](CHANGELOG.de.md), und im Fenster „Was ist neu" lässt sich nachlesen, was jede Fassung gebracht hat.
 
-Gerade in Arbeit sind mehr Komfort beim Einrichten, ein Ablage-Symbol und der Export des eigenen Bestands für andere Bauplan-Dienste.
+Gerade in Arbeit sind mehr Komfort beim Einrichten und ein Ablage-Symbol.
 
 ## Verhältnis zum SC Deutsch Launcher
 

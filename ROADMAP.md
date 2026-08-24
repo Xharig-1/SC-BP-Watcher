@@ -27,12 +27,14 @@ Four things are deliberate and will stay that way:
 | ✅ | Setup wizard, repeatable at any time |
 | ✅ | German and English, switchable |
 | ✅ | Windows and Linux, with autostart on both |
+| ✅ | Export your inventory — for the KRT Profit Basetool, for scmdb.net and as a full backup |
+| ✅ | Collapse the overlay, for anyone on a single screen |
 
 ## What is being worked on
 
 No schedule and no fixed order — the state of things is in [`CHANGELOG.md`](CHANGELOG.md), and the **ⓘ "What's new"** window inside the tool shows what each build brought.
 
-Currently in the works: more convenience during setup, a tray icon, and exporting your inventory for other blueprint services.
+Currently in the works: more convenience during setup and a tray icon.
 
 ## Relationship to the SC Deutsch Launcher
 

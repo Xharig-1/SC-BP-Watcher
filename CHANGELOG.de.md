@@ -10,6 +10,8 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (mittwochs).
 
+## v2.1.0 - 2026-08-26
+
 ### Hinzugefügt
 
 - **Startbaupläne werden erkannt und eingetragen.** Acht Baupläne hat jeder Spieler von
@@ -45,9 +47,8 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   - Die Höhe **vor** dem Einklappen wird gemerkt, nicht eine feste Zahl: Wer sich das
     Fenster auf 900 Pixel gezogen hat, bekommt es auch so zurück.
   - Der Zustand überlebt einen Neustart.
-  - Damit erledigt sich das lange geplante **Ablage-Symbol (Tray)**: Das bräuchte
-    `pystray` und `Pillow` und würde die Projektregel „reine Standardbibliothek"
-    brechen — ein eingeklappter Streifen erfüllt denselben Zweck ohne Zusatzpaket.
+  - Gedacht für alle, die neben dem Spiel keinen Platz für ein zweites Fenster haben:
+    ein Streifen von der Höhe einer Titelleiste, ohne Zusatzpaket.
 - **Baupläne ohne bekannte Bezugsquelle sind als solche gekennzeichnet** (`?` statt `ⓘ`).
   59 der 714 lassen sich über keinen Auftrag beziehen — überwiegend Event-Belohnungen
   („Purgatory Camo", „SecondWind"). Ohne Zeichen sah die Zeile aus, als hätte jemand

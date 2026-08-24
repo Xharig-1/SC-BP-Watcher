@@ -43,7 +43,7 @@ There are several blueprint lists. Four things make the difference day to day:
 
 - **You never leave the game.** The overlay sits on top of Star Citizen. No second window, no alt-tab, no browser — the new blueprint is simply there while you keep playing.
 - **It knows what you already have.** The watcher keeps your blueprint inventory itself and reads Star Citizen's stored session logs on first start — you get your existing collection for free, without typing anything. If a gap remains anyway, it says so instead of passing off an incomplete list as complete.
-- **It tells you where to get what's missing.** For **655 of the 714** blueprints it shows which faction offers it, in which contract, from which standing, and what it pays — sorted by the easiest route. "I'm missing X" is half the information; "X drops at Foxwell from Veteran Contractor" is all of it.
+- **It tells you where to get what's missing.** For **655 of the 722** blueprints it shows which faction offers it, in which contract, from which standing, and what it pays — sorted by the easiest route. "I'm missing X" is half the information; "X drops at Foxwell from Veteran Contractor" is all of it.
 - **Nothing leaves your machine.** No account, no sign-in, no cloud. It reads files that are already on your disk and writes nothing back into the game.
 
 On top of that: class, grade and size are right there in the line (`M/A/1`), the interface speaks German and English, and the whole thing runs on the plain Python standard library — no extra packages, no dependencies that break tomorrow.
@@ -54,7 +54,7 @@ On top of that: class, grade and size are right there in the line (`M/A/1`), the
 |---|---|
 | ⚡ **Instant** | Reads Star Citizen's `Game.log` → the blueprint is in the list **within seconds** |
 | 📋 **Blueprint list** | Search everything, grouped by type, filters *all / owned / missing*, with progress. Tick items with one click |
-| 🧭 **Where it drops** | One click shows faction, contract, required standing and payout — for **655 of 714** blueprints, sorted by the easiest route |
+| 🧭 **Where it drops** | One click shows faction, contract, required standing and payout — for **655 of 722** blueprints, sorted by the easiest route |
 | 🧙 **Setup wizard** | Four steps on first start — and **repeatable any time**, no digging through menus |
 | 🔵 **Catalogue watch** | Also reports when something becomes **newly craftable in the game** — a blueprint CIG added that did not exist before |
 | ⭐ **Watchlist** | Click the star next to anything you are waiting for. When it shows up it is announced in gold — and **removed from the watchlist by itself** |

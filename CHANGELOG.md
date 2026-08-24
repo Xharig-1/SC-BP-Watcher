@@ -10,6 +10,8 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collecting until the next release day (Wednesdays).
 
+## v2.1.0 - 2026-08-26
+
 ### Added
 
 - **Starter blueprints are recognised and added.** Every player has eight from the
@@ -44,9 +46,8 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   - The height **before** collapsing is remembered rather than a fixed number: if you
     dragged the window to 900 pixels, that is what you get back.
   - The state survives a restart.
-  - This settles the long-planned **tray icon**: that would need `pystray` and `Pillow`,
-    breaking the project's "standard library only" rule — a collapsed strip does the
-    same job with no extra package.
+  - Meant for anyone with no room for a second window next to the game: a strip the
+    height of a title bar, with no extra package.
 - **Blueprints with no known source are marked as such** (`?` instead of `ⓘ`). 59 of the
   714 cannot be obtained from any contract — mostly event rewards ("Purgatory Camo",
   "SecondWind"). Without a marker the row looked like someone had forgotten to fill in
