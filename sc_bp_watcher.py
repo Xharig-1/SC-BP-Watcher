@@ -122,7 +122,9 @@ DEFAULT_GEOM  = os.environ.get('SC_BP_GEOMETRIE') or '440x1000'
 SETTINGS_FILE = pfade.app_datei('watcher.json')
 
 # Farben (dunkles Overlay)
-BG, FG, ACCENT, SUB, BAR = '#10141c', '#e6edf3', '#47aa42', '#8b98a5', '#1b2230'
+# Xharig-Grün für dunklen Grund. Bis v1.5.0 stand hier noch #47aa42 — die alte
+# Markenfarbe von vor dem Logo-Wechsel. Zwei Grüntöne im selben Programm gehen nicht.
+BG, FG, ACCENT, SUB, BAR = '#10141c', '#e6edf3', '#9ce430', '#8b98a5', '#1b2230'
 PROV = '#d8a03a'        # Gelb für „vorläufig" (aus der Game.log, noch nicht vom Launcher bestätigt)
 CATA = '#4aa3d8'        # Blau für „neu im Spiel craftbar" (Katalog-Zuwachs, kein eigener Fund)
 

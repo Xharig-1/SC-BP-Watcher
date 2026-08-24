@@ -34,6 +34,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Geändert
 
+- **Markenfarbe auf `#9ce430` gezogen.** Das Overlay lief noch mit `#47aa42` — der Xharig-Farbe von vor dem Logo-Wechsel. Betrifft `ACCENT` im Overlay und `GREEN` im Icon-Werkzeug. Für helle Flächen (README-Badges) bleibt es beim Text-Grün `#5fa522`.
 - **Die Statuszeile zeigt den eigenen Bestand**, nicht mehr die Launcher-Zahl, und dazu, ob mit oder ohne Launcher gearbeitet wird. Grund: Der Launcher zählt nachweislich zu niedrig — ihm fehlt die P4-AR Rifle, obwohl sie im Fabricator als „im Besitz" steht (gemessen 11.08.2026). Startbaupläne wurden nie „erhalten" und stehen in keinem Log.
 - **Der SC Deutsch Launcher ist optional.** Ist er da, wird er weiter genutzt: Er bestätigt die Funde (🟡 → 🟢) und liefert den gepflegten Katalog. Fehlt er, entfällt nur das — gemeldet wird trotzdem, denn die Game.log ist die eigentliche Quelle.
 - **Startbedingung.** Der Watcher verlangt beim Start nicht mehr die Launcher-Datei, sondern nur noch, dass Star Citizen selbst gefunden wird.

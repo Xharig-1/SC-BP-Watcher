@@ -16,7 +16,7 @@ S = 4                      # Supersampling
 N = 256 * S                # Arbeitsauflösung
 BG1   = (16, 20, 28, 255)  # #10141c
 BG2   = (27, 34, 48, 255)  # #1b2230
-GREEN = (71, 170, 66)      # #47aa42  (Xharig-Grün)
+GREEN = (156, 228, 48)     # #9ce430  (Xharig-Grün, Neon für dunklen Grund)
 BRIGHT = (104, 214, 96)
 DIM   = (54, 110, 52)
 
