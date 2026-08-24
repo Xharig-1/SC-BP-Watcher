@@ -1041,6 +1041,12 @@ class Overlay:
         # Ordner unter Dokumente **kopiert**. Erst danach darf irgendetwas
         # gelesen werden — sonst startet der Spieler mit leerer Liste, obwohl
         # sein Bestand nur woanders liegt.
+        # Nach einem Selbst-Update zeigt Windows sonst weiter die alte Nummer.
+        try:
+            aktualisierung.windows_eintrag_pflegen(__version__)
+        except Exception as ausnahme:
+            fehler.merken('start.windows_eintrag', ausnahme)
+
         self.umzug_meldung = ''
         try:
             if pfade.umzug_noetig():

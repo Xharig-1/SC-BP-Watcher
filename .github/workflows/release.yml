@@ -61,10 +61,27 @@ jobs:
           --add-data "daten;daten"
           sc_bp_watcher.py
 
+      # Installer bauen. Inno Setup ist auf den Windows-Baurechnern von GitHub
+      # vorinstalliert; falls nicht, wird es nachgeholt statt den Bau abzubrechen.
+      - name: Installer bauen
+        shell: pwsh
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            Write-Host "Inno Setup fehlt — wird geholt"
+            choco install innosetup --no-progress -y
+          }
+          if (-not (Test-Path $iscc)) { $iscc = "ISCC.exe" }
+          & $iscc "/DAppVersion=${{ env.TAG }}".Replace('/DAppVersion=v', '/DAppVersion=') `
+                  packaging\installer.iss
+          Get-ChildItem dist
+
       - uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: dist/SC-BP-Watcher.exe
+          path: |
+            dist/SC-BP-Watcher.exe
+            dist/SC-BP-Watcher-Setup.exe
 
   # -------------------------------------------------------------------- Linux
   linux:
@@ -166,5 +183,6 @@ jobs:
           prerelease: ${{ steps.art.outputs.vorab }}
           body_path: release-text.md
           files: |
+            dateien/windows/SC-BP-Watcher-Setup.exe
             dateien/windows/SC-BP-Watcher.exe
             dateien/linux/SC-BP-Watcher-x86_64.AppImage

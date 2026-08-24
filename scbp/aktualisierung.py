@@ -416,3 +416,41 @@ if __name__ == '__main__':
     for e in protokoll()[:6]:
         kopf = '%s %s' % (e['version'], ('(%s)' % e['datum']) if e['datum'] else '')
         print('  %-28s %s  %d Zeichen' % (kopf, e['quelle'], len(e['text'])))
+
+
+# --------------------------------------------------- Eintrag in "Apps & Features"
+# Der Installer trägt die Fassung dort ein. Ersetzt sich das Programm danach
+# selbst, bleibt der Eintrag auf dem alten Stand stehen — Windows zeigt dann
+# eine Nummer, die es gar nicht mehr gibt. Dazu: „Die Versionsanzeige
+# wäre schon wichtig, da User ja sonst nicht sehen ob sie aktuell sind."
+#
+# Der Schlüssel liegt unter HKCU (der Installer schreibt in den Benutzerzweig),
+# deshalb braucht das **keine Administratorrechte**.
+INNO_KENNUNG = '{7C4B1E93-2A6F-4D58-B0E1-9F3A5C8D2461}_is1'
+
+
+def windows_eintrag_pflegen(eigene_version):
+    """Die angezeigte Fassung in Windows nachziehen. True, wenn geändert."""
+    if not sys.platform.startswith('win') or not eigene_version:
+        return False
+    try:
+        import winreg
+        pfad = (r'Software\Microsoft\Windows\CurrentVersion\Uninstall\%s'
+                % INNO_KENNUNG)
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, pfad, 0,
+                            winreg.KEY_READ | winreg.KEY_WRITE) as schluessel:
+            try:
+                steht_da = winreg.QueryValueEx(schluessel, 'DisplayVersion')[0]
+            except FileNotFoundError:
+                steht_da = ''
+            if str(steht_da) == str(eigene_version):
+                return False
+            winreg.SetValueEx(schluessel, 'DisplayVersion', 0, winreg.REG_SZ,
+                              str(eigene_version))
+            return True
+    except FileNotFoundError:
+        return False          # nicht über den Installer installiert — in Ordnung
+    except Exception as ausnahme:
+        from . import fehler
+        fehler.merken('aktualisierung.windows_eintrag', ausnahme)
+        return False
