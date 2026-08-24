@@ -274,7 +274,33 @@ def main():
             print('  [--]   Katalog nicht vorhanden, Arten nicht prüfbar')
         sprache.setzen('de')
 
-        print('\n8. Merkliste')
+        print('\n8. Spielsprache selbst erkennen')
+        from scbp import phrasen as ph
+        # Eine Sprache, die nirgends im Code steht: Der Katalog mit den
+        # Bauplan-Namen verrät, welcher Text davor die Bauplan-Meldung ist.
+        fremd = os.path.join(basis, 'fremd')
+        os.makedirs(os.path.join(fremd, 'logbackups'))
+        open(os.path.join(fremd, 'Game.log'), 'w').close()
+        with open(os.path.join(fremd, 'logbackups', 'alt.log'), 'w',
+                  encoding='utf-8') as f:
+            f.write(zeile('Plan de construction reçu: Attrition-5 Repeater', 1))
+            f.write(zeile('Mission terminée: Irgendwas', 2))
+            f.write(zeile('Plan de construction reçu: Singe Cannon (S2)', 3))
+        katalognamen = ['Attrition-5 Repeater', 'Singe Cannon (S2)',
+                        '10-Series Greatsword Cannon']
+        sicherungen = [os.path.join(fremd, 'logbackups', 'alt.log')]
+        gefunden = ph.selbst_finden(katalognamen, sicherungen)
+        pruefe(gefunden == 'Plan de construction reçu',
+               'unbekannte Sprache wird erkannt (%r)' % gefunden)
+        # Ein einzelner Treffer reicht nicht — das könnte Zufall sein
+        with open(os.path.join(fremd, 'logbackups', 'einzeln.log'), 'w',
+                  encoding='utf-8') as f:
+            f.write(zeile('Irgendein Text: Attrition-5 Repeater', 1))
+        einzeln = ph.selbst_finden(
+            katalognamen, [os.path.join(fremd, 'logbackups', 'einzeln.log')])
+        pruefe(einzeln is None, 'ein einzelner Treffer gilt nicht als Beleg')
+
+        print('\n9. Merkliste')
         from scbp import merkliste as mk
         os.environ['SC_BP_HOME'] = os.path.join(basis, 'merk')
         os.makedirs(os.environ['SC_BP_HOME'], exist_ok=True)
@@ -296,7 +322,7 @@ def main():
         pruefe(mk.erledigen('Irgendwas anderes') is None,
                'was nie beobachtet wurde, ändert nichts')
 
-        print('\n9. Fensterlage von einem fremden Rechner')
+        print('\n10. Fensterlage von einem fremden Rechner')
         if ANZEIGE:
             kaputt = w.geometrie_pruefen('440x1098+999999+-999999', _wurzel())
             pruefe('+999999' not in kaputt,

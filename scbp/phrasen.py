@@ -71,6 +71,10 @@ TABELLE = {
 # Ausblende-Ereignisse — wer sie mitzählt, meldet jeden Bauplan mehrfach.
 RAHMEN = r'Added notification "(?:%s):\s*(.+?)\s*:\s*"'
 
+# Dasselbe ohne feste Phrase: Damit lässt sich herausfinden, WIE die Meldung in
+# einer unbekannten Sprache lautet — siehe `selbst_finden()`.
+RAHMEN_OFFEN = re.compile(r'Added notification "([^":]{3,60}):\s*(.+?)\s*:\s*"')
+
 
 def _ini_dateien():
     """Alle entpackten `global.ini` der Installation (kann leer sein)."""
@@ -119,6 +123,69 @@ def _eigene():
         return [str(p).strip() for p in werte if str(p).strip()]
     except Exception:
         return []
+
+
+def selbst_finden(katalog_namen, sicherungen, hoechstens=40):
+    """Die Bauplan-Phrase aus den eigenen Logs erschließen — in jeder Sprache.
+
+    Der Kniff: Wir kennen alle 714 Bauplan-Namen. Steht in einer Logzeile
+
+        Added notification "IRGENDWAS: Attrition-5 Repeater: "
+
+    und ist „Attrition-5 Repeater" ein bekannter Bauplan, dann ist IRGENDWAS die
+    gesuchte Formulierung. Das funktioniert für Französisch und Spanisch genauso
+    wie für Englisch — ohne dass jemand die Sprache vorher kennen muss.
+
+    Verlangt werden **mindestens zwei** verschiedene Treffer für dieselbe Phrase.
+    Bei nur einem könnte es Zufall sein: Ein Bauplan-Name taucht auch in anderen
+    Meldungen auf („Auftrag abgeschlossen: Attrition-5 Repeater geliefert").
+
+    Rückgabe: die gefundene Phrase oder None.
+    """
+    if not katalog_namen or not sicherungen:
+        return None
+    bekannt = {str(n).lower().strip() for n in katalog_namen}
+    zaehler = {}
+    for datei in sicherungen[-hoechstens:]:
+        try:
+            with open(datei, 'rb') as f:
+                text = f.read().decode('utf-8', 'ignore')
+        except OSError:
+            continue
+        for m in RAHMEN_OFFEN.finditer(text):
+            phrase, name = m.group(1).strip(), m.group(2).strip()
+            # Klassen-Zusatz abschneiden, sonst passt kein Name auf den Katalog
+            name = re.sub(r'\s*\((?:Civ|Mil|Ind|Sth|Cmp)/\d+/[A-D]\)\s*$', '',
+                          name, flags=re.I).strip()
+            if name.lower() in bekannt:
+                zaehler.setdefault(phrase, set()).add(name.lower())
+    treffer = [(len(namen), p) for p, namen in zaehler.items() if len(namen) >= 2]
+    if not treffer:
+        return None
+    treffer.sort(reverse=True)
+    return treffer[0][1]
+
+
+def merken(phrase):
+    """Eine gefundene Formulierung dauerhaft festhalten.
+
+    Sie landet in derselben `phrasen.json`, die auch von Hand gepflegt werden
+    kann — es gibt keine zweite, versteckte Wahrheit."""
+    if not phrase:
+        return False
+    vorhandene = _eigene()
+    if phrase in vorhandene:
+        return False
+    try:
+        with open(pfade.app_datei('phrasen.json'), 'w', encoding='utf-8') as f:
+            json.dump({'phrasen': vorhandene + [phrase],
+                       '_hinweis': 'Formulierungen, an denen ein neuer Bauplan '
+                                   'im Spiel-Log erkannt wird. Selbst gefundene '
+                                   'stehen hier mit drin.'},
+                      f, ensure_ascii=False, indent=1)
+        return True
+    except OSError:
+        return False
 
 
 def sammeln():

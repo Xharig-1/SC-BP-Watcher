@@ -650,6 +650,32 @@ class Watcher(threading.Thread):
             return hits[0]
         return None
 
+    # ---- Sprache des Spiels erschließen ----
+    def _sprache_erschliessen(self):
+        """Herausfinden, wie die Bauplan-Meldung in DIESEM Client lautet.
+
+        Nötig, weil die mitgelieferte Tabelle nur Deutsch sicher kennt; die
+        englischen Formulierungen sind Kandidaten, und Französisch oder Spanisch
+        stehen gar nicht drin. Der Katalog mit über 700 Bauplan-Namen macht es
+        möglich: Wer in einer Logzeile einen bekannten Bauplan findet, kennt
+        auch den Text davor.
+
+        Läuft nur, solange die Formulierung nicht ohnehin feststeht — und nur
+        einmal, denn danach steht sie in `phrasen.json`."""
+        try:
+            if phrasen.bestaetigt():
+                return
+            from scbp import katalog as katalog_modul
+            namen = [e['n'] for e in katalog_modul.laden()['bauplaene'].values()]
+            if not namen:
+                return
+            gefunden = phrasen.selbst_finden(namen, pfade.log_sicherungen())
+            if gefunden and phrasen.merken(gefunden):
+                self.tail.muster = phrasen.muster()
+                self.q.put(('hinweis', sprache.t('sprache_erkannt', gefunden)))
+        except Exception:
+            pass            # ohne Erkennung gilt die mitgelieferte Tabelle
+
     # ---- Nachlese: was wurde ohne laufenden Watcher freigeschaltet? ----
     def _nachlese(self):
         """Beim Start die aufgehobenen Logs durchsehen und in den Bestand nehmen.
@@ -688,6 +714,10 @@ class Watcher(threading.Thread):
         return neu
 
     def run(self):
+        # 0) Erst klären, wonach überhaupt gesucht wird — sonst liest die
+        #    Nachlese mit der falschen Formulierung und findet nichts.
+        self._sprache_erschliessen()
+
         # 1) Vergangenes nachlesen (still, nur in den Bestand)
         self._nachlese()
 

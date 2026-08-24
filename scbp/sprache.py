@@ -141,6 +141,10 @@ TEXTE = {
     'ordner_gedeutet':   ('Genommen wird: %s', 'Using: %s'),
     'weiter':            ('Weiter', 'Continue'),
     'willkommen':        ('Willkommen', 'Welcome'),
+    'sprache_erkannt':   ('Spielsprache erkannt — Baupläne werden an „%s" '
+                          'erkannt.',
+                          'Game language detected — blueprints are recognised '
+                          'by „%s".'),
     'lese_logs_n':       ('%d aufgehobene Spielsitzungen werden gelesen …',
                           'Reading %d stored play sessions …'),
     'lese_logs':         ('Deine bisherigen Spielsitzungen werden gelesen …',

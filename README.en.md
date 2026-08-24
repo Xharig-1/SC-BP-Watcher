@@ -133,7 +133,7 @@ What the coloured dots mean:
 | ℹ | A note, not an unlock (e.g. a gap in your inventory) |
 
 1. **On start** the tool goes through the stored logs of earlier sessions (`logbackups/`) and quietly adds everything it finds to your inventory — nothing is lost if you played without the watcher running. Those blueprints are **not** reported as new. If the stored logs don't reach far enough back, the watcher says so as an ℹ line instead of passing off an incomplete list as complete.
-2. **In the background** the **`Game.log`** is read — every 3 seconds, adjustable. When the game writes `Added notification "Blueprint Received: <name>: "` on unlock, the blueprint is in the list **immediately** (🟢) and in your inventory.
+2. **In the background** the **`Game.log`** is read — every 3 seconds, adjustable. *(The wording of the blueprint message depends on your game language — the watcher works it out by itself, see below.)* When the game writes `Added notification "Blueprint Received: <name>: "` on unlock, the blueprint is in the list **immediately** (🟢) and in your inventory.
    - **If the SC Deutsch Launcher is installed as well**, reporting is two-stage: first 🟡 *provisional* from the log, then 🟢 *confirmed* once the launcher catches up and supplies its data. Without the launcher there is no intermediate stage — the log message is the answer.
 3. Every new line is inserted at the top (name · type · `M/A/1` · time) and a short sound plays.
    - **Once a minute** the craftable catalogue is checked. If it grew, CIG made something **newly craftable** with a patch → 🔵 line. This has nothing to do with your own unlocks.
@@ -158,6 +158,16 @@ Its own files (inventory, settings, cache) live here:
 | Linux | `~/.config/sc-bp-watcher/` |
 
 Both can be moved with the `SC_BP_HOME` environment variable.
+
+### Game language
+
+The blueprint message in the log is translated, and the watcher **works out by itself** how it reads in your client. It knows over 700 blueprint names; if a log line contains one of them, the text in front of it is the phrase it was looking for. That works for languages nobody planned for — French and Spanish just as well as English.
+
+German and English are additionally built in, and you can add your own in `phrasen.json` in its own folder:
+
+```json
+{ "phrasen": ["Blueprint Received"] }
+```
 
 ### Setting your own paths
 

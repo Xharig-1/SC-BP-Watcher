@@ -9,6 +9,10 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 ### Hinzugefügt
 
 
+- **Der Watcher findet die Spielsprache selbst heraus.** Die Bauplan-Meldung im Log ist übersetzt; bisher war nur die deutsche Formulierung gemessen, die englischen waren geraten und andere Sprachen gar nicht vorgesehen. Jetzt erschließt er sie aus den eigenen Logs: Er kennt über 700 Bauplan-Namen — steht in einer Logzeile einer davon, ist der Text davor die gesuchte Formulierung. An einer erfundenen französischen Fassung geprüft.
+  - Verlangt werden **zwei** verschiedene Treffer für dieselbe Formulierung. Bei einem könnte es Zufall sein (ein Bauplan-Name taucht auch in anderen Meldungen auf).
+  - Gefundenes landet in `phrasen.json` — derselben Datei, die man auch von Hand pflegen kann. Keine zweite, versteckte Wahrheit.
+  - Damit ist das Werkzeug nicht mehr auf die Sprachen angewiesen, die jemand vorher eingetragen hat.
 - **Englische Projektseite** (`README.en.md`), verlinkt über einen Umschalter oben in beiden Fassungen. Das Werkzeug spricht Englisch, die Beschreibung tat es nicht — wer aus der Linux-Ecke kommt, wo die meisten den englischen Client fahren, stand vor einer rein deutschen Seite.
 - **Merkliste per Klick** (`scbp/merkliste.py`). In der Bauplan-Liste macht ein Klick auf den Stern aus jedem Eintrag einen Wunsch — taucht er auf, meldet ihn der Watcher auffällig in Gold. Dafür muss niemand mehr eine `watchlist.json` von Hand anlegen.
   - Eigener Filter **⭐ beobachtet** zeigt, worauf man gerade wartet.
