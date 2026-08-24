@@ -105,10 +105,8 @@ class Versionsfenster:
         kopf.pack(fill='x')
         tk.Label(kopf, text=t('was_ist_neu'), bg=BAR, fg=FG,
                  font=schrift(12, True)).pack(side='left', padx=16, pady=11)
-        zu = tk.Label(kopf, text='✕', bg=BAR, fg=SUB, font=schrift(12),
-                      cursor='hand2')
-        zu.pack(side='right', padx=16)
-        zu.bind('<Button-1>', lambda e: self.schliessen())
+        # Kein eigenes ✕ — das Fenster hat eine Systemtitelleiste, und die hat
+        # schon eins. Zwei Kreuze übereinander sehen aus wie ein Fehler.
 
         self._banner()
         self._geschichte()

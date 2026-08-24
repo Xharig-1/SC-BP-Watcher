@@ -129,10 +129,12 @@ class Bestandsfenster:
                  font=schrift(12, True)).pack(side='left', padx=14, pady=10)
         self.fortschritt = tk.Label(bar, text='', bg=BAR, fg=SUB, font=schrift(10))
         self.fortschritt.pack(side='left')
-        zu = tk.Label(bar, text='✕', bg=BAR, fg=SUB, font=schrift(12), cursor='hand2')
-        zu.pack(side='right', padx=14)
-        zu.bind('<Button-1>', lambda e: self.schliessen())
-        hinweis.anhaengen(zu, lambda: t('hinweis_schliessen_liste'))
+        # Kein eigenes ✕: Dieses Fenster hat eine ganz normale Titelleiste vom
+        # System, und die hat bereits eins. Zwei Kreuze übereinander sehen aus
+        # wie ein Fehler — und man rät, welches was tut. (Betraf Windows genauso,
+        # die Leiste kommt dort ebenfalls vom Fenstermanager.) Das randlose
+        # Overlay ist der andere Fall: Dort gibt es keine Systemleiste, deshalb
+        # behält es sein eigenes ✕.
 
     def _werkzeugleiste(self):
         leiste = tk.Frame(self.root, bg=BG)

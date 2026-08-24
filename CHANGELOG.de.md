@@ -6,6 +6,23 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc8 - 2026-08-24
+
+### Hinzugefügt
+
+- **Textquelle auch im Einstellungsfenster umstellbar** — dieselben drei Wege wie im
+  Assistenten. Wer sich später umentscheidet (etwa vom deutschen auf den englischen
+  Client), soll dafür nicht den Einrichtungsassistenten suchen müssen.
+
+### Behoben
+
+- **Zwei Schließen-Kreuze übereinander.** Bauplan-Liste, Einstellungen und „Was ist
+  neu" haben eine ganz normale Fenstertitelleiste vom System — mit einem ✕ darin.
+  Ein zweites, selbst gezeichnetes daneben sieht aus wie ein Fehler, und man rät,
+  welches was tut. Betraf Windows genauso, die Leiste kommt dort ebenfalls vom
+  Fenstermanager. Das randlose Overlay behält sein eigenes ✕: Dort gibt es keine
+  Systemleiste.
+
 ## v2.0.0-rc7 - 2026-08-24
 
 ### Behoben

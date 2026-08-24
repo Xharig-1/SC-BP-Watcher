@@ -6,6 +6,22 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc8 - 2026-08-24
+
+### Added
+
+- **Text source can also be switched from the settings window** — the same three
+  options as in the wizard. Changing your mind later (say from a German to an English
+  client) should not mean hunting for the setup wizard.
+
+### Fixed
+
+- **Two close buttons stacked on top of each other.** The blueprint list, settings and
+  "What's new" all have an ordinary system title bar — with an ✕ in it. A second,
+  hand-drawn one next to it looks like a bug, and you have to guess which does what.
+  This affected Windows just the same; the title bar comes from the window manager
+  there too. The frameless overlay keeps its own ✕: it has no system bar.
+
 ## v2.0.0-rc7 - 2026-08-24
 
 ### Fixed

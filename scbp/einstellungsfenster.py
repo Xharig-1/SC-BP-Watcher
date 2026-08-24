@@ -108,10 +108,7 @@ class Einstellungsfenster:
         bar.pack(fill='x')
         tk.Label(bar, text=t('einstellungen'), bg=BAR, fg=FG,
                  font=schrift(12, True)).pack(side='left', padx=18, pady=10)
-        zu = tk.Label(bar, text='✕', bg=BAR, fg=SUB, font=schrift(12),
-                      cursor='hand2')
-        zu.pack(side='right', padx=16)
-        zu.bind('<Button-1>', lambda e: self.schliessen())
+        # Kein eigenes ✕ — siehe Bestandsfenster: Die Systemtitelleiste hat eins.
 
     def _rollflaeche(self):
         """Der scrollbare Innenbereich.
@@ -272,6 +269,22 @@ class Einstellungsfenster:
                                  wraplength=600)
         self.inj_lage.pack(fill='x', pady=(0, 8))
 
+        # Quelle wechseln — dieselben drei Wege wie im Einrichtungsassistenten.
+        # Wer sich später umentscheidet (etwa vom deutschen auf den englischen
+        # Client), soll dafür nicht den Assistenten suchen müssen.
+        wahl = tk.Frame(eltern, bg=BG)
+        wahl.pack(fill='x', pady=(0, 8))
+        for schluessel, quelle in (('inj_quelle_de', 'deutsch'),
+                                   ('inj_quelle_ss', 'starstrings'),
+                                   ('inj_quelle_orig', 'original')):
+            k = tk.Label(wahl, text=' %s ' % t(schluessel), bg=FLAECHE, fg=FG,
+                         font=schrift(10), cursor='hand2', padx=10, pady=6)
+            k.pack(side='left', padx=(0, 6))
+            k.bind('<Button-1>', lambda e, q=quelle: self._inj_wechseln(q))
+        tk.Label(eltern, text=t('inj_fremd'), bg=BG, fg=SUB, font=schrift(9),
+                 anchor='w', justify='left', wraplength=600).pack(fill='x',
+                                                                  pady=(0, 10))
+
         reihe = tk.Frame(eltern, bg=BG)
         reihe.pack(fill='x')
         for text, tat in ((t('inj_erneuern'), self._inj_erneuern),
@@ -281,6 +294,38 @@ class Einstellungsfenster:
                          font=schrift(10), cursor='hand2', padx=10, pady=6)
             k.pack(side='left', padx=(0, 6))
             k.bind('<Button-1>', lambda e, f=tat: f())
+        self._inj_lage_zeigen()
+
+    def _inj_wechseln(self, quelle):
+        """Auf eine andere Textquelle umstellen — holen, einsetzen, auszeichnen."""
+        def melde(x):
+            self.meldung.configure(text=x, fg=SUB)
+            self.root.update()
+
+        melde(t('inj_laeuft'))
+        try:
+            if quelle == 'original':
+                sprache_ordner = 'english'
+                ziel = uebersetzung.ziel_ini(sprache_ordner)
+                if not (ziel and os.path.isfile(ziel)):
+                    self.meldung.configure(
+                        text=t('inj_fehler', 'global.ini'), fg=ROT)
+                    return
+                uebersetzung.user_cfg_setzen(sprache_ordner)
+            else:
+                ok, meldung = uebersetzung.holen(quelle, fortschritt=melde)
+                if not ok:
+                    self.meldung.configure(text=t('inj_fehler', meldung), fg=ROT)
+                    return
+                sprache_ordner = uebersetzung.QUELLEN[quelle]['sprache']
+                ziel = uebersetzung.ziel_ini(sprache_ordner)
+            ok, n, meldung = injektion.einrichten(ziel, sprache_ordner,
+                                                  fortschritt=melde)
+            self.meldung.configure(
+                text=t('inj_aktiv', n) if ok else t('inj_fehler', meldung),
+                fg=SUB if ok else ROT)
+        except Exception as e:
+            self.meldung.configure(text=t('inj_fehler', e), fg=ROT)
         self._inj_lage_zeigen()
 
     def _inj_ini(self):
