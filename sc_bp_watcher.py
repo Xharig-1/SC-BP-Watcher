@@ -1082,12 +1082,18 @@ if __name__ == '__main__':
     # Der SC Deutsch Launcher ist seit v1.6 **nicht** mehr Voraussetzung — nur
     # Star Citizen selbst muss gefunden werden, denn die Game.log ist die Quelle.
     if not pfade.spiel_ordner():
+        # Die Einstellungsdatei gleich mit anlegen: Wer hier landet, braucht sie —
+        # sie soll dastehen und nicht erst nach Anleitung erzeugt werden müssen.
+        datei = pfade.vorlage_anlegen()
         _startfehler(
             'Star Citizen wurde nicht gefunden.\n\n'
             'Gesucht wurde nach dem Ordner mit der Game.log darin, an den\n'
             'üblichen Stellen%s.\n\n'
-            'Liegt das Spiel woanders, hilft die Umgebungsvariable\n'
-            'SC_INSTALL_DIR — sie zeigt auf den Ordner LIVE.'
-            % ('' if pfade.WINDOWS else ' (auch in den gängigen Wine-Präfixen)'))
+            'Liegt das Spiel woanders, trag den Ordner hier ein:\n\n'
+            '    %s\n\n'
+            'In das Feld "spiel_ordner" gehört der Ordner, in dem die Game.log\n'
+            'liegt (meist "LIVE"). Danach den Watcher neu starten.'
+            % ('' if pfade.WINDOWS else ' (auch in den gängigen Wine-Präfixen)',
+               datei))
     else:
         Overlay().run()

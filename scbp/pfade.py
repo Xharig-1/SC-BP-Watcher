@@ -36,12 +36,26 @@ Drei Sorten Pfade:
      Er ist ab Phase 1 kein Muss mehr — wenn er da ist, wird er weiter genutzt,
      weil er den vollständigen Bestand und einen gepflegten Katalog liefert.
 
-Eigene Wege gehen Umgebungsvariablen vor:
-  SC_BP_HOME        eigener Ordner für Einstellungen und Bestand
-  SC_INSTALL_DIR    Spielordner (der mit der Game.log darin)
-  SC_BP_LAUNCHER    Blueprint-Ordner des SC Deutsch Launchers
+**Wer die Sachen woanders liegen hat, trägt die Pfade selbst ein.** Dafür gibt es
+`einstellungen.json` im eigenen Ordner:
+
+    {
+      "spiel_ordner":    "/mnt/spiele/StarCitizen/LIVE",
+      "launcher_ordner": "D:\\SCDL\\blueprints"
+    }
+
+Die Datei wird angelegt, sobald das Spiel nicht gefunden wird — mit Kommentar
+und leeren Feldern zum Ausfüllen. Ein leeres Feld heißt „bitte suchen".
+
+Rangfolge, wenn mehrere Angaben da sind:
+
+  1. Umgebungsvariable — `SC_BP_HOME`, `SC_INSTALL_DIR`, `SC_BP_LAUNCHER`
+     (für einen einmaligen Sonderfall, ohne etwas zu ändern)
+  2. `einstellungen.json` — der normale Weg für einen dauerhaft eigenen Pfad
+  3. die Suche an den üblichen Stellen
 """
 import glob
+import json
 import os
 import sys
 
@@ -77,6 +91,55 @@ def app_ordner():
 def app_datei(name):
     """Voller Pfad zu einer eigenen Datei, z. B. app_datei('bestand.json')."""
     return os.path.join(app_ordner(), name)
+
+
+# ------------------------------------------------------- Selbst gesetzte Pfade
+EINSTELLUNGEN = 'einstellungen.json'
+
+VORLAGE = {
+    '_hinweis': 'Hier koennen eigene Pfade eingetragen werden, wenn Star Citizen '
+                'oder der SC Deutsch Launcher nicht an den ueblichen Stellen '
+                'liegen. Leeres Feld = automatisch suchen. Nach dem Aendern den '
+                'Watcher neu starten.',
+    '_beispiel_windows': 'D:\\Spiele\\StarCitizen\\LIVE',
+    '_beispiel_linux': '/mnt/spiele/star-citizen/drive_c/Program Files/'
+                       'Roberts Space Industries/StarCitizen/LIVE',
+    'spiel_ordner': '',
+    'launcher_ordner': '',
+}
+
+
+def einstellungen():
+    """Die selbst eingetragenen Pfade. Fehlt die Datei, ist sie leer."""
+    try:
+        with open(app_datei(EINSTELLUNGEN), encoding='utf-8') as f:
+            daten = json.load(f)
+        return daten if isinstance(daten, dict) else {}
+    except Exception:
+        return {}
+
+
+def einstellung(name):
+    """Ein einzelner selbst gesetzter Pfad — oder None, wenn nichts eingetragen ist."""
+    wert = (einstellungen().get(name) or '').strip()
+    return os.path.expanduser(wert) if wert else None
+
+
+def vorlage_anlegen():
+    """Legt `einstellungen.json` zum Ausfüllen an, falls sie noch fehlt.
+
+    Passiert genau dann, wenn das Spiel nicht gefunden wurde: Dann braucht der
+    Nutzer die Datei, und sie soll schon dastehen, statt dass er sie nach
+    Anleitung selbst erzeugen muss."""
+    ziel = app_datei(EINSTELLUNGEN)
+    if os.path.exists(ziel):
+        return ziel
+    try:
+        with open(ziel, 'w', encoding='utf-8') as f:
+            json.dump(VORLAGE, f, ensure_ascii=False, indent=2)
+    except OSError:
+        pass
+    return ziel
 
 
 # --------------------------------------------------------- 2. Star Citizen selbst
@@ -133,8 +196,9 @@ def spiel_ordner():
 
     Erst die Umgebungsvariable, dann die üblichen Orte. Es wird nur nachgesehen,
     ob die Game.log dort liegt — geraten wird nicht."""
-    eigen = os.environ.get('SC_INSTALL_DIR')
-    if eigen:
+    for eigen in (os.environ.get('SC_INSTALL_DIR'), einstellung('spiel_ordner')):
+        if not eigen:
+            continue
         eigen = os.path.expanduser(eigen)
         if os.path.isfile(os.path.join(eigen, 'Game.log')):
             return eigen
@@ -206,10 +270,11 @@ def launcher_ordner():
 
     Unter Windows liegt er in %APPDATA%. Unter Linux nur dann, wenn jemand den
     Launcher unter Wine betreibt — dann steckt dasselbe AppData im Wine-Präfix."""
-    eigen = os.environ.get('SC_BP_LAUNCHER')
-    if eigen:
-        eigen = os.path.expanduser(eigen)
-        return eigen if os.path.isdir(eigen) else None
+    for eigen in (os.environ.get('SC_BP_LAUNCHER'), einstellung('launcher_ordner')):
+        if eigen:
+            eigen = os.path.expanduser(eigen)
+            if os.path.isdir(eigen):
+                return eigen
     if WINDOWS:
         p = os.path.join(os.environ.get('APPDATA', ''), 'sc-deutsch-launcher',
                          'blueprints')
@@ -244,6 +309,9 @@ def uebersicht():
         'game_log': game_log(spiel),
         'sicherungen': len(log_sicherungen(spiel)),
         'launcher': launcher_ordner(),
+        'einstellungen': app_datei(EINSTELLUNGEN),
+        'selbst_gesetzt': {k: v for k, v in einstellungen().items()
+                           if not k.startswith('_') and v},
     }
 
 

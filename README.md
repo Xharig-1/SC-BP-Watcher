@@ -115,6 +115,21 @@ Eigene Dateien (Bestand, Einstellungen, Zwischenspeicher) liegen hier:
 
 Beides lässt sich mit der Umgebungsvariablen `SC_BP_HOME` verlegen.
 
+### Eigene Pfade eintragen
+
+Liegt Star Citizen (oder der SC Deutsch Launcher) nicht an einer der üblichen Stellen, trägst du den Ordner selbst ein — in `einstellungen.json` im Ordner oben:
+
+```json
+{
+  "spiel_ordner": "D:\\Spiele\\StarCitizen\\LIVE",
+  "launcher_ordner": ""
+}
+```
+
+In `spiel_ordner` gehört der Ordner, in dem die `Game.log` liegt (meist `LIVE`). Ein leeres Feld heißt „bitte suchen". Nach dem Ändern den Watcher neu starten.
+
+> Findet der Watcher das Spiel nicht, legt er diese Datei beim Start **von selbst** an und sagt dir, wo sie liegt — du musst sie nicht von Hand erzeugen.
+
 ### Auf bestimmte Gegenstände warten
 
 Wartest du auf einen ganz bestimmten Bauplan, den es noch gar nicht gibt, leg dir

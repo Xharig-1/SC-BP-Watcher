@@ -156,7 +156,22 @@ def main():
         pruefe(not doppelt, 'keine Meldung wiederholt (waren: %d)' % len(doppelt))
         pruefe(bd.anzahl(bd.laden()) == vorher, 'Bestand unverändert (%d)' % vorher)
 
-        print('\n5. Fensterlage von einem fremden Rechner')
+        print('\n5. Eigener Pfad statt Suche')
+        import json
+        from scbp import pfade as pf
+        os.environ.pop('SC_INSTALL_DIR')        # Suche muss jetzt scheitern
+        anders = os.path.join(basis, 'woanders', 'LIVE')
+        os.makedirs(anders)
+        open(os.path.join(anders, 'Game.log'), 'w').close()
+        pruefe(pf.spiel_ordner() is None, 'ohne Eintrag wird nichts gefunden')
+        datei = pf.vorlage_anlegen()
+        pruefe(os.path.exists(datei), 'Einstellungsdatei wird zum Ausfüllen angelegt')
+        d = json.load(open(datei, encoding='utf-8'))
+        d['spiel_ordner'] = anders
+        json.dump(d, open(datei, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+        pruefe(pf.spiel_ordner() == anders, 'selbst eingetragener Pfad wird genommen')
+
+        print('\n6. Fensterlage von einem fremden Rechner')
         kaputt = w.geometrie_pruefen('440x1098+999999+-999999', _wurzel())
         pruefe('+999999' not in kaputt, 'unsinnige Position verworfen (%s)' % kaputt)
 
