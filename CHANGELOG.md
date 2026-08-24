@@ -9,6 +9,10 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 ### Hinzugefügt
 
 
+- **Merkliste per Klick** (`scbp/merkliste.py`). In der Bauplan-Liste macht ein Klick auf den Stern aus jedem Eintrag einen Wunsch — taucht er auf, meldet ihn der Watcher auffällig in Gold. Dafür muss niemand mehr eine `watchlist.json` von Hand anlegen.
+  - Eigener Filter **⭐ beobachtet** zeigt, worauf man gerade wartet.
+  - **Erfüllte Wünsche verschwinden von selbst.** Landet ein beobachteter Bauplan im Bestand, sagt der Watcher einmal Bescheid und trägt ihn aus — eine Liste voller längst erledigter Wünsche wäre keine Merkliste, sondern ein Archiv.
+  - Von außen eingetragene **Muster** funktionieren weiter (die des Autors: Skill „SC BP" schreibt dort die Teile der Staffelrüstung hinein, deren endgültige Namen noch niemand kennt).
 - **Fertige Dateien für beide Systeme, gebaut von GitHub.** Ein Versions-Tag löst den Bau aus: ein Windows-Rechner baut die `.exe`, ein Linux-Rechner das AppImage, beide werden ans Release gehängt — samt Beschreibung aus dem CHANGELOG, damit im Werkzeug unter „Was ist neu" dasselbe steht wie auf GitHub.
   - Das AppImage wird **in einem Ubuntu-22.04-Container** gebaut (glibc 2.35). Auf neuerem glibc gebaut, würde es auf verbreiteten Systemen gar nicht erst starten.
   - Der Bau bricht ab, wenn Tag und `__version__` nicht zusammenpassen. Wer „v2.0.0" lädt, soll im Fenster nicht etwas anderes lesen.
@@ -35,6 +39,10 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Deutsch und Englisch, umschaltbar** (`scbp/sprache.py`). Standard ist die Systemsprache, aber das Feld `sprache` in `einstellungen.json` (`de`/`en`/`auto`) sticht sie — wer ein englisches System fährt und trotzdem Deutsch lesen will, soll das dürfen. Umschalten wirkt sofort, ohne Neustart.
   - Auch die **Bauplan-Arten** hängen daran: `Char_Armor_Helmet` ist nichts für Menschen, „Helm" nichts für eine englische Liste.
   - Der Selbsttest prüft, dass jeder Text beide Sprachen hat und **jede Art aus dem Katalog übersetzt ist** — nach einem SC-Patch können neue dazukommen.
+
+### Entfernt
+
+- **`EXE bauen.bat`.** Seit GitHub die Dateien baut, braucht sie niemand mehr — und sie war bereits falsch: Sie baute ohne `--add-data`, die daraus entstandene `.exe` hätte weder Änderungsprotokoll noch Katalogdaten gehabt. Zum Ausprobieren lässt sich der Bau-Workflow ohne Tag von Hand starten.
 
 ### Wissenswert
 

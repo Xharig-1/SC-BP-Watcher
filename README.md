@@ -43,7 +43,7 @@ Dazu: Klasse, Gütegrad und Größe stehen direkt in der Zeile (`M/A/1`), die Ob
 | 🧭 **Herkunft je Bauplan** | Ein Klick zeigt Fraktion, Auftrag, nötigen Rang und Belohnung — sortiert nach dem leichtesten Weg |
 | 🧙 **Einrichtungsassistent** | Vier Schritte beim ersten Start — und **jederzeit wiederholbar**, ohne sich durch Menüs zu klicken |
 | 🔵 **Katalog-Wache** | Meldet auch, wenn im **Spiel** etwas neu craftbar wird — also wenn CIG einen Bauplan nachreicht, den es vorher gar nicht gab (nicht nur, was du selbst freischaltest) |
-| ⭐ **Beobachtungsliste** | Gegenstände, auf die du wartest, werden bei ihrem Auftauchen auffällig in Gold gemeldet — optionale `watchlist.json` |
+| ⭐ **Merkliste** | Klick auf den Stern in der Liste — taucht der Bauplan auf, wird er auffällig gemeldet und **verschwindet danach von selbst** von der Merkliste |
 | 🏷️ **Size · Grade · Klasse** | Kompakt-Kürzel `Klasse/Grade/Size` je Bauplan, z. B. `M/A/1` (Military · Grade A · Size 1) |
 | 🔔 **Signalton** | Kurzer Ton bei jedem Neuzugang — du musst nicht aufs Fenster schauen |
 | 🧷 **Immer im Vordergrund** | Randloses, leicht durchscheinendes Overlay über dem Spiel |
@@ -176,11 +176,18 @@ In `spiel_ordner` gehört der Ordner, in dem die `Game.log` liegt (meist `LIVE`)
 
 ### Auf bestimmte Gegenstände warten
 
-Wartest du auf einen ganz bestimmten Bauplan, den es noch gar nicht gibt, leg dir
-`watchlist.json` im eigenen Ordner an:
+Wartest du auf einen ganz bestimmten Bauplan, klick in der Liste (**☰**) auf den **Stern** neben seinem Namen. Über das Suchfeld findest du ihn in Sekunden, und der Filter **⭐ beobachtet** zeigt dir, worauf du gerade wartest.
+
+Taucht ein beobachteter Bauplan auf, meldet ihn der Watcher auffällig in Gold mit ⭐ und eigenem Signalton — und **nimmt ihn danach von selbst von der Merkliste**. Was du hast, muss dort nicht mehr stehen.
+
+<details>
+<summary>Für Fortgeschrittene: Muster statt Namen</summary>
+
+Manchmal wartet man auf etwas, dessen genauen Namen es noch gar nicht gibt — „irgendein Helm für den schweren Anzug". Dafür kennt die `watchlist.json` im eigenen Ordner neben den angeklickten Namen auch **Muster**:
 
 ```json
 {
+  "namen": ["Attrition-5 Repeater"],
   "eintraege": [
     { "titel": "Helm für den schweren Anzug", "muster": ["manticore helmet"] },
     { "titel": "Kühler, egal welcher", "muster": ["cooler"] }
@@ -188,21 +195,11 @@ Wartest du auf einen ganz bestimmten Bauplan, den es noch gar nicht gibt, leg di
 }
 ```
 
-Ein Eintrag besteht aus einem frei gewählten **Titel** (der steht später in der Meldung) und
-beliebig vielen **Mustern**. Die Muster werden **kleingeschrieben** als Teilstring gegen jeden
-neuen Katalog-Eintrag geprüft — `cooler` trifft also auf jeden Kühler, `manticore helmet` nur
-auf diesen einen. Ein Treffer wird auffällig in Gold mit ⭐ und eigenem Signalton gemeldet
-(`<Titel> — jetzt craftbar!`).
+Ein Muster-Eintrag hat einen frei gewählten **Titel** (der steht später in der Meldung) und beliebig viele **Muster**, die kleingeschrieben als Teilstück gegen jeden neuen Katalog-Eintrag geprüft werden — `cooler` trifft also jeden Kühler, `manticore helmet` nur diesen einen.
 
-Ohne die Datei meldet der Watcher einfach jeden Zuwachs — sie ist rein optional.
+Von Hand nötig ist das nicht: Für einen bestimmten Bauplan genügt der Stern in der Liste.
 
-> 🔜 Das von Hand zu schreiben ist umständlich, das ist uns bewusst. Geplant ist ein Fenster, in
-> dem man den gewünschten Gegenstand sucht und per Klick auf die Merkliste setzt — die Liste
-> aller craftbaren Dinge kennt das Tool ohnehin schon.
-
-Der Spielordner wird an den üblichen Stellen gesucht — unter Windows in den Programme-Ordnern, unter Linux in den gängigen Wine-Präfixen (lug-helper, Lutris, Bottles, Heroic). Wird nichts gefunden, fragt der Assistent danach. Ein Spiel-Neustart (neue, kürzere Log) wird erkannt, und der Lesestand übersteht auch einen Neustart des Watchers.
-
-> ℹ️ **Spielsprache:** Die Meldung im Log ist übersetzt. Der Watcher sucht nach deutschen und englischen Formulierungen; liegt eine entpackte `global.ini` deiner Installation vor, nimmt er den Wortlaut exakt daraus. Fehlt deine Formulierung, trag sie in `phrasen.json` im eigenen Ordner ein: `{"phrasen": ["Blueprint Received"]}`.
+</details>
 
 ## Einstellungen
 

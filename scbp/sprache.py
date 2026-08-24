@@ -75,6 +75,17 @@ TEXTE = {
     'ruf_punkte':        ('(%s Ruf)', '(%s rep)'),
     'ruf_gewinn':        ('+%d Ruf', '+%d rep'),
 
+    'filter_merk':       ('beobachtet', 'watching'),
+    'merken':            ('Auf die Merkliste', 'Add to watchlist'),
+    'nicht_mehr_merken': ('Von der Merkliste nehmen', 'Remove from watchlist'),
+    'merkliste_leer':    ('Du beobachtest noch nichts. Tippe oben einen Namen '
+                          'ein und klick auf den Stern.',
+                          'You are not watching anything yet. Type a name above '
+                          'and click the star.'),
+    'merk_erledigt':     ('%s ist da — von der Merkliste genommen.',
+                          '%s has arrived — removed from your watchlist.'),
+    'merkliste':         ('Merkliste', 'Watchlist'),
+
     # -- Einstellungen --
     'einstellungen':     ('Einstellungen', 'Settings'),
     'status':            ('Status', 'Status'),

@@ -43,7 +43,8 @@ from tkinter import font as tkfont
 # unterscheidet — der Rest dieser Datei muss das Betriebssystem nicht kennen.
 from scbp import sprache
 from scbp import (aktualisierung, assistent, autostart,
-                  bestand as bestand_datei, logquelle, pfade, phrasen)
+                  bestand as bestand_datei, logquelle, merkliste,
+                  pfade, phrasen)
 
 try:
     import winsound                      # nur Windows; unter Linux übernimmt tkinter
@@ -164,15 +165,8 @@ def load_types():
             for name, eintrag in (SCMDB or {}).items()} if SCMDB else {}
 
 
-def load_watchlist():
-    """Optionale Beobachtungsliste -> [(Titel, [Muster, …]), …]. Fehlt sie, ist sie leer."""
-    try:
-        with open(WATCHLIST, encoding='utf-8') as f:
-            eintraege = json.load(f).get('eintraege', [])
-        return [(e['titel'], [m.lower() for m in e.get('muster', [])])
-                for e in eintraege if e.get('muster')]
-    except Exception:
-        return []
+# Die Merkliste steckt in `scbp/merkliste.py` — sie wird im Fenster per Klick
+# gepflegt, nicht mehr nur von Hand in der Datei.
 
 
 # Vorbelegung, damit `load_types()` weiter unten nicht ins Leere greift: Die
@@ -621,9 +615,9 @@ class Watcher(threading.Thread):
         if not neu:
             self._save_catalog(jetzt)
             return
-        muster, anzeige = load_watchlist(), load_display()
+        anzeige = load_display()
         for name in neu:
-            titel = next((t for t, muss in muster if any(m in name for m in muss)), None)
+            titel = merkliste.treffer(name)
             self.q.put(('catalog', anzeige.get(_norm(name)) or name.title(),
                         jetzt.get(name) or '—', time.strftime('%H:%M:%S'), titel))
         self._save_catalog(jetzt)
@@ -735,6 +729,7 @@ class Watcher(threading.Thread):
                 if HAT_LAUNCHER:
                     self.prov[nk] = name
                 self._emit(name, HAT_LAUNCHER, kuerzel_aus_zusatz(zusatz))
+                self._merkliste_erledigen(name)
             if geaendert:
                 bestand_datei.speichern(self.bestand)
 
@@ -749,6 +744,7 @@ class Watcher(threading.Thread):
                     self.seen.add(_norm(k))
                     if bestand_datei.hinzufuegen(self.bestand, k, 'launcher'):
                         zuwachs = True
+                    self._merkliste_erledigen(k)
                     if row:
                         self.q.put(('confirm', row, k, art_of(k), meta_of(k)))
                     elif not dup:
@@ -763,6 +759,18 @@ class Watcher(threading.Thread):
                 self._catalog_tick()
 
             self.q.put(('status', self._statuszeile()))
+
+    def _merkliste_erledigen(self, name):
+        """Worauf gewartet wurde und was jetzt da ist, fliegt von der Merkliste.
+
+        Eine Liste voller längst erfüllter Wünsche wäre keine Merkliste, sondern
+        ein Archiv. Der Watcher sagt einmal Bescheid, dann ist es erledigt."""
+        try:
+            titel = merkliste.erledigen(name)
+        except Exception:
+            return
+        if titel:
+            self.q.put(('hinweis', sprache.t('merk_erledigt', titel)))
 
     def _statuszeile(self):
         """Was unten im Fenster steht. Zeigt den **eigenen** Bestand — nicht mehr

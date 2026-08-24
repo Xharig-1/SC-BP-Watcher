@@ -38,6 +38,7 @@ import tkinter as tk
 
 from . import bestand as bestand_datei
 from . import katalog as katalog_modul
+from . import merkliste as merk
 from . import pfade
 from .sprache import t
 
@@ -142,7 +143,8 @@ class Bestandsfenster:
         self.knoepfe = {}
         for schluessel, text in (('alle', t('filter_alle')),
                                  ('habe', t('filter_habe')),
-                                 ('fehlt', t('filter_fehlt'))):
+                                 ('fehlt', t('filter_fehlt')),
+                                 ('merk', '⭐ ' + t('filter_merk'))):
             k = tk.Label(leiste, text=' %s ' % text, bg=FLAECHE, fg=SUB,
                          font=schrift(10), cursor='hand2', padx=8, pady=5)
             k.pack(side='left', padx=2)
@@ -182,6 +184,7 @@ class Bestandsfenster:
         """Die Baupläne, die gerade angezeigt werden sollen."""
         text = self.suche.get().strip().lower()
         habe = bestand_datei.schluessel(self.bestand)
+        beobachtet = merk.namen()
         ergebnis = []
         for art, liste in sorted(katalog_modul.nach_art(self.katalog).items()):
             treffer = []
@@ -191,6 +194,8 @@ class Bestandsfenster:
                 if self.filter == 'habe' and not drin:
                     continue
                 if self.filter == 'fehlt' and drin:
+                    continue
+                if self.filter == 'merk' and katalog_modul._norm(e['n']) not in beobachtet:
                     continue
                 if text and text not in e['n'].lower() and text not in art.lower():
                     continue
@@ -238,8 +243,10 @@ class Bestandsfenster:
             mehr.pack(fill='x')
             mehr.bind('<Button-1>', lambda e: self._alle())
         if not gruppen:
-            tk.Label(self.inhalt, text=t('nichts_gefunden'), bg=BG, fg=SUB,
-                     font=schrift(11), pady=20).pack()
+            leer = (t('merkliste_leer') if self.filter == 'merk'
+                    else t('nichts_gefunden'))
+            tk.Label(self.inhalt, text=leer, bg=BG, fg=SUB, font=schrift(11),
+                     pady=20, wraplength=520, justify='center').pack()
 
     def _alle(self):
         self.alle_zeigen = True
@@ -288,6 +295,16 @@ class Bestandsfenster:
             info.pack(side='right')
             info.bind('<Button-1>', lambda e, n=name: self._herkunft_umschalten(n))
 
+        # Stern: worauf man wartet, wird auffällig gemeldet, sobald es auftaucht.
+        # Bei schon vorhandenen Bauplänen wäre das sinnlos — dort kein Stern.
+        if not drin:
+            gemerkt = merk.enthaelt(name)
+            stern = tk.Label(zeile, text='⭐' if gemerkt else '☆', bg=FLAECHE,
+                             fg=GELB if gemerkt else SUB, font=schrift(11),
+                             cursor='hand2', padx=6)
+            stern.pack(side='right')
+            stern.bind('<Button-1>', lambda e, n=name: self._merken(n))
+
         if name in self.offen:
             self._herkunft(eintrag)
 
@@ -316,6 +333,11 @@ class Bestandsfenster:
         else:
             bestand_datei.hinzufuegen(self.bestand, name, 'hand')
         bestand_datei.speichern(self.bestand)
+        self._zeichnen()
+
+    def _merken(self, name):
+        """Stern an oder aus — sofort auf die Platte, kein Speichern-Knopf."""
+        merk.umschalten(name)
         self._zeichnen()
 
     def _herkunft_umschalten(self, name):

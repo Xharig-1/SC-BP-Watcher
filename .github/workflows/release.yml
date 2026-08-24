@@ -61,13 +61,19 @@ jobs:
     # Runner: Ein auf neuerem glibc gebautes AppImage startet auf aelteren
     # Systemen gar nicht — und die sind verbreiteter als das neueste.
     container: ubuntu:22.04
+    env:
+      # Ohne das fragt `tzdata` beim Installieren interaktiv nach der Zeitzone
+      # und wartet ewig auf eine Eingabe, die im Bau nie kommt. Kostete beim
+      # ersten Probelauf acht Minuten, bis der Job abgebrochen wurde.
+      DEBIAN_FRONTEND: noninteractive
+      TZ: Etc/UTC
     steps:
       - name: Werkzeuge
         run: |
-          apt-get update
-          apt-get install -y --no-install-recommends \
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends \
             python3 python3-pip python3-tk binutils file wget ca-certificates git
-          python3 -m pip install --upgrade pip pyinstaller
+          python3 -m pip install --quiet --upgrade pip pyinstaller
 
       - uses: actions/checkout@v4
 

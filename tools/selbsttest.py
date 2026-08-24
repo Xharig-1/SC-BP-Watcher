@@ -246,7 +246,29 @@ def main():
             print('  [--]   Katalog nicht vorhanden, Arten nicht prüfbar')
         sprache.setzen('de')
 
-        print('\n8. Fensterlage von einem fremden Rechner')
+        print('\n8. Merkliste')
+        from scbp import merkliste as mk
+        os.environ['SC_BP_HOME'] = os.path.join(basis, 'merk')
+        os.makedirs(os.environ['SC_BP_HOME'], exist_ok=True)
+        pruefe(mk.anzahl() == 0, 'startet leer')
+        pruefe(mk.umschalten('Wunschteil') is True, 'ein Klick trägt ein')
+        pruefe(mk.enthaelt('wunschteil'), 'Groß- und Kleinschreibung egal')
+        pruefe(mk.umschalten('Wunschteil') is False, 'zweiter Klick trägt aus')
+        mk.umschalten('Wunschteil')
+        # Muster-Einträge von außen (die des Autors: Skill „SC BP" schreibt so)
+        d = mk.laden()
+        d['eintraege'].append({'titel': 'Staffelrüstung',
+                               'muster': ['adp-mk4', 'woodland']})
+        mk.speichern(d)
+        pruefe(mk.treffer('ADP-mk4 Woodland Helmet') == 'Staffelrüstung',
+               'Muster von außen greifen weiter')
+        pruefe(mk.erledigen('Wunschteil') == 'Wunschteil',
+               'erfüllter Wunsch wird ausgetragen')
+        pruefe(not mk.enthaelt('Wunschteil'), 'und ist danach wirklich weg')
+        pruefe(mk.erledigen('Irgendwas anderes') is None,
+               'was nie beobachtet wurde, ändert nichts')
+
+        print('\n9. Fensterlage von einem fremden Rechner')
         kaputt = w.geometrie_pruefen('440x1098+999999+-999999', _wurzel())
         pruefe('+999999' not in kaputt, 'unsinnige Position verworfen (%s)' % kaputt)
 
