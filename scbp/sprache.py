@@ -81,6 +81,11 @@ TEXTE = {
     'ruf_punkte':        ('(%s Ruf)', '(%s rep)'),
     'ruf_gewinn':        ('+%d Ruf', '+%d rep'),
 
+    'export_basetool':   ('Export fürs Basetool', 'Export for Basetool'),
+    'export_alles':      ('Alles sichern', 'Export everything'),
+    'export_fertig':     ('%s Baupläne gesichert', '%s blueprints saved'),
+    'export_fehler':     ('Export fehlgeschlagen: %s', 'Export failed: %s'),
+    'alle_dateien':      ('Alle Dateien', 'All files'),
     'filter_merk':       ('beobachtet', 'watching'),
     'merken':            ('Auf die Merkliste', 'Add to watchlist'),
     'nicht_mehr_merken': ('Von der Merkliste nehmen', 'Remove from watchlist'),

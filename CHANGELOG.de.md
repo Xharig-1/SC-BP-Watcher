@@ -12,6 +12,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Bestand als Datei ausgeben** (`scbp/export.py`), zwei Knöpfe in der Bauplan-Liste:
+  - **Fürs KRT Profit Basetool** — die JSON, die dessen Import erwartet
+    (`productName` + `receivedAt`). Hochladen macht der Spieler selbst; es verlässt
+    nichts ungefragt den Rechner.
+  - **Alles sichern** — Name, Art, Klasse, Größe, Gütegrad, Hersteller, Quelle und
+    Zeitpunkt. Als Rückfall und für eigene Auswertungen, unabhängig von jedem Dienst.
+  - Ein Zeitwert, der sich nicht sauber in ISO 8601 bringen lässt, wird **weggelassen**
+    statt erfunden — das Feld ist optional, ein falscher Zeitpunkt wäre schlechter.
 - **Overlay einklappen** (▾ in der Titelleiste). Es schiebt sich auf die Titelleiste
   zusammen und gibt die Sicht frei — gedacht für alle mit **einem** Bildschirm, wo das
   Fenster zwangsläufig über dem Spiel liegt und Durchsichtigkeit allein nicht reicht.

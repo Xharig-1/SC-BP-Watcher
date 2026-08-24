@@ -35,8 +35,10 @@ Bedienung: tippen filtert, Klick auf eine Zeile setzt oder entfernt das Häkchen
 Klick auf ⓘ klappt die Bezugsquellen aus.
 """
 import tkinter as tk
+from tkinter import filedialog
 
 from . import bestand as bestand_datei
+from . import export as export_modul
 from . import hinweis
 from . import katalog as katalog_modul
 from . import merkliste as merk
@@ -181,12 +183,43 @@ class Bestandsfenster:
                  font=schrift(12, True)).pack(side='left', padx=14, pady=10)
         self.fortschritt = tk.Label(bar, text='', bg=BAR, fg=SUB, font=schrift(10))
         self.fortschritt.pack(side='left')
+        # Export rechts in der Kopfzeile — dort, wo man ihn sucht, wenn man die
+        # Liste vor sich hat. Geschrieben wird eine Datei; hochladen macht der
+        # Spieler selbst (nichts verlässt den Rechner ungefragt).
+        for text, art in ((t('export_basetool'), 'basetool'),
+                          (t('export_alles'), 'voll')):
+            k = tk.Label(bar, text=' %s ' % text, bg=FLAECHE, fg=FG,
+                         font=schrift(9), cursor='hand2', padx=8, pady=4)
+            k.pack(side='right', padx=(0, 14) if art == 'basetool' else (0, 6))
+            k.bind('<Button-1>', lambda e, a=art: self._exportieren(a))
+        self.export_meldung = tk.Label(bar, text='', bg=BAR, fg=ACCENT,
+                                       font=schrift(9))
+        self.export_meldung.pack(side='right', padx=(0, 10))
         # Kein eigenes ✕: Dieses Fenster hat eine ganz normale Titelleiste vom
         # System, und die hat bereits eins. Zwei Kreuze übereinander sehen aus
         # wie ein Fehler — und man rät, welches was tut. (Betraf Windows genauso,
         # die Leiste kommt dort ebenfalls vom Fenstermanager.) Das randlose
         # Overlay ist der andere Fall: Dort gibt es keine Systemleiste, deshalb
         # behält es sein eigenes ✕.
+
+    def _exportieren(self, art):
+        """Bestand als Datei ausgeben — Ziel wählt der Spieler."""
+        pfad = filedialog.asksaveasfilename(
+            parent=self.root, title=t('export_basetool' if art == 'basetool'
+                                      else 'export_alles'),
+            initialfile=export_modul.vorschlag(art),
+            defaultextension='.json',
+            filetypes=[('JSON', '*.json'), (t('alle_dateien'), '*.*')])
+        if not pfad:
+            return
+        ok, meldung = export_modul.schreiben(pfad, art, self.bestand,
+                                             self.katalog)
+        self.export_meldung.configure(
+            text=t('export_fertig', meldung) if ok else t('export_fehler', meldung),
+            fg=ACCENT if ok else GELB)
+        # Nach ein paar Sekunden wieder wegnehmen — eine Erfolgsmeldung, die
+        # stehen bleibt, wird zur Beschriftung und sagt dann nichts mehr.
+        self.root.after(6000, lambda: self.export_meldung.configure(text=''))
 
     def _werkzeugleiste(self):
         leiste = tk.Frame(self.root, bg=BG)
