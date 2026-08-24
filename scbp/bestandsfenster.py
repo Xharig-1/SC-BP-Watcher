@@ -57,6 +57,9 @@ GELB    = '#d8a03a'
 # bauen dauert in tkinter spürbar lange, und niemand scrollt durch 714 Zeilen —
 # wer etwas sucht, tippt. Der Rest kommt auf Knopfdruck.
 ZEILEN_ZUERST = 120
+# Die Programmversion wird vom Hauptprogramm gesetzt; sie landet im
+# scmdb-Export als Kennung des erzeugenden Werkzeugs.
+VERSION = ['']
 
 
 def schrift(groesse, fett=False):
@@ -186,12 +189,18 @@ class Bestandsfenster:
         # Export rechts in der Kopfzeile — dort, wo man ihn sucht, wenn man die
         # Liste vor sich hat. Geschrieben wird eine Datei; hochladen macht der
         # Spieler selbst (nichts verlässt den Rechner ungefragt).
-        for text, art in ((t('export_basetool'), 'basetool'),
-                          (t('export_alles'), 'voll')):
+        # Ein Knopf für den Regelfall (alle Formate in die Ablage), einer für
+        # den Einzelfall (eine Datei, Ziel selbst wählen). Drei Knöpfe für drei
+        # Formate wären eine Zumutung — die wenigsten wollen sich mit dem
+        # Unterschied befassen.
+        for text, tat, abstand in (
+                (t('export_ablage'), self._in_ablage, (0, 14)),
+                (t('export_einzeln'), lambda: self._exportieren('basetool'), (0, 6))):
             k = tk.Label(bar, text=' %s ' % text, bg=FLAECHE, fg=FG,
                          font=schrift(9), cursor='hand2', padx=8, pady=4)
-            k.pack(side='right', padx=(0, 14) if art == 'basetool' else (0, 6))
-            k.bind('<Button-1>', lambda e, a=art: self._exportieren(a))
+            k.pack(side='right', padx=abstand)
+            k.bind('<Button-1>', lambda e, f=tat: f())
+            hinweis.anhaengen(k, lambda: t('hinweis_export'))
         self.export_meldung = tk.Label(bar, text='', bg=BAR, fg=ACCENT,
                                        font=schrift(9))
         self.export_meldung.pack(side='right', padx=(0, 10))
@@ -201,6 +210,29 @@ class Bestandsfenster:
         # die Leiste kommt dort ebenfalls vom Fenstermanager.) Das randlose
         # Overlay ist der andere Fall: Dort gibt es keine Systemleiste, deshalb
         # behält es sein eigenes ✕.
+
+    def _in_ablage(self):
+        """Alle Formate auf einmal in den Ablage-Ordner — und ihn öffnen."""
+        ok, ordner, dateien = export_modul.ablegen(self.bestand, self.katalog,
+                                                   VERSION[0])
+        if not ok:
+            self.export_meldung.configure(text=t('export_fehler', ordner),
+                                          fg=GELB)
+            return
+        self.export_meldung.configure(text=t('export_ablage_fertig',
+                                             len(dateien)), fg=ACCENT)
+        # Ordner zeigen: Eine Datei, die man nicht findet, hilft niemandem.
+        try:
+            import subprocess, sys as _sys
+            if _sys.platform.startswith('win'):
+                os.startfile(ordner)                       # noqa: S606
+            else:
+                subprocess.Popen(['xdg-open', ordner],
+                                 stdout=subprocess.DEVNULL,
+                                 stderr=subprocess.DEVNULL)
+        except Exception:
+            pass
+        self.root.after(8000, lambda: self.export_meldung.configure(text=''))
 
     def _exportieren(self, art):
         """Bestand als Datei ausgeben — Ziel wählt der Spieler."""

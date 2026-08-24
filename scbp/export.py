@@ -79,6 +79,53 @@ def fuer_basetool(bestand=None):
     return {'blueprints': eintraege}
 
 
+def _epoch(zeit_text):
+    """„2026-08-24 07:57:59" -> Epochsekunden, oder None."""
+    if not zeit_text:
+        return None
+    try:
+        return time.mktime(time.strptime(str(zeit_text), '%Y-%m-%d %H:%M:%S'))
+    except (ValueError, TypeError, OverflowError):
+        return None
+
+
+def fuer_scmdb(bestand=None, version=''):
+    """Die Struktur, die der Import von **scmdb.net** erwartet.
+
+    Abgelesen am `--export` ihres eigenen Log-Watchers (v0.1.9): ein Umschlag
+    mit `exportSchemaVersion`, dazu `blueprints` mit `productName` und `ts`
+    (Epochsekunden). Die Missionsfelder ihres Watchers (`missionGuid` und
+    Verwandte) entstehen aus der zeitlichen Zuordnung zu einer abgeschlossenen
+    Mission — die haben wir nicht und erfinden sie auch nicht.
+
+    ⚠️ **Der Zeitstempel ist bei uns oft nicht der echte Drop-Zeitpunkt.** Wer
+    seinen Bestand aus der Launcher-Datei übernommen hat, trägt für **alle**
+    Einträge denselben Zeitpunkt — nämlich den des Imports. Aus den Logs
+    nachgelesene Einträge haben dagegen den richtigen. Das ist keine
+    Nachlässigkeit, sondern die Datenlage: Wann ein Bauplan ursprünglich fiel,
+    steht in der Launcher-Datei nicht drin."""
+    daten = bestand if bestand is not None else bestand_datei.laden()
+    eintraege = []
+    for schluessel, e in sorted((daten.get('bauplaene') or {}).items()):
+        name = (e.get('name') or '').strip()
+        if not name:
+            continue
+        satz = {'productName': name}
+        ts = _epoch(e.get('zeit'))
+        if ts:
+            satz['ts'] = round(ts, 3)
+        eintraege.append(satz)
+    return {
+        'exportSchemaVersion': 1,
+        'watcherVersion': 'SC-BP-Watcher/%s' % (version or '2.x'),
+        'channel': 'LIVE',
+        'exportedAt': time.strftime('%Y-%m-%dT%H:%M:%S+00:00', time.gmtime()),
+        'sourceLogs': [],
+        'missions': [],
+        'blueprints': eintraege,
+    }
+
+
 def vollstaendig(bestand=None, katalog=None):
     """Alles, was das Werkzeug über den eigenen Bestand weiß."""
     daten = bestand if bestand is not None else bestand_datei.laden()
@@ -107,11 +154,15 @@ def vollstaendig(bestand=None, katalog=None):
     }
 
 
-def schreiben(pfad, art='basetool', bestand=None, katalog=None):
-    """Eine der beiden Fassungen in eine Datei schreiben. (Erfolg, Meldung)."""
+def schreiben(pfad, art='basetool', bestand=None, katalog=None, version=''):
+    """Eine Fassung in eine Datei schreiben. (Erfolg, Meldung)."""
     try:
-        doc = (fuer_basetool(bestand) if art == 'basetool'
-               else vollstaendig(bestand, katalog))
+        if art == 'basetool':
+            doc = fuer_basetool(bestand)
+        elif art == 'scmdb':
+            doc = fuer_scmdb(bestand, version)
+        else:
+            doc = vollstaendig(bestand, katalog)
         anzahl = len(doc.get('blueprints') or doc.get('bauplaene') or [])
         if not anzahl:
             return False, 'leerer Bestand'
@@ -126,8 +177,45 @@ def schreiben(pfad, art='basetool', bestand=None, katalog=None):
         return False, str(fehler)
 
 
+DATEINAMEN = {
+    'basetool': 'SC-Blueprints-Basetool-%s.json',
+    'scmdb':    'scmdb-import-%s.json',
+    'voll':     'SC-BP-Watcher-Bestand-%s.json',
+}
+
+
 def vorschlag(art='basetool'):
     """Ein sinnvoller Dateiname für den Speichern-Dialog."""
-    heute = time.strftime('%Y-%m-%d')
-    return ('SC-Blueprints-%s.json' % heute if art == 'basetool'
-            else 'SC-BP-Watcher-Bestand-%s.json' % heute)
+    return DATEINAMEN.get(art, DATEINAMEN['voll']) % time.strftime('%Y-%m-%d')
+
+
+def ablage_ordner():
+    """Wohin die Ablage schreibt. Eigener Ordner neben den übrigen Dateien.
+
+    Ein fester Ort statt jedes Mal ein Dateidialog: Wer den Bestand regelmäßig
+    hochlädt, will nicht dreimal durch einen Speichern-Dialog klicken. Der
+    Dialog bleibt für den Einzelfall daneben bestehen."""
+    from . import pfade
+    eigen = pfade.einstellung('export_ordner')
+    ordner = eigen or os.path.join(pfade.app_ordner(), 'export')
+    try:
+        os.makedirs(ordner, exist_ok=True)
+    except OSError:
+        pass
+    return ordner
+
+
+def ablegen(bestand=None, katalog=None, version=''):
+    """**Alle** Fassungen auf einmal in die Ablage schreiben.
+
+    Gibt (Erfolg, Ordner, Liste der Dateien) zurück. Ein Fehler bei einer
+    Fassung lässt die anderen nicht ausfallen — lieber zwei von drei Dateien
+    als gar keine."""
+    ordner = ablage_ordner()
+    geschrieben = []
+    for art in ('basetool', 'scmdb', 'voll'):
+        ziel = os.path.join(ordner, vorschlag(art))
+        ok, _meldung = schreiben(ziel, art, bestand, katalog, version)
+        if ok:
+            geschrieben.append(os.path.basename(ziel))
+    return bool(geschrieben), ordner, geschrieben

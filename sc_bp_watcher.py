@@ -43,8 +43,9 @@ from tkinter import font as tkfont
 # unterscheidet — der Rest dieser Datei muss das Betriebssystem nicht kennen.
 from scbp import sprache
 from scbp import (aktualisierung, assistent, autostart,
-                  bestand as bestand_datei, einstellungsfenster, hinweis,
-                  injektion, katalog as katalog_modul, logquelle, merkliste,
+                  bestand as bestand_datei, bestandsfenster as bestandsfenster_modul,
+                  einstellungsfenster, hinweis, injektion,
+                  katalog as katalog_modul, logquelle, merkliste,
                   pfade, phrasen, ton, uebersetzung)
 
 try:
@@ -1121,6 +1122,9 @@ class Overlay:
         hinweis.anhaengen(grip, lambda: sprache.t('hinweis_groesse'))
 
         # Watcher starten
+        # Version an die Bauplan-Liste durchreichen — sie landet im
+        # scmdb-Export als Kennung des erzeugenden Werkzeugs.
+        bestandsfenster_modul.VERSION[0] = __version__
         self.eingeklappt = False
         self.hoehe_offen = None      # Fensterhöhe vor dem Einklappen
         if pfade.einstellung_wahrheit('eingeklappt', False):

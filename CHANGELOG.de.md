@@ -12,14 +12,21 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
-- **Bestand als Datei ausgeben** (`scbp/export.py`), zwei Knöpfe in der Bauplan-Liste:
-  - **Fürs KRT Profit Basetool** — die JSON, die dessen Import erwartet
-    (`productName` + `receivedAt`). Hochladen macht der Spieler selbst; es verlässt
-    nichts ungefragt den Rechner.
-  - **Alles sichern** — Name, Art, Klasse, Größe, Gütegrad, Hersteller, Quelle und
-    Zeitpunkt. Als Rückfall und für eigene Auswertungen, unabhängig von jedem Dienst.
-  - Ein Zeitwert, der sich nicht sauber in ISO 8601 bringen lässt, wird **weggelassen**
-    statt erfunden — das Feld ist optional, ein falscher Zeitpunkt wäre schlechter.
+- **Bestand als Datei ausgeben** (`scbp/export.py`) — **drei Formate**, zwei Knöpfe:
+  - **„In die Ablage"** schreibt alle drei auf einmal in einen festen Ordner und öffnet
+    ihn. Wer regelmäßig hochlädt, klickt nicht dreimal durch einen Speichern-Dialog.
+  - **„Datei speichern …"** bleibt für den Einzelfall, mit freier Zielwahl.
+  - **KRT Profit Basetool** (`productName` + `receivedAt`) · **scmdb.net**
+    (`exportSchemaVersion`, `productName` + `ts` als Epochsekunden — abgelesen am
+    `--export` ihres eigenen Log-Watchers v0.1.9) · **vollständige Sicherung** mit Art,
+    Klasse, Größe, Gütegrad, Hersteller und Quelle.
+  - Ein Zeitwert, der sich nicht sauber umrechnen lässt, wird **weggelassen** statt
+    erfunden — das Feld ist optional, ein falscher Zeitpunkt wäre schlechter.
+  - ⚠️ **Der Zeitstempel ist nicht immer der echte Drop-Zeitpunkt.** Wer seinen Bestand
+    aus der Launcher-Datei übernommen hat, trägt für alle Einträge den Zeitpunkt des
+    Imports — wann ein Bauplan ursprünglich fiel, steht dort nicht drin. Aus den Logs
+    nachgelesene Einträge haben den richtigen.
+  - **Hochgeladen wird nichts.** Der Export schreibt Dateien, den Rest macht der Spieler.
 - **Overlay einklappen** (▾ in der Titelleiste). Es schiebt sich auf die Titelleiste
   zusammen und gibt die Sicht frei — gedacht für alle mit **einem** Bildschirm, wo das
   Fenster zwangsläufig über dem Spiel liegt und Durchsichtigkeit allein nicht reicht.

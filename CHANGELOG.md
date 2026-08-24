@@ -12,14 +12,20 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
-- **Export your collection to a file** (`scbp/export.py`), two buttons in the blueprint
-  list:
-  - **For the KRT Profit Basetool** — the JSON its import expects (`productName` +
-    `receivedAt`). Uploading is up to you; nothing leaves the machine unasked.
-  - **Export everything** — name, type, class, size, grade, manufacturer, source and
-    timestamp. As a fallback and for your own analysis, independent of any service.
-  - A timestamp that cannot be cleanly turned into ISO 8601 is **omitted** rather than
-    invented — the field is optional, and a wrong time would be worse than none.
+- **Export your collection to a file** (`scbp/export.py`) — **three formats**, two buttons:
+  - **"To the export folder"** writes all three at once into a fixed folder and opens it.
+    If you upload regularly, you should not have to click through a save dialog three times.
+  - **"Save file …"** remains for one-offs, with a free choice of destination.
+  - **KRT Profit Basetool** (`productName` + `receivedAt`) · **scmdb.net**
+    (`exportSchemaVersion`, `productName` + `ts` as epoch seconds — read off the
+    `--export` of their own log watcher v0.1.9) · **full backup** with type, class,
+    size, grade, manufacturer and source.
+  - A timestamp that cannot be converted cleanly is **omitted** rather than invented —
+    the field is optional, and a wrong time would be worse than none.
+  - ⚠️ **The timestamp is not always the real drop time.** If your collection came from
+    the launcher file, every entry carries the time of that import — when a blueprint
+    originally dropped is not recorded there. Entries read from logs have the real one.
+  - **Nothing is uploaded.** The export writes files; the rest is up to you.
 - **Collapse the overlay** (▾ in the title bar). It shrinks to just the title bar and
   frees up the view — meant for anyone on a **single** screen, where the window
   inevitably sits on top of the game and opacity alone is not enough.
