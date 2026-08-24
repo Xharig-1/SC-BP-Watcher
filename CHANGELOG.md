@@ -6,258 +6,85 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## Unreleased
+## v2.0.0 - 2026-08-24
 
-### Fixed
+**The Windows overlay has become a standalone tool for Windows and Linux — and on
+request it writes blueprint details straight into the game.**
 
-- **The update notice named the wrong version — or never appeared.** Three causes:
-  - GitHub returns releases **alphabetically by tag name**, where `rc9` sorts above
-    `rc10`. The code took the **first** match in that list; the actually newest release
-    sat at position 9. Users were therefore told the second-newest version was "new".
-    It now looks for the **highest** version rather than the first.
-  - It only checked **once a day**. Anyone starting the program a second time saw
-    nothing. Now hourly — so effectively on every start.
-  - There was **no way to check manually**. The "What's new" window now has a button;
-    it turns into the answer itself rather than rebuilding the window.
+The SC Deutsch Launcher is no longer required. Verified against a real Star Citizen
+installation, with both a German **and** an English client.
 
-## v2.0.0-rc10 - 2026-08-24
+### Without the launcher
 
-### Fixed
+- **`Game.log` is the source.** Your collection is maintained by the tool itself; on
+  first start the stored session logs are read. If a gap remains, the tool says so
+  instead of presenting an incomplete list as complete.
+- **The game language works itself out.** The in-game blueprint message is localised;
+  the tool derives the wording from your own logs — it knows over 700 blueprint names,
+  and where one appears in a log line, the text before it is the phrase. German and
+  English are measured; other languages it figures out by itself.
+- **If the launcher is present it is still used** — including when it sits on a mounted
+  Windows drive, which is the normal case on dual-boot systems.
 
-- **"English — original texts from the game" did nothing.** The option was offered but
-  only checked whether an English `global.ini` already existed — and if it did not (the
-  normal case), it reported an error. In practice this tied blueprint markup to one of
-  the two third-party sources.
-  - It now actually fetches the file: `scbp/spieltexte.py` reads it from the player's
-    `Data.p4k`. **10 MB in 0.3 seconds** out of a 144 GB archive — only the central
-    directory and a single block are read.
-  - Blueprint details therefore work **without any third-party project**, using only
-    files already on the machine.
-  - An **existing** `global.ini` is left alone: it may hold another project's translation.
-- **The third button was invisible.** Three choice buttons side by side did not fit the
-  settings window — the last one sat outside it, and you had to widen the window to
-  suspect it existed. They are stacked vertically now.
+### Blueprint list
 
-## v2.0.0-rc9 - 2026-08-24
+- **Every blueprint to look up**, with search, filters and progress. Search covers name,
+  category, class (`military`, `stealth`, `civilian`, …), manufacturer and grade.
+- **Where each blueprint comes from** — faction, contract, required standing, payout
+  **and where the contract can be picked up**.
+- **Four sections** to show and hide: ship parts, FPS weapons, armor & clothing, other.
+  Ordered by section rather than alphabetically.
+- **Watchlist by click.** When a watched blueprint shows up the tool says so loudly —
+  and removes the fulfilled wish by itself.
 
-Both from tester feedback.
+### Blueprint details in game
 
-### Added
+- **Every contract that awards blueprints** gets the list inside its mission text — with
+  tick boxes: ticked for what you own, empty for what you lack. Plus a marker in the
+  title (`[BP 2/3]`), visible in the contract list itself. **681 text spots**, German and
+  English.
+- **Three ways to get the base text:** the German translation by
+  [rjcncpt](https://github.com/rjcncpt/StarCitizen-Deutsch-INI),
+  [StarStrings](https://github.com/MrKraken/StarStrings) by MrKraken — or the English
+  originals from your own `Data.p4k`, with no download at all.
+- **Undo is byte-exact.** StarStrings users keep it: its markup stays, ours is added.
+- You are **asked**, never surprised. Nothing is preselected.
+- **It stays current by itself.** On startup and every six hours after, the tool checks
+  for a newer translation, newer blueprint data — or a `global.ini` that a game patch
+  has replaced. All three are re-applied automatically.
+  - **Why this is not a nicety:** every translation update and every patch rewrites the
+    file, so the details are simply **gone** — and after a patch, contracts award
+    different blueprints. Neither is noticeable, because the game runs fine either way.
+    Without this check you eventually play on wrong data.
+  - Only what the player set up themselves is ever touched.
 
-- **Where the contract is available.** Until now it said where a blueprint *comes
-  from*, but not where to *find* the mission — leaving you to look the mission name up
-  elsewhere. Now the line is there: "Available in Stanton: Hurston, Crusader, ArcCorp,
-  microTech and 12 more".
-  - Planets and moons first, everything else after. A planet name is an answer you can
-    act on; "HUR L2" only helps if you already know where you are.
-- **Search by class, manufacturer and grade.** `military`, `stealth`, `civilian`,
-  `industrial`, `energy`, `ballistic` — the class is shown on every row but could not
-  be searched. Manufacturer names (`aegis`) and `grade a` to `grade d` as well.
-  - Grade is stored as a **number** and displayed as a letter. Anyone searching
-    "Grade A" types the letter — without conversion the search never matched.
+### Using it
 
-## v2.0.0-rc8 - 2026-08-24
+- **Setup wizard** in five steps, repeatable at any time — and a **settings window** for
+  everything at once.
+- **German and English**, switchable, effective immediately.
+- Hover explanations on every icon, adjustable opacity (which matters with a single
+  screen), sound, autostart.
+- **Update notice with a version history** — including releases you skipped.
 
-### Added
+### Distribution
 
-- **Text source can also be switched from the settings window** — the same three
-  options as in the wizard. Changing your mind later (say from a German to an English
-  client) should not mean hunting for the setup wizard.
+- **Ready-made files for both systems**, built by GitHub on every version tag. The
+  AppImage is built in an Ubuntu 22.04 container so it starts on common systems.
+- ⚠️ **Important for Arch, Fedora and openSUSE:** that same container was also a trap.
+  The bundled Python looked for its certificate store under the Ubuntu path
+  `/usr/lib/ssl`, which does not exist there — **every** HTTPS connection failed
+  silently. No blueprint catalogue, no translation, no update notice; the program
+  started but could load nothing. The launcher now looks for the store in all the usual
+  places. On Ubuntu and Debian this never showed up.
+- **Nothing third-party is bundled.** The blueprint catalogue (scmdb), the translation
+  and StarStrings are fetched at runtime, from their own addresses, on your machine.
 
-### Fixed
+### Thanks
 
-- **Two close buttons stacked on top of each other.** The blueprint list, settings and
-  "What's new" all have an ordinary system title bar — with an ✕ in it. A second,
-  hand-drawn one next to it looks like a bug, and you have to guess which does what.
-  This affected Windows just the same; the title bar comes from the window manager
-  there too. The frameless overlay keeps its own ✕: it has no system bar.
-
-## v2.0.0-rc7 - 2026-08-24
-
-### Fixed
-
-- **The save button in the settings window was invisible.** Once the content grew
-  taller than the window, it simply pushed the button out — visible only after
-  resizing the window by hand. Nothing hinted that something was missing below, so
-  users would have discarded their changes without noticing.
-  - The content now scrolls (scrollbar and mouse wheel) while **header and footer stay
-    put**. The footer is placed before the content, so no amount of future settings
-    can ever push it out again.
-
-## v2.0.0-rc6 - 2026-08-24
-
-### Added
-
-- **Adjustable overlay opacity** (30–100 %, still 93 % by default). With a **single**
-  screen the window inevitably sits on top of the game — you need to see through it.
-  The slider in the settings window updates the window **immediately**: opacity is
-  something you judge by eye, not by a number that only takes effect after saving.
-
-## v2.0.0-rc5 - 2026-08-24
-
-Blueprint details now show up **in the game** — inside the mission text, with tick
-boxes for the ones you already own.
-
-### Added
-
-- **Blueprint details in mission texts** (`scbp/injektion.py`). Every contract that
-  awards blueprints gets the list — ticked for what is in your collection, empty for
-  what is missing. Plus a marker in the title (`[BP 2/3]`), so you can see it in the
-  contract list without opening each one. **668 text spots.**
-  - Along with the figures that matter before accepting: blueprint chance, minimum and
-    maximum reputation, payout, reputation gain, cooldown, shareable yes/no.
-  - Attached to the **text key**, not the mission name. That key is identical in every
-    language — the same markup works for German, English and the game's nine others.
-  - **Undo is byte-exact.** Everything inserted sits between markers; `entfernen()`
-    restores the original file character for character.
-- **Blueprint data comes from the SCDL team.** The translation project publishes its
-  prepared contract data openly — **813 contracts**, German **and** English, with
-  details available nowhere else (region, danger rating, cooldown in words). scmdb
-  alone yields 349.
-  - The division of labour is the sensible one: the SCDL team maintains what it
-    maintains anyway. This tool adds the one thing only it can — the **tick box**. In
-    the raw data blueprints are listed neutrally as `- Name`; that becomes `[x]` or `[  ]`.
-  - Fetched at runtime from the original address, with attribution in the inserted
-    text. If the data is unreachable, the tool's own scmdb-based layout takes over.
-- **Fetching and updating text sources** (`scbp/uebersetzung.py`): the German
-  translation from `rjcncpt/StarCitizen-Deutsch-INI`, StarStrings from
-  `MrKraken/StarStrings`, or the English originals from your own `Data.p4k`. With an
-  update check, because every translation update overwrites the blueprint notes.
-  - **None of it is bundled.** Both third-party projects keep their rights; everything
-    is fetched at runtime from their own pages, at the user's request.
-  - StarStrings users keep it: its markup stays, ours goes after it — filling its gaps.
-- **A step in the setup wizard** that asks. Nothing is preselected: clicking past it
-  leaves your installation untouched. It is the only place where this tool changes
-  anything about the game.
-- **A section in the settings window**: state, refresh, remove, check for updates.
-
-### Fixed
-
-- **The SC Deutsch Launcher was not found on dual-boot systems.** Only Wine prefixes
-  were searched — but for players who moved over, the data sits on the **Windows
-  drive**, usually mounted under Linux. An entire blueprint collection went unused
-  while sitting two folders away.
-- **A configured launcher path now stands on its own.** Previously, if the folder did
-  not exist, the program quietly fell back to searching and might use a different
-  collection than the one specified.
-
-## v2.0.0-rc4 - 2026-08-24
-
-The first real blueprint drop on an **English** client — and what it turned up.
-
-### Added
-
-- **A settings window** (`scbp/einstellungsfenster.py`), reachable via ⚙ in the title bar.
-  All five fields in one place: language, Star Citizen folder, launcher folder, check
-  interval and sound — each with one line of explanation below it.
-  - Previously only language and game folder could be changed, and only through the
-    **setup wizard**. The other three required editing `einstellungen.json` by hand.
-    Reported as "I can't find the settings button at all" — rightly so, there wasn't one.
-  - **The wizard stays.** Two paths on purpose: it walks you through first-time setup for
-    anyone who does not know how this works, while the gear is the direct grip for anyone
-    who knows exactly what they want to change.
-  - Language switches **immediately**, not on save — if you pick a language you want to
-    see whether it is the right one.
-  - A folder that does not exist is **not** saved. Otherwise the watcher would look in a
-    place the player believes is correct, and report nothing.
-
-### Fixed
-
-- **No sound on Linux.** The watcher called `tkinter.bell()` — that is the **X11 system
-  bell**, which is off almost everywhere on modern desktops and effectively gone under
-  Wayland. The code explicitly considered this "not a fault". On the first real drop it
-  stayed silent, and that made it one: a sound that fails exactly when it is needed is
-  worse than none, because you rely on it and miss the blueprint.
-  - `scbp/ton.py` now plays a **system sound** via `canberra-gtk-play`, `paplay` or
-    `pw-play` — all common on Linux, none a new dependency. `bell()` remains the last
-    fallback.
-  - `aplay` is deliberately absent: it cannot play Ogg and would fail silently.
-- **The watchlist star was too small** to hit. It is the one glyph in a row you click
-  rather than read — now noticeably larger, with a wider click area.
-
-### Changed
-
-- ⭐ **The English blueprint message has been measured.** Until now five guessed wordings
-  sat side by side, none confirmed against a real English client. The client writes:
-
-        Added notification "Received Blueprint: Aves Shrike Helmet: "
-
-  `Received Blueprint` now comes first. The four remaining candidates stay as a fallback —
-  they cost nothing, and should CIG change the wording, one of them might fit.
-
-## v2.0.0-rc3 - 2026-08-24
-
-The blueprint list, sharpened up by actually using it.
-
-### Added
-
-- **Sections you can show and hide** — four buttons above the list: ship parts,
-  FPS weapons, armor & clothing, other. Looking for armor? Hide the ship and 714
-  rows become 316. Individual buttons for all 25 categories would not have helped;
-  that is a second list on top of the list.
-  - The **last** visible section cannot be hidden as well. An empty list with no
-    visible reason is not a setting, it is a riddle.
-  - Hidden sections are dimmed, not removed — you need to see that you clicked
-    something away yourself.
-- **A ✕ in the search box.** It only appears once there is something to clear: a
-  clear icon on an empty field is just an icon that does nothing.
-- **German search terms for the English category names.** Four categories are
-  deliberately English because that is what the game calls them — "Cooler",
-  "Power Plant", "Quantum Drive", "Radar". Anyone thinking in German types
-  "Kühler" and found nothing. Now both work, without changing the wording players
-  know from the game.
-
-### Changed
-
-- **A sensible order instead of the alphabet.** Ship parts first, then FPS
-  weapons, then armor and clothing. Alphabetically "Docking collar" came first
-  and armor sat in the middle — 25 categories in letter order are not an
-  overview. Within a section it stays alphabetical: that is predictable, and
-  everyone would order the ship parts differently in their head.
-
-## v2.0.0-rc2 - 2026-08-24
-
-Both found during the first run against a real Linux installation.
-
-### Added
-
-- **Hover explanations for the icons** (`scbp/hinweis.py`). The title bar is seven
-  symbols — ⟳ ⓘ ☰ ⏻ 🗑 ✕ and the resize grip ◢. Anyone who did not build it had to
-  guess, and trying things out is a poor idea with ✕ and 🗑. Labels next to them are
-  out of the question: the overlay is deliberately narrow and sits on top of the game.
-  - The ones with a **state** say what the click will do, not just what the symbol
-    means: ⏻ depending on autostart, ⓘ depending on whether a new version is waiting,
-    the star depending on whether the blueprint is already being watched.
-  - The blueprint list's ✕ explicitly says "the watcher keeps running" — it looks
-    exactly like the overlay's ✕, which quits the program.
-  - `merken` and `nicht_mehr_merken` had been in the language module since
-    v2.0.0-rc1 without either ever being wired up.
-
-### Fixed
-
-- **Search looked like it found nothing.** Anyone who had scrolled down the
-  blueprint list and then typed something was left staring at **empty space** —
-  the view kept its old scroll position while 714 rows turned into five. The
-  matches were there, just far above. Search and filters now jump back to the
-  top; ticking off, watching and expanding keep the position, where jumping
-  would only lose your place.
-  - Reported as "typing *xl* leaves the list empty" — `XL-1` had been in the
-    results the whole time.
-- **The blueprint catalogue was never fetched.** The function existed, but nothing
-  ever called it — `katalog.laden()` quietly returned an empty catalogue when the
-  file was missing. As a result the blueprint list stayed empty for **every** user,
-  while the notice inside it promised the catalogue would be fetched on startup.
-  Found during the first run against a real Linux installation.
-  - The catalogue is now fetched **before** the game language is worked out, if it is
-    missing entirely. That ordering matters: `phrasen.selbst_finden()` needs the
-    blueprint names to derive this client's wording from the logs, and the backlog
-    scan needs that wording. Without a catalogue both came up empty on the very first
-    run — on an English client that meant not a single blueprint found, with no
-    visible reason why.
-  - After that a separate background thread keeps it current. Roughly 12 MB must not
-    stall the watcher loop — log detection is the core job.
-  - If the fetch fails (no network), it is retried after 5 minutes instead of 6 hours.
-    A brief hiccup at startup should not linger all day.
+The in-game blueprint details build on the openly published contract data of the
+**SC Deutsch Launcher team** (813 contracts, German and English) and on **scmdb.net**.
+Without either, this release would not exist.
 
 ## v2.0.0-rc1 - 2026-08-24
 

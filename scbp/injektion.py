@@ -429,6 +429,37 @@ def aktualisieren(ini_pfad, sprache, fortschritt=None, bestand=None):
     return einrichten(ini_pfad, sprache, fortschritt, bestand)
 
 
+def scdl_update_da(sprachkuerzel):
+    """Gibt es bei den Vertragsdaten etwas Neueres? (ja/nein, neue Kennung).
+
+    Verglichen wird die Kennung aus `_meta.version` (z. B. „LIVE 20.08.2026").
+    Geholt wird dafür die ganze Datei — sie hat keine eigene Versionsauskunft,
+    und 2,4 MB einmal am Tag sind kein Grund, dafür etwas zu bauen."""
+    alt = scdl_stand(sprachkuerzel)
+    datei = SCDL_DATEI.get(sprachkuerzel)
+    if not datei:
+        return False, None
+    try:
+        req = urllib.request.Request(SCDL_ROH % datei,
+                                     headers={'User-Agent': 'SC-BP-Watcher'})
+        with urllib.request.urlopen(req, timeout=60) as r:
+            roh = json.loads(r.read().decode('utf-8'))
+    except Exception:
+        return False, None
+    neu_kennung = (roh.get('_meta') or {}).get('version')
+    if not roh.get('entries') or neu_kennung == alt:
+        return False, alt
+    # Schon mal ablegen — der Abruf ist gelaufen, ein zweiter wäre Verschwendung.
+    try:
+        ziel = pfade.app_datei(SCDL_CACHE % sprachkuerzel)
+        with open(ziel + '.tmp', 'w', encoding='utf-8') as f:
+            json.dump(roh, f, ensure_ascii=False)
+        os.replace(ziel + '.tmp', ziel)
+    except Exception:
+        return False, alt
+    return True, neu_kennung
+
+
 def scdl_stand(sprachkuerzel):
     """Welche Fassung der Vertragsdaten liegt hier? Oder None."""
     d = scdl_laden(sprachkuerzel)

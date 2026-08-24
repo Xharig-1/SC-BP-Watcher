@@ -373,6 +373,10 @@ TEXTE = {
     'inj_update_da':     ('Neue Fassung verfügbar: %s', 'New version available: %s'),
     'inj_aktuell':       ('Ist auf dem neuesten Stand', 'Up to date'),
     'inj_pruefen':       ('Auf Updates prüfen', 'Check for updates'),
+    'texte_erneuert':    ('Übersetzung aktualisiert (%s)',
+                          'Translation updated (%s)'),
+    'bpdaten_erneuert':  ('Neue Bauplan-Daten (%s)',
+                          'New blueprint data (%s)'),
 
     # -- Bereiche (Obergruppen der Kategorien) --
     'gruppe_schiff':     ('Schiffsteile', 'Ship parts'),

@@ -6,269 +6,88 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## Unveröffentlicht
+## v2.0.0 - 2026-08-24
 
-### Behoben
+**Aus dem Windows-Overlay ist ein eigenständiges Werkzeug für Windows und Linux
+geworden — und es schreibt die Bauplan-Angaben auf Wunsch direkt ins Spiel.**
 
-- **Die Update-Meldung nannte die falsche Fassung — oder kam gar nicht.** Drei Ursachen:
-  - GitHub gibt die Freigaben **alphabetisch nach Tag-Namen** zurück, und dort ist `rc9`
-    größer als `rc10`. Der Code nahm den **ersten** Treffer aus der Liste; die tatsächlich
-    neueste stand auf Position 9. Nutzern wurde damit die vorletzte Fassung als „neu"
-    gemeldet. Jetzt wird die **höchste** Version gesucht, nicht die erste.
-  - Nachgesehen wurde nur **einmal am Tag**. Wer das Programm mehrmals startete, bekam
-    beim zweiten Mal nichts mehr zu sehen. Jetzt stündlich — beim Starten also praktisch
-    immer.
-  - Es gab **keine Möglichkeit, von Hand nachzusehen**. Das Fenster „Was ist neu" hat
-    jetzt einen Knopf dafür; er wird selbst zur Antwort, statt das Fenster neu aufzubauen.
+Der SC Deutsch Launcher wird nicht mehr gebraucht. Geprüft an einer echten
+Star-Citizen-Installation, mit deutschem **und** englischem Client.
 
-## v2.0.0-rc10 - 2026-08-24
+### Ohne Launcher
 
-### Behoben
+- **Die `Game.log` ist die Quelle.** Der Bauplan-Bestand wird selbst geführt; beim ersten
+  Start werden die aufgehobenen Spielprotokolle nachgelesen. Bleibt eine Lücke, sagt das
+  Werkzeug das, statt eine unvollständige Liste als vollständig auszugeben.
+- **Die Spielsprache erschließt sich von selbst.** Die Bauplan-Meldung im Log ist
+  übersetzt; das Werkzeug leitet den Wortlaut aus den eigenen Logs ab — es kennt über 700
+  Bauplan-Namen, und steht einer davon in einer Logzeile, ist der Text davor die gesuchte
+  Formulierung. Deutsch und Englisch sind gemessen, andere Sprachen findet es selbst.
+- **Ist der Launcher da, wird er weiter genutzt** — auch wenn er auf einer eingehängten
+  Windows-Platte liegt, was bei Dual-Boot der Normalfall ist.
 
-- **„Englisch — Originaltexte aus dem Spiel" tat nichts.** Der Punkt stand zur Auswahl,
-  prüfte aber nur, ob schon eine englische `global.ini` dalag — und war das nicht der
-  Fall (der Normalfall), kam eine Fehlermeldung. Damit hing die Bauplan-Auszeichnung
-  faktisch an einer der beiden Fremdquellen.
-  - Der Weg holt die Datei jetzt wirklich: `scbp/spieltexte.py` liest sie aus dem
-    `Data.p4k` des Spielers. **10 MB in 0,3 Sekunden** aus einem 144-GB-Archiv — es
-    werden nur das Inhaltsverzeichnis und ein einziger Block gelesen.
-  - Damit funktionieren die Bauplan-Angaben **ohne jedes fremde Projekt**, allein aus
-    den Dateien, die ohnehin auf dem Rechner liegen.
-  - Eine **vorhandene** `global.ini` wird nicht angetastet: Dort könnte die Übersetzung
-    eines anderen Projekts liegen.
-- **Der dritte Knopf war unsichtbar.** Drei Auswahlknöpfe nebeneinander passten nicht ins
-  Einstellungsfenster — der letzte lag außerhalb, und man musste das Fenster erst breiter
-  ziehen, um zu ahnen, dass es ihn gibt. Jetzt stehen sie untereinander.
+### Bauplan-Liste
 
-## v2.0.0-rc9 - 2026-08-24
+- **Alle Baupläne zum Nachschlagen**, mit Suche, Filtern und Fortschritt. Gesucht wird
+  über Name, Kategorie, Klasse (`military`, `stealth`, `civilian`, …), Hersteller und
+  Gütegrad.
+- **Woher jeder Bauplan kommt** — Fraktion, Auftrag, nötiger Ruf, Belohnung **und wo sich
+  der Auftrag annehmen lässt**.
+- **Vier Bereiche** zum Ein- und Ausblenden: Schiffsteile, FPS-Waffen, Rüstung & Kleidung,
+  Sonstiges. Sortiert nach Bereichen statt nach Alphabet.
+- **Merkliste per Klick.** Taucht ein beobachteter Bauplan auf, meldet das Werkzeug ihn
+  auffällig — und trägt den erfüllten Wunsch selbst wieder aus.
 
-Beides aus Rückmeldungen von Testern.
+### Bauplan-Angaben im Spiel
 
-### Hinzugefügt
+- **An jede Mission, die Baupläne ausschüttet**, kommt die Liste in den Missionstext —
+  mit Kästchen: angehakt, was man hat, leer, was fehlt. Dazu ein Kürzel im Titel
+  (`[BP 2/3]`), sichtbar schon in der Auftragsliste. **681 Textstellen**, deutsch und
+  englisch.
+- **Drei Wege zur Grundlage:** die deutsche Übersetzung von
+  [rjcncpt](https://github.com/rjcncpt/StarCitizen-Deutsch-INI),
+  [StarStrings](https://github.com/MrKraken/StarStrings) von MrKraken — oder die
+  englischen Originaltexte aus dem eigenen `Data.p4k`, ganz ohne Download.
+- **Rückgängig auf den Buchstaben genau.** Wer StarStrings nutzt, behält es: Dessen
+  Auszeichnungen bleiben stehen, die eigenen kommen dazu.
+- Es wird **gefragt**, nie stillschweigend gemacht. Voreingestellt ist nichts.
+- **Es bleibt von selbst aktuell.** Beim Start und danach alle sechs Stunden wird
+  nachgesehen: neue Übersetzung, neue Bauplan-Daten — oder eine `global.ini`, die ein
+  Spiel-Patch ersetzt hat. Alles drei trägt sich dann selbst wieder ein.
+  - **Warum das kein Beiwerk ist:** Jedes Übersetzungs-Update und jeder Patch schreibt
+    die Datei neu, die Angaben sind dann **weg** — und nach einem Patch geben Missionen
+    andere Baupläne aus. Beides fällt niemandem auf, weil das Spiel normal weiterläuft.
+    Ohne diesen Abgleich spielt man irgendwann mit falschen Daten.
+  - Angefasst wird nur, was der Spieler selbst eingerichtet hat.
 
-- **Wo der Auftrag angenommen wird.** Bisher stand da, *woher* ein Bauplan kommt, aber
-  nicht, *wo* man die Mission findet — und damit musste man den Missionsnamen anderswo
-  nachschlagen. Jetzt steht die Zeile dabei: „Annehmen in Stanton: Hurston, Crusader,
-  ArcCorp, microTech und 12 weiteren".
-  - Planeten und Monde zuerst, danach der Rest. Ein Planetenname ist die Auskunft, mit
-    der man etwas anfangen kann; „HUR L2" hilft nur, wer ohnehin weiß, wo er ist.
-- **Suche nach Klasse, Hersteller und Gütegrad.** `military`, `stealth`, `civilian`,
-  `industrial`, `energy`, `ballistic` — die Klasse steht in jeder Zeile, war aber nicht
-  auffindbar. Dazu Herstellernamen (`aegis`) und `grade a` bis `grade d`.
-  - Der Gütegrad steht in den Daten als **Zahl**, angezeigt wird ein Buchstabe. Wer
-    „Grade A" sucht, tippt den Buchstaben — ohne Umrechnung fand die Suche nie etwas.
+### Bedienung
 
-## v2.0.0-rc8 - 2026-08-24
+- **Einrichtungsassistent** in fünf Schritten, jederzeit wiederholbar — und ein
+  **Einstellungsfenster** für alle Angaben auf einmal.
+- **Deutsch und Englisch**, umschaltbar, wirkt sofort.
+- Erklärtexte beim Überfahren jedes Zeichens, einstellbare Durchsichtigkeit (wichtig für
+  alle mit nur einem Bildschirm), Signalton, Autostart.
+- **Update-Meldung mit Änderungsprotokoll** — auch für übersprungene Fassungen.
 
-### Hinzugefügt
+### Verteilung
 
-- **Textquelle auch im Einstellungsfenster umstellbar** — dieselben drei Wege wie im
-  Assistenten. Wer sich später umentscheidet (etwa vom deutschen auf den englischen
-  Client), soll dafür nicht den Einrichtungsassistenten suchen müssen.
+- **Fertige Dateien für beide Systeme**, von GitHub bei jedem Versions-Tag gebaut. Das
+  AppImage entsteht in einem Ubuntu-22.04-Container, damit es auf verbreiteten Systemen
+  startet.
+- ⚠️ **Wichtig für Arch, Fedora und openSUSE:** Genau dieser Container war auch eine
+  Falle. Das gebündelte Python suchte seinen Zertifikatsspeicher unter dem Ubuntu-Pfad
+  `/usr/lib/ssl`, den es dort nicht gibt — **jede** HTTPS-Verbindung scheiterte still.
+  Kein Bauplan-Katalog, keine Übersetzung, keine Update-Meldung; das Programm startete,
+  konnte aber nichts laden. Der Starter sucht den Speicher jetzt an allen üblichen
+  Stellen. Auf Ubuntu und Debian fiel das nie auf.
+- **Nichts Fremdes wird mitgeliefert.** Bauplan-Katalog (scmdb), Übersetzung und
+  StarStrings werden zur Laufzeit beim Nutzer von ihrer eigenen Adresse geholt.
 
-### Behoben
+### Dank
 
-- **Zwei Schließen-Kreuze übereinander.** Bauplan-Liste, Einstellungen und „Was ist
-  neu" haben eine ganz normale Fenstertitelleiste vom System — mit einem ✕ darin.
-  Ein zweites, selbst gezeichnetes daneben sieht aus wie ein Fehler, und man rät,
-  welches was tut. Betraf Windows genauso, die Leiste kommt dort ebenfalls vom
-  Fenstermanager. Das randlose Overlay behält sein eigenes ✕: Dort gibt es keine
-  Systemleiste.
-
-## v2.0.0-rc7 - 2026-08-24
-
-### Behoben
-
-- **Der Speichern-Knopf im Einstellungsfenster war nicht zu sehen.** Wurde der Inhalt
-  höher als das Fenster, schob er den Knopf einfach hinaus — sichtbar erst, wenn man
-  das Fenster von Hand größer zog. Nichts wies darauf hin, dass unten noch etwas
-  fehlt, also hätten Nutzer ihre Änderungen verworfen, ohne es zu merken.
-  - Der Inhalt rollt jetzt (Rollbalken und Mausrad), **Kopf und Fuß stehen fest**. Der
-    Fuß wird vor dem Inhalt gesetzt — dadurch kann kein Inhalt ihn je verdrängen,
-    egal wie viele Einstellungen noch dazukommen.
-
-## v2.0.0-rc6 - 2026-08-24
-
-### Hinzugefügt
-
-- **Durchsichtigkeit des Overlays einstellbar** (30–100 %, Standard bleibt 93 %). Wer nur
-  **einen** Bildschirm hat, legt das Fenster zwangsläufig übers Spiel — dann muss man
-  hindurchsehen können. Der Regler im Einstellungsfenster zieht das Fenster **sofort**
-  mit: Durchsichtigkeit beurteilt man mit dem Auge, nicht an einer Zahl, die erst nach
-  dem Speichern wirkt.
-
-## v2.0.0-rc5 - 2026-08-24
-
-Die Bauplan-Angaben stehen jetzt **im Spiel** — in der Missionsbeschreibung, mit
-Kästchen für das, was man schon hat.
-
-### Hinzugefügt
-
-- **Bauplan-Angaben in den Missionstexten** (`scbp/injektion.py`). An jeden Auftrag, der
-  Baupläne ausschüttet, kommt die Liste — angehakt, was im eigenen Bestand liegt, leer,
-  was fehlt. Dazu ein Kürzel im Titel (`[BP 2/3]`), damit man es schon in der
-  Auftragsliste sieht, ohne jede Mission zu öffnen. **668 Textstellen.**
-  - Dazu die Eckdaten, die vor dem Annehmen zählen: Chance auf den Bauplan,
-    Mindest- und Höchst-Reputation, Belohnung, Rufpunkte, Wartezeit, teilbar ja/nein.
-  - Angehängt wird am **Textschlüssel**, nicht am Missionsnamen. Der ist in jeder
-    Sprache derselbe — dieselbe Auszeichnung greift für Deutsch, Englisch und die
-    neun weiteren Sprachen des Spiels.
-  - **Rückgängig auf den Buchstaben genau.** Alles Eingefügte steht zwischen Marken;
-    `entfernen()` stellt die Ausgangsdatei zeichengleich wieder her.
-- **Die Bauplan-Daten kommen vom SCDL-Team.** Das Übersetzungsprojekt veröffentlicht
-  seine aufbereiteten Vertragsdaten offen mit — **813 Verträge**, deutsch **und**
-  englisch, mit Angaben, die es sonst nirgends gibt (Region, Gefahrenstufe, Wartezeit
-  in Worten). Aus scmdb allein kämen 349 zusammen.
-  - Die Arbeitsteilung ist die sinnvolle: Das SCDL-Team pflegt, was es ohnehin pflegt.
-    Dieses Werkzeug steuert bei, was nur es kann — das **Kästchen**. In den Rohdaten
-    stehen die Baupläne neutral als `- Name`; daraus wird `[x]` oder `[  ]`.
-  - Geholt zur Laufzeit von der Original-Adresse, Herkunft im eingefügten Text genannt.
-    Sind die Daten nicht erreichbar, greift der eigene Aufbau aus scmdb.
-- **Textquellen holen und aktuell halten** (`scbp/uebersetzung.py`): die deutsche
-  Übersetzung von `rjcncpt/StarCitizen-Deutsch-INI`, StarStrings von
-  `MrKraken/StarStrings` oder die englischen Originaltexte aus dem eigenen `Data.p4k`.
-  Mit Update-Prüfung, denn jedes Update der Übersetzung überschreibt die Bauplan-Angaben.
-  - **Nichts davon wird mitgeliefert.** Beide Fremdprojekte behalten ihre Rechte; geholt
-    wird zur Laufzeit von deren eigener Adresse, auf Wunsch des Nutzers.
-  - Wer StarStrings nutzt, behält es: Dessen Auszeichnungen bleiben stehen, die eigenen
-    kommen dahinter — und füllen seine Lücken.
-- **Schritt im Einrichtungsassistenten**, der danach fragt. Voreingestellt ist nichts:
-  Wer weiterklickt, ohne zu wählen, behält seine Installation unverändert. Es ist die
-  einzige Stelle, an der dieses Werkzeug etwas am Spiel ändert.
-- **Abschnitt im Einstellungsfenster**: Zustand, Auffrischen, Entfernen, Update-Prüfung.
-
-### Behoben
-
-- **Der SC Deutsch Launcher wurde bei Dual-Boot nicht gefunden.** Gesucht wurde nur in
-  Wine-Präfixen — die Daten liegen bei umgestiegenen Spielern aber auf der
-  **Windows-Platte**, die unter Linux meist eingehängt ist. Ein ganzer Bauplan-Stand
-  blieb dadurch ungenutzt, obwohl er zwei Ordner weiter vollständig vorlag.
-- **Ein eingetragener Launcher-Pfad gilt jetzt allein.** Vorher fiel das Programm bei
-  einem Pfad, den es nicht gab, stillschweigend auf die Suche zurück und nahm womöglich
-  einen ganz anderen Stand her als den angegebenen.
-
-## v2.0.0-rc4 - 2026-08-24
-
-Der erste echte Bauplan-Drop an einem **englischen** Client — und was dabei auffiel.
-
-### Hinzugefügt
-
-- **Einstellungsfenster** (`scbp/einstellungsfenster.py`), erreichbar über ⚙ in der
-  Titelleiste. Alle fünf Felder auf einmal: Sprache, Star-Citizen-Ordner, Launcher-Ordner,
-  Prüfintervall und Signalton — jedes mit einem Satz Erklärung darunter.
-  - Vorher ließen sich nur Sprache und Spielordner ändern, und das ausgerechnet über den
-    **Einrichtungsassistenten**. Auf die drei übrigen kam man nur, indem man
-    `einstellungen.json` von Hand bearbeitete. Gemeldet als „ich finde den
-    Einstellungs-Button gar nicht" — zu Recht, es gab keinen.
-  - **Der Assistent bleibt daneben bestehen.** Zwei Wege mit Absicht: Er führt Schritt für
-    Schritt durch die Ersteinrichtung, für alle, die nicht wissen, wie so etwas geht. Das
-    Zahnrad ist der direkte Griff für alle, die genau wissen, was sie ändern wollen.
-  - Die Sprache schaltet **sofort** um, nicht erst beim Speichern — wer eine Sprache
-    wählt, will sehen, ob es die richtige ist.
-  - Ein Ordner, den es nicht gibt, wird **nicht** gespeichert. Sonst sucht der Watcher
-    beim nächsten Start an einem Ort, den der Spieler für richtig hält, und meldet nichts.
-
-### Behoben
-
-- **Unter Linux kam kein Signalton.** Der Watcher rief `tkinter.bell()` auf — das ist die
-  **X11-Systemglocke**, und die ist auf modernen Arbeitsplätzen praktisch überall aus;
-  unter Wayland gibt es sie faktisch nicht mehr. Der Code hielt das ausdrücklich für „kein
-  Fehler". Beim ersten echten Drop blieb es still, und damit war es einer: Auf einen Ton,
-  der ausgerechnet dann nicht kommt, verlässt man sich und verpasst den Bauplan.
-  - Jetzt spielt `scbp/ton.py` einen **Systemklang** über `canberra-gtk-play`, `paplay`
-    oder `pw-play` — alle drei auf verbreiteten Systemen vorhanden, keines ein Zusatzpaket.
-    `bell()` bleibt letzter Rückfall.
-  - `aplay` steht bewusst nicht in der Liste: Es kann kein Ogg und würde stumm scheitern.
-- **Der Merkstern war zu klein** zum Treffen. Er ist das einzige Zeichen in der Zeile, das
-  man anklickt statt liest — jetzt deutlich größer, mit breiterer Klickfläche.
-
-### Geändert
-
-- ⭐ **Die englische Bauplan-Meldung ist gemessen.** Bis hierher standen fünf geratene
-  Formulierungen nebeneinander, keine an einem echten englischen Client geprüft. Der
-  Client schreibt:
-
-        Added notification "Received Blueprint: Aves Shrike Helmet: "
-
-  `Received Blueprint` steht jetzt vorn. Die vier übrigen Kandidaten bleiben als Rückfall
-  stehen — sie kosten nichts, und sollte CIG die Formulierung ändern, trifft vielleicht
-  eine davon zu.
-
-## v2.0.0-rc3 - 2026-08-24
-
-Die Bauplan-Liste, nachgeschärft aus dem ersten echten Gebrauch.
-
-### Hinzugefügt
-
-- **Bereiche zum Ein- und Ausblenden** — vier Knöpfe über der Liste: Schiffsteile,
-  FPS-Waffen, Rüstung & Kleidung, Sonstiges. Wer Rüstung sucht, blendet das Schiff
-  weg und hat statt 714 Zeilen noch 316. Einzelne Knöpfe für alle 25 Kategorien
-  wären keine Hilfe gewesen, sondern eine zweite Liste über der Liste.
-  - Der **letzte** sichtbare Bereich lässt sich nicht auch noch ausblenden. Eine
-    leere Liste ohne erkennbaren Grund ist keine Einstellung, sondern ein Rätsel.
-  - Ausgeblendetes wird abgedunkelt, nicht entfernt — man muss sehen, dass man
-    selbst etwas weggeklickt hat.
-- **✕ im Suchfeld.** Erscheint erst, wenn etwas drinsteht: Ein Löschzeichen an
-  einem leeren Feld ist nur ein Zeichen, das nichts tut.
-- **Deutsche Suchwörter für die englischen Kategorien.** Vier Kategorien heißen
-  bewusst englisch, weil das Spiel sie so nennt — „Cooler", „Power Plant",
-  „Quantum Drive", „Radar". Wer deutsch denkt, tippt „Kühler" und fand nichts.
-  Jetzt findet beides, ohne die im Spiel gebräuchliche Beschriftung zu ändern.
-  Ebenso „Generator", „Sprungantrieb", „Kanone", „Scanner" und weitere.
-
-### Geändert
-
-- **Sinnvolle Reihenfolge statt Alphabet.** Erst die Schiffsteile, dann die
-  FPS-Waffen, dann Rüstung und Kleidung. Alphabetisch stand „Andockkragen" ganz
-  oben und die Rüstung mittendrin — 25 Kategorien in Buchstabenreihenfolge sind
-  kein Überblick. Innerhalb eines Bereichs bleibt es alphabetisch: Das ist
-  vorhersagbar, und eine „sinnvolle" Reihenfolge innerhalb der Schiffsteile hätte
-  jeder anders im Kopf.
-
-## v2.0.0-rc2 - 2026-08-24
-
-Beides beim ersten Lauf an einer echten Linux-Installation gefunden.
-
-### Hinzugefügt
-
-- **Erklärtexte beim Überfahren der Zeichen mit der Maus** (`scbp/hinweis.py`). Die
-  Titelleiste besteht aus sieben Zeichen — ⟳ ⓘ ☰ ⏻ 🗑 ✕ und der Griff ◢. Wer sie
-  nicht selbst gebaut hat, musste raten, und Ausprobieren ist bei ✕ und 🗑 eine
-  schlechte Idee. Eine Beschriftung daneben scheidet aus: Das Overlay ist absichtlich
-  schmal und liegt über dem Spiel.
-  - Die Texte, die einen **Zustand** haben, sagen an, was der Klick bewirkt — nicht
-    nur, was das Zeichen bedeutet: ⏻ je nach Autostart, ⓘ je nachdem, ob eine neue
-    Fassung vorliegt, der Stern je nachdem, ob der Bauplan schon beobachtet wird.
-  - Das ✕ der Bauplan-Liste sagt ausdrücklich „der Watcher läuft weiter" — es sieht
-    aus wie das ✕ des Overlays, das das Programm beendet.
-  - `merken` und `nicht_mehr_merken` gab es seit v2.0.0-rc1 im Sprachmodul,
-    angeschlossen war nie einer der beiden.
-
-### Behoben
-
-- **Die Suche sah aus, als fände sie nichts.** Wer in der Bauplan-Liste nach unten
-  gescrollt hatte und dann etwas eintippte, blickte auf **leere Fläche** — die
-  Ansicht behielt ihre alte Scrollposition, während aus 714 Zeilen fünf wurden.
-  Die Treffer waren da, nur weit darüber. Suche und Filter springen jetzt an den
-  Anfang; beim Abhaken, Merken und Ausklappen bleibt die Position stehen, dort
-  wäre ein Sprung ein Verlust.
-  - Gemeldet als „gebe ich *xl* ein, ist die Liste leer" — `XL-1` stand die ganze
-    Zeit im Ergebnis.
-- **Der Bauplan-Katalog wurde nie geholt.** Die Funktion dafür gab es, aufgerufen
-  hat sie niemand — `katalog.laden()` gab bei fehlender Datei stillschweigend einen
-  leeren Katalog zurück. Folge: Die Bauplan-Liste blieb bei **jedem** Nutzer leer,
-  während der Hinweis darin versprach, der Katalog werde beim Start geholt.
-  Gefunden beim ersten Lauf an einer echten Linux-Installation.
-  - Der Katalog wird jetzt **vor** der Spracherschließung geholt, wenn er ganz fehlt.
-    Das ist keine Kosmetik: `phrasen.selbst_finden()` braucht die Bauplan-Namen, um
-    aus den Logs die Formulierung dieses Clients abzuleiten, und die Nachlese braucht
-    diese Formulierung. Ohne Katalog lief beim allerersten Start beides ins Leere —
-    bei einem englischen Client hieß das: kein einziger Bauplan gefunden, ohne dass
-    der Grund sichtbar wurde.
-  - Danach hält ihn ein eigener Nebenthread frisch. Rund 12 MB dürfen den Watcher-Takt
-    nicht anhalten — die Log-Erkennung ist die Kernaufgabe.
-  - Schlägt der Abruf fehl (kein Netz), wird nach 5 Minuten erneut versucht statt nach
-    6 Stunden. Ein kurzer Aussetzer beim Start soll nicht den ganzen Tag nachwirken.
+Die Bauplan-Angaben beruhen auf den offen veröffentlichten Vertragsdaten des
+**SC-Deutsch-Launcher-Teams** (813 Verträge, deutsch und englisch) und auf **scmdb.net**.
+Ohne beide gäbe es diese Fassung nicht.
 
 ## v2.0.0-rc1 - 2026-08-24
 

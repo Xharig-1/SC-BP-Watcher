@@ -87,6 +87,14 @@ def _hole(url, roh=False):
 
 
 # --------------------------------------------------------------- Was ist neu?
+# Der zuletzt aufgetretene Netzfehler — im Klartext, für die Anzeige.
+# Ohne diese Zeile stand bei einem Zertifikatsproblem nur „Fassung nicht
+# gefunden" im Fenster, was nach „das Release existiert nicht" aussieht und in
+# die völlig falsche Richtung führt. Die Diagnose kostete am 24.08.2026 eine
+# halbe Stunde, obwohl die Ausnahme den Grund kannte.
+letzter_fehler = [None]
+
+
 def neueste(quelle):
     """Die neueste Fassung einer Quelle: (Kennung, Adresse, Größe) oder None.
 
@@ -98,7 +106,16 @@ def neueste(quelle):
         return None
     try:
         r = _hole('https://api.github.com/repos/%s/releases/latest' % q['repo'])
-    except Exception:
+        letzter_fehler[0] = None
+    except Exception as e:
+        # Zertifikatsfehler eigens benennen — die Meldung von OpenSSL ist für
+        # Nichttechniker unlesbar, die Ursache aber immer dieselbe.
+        text = str(e)
+        if 'CERTIFICATE' in text.upper() or 'SSL' in text.upper():
+            letzter_fehler[0] = ('Sichere Verbindung fehlgeschlagen — die '
+                                 'Zertifikate des Systems wurden nicht gefunden')
+        else:
+            letzter_fehler[0] = text
         return None
     kennung = r.get('tag_name') or ''
     if kennung.lower() in ('latest', ''):
@@ -128,6 +145,16 @@ def _merk_setzen(quelle, kennung):
         os.replace(ziel + '.tmp', ziel)
     except OSError:
         pass
+
+
+def vermerken(quelle, kennung):
+    """Eine Quelle als eingerichtet festhalten.
+
+    Auch für den Weg „Originaltexte aus dem Spiel" nötig, obwohl dort nichts
+    heruntergeladen wird: Ohne Vermerk weiß der Watcher beim nächsten Start
+    nicht, dass der Spieler die Bauplan-Angaben überhaupt eingerichtet hat —
+    und würde sie nach einem Spiel-Patch nicht wieder eintragen."""
+    _merk_setzen(quelle, kennung)
 
 
 def installiert(quelle):
@@ -229,7 +256,7 @@ def holen(quelle, fortschritt=None, spielordner=None):
         return False, 'unbekannte Quelle'
     neu = neueste(quelle)
     if not neu:
-        return False, 'Fassung nicht gefunden'
+        return False, letzter_fehler[0] or 'Fassung nicht gefunden'
     kennung, adresse, groesse = neu
 
     melde('%s wird geladen (%.1f MB) …' % (q['name'], groesse / 1048576.0))

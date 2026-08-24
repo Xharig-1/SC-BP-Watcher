@@ -44,15 +44,15 @@ from tkinter import font as tkfont
 from scbp import sprache
 from scbp import (aktualisierung, assistent, autostart,
                   bestand as bestand_datei, einstellungsfenster, hinweis,
-                  katalog as katalog_modul, logquelle, merkliste, pfade,
-                  phrasen, ton)
+                  injektion, katalog as katalog_modul, logquelle, merkliste,
+                  pfade, phrasen, ton, uebersetzung)
 
 try:
     import winsound                      # nur Windows; unter Linux übernimmt tkinter
 except ImportError:
     winsound = None
 
-__version__ = '2.0.0-rc10'
+__version__ = '2.0.0'
 
 # ---------------------------------------------------------------- Konfiguration
 # Wo die Dateien liegen, entscheidet `scbp/pfade.py` je nach Betriebssystem.
@@ -115,6 +115,9 @@ CAT_POLL   = 60         # Katalogdatei nur jede Minute prüfen (ändert sich nur
 SCMDB_BASE     = 'https://scmdb.net/data'
 SCMDB_CACHE    = pfade.app_datei('scmdb-items.json')   # aufbereitet, klein
 SCMDB_POLL_SEC = 6 * 3600    # nur alle 6 Stunden nach einer neuen Spielversion sehen
+# Übersetzung und Bauplan-Angaben: beim Start und danach alle sechs Stunden.
+# Häufiger bringt nichts — die Quellen aktualisieren im Tagesrhythmus.
+TEXTE_POLL_SEC = 6 * 3600
 SCMDB_TIMEOUT  = 30
 # Wer die Netzabfrage nicht will, setzt SC_BP_NO_NET=1 — dann bleibt alles beim
 # Launcher-Katalog wie bisher.
@@ -578,6 +581,8 @@ class Watcher(threading.Thread):
         self.scmdb_next = 0.0   # nächster Blick auf die scmdb-Craftdaten
         self.kat_next = 0.0     # nächster Blick auf den Bauplan-Katalog
         self.kat_laeuft = False  # holt gerade ein Nebenthread den Katalog?
+        self.texte_next = 0.0   # nächster Blick auf Übersetzung und Injektion
+        self.texte_laeuft = False
 
     # ---- scmdb-Craftdaten frisch halten (ab v1.5.0) ----
     def _scmdb_tick(self):
@@ -628,6 +633,76 @@ class Watcher(threading.Thread):
                 self.kat_laeuft = False
 
         threading.Thread(target=holen, daemon=True).start()
+
+    # ---- Bauplan-Angaben im Spiel frisch halten ----
+    def _texte_tick(self):
+        """Übersetzung, Vertragsdaten und Injektion nachziehen — von selbst.
+
+        **Warum das nicht optional sein kann:** Jedes Übersetzungs-Update und
+        jeder Spiel-Patch schreibt die `global.ini` neu; die eingetragenen
+        Bauplan-Angaben sind dann **weg**, ohne dass irgendetwas darauf
+        hinweist. Und nach einem Patch geben Missionen andere Baupläne aus —
+        wer dann noch die alten Angaben liest, plant mit falschen Daten.
+        Beides fällt niemandem auf, weil das Spiel ja normal weiterläuft.
+
+        Angefasst wird nur, was der Spieler selbst eingerichtet hat: Ohne
+        vermerkte Quelle passiert hier gar nichts.
+
+        Läuft im **eigenen** Thread — es sind mehrere Megabyte, und die
+        Log-Erkennung darf dafür nicht stehenbleiben."""
+        if SCMDB_AUS or self.texte_laeuft or time.time() < self.texte_next:
+            return
+        quelle = next((q for q in uebersetzung.QUELLEN
+                       if uebersetzung.installiert(q)), None)
+        eigene_texte = bool(uebersetzung.installiert('original'))
+        if not quelle and not eigene_texte:
+            return                      # nie eingerichtet — Finger weg
+        self.texte_next = time.time() + TEXTE_POLL_SEC
+        self.texte_laeuft = True
+
+        def arbeit():
+            try:
+                self._texte_abgleichen(quelle)
+            finally:
+                self.texte_laeuft = False
+
+        threading.Thread(target=arbeit, daemon=True).start()
+
+    def _texte_abgleichen(self, quelle):
+        """Der eigentliche Abgleich. Meldet nur, wenn sich etwas geändert hat."""
+        sprache_ordner = (uebersetzung.QUELLEN[quelle]['sprache'] if quelle
+                          else 'english')
+        ziel = uebersetzung.ziel_ini(sprache_ordner)
+        if not ziel:
+            return
+        kuerzel = injektion._sprachkuerzel(sprache_ordner)
+        neu_noetig = False
+
+        # 1. Neue Fassung der Übersetzung? Die schreibt die Datei komplett neu,
+        #    danach ist die Injektion in jedem Fall weg.
+        if quelle:
+            da, kennung = uebersetzung.update_da(quelle)
+            if da:
+                ok, meldung = uebersetzung.holen(quelle)
+                if ok:
+                    self.q.put(('status', sprache.t('texte_erneuert', kennung)))
+                    neu_noetig = True
+
+        # 2. Neue Vertragsdaten? Nach einem Patch geben Missionen anderes aus.
+        da, kennung = injektion.scdl_update_da(kuerzel)
+        if da:
+            self.q.put(('status', sprache.t('bpdaten_erneuert', kennung)))
+            neu_noetig = True
+
+        # 3. Ist die Auszeichnung überhaupt noch drin? Ein Spiel-Patch ersetzt
+        #    die Datei, ohne dass jemand etwas davon merkt.
+        if not neu_noetig and not injektion.ist_drin(ziel):
+            neu_noetig = True
+
+        if neu_noetig and os.path.isfile(ziel):
+            ok, anzahl, _meldung = injektion.einrichten(ziel, sprache_ordner)
+            if ok:
+                self.q.put(('status', sprache.t('inj_aktiv', anzahl)))
 
     # ---- Katalog-Wache: was ist NEU craftbar im Spiel? ----
     def _catalog_tick(self):
@@ -821,6 +896,7 @@ class Watcher(threading.Thread):
             #    (selten, nur bei neuer Spielversion)
             self._scmdb_tick()
             self._katalog_tick()
+            self._texte_tick()
 
             # 1) Game.log: die eigentliche Quelle. Ohne Launcher ist die Meldung
             #    endgültig, mit Launcher zunächst vorläufig (er bestätigt gleich).
