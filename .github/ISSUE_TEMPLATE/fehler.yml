@@ -1,0 +1,42 @@
+# Deutsche Fehlermeldung. Das Werkzeug öffnet dieses Formular über
+# "Fehler melden" und füllt das Feld `bericht` schon aus — siehe
+# scbp/bericht.py, issue_adresse().
+name: Fehler melden (Deutsch)
+description: Etwas funktioniert nicht wie erwartet
+labels: [fehler]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke, dass du dir die Zeit nimmst.
+
+        Kommst du aus dem Werkzeug hierher, ist der Bericht unten schon ausgefüllt —
+        dann fehlt nur noch, **was passiert ist**. Er enthält keine Namen und keine
+        Zugangsdaten; Pfade sind gekürzt.
+
+  - type: textarea
+    id: was
+    attributes:
+      label: Was ist passiert?
+      description: Was hast du gemacht, und was kam dabei heraus?
+      placeholder: |
+        Ich habe einen Bauplan bekommen, im Overlay ist aber nichts erschienen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: erwartet
+    attributes:
+      label: Was hättest du erwartet?
+      placeholder: Der Bauplan sollte in der Liste auftauchen.
+
+  - type: textarea
+    id: bericht
+    attributes:
+      label: Bericht aus dem Werkzeug
+      description: >
+        Einstellungen → Diagnose → „Angaben kopieren". Ohne diesen Block lässt sich
+        fast nichts nachvollziehen.
+      render: text
+    validations:
+      required: false

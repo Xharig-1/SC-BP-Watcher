@@ -165,6 +165,57 @@ def in_die_ablage(text, wurzel=None):
         return False
 
 
+# GitHub schneidet sehr lange Adressen ab. Der Bericht ist normalerweise gut
+# 1 KB groß; die Grenze greift erst, wenn jemand mit 50 Fehlern im Gepäck meldet.
+URL_GRENZE = 6000
+ISSUE_ADRESSE = 'https://github.com/Xharig-1/SC-BP-Watcher/issues/new'
+
+
+def _vorlage_zur_sprache():
+    """Deutsche Oberfläche → deutsches Formular, sonst das englische."""
+    try:
+        from . import sprache
+        return 'fehler.yml' if sprache.aktuelle() == 'de' else 'bug.yml'
+    except Exception:
+        return 'bug.yml'
+
+
+def issue_adresse(text, titel='', vorlage=None):
+    """Eine Adresse, die bei GitHub ein **vorausgefülltes** Formular öffnet.
+
+    Warum dieser Weg und kein Absenden aus dem Programm heraus: Ein Issue
+    anzulegen verlangt einen Zugangsschlüssel. Einen eigenen mitzuliefern hieße,
+    ihn zu verschenken — in einer `.exe` ist nichts geheim, und jeder könnte
+    damit im Namen des Projekts schreiben. Den Spieler nach seinem zu fragen ist
+    ihm nicht zuzumuten.
+
+    Über die Adresse ist beides gelöst: Der Browser öffnet das Formular fertig
+    ausgefüllt, der Spieler liest es und drückt selbst auf Abschicken. Er sieht
+    also genau, was er weitergibt — und angemeldet ist er dort ohnehin.
+    """
+    from urllib.parse import urlencode
+
+    koerper = text or ''
+    if len(koerper) > URL_GRENZE:
+        koerper = (koerper[:URL_GRENZE]
+                   + '\n\n… gekürzt. Der vollständige Bericht liegt unter '
+                     '"Als Datei speichern" und kann angehängt werden.')
+
+    werte = {'template': vorlage or _vorlage_zur_sprache(), 'bericht': koerper}
+    if titel:
+        werte['title'] = titel
+    return ISSUE_ADRESSE + '?' + urlencode(werte)
+
+
+def issue_oeffnen(text, titel=''):
+    """Das vorausgefüllte Formular im Browser öffnen. True, wenn es startete."""
+    try:
+        import webbrowser
+        return bool(webbrowser.open(issue_adresse(text, titel)))
+    except Exception:
+        return False
+
+
 def speichern(text, pfad_=None):
     """Den Bericht als Datei ablegen; gibt den Pfad zurück oder None."""
     try:
