@@ -322,7 +322,15 @@ def main():
         pruefe(mk.erledigen('Irgendwas anderes') is None,
                'was nie beobachtet wurde, ändert nichts')
 
-        print('\n10. Fensterlage von einem fremden Rechner')
+        print('\n10. Deutsch und Englisch decken sich')
+        import sprachen_pruefen
+        beanstandungen = sprachen_pruefen.pruefe(melden=lambda *_: None)
+        pruefe(not beanstandungen,
+               'Projektseite, Changelog und Roadmap sind in beiden Sprachen gleich')
+        for b in beanstandungen[:5]:
+            print('        ·', b)
+
+        print('\n11. Fensterlage von einem fremden Rechner')
         if ANZEIGE:
             kaputt = w.geometrie_pruefen('440x1098+999999+-999999', _wurzel())
             pruefe('+999999' not in kaputt,
