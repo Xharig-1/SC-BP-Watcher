@@ -45,7 +45,7 @@ jobs:
         run: >
           python -m PyInstaller --noconfirm --onefile --windowed
           --name "SC-BP-Watcher" --icon "icon.ico"
-          --add-data "CHANGELOG.md;."
+          --add-data "CHANGELOG.md;." --add-data "CHANGELOG.de.md;."
           --add-data "daten;daten"
           sc_bp_watcher.py
 
@@ -91,7 +91,7 @@ jobs:
         run: >
           python3 -m PyInstaller --noconfirm --onefile --windowed
           --name "SC-BP-Watcher"
-          --add-data "CHANGELOG.md:."
+          --add-data "CHANGELOG.md:." --add-data "CHANGELOG.de.md:."
           --add-data "daten:daten"
           sc_bp_watcher.py
 

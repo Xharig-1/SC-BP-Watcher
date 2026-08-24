@@ -1,48 +1,50 @@
 # Roadmap
 
-## Zielbild
+**English** · [Deutsch](ROADMAP.de.md)
 
-SC BP Watcher ist ein kleines Overlay, das beim Spielen von Star Citizen live anzeigt, sobald ein neuer Bauplan freigeschaltet wird — unter **Windows und Linux**, aus einer gemeinsamen Codebasis.
+## What it is for
 
-Vier Dinge sind Absicht und bleiben so:
+SC BP Watcher is a small overlay that shows, while you play Star Citizen, when a new blueprint is unlocked — on **Windows and Linux**, from a shared codebase.
 
-- **Leichtgewichtig.** Reine Python-Standardbibliothek, keine Zusatzpakete. Was keine Abhängigkeit hat, kann auch keine verlieren.
-- **Es gehört dir.** Kein Konto, keine Anmeldung, keine Cloud. Was das Werkzeug weiß, steht in Dateien auf deiner Platte.
-- **Es liest, es schreibt nicht.** An der Spielinstallation wird nichts verändert.
-- **Ehrlich statt hübsch.** Wenn etwas fehlen könnte, sagt es das — lieber eine unbequeme Auskunft als eine schöne Zahl, auf die kein Verlass ist.
+Four things are deliberate and will stay that way:
 
-## Was es kann
+- **Lightweight.** Plain Python standard library, no extra packages. What has no dependency cannot lose one.
+- **It's yours.** No account, no sign-in, no cloud. What the tool knows sits in files on your disk.
+- **It reads, it does not write.** Nothing about the game installation is changed.
+- **Honest over pretty.** If something might be missing, it says so — an uncomfortable answer beats a nice number you cannot rely on.
 
-| | Inhalt |
+## What it does today
+
+| | |
 |---|---|
-| ✅ | Live-Erkennung neuer Baupläne aus der Spiel-Log, Anzeige im Overlay |
-| ✅ | **Eigener Bauplan-Bestand** — der SC Deutsch Launcher ist nicht nötig |
-| ✅ | **Nachlese**: beim Start werden frühere Spielsitzungen ausgewertet |
-| ✅ | **Bauplan-Liste** zum Nachschlagen, Filtern und Abhaken, mit Fortschritt |
-| ✅ | **Herkunft je Bauplan** — Fraktion, Auftrag, nötiger Ruf, Belohnung |
-| ✅ | Katalog-Wache: meldet, was im Spiel **neu craftbar** wird, dazu eine Merkliste |
-| ✅ | Kürzel für Klasse, Gütegrad und Größe (`M/A/1`) |
-| ✅ | Einrichtungsassistent, jederzeit wiederholbar |
-| ✅ | Deutsch und Englisch, umschaltbar |
-| ✅ | Windows und Linux, mit Autostart auf beiden |
+| ✅ | Live detection of new blueprints from the game log, shown in the overlay |
+| ✅ | **Its own blueprint inventory** — the SC Deutsch Launcher is not needed |
+| ✅ | **Catch-up**: earlier play sessions are read on start |
+| ✅ | **Blueprint list** to look up, filter and tick off, with progress |
+| ✅ | **Where each blueprint drops** — faction, contract, required standing, payout |
+| ✅ | Catalogue watch: reports what becomes **newly craftable** in the game, plus a watchlist |
+| ✅ | Class, grade and size tag (`M/A/1`) |
+| ✅ | Setup wizard, repeatable at any time |
+| ✅ | German and English, switchable |
+| ✅ | Windows and Linux, with autostart on both |
 
-## Woran gearbeitet wird
+## What is being worked on
 
-Ohne Zeitplan und ohne feste Reihenfolge — Stand der Dinge steht im [`CHANGELOG.md`](CHANGELOG.md), und im Fenster „Was ist neu" lässt sich nachlesen, was jede Fassung gebracht hat.
+No schedule and no fixed order — the state of things is in [`CHANGELOG.md`](CHANGELOG.md), and the **ⓘ "What's new"** window inside the tool shows what each build brought.
 
-Gerade in Arbeit sind mehr Komfort beim Einrichten, ein Ablage-Symbol und der Export des eigenen Bestands für andere Bauplan-Dienste.
+Currently in the works: more convenience during setup, a tray icon, and exporting your inventory for other blueprint services.
 
-## Verhältnis zum SC Deutsch Launcher
+## Relationship to the SC Deutsch Launcher
 
-**Wahlfreiheit, nicht Ersatz.**
+**Freedom of choice, not replacement.**
 
-Hier stand lange, ein selbst geführter Bestand sei zwangsläufig ungenau, weil er nur „ab heute" fortgeschrieben werden könne. Zwei Messungen haben das widerlegt:
+This page used to argue that a self-kept inventory is necessarily inaccurate because it could only be filled "from today on". Two measurements disproved that:
 
-- Der Watcher liest beim Start die **aufgehobenen Logs** nach. Ohne laufenden Watcher gespielt zu haben, reißt also kein Loch, solange Star Citizen die Sicherung noch hat. Bleibt doch eine Lücke, wird sie **gesagt** statt verschwiegen.
-- Der Launcher selbst zählt **zu niedrig**: Ihm fehlt die P4-AR Rifle, obwohl sie im Fabricator als „im Besitz" steht. Startbaupläne wurden nie „erhalten" und stehen in keinem Log. Seine Zahl ist eine Untergrenze, kein Bestand.
+- The watcher reads the **stored logs** on start. Having played without it running does not tear a hole, as long as Star Citizen still has the backup. If a gap remains anyway, it is **stated** rather than hidden.
+- The launcher itself counts **too low**: it is missing the P4-AR Rifle although the Fabricator lists it as owned. Starter blueprints were never "received" and appear in no log. Its number is a lower bound, not an inventory.
 
-Der Launcher bleibt trotzdem nützlich: Er bestätigt Funde und pflegt einen Katalog mit deutschen Bezeichnungen. Ist er da, wird er genutzt. Ist er nicht da — unter Linux immer —, läuft der Watcher trotzdem.
+The launcher remains useful all the same: it confirms finds and maintains a catalogue with German names. If it is there, it is used. If it is not — always the case on Linux — the watcher works anyway.
 
-## Mitreden
+## Getting involved
 
-Wünsche, Fehlermeldungen und Ideen gern als [Issue](../../issues).
+Wishes, bug reports and ideas are welcome as an [issue](../../issues).

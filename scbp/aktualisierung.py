@@ -179,16 +179,28 @@ def freigaben():
 
 # --------------------------------------------------------- Änderungsprotokoll
 def _changelog_datei():
-    """Die mitgelieferte CHANGELOG.md finden — im Quellbaum oder im Paket."""
-    orte = []
+    """Die mitgelieferte Änderungsliste in der Sprache des Nutzers finden.
+
+    Es gibt zwei: `CHANGELOG.md` (englisch) und `CHANGELOG.de.md` (deutsch).
+    Wer die Oberfläche auf Deutsch stehen hat, soll auch die Einträge auf
+    Deutsch lesen — sonst wäre die Zweisprachigkeit an der Stelle nur behauptet.
+    Fehlt die eigene Sprache, gilt die andere: eine fremdsprachige Auskunft ist
+    besser als gar keine."""
+    from . import sprache
+    namen = (['CHANGELOG.de.md', 'CHANGELOG.md'] if sprache.aktuelle() == 'de'
+             else ['CHANGELOG.md', 'CHANGELOG.de.md'])
+    ordner = []
     if getattr(sys, 'frozen', False):        # PyInstaller legt Beigaben hierhin
-        orte.append(os.path.join(getattr(sys, '_MEIPASS', ''), 'CHANGELOG.md'))
-        orte.append(os.path.join(os.path.dirname(sys.executable), 'CHANGELOG.md'))
-    hier = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    orte.append(os.path.join(hier, 'CHANGELOG.md'))
-    for p in orte:
-        if p and os.path.isfile(p):
-            return p
+        ordner.append(getattr(sys, '_MEIPASS', ''))
+        ordner.append(os.path.dirname(sys.executable))
+    ordner.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    for name in namen:
+        for ordner_p in ordner:
+            if not ordner_p:
+                continue
+            voll = os.path.join(ordner_p, name)
+            if os.path.isfile(voll):
+                return voll
     return None
 
 
