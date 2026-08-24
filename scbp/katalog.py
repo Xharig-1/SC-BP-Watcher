@@ -51,6 +51,7 @@ ein Zwanzigstel davon).
 """
 import json
 import os
+import re
 import time
 import urllib.request
 
@@ -183,6 +184,51 @@ def _annahmeorte(vertrag, orte_pool):
     return {'system': ', '.join(systeme) or None,
             'orte': namen[:ORTE_JE_AUFTRAG],
             'mehr': max(0, len(namen) - ORTE_JE_AUFTRAG)}
+
+
+# Vorsätze, die jeder Belohnungstopf trägt — sie sagen nichts aus.
+_TOPF_VORSATZ = re.compile(r'^BP_(?:MISSION)?REWARDS?_', re.I)
+
+# Töpfe, deren Namen ein Mensch nicht deuten muss. Alles andere wird nur
+# aufgeräumt, nicht gedeutet — lieber „aus: RedWind" als eine erfundene Erklärung.
+_TOPF_KLARTEXT = (
+    (re.compile(r'^xenothreat', re.I), 'XenoThreat'),
+    (re.compile(r'^rdc[_ ]?boss', re.I), 'RDC-Boss'),
+    (re.compile(r'^superheavy', re.I), 'Super-Heavy-Mission'),
+    (re.compile(r'^cds[_ ]', re.I), 'CDS-Rüstung'),
+)
+
+
+def topf_lesbar(roh):
+    """Aus `BP_REWARDS_Xenothreat2_15_06` wird `XenoThreat`.
+
+    Die 59 Baupläne ohne Auftrag liegen **nicht im Nichts** — sie stehen in
+    benannten Belohnungstöpfen. Vorher stand bei ihnen nur ein `?`, und der
+    Spieler wusste nicht, ob es ihn nie gibt oder ob nur die Daten fehlen. Der
+    Topf-Name sagt ihm wenigstens, wonach er suchen muss.
+
+    Gedeutet wird nur, was eindeutig ist. Der Rest wird lediglich lesbar
+    gemacht: Vorsatz weg, Unterstriche zu Leerzeichen, die durchnummerierten
+    Endungen (`_15_06`) abgeschnitten — sie sind Stufen desselben Topfes.
+    """
+    roh = (roh or '').strip()
+    if not roh:
+        return ''
+    kern = _TOPF_VORSATZ.sub('', roh)
+    for muster, klar in _TOPF_KLARTEXT:
+        if muster.search(kern):
+            return klar
+    # Manche Töpfe heißen nach dem **Gegenstand**, nicht nach der Quelle:
+    # `behr_rifle_ballistic_01_mr01` ist ein Behring-Gewehr, kein Ort und kein
+    # Ereignis. Solche Namen zu zeigen wäre schlechter als nichts — der Spieler
+    # läse eine Herkunft, die keine ist. Erkennbar sind sie daran, dass sie
+    # durchgehend klein geschrieben sind; die echten Quellen (`RedWind`,
+    # `Xenothreat2`) tragen Großbuchstaben.
+    if kern and kern == kern.lower():
+        return ''
+    kern = re.sub(r'(_\d+)+$', '', kern)          # `_15_06` und Verwandte weg
+    kern = re.sub(r'[_\-]+', ' ', kern).strip()
+    return kern or ''
 
 
 def _herkunft(merged):
@@ -365,6 +411,12 @@ def erzeugen(version=None, fortschritt=None, aus_datei=None):
 
     melde('Wird ausgewertet …')
     pools, quellen = _herkunft(merged)
+    topf_namen = {}
+    for topf in (merged.get('blueprintPools') or {}).values():
+        wie = topf.get('name') or ''
+        for b in (topf.get('blueprints') or []):
+            if b.get('name'):
+                topf_namen.setdefault(_norm(b['name']), []).append(wie)
     namen = {n for liste in pools.values() for n in liste}
 
     bauplaene = {}
@@ -375,6 +427,11 @@ def erzeugen(version=None, fortschritt=None, aus_datei=None):
         q = quellen.get(k)
         if q:
             eintrag['q'] = q
+        else:
+            # Kein Auftrag schüttet ihn aus — aber der Topf hat einen Namen.
+            toepfe = sorted({topf_lesbar(t) for t in (topf_namen.get(k) or []) if t})
+            if toepfe:
+                eintrag['topf'] = ' · '.join(toepfe[:2])
         bauplaene[k] = eintrag
 
     # Startbaupläne dazu — sie stehen in keinem Belohnungs-Pool und würden
