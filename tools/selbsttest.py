@@ -385,6 +385,66 @@ def main():
         fehlerbuch.leeren()
         pruefe(fehlerbuch.anzahl() == 0, 'das Protokoll lässt sich leeren')
 
+        # ------------------------------------------------------------------ 13
+        # Bestand einlesen. Wichtig ist vor allem, dass NICHTS verloren geht:
+        # zusammenführen heißt zusammenführen.
+        print()
+        print('13. Vorhandenen Bestand einlesen')
+        from scbp import importieren, bestand as bestandsmodul
+
+        proben = {
+            'eigen': {'werkzeug': 'SC BP Watcher',
+                      'bauplaene': [{'name': 'XL-1', 'zeit': '2026-08-01 10:00:00'}]},
+            'scmdb': {'exportSchemaVersion': 1,
+                      'blueprints': [{'productName': 'XL-1', 'ts': 1756000000}]},
+            'basetool': {'blueprints': [{'productName': 'XL-1',
+                                         'receivedAt': '2026-08-02T01:49:03.322Z'}]},
+            'launcher': {'blueprints': [{'key': 'XL-1'}]},
+        }
+        erkannt = all(importieren.erkennen(d) == art for art, d in proben.items())
+        pruefe(erkannt, 'alle vier Formate werden am Inhalt erkannt')
+        pruefe(importieren.erkennen({'irgendwas': [1, 2, 3]}) is None,
+               'eine fremde Datei wird nicht erkannt')
+
+        datei = os.path.join(basis, 'einlesen.json')
+        with open(datei, 'w', encoding='utf-8') as f:
+            json.dump({'blueprints': [
+                {'productName': 'Attrition-5 Repeater',
+                 'receivedAt': '2026-08-02T01:49:03.322Z'},
+                {'productName': 'Attrition-5 Repeater'},          # Dublette
+                {'productName': 'Voll Neuer Bauplan'},
+            ]}, f)
+        art, eintraege = importieren.lesen(datei)
+        pruefe(art == 'basetool', 'die Datei wird als Basetool-Ausgabe gelesen')
+        pruefe(len(eintraege) == 3, 'alle Zeilen kommen an')
+
+        vorher = bestandsmodul.leer()
+        bestandsmodul.hinzufuegen(vorher, 'Attrition-5 Repeater', 'log')
+        bestandsmodul.hinzufuegen(vorher, 'Nur Im Bestand', 'log')
+        v = importieren.vorschau(eintraege, vorher,
+                                 katalog_namen=['Attrition-5 Repeater',
+                                                'Scalpel Sniper Rifle Magazine (12 cap)'])
+        pruefe(v['gesamt'] == 2, 'Dubletten in der Datei zählen einmal')
+        pruefe(v['neu'] == ['Voll Neuer Bauplan'], 'nur wirklich Neues gilt als neu')
+        pruefe(v['schon_da'] == ['Attrition-5 Repeater'], 'Vorhandenes wird erkannt')
+        pruefe(v['unbekannt'] == ['Voll Neuer Bauplan'],
+               'ein dem Katalog unbekannter Name wird gemeldet')
+
+        dazu = importieren.uebernehmen(eintraege, vorher, speichern=False)
+        pruefe(dazu == 1, 'genau ein Eintrag kommt dazu')
+        pruefe('nur im bestand' in vorher['bauplaene'],
+               'der vorhandene Bestand bleibt vollständig erhalten')
+        pruefe(vorher['bauplaene']['attrition-5 repeater']['quelle'] == 'log',
+               'ein Import überschreibt keine bessere Quelle')
+
+        # Der Klammer-Abgleich: (12 Schuss) gegen (12 cap) — derselbe Bauplan.
+        v2 = importieren.vorschau(
+            [{'name': 'Scalpel Sniper Rifle Magazine (12 Schuss)', 'zeit': None}],
+            bestandsmodul.leer(),
+            katalog_namen=['Scalpel Sniper Rifle Magazine (12 cap)'])
+        pruefe(v2['unbekannt'] == [],
+               'abweichender Klammer-Zusatz gilt nicht als unbekannt')
+
     finally:
         shutil.rmtree(basis, ignore_errors=True)
 
