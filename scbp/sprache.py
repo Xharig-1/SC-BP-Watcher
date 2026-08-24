@@ -334,6 +334,20 @@ TEXTE = {
                           '100 = solid, 30 = strongly see-through. With a single '
                           'screen this lets you see the game underneath. Takes '
                           'effect immediately.'),
+    'e_vorab':           ('Auch Testfassungen anbieten',
+                          'Offer test versions too'),
+    'e_vorab_hilfe':     ('Testfassungen (rc) kommen vor den fertigen Fassungen und '
+                          'enthalten Neues, das noch nicht lange erprobt ist. '
+                          'Wer mithelfen will, schaltet das ein und bekommt sie als '
+                          'Erster angeboten; ausgeschaltet siehst du nur fertige '
+                          'Fassungen. Umschalten geht jederzeit — die fertige Fassung '
+                          'gilt immer als neuer als jede Testfassung derselben Nummer.',
+                          'Test versions (rc) arrive before the finished ones and '
+                          'contain changes that have not been proven for long. Turn '
+                          'this on to help out and get them first; left off, you only '
+                          'see finished versions. You can switch back at any time — a '
+                          'finished version always counts as newer than any test '
+                          'version of the same number.'),
     'e_ton':             ('Signalton', 'Sound'),
     'e_ton_hilfe':       ('Kurzer Ton, wenn ein Bauplan erscheint.',
                           'A short sound when a blueprint shows up.'),

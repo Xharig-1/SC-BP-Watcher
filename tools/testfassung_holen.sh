@@ -32,12 +32,17 @@ fi
 
 cd "$WURZEL"
 
-echo "Suche den letzten erfolgreichen Bau …"
-LAUF="$(gh run list --workflow "$ABLAUF" --status success --limit 1 --json databaseId \
-        --jq '.[0].databaseId')"
+# Der Bau haengt am Zweig: Waehrend an v2.2 gearbeitet wird, liegt auf main der
+# eingefrorene Stand fuer die naechste Veroeffentlichung. Genommen wird deshalb der
+# Zweig, der hier gerade ausgecheckt ist — oder was in SC_BP_ZWEIG steht.
+ZWEIG="${SC_BP_ZWEIG:-$(git -C "$WURZEL" rev-parse --abbrev-ref HEAD)}"
+
+echo "Suche den letzten erfolgreichen Bau auf Zweig '$ZWEIG' …"
+LAUF="$(gh run list --workflow "$ABLAUF" --branch "$ZWEIG" --status success --limit 1 \
+        --json databaseId --jq '.[0].databaseId')"
 if [ -z "${LAUF:-}" ]; then
-  echo "Kein erfolgreicher Bau gefunden. Zuerst einen anstossen:" >&2
-  echo "  gh workflow run $ABLAUF" >&2
+  echo "Auf '$ZWEIG' gibt es keinen erfolgreichen Bau. Zuerst einen anstossen:" >&2
+  echo "  gh workflow run $ABLAUF --ref $ZWEIG" >&2
   exit 1
 fi
 echo "  Lauf $LAUF"

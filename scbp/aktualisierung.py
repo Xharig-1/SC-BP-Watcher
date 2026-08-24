@@ -164,11 +164,20 @@ def nachsehen(eigene_version, erzwingen=False):
         except Exception:
             pass                      # ohne Netz bleibt der letzte Stand
 
-    # Vorabversionen werden **nicht** angeboten. Wer sie ausprobieren will, holt
-    # sie bewusst von der Releases-Seite; ungefragt vorgeschlagen bekommt sie
-    # niemand — eine Vorabfassung ist zum Prüfen da, nicht zum Verteilen.
-    # Ausnahme: Wer selbst schon eine fährt, darf auch die nächste sehen.
-    eigene_ist_vorab = bool(re.search(r'-(rc|beta|alpha|dev)', str(eigene_version)))
+    # Vorabversionen bekommt **niemand ungefragt** angeboten — eine Vorabfassung
+    # ist zum Prüfen da, nicht zum Verteilen. Angeboten werden sie in drei Fällen:
+    #
+    #   1. Der Spieler hat es in den Einstellungen ausdrücklich verlangt
+    #      (`vorabversionen`, Standard aus). Das ist der Testkanal: Wer mithelfen
+    #      will, bekommt die Fassungen vor allen anderen — wer Ruhe will, merkt
+    #      von ihnen nichts und bleibt auf den fertigen Fassungen.
+    #   2. Er fährt selbst schon eine Vorabfassung; dann wäre es unsinnig, ihm
+    #      die nächste zu verschweigen.
+    #   3. Die fertige Fassung zur selben Nummer erscheint — die ist ohnehin
+    #      "neuer" als jede Vorabfassung (siehe `ist_neuer`), also endet der
+    #      Testkanal nie in einer Sackgasse.
+    eigene_ist_vorab = (_vorab(eigene_version)
+                        or pfade.einstellung_wahrheit('vorabversionen', False))
     # ⚠ **Nicht** den ersten Treffer nehmen, sondern den höchsten.
     # GitHub gibt die Freigaben nach Erstellungszeit des Tags zurück, nicht nach
     # Versionsnummer — und das ist nicht dasselbe: In der Liste stand `rc10`
