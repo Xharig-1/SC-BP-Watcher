@@ -12,46 +12,60 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ## v3.0.0 - 2026-08-29
 
+> **One window for everything.** The blueprint list and the settings used to live in two
+> separate windows, and you had to know which one held what. Now they sit together — tabs
+> on the left, a visible folder for your files, and an installer instead of dragging a
+> file somewhere by hand.
+
 ### Added
 
-- **Starter blueprints are recognised and added.** Every player has eight from the
-  start — P4-AR Rifle and S-38 Pistol with their magazines, plus the Field Recon Suit
-  (four pieces). Until now they appeared **nowhere**: not in the catalogue, not in your
-  collection.
-  - The reason: the catalogue is built from mission reward pools, and a starter
-    blueprint is in none of them — you never receive it as a reward. Progress therefore
-    showed less than you actually own.
-  - Detected via the `isDefault` field in `crafting_blueprints-<version>.json` — **not**
-    in `crafting_items`, which has no such field.
-  - The catalogue grows from **714 to 722**, your collection by eight entries.
-  - Marked with ◆ in the list, so nobody hunts for a contract that does not exist. If
-    you ticked them off yourself, your entry stands (`hand` outranks `start`).
-- **Export your collection to a file** (`scbp/export.py`) — **three formats**, two buttons:
-  - **"To the export folder"** writes all three at once into a fixed folder and opens it.
-    If you upload regularly, you should not have to click through a save dialog three times.
-  - **"Save file …"** remains for one-offs, with a free choice of destination.
-  - **KRT Profit Basetool** (`productName` + `receivedAt`) · **scmdb.net**
-    (`exportSchemaVersion`, `productName` + `ts` as epoch seconds — read off the
-    `--export` of their own log watcher v0.1.9) · **full backup** with type, class,
-    size, grade, manufacturer and source.
-  - A timestamp that cannot be converted cleanly is **omitted** rather than invented —
-    the field is optional, and a wrong time would be worse than none.
-  - ⚠️ **The timestamp is not always the real drop time.** If your collection came from
-    the launcher file, every entry carries the time of that import — when a blueprint
-    originally dropped is not recorded there. Entries read from logs have the real one.
-  - **Nothing is uploaded.** The export writes files; the rest is up to you.
-- **Collapse the overlay** (▾ in the title bar). It shrinks to just the title bar and
-  frees up the view — meant for anyone on a **single** screen, where the window
-  inevitably sits on top of the game and opacity alone is not enough.
-  - The height **before** collapsing is remembered rather than a fixed number: if you
-    dragged the window to 900 pixels, that is what you get back.
-  - The state survives a restart.
-  - Meant for anyone with no room for a second window next to the game: a strip the
-    height of a title bar, with no extra package.
-- **Blueprints with no known source are marked as such** (`?` instead of `ⓘ`). 59 of the
-  714 cannot be obtained from any contract — mostly event rewards ("Purgatory Camo",
-  "SecondWind"). Without a marker the row looked like someone had forgotten to fill in
-  the source.
+- **One window with tabs.** Blueprints on top, settings below, and everything only
+  advanced users need collapsed at the bottom. The overlay stays as small as before; this
+  window is what opens behind it.
+- **An installer for Windows.** Start menu entry, optional desktop icon, optional
+  autostart — and a proper uninstall. If you would rather not install anything, the plain
+  `.exe` is still in the release.
+- **Your files are now visible** under `Documents\SC BP Watcher`, split into blueprints,
+  exports, settings and diagnostics. They used to sit hidden in the system — nobody looks
+  there for their blueprint inventory. On first start they are **copied**, the old folder
+  stays as a way back.
+- **Import an existing inventory** — from the KRT Profit Basetool, from scmdb.net, from
+  the launcher file or from your own backup. The format is recognised by its content, you
+  just pick a file. Merged, never replaced.
+- **Report a problem with one click.** "Report a problem" opens a pre-filled form; all
+  you add is what happened. The report contains no names and no paths with your user name.
+- **Test versions on request.** If you want to help checking, turn them on under *About*
+  and get new versions before everyone else — through the same update notice.
+- **Text size in four steps**, affecting text, icons and buttons alike.
+- **Where blueprints without a contract come from.** 55 blueprints are not handed out by
+  any regular contract — they come from named pools such as XenoThreat, RDC-Boss or
+  RedWind. Instead of a question mark the source is shown, and you can filter by it.
+- **What's new** as its own tab, split into new, improved and fixed.
+- **Starter blueprints** are detected and entered — the eight everyone has from the
+  start, marked with ◆.
+- **Export your inventory** in three formats: KRT Profit Basetool, scmdb.net and a full
+  backup.
+
+### Changed
+
+- **Up to twelve sources per blueprint** instead of three. Measured: more than half of
+  all blueprints had sources cut off before. The easiest route is still shown first, the
+  rest unfolds.
+- **The source details appear on click** and can be closed again — in a small window they
+  used to eat a third of the list.
+- **Filter by type, class, size, grade and source**, on top of search and the
+  "watched / owned / still missing" lists.
+- **Collapse the overlay** (▾): it folds into its title bar.
+- **No more save button** — changes take effect right away.
+
+### Fixed
+
+- **The window icon was missing from every finished build** — on both systems. The file
+  was not shipped with the program at all.
+- **The self-test failed on machines with Star Citizen installed.** Two checks expected
+  the game *not* to be found — testing the environment instead of the program.
+- **Errors vanished without trace.** Over sixty places caught them and carried on; now
+  the last fifty are kept and end up in the problem report.
 
 ## v2.0.0 - 2026-08-24
 

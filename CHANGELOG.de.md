@@ -12,47 +12,62 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ## v3.0.0 - 2026-08-29
 
+> **Ein Fenster für alles.** Bauplan-Liste und Einstellungen lagen bisher in zwei
+> getrennten Fenstern, und man musste wissen, in welchem etwas steckt. Jetzt liegen sie
+> zusammen — mit Reitern links, einer sichtbaren Ablage für deine Dateien und einem
+> Installer, statt eine Datei von Hand irgendwohin zu ziehen.
+
 ### Hinzugefügt
 
-- **Startbaupläne werden erkannt und eingetragen.** Acht Baupläne hat jeder Spieler von
-  Anfang an — P4-AR Rifle und S-38 Pistol samt Magazinen, dazu der Field Recon Suit
-  (vier Teile). Sie standen bisher **nirgends**: nicht im Katalog, nicht im Bestand.
-  - Der Grund: Der Katalog entsteht aus den Belohnungs-Töpfen der Missionen, und ein
-    Startbauplan steht in keinem davon — man bekommt ihn ja nie als Belohnung. Der
-    Fortschritt zeigte dadurch weniger an, als man tatsächlich hat.
-  - Erkannt am Feld `isDefault` in `crafting_blueprints-<version>.json` — **nicht** in
-    `crafting_items`, dort gibt es das Feld nicht.
-  - Der Katalog wächst damit von **714 auf 722**, der Bestand um acht Einträge.
-  - In der Liste mit ◆ gekennzeichnet, damit niemand nach einem Auftrag sucht, den es
-    nicht gibt. Wer sie selbst abgehakt hat, behält seinen Eintrag (Rang `hand` schlägt
-    `start`).
-- **Bestand als Datei ausgeben** (`scbp/export.py`) — **drei Formate**, zwei Knöpfe:
-  - **„In die Ablage"** schreibt alle drei auf einmal in einen festen Ordner und öffnet
-    ihn. Wer regelmäßig hochlädt, klickt nicht dreimal durch einen Speichern-Dialog.
-  - **„Datei speichern …"** bleibt für den Einzelfall, mit freier Zielwahl.
-  - **KRT Profit Basetool** (`productName` + `receivedAt`) · **scmdb.net**
-    (`exportSchemaVersion`, `productName` + `ts` als Epochsekunden — abgelesen am
-    `--export` ihres eigenen Log-Watchers v0.1.9) · **vollständige Sicherung** mit Art,
-    Klasse, Größe, Gütegrad, Hersteller und Quelle.
-  - Ein Zeitwert, der sich nicht sauber umrechnen lässt, wird **weggelassen** statt
-    erfunden — das Feld ist optional, ein falscher Zeitpunkt wäre schlechter.
-  - ⚠️ **Der Zeitstempel ist nicht immer der echte Drop-Zeitpunkt.** Wer seinen Bestand
-    aus der Launcher-Datei übernommen hat, trägt für alle Einträge den Zeitpunkt des
-    Imports — wann ein Bauplan ursprünglich fiel, steht dort nicht drin. Aus den Logs
-    nachgelesene Einträge haben den richtigen.
-  - **Hochgeladen wird nichts.** Der Export schreibt Dateien, den Rest macht der Spieler.
-- **Overlay einklappen** (▾ in der Titelleiste). Es schiebt sich auf die Titelleiste
-  zusammen und gibt die Sicht frei — gedacht für alle mit **einem** Bildschirm, wo das
-  Fenster zwangsläufig über dem Spiel liegt und Durchsichtigkeit allein nicht reicht.
-  - Die Höhe **vor** dem Einklappen wird gemerkt, nicht eine feste Zahl: Wer sich das
-    Fenster auf 900 Pixel gezogen hat, bekommt es auch so zurück.
-  - Der Zustand überlebt einen Neustart.
-  - Gedacht für alle, die neben dem Spiel keinen Platz für ein zweites Fenster haben:
-    ein Streifen von der Höhe einer Titelleiste, ohne Zusatzpaket.
-- **Baupläne ohne bekannte Bezugsquelle sind als solche gekennzeichnet** (`?` statt `ⓘ`).
-  59 der 714 lassen sich über keinen Auftrag beziehen — überwiegend Event-Belohnungen
-  („Purgatory Camo", „SecondWind"). Ohne Zeichen sah die Zeile aus, als hätte jemand
-  vergessen, die Herkunft einzutragen.
+- **Ein Fenster mit Reitern.** Oben die Baupläne, darunter die Einstellungen, ganz unten
+  eingeklappt, was nur Fortgeschrittene brauchen. Das Overlay bleibt klein wie bisher;
+  dieses Fenster ist das, was sich dahinter öffnet.
+- **Ein Installer für Windows.** Startmenü-Eintrag, optionales Desktop-Symbol, optionaler
+  Autostart — und eine ordentliche Deinstallation. Wer lieber nichts installiert, findet
+  die blanke `.exe` weiterhin im Release.
+- **Deine Dateien liegen jetzt sichtbar** unter `Dokumente\SC BP Watcher`, getrennt nach
+  Bauplänen, Exporten, Einstellungen und Diagnose. Vorher lagen sie versteckt im
+  System — dort sucht niemand seinen Bauplan-Bestand. Beim ersten Start werden sie
+  **kopiert**, der alte Ordner bleibt als Rückweg liegen.
+- **Vorhandenen Bestand einlesen** — aus dem KRT Profit Basetool, von scmdb.net, aus der
+  Launcher-Datei oder einer eigenen Sicherung. Das Format wird am Inhalt erkannt, du
+  wählst nur eine Datei. Zusammengeführt, nie ersetzt.
+- **Fehler melden mit einem Klick.** „Fehler melden" öffnet ein fertig ausgefülltes
+  Formular; du schreibst nur noch dazu, was passiert ist. Der Bericht enthält keine Namen
+  und keine Pfade mit deinem Benutzernamen.
+- **Testfassungen auf Wunsch.** Wer beim Prüfen helfen will, schaltet sie unter *Über*
+  ein und bekommt neue Fassungen vor allen anderen — über dieselbe Update-Meldung.
+- **Schriftgröße in vier Stufen**, wirkt auf Schrift, Symbole und Knöpfe zugleich.
+- **Woher Baupläne ohne Auftrag kommen.** 55 Baupläne schüttet kein regulärer Auftrag
+  aus — sie stammen aus benannten Töpfen wie XenoThreat, RDC-Boss oder RedWind. Statt
+  eines Fragezeichens steht dort jetzt die Quelle, und man kann danach filtern.
+- **Was ist neu** als eigener Reiter, getrennt nach Neu, Verbessert und Behoben.
+- **Startbaupläne** werden erkannt und eingetragen — die acht, die jeder von Anfang an
+  hat, mit ◆ gekennzeichnet.
+- **Bestand ausgeben** in drei Formaten: KRT Profit Basetool, scmdb.net und eine
+  vollständige Sicherung.
+
+### Geändert
+
+- **Bis zu zwölf Bezugswege je Bauplan** statt drei. Gemessen: Über die Hälfte aller
+  Baupläne hatte vorher abgeschnittene Wege. Angezeigt wird weiterhin der leichteste, der
+  Rest klappt auf.
+- **Die Herkunft erscheint erst auf Klick** und lässt sich wieder schließen — bei kleinem
+  Fenster fraß sie sonst ein Drittel der Liste.
+- **Filtern nach Art, Klasse, Größe, Gütegrad und Quelle**, zusätzlich zu Suche und den
+  Listen „beobachtet / vorhanden / fehlt noch".
+- **Overlay einklappen** (▾): schiebt sich auf die Titelleiste zusammen.
+- **Kein Speichern-Knopf mehr** — Änderungen greifen sofort.
+
+### Behoben
+
+- **Das Fenster-Icon fehlte in jeder fertigen Fassung** — auf beiden Systemen. Die Datei
+  lag zur Laufzeit gar nicht bei.
+- **Der Selbsttest schlug auf Rechnern mit installiertem Star Citizen fehl.** Zwei
+  Prüfungen erwarteten, dass kein Spiel gefunden wird — geprüft wurde damit die Umgebung
+  statt das Programm.
+- **Fehler verschwanden spurlos.** Über sechzig Stellen fingen sie ab und machten
+  weiter; jetzt werden die letzten fünfzig festgehalten und landen im Fehlerbericht.
 
 ## v2.0.0 - 2026-08-24
 
