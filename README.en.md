@@ -12,6 +12,7 @@
 [![License](https://img.shields.io/badge/License-GPL--3.0-5fa522)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-0a4a7a?logo=python&logoColor=white)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%C2%B7%20Linux-0a4a7a)](#requirements)
+[![Star Citizen](https://img.shields.io/badge/Star%20Citizen-compatible-0a4a7a)](https://robertsspaceindustries.com/)
 
 **English** · [Deutsch](README.md)
 

@@ -14,6 +14,8 @@
 [![System](https://img.shields.io/badge/System-Windows%20%C2%B7%20Linux-0a4a7a)](#voraussetzungen)
 [![Star Citizen](https://img.shields.io/badge/Star%20Citizen-kompatibel-0a4a7a)](https://robertsspaceindustries.com/)
 
+**Deutsch** · [English](README.en.md)
+
 </div>
 
 ---

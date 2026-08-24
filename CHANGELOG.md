@@ -9,6 +9,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 ### Hinzugefügt
 
 
+- **Englische Projektseite** (`README.en.md`), verlinkt über einen Umschalter oben in beiden Fassungen. Das Werkzeug spricht Englisch, die Beschreibung tat es nicht — wer aus der Linux-Ecke kommt, wo die meisten den englischen Client fahren, stand vor einer rein deutschen Seite.
 - **Merkliste per Klick** (`scbp/merkliste.py`). In der Bauplan-Liste macht ein Klick auf den Stern aus jedem Eintrag einen Wunsch — taucht er auf, meldet ihn der Watcher auffällig in Gold. Dafür muss niemand mehr eine `watchlist.json` von Hand anlegen.
   - Eigener Filter **⭐ beobachtet** zeigt, worauf man gerade wartet.
   - **Erfüllte Wünsche verschwinden von selbst.** Landet ein beobachteter Bauplan im Bestand, sagt der Watcher einmal Bescheid und trägt ihn aus — eine Liste voller längst erledigter Wünsche wäre keine Merkliste, sondern ein Archiv.
