@@ -192,7 +192,16 @@ def main():
         anders = os.path.join(basis, 'woanders', 'LIVE')
         os.makedirs(anders)
         open(os.path.join(anders, 'Game.log'), 'w').close()
-        pruefe(pf.spiel_ordner() is None, 'ohne Eintrag wird nichts gefunden')
+
+        # ⚠ Die Suche darf hier nichts finden — sonst prüft der Test nur, ob auf
+        # DIESEM Rechner zufällig kein Star Citizen liegt. Auf einem Spielrechner
+        # war er deshalb rot, obwohl das Programm richtig arbeitete. Also werden
+        # die Suchwurzeln für diesen Abschnitt geleert; gesucht wird gleich
+        # nochmal ausdrücklich MIT Wurzel.
+        echte_wurzeln = pf._spiel_wurzeln
+        pf._spiel_wurzeln = lambda: []
+        pruefe(pf.spiel_ordner() is None,
+               'ohne Eintrag und ohne Fundort wird nichts gefunden')
         datei = pf.vorlage_anlegen()
         pruefe(os.path.exists(datei), 'Einstellungsdatei wird zum Ausfüllen angelegt')
         d = json.load(open(datei, encoding='utf-8'))
@@ -205,6 +214,22 @@ def main():
         pruefe('_spiel_ordner_gesucht_wird_hier' in d2,
                'die Vorlage nennt die Suchorte beim Feld')
 
+        # Und die Gegenprobe: Liegt an einem Suchort wirklich ein Spiel, muss es
+        # gefunden werden. Ohne diese Hälfte wäre „nichts gefunden" wertlos —
+        # eine kaputte Suche fände auch nichts.
+        with open(datei, encoding='utf-8') as f:
+            ohne = json.load(f)
+        ohne['spiel_ordner'] = ''
+        with open(datei, 'w', encoding='utf-8') as f:
+            json.dump(ohne, f, ensure_ascii=False, indent=2)
+        wurzel_mit_spiel = os.path.join(basis, 'installiert')
+        echt = os.path.join(wurzel_mit_spiel, pf.SC_UNTERPFAD, 'LIVE')
+        os.makedirs(echt)
+        open(os.path.join(echt, 'Game.log'), 'w').close()
+        pf._spiel_wurzeln = lambda: [wurzel_mit_spiel]
+        pruefe(pf.spiel_ordner() == echt, 'ein Spiel an einem Suchort wird gefunden')
+        pf._spiel_wurzeln = echte_wurzeln
+
         print('\n6. Erster Start nimmt dem Spieler die Arbeit ab')
         from scbp import assistent as assi, pfade as pf2
         # Frischer Ordner, damit "erster Start" wirklich zutrifft
@@ -212,8 +237,11 @@ def main():
         os.makedirs(frisch)
         os.environ['SC_BP_HOME'] = frisch
         os.environ.pop('SC_INSTALL_DIR', None)
+        echte_wurzeln6 = pf2._spiel_wurzeln
+        pf2._spiel_wurzeln = lambda: []        # siehe Abschnitt 5
         pruefe(assi.noetig(), 'Assistent meldet sich beim ersten Start')
-        pruefe(pf2.spiel_ordner() is None, 'ohne Angabe wird nichts gefunden')
+        pruefe(pf2.spiel_ordner() is None, 'ohne Angabe und ohne Fundort: nichts')
+        pf2._spiel_wurzeln = echte_wurzeln6
         # Der Spieler wählt irgendeine Ebene — auch die falsche muss reichen
         gedeutet = pf2.spielordner_deuten(os.path.dirname(live))
         pruefe(gedeutet == live,
