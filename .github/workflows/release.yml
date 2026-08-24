@@ -72,13 +72,17 @@ jobs:
         run: |
           apt-get update -qq
           apt-get install -y -qq --no-install-recommends \
-            python3 python3-pip python3-tk binutils file wget ca-certificates git
+            python3 python3-pip python3-tk binutils file wget ca-certificates git \
+            xvfb
           python3 -m pip install --quiet --upgrade pip pyinstaller
 
       - uses: actions/checkout@v4
 
       - name: Selbsttest
-        run: python3 tools/selbsttest.py
+        # xvfb-run stellt einen Bildschirm bereit, den es auf einem Bau-Rechner
+        # sonst nicht gibt. Ohne ihn wuerden die Fenster-Pruefungen still
+        # uebersprungen — geprueft werden soll aber alles.
+        run: xvfb-run -a python3 tools/selbsttest.py
 
       - name: Binaerdatei bauen
         run: >

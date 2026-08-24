@@ -78,6 +78,27 @@ ERWARTET = {
 fehler = []
 
 
+def hat_anzeige():
+    """Lässt sich hier überhaupt ein Fenster öffnen?
+
+    Auf einem Bau-Rechner gibt es keinen Bildschirm — dort scheitert schon
+    `tk.Tk()` mit „no display name and no $DISPLAY". Die Erkennung, der Bestand
+    und die Pfade brauchen kein Fenster; nur die paar Prüfungen, die eines
+    aufmachen, werden dann übersprungen statt den ganzen Lauf zu versenken."""
+    try:
+        import tkinter
+        r = tkinter.Tk()
+        r.withdraw()
+        r.destroy()
+        return True
+    except Exception:
+        return False
+
+
+def uebersprungen(was, grund='kein Bildschirm vorhanden'):
+    print('  [--]   %s — übersprungen (%s)' % (was, grund))
+
+
 def pruefe(bedingung, was):
     print(('  [ok]   ' if bedingung else '  [FEHL] ') + was)
     if not bedingung:
@@ -99,6 +120,10 @@ def baue(basis):
 
 
 def main():
+    global ANZEIGE
+    ANZEIGE = hat_anzeige()
+    if not ANZEIGE:
+        print('Hinweis: kein Bildschirm — Fenster-Prüfungen werden übersprungen.')
     basis = tempfile.mkdtemp(prefix='sc-bp-selbsttest-')
     live = baue(basis)
     os.environ['SC_INSTALL_DIR'] = live
@@ -206,17 +231,20 @@ def main():
 
         # Der Assistent muss sich wiederholen lassen — für Leute, die sich nicht
         # durch Menüs klicken wollen. Vier Schritte, ohne Absturz durchgereicht.
-        a = assi.Assistent()
-        a.root.withdraw()
-        titel = []
-        for _ in range(assi.SCHRITTE):
-            titel.append(a.titel.cget('text'))
-            if a.schritt == 2:
-                a.pfad.set(live)
-            a._weiter()
-        pruefe(len(set(titel)) == assi.SCHRITTE,
-               'Assistent hat %d unterschiedliche Schritte' % len(set(titel)))
-        pruefe(assi.noetig() is False, 'nach dem Durchlauf ist alles gesetzt')
+        if ANZEIGE:
+            a = assi.Assistent()
+            a.root.withdraw()
+            titel = []
+            for _ in range(assi.SCHRITTE):
+                titel.append(a.titel.cget('text'))
+                if a.schritt == 2:
+                    a.pfad.set(live)
+                a._weiter()
+            pruefe(len(set(titel)) == assi.SCHRITTE,
+                   'Assistent hat %d unterschiedliche Schritte' % len(set(titel)))
+            pruefe(assi.noetig() is False, 'nach dem Durchlauf ist alles gesetzt')
+        else:
+            uebersprungen('Assistent-Durchlauf')
 
         print('\n7. Sprache')
         from scbp import sprache
@@ -269,8 +297,12 @@ def main():
                'was nie beobachtet wurde, ändert nichts')
 
         print('\n9. Fensterlage von einem fremden Rechner')
-        kaputt = w.geometrie_pruefen('440x1098+999999+-999999', _wurzel())
-        pruefe('+999999' not in kaputt, 'unsinnige Position verworfen (%s)' % kaputt)
+        if ANZEIGE:
+            kaputt = w.geometrie_pruefen('440x1098+999999+-999999', _wurzel())
+            pruefe('+999999' not in kaputt,
+                   'unsinnige Position verworfen (%s)' % kaputt)
+        else:
+            uebersprungen('Fensterlage von einem fremden Rechner')
 
     finally:
         shutil.rmtree(basis, ignore_errors=True)
