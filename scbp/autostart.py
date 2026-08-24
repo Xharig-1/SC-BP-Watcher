@@ -1,0 +1,161 @@
+# -*- coding: utf-8 -*-
+#
+# SC BP Watcher — zeigt live neue Star-Citizen-Baupläne an.
+# Copyright (C) 2026 Xharig
+#
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+Mit dem Rechner starten — auf beiden Systemen.
+
+Bewusst **freiwillig**: Der Watcher schaltet sich nicht selbst ein, es gibt
+einen Schalter in der Titelleiste. Der Zustand steht ausschließlich dort, wo
+das System ihn ohnehin führt — es gibt keine zweite Wahrheit, die auseinander-
+laufen könnte.
+
+  Windows:  ein Wert unter HKCU\\…\\CurrentVersion\\Run
+  Linux:    eine `.desktop`-Datei in ~/.config/autostart/ (der Standard, den
+            KDE, GNOME und XFCE gleichermaßen lesen)
+"""
+import os
+import sys
+
+from . import pfade
+
+NAME = 'SC BP Watcher'
+
+try:
+    import winreg
+except ImportError:
+    winreg = None
+
+REG_SCHLUESSEL = r'Software\Microsoft\Windows\CurrentVersion\Run'
+
+
+def _startdatei():
+    """Die Datei, die gestartet werden muss, um den Watcher hochzufahren."""
+    haupt = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                         'sc_bp_watcher.py')
+    return haupt if os.path.exists(haupt) else os.path.abspath(sys.argv[0])
+
+
+def befehl():
+    """Womit das System den Watcher starten soll.
+
+    Als fertiges Paket (`.exe` oder AppImage) sich selbst. Aus dem Quellcode
+    heraus unter Windows über `pythonw.exe` — ohne das w bliebe bei jedem
+    Anmelden ein Konsolenfenster offen, das im Spiel den Fokus klaut."""
+    if getattr(sys, 'frozen', False):
+        return '"%s"' % sys.executable if pfade.WINDOWS else sys.executable
+    appimage = os.environ.get('APPIMAGE')
+    if appimage:
+        return appimage
+    if pfade.WINDOWS:
+        pyw = os.path.join(os.path.dirname(sys.executable), 'pythonw.exe')
+        if not os.path.exists(pyw):
+            pyw = sys.executable
+        return '"%s" "%s"' % (pyw, _startdatei())
+    return '%s %s' % (sys.executable, _startdatei())
+
+
+# ------------------------------------------------------------------- Windows
+def _win_an():
+    if winreg is None:
+        return False
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, REG_SCHLUESSEL) as k:
+            wert, _ = winreg.QueryValueEx(k, NAME)
+        return bool(wert)
+    except Exception:
+        return False
+
+
+def _win_setzen(an):
+    if winreg is None:
+        return False
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, REG_SCHLUESSEL, 0,
+                            winreg.KEY_SET_VALUE) as k:
+            if an:
+                winreg.SetValueEx(k, NAME, 0, winreg.REG_SZ, befehl())
+            else:
+                try:
+                    winreg.DeleteValue(k, NAME)
+                except FileNotFoundError:
+                    pass          # war schon aus
+        return True
+    except Exception:
+        return False
+
+
+# --------------------------------------------------------------------- Linux
+def _desktop_datei():
+    basis = os.environ.get('XDG_CONFIG_HOME') or os.path.expanduser('~/.config')
+    return os.path.join(basis, 'autostart', 'sc-bp-watcher.desktop')
+
+
+def _linux_an():
+    return os.path.isfile(_desktop_datei())
+
+
+def _linux_setzen(an):
+    ziel = _desktop_datei()
+    if not an:
+        try:
+            os.remove(ziel)
+        except FileNotFoundError:
+            pass
+        except OSError:
+            return False
+        return True
+    inhalt = (
+        '[Desktop Entry]\n'
+        'Type=Application\n'
+        'Name=%s\n'
+        'Comment=Zeigt neue Star-Citizen-Baupläne an\n'
+        'Exec=%s\n'
+        'Terminal=false\n'
+        'X-GNOME-Autostart-enabled=true\n'
+    ) % (NAME, befehl())
+    try:
+        os.makedirs(os.path.dirname(ziel), exist_ok=True)
+        with open(ziel, 'w', encoding='utf-8') as f:
+            f.write(inhalt)
+        os.chmod(ziel, 0o755)
+        return True
+    except OSError:
+        return False
+
+
+# ------------------------------------------------------------------ Nach außen
+def ist_an():
+    """Startet der Watcher mit dem System? Fehler gelten als „aus"."""
+    return _win_an() if pfade.WINDOWS else _linux_an()
+
+
+def setzen(an):
+    """Ein- oder ausschalten. Gibt zurück, ob es geklappt hat."""
+    return _win_setzen(an) if pfade.WINDOWS else _linux_setzen(an)
+
+
+def moeglich():
+    """Lässt sich der Autostart auf diesem System überhaupt schalten?"""
+    return winreg is not None if pfade.WINDOWS else True
+
+
+if __name__ == '__main__':
+    print('möglich:', moeglich(), '· an:', ist_an())
+    print('Befehl :', befehl())
+    if not pfade.WINDOWS:
+        print('Datei  :', _desktop_datei())

@@ -20,44 +20,53 @@
 SC BP Watcher — zeigt live an, sobald im SC Deutsch Launcher ein neuer
 Bauplan (Blueprint) freigeschaltet wird.
 
-Überwacht:  %APPDATA%\\sc-deutsch-launcher\\blueprints\\sc_bp_erledigt.json
-            + (ab v1.2.0) die Star-Citizen-Game.log für die Sofort-Meldung
-            + (ab v1.3.0) bp_item_types.json — meldet, was im Spiel NEU craftbar wurde
-Werte:      Art/Größe/Gütegrad/Klasse aus dem Launcher-Katalog, ab v1.5.0 mit
-            scmdb.net als Rückfall für alles, was der Katalog nicht kennt.
+Überwacht:  die Star-Citizen-Game.log (die eigentliche Quelle) und liest beim
+            Start auch die aufgehobenen Logs vergangener Sitzungen nach
+            + den SC Deutsch Launcher, **falls** er vorhanden ist (er bestätigt
+              die Funde und liefert einen gepflegten Katalog)
+            + bp_item_types.json bzw. die scmdb-Craftdaten als Katalog-Wache —
+              meldet, was im Spiel NEU craftbar wurde
+Bestand:    wird ab v2.0 selbst geführt (`bestand.json` im eigenen Ordner) —
+            der SC Deutsch Launcher ist damit kein Muss mehr.
+Werte:      Art/Größe/Gütegrad/Klasse aus dem Launcher-Katalog, sonst von
+            scmdb.net (seit v1.5.0).
 Anzeige:    kleines, immer-im-Vordergrund Overlay-Fenster (verschiebbar).
 
 Reines Python-Standardbibliothek-Tool (tkinter) — keine Zusatzpakete nötig.
-Läuft unter Windows mit dem normalen Python.
+Läuft unter **Windows und Linux**; wo die Dateien jeweils liegen, weiß `scbp/pfade.py`.
 """
 import os, re, sys, json, time, threading, queue
 import tkinter as tk
 from tkinter import font as tkfont
+
+# Eigene Bausteine. Sie kapseln alles, was sich zwischen Windows und Linux
+# unterscheidet — der Rest dieser Datei muss das Betriebssystem nicht kennen.
+from scbp import autostart, bestand as bestand_datei, logquelle, pfade, phrasen
+
 try:
-    import winsound
+    import winsound                      # nur Windows; unter Linux übernimmt tkinter
 except ImportError:
     winsound = None
-try:
-    import winreg
-except ImportError:
-    winreg = None
 
-__version__ = '1.5.0'
+__version__ = '1.6.0-dev'
 
 # ---------------------------------------------------------------- Konfiguration
-BP_DIR   = os.path.join(os.environ.get('APPDATA', ''), 'sc-deutsch-launcher', 'blueprints')
-BP_FILE  = os.path.join(BP_DIR, 'sc_bp_erledigt.json')
-TYPE_FILE = os.path.join(BP_DIR, 'bp_item_types.json')
-CAT_DIR  = os.path.join(BP_DIR, 'catalog')                       # Launcher-Katalog (Size/Grade/Klasse)
-SCDL_SETTINGS = os.path.join(BP_DIR, 'scdl-settings.json')       # kennt den SC-Installationsordner
-SCAN_STATE    = os.path.join(BP_DIR, 'scan-state.json')          # kennt die zuletzt gelesene Game.log
+# Wo die Dateien liegen, entscheidet `scbp/pfade.py` je nach Betriebssystem.
+# Der SC Deutsch Launcher ist ab jetzt **optional**: Ist er da, wird er genutzt;
+# fehlt er (immer unter Linux), fällt nur seine Bestätigung weg — gemeldet wird
+# trotzdem, denn die Game.log ist die eigentliche Quelle.
+BP_DIR   = pfade.launcher_ordner() or ''
+BP_FILE  = pfade.launcher_datei('sc_bp_erledigt.json', BP_DIR)
+TYPE_FILE = pfade.launcher_datei('bp_item_types.json', BP_DIR)
+CAT_DIR  = pfade.launcher_datei('catalog', BP_DIR)               # Launcher-Katalog (Size/Grade/Klasse)
+HAT_LAUNCHER = bool(BP_DIR) and os.path.isdir(BP_DIR)
 # Manuelle Korrekturen an Size/Grade/Klasse, Vorrang vor dem Launcher-Katalog.
 # Standard: neben den eigenen Einstellungen in %APPDATA%\sc-bp-watcher\.
 # Wer die Datei woanders pflegt, setzt die
 # Umgebungsvariable SC_BP_OVERRIDES auf den vollen Pfad. Fehlt beides, gilt der
 # Katalog unverändert — die Datei ist optional.
-OVERRIDES_FILE = os.environ.get('SC_BP_OVERRIDES') or os.path.join(
-    os.environ.get('APPDATA', ''), 'sc-bp-watcher', 'bp-overrides.json')
+OVERRIDES_FILE = os.environ.get('SC_BP_OVERRIDES') or pfade.app_datei(
+    'bp-overrides.json')
 POLL_SEC = 3            # wie oft die Dateien geprüft werden (Sekunden)
 MAX_ROWS = 200          # so viele Neuzugänge max. in der Liste behalten
 
@@ -67,13 +76,13 @@ MAX_ROWS = 200          # so viele Neuzugänge max. in der Liste behalten
 # unabhängig davon, ob man es freigeschaltet hat. Der Stand liegt bewusst in einer
 # eigenen Datei, damit ein zweites Werkzeug auf denselben Daten dem Watcher
 # nicht die Meldung wegnimmt.
-APP_DIR    = os.path.join(os.environ.get('APPDATA', ''), 'sc-bp-watcher')
-CAT_SEEN   = os.path.join(APP_DIR, 'catalog-seen.json')
+APP_DIR    = pfade.app_ordner()
+CAT_SEEN   = pfade.app_datei('catalog-seen.json')
 # Optionale Beobachtungsliste: Gegenstände, auf die man besonders wartet.
 # Format: {"eintraege": [{"titel": "…", "muster": ["teilstring", …]}, …]} — Muster
 # kleingeschrieben, Treffer per Teilstring. Fehlt die Datei, meldet der Watcher
 # einfach jeden Katalog-Zuwachs.
-WATCHLIST  = os.path.join(APP_DIR, 'watchlist.json')
+WATCHLIST  = pfade.app_datei('watchlist.json')
 CAT_POLL   = 60         # Katalogdatei nur jede Minute prüfen (ändert sich nur bei Patches)
 
 # --- scmdb-Craftdaten (ab v1.5.0) ------------------------------------------
@@ -93,7 +102,7 @@ CAT_POLL   = 60         # Katalogdatei nur jede Minute prüfen (ändert sich nur
 # `components.ini` übereinstimmend B sagen (auch der Hersteller ist dort falsch).
 # Eine sehr gute Quelle, aber keine unfehlbare.
 SCMDB_BASE     = 'https://scmdb.net/data'
-SCMDB_CACHE    = os.path.join(APP_DIR, 'scmdb-items.json')   # aufbereitet, klein
+SCMDB_CACHE    = pfade.app_datei('scmdb-items.json')   # aufbereitet, klein
 SCMDB_POLL_SEC = 6 * 3600    # nur alle 6 Stunden nach einer neuen Spielversion sehen
 SCMDB_TIMEOUT  = 30
 # Wer die Netzabfrage nicht will, setzt SC_BP_NO_NET=1 — dann bleibt alles beim
@@ -103,12 +112,14 @@ SCMDB_AUS      = os.environ.get('SC_BP_NO_NET', '') not in ('', '0')
 # geprüft: A=1 (21x), B=2 (20x), C=3 (7x), D=4 (7x).
 GRADE_LETTER = {1: 'A', 2: 'B', 3: 'C', 4: 'D'}
 
-# Fensterposition/-größe. Standard = dort, wo Xharig es haben will: oberer Monitor
-# (nicht der Spiel-Monitor) → man tabbt nicht mehr versehentlich aus dem Spiel.
-# Wird beim Beenden/Verschieben in SETTINGS_FILE gespeichert und beim nächsten Start
-# von dort wiederhergestellt. Format: BxH+X+Y (negatives Y als „+-1439" = absolut).
-DEFAULT_GEOM  = '440x1098+3656+-1439'
-SETTINGS_FILE = os.path.join(os.environ.get('APPDATA', ''), 'sc-bp-watcher', 'watcher.json')
+# Fenstergröße beim allerersten Start. **Ohne feste Position**: Wo das Fenster
+# gut aufgehoben ist, hängt am Monitoraufbau, und eine Position vom Rechner des
+# Entwicklers ist auf einem anderen im besten Fall unsichtbar — unter macOS
+# stürzt Tk dabei sogar ab. Tk sucht sich beim ersten Mal selbst eine Stelle,
+# danach gilt die zuletzt gemerkte (siehe `geometrie_pruefen`).
+# Wer sie fest vorgeben will, setzt SC_BP_GEOMETRIE (Format BxH+X+Y).
+DEFAULT_GEOM  = os.environ.get('SC_BP_GEOMETRIE') or '440x1000'
+SETTINGS_FILE = pfade.app_datei('watcher.json')
 
 # Farben (dunkles Overlay)
 BG, FG, ACCENT, SUB, BAR = '#10141c', '#e6edf3', '#47aa42', '#8b98a5', '#1b2230'
@@ -128,11 +139,19 @@ def load_keys():
 
 
 def load_types():
+    """Was im Spiel überhaupt craftbar ist: Name -> Art.
+
+    Erste Wahl ist die Launcher-Datei (deutsche Bezeichnungen, gepflegt). Fehlt
+    der Launcher — unter Linux immer —, treten die scmdb-Craftdaten an ihre
+    Stelle. Ohne diesen Rückfall wäre die Katalog-Wache dort tot, dabei liegen
+    die Daten längst im Zwischenspeicher."""
     try:
         with open(TYPE_FILE, encoding='utf-8') as f:
             return json.load(f)
     except Exception:
-        return {}
+        pass
+    return {name: (eintrag.get('art') or eintrag.get('attachType') or '—')
+            for name, eintrag in (SCMDB or {}).items()} if SCMDB else {}
 
 
 def load_watchlist():
@@ -146,7 +165,13 @@ def load_watchlist():
         return []
 
 
+# Vorbelegung, damit `load_types()` weiter unten nicht ins Leere greift: Die
+# scmdb-Daten werden erst nach diesen Zeilen geladen (sie brauchen Funktionen,
+# die weiter unten stehen). Direkt danach wird TYPES neu gesetzt.
+SCMDB, SCMDB_VERSION = {}, ''
 TYPES = load_types()
+
+
 def art_of(key):
     global TYPES
     k = key.lower().replace('\xa0', ' ')
@@ -346,6 +371,10 @@ def scmdb_aktualisieren():
 
 
 SCMDB, SCMDB_VERSION = load_scmdb()
+# Jetzt, wo die scmdb-Daten stehen, kann der Katalog auch ohne Launcher gefüllt
+# werden — vorhin war er es nur, wenn die Launcher-Datei da war.
+if not TYPES:
+    TYPES = load_types()
 
 
 def scmdb_of(key):
@@ -402,37 +431,22 @@ def meta_of(key):
 
 
 # ------------------------------------------------------- Game.log (Sofort-Meldung)
-# Das Spiel schreibt beim Freischalten eine Notification im Klartext, z. B.:
-#   <SHUDEvent_OnNotification> Added notification "Bauplan erhalten: Attrition-5 Repeater: " [136] …
-# Der SC Deutsch Launcher liest dieselbe Log, exportiert seine Datei aber nur alle
-# paar Minuten — deshalb lesen wir den Namen zusätzlich selbst mit und zeigen ihn
-# sofort als „vorläufig" (gelb) an. Sobald der Launcher nachzieht, wird die Zeile
-# bestätigt (grün). Size/Grade/Klasse/Art kommen weiterhin aus dem Launcher-Katalog.
-#
-# Nur die deutsche Meldung ist verifiziert (Xharigs Client, Translation "de"). Bei
-# anderer Spielsprache greift der Log-Weg einfach nicht — dann bleibt es beim
-# bisherigen Verhalten (Meldung erst, wenn der Launcher exportiert hat).
-LOG_PHRASES = ['Bauplan erhalten']
-LOG_RE = re.compile(r'Added notification "(?:%s):\s*(.+?)\s*:\s*"'
-                    % '|'.join(re.escape(p) for p in LOG_PHRASES))
-
-# Schiffskomponenten stehen im Log MIT Zusatz „(Klasse/Size/Grade)", z. B.
-# „7CA 'Nargun' (Civ/3/A)" — der Launcher-Schlüssel ist aber „7CA 'Nargun'".
-# Ohne Abschneiden würde die Bestätigung nie greifen (Zeile bliebe gelb + Dublette).
-# Bewusst eng gefasst (nur die bekannten Klassen-Kürzel), damit echte Namens-Klammern
-# wie „(30 cap)" oder „Singe Cannon (S2)" unangetastet bleiben.
-LOG_SUFFIX_RE = re.compile(r'\s*\((Civ|Mil|Ind|Sth|Cmp)/(\d+)/([A-D])\)\s*$', re.I)
+# Das Lesen der Log steckt seit v1.6 in `scbp/logquelle.py` — samt Nachlese der
+# aufgehobenen Sitzungen und einem Lesestand, der Programmneustarts übersteht.
+# Welche Formulierung im Log steht, hängt an der Spielsprache; darum kümmert
+# sich `scbp/phrasen.py`. Hier bleibt nur, was mit der ANZEIGE zu tun hat.
 
 
-def clean_log_name(name):
-    """('7CA 'Nargun'', 'C/A/3')  aus  \"7CA 'Nargun' (Civ/3/A)\".
-    Zweiter Wert = Kürzel aus dem Log-Zusatz (None, wenn keiner da war)."""
-    m = LOG_SUFFIX_RE.search(name)
-    if not m:
-        return name.strip(), None
-    cl, sz, gr = m.group(1).title(), m.group(2), m.group(3).upper()
-    letter = CLASS_LETTER.get(_CLASS_FULL.get(cl, cl), '–')
-    return name[:m.start()].strip(), f'{letter}/{gr}/{sz}'
+def kuerzel_aus_zusatz(zusatz):
+    """('Civ', '3', 'A') -> 'C/A/3'.
+
+    Der Zusatz hinter dem Namen im Log ist der Rückfall fürs Kürzel, falls ein
+    Gegenstand nach einem SC-Patch noch in keinem Katalog steht."""
+    if not zusatz:
+        return None
+    klasse, size, grade = zusatz
+    letter = CLASS_LETTER.get(_CLASS_FULL.get(klasse, klasse), '–')
+    return f'{letter}/{grade}/{size}'
 
 
 def _loose(name):
@@ -441,71 +455,6 @@ def _loose(name):
     (12 Schuss)" im Log vs. „… (12 cap)" beim Launcher)."""
     return re.sub(r'\s*\([^()]*\)\s*$', '', _norm(name)).strip()
 
-
-def find_game_log():
-    """Pfad zur aktiven Game.log — 1. aus den Launcher-Einstellungen (Installfolder),
-    2. aus dem Lesestand des Launchers (scan-state.json), 3. Standard-Installpfad."""
-    cands = []
-    try:
-        for s in json.load(open(SCDL_SETTINGS, encoding='utf-8')).get('Settings', []):
-            f = s.get('Installfolder')
-            if f: cands.append(os.path.join(f, 'Game.log'))
-    except Exception:
-        pass
-    try:
-        for p in json.load(open(SCAN_STATE, encoding='utf-8')).get('files', {}):
-            if os.path.basename(p).lower() == 'game.log' and 'logbackups' not in p.lower():
-                cands.append(p)
-    except Exception:
-        pass
-    cands.append(r'C:\Program Files\Roberts Space Industries\StarCitizen\LIVE\Game.log')
-    for p in cands:
-        try:
-            if os.path.isfile(p): return p
-        except Exception:
-            pass
-    return None
-
-
-class LogTail:
-    """Liest die Game.log fortlaufend ab dem Startzeitpunkt (Historie wird ignoriert).
-    Erkennt einen Spiel-Neustart daran, dass die Datei kürzer wird als der Lesestand —
-    dann wird von vorn gelesen (frische Log = nur die laufende Session)."""
-
-    def __init__(self):
-        self.path, self.offset = None, 0
-
-    def _locate(self):
-        p = find_game_log()
-        if p and p != self.path:
-            self.path = p
-            try: self.offset = os.path.getsize(p)   # ab jetzt mitlesen, nicht die Historie
-            except OSError: self.offset = 0
-        elif not p:
-            self.path = None
-        return self.path
-
-    def new_names(self):
-        """Neue Bauplan-Namen seit dem letzten Aufruf (Liste, evtl. leer)."""
-        if not self._locate():
-            return []
-        try:
-            size = os.path.getsize(self.path)
-            if size < self.offset:      # Log rotiert -> neue Spiel-Session
-                self.offset = 0
-            if size == self.offset:
-                return []
-            with open(self.path, 'rb') as f:
-                f.seek(self.offset)
-                chunk = f.read()
-        except OSError:
-            return []
-        cut = chunk.rfind(b'\n')        # angefangene letzte Zeile stehen lassen
-        if cut < 0:
-            return []
-        self.offset += cut + 1
-        text = chunk[:cut].decode('utf-8', 'ignore')
-        return [clean_log_name(m.group(1)) for m in LOG_RE.finditer(text)]
 
 
 # ------------------------------------------------ Fensterposition merken/laden
@@ -517,6 +466,47 @@ def load_geometry():
         return DEFAULT_GEOM
 
 
+GEOM_RE = re.compile(r'^(\d+)x(\d+)(?:\+(-?\d+)\+(-?\d+))?$')
+
+
+def geometrie_pruefen(geom, root):
+    """Liegt die gemerkte Fensterlage auf diesem Rechner überhaupt im Bild?
+
+    Der Watcher speichert seine Lage, damit er beim nächsten Mal wieder dort
+    steht — bei der Autor auf dem oberen von drei Monitoren, also bei X≈3656 und
+    negativem Y. Auf einem Rechner mit einem einzigen Bildschirm zeigt dieselbe
+    Angabe ins Nichts: Das Fenster ist unsichtbar, unter macOS reißt Tk sogar
+    das ganze Programm mit. Sobald die Fassung öffentlich wird, landet sie auf
+    genau solchen Rechnern.
+
+    Geprüft wird **großzügig**: Mehrere Monitore sollen weiter funktionieren
+    (Tk kennt oft nur den Hauptbildschirm), es geht nur darum, offensichtlichen
+    Unsinn abzufangen. Passt die Lage nicht, bleibt die Größe erhalten und nur
+    die Position fällt weg — Tk platziert das Fenster dann selbst."""
+    m = GEOM_RE.match(geom or '')
+    if not m:
+        return DEFAULT_GEOM
+    breite, hoehe, x, y = m.groups()
+    if x is None:
+        return geom
+    # macOS ist kein Zielsystem (Star Citizen gibt es dort nicht), aber am Mac
+    # wird geplant und entwickelt. Tk rechnet dort negative Fensterkoordinaten
+    # in einen Unsinnswert um und reißt das Programm mit — deshalb zählt die
+    # gemerkte Position dort nicht.
+    if sys.platform == 'darwin' and (int(x) < 0 or int(y) < 0):
+        return '%sx%s' % (breite, hoehe)
+    try:
+        sb = max(root.winfo_screenwidth(), root.winfo_vrootwidth())
+        sh = max(root.winfo_screenheight(), root.winfo_vrootheight())
+    except Exception:
+        return geom
+    # Bis zum Zweifachen der Bildschirmgröße nach jeder Seite gilt als plausibel:
+    # Das deckt übliche Mehrschirm-Aufbauten ab, ohne Fantasiewerte durchzulassen.
+    if -2 * sb <= int(x) <= 3 * sb and -2 * sh <= int(y) <= 3 * sh:
+        return geom
+    return '%sx%s' % (breite, hoehe)
+
+
 def save_geometry(geom):
     try:
         os.makedirs(os.path.dirname(SETTINGS_FILE), exist_ok=True)
@@ -525,57 +515,37 @@ def save_geometry(geom):
         pass
 
 
-# ------------------------------------------------ Mit Windows starten (ab v1.5.0)
-# Eintrag unter HKCU\…\CurrentVersion\Run. Bewusst **freiwillig**: Der Watcher
-# schaltet sich nicht selbst ein, es gibt einen Schalter in der Titelleiste, und
-# der Zustand steht ausschließlich in der Registry — es gibt keine zweite Wahrheit,
-# die damit auseinanderlaufen könnte.
-AUTOSTART_KEY  = r'Software\Microsoft\Windows\CurrentVersion\Run'
-AUTOSTART_NAME = 'SC BP Watcher'
+# ------------------------------------------------ Mit dem Rechner starten
+# Steckt seit v1.6 in `scbp/autostart.py`: unter Windows ein Registry-Wert,
+# unter Linux eine `.desktop`-Datei in ~/.config/autostart/.
+AUTOSTART_TEXT = ('Mit Windows starten' if pfade.WINDOWS
+                  else 'Beim Anmelden starten')
 
 
-def autostart_befehl():
-    """Womit Windows den Watcher starten soll. Als `.exe` sie selbst, aus dem
-    Quellcode heraus `pythonw.exe` — ohne w bliebe bei jedem Anmelden ein
-    Konsolenfenster offen, das im Spiel den Fokus klaut."""
-    if getattr(sys, 'frozen', False):
-        return '"%s"' % sys.executable
-    pyw = os.path.join(os.path.dirname(sys.executable), 'pythonw.exe')
-    if not os.path.exists(pyw):
-        pyw = sys.executable
-    return '"%s" "%s"' % (pyw, os.path.abspath(__file__))
+# ------------------------------------------------------------------ Signalton
+def signalton(auffaellig=False):
+    """Kurzer Ton bei einem Fund.
 
-
-def autostart_an():
-    """Steht der Eintrag in der Registry? Fehler gelten als „aus"."""
-    if winreg is None:
-        return False
+    Unter Windows über `winsound` wie bisher. Unter Linux gibt es das nicht —
+    dort übernimmt tkinter selbst (`bell()`), das ist Teil der Standard-
+    bibliothek und braucht kein Zusatzpaket. Bleibt es still, weil das System
+    keinen Systemton hat, ist das kein Fehler: Die Meldung steht ja im Fenster."""
+    if winsound:
+        try:
+            winsound.MessageBeep(winsound.MB_ICONEXCLAMATION if auffaellig
+                                 else winsound.MB_ICONASTERISK)
+        except Exception:
+            pass
+        return
     try:
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, AUTOSTART_KEY) as k:
-            wert, _ = winreg.QueryValueEx(k, AUTOSTART_NAME)
-        return bool(wert)
+        _WURZEL[0].bell()
     except Exception:
-        return False
+        pass
 
 
-def autostart_setzen(an):
-    """Schaltet den Autostart ein oder aus. Gibt zurück, ob es geklappt hat."""
-    if winreg is None:
-        return False
-    try:
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, AUTOSTART_KEY, 0,
-                            winreg.KEY_SET_VALUE) as k:
-            if an:
-                winreg.SetValueEx(k, AUTOSTART_NAME, 0, winreg.REG_SZ,
-                                  autostart_befehl())
-            else:
-                try:
-                    winreg.DeleteValue(k, AUTOSTART_NAME)
-                except FileNotFoundError:
-                    pass          # war schon aus
-        return True
-    except Exception:
-        return False
+# Das Hauptfenster, damit `signalton()` es erreicht, ohne es durchreichen zu müssen.
+_WURZEL = [None]
+
 
 
 # ---------------------------------------------------------------- Watcher-Thread
@@ -583,10 +553,12 @@ class Watcher(threading.Thread):
     def __init__(self, out_queue):
         super().__init__(daemon=True)
         self.q = out_queue
-        self.known = None       # BP-Namen aus der Launcher-Datei
+        self.known = None       # BP-Namen aus der Launcher-Datei (None = kein Launcher)
         self.seen = set()       # schon angezeigte Namen (normalisiert) — gegen Dubletten
         self.prov = {}          # noch unbestätigt: norm(Log-Name) -> Log-Name
-        self.tail = LogTail()
+        self.stand = logquelle.Lesestand()
+        self.tail = logquelle.LogTail(self.stand)
+        self.bestand = bestand_datei.laden()   # der eigene, dauerhafte Bestand
         self.running = True
         self.cat_next = 0.0     # nächster Katalog-Check (Zeitstempel)
         self.cat_mtime = None   # letzter gesehener Änderungszeitpunkt der Katalogdatei
@@ -611,12 +583,17 @@ class Watcher(threading.Thread):
         """Prüft, ob der Craftbar-Katalog gewachsen ist. Der Vergleichsstand überlebt
         Neustarts (CAT_SEEN), sonst käme nach jedem Programmstart alles doppelt."""
         try:
-            mt = os.path.getmtime(TYPE_FILE)
+            marke = os.path.getmtime(TYPE_FILE)
         except OSError:
+            # Kein Launcher: Dann ist die Spielversion der scmdb-Daten die Marke.
+            # Sie ändert sich genau dann, wenn ein Patch neue Baupläne bringt —
+            # also genau dann, wenn nachgesehen werden muss.
+            marke = SCMDB_VERSION or None
+            if marke is None:
+                return
+        if marke == self.cat_mtime:
             return
-        if mt == self.cat_mtime:
-            return
-        self.cat_mtime = mt
+        self.cat_mtime = marke
         jetzt = load_types()
         if not jetzt:
             return
@@ -667,67 +644,159 @@ class Watcher(threading.Thread):
             return hits[0]
         return None
 
+    # ---- Nachlese: was wurde ohne laufenden Watcher freigeschaltet? ----
+    def _nachlese(self):
+        """Beim Start die aufgehobenen Logs durchsehen und in den Bestand nehmen.
+
+        Bewusst **still**: Es geht um Vergangenes, das gehört nicht als Meldung
+        in die Liste — sonst stünden nach jedem Start hunderte Zeilen da. Nur
+        die Zahl kommt in die Statuszeile, und eine verbleibende Lücke wird
+        deutlich gesagt, damit niemand seinen Bestand für vollständig hält."""
+        try:
+            funde, bericht = logquelle.nachlesen(self.stand)
+        except Exception:
+            return
+        neu = 0
+        for name, _zusatz in funde:
+            if bestand_datei.hinzufuegen(self.bestand, name, 'nachlese'):
+                neu += 1
+        if neu:
+            bestand_datei.speichern(self.bestand)
+            self.q.put(('status', 'Nachgelesen: %d Baupläne aus %d früheren '
+                                  'Sitzungen übernommen.' % (neu, bericht['dateien'])))
+        if bericht.get('luecke') and bericht.get('grund'):
+            self.q.put(('hinweis', bericht['grund']))
+
+    def _launcher_uebernehmen(self, keys):
+        """Was der Launcher kennt, gehört auch in den eigenen Bestand.
+
+        Kein „Import" im Sinne eines einmaligen Grundstocks (den macht das
+        Hilfsprogramm unter `tools/`), sondern laufender Betrieb: Er ist die
+        genauere Quelle, solange er da ist."""
+        neu = 0
+        for k in keys:
+            if bestand_datei.hinzufuegen(self.bestand, k, 'launcher'):
+                neu += 1
+        if neu:
+            bestand_datei.speichern(self.bestand)
+        return neu
+
     def run(self):
-        # Basisstand setzen (nicht alle vorhandenen BPs als "neu" melden)
-        while self.known is None and self.running:
-            self.known = load_keys()
-            if self.known is None:
+        # 1) Vergangenes nachlesen (still, nur in den Bestand)
+        self._nachlese()
+
+        # 2) Launcher-Stand holen — wenn es ihn gibt. Ohne ihn wird nicht mehr
+        #    gewartet: Bis v1.5.0 hing der Watcher hier in einer Endlosschleife,
+        #    wenn die Launcher-Datei fehlte. Unter Linux wäre er nie gestartet.
+        if HAT_LAUNCHER:
+            for _ in range(10):
+                if not self.running:
+                    return
+                self.known = load_keys()
+                if self.known is not None:
+                    break
                 time.sleep(POLL_SEC)
-        self.seen = {_norm(k) for k in self.known}
-        self.tail.new_names()          # Lesestand der Game.log auf „jetzt" setzen
-        self.q.put(('status', f'Überwache {len(self.known)} BPs …'))
+            if self.known:
+                self._launcher_uebernehmen(self.known)
+
+        # 3) Alles, was schon im Bestand steht, gilt als bekannt — es wird nicht
+        #    als „neu" gemeldet.
+        self.seen = set(bestand_datei.schluessel(self.bestand))
+        self.tail.new_names()          # Lesestand der Game.log setzen/fortführen
+        self.q.put(('status', self._statuszeile()))
         while self.running:
             time.sleep(POLL_SEC)
 
             # 0) Werte-Daten frisch halten (selten, nur bei neuer Spielversion)
             self._scmdb_tick()
 
-            # 1) Game.log: sofortige, aber noch unbestätigte Meldung
-            for name, log_meta in self.tail.new_names():
+            # 1) Game.log: die eigentliche Quelle. Ohne Launcher ist die Meldung
+            #    endgültig, mit Launcher zunächst vorläufig (er bestätigt gleich).
+            geaendert = False
+            for name, zusatz in self.tail.new_names():
                 nk = _norm(name)
                 if nk in self.seen:
                     continue
                 self.seen.add(nk)
-                self.prov[nk] = name
-                self._emit(name, True, log_meta)
+                if bestand_datei.hinzufuegen(self.bestand, name, 'log'):
+                    geaendert = True
+                if HAT_LAUNCHER:
+                    self.prov[nk] = name
+                self._emit(name, HAT_LAUNCHER, kuerzel_aus_zusatz(zusatz))
+            if geaendert:
+                bestand_datei.speichern(self.bestand)
 
-            # 2) Launcher-Datei: die verbindliche Quelle (bestätigt bzw. meldet nach)
-            cur = load_keys()
-            if cur is None:
-                continue
-            for k in sorted(cur - self.known):
-                row = self._match_prov(k)
-                dup = _norm(k) in self.seen      # steht schon in der Liste
-                self.seen.add(_norm(k))
-                if row:
-                    self.q.put(('confirm', row, k, art_of(k), meta_of(k)))
-                elif not dup:
-                    self._emit(k, False)
-            self.known = cur
+            # 2) Launcher-Datei: bestätigt die Funde und meldet nach, was im Log
+            #    fehlte. Gibt es keinen Launcher, entfällt dieser Schritt still.
+            cur = load_keys() if HAT_LAUNCHER else None
+            if cur is not None:
+                zuwachs = False
+                for k in sorted(cur - (self.known or set())):
+                    row = self._match_prov(k)
+                    dup = _norm(k) in self.seen      # steht schon in der Liste
+                    self.seen.add(_norm(k))
+                    if bestand_datei.hinzufuegen(self.bestand, k, 'launcher'):
+                        zuwachs = True
+                    if row:
+                        self.q.put(('confirm', row, k, art_of(k), meta_of(k)))
+                    elif not dup:
+                        self._emit(k, False)
+                if zuwachs:
+                    bestand_datei.speichern(self.bestand)
+                self.known = cur
 
             # 3) Katalog-Wache (selten, die Datei ändert sich nur bei SC-Patches)
             if time.time() >= self.cat_next:
                 self.cat_next = time.time() + CAT_POLL
                 self._catalog_tick()
 
-            log_state = '✓' if self.tail.path else '–'
-            self.q.put(('status', f'Überwache {len(cur)} BPs · Log {log_state} · '
-                                  f'geprüft {time.strftime("%H:%M:%S")}'))
+            self.q.put(('status', self._statuszeile()))
+
+    def _statuszeile(self):
+        """Was unten im Fenster steht. Zeigt den **eigenen** Bestand — nicht mehr
+        die Launcher-Zahl, denn der Launcher ist ab jetzt nur noch eine von
+        mehreren Quellen (und zählt nachweislich zu niedrig)."""
+        log_state = '✓' if self.tail.path else '–'
+        quelle = 'Launcher ✓' if (HAT_LAUNCHER and self.known) else 'ohne Launcher'
+        return ('%d Baupläne · Log %s · %s · geprüft %s'
+                % (bestand_datei.anzahl(self.bestand), log_state, quelle,
+                   time.strftime('%H:%M:%S')))
 
     def stop(self):
         self.running = False
 
 
 # ---------------------------------------------------------------- GUI / Overlay
+# Mauszeiger heißen je Fenstersystem anders. `size_nw_se` gibt es nur unter
+# Windows — unter Linux und macOS wirft tkinter dafür einen Fehler und das
+# Fenster kommt gar nicht erst hoch. `hand2` dagegen kennen alle drei.
+CURSOR_GROESSE = 'size_nw_se' if pfade.WINDOWS else 'bottom_right_corner'
+
+
+def sicherer_cursor(name):
+    """Gibt den Zeigernamen zurück, wenn dieses System ihn kennt — sonst ''.
+
+    Geprüft wird an einem Wegwerf-Widget: Das ist der einzige verlässliche Weg,
+    weil die Namensliste von der Tk-Fassung abhängt, nicht nur vom System."""
+    try:
+        probe = tk.Label(None, cursor=name)
+        probe.destroy()
+        return name
+    except Exception:
+        return ''
+
+
+
 class Overlay:
     def __init__(self):
         self.root = tk.Tk()
+        _WURZEL[0] = self.root                    # damit signalton() klingeln kann
         self.root.title('SC BP Watcher')
         self.root.configure(bg=BG)
         self.root.overrideredirect(True)          # randloses Overlay
         self.root.attributes('-topmost', True)    # immer im Vordergrund
         self.root.attributes('-alpha', 0.93)      # leicht durchscheinend
-        self.root.geometry(load_geometry())
+        self.root.geometry(geometrie_pruefen(load_geometry(), self.root))
         # Fenster-/Taskleisten-Icon setzen, falls icon.ico daneben liegt
         try:
             ico = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'icon.ico')
@@ -791,7 +860,8 @@ class Overlay:
         self._placeholder()
 
         # Resize-Griff unten rechts
-        grip = tk.Label(self.root, text='◢', bg=BG, fg=SUB, cursor='size_nw_se')
+        grip = tk.Label(self.root, text='◢', bg=BG, fg=SUB,
+                        cursor=sicherer_cursor(CURSOR_GROESSE))
         grip.place(relx=1.0, rely=1.0, anchor='se')
         grip.bind('<B1-Motion>', self._resize)
         grip.bind('<ButtonRelease-1>', self._save_geo)    # Größe nach dem Skalieren merken
@@ -803,22 +873,22 @@ class Overlay:
         self.root.after(200, self._poll_queue)
 
     # ---- Drag & Resize ----
-    # ---- Schalter „mit Windows starten" ----
+    # ---- Schalter „mit dem Rechner starten" ----
     def _show_autostart(self):
-        an = autostart_an()
+        an = autostart.ist_an()
         self.as_lbl.config(fg=ACCENT if an else SUB)
         # Kein echtes Kurzinfo-Fenster in der Standardbibliothek — der Text in der
         # Statuszeile beim Umschalten reicht, und die Farbe zeigt den Zustand.
         return an
 
     def _toggle_autostart(self):
-        neu = not autostart_an()
-        if autostart_setzen(neu):
+        neu = not autostart.ist_an()
+        if autostart.setzen(neu):
             self._show_autostart()
-            self.status.config(text='Mit Windows starten: %s'
-                               % ('an' if neu else 'aus'))
+            self.status.config(text='%s: %s' % (AUTOSTART_TEXT,
+                                                'an' if neu else 'aus'))
         else:
-            self.status.config(text='Autostart ließ sich nicht ändern (Registry).')
+            self.status.config(text='Autostart ließ sich nicht ändern.')
 
     def _drag_start(self, e): self._dx, self._dy = e.x, e.y
     def _drag_move(self, e):
@@ -885,9 +955,31 @@ class Overlay:
             row.pack_configure(before=top[0])
         self._trim()
         self.canvas.yview_moveto(0)
-        if winsound:
-            try: winsound.MessageBeep(winsound.MB_ICONASTERISK)
-            except Exception: pass
+        signalton()
+
+    def add_hinweis(self, text):
+        """Eine Zeile, die keine Freischaltung meldet, sondern etwas erklärt —
+        derzeit nur: „im Bestand fehlt möglicherweise etwas".
+
+        Kein Signalton, kein Ausrufezeichen: Es ist eine Information beim Start,
+        keine Neuigkeit aus dem Spiel."""
+        if self.count == 0 and hasattr(self, '_ph') and self._ph.winfo_exists():
+            self._ph.destroy()
+        self.count += 1
+        top = self.list.pack_slaves()
+        row = tk.Frame(self.list, bg=BG)
+        row.pack(fill='x', anchor='w', padx=2, pady=1)
+        tk.Label(row, text='ℹ', bg=BG, fg=SUB, font=self.f_item).pack(side='left')
+        lbl = tk.Label(row, text=text, bg=BG, fg=SUB, font=self.f_sub,
+                       anchor='w', justify='left')
+        lbl.pack(side='left', fill='x', expand=True, anchor='w')
+        self._wrap_labels.append(lbl)
+        self._fit_width()
+        row._bpkey = None
+        if top:
+            row.pack_configure(before=top[0])
+        self._trim()
+        self.canvas.yview_moveto(0)
 
     def add_catalog(self, name, art, ts, titel):
         """Katalog-Zuwachs: im Spiel ist etwas NEU craftbar (nicht: selbst freigeschaltet).
@@ -914,12 +1006,7 @@ class Overlay:
             row.pack_configure(before=top[0])
         self._trim()
         self.canvas.yview_moveto(0)
-        if winsound:
-            try:
-                winsound.MessageBeep(winsound.MB_ICONEXCLAMATION if titel
-                                     else winsound.MB_ICONASTERISK)
-            except Exception:
-                pass
+        signalton(auffaellig=bool(titel))
 
     def confirm(self, row_key, key, art, meta):
         """Der Launcher hat den vorläufig (aus der Game.log) gemeldeten BP bestätigt:
@@ -950,6 +1037,11 @@ class Overlay:
                 msg = self.q.get_nowait()
                 if msg[0] == 'status':
                     self.status.config(text=msg[1])
+                elif msg[0] == 'hinweis':
+                    # Bleibt stehen, bis die nächste Statusmeldung kommt, und
+                    # wird farblich abgesetzt — eine Lücke im Bestand soll
+                    # auffallen, aber kein Fenster aufreißen.
+                    self.add_hinweis(msg[1])
                 elif msg[0] == 'new':
                     self.add_new(msg[1], msg[2], msg[3], msg[4], msg[5])
                 elif msg[0] == 'confirm':
@@ -978,13 +1070,24 @@ class Overlay:
         self.root.mainloop()
 
 
+def _startfehler(text):
+    """Letzte Rettung: Wenn gar nichts gefunden wird, wenigstens sagen warum."""
+    r = tk.Tk()
+    r.title('SC BP Watcher')
+    tk.Label(r, text=text, justify='left', padx=20, pady=20).pack()
+    r.mainloop()
+
+
 if __name__ == '__main__':
-    if not os.path.exists(BP_FILE):
-        # Minimaler Hinweis, falls der Launcher-Ordner fehlt
-        r = tk.Tk(); r.title('SC BP Watcher')
-        tk.Label(r, text='Datei nicht gefunden:\n' + BP_FILE +
-                 '\n\nIst der SC Deutsch Launcher installiert?',
-                 justify='left', padx=20, pady=20).pack()
-        r.mainloop()
+    # Der SC Deutsch Launcher ist seit v1.6 **nicht** mehr Voraussetzung — nur
+    # Star Citizen selbst muss gefunden werden, denn die Game.log ist die Quelle.
+    if not pfade.spiel_ordner():
+        _startfehler(
+            'Star Citizen wurde nicht gefunden.\n\n'
+            'Gesucht wurde nach dem Ordner mit der Game.log darin, an den\n'
+            'üblichen Stellen%s.\n\n'
+            'Liegt das Spiel woanders, hilft die Umgebungsvariable\n'
+            'SC_INSTALL_DIR — sie zeigt auf den Ordner LIVE.'
+            % ('' if pfade.WINDOWS else ' (auch in den gängigen Wine-Präfixen)'))
     else:
         Overlay().run()

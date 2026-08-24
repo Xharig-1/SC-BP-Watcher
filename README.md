@@ -15,11 +15,9 @@
 
 ---
 
-Ein kleines, randloses Overlay, das im Hintergrund die Bauplan-Daten des **SC Deutsch Launcher** überwacht und dir **in Echtzeit** meldet, sobald ein neuer Bauplan (Blueprint) dazukommt — inklusive Name, Art und Uhrzeit. Ohne Account, ohne Cloud, ohne Installation.
+Ein kleines, randloses Overlay, das beim Spielen **in Echtzeit** meldet, sobald ein neuer Bauplan (Blueprint) dazukommt — inklusive Name, Art und Uhrzeit. Ohne Account, ohne Cloud, ohne Installation. Läuft unter **Windows und Linux**.
 
-> ⚠️ **Wichtig:** Dieses Tool funktioniert **ausschließlich** zusammen mit dem **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** — es liest dessen Bauplan-Datei (`%APPDATA%\sc-deutsch-launcher\…`). Ohne diesen Launcher gibt es **keine Datenquelle** und das Overlay bleibt leer. Der normale RSI-Launcher allein reicht **nicht**.
->
-> Ob und wie sich das Tool vom Launcher lösen lässt, ist untersucht — siehe [`ROADMAP.md`](ROADMAP.md).
+> ℹ️ **Der SC Deutsch Launcher ist nicht mehr Voraussetzung.** Die eigentliche Quelle ist die `Game.log` von Star Citizen — dort steht jeder freigeschaltete Bauplan im Klartext. Ist der Launcher da, wird er weiter genutzt: Er bestätigt die Funde und liefert deutsche Bezeichnungen. Ist er nicht da (unter Linux immer), läuft der Watcher trotzdem.
 
 ## Warum dieses Tool
 
@@ -46,13 +44,18 @@ Dazu: Klasse, Gütegrad und Größe stehen direkt in der Zeile (`M/A/1`), und da
 | 🧷 **Immer im Vordergrund** | Randloses, leicht durchscheinendes Overlay über dem Spiel |
 | 🖱️ **Verschiebbar & skalierbar** | An der Titelleiste ziehen, Größe am Griff ◢ unten rechts — **Position & Größe werden gemerkt** |
 | 🌐 **Zweisprachig** | Zeigt die Art genau so an, wie der Launcher sie liefert (deutsch oder englisch) |
-| 🔒 **Nur lesend** | Verändert oder sendet nichts — liest ausschließlich die Launcher-Dateien und die `Game.log` |
+| 🔒 **Nur lesend** | Verändert am Spiel nichts — liest die `Game.log` und, falls vorhanden, die Launcher-Dateien |
+| 📒 **Eigener Bestand** | Führt selbst Buch, welche Baupläne du hast — auch ohne den SC Deutsch Launcher |
+| 🕓 **Nachlese** | Liest beim Start die aufgehobenen Logs früherer Sitzungen und holt nach, was ohne laufenden Watcher freigeschaltet wurde |
+| 🐧 **Windows und Linux** | Eine Fassung für beide Systeme, inklusive Autostart und Spracherkennung im Log |
 
 ## Voraussetzungen
 
-- **Windows**
-- **SC Deutsch Launcher** installiert und mindestens einmal gelaufen (damit die überwachte Datei existiert)
-- Zum Start als Skript: **Python 3.8+** (für die fertige `.exe` nicht nötig)
+- **Windows oder Linux**
+- **Star Citizen** installiert — gesucht wird der Ordner mit der `Game.log` darin. Unter Linux werden die üblichen Wine-Präfixe abgesucht (lug-helper, Lutris, Bottles, Heroic). Liegt das Spiel woanders, hilft die Umgebungsvariable `SC_INSTALL_DIR`.
+- Zum Start als Skript: **Python 3.8+** (für die fertigen Pakete nicht nötig). Unter Linux zusätzlich das Paket `tk` — `SC-BP-Watcher starten.sh` sagt dir, wie es heißt, falls es fehlt.
+
+**Optional, aber nützlich:** der **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** (nur Windows). Mit ihm werden Funde zusätzlich bestätigt und die Bezeichnungen kommen auf Deutsch.
 
 ## Start
 
@@ -84,23 +87,33 @@ Es sind **keine** Zusatzpakete nötig — das Tool nutzt nur die Python-Standard
 
 ## Wie es funktioniert
 
-1. **Beim Start** liest das Tool einmal alle aktuell freigeschalteten Baupläne ein und merkt sie sich als Basis — diese werden **nicht** gemeldet. Auch die `Game.log` wird ab dem Startzeitpunkt mitgelesen, nicht rückwirkend.
+1. **Beim Start** sieht das Tool die aufgehobenen Logs vergangener Sitzungen durch (`logbackups/`) und übernimmt alles Gefundene still in deinen Bestand — wer ohne laufenden Watcher gespielt hat, verliert nichts. Diese Baupläne werden **nicht** als neu gemeldet. Reichen die Sicherungen nicht weit genug zurück, sagt der Watcher das als ℹ-Zeile, statt eine unvollständige Liste als vollständig auszugeben.
 2. **Im Hintergrund** (eigener Thread) laufen alle 3 Sekunden zwei Prüfungen:
    - **`Game.log`** — schreibt das Spiel beim Freischalten `Added notification "Bauplan erhalten: <Name>: "`, erscheint der Bauplan **sofort** als 🟡 *vorläufig*.
-   - **`sc_bp_erledigt.json`** — die Datei des Launchers ist die verbindliche Quelle. Taucht der Name dort auf, wird die Zeile auf 🟢 bestätigt. Baupläne, die nur dort stehen (andere Spielsprache, Import aus alten Logs), landen direkt als 🟢 in der Liste.
+   - **`sc_bp_erledigt.json`** — *sofern der SC Deutsch Launcher vorhanden ist.* Taucht der Name dort auf, wird die Zeile auf 🟢 bestätigt. Baupläne, die nur dort stehen, landen direkt als 🟢 in der Liste. Ohne Launcher entfällt dieser Schritt und die Meldung aus dem Log ist endgültig.
 3. Jede neue Zeile wird oben eingefügt (Name · Art · `M/A/1` · Uhrzeit) und ein kurzer Ton gespielt.
    - **Einmal pro Minute** kommt eine dritte Prüfung dazu: Ist `bp_item_types.json` gewachsen, ist im Spiel etwas **neu craftbar** geworden → 🔵-Zeile. Das hat nichts mit deinem Freischalt-Stand zu tun; solche Zeilen werden deshalb nie auf 🟢 bestätigt. Der Vergleichsstand liegt in `%APPDATA%\sc-bp-watcher\catalog-seen.json` und überlebt Neustarts; beim allerersten Start wird nur die Basis gesetzt.
-4. Die **Art** kommt aus `bp_item_types.json`; **Size/Grade/Klasse** aus dem Launcher-Katalog (`catalog\components.ini` + `items_raw.ini`), bei Bedarf überschrieben durch die eigene `bp-overrides.json`.
+4. Die **Art** kommt aus `bp_item_types.json` (oder von scmdb, wenn kein Launcher da ist); **Size/Grade/Klasse** aus dem Launcher-Katalog (`catalog\components.ini` + `items_raw.ini`), bei Bedarf überschrieben durch die eigene `bp-overrides.json`.
+5. **Dein Bestand** wächst dabei mit und bleibt in `bestand.json` erhalten — mit Vermerk, woher jeder Bauplan stammt (Log, Nachlese, Launcher). Das ist die Liste „welche habe ich", die bisher allein vom Launcher kam.
 
 > **Warum zwei Quellen?** Der Launcher liest dieselbe `Game.log`, exportiert seine Datei aber nur alle paar Minuten. Gemessen am 30.07.2026: Freischaltung im Spiel **21:23:49** → Launcher-Export **21:26:24** = **2,5 Minuten** Verzug. Die Log-Mitlesung schließt diese Lücke, die gepflegten Werte kommen weiter vom Launcher.
 
 Überwachte Dateien:
 
 ```text
-%APPDATA%\sc-deutsch-launcher\blueprints\sc_bp_erledigt.json     (Launcher, verbindlich)
-…\StarCitizen\LIVE\Game.log                                      (Spiel, Sofort-Meldung)
-%APPDATA%\sc-deutsch-launcher\blueprints\bp_item_types.json      (Katalog-Wache, ab v1.3.0)
+…\StarCitizen\LIVE\Game.log                 (Spiel — die eigentliche Quelle)
+…\StarCitizen\LIVE\logbackups\             (frühere Sitzungen, beim Start nachgelesen)
+…\sc-deutsch-launcher\blueprints\           (optional: bestätigt und liefert deutsche Namen)
 ```
+
+Eigene Dateien (Bestand, Einstellungen, Zwischenspeicher) liegen hier:
+
+| System | Ordner |
+|---|---|
+| Windows | `%APPDATA%\sc-bp-watcher\` |
+| Linux | `~/.config/sc-bp-watcher/` |
+
+Beides lässt sich mit der Umgebungsvariablen `SC_BP_HOME` verlegen.
 
 ### Auf bestimmte Gegenstände warten
 
@@ -130,7 +143,7 @@ Ohne die Datei meldet der Watcher einfach jeden Zuwachs — sie ist rein optiona
 
 Der Launcher-Pfad wird über `%APPDATA%` gefunden, der Spiel-Pfad über den `Installfolder` aus `scdl-settings.json` (ersatzweise `scan-state.json` oder der Standard-Installationspfad). Ein Spiel-Neustart (neue, kürzere Log) wird erkannt.
 
-> ℹ️ Die Sofort-Meldung erkennt die **deutsche** Spielmeldung. Läuft dein Client in einer anderen Sprache, greift sie nicht — dann meldet das Tool wie bisher, sobald der Launcher exportiert hat. Weitere Sprachen kannst du in `LOG_PHRASES` ergänzen.
+> ℹ️ **Spielsprache:** Die Meldung im Log ist übersetzt. Der Watcher sucht nach deutschen und englischen Formulierungen; liegt eine entpackte `global.ini` deiner Installation vor, nimmt er den Wortlaut exakt daraus. Fehlt deine Formulierung, trag sie in `phrasen.json` im eigenen Ordner ein: `{"phrasen": ["Blueprint Received"]}`.
 
 ## Einstellungen
 
@@ -146,7 +159,7 @@ Oben in `sc_bp_watcher.py` anpassbar:
 | `CLASS_LETTER` | Kürzel je Klasse (M/S/I/C/K) | Military/Stealth/Industrial/Civilian/Competition |
 | `BG / FG / ACCENT / …` | Farben des Overlays | dunkel + Xharig-Grün |
 
-> Position & Größe werden beim Verschieben/Beenden in `%APPDATA%\sc-bp-watcher\watcher.json` gespeichert. Zum Zurücksetzen einfach diese Datei löschen — dann greift wieder `DEFAULT_GEOM`.
+> Position & Größe merkt sich der Watcher beim Verschieben und Beenden (`watcher.json` im eigenen Ordner) — zieh das Fenster einfach dorthin, wo du es haben willst. Eine feste Startposition gibt das Programm bewusst **nicht** vor: Wo ein Overlay gut sitzt, hängt am Monitoraufbau. Zum Zurücksetzen die Datei löschen.
 >
 > Im selben Ordner liegen `catalog-seen.json` (Vergleichsstand der Katalog-Wache) und optional `watchlist.json`. Löschst du `catalog-seen.json`, wird beim nächsten Start nur die Basis neu gesetzt — es kommt also keine Meldungsflut.
 >
@@ -156,7 +169,7 @@ Oben in `sc_bp_watcher.py` anpassbar:
 >
 > Die Rangfolge ist bewusst so: **eigene Korrekturen → Launcher-Katalog → scmdb**. scmdb füllt nur Lücken und überschreibt nie — ein Abgleich gegen 56 Meldungen aus der Spiel-Log ergab 55 exakte Treffer und eine Abweichung.
 
-> **Mit Windows starten (ab v1.5.0):** Der Schalter `⏻` in der Titelleiste schaltet den Autostart ein und aus — grün heißt an, grau aus. Er ist standardmäßig **aus**; der Watcher trägt sich nie von selbst ein. Technisch ist es ein Eintrag unter `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, den du dort auch von Hand wieder löschen kannst.
+> **Mit dem Rechner starten (ab v1.5.0):** Der Schalter `⏻` in der Titelleiste schaltet den Autostart ein und aus — grün heißt an, grau aus. Er ist standardmäßig **aus**; der Watcher trägt sich nie von selbst ein. Unter Windows ist es ein Eintrag unter `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, unter Linux die Datei `~/.config/autostart/sc-bp-watcher.desktop` — beides kannst du auch von Hand wieder löschen.
 
 ## Weitergeben
 
