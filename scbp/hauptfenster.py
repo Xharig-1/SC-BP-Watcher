@@ -70,6 +70,54 @@ MIN_BREITE, MIN_HOEHE = 720, 520
 STUFEN = {'klein': 0, 'normal': 1, 'gross': 3, 'sehrgross': 5}
 
 
+def _rundes_rechteck(leinwand, x1, y1, x2, y2, radius, **kw):
+    """Ein Rechteck mit runden Ecken.
+
+    Tk kennt so etwas nicht — aber ein Vieleck mit `smooth=True` rundet genau
+    dort ab, wo Punkte dicht beieinander liegen. Deshalb sitzt an jeder Ecke ein
+    Punktepaar im Abstand des Radius.
+    """
+    punkte = [
+        x1 + radius, y1, x2 - radius, y1, x2, y1,
+        x2, y1 + radius, x2, y2 - radius, x2, y2,
+        x2 - radius, y2, x1 + radius, y2, x1, y2,
+        x1, y2 - radius, x1, y1 + radius, x1, y1,
+    ]
+    return leinwand.create_polygon(punkte, smooth=True, **kw)
+
+
+def marke(eltern, text, farbe, schrift, grund=None):
+    """Eine abgerundete Blase mit farbigem Rand — „neu", „behoben" und Verwandte.
+
+    Ein farbiges Wort geht in einer Liste unter; eine umrandete Blase liest man
+    als Auszeichnung.
+
+    ⚠ Mit einem Label geht das nicht: `highlightthickness` zeichnet Tk je nach
+    System nur bei Fokus (auf dem Mac blieb der Rand unsichtbar), und
+    `relief='solid'` malt eine Systemlinie statt einer eigenen Farbe. Runde
+    Ecken kann ein Label ohnehin nicht. Deshalb eine kleine Leinwand: Sie kostet
+    ein paar Zeilen mehr und sieht auf allen drei Systemen gleich aus.
+    """
+    grund = grund or FLAECHE
+    hoehe = schrift.metrics('linespace') + 7
+    breite = schrift.measure(text) + 16
+    c = tk.Canvas(eltern, width=breite, height=hoehe, bg=grund,
+                  highlightthickness=0, bd=0)
+    c.blase = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1,
+                               radius=max(4, hoehe // 3),
+                               fill=grund, outline=farbe, width=1)
+    c.create_text(breite / 2.0, hoehe / 2.0 + 1, text=text, fill=farbe,
+                  font=schrift)
+
+    def hintergrund(neuer):
+        """Beim Einfärben der Zeile mitziehen — Leinwand und Blasenfüllung."""
+        c.configure(bg=neuer)
+        c.itemconfigure(c.blase, fill=neuer)
+
+    c.hintergrund = hintergrund
+    return c
+
+
 class Hauptfenster:
     """Der Rahmen mit der Reiterleiste. Die Seiten liefern andere Module."""
 
@@ -240,15 +288,14 @@ class Hauptfenster:
                      anchor='w')
         b.pack(side='left', fill='x', expand=True)
 
-        marke = None
+        marke_widget = None
         if neuheiten.ist_neu(kennung, self.version):
-            marke = tk.Label(zeile, text=' %s ' % t('hf_neu'), bg=FLAECHE,
-                             fg=ACCENT, font=self.f_klein)
-            marke.pack(side='right', padx=8)
+            marke_widget = marke(zeile, t('hf_neu'), ACCENT, self.f_klein)
+            marke_widget.pack(side='right', padx=10)
 
         for teil in (zeile, z, b):
             teil.bind('<Button-1>', lambda e, k=kennung: self.oeffnen(k))
-        self.knoepfe[kennung] = (zeile, strich, z, b, marke)
+        self.knoepfe[kennung] = (zeile, strich, z, b, marke_widget)
 
     def _klapp_umschalten(self):
         self.fortgeschritten_offen = not self.fortgeschritten_offen
@@ -302,7 +349,7 @@ class Hauptfenster:
             for teil in (zeile, z, b):
                 teil.configure(bg=grund)
             if marke is not None:
-                marke.configure(bg=grund)
+                marke.hintergrund(grund)
             z.configure(fg=FG if an else SUB)
             b.configure(fg=FG if an else SUB, font=self.f_fett if an else self.f_grund)
             strich.configure(bg=ACCENT if an else FLAECHE)

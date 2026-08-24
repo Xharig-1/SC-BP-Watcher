@@ -175,6 +175,16 @@ def _fortschritt(fenster, rahmen):
              % (gesamt_alle, 100.0 * meine_alle / gesamt_alle),
              bg=BG, fg=SUB, font=fenster.f_klein).pack(side='left')
 
+    # Ein Gesamtbalken direkt darunter — die Zahl allein sagt wenig, der Balken
+    # zeigt auf einen Blick, wie weit der Weg noch ist.
+    gesamtbalken = tk.Frame(innen, bg='#222b3b', height=9)
+    gesamtbalken.pack(fill='x', pady=(6, 18))
+    gesamtbalken.pack_propagate(False)
+    innen.update_idletasks()
+    breite = max(200, innen.winfo_width() or 600)
+    tk.Frame(gesamtbalken, bg=ACCENT, height=9,
+             width=int(breite * meine_alle / float(gesamt_alle))).pack(side='left')
+
     for art, (gesamt, meine) in sorted(nach_art.items(),
                                        key=lambda x: -x[1][0]):
         zeile = tk.Frame(innen, bg=BG)
@@ -371,20 +381,40 @@ def _wasistneu(fenster, rahmen):
     def waehlen(art):
         stand['art'] = art
         for kennung, k in chips.items():
-            an = (kennung == art)
-            k.configure(fg=ACCENT if an else SUB)
+            k.setzen(kennung == art)
         zeichnen()
 
     for kennung, text in (('alle', 'Alles'), ('neu', 'Neu'),
                           ('bess', 'Verbessert'), ('fix', 'Behoben')):
-        k = tk.Label(leiste, text=' %s ' % text, bg=FLAECHE,
-                     fg=ACCENT if kennung == 'alle' else SUB,
-                     font=fenster.f_klein, cursor='hand2', padx=9, pady=4)
+        an = (kennung == 'alle')
+        k = _chip(fenster, leiste, text, an)
         k.pack(side='left', padx=(0, 6))
         k.bind('<Button-1>', lambda ev, s=kennung: waehlen(s))
         chips[kennung] = k
 
     zeichnen()
+
+
+def _chip(fenster, eltern, text, an):
+    """Ein anklickbarer Filter — abgerundet, Rand in Akzentfarbe wenn gewählt."""
+    from .hauptfenster import _rundes_rechteck
+    schrift = fenster.f_klein
+    hoehe = schrift.metrics('linespace') + 12
+    breite = schrift.measure(text) + 26
+    c = tk.Canvas(eltern, width=breite, height=hoehe, bg=BG,
+                  highlightthickness=0, bd=0, cursor='hand2')
+    blase = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1,
+                             radius=max(5, hoehe // 3),
+                             fill=FLAECHE, outline=ACCENT if an else LINIE, width=1)
+    beschriftung = c.create_text(breite / 2.0, hoehe / 2.0 + 1, text=text,
+                                 fill=ACCENT if an else SUB, font=schrift)
+
+    def setzen(gewaehlt):
+        c.itemconfigure(blase, outline=ACCENT if gewaehlt else LINIE)
+        c.itemconfigure(beschriftung, fill=ACCENT if gewaehlt else SUB)
+
+    c.setzen = setzen
+    return c
 
 
 _ART_FARBE = {'neu': ACCENT, 'bess': '#7db8e8', 'fix': GOLD}
@@ -411,15 +441,23 @@ def _fassung(fenster, eltern, eintrag, punkte, offen):
     if offen:
         koerper.pack(fill='x')
 
+    from .hauptfenster import marke
     for art, zeile in punkte:
         z = tk.Frame(koerper, bg=BG)
-        z.pack(fill='x', pady=1)
-        tk.Label(z, text=_ART_WORT.get(art, ''), bg=BG,
-                 fg=_ART_FARBE.get(art, SUB), font=fenster.f_klein,
-                 width=11, anchor='w').pack(side='left')
+        z.pack(fill='x', pady=3)
+        halter = tk.Frame(z, bg=BG, width=92)
+        halter.pack(side='left', fill='y', anchor='n')
+        halter.pack_propagate(False)
+        marke(halter, _ART_WORT.get(art, ''), _ART_FARBE.get(art, SUB),
+              fenster.f_klein, grund=BG).pack(side='left', anchor='n')
+        # ⚠ `wraplength` muss zur wirklichen Breite passen. Stand er zu niedrig,
+        # brach der Text zwar um — die Zeile blieb aber einzeilig hoch, und der
+        # Rest war schlicht abgeschnitten. Deshalb wird die Breite beim Zeichnen
+        # aus dem Fenster genommen statt geraten.
+        breite = max(360, (fenster.root.winfo_width() or 980) - 340)
         tk.Label(z, text=_saubere_zeile(zeile), bg=BG, fg=FG,
                  font=fenster.f_klein, anchor='w', justify='left',
-                 wraplength=560).pack(side='left', fill='x', expand=True)
+                 wraplength=breite).pack(side='left', fill='x', expand=True)
 
     def umschalten(*_):
         zustand['offen'] = not zustand['offen']

@@ -250,8 +250,7 @@ def punkte_nach_art(text):
     heraus = []
     for zeile in (text or '').split('\n'):
         # ⚠ Die Einrückung muss VOR dem Abschneiden geprüft werden — sonst sind
-        # Unterpunkte nicht mehr von Hauptpunkten zu unterscheiden und die Liste
-        # zerfällt in doppelt so viele Zeilen.
+        # Unterpunkte nicht mehr von Hauptpunkten zu unterscheiden.
         eingerueckt = zeile[:1].isspace()
         blank = zeile.strip()
         if blank.startswith('#'):
@@ -262,8 +261,15 @@ def punkte_nach_art(text):
                     break
             continue
         if not eingerueckt and blank.startswith(('- ', '* ')):
-            heraus.append((art, blank[2:].strip()))
-    return heraus
+            heraus.append([art, blank[2:].strip()])
+        elif eingerueckt and blank and not blank.startswith(('- ', '* ')) and heraus:
+            # Eine eingerückte Zeile **ohne** Aufzählungszeichen ist die
+            # Fortsetzung des Punktes darüber — im Markdown umgebrochen, im
+            # Fenster gehört sie an denselben Satz. Wer sie verwirft, zeigt
+            # abgeschnittene Sätze („… ganz unten") und merkt es nicht, weil
+            # es wie ein Zeilenumbruch aussieht.
+            heraus[-1][1] = (heraus[-1][1] + ' ' + blank).strip()
+    return [(a, z) for a, z in heraus]
 
 
 def protokoll():

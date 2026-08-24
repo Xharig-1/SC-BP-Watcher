@@ -493,6 +493,29 @@ def main():
         pruefe(not neuheiten.ist_neu('bestand', '2.0.0'),
                'was es in der eigenen Fassung noch nicht gibt, wird nicht markiert')
 
+        # ------------------------------------------------------------------ 14a
+        # Der Änderungstext wird für „Was ist neu" zerlegt. Zwei Fallen, beide
+        # schon zugeschnappt: Unterpunkte als eigene Zeilen (Liste doppelt so
+        # lang) und verworfene Fortsetzungszeilen (Sätze enden mittendrin).
+        print()
+        print('14a. Änderungstext zerlegen')
+        from scbp import aktualisierung as akt
+        probe = """### Hinzugefügt
+- **Ein Fenster mit Reitern.** Oben die Baupläne, darunter die Einstellungen,
+  ganz unten eingeklappt, was nur Fortgeschrittene brauchen.
+  - Ein Unterpunkt, der nicht als eigene Zeile zählt
+### Behoben
+- **Das Icon fehlte.**
+"""
+        punkte = akt.punkte_nach_art(probe)
+        pruefe(len(punkte) == 2, 'zwei Punkte, nicht vier')
+        pruefe(punkte and punkte[0][0] == 'neu' and punkte[1][0] == 'fix',
+               'die Art kommt aus der Zwischenüberschrift')
+        pruefe(punkte and punkte[0][1].endswith('brauchen.'),
+               'die Fortsetzungszeile gehört zum Satz')
+        pruefe(punkte and 'Unterpunkt' not in punkte[0][1],
+               'ein Unterpunkt wird nicht angehängt')
+
         # ------------------------------------------------------------------ 14b
         # Sprachwechsel im Hauptfenster. Es darf dabei KEIN zweites Fenster
         # aufgehen — das alte Einstellungsfenster baute sich bei einem Wechsel
