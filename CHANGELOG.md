@@ -6,6 +6,20 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Fixed
+
+- **The update notice named the wrong version — or never appeared.** Three causes:
+  - GitHub returns releases **alphabetically by tag name**, where `rc9` sorts above
+    `rc10`. The code took the **first** match in that list; the actually newest release
+    sat at position 9. Users were therefore told the second-newest version was "new".
+    It now looks for the **highest** version rather than the first.
+  - It only checked **once a day**. Anyone starting the program a second time saw
+    nothing. Now hourly — so effectively on every start.
+  - There was **no way to check manually**. The "What's new" window now has a button;
+    it turns into the answer itself rather than rebuilding the window.
+
 ## v2.0.0-rc10 - 2026-08-24
 
 ### Fixed

@@ -59,7 +59,14 @@ API = 'https://api.github.com/repos/%s/releases' % REPO
 SEITE = 'https://github.com/%s/releases/latest' % REPO
 KENNUNG = 'SC-BP-Watcher (+https://github.com/%s)' % REPO
 CACHE = 'versionen.json'
-ABSTAND = 24 * 3600          # einmal am Tag reicht
+# Wie lange ein Blick auf GitHub gilt. Früher standen hier 24 Stunden — „einmal
+# am Tag reicht". Tut es nicht: Wer das Programm mehrmals startet, bekam beim
+# zweiten Mal nichts mehr zu sehen, obwohl inzwischen eine neue Fassung
+# vorlag. Gemeldet am 24.08.2026, an einem Tag mit zehn Vorabversionen.
+#
+# Eine Stunde ist der Kompromiss: Beim Starten wird praktisch immer nachgesehen,
+# im Dauerbetrieb bleibt es bei ein paar Abfragen am Tag.
+ABSTAND = 3600
 AUS = os.environ.get('SC_BP_NO_NET', '') not in ('', '0')
 ERLAUBTE_HOSTS = ('github.com', 'objects.githubusercontent.com')
 
@@ -162,14 +169,22 @@ def nachsehen(eigene_version, erzwingen=False):
     # niemand — eine Vorabfassung ist zum Prüfen da, nicht zum Verteilen.
     # Ausnahme: Wer selbst schon eine fährt, darf auch die nächste sehen.
     eigene_ist_vorab = bool(re.search(r'-(rc|beta|alpha|dev)', str(eigene_version)))
+    # ⚠ **Nicht** den ersten Treffer nehmen, sondern den höchsten.
+    # GitHub gibt die Freigaben nach Erstellungszeit des Tags zurück, nicht nach
+    # Versionsnummer — und das ist nicht dasselbe: In der Liste stand `rc10`
+    # hinter `rc9`, weshalb Nutzern die **vorletzte** Fassung als „neu" gemeldet
+    # wurde. Gemeldet am 24.08.2026.
+    bester = None
     for f in zwischen.get('freigaben') or []:
         if not f.get('version'):
             continue
         if f.get('vorab') and not eigene_ist_vorab:
             continue
-        if ist_neuer(f['version'], eigene_version):
-            return f
-    return None
+        if not ist_neuer(f['version'], eigene_version):
+            continue
+        if bester is None or ist_neuer(f['version'], bester['version']):
+            bester = f
+    return bester
 
 
 def freigaben():

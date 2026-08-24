@@ -6,6 +6,21 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## Unveröffentlicht
+
+### Behoben
+
+- **Die Update-Meldung nannte die falsche Fassung — oder kam gar nicht.** Drei Ursachen:
+  - GitHub gibt die Freigaben **alphabetisch nach Tag-Namen** zurück, und dort ist `rc9`
+    größer als `rc10`. Der Code nahm den **ersten** Treffer aus der Liste; die tatsächlich
+    neueste stand auf Position 9. Nutzern wurde damit die vorletzte Fassung als „neu"
+    gemeldet. Jetzt wird die **höchste** Version gesucht, nicht die erste.
+  - Nachgesehen wurde nur **einmal am Tag**. Wer das Programm mehrmals startete, bekam
+    beim zweiten Mal nichts mehr zu sehen. Jetzt stündlich — beim Starten also praktisch
+    immer.
+  - Es gab **keine Möglichkeit, von Hand nachzusehen**. Das Fenster „Was ist neu" hat
+    jetzt einen Knopf dafür; er wird selbst zur Antwort, statt das Fenster neu aufzubauen.
+
 ## v2.0.0-rc10 - 2026-08-24
 
 ### Behoben

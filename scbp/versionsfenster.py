@@ -105,11 +105,34 @@ class Versionsfenster:
         kopf.pack(fill='x')
         tk.Label(kopf, text=t('was_ist_neu'), bg=BAR, fg=FG,
                  font=schrift(12, True)).pack(side='left', padx=16, pady=11)
+        # Von Hand nachsehen — nötig, weil die Abfrage sonst höchstens
+        # stündlich läuft und man sonst nicht weiß, ob gerade geprüft wurde.
+        self.pruef_lbl = tk.Label(kopf, text=' %s ' % t('inj_pruefen'), bg=FLAECHE,
+                                  fg=FG, font=schrift(10), cursor='hand2',
+                                  padx=10, pady=5)
+        self.pruef_lbl.pack(side='right', padx=16)
+        self.pruef_lbl.bind('<Button-1>', lambda e: self._jetzt_pruefen())
         # Kein eigenes ✕ — das Fenster hat eine Systemtitelleiste, und die hat
         # schon eins. Zwei Kreuze übereinander sehen aus wie ein Fehler.
 
         self._banner()
         self._geschichte()
+
+    def _jetzt_pruefen(self):
+        """Sofort bei GitHub nachfragen — der Knopf wird selbst zur Antwort.
+
+        Bewusst **kein** Neuaufbau des Fensters: Wer nachsieht, will eine
+        Auskunft, kein Flackern. Steht etwas Neues an, sagt der Knopf es; sonst
+        steht dort, dass alles aktuell ist."""
+        self.pruef_lbl.configure(text='  …  ', fg=SUB)
+        self.root.update()
+        neu = aktualisierung.nachsehen(self.eigene, erzwingen=True)
+        if neu and neu.get('version'):
+            self.neue = neu
+            self.pruef_lbl.configure(
+                text='  %s  ' % t('neue_version_da', neu['version']), fg=ACCENT)
+        else:
+            self.pruef_lbl.configure(text='  %s  ' % t('inj_aktuell'), fg=SUB)
 
     # ------------------------------------------------------------------ Banner
     def _banner(self):
