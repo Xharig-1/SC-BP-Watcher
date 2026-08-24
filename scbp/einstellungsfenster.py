@@ -42,6 +42,7 @@ from tkinter import filedialog
 
 from . import injektion
 from . import pfade
+from . import spieltexte
 from . import sprache
 from . import uebersetzung
 from .sprache import t
@@ -272,14 +273,18 @@ class Einstellungsfenster:
         # Quelle wechseln — dieselben drei Wege wie im Einrichtungsassistenten.
         # Wer sich später umentscheidet (etwa vom deutschen auf den englischen
         # Client), soll dafür nicht den Assistenten suchen müssen.
+        # Untereinander, nicht nebeneinander: Zu dritt nebeneinander passte der
+        # letzte nicht mehr ins Fenster und war schlicht unsichtbar — man musste
+        # das Fenster erst breiter ziehen, um zu ahnen, dass es ihn gibt.
         wahl = tk.Frame(eltern, bg=BG)
         wahl.pack(fill='x', pady=(0, 8))
         for schluessel, quelle in (('inj_quelle_de', 'deutsch'),
                                    ('inj_quelle_ss', 'starstrings'),
                                    ('inj_quelle_orig', 'original')):
-            k = tk.Label(wahl, text=' %s ' % t(schluessel), bg=FLAECHE, fg=FG,
-                         font=schrift(10), cursor='hand2', padx=10, pady=6)
-            k.pack(side='left', padx=(0, 6))
+            k = tk.Label(wahl, text='  %s  ' % t(schluessel), bg=FLAECHE, fg=FG,
+                         font=schrift(10), cursor='hand2', padx=10, pady=7,
+                         anchor='w')
+            k.pack(fill='x', pady=(0, 4))
             k.bind('<Button-1>', lambda e, q=quelle: self._inj_wechseln(q))
         tk.Label(eltern, text=t('inj_fremd'), bg=BG, fg=SUB, font=schrift(9),
                  anchor='w', justify='left', wraplength=600).pack(fill='x',
@@ -305,12 +310,14 @@ class Einstellungsfenster:
         melde(t('inj_laeuft'))
         try:
             if quelle == 'original':
+                # Holt die englische global.ini aus dem Data.p4k des Spielers —
+                # dadurch braucht die Auszeichnung **keine** Fremdquelle.
                 sprache_ordner = 'english'
-                ziel = uebersetzung.ziel_ini(sprache_ordner)
-                if not (ziel and os.path.isfile(ziel)):
-                    self.meldung.configure(
-                        text=t('inj_fehler', 'global.ini'), fg=ROT)
+                ok, meldung = spieltexte.holen(sprache_ordner, fortschritt=melde)
+                if not ok:
+                    self.meldung.configure(text=t('inj_fehler', meldung), fg=ROT)
                     return
+                ziel = uebersetzung.ziel_ini(sprache_ordner)
                 uebersetzung.user_cfg_setzen(sprache_ordner)
             else:
                 ok, meldung = uebersetzung.holen(quelle, fortschritt=melde)

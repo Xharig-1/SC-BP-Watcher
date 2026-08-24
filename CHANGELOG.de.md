@@ -6,6 +6,25 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc10 - 2026-08-24
+
+### Behoben
+
+- **„Englisch — Originaltexte aus dem Spiel" tat nichts.** Der Punkt stand zur Auswahl,
+  prüfte aber nur, ob schon eine englische `global.ini` dalag — und war das nicht der
+  Fall (der Normalfall), kam eine Fehlermeldung. Damit hing die Bauplan-Auszeichnung
+  faktisch an einer der beiden Fremdquellen.
+  - Der Weg holt die Datei jetzt wirklich: `scbp/spieltexte.py` liest sie aus dem
+    `Data.p4k` des Spielers. **10 MB in 0,3 Sekunden** aus einem 144-GB-Archiv — es
+    werden nur das Inhaltsverzeichnis und ein einziger Block gelesen.
+  - Damit funktionieren die Bauplan-Angaben **ohne jedes fremde Projekt**, allein aus
+    den Dateien, die ohnehin auf dem Rechner liegen.
+  - Eine **vorhandene** `global.ini` wird nicht angetastet: Dort könnte die Übersetzung
+    eines anderen Projekts liegen.
+- **Der dritte Knopf war unsichtbar.** Drei Auswahlknöpfe nebeneinander passten nicht ins
+  Einstellungsfenster — der letzte lag außerhalb, und man musste das Fenster erst breiter
+  ziehen, um zu ahnen, dass es ihn gibt. Jetzt stehen sie untereinander.
+
 ## v2.0.0-rc9 - 2026-08-24
 
 Beides aus Rückmeldungen von Testern.

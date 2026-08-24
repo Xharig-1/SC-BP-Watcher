@@ -6,6 +6,24 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v2.0.0-rc10 - 2026-08-24
+
+### Fixed
+
+- **"English — original texts from the game" did nothing.** The option was offered but
+  only checked whether an English `global.ini` already existed — and if it did not (the
+  normal case), it reported an error. In practice this tied blueprint markup to one of
+  the two third-party sources.
+  - It now actually fetches the file: `scbp/spieltexte.py` reads it from the player's
+    `Data.p4k`. **10 MB in 0.3 seconds** out of a 144 GB archive — only the central
+    directory and a single block are read.
+  - Blueprint details therefore work **without any third-party project**, using only
+    files already on the machine.
+  - An **existing** `global.ini` is left alone: it may hold another project's translation.
+- **The third button was invisible.** Three choice buttons side by side did not fit the
+  settings window — the last one sat outside it, and you had to widen the window to
+  suspect it existed. They are stacked vertically now.
+
 ## v2.0.0-rc9 - 2026-08-24
 
 Both from tester feedback.

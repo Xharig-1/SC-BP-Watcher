@@ -275,20 +275,24 @@ class Assistent:
 
     def _texte_holen(self, quelle):
         """Herunterladen, einsetzen, Bauplan-Angaben eintragen — in einem Zug."""
-        from . import injektion, uebersetzung
+        from . import injektion, spieltexte, uebersetzung
         self.inj_meldung.configure(text=t('inj_laeuft'), fg=SUB)
         self.root.update()
         try:
             if quelle == 'original':
-                # Kein Download: Die englische Fassung liegt im Data.p4k des
-                # Spielers. Sie wird nur gebraucht, wenn dort noch keine Datei
-                # liegt — eine vorhandene wird nicht ersetzt.
+                # Kein Download nötig: Die englische Fassung liegt im Data.p4k
+                # des Spielers und wird von dort geholt (0,2 s). Eine bereits
+                # vorhandene Datei wird nicht ersetzt.
                 sprache_ordner = 'english'
-                ziel = uebersetzung.ziel_ini(sprache_ordner)
-                if not (ziel and os.path.isfile(ziel)):
-                    self.inj_meldung.configure(
-                        text=t('inj_fehler', 'global.ini fehlt'), fg=GELB)
+                ok, meldung = spieltexte.holen(
+                    sprache_ordner,
+                    fortschritt=lambda x: (self.inj_meldung.configure(text=x),
+                                           self.root.update()))
+                if not ok:
+                    self.inj_meldung.configure(text=t('inj_fehler', meldung),
+                                               fg=GELB)
                     return
+                ziel = uebersetzung.ziel_ini(sprache_ordner)
                 uebersetzung.user_cfg_setzen(sprache_ordner)
             else:
                 ok, meldung = uebersetzung.holen(
