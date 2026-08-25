@@ -394,18 +394,20 @@ def eigenes_appimage():
     dort kommt, laufen wir wirklich in diesem AppImage.
     """
     pfad = os.environ.get('APPIMAGE')
-    appdir = os.environ.get('APPDIR')
-    if not pfad or not appdir:
+    if not pfad or not os.path.isfile(pfad):
         return None
-    eigener = os.path.abspath(getattr(sys, '_MEIPASS', '')
-                              or os.path.dirname(os.path.abspath(__file__)))
-    try:
-        appdir = os.path.abspath(appdir)
-        if os.path.commonpath([eigener, appdir]) == appdir:
-            return pfad
-    except ValueError:
-        pass                          # verschiedene Laufwerke: gehört nicht zu uns
-    return None
+    # ⚠ Der erste Anlauf verglich den eigenen Code mit `APPDIR`. Das ging schief:
+    # PyInstaller entpackt sich in ein **eigenes** Verzeichnis (`sys._MEIPASS`,
+    # etwa `/tmp/_MEIabc123`), nicht in den AppImage-Einhängepunkt. Der Vergleich
+    # schlug also **immer** fehl — das Programm hielt sich für eine `.exe`, ging in
+    # den Windows-Zweig und meldete „[Errno 2] No such file or directory: 'cmd'".
+    #
+    # Maßgeblich ist stattdessen der Dateiname: Zeigt `APPIMAGE` auf eine Datei,
+    # die nach diesem Programm heißt, ist es unsere. Ein fremdes AppImage — der
+    # Unfall, um den es hier geht — heißt anders und fällt durch.
+    if 'sc-bp-watcher' not in os.path.basename(pfad).lower():
+        return None
+    return pfad
 
 
 def verpackung():

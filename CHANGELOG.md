@@ -19,6 +19,10 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **The mouse brings the overlay back.** In pop-up mode just move to where it sits — it
+  reappears by itself and stays as long as the pointer is on it. Previously you had to
+  restart the program for that, which no other overlay asks of you.
+
 - **Restart right after an update.** It used to say „the new version runs on next start" —
   you had to quit and start it yourself. The fetch button now turns into **„⟳ Restart now"**
   once the download is done. The single-instance guard is closed first, otherwise the new
@@ -97,6 +101,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **No more save button** — changes take effect right away.
 
 ### Fixed
+
+- **Self-update took the Windows path on Linux** and reported „[Errno 2] No such file or
+  directory: 'cmd'". The guard against foreign programs compared our own code against
+  `APPDIR` — but PyInstaller extracts into a directory of its own, so the comparison always
+  failed. The filename decides now.
 
 - **The fetch button could take you backwards.** It showed the release from the cache, and
   that only refreshes once a day — with rc15 running it offered „get v3.0.0-rc13". Clicking

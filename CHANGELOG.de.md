@@ -19,6 +19,10 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Die Maus holt das Overlay zurück.** Im Aufblend-Betrieb genügt es, dorthin zu fahren, wo
+  es steht — es kommt von selbst und bleibt, solange der Zeiger darauf ist. Vorher musste
+  man das Programm dafür neu starten, und das verlangt kein anderes Overlay.
+
 - **Neustart direkt nach dem Update.** Bisher hieß es „beim nächsten Start läuft die neue
   Fassung" — man musste selbst beenden und wieder starten. Jetzt wird der Holen-Knopf nach
   dem Laden zu **„⟳ Jetzt neu starten"**. Der Einzelinstanz-Wächter wird dabei zuerst
@@ -100,6 +104,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Kein Speichern-Knopf mehr** — Änderungen greifen sofort.
 
 ### Behoben
+
+- **Das Selbst-Update ging unter Linux in den Windows-Zweig** und meldete „[Errno 2] No such
+  file or directory: 'cmd'". Der Riegel gegen fremde Programme verglich den eigenen Code mit
+  `APPDIR` — nur entpackt sich PyInstaller in ein **eigenes** Verzeichnis, der Vergleich
+  schlug also immer fehl. Maßgeblich ist jetzt der Dateiname.
 
 - **Der Holen-Knopf konnte einen zurückwerfen.** Er zeigte die Fassung aus dem
   Zwischenspeicher, und der frischt sich nur einmal am Tag auf — bei laufender rc15 stand

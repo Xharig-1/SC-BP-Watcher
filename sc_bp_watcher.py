@@ -55,7 +55,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc17'
+__version__ = '3.0.0-rc18'
 
 
 def _mitgeliefert(name):
@@ -517,6 +517,20 @@ def load_geometry():
 
 
 GEOM_RE = re.compile(r'^(\d+)x(\d+)(?:\+(-?\d+)\+(-?\d+))?$')
+
+
+def _in_bereich(geom, x, y, rand=6):
+    """Liegt der Punkt (x, y) in dieser Fensterlage? `rand` gibt etwas Zugabe.
+
+    Die Zugabe ist Absicht: Wer sein Overlay zurückholen will, zielt grob. Ein
+    paar Pixel Toleranz sind der Unterschied zwischen „geht" und „geht manchmal".
+    """
+    m = GEOM_RE.match(geom or '')
+    if not m or m.group(3) is None:
+        return False
+    breite, hoehe, links, oben = (int(z) for z in m.groups())
+    return (links - rand <= x <= links + breite + rand
+            and oben - rand <= y <= oben + hoehe + rand)
 
 
 def geometrie_pruefen(geom, root):
@@ -1160,6 +1174,7 @@ class Overlay:
         # wenn wirklich ein Bauplan dazukommt.
         self.anzeigeart = pfade.einstellung('overlay_modus') or 'immer'
         self._popup_uhr = None
+        self._letzte_lage = ''
         # Durchsichtigkeit einstellbar (30–100 %). Wer nur **einen** Monitor hat,
         # legt das Overlay zwangsläufig übers Spiel — dann muss man hindurchsehen
         # können. 93 % bleibt der Standard, das ist auf zwei Bildschirmen richtig.
@@ -1697,7 +1712,46 @@ class Overlay:
         if an and not geklappt:
             self.status.config(text=sprache.t('ov_durchklick_geht_nicht'))
 
-    def _popup_zeigen(self):
+    # ---------------------------------------------- Maus holt es zurück
+    #
+    # Gemeldet am 25.08.2026: „Wie schaut es aus, das Fenster bei Mouseover sichtbar
+    # zu machen, damit man den Umweg nicht gehen muss es erneut zu starten? Die
+    # Logik kenne ich bisher ohnehin nicht bei anderen Programmen dieser Art."
+    #
+    # Er hat recht. „Zum Zurückholen das Programm noch einmal starten" ist ein
+    # Umweg, den kein anderes Overlay verlangt. Wer weiß, wo sein Overlay steht,
+    # fährt mit der Maus dorthin — und dann soll es da sein.
+    #
+    # ⚠ Ein verstecktes Fenster bekommt keine Maus-Ereignisse; ein `<Enter>` kann
+    # es also nicht geben. `winfo_pointerxy()` liefert die Mausposition aber
+    # **global**, auch ohne eigenes Fenster darunter. Deshalb wird sie in Ruhe
+    # abgefragt: viermal in der Sekunde, und nur solange das Overlay wirklich
+    # versteckt ist.
+    MAUSPRUEFUNG_MS = 250
+
+    def _mauswache(self):
+        """Nachsehen, ob die Maus dort steht, wo das Overlay wäre."""
+        try:
+            if self.anzeigeart == 'popup' and self._versteckt():
+                x, y = self.root.winfo_pointerxy()
+                lage = self._letzte_lage or self._current_geom()
+                if _in_bereich(lage, x, y):
+                    self._popup_zeigen(wegen_maus=True)
+        except Exception:
+            pass
+        finally:
+            try:
+                self.root.after(self.MAUSPRUEFUNG_MS, self._mauswache)
+            except tk.TclError:
+                pass
+
+    def _versteckt(self):
+        try:
+            return self.root.state() == 'withdrawn'
+        except tk.TclError:
+            return False
+
+    def _popup_zeigen(self, wegen_maus=False):
         """Das Overlay kurz einblenden — im Pop-up-Betrieb nach einem Fund.
 
         Der Zähler wird bei jedem neuen Fund neu gestellt: Wer drei Baupläne
@@ -1718,12 +1772,29 @@ class Overlay:
             except (tk.TclError, ValueError):
                 pass
         sekunden = pfade.einstellung_zahl('popup_sekunden', 6, 2, 60)
+        if wegen_maus:
+            # Von der Maus geholt: nicht nach ein paar Sekunden wieder wegnehmen,
+            # während jemand hinsieht. Es verschwindet, wenn die Maus weg ist —
+            # darum kümmert sich `_popup_verstecken`.
+            self._wegen_maus = True
         self._popup_uhr = self.root.after(sekunden * 1000, self._popup_verstecken)
 
     def _popup_verstecken(self):
         self._popup_uhr = None
         if self.anzeigeart != 'popup':
             return
+        # Solange die Maus darauf steht, bleibt es stehen. Ein Fenster, das unter
+        # dem Mauszeiger verschwindet, während man es ansieht, ist ärgerlicher als
+        # eines, das zu lange bleibt.
+        if getattr(self, '_wegen_maus', False):
+            try:
+                x, y = self.root.winfo_pointerxy()
+                if _in_bereich(self._current_geom(), x, y):
+                    self._popup_uhr = self.root.after(800, self._popup_verstecken)
+                    return
+            except Exception:
+                pass
+            self._wegen_maus = False
         # Solange ein Fenster davor offen ist, bleibt auch das Overlay stehen —
         # sonst verschwindet es unter den Händen, während man die Liste liest.
         for name in ('listenfenster', 'hauptfenster'):
@@ -1735,6 +1806,10 @@ class Overlay:
             except (tk.TclError, AttributeError):
                 pass
         try:
+            # Die Lage merken, bevor das Fenster verschwindet — danach meldet Tk
+            # für ein verstecktes Fenster keine brauchbaren Werte mehr, und die
+            # Mauswache wüsste nicht, wo sie hinsehen soll.
+            self._letzte_lage = self._current_geom()
             self.root.withdraw()
         except tk.TclError:
             pass
@@ -1778,6 +1853,7 @@ class Overlay:
     def run(self):
         self.verhalten_anwenden()
         self.ablagesymbol_starten()
+        self.root.after(self.MAUSPRUEFUNG_MS, self._mauswache)
         # Ein zweiter Start soll das vorhandene Fenster hervorholen, statt eine
         # zweite Fassung zu öffnen. Der Rückruf kommt aus einem eigenen Faden —
         # deshalb die Arbeit per `after` an Tk übergeben, nicht dort erledigen.
