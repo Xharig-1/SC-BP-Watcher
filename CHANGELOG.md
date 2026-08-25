@@ -93,6 +93,15 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The fetch button could take you backwards.** It showed the release from the cache, and
+  that only refreshes once a day — with rc15 running it offered „get v3.0.0-rc13". Clicking
+  it landed you on an **older** build. The page now really checks when opened, and the
+  button says where it leads: „⤺ back to v2.0.0" or „v3.0.0-rc16 is already installed".
+- **Self-update could have overwritten other programs.** It treated any file the `APPIMAGE`
+  environment variable pointed at as its own — and that variable is set in **every** program
+  started from an AppImage. Now our own code must come from the matching `APPDIR`, and a
+  second guard rejects any target whose filename does not belong to this program.
+
 - **Self-update always failed on Linux.** The download went to `/tmp` and was installed
   with `os.replace()` — and on virtually every Linux `/tmp` is a separate filesystem.
   `os.replace` cannot move across filesystems; it ends in „[Errno 18] Invalid cross-device

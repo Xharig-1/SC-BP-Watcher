@@ -1467,11 +1467,18 @@ def _kanaele_auffrischen(fenster, kaesten, neu_zeichnen):
     if getattr(kaesten, 'schon_gefragt', False):
         return
     kaesten.schon_gefragt = True
-    vorher = (_holen_text(False), _holen_text(True))
+    vorher = (_holen_text(False, fenster.version),
+              _holen_text(True, fenster.version))
 
     def arbeit():
         try:
-            aktualisierung.nachsehen(fenster.version or '0.0.0')
+            # ⚠ `erzwingen=True` ist hier nötig. Ohne das fragt `nachsehen()` nur,
+            # wenn der letzte Blick länger als einen Tag her ist — und dann bleibt
+            # die Beschriftung auf dem Stand von heute früh stehen. Genau so ist es
+            # passiert: Der Knopf bot „v3.0.0-rc13 holen" an, während rc15 lief.
+            # Wer draufdrückt, geht **zurück**. Einmal je Seitenaufbau nachfragen
+            # ist der Preis dafür, dass draufsteht, was drin ist.
+            aktualisierung.nachsehen(fenster.version or '0.0.0', erzwingen=True)
         except Exception as ausnahme:
             fehler.merken('seiten.kanaele_auffrischen', ausnahme)
             return
@@ -1480,7 +1487,8 @@ def _kanaele_auffrischen(fenster, kaesten, neu_zeichnen):
             try:
                 if not kaesten.winfo_exists():
                     return
-                if (_holen_text(False), _holen_text(True)) == vorher:
+                if (_holen_text(False, fenster.version),
+                        _holen_text(True, fenster.version)) == vorher:
                     return              # nichts Neues, kein Flackern
                 for kind in kaesten.winfo_children():
                     kind.destroy()
@@ -1496,12 +1504,17 @@ def _kanaele_auffrischen(fenster, kaesten, neu_zeichnen):
     threading.Thread(target=arbeit, daemon=True).start()
 
 
-def _holen_text(mit_vorab):
+def _holen_text(mit_vorab, eigene=''):
     """Die Beschriftung des Knopfes — mit der Fassung, die dahinter steckt.
 
     Aus dem Zwischenspeicher, ohne ins Netz zu gehen: Die Seite soll sofort
-    stehen. Beim Klick wird ohnehin frisch nachgesehen; steht dann eine neuere
-    Fassung an, holt der Knopf diese.
+    stehen. Kurz darauf frischt `_kanaele_auffrischen` sie auf.
+
+    ⚠ Und sie sagt, **wohin** es geht. „v2.0.0 holen" neben einer laufenden
+    v3.0.0-rc15 sieht aus wie ein Update und ist ein Rückschritt — der Autor ist
+    am 25.08.2026 genau darauf hereingefallen und stand danach wieder auf rc13.
+    Ist die angebotene Fassung älter, steht das jetzt dabei; ist es dieselbe,
+    steht das auch da.
     """
     from . import aktualisierung
     try:
@@ -1510,7 +1523,14 @@ def _holen_text(mit_vorab):
         freigabe = None
     if not freigabe:
         return t('s_ub_holen_keine')
-    return t('s_ub_holen') % freigabe.get('version')
+    fassung = freigabe.get('version') or ''
+    if eigene:
+        sauber = fassung.lstrip('v')
+        if sauber == eigene.lstrip('v'):
+            return t('s_ub_holen_gleich') % fassung
+        if aktualisierung.ist_neuer(eigene, fassung):
+            return t('s_ub_holen_zurueck') % fassung
+    return t('s_ub_holen') % fassung
 
 
 def _fassung_holen(fenster, mit_vorab):
@@ -1691,12 +1711,12 @@ def _ueber(fenster, rahmen):
         _kanalkasten(fenster, kaesten, t('s_ub_fertig'), t('s_ub_fertig_h'),
                      not an, lambda: kanal_setzen(False), untereinander=eng,
                      holen=lambda: _fassung_holen(fenster, False),
-                     holen_text=_holen_text(False))
+                     holen_text=_holen_text(False, fenster.version))
         _kanalkasten(fenster, kaesten, t('s_ub_test'), t('s_ub_test_h'),
                      an, lambda: kanal_setzen(True), marke_text='rc',
                      untereinander=eng,
                      holen=lambda: _fassung_holen(fenster, True),
-                     holen_text=_holen_text(True))
+                     holen_text=_holen_text(True, fenster.version))
         # ⚠ Die Beschriftungen kommen aus dem Zwischenspeicher, damit die Seite
         # sofort steht. Der frischt sich aber nur einmal am Tag auf — auf einem
         # Bildschirmfoto vom 25.08.2026 bot der Knopf „v3.0.0-rc9 holen" an,

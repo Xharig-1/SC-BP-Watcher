@@ -402,6 +402,8 @@ TEXTE = {
     'as_menue_da':     ('Eingetragen: %s', 'Added: %s'),
     'as_menue_nein':   ('Hat nicht geklappt: %s', 'Did not work: %s'),
     's_ub_holen':      ('%s holen', 'Get %s'),
+    's_ub_holen_zurueck': ('⤺ zurück auf %s', '⤺ back to %s'),
+    's_ub_holen_gleich': ('%s ist schon da', '%s is already installed'),
     's_ub_holen_keine': ('Noch keine Fassung bekannt', 'No release known yet'),
     's_ub_holen_laeuft': ('%s wird geholt …', 'Fetching %s …'),
     's_ub_auf':        ('Im Browser geöffnet: %s', 'Opened in the browser: %s'),

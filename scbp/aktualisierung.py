@@ -374,9 +374,42 @@ def protokoll():
 
 
 # ------------------------------------------------------------------- Holen
+def eigenes_appimage():
+    """Der Pfad **unseres** AppImage — oder None.
+
+    ⚠ `APPIMAGE` allein genügt nicht. Die Variable steht in der Umgebung
+    **jedes** Programms, das aus einem AppImage heraus gestartet wurde — auch in
+    einem Terminal, das man daraus öffnet, und in allem, was von dort aus läuft.
+    Wer nur auf sie schaut, hält jedes beliebige Programm für sich selbst.
+
+    Das ist am 25.08.2026 teuer geworden: Ein Testlauf des Selbst-Updates lief in
+    einer Umgebung, in der `APPIMAGE` auf eine **fremde** Anwendung zeigte — und
+    das Update hat prompt diese fremde Datei überschrieben (234 MB durch 12 MB
+    ersetzt). Zurückzuholen war sie nur, weil das fremde Programm noch lief und
+    die alte Inode über `/proc/<pid>/exe` offen hielt.
+
+    Verlässlich ist erst der zweite Teil: Zu einem AppImage gehört `APPDIR`, der
+    Ort, an dem es entpackt eingehängt ist. Nur wenn **unser eigener Code** von
+    dort kommt, laufen wir wirklich in diesem AppImage.
+    """
+    pfad = os.environ.get('APPIMAGE')
+    appdir = os.environ.get('APPDIR')
+    if not pfad or not appdir:
+        return None
+    eigener = os.path.abspath(getattr(sys, '_MEIPASS', '')
+                              or os.path.dirname(os.path.abspath(__file__)))
+    try:
+        appdir = os.path.abspath(appdir)
+        if os.path.commonpath([eigener, appdir]) == appdir:
+            return pfad
+    except ValueError:
+        pass                          # verschiedene Laufwerke: gehört nicht zu uns
+    return None
+
+
 def verpackung():
     """Wie läuft dieses Programm gerade? 'exe', 'appimage' oder 'quellcode'."""
-    if os.environ.get('APPIMAGE'):
+    if eigenes_appimage():
         return 'appimage'
     if getattr(sys, 'frozen', False):
         return 'exe'
@@ -427,7 +460,7 @@ def _ablageort_fuer_update(name):
     Ist der Zielordner nicht beschreibbar, bleibt `/tmp` als Rückfall — dann greift
     beim Einspielen der Umweg über `shutil.move`.
     """
-    laufende = os.environ.get('APPIMAGE') or sys.executable
+    laufende = eigenes_appimage() or sys.executable
     ordner = os.path.dirname(os.path.abspath(laufende))
     if os.access(ordner, os.W_OK):
         return os.path.join(ordner, '.' + (name or 'update.bin') + '.neu')
@@ -467,7 +500,16 @@ def einspielen(neue_datei):
     art = verpackung()
     if art == 'quellcode':
         return False, 'quellcode'
-    ziel = os.environ.get('APPIMAGE') or sys.executable
+    ziel = eigenes_appimage() or sys.executable
+
+    # ⚠ Letzter Riegel vor dem Überschreiben: Der Dateiname muss zu uns gehören.
+    # Selbst wenn die Erkennung oben irgendwann wieder danebenliegt, wird dadurch
+    # keine fremde Datei ersetzt. Genau dieser Riegel hätte den Unfall vom
+    # 25.08.2026 verhindert, bei dem ein fremdes AppImage überschrieben wurde,
+    # weil `APPIMAGE` auf ein anderes Programm zeigte.
+    if 'sc-bp-watcher' not in os.path.basename(ziel).lower():
+        return False, ('Zieldatei gehört nicht zu diesem Programm: %s'
+                       % os.path.basename(ziel))
     try:
         if art == 'appimage':
             # Unter Linux darf die laufende Datei ersetzt werden, solange man sie

@@ -96,6 +96,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Der Holen-Knopf konnte einen zurückwerfen.** Er zeigte die Fassung aus dem
+  Zwischenspeicher, und der frischt sich nur einmal am Tag auf — bei laufender rc15 stand
+  dort „v3.0.0-rc13 holen". Wer draufdrückte, landete auf einer **älteren** Fassung. Jetzt
+  wird beim Öffnen der Seite wirklich nachgesehen, und der Knopf sagt, wohin es geht:
+  „⤺ zurück auf v2.0.0" oder „v3.0.0-rc16 ist schon da".
+- **Das Selbst-Update hätte fremde Programme überschreiben können.** Es hielt jede Datei
+  für sich selbst, auf die die Umgebungsvariable `APPIMAGE` zeigte — und die steht in
+  **jedem** Programm, das aus einem AppImage heraus gestartet wurde. Jetzt muss auch der
+  eigene Code aus dem zugehörigen `APPDIR` kommen, und ein zweiter Riegel lehnt jede
+  Zieldatei ab, deren Name nicht zum Programm gehört.
+
 - **Das Selbst-Update scheiterte unter Linux immer.** Geladen wurde nach `/tmp`,
   eingespielt mit `os.replace()` — und `/tmp` ist auf so gut wie jedem Linux ein eigenes
   Dateisystem. Über Dateisystemgrenzen kann `os.replace` nicht verschieben, das endet mit
