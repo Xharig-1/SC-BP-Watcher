@@ -83,6 +83,56 @@ def _windows_hauptschirm():
     return None
 
 
+# Dieselbe Zeilenform wie oben, nur ohne den Stern — also **alle** Monitore.
+_XRANDR_ALLE = re.compile(r'^\s*\d+:\s*\+\*?\S*\s+(\d+)/\d+x(\d+)/\d+\+(\d+)\+(\d+)')
+
+
+def _linux_alle_schirme():
+    try:
+        umgebung = dict(os.environ)
+        umgebung['LC_ALL'] = 'C'
+        ausgabe = subprocess.run(['xrandr', '--listmonitors'],
+                                 capture_output=True, text=True, timeout=3,
+                                 env=umgebung).stdout
+        schirme = []
+        for zeile in ausgabe.splitlines():
+            treffer = _XRANDR_ALLE.match(zeile)
+            if treffer:
+                b, h, x, y = (int(z) for z in treffer.groups())
+                if b > 0 and h > 0:
+                    schirme.append((x, y, b, h))
+        return schirme
+    except Exception:
+        return []
+
+
+def _windows_alle_schirme():
+    """Alle Monitore über EnumDisplayMonitors."""
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class RECT(ctypes.Structure):
+            _fields_ = [('left', ctypes.c_long), ('top', ctypes.c_long),
+                        ('right', ctypes.c_long), ('bottom', ctypes.c_long)]
+
+        schirme = []
+        rueckruf_typ = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_void_p,
+                                          ctypes.c_void_p,
+                                          ctypes.POINTER(RECT), ctypes.c_double)
+
+        def sammeln(_h, _dc, rechteck, _daten):
+            r = rechteck.contents
+            schirme.append((r.left, r.top, r.right - r.left, r.bottom - r.top))
+            return 1
+
+        ctypes.windll.user32.EnumDisplayMonitors(None, None,
+                                                 rueckruf_typ(sammeln), 0)
+        return [s for s in schirme if s[2] > 0 and s[3] > 0]
+    except Exception:
+        return []
+
+
 def _linux_hauptschirm():
     try:
         umgebung = dict(os.environ)
@@ -105,6 +155,35 @@ def hauptbildschirm(root):
     """Lage und Größe des Hauptbildschirms als (x, y, breite, hoehe)."""
     gefunden = _windows_hauptschirm() if WINDOWS else _linux_hauptschirm()
     return gefunden or _ganze_flaeche(root)
+
+
+def alle_schirme(root):
+    """Alle Bildschirme als (x, y, breite, hoehe) — oder die Gesamtfläche."""
+    if WINDOWS:
+        gefunden = _windows_alle_schirme()
+        if gefunden:
+            return gefunden
+        einer = _windows_hauptschirm()
+        return [einer] if einer else [_ganze_flaeche(root)]
+    gefunden = _linux_alle_schirme()
+    return gefunden or [_ganze_flaeche(root)]
+
+
+def schirm_fuer(root, x, y):
+    """Auf welchem Bildschirm liegt dieser Punkt? (x, y, breite, hoehe)
+
+    ⚠ Gebraucht überall dort, wo etwas neben ein Bedienelement geklappt wird.
+    Tk kennt nur **einen** Bildschirm: `winfo_screenheight()` meldet die Höhe der
+    gesamten zusammengesetzten Fläche. Bei zwei übereinander stehenden Monitoren
+    sind das doppelt so viele Pixel, wie tatsächlich zu sehen sind — eine
+    Auswahlliste auf dem oberen Schirm „passt" dann rechnerisch nach unten und
+    klappt in Wirklichkeit ins Nichts. Gemeldet als „Alle Arten und Alle Quellen
+    sind nicht auswählbar": Die langen Listen gingen unterhalb des Bildes auf.
+    """
+    for sx, sy, sb, sh in alle_schirme(root):
+        if sx <= x < sx + sb and sy <= y < sy + sh:
+            return sx, sy, sb, sh
+    return hauptbildschirm(root)
 
 
 def mittig(root, breite, hoehe):

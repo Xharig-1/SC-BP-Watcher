@@ -350,6 +350,15 @@ def _liste(fenster, rahmen):
 
 
 def _fortschritt(fenster, rahmen):
+    """Wie weit bin ich? — nach Bereichen gegliedert, jeder Bereich aufklappbar.
+
+    ⚠ Vorher standen hier alle 25 Kategorien in einer einzigen langen Liste. Bei
+    722 Bauplänen sucht man darin ewig, und der eine Wert, der einen gerade
+    interessiert, steht irgendwo in der Mitte. Jetzt zuerst die vier Bereiche mit
+    ihrem Gesamtstand — und die Einzelheiten erst auf Klick. Eingeklappt zu
+    starten ist Absicht: Der Überblick ist die Antwort auf „wie weit bin ich",
+    die Kategorien sind die Antwort auf „und wo genau".
+    """
     _ueberschrift(fenster, rahmen, t('hf_fortschritt'), t('s_fo_lead'))
     innen = _rollflaeche(rahmen)
     try:
@@ -361,14 +370,19 @@ def _fortschritt(fenster, rahmen):
 
     bp = katalog.get('bauplaene') or {}
     habe = set(bestand.get('bauplaene') or {})
-    nach_art = {}
+    # Je Bereich: Liste von (Kategorie, gesamt, meine)
+    nach_bereich = {}
     for schluessel, e in bp.items():
-        art = katalog_modul.art_lesbar(e.get('a')) if e.get('a') else '—'
-        gesamt, meine = nach_art.get(art, (0, 0))
-        nach_art[art] = (gesamt + 1, meine + (1 if schluessel in habe else 0))
+        roh = katalog_modul.art_kennung(e)
+        bereich = katalog_modul.obergruppe(roh)
+        art = katalog_modul.art_lesbar(roh) if roh else '—'
+        zaehler = nach_bereich.setdefault(bereich, {})
+        gesamt, meine = zaehler.get(art, (0, 0))
+        zaehler[art] = (gesamt + 1, meine + (1 if schluessel in habe else 0))
 
-    gesamt_alle = sum(g for g, _ in nach_art.values()) or 1
-    meine_alle = sum(m for _, m in nach_art.values())
+    gesamt_alle = sum(g for z in nach_bereich.values() for g, _ in z.values()) or 1
+    meine_alle = sum(m for z in nach_bereich.values() for _, m in z.values())
+
     kopf = tk.Frame(innen, bg=BG)
     kopf.pack(fill='x', pady=(0, 4))
     tk.Label(kopf, text=str(meine_alle), bg=BG, fg=ACCENT,
@@ -377,23 +391,73 @@ def _fortschritt(fenster, rahmen):
              % (gesamt_alle, 100.0 * meine_alle / gesamt_alle),
              bg=BG, fg=SUB, font=fenster.f_klein).pack(side='left')
 
-    # Ein Gesamtbalken direkt darunter — die Zahl allein sagt wenig, der Balken
-    # zeigt auf einen Blick, wie weit der Weg noch ist.
     from .hauptfenster import rundbalken
     rundbalken(innen, 9, meine_alle / float(gesamt_alle), BG, '#222b3b',
                ACCENT).pack(fill='x', pady=(6, 18))
 
-    for art, (gesamt, meine) in sorted(nach_art.items(),
-                                       key=lambda x: -x[1][0]):
-        zeile = tk.Frame(innen, bg=BG)
-        zeile.pack(fill='x', pady=3)
-        tk.Label(zeile, text=art, bg=BG, fg=FG, font=fenster.f_klein,
-                 width=22, anchor='w').pack(side='left')
-        anteil = max(0.0, min(1.0, meine / float(gesamt or 1)))
-        rundbalken(zeile, 7, anteil, BG, '#222b3b', ACCENT,
-                   breite=260).pack(side='left', padx=8)
-        tk.Label(zeile, text='%d / %d' % (meine, gesamt), bg=BG, fg=SUB,
-                 font=fenster.f_klein, width=10, anchor='e').pack(side='right')
+    for bereich in katalog_modul.OBERGRUPPEN:
+        zaehler = nach_bereich.get(bereich)
+        if not zaehler:
+            continue
+        gesamt = sum(g for g, _ in zaehler.values())
+        meine = sum(m for _, m in zaehler.values())
+        _fortschritt_bereich(fenster, innen, t('gruppe_' + bereich), gesamt,
+                             meine, zaehler)
+
+
+def _fortschritt_bereich(fenster, eltern, titel, gesamt, meine, kategorien):
+    """Ein Bereich mit Gesamtbalken — die Kategorien darin klappen auf."""
+    from .hauptfenster import rundbalken
+    zustand = {'offen': False}
+
+    kopf = tk.Frame(eltern, bg=BG, cursor='hand2')
+    kopf.pack(fill='x', pady=(10, 2))
+    pfeil = tk.Label(kopf, text='▶', bg=BG, fg=SUB, font=fenster.f_klein,
+                     width=2)
+    pfeil.pack(side='left')
+    tk.Label(kopf, text=titel, bg=BG, fg=FG, font=fenster.f_fett,
+             anchor='w').pack(side='left')
+    tk.Label(kopf, text='  %d / %d' % (meine, gesamt), bg=BG, fg=SUB,
+             font=fenster.f_klein, anchor='w').pack(side='left')
+
+    anteil = max(0.0, min(1.0, meine / float(gesamt or 1)))
+    rundbalken(eltern, 9, anteil, BG, '#222b3b', ACCENT).pack(fill='x',
+                                                              pady=(2, 0))
+
+    koerper = tk.Frame(eltern, bg=BG)
+
+    def zeichnen():
+        if koerper.winfo_children():
+            return
+        for art, (art_gesamt, art_meine) in sorted(kategorien.items(),
+                                                   key=lambda x: -x[1][0]):
+            zeile = tk.Frame(koerper, bg=BG)
+            zeile.pack(fill='x', pady=3)
+            tk.Label(zeile, text=art, bg=BG, fg=SUB, font=fenster.f_klein,
+                     width=22, anchor='w').pack(side='left')
+            teil = max(0.0, min(1.0, art_meine / float(art_gesamt or 1)))
+            rundbalken(zeile, 7, teil, BG, '#222b3b', ACCENT,
+                       breite=260).pack(side='left', padx=8)
+            tk.Label(zeile, text='%d / %d' % (art_meine, art_gesamt), bg=BG,
+                     fg=SUB, font=fenster.f_klein, width=10,
+                     anchor='e').pack(side='right')
+
+    def umschalten(*_):
+        zustand['offen'] = not zustand['offen']
+        pfeil.configure(text='▼' if zustand['offen'] else '▶')
+        if zustand['offen']:
+            zeichnen()
+            koerper.pack(fill='x', padx=(18, 0), pady=(6, 0))
+        else:
+            koerper.pack_forget()
+
+    # Der ganze Kopf ist die Schaltfläche, nicht nur der Pfeil.
+    for teil in [kopf] + list(kopf.winfo_children()):
+        teil.bind('<Button-1>', umschalten)
+        try:
+            teil.configure(cursor='hand2')
+        except tk.TclError:
+            pass
 
 
 def _einstellungen(fenster):
@@ -1237,6 +1301,29 @@ def _fassung(fenster, eltern, eintrag, punkte, offen):
         koerper.pack(fill='x')
 
     from .hauptfenster import marke
+    # Der Vorstellungssatz der Fassung steht **hier**, unter ihrer Überschrift —
+    # nicht irgendwo am Seitenende. Wer eine Version aufklappt, will zuerst wissen,
+    # worum es ging, und dann die Einzelheiten.
+    from . import aktualisierung as _akt
+    lead = _akt.einleitung(eintrag.get('text') or '')
+    if lead:
+        satz = tk.Label(koerper, text=lead, bg=BG, fg=SUB, font=fenster.f_klein,
+                        anchor='w', justify='left', wraplength=600)
+        satz.pack(fill='x', padx=24, pady=(2, 8))
+
+        # Denselben Weg wie bei den Punkten: nicht rechnen, sondern nehmen, was
+        # das Label wirklich bekommt — sonst ragt der Satz bei jeder
+        # Fenstergröße heraus.
+        def lead_umbruch(ereignis, lab=satz):
+            passend = max(200, ereignis.width - 8)
+            try:
+                if abs(int(lab.cget('wraplength')) - passend) > 4:
+                    lab.configure(wraplength=passend)
+            except tk.TclError:
+                pass
+
+        satz.bind('<Configure>', lead_umbruch)
+
     # Alle Blasen so breit wie die längste Beschriftung — sonst flattern sie
     # und die Texte daneben fangen an unterschiedlichen Stellen an.
     breiteste = max(fenster.f_klein.measure(w) for w in _ART_WORT.values()) + 20
@@ -1284,8 +1371,16 @@ def _fassung(fenster, eltern, eintrag, punkte, offen):
         else:
             koerper.pack_forget()
 
-    for teil in (kopf, pfeil):
+    # ⚠ **Alle** Teile des Kopfes binden, nicht nur Rahmen und Pfeil. Die
+    # Versionsnummer, das Datum und die Anzahl sind eigene Labels — ein Klick
+    # darauf erreichte den Rahmen nie. Genau dorthin zielt man aber: Gemeldet als
+    # „die alten Versionen sind gar nicht aufklappbar".
+    for teil in [kopf, pfeil] + list(kopf.winfo_children()):
         teil.bind('<Button-1>', umschalten)
+        try:
+            teil.configure(cursor='hand2')
+        except tk.TclError:
+            pass
 
 
 def _saubere_zeile(zeile):

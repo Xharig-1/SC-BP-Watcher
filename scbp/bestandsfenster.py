@@ -517,11 +517,60 @@ class Bestandsfenster:
         """
         from collections import Counter
         zaehler = Counter()
+        nur_echte = feld in ('g', 's')
         for e in (self.katalog.get('bauplaene') or {}).values():
+            if nur_echte and not self._feld_zaehlt(e, feld):
+                continue          # dort ist die Zahl ohne Bedeutung — nicht mitzählen
             wert = kennung(e) if kennung else e.get(feld)
             if wert is not None and wert != '':
                 zaehler[str(wert)] += 1
         return zaehler
+
+    # ------------------------------- Wo Grad und Größe überhaupt etwas bedeuten
+    #
+    # ⚠ „Grad A" lieferte 603 von 722 Bauplänen — der Filter rechnete richtig, aber
+    # die Zahl im Katalog steht nicht überall für etwas. Bei Schiffsteilen ist der
+    # Gütegrad echt verteilt (Cooler: 11×A, 15×B, 12×C, 7×D); bei Rüstung steht
+    # 314-mal die 1, weil das Feld ausgefüllt sein muss, nicht weil es Grad A wäre.
+    # Dasselbe bei der Größe: 445-mal die 1.
+    #
+    # Deshalb wirken beide Filter nur auf die Arten, bei denen der Wert wirklich
+    # unterschiedlich ausfällt. Das wird **aus den Daten abgeleitet**, nicht in eine
+    # Liste geschrieben: Gibt CIG der Rüstung eines Tages echte Grade, greift der
+    # Filter dort von selbst — und niemand muss daran denken, hier etwas
+    # nachzutragen.
+    #
+    # Die Zehn-Prozent-Schwelle fängt Einzelfälle ab: Bei den Helmen tragen zwei von
+    # 82 einen anderen Grad. Zwei Ausreißer machen aus einem bedeutungslosen Feld
+    # noch kein Merkmal, nach dem man sinnvoll sucht.
+    VERTEILT_MINDESTANTEIL = 0.10
+
+    def _arten_mit_echtem(self, feld):
+        """Bei welchen Arten sagt dieses Feld etwas aus? (Menge von Art-Kennungen)"""
+        merker = getattr(self, '_verteilt_merker', None)
+        if merker is None:
+            merker = self._verteilt_merker = {}
+        if feld in merker:
+            return merker[feld]
+        from collections import Counter
+        je_art = {}
+        for e in (self.katalog.get('bauplaene') or {}).values():
+            wert = e.get(feld)
+            if wert in (None, ''):
+                continue
+            je_art.setdefault(katalog_modul.art_kennung(e), Counter())[str(wert)] += 1
+        echt = set()
+        for art, zaehler in je_art.items():
+            gesamt = sum(zaehler.values())
+            haeufigste = zaehler.most_common(1)[0][1]
+            if gesamt and (gesamt - haeufigste) / float(gesamt) >= self.VERTEILT_MINDESTANTEIL:
+                echt.add(art)
+        merker[feld] = echt
+        return echt
+
+    def _feld_zaehlt(self, eintrag, feld):
+        """Zählt dieser Bauplan für den Grad- bzw. Größenfilter überhaupt mit?"""
+        return katalog_modul.art_kennung(eintrag) in self._arten_mit_echtem(feld)
 
     def _mit_zahl(self, eintraege, zaehler):
         """An jede Beschriftung die Anzahl hängen — „Military (38)"."""
@@ -546,6 +595,9 @@ class Bestandsfenster:
     def _groessen(self):
         return [(s, t('ff_groesse') % s)
                 for s in self._mit_katalog(GROESSEN_FEST, 's')]
+
+    # (Grad und Größe kommen aus `_mit_katalog`; welche Baupläne dahinter zählen,
+    #  entscheidet `_feld_zaehlt` — siehe oben.)
 
     def _grade(self):
         return [(g, t('ff_grad') % GRAD_BUCHSTABE.get(int(g), g).upper()
@@ -597,10 +649,15 @@ class Bestandsfenster:
         """
         if self.fein['klasse'] and e.get('c') != self.fein['klasse']:
             return False
-        if self.fein['groesse'] and str(e.get('s')) != self.fein['groesse']:
-            return False
-        if self.fein['grad'] and str(e.get('g')) != self.fein['grad']:
-            return False
+        # ⚠ Wer nach „Größe 2" oder „Grad A" sucht, meint Schiffsteile. Arten, bei
+        # denen die Zahl nur der Vollständigkeit halber dasteht (Rüstung, FPS-Waffen),
+        # fallen deshalb heraus, statt das Ergebnis zu fluten.
+        if self.fein['groesse']:
+            if not self._feld_zaehlt(e, 's') or str(e.get('s')) != self.fein['groesse']:
+                return False
+        if self.fein['grad']:
+            if not self._feld_zaehlt(e, 'g') or str(e.get('g')) != self.fein['grad']:
+                return False
         quelle = self.fein['quelle']
         if quelle:
             if quelle.startswith('f:'):

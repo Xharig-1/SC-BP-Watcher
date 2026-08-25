@@ -239,6 +239,29 @@ _ARTEN = (
 )
 
 
+def einleitung(text):
+    """Der Satz, mit dem eine Fassung vorgestellt wird — das Zitat im Changelog.
+
+    Im Markdown steht er als `> …`-Block über den Aufzählungen: „Ein Fenster für
+    alles." Er sagt in einem Satz, worum es in der Fassung ging, und war bisher
+    nirgends zu sehen — `punkte_nach_art` wirft alles weg, was keine Aufzählung
+    ist. Genau dieser Satz gehört aber unter die Version, wenn man sie aufklappt.
+    """
+    zeilen = []
+    for zeile in (text or '').split('\n'):
+        blank = zeile.strip()
+        if blank.startswith('>'):
+            zeilen.append(blank.lstrip('>').strip())
+        elif zeilen and not blank:
+            break                      # der Block ist zu Ende
+        elif zeilen:
+            break
+    satz = ' '.join(z for z in zeilen if z)
+    # Die Auszeichnungen sind im Fenster nur Zeichen — sie stören mehr, als sie
+    # helfen.
+    return satz.replace('**', '').replace('`', '').strip()
+
+
 def punkte_nach_art(text):
     """Zerlegt einen Änderungstext in (art, zeile) — für Filter und Marken.
 
@@ -279,16 +302,17 @@ def protokoll():
     Fassungen kennen, die neuer sind als die eigene) und der mitgelieferten
     `CHANGELOG.md` (die auch ohne Netz da ist). Doppeltes wird zusammengeführt,
     die GitHub-Fassung hat Vorrang — sie ist die veröffentlichte Wahrheit."""
-    eintraege, gesehen = [], set()
+    eintraege, gesehen = [], {}
     for f in freigaben():
         schluessel = _teile(f.get('version'))
         if schluessel in gesehen:
             continue
-        gesehen.add(schluessel)
-        eintraege.append({'version': f.get('version') or '',
-                          'datum': f.get('datum') or '',
-                          'text': (f.get('text') or '').strip(),
-                          'quelle': 'github'})
+        eintrag = {'version': f.get('version') or '',
+                   'datum': f.get('datum') or '',
+                   'text': (f.get('text') or '').strip(),
+                   'quelle': 'github'}
+        gesehen[schluessel] = eintrag
+        eintraege.append(eintrag)
 
     datei = _changelog_datei()
     if datei:
@@ -303,15 +327,30 @@ def protokoll():
             schluessel = _teile(version)
             if schluessel == (0, 0, 0):
                 continue        # „Unveröffentlicht" ist nichts für Nutzer
-            if schluessel in gesehen:
-                continue
-            gesehen.add(schluessel)
             datum = ''
             m = re.search(r'(\d{4}-\d{2}-\d{2})', kopf)
             if m:
                 datum = m.group(1)
-            eintraege.append({'version': version, 'datum': datum,
-                              'text': rest.strip(), 'quelle': 'changelog'})
+            vorhanden = gesehen.get(schluessel)
+            if vorhanden is not None:
+                # ⚠ Diese Fassung kennen wir schon von GitHub. Das heißt aber nicht,
+                # dass dort auch etwas Lesbares steht: Eine Vorabfassung (v3.0.0-rc1)
+                # zählt als dieselbe Version wie v3.0.0, und ihr Release-Text ist oft
+                # nur ein Hinweis ohne Aufzählung. Dann fiel die Fassung im Fenster
+                # **ganz heraus** — „Was ist neu" zeigte v3.0.0 gar nicht mehr an.
+                # Deshalb: Wo GitHub nichts Zählbares liefert, springt der
+                # mitgelieferte Changelog ein.
+                bisheriger = vorhanden.get('text') or ''
+                if not punkte_nach_art(bisheriger):
+                    vorhanden['text'] = rest.strip()
+                    vorhanden['quelle'] = 'changelog'
+                    if datum and not vorhanden.get('datum'):
+                        vorhanden['datum'] = datum
+                continue
+            eintrag = {'version': version, 'datum': datum,
+                       'text': rest.strip(), 'quelle': 'changelog'}
+            gesehen[schluessel] = eintrag
+            eintraege.append(eintrag)
 
     eintraege.sort(key=lambda e: (_teile(e['version']), e['datum']), reverse=True)
     return eintraege

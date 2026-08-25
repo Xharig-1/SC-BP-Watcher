@@ -754,10 +754,18 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
 
         x = c.winfo_rootx()
         unten = c.winfo_rooty() + hoehe + 2
-        schirm = c.winfo_screenheight()
+        # ⚠ Nicht `winfo_screenheight()`: Tk meldet damit die Höhe **aller**
+        # Bildschirme zusammen. Bei zwei übereinander stehenden Monitoren passt
+        # eine lange Liste rechnerisch immer nach unten — und klappt in
+        # Wirklichkeit unterhalb des Bildes auf. Gemeldet als „Alle Arten und
+        # Alle Quellen sind nicht auswählbar", also genau die beiden längsten
+        # Listen. Maßgeblich ist der Bildschirm, auf dem das Feld steht.
+        _sx, schirm_oben, _sb, schirm_hoch = bildschirm.schirm_fuer(
+            c, c.winfo_rootx(), c.winfo_rooty())
+        schirm_unten = schirm_oben + schirm_hoch
         # So viel Platz ist nach unten bzw. nach oben — mit etwas Luft zum Rand.
-        platz_unten = schirm - unten - 20
-        platz_oben = c.winfo_rooty() - 20
+        platz_unten = schirm_unten - unten - 20
+        platz_oben = c.winfo_rooty() - schirm_oben - 20
         nach_oben = gebraucht_hoehe > platz_unten and platz_oben > platz_unten
         sicht = min(gebraucht_hoehe, max(platz_oben if nach_oben
                                          else platz_unten, 120))
