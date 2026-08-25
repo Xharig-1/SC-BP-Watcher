@@ -86,7 +86,7 @@ def _rundes_rechteck(leinwand, x1, y1, x2, y2, radius, **kw):
     return leinwand.create_polygon(punkte, smooth=True, **kw)
 
 
-def marke(eltern, text, farbe, schrift, grund=None):
+def marke(eltern, text, farbe, schrift, grund=None, mindestbreite=0):
     """Eine abgerundete Blase mit farbigem Rand — „neu", „behoben" und Verwandte.
 
     Ein farbiges Wort geht in einer Liste unter; eine umrandete Blase liest man
@@ -99,15 +99,18 @@ def marke(eltern, text, farbe, schrift, grund=None):
     ein paar Zeilen mehr und sieht auf allen drei Systemen gleich aus.
     """
     grund = grund or FLAECHE
-    hoehe = schrift.metrics('linespace') + 7
-    breite = schrift.measure(text) + 16
+    hoehe = schrift.metrics('linespace') + 8
+    # ⚠ Genug Luft, und alle Blasen einer Gruppe gleich breit: Sonst wird die
+    # längste abgeschnitten, sobald der Platz feststeht — und die Wörter
+    # flattern, weil jede Blase anders breit ist.
+    breite = max(mindestbreite, schrift.measure(text) + 20)
     c = tk.Canvas(eltern, width=breite, height=hoehe, bg=grund,
                   highlightthickness=0, bd=0)
     c.blase = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1,
                                radius=max(4, hoehe // 3),
                                fill=grund, outline=farbe, width=1)
-    c.create_text(breite / 2.0, hoehe / 2.0 + 1, text=text, fill=farbe,
-                  font=schrift)
+    c.create_text(breite / 2.0, hoehe / 2.0, text=text, fill=farbe,
+                  font=schrift, anchor='center')
 
     def hintergrund(neuer):
         """Beim Einfärben der Zeile mitziehen — Leinwand und Blasenfüllung."""

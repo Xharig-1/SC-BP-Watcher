@@ -28,6 +28,7 @@ Die großen Seiten leihen sich die vorhandenen Fenster: `bestandsfenster` und
 `einstellungsfenster` können seit v3.0.0 auch in einen übergebenen Rahmen
 zeichnen, statt ein eigenes Fenster aufzumachen.
 """
+import os
 import tkinter as tk
 
 from . import bericht, bestand as bestand_datei, fehler, katalog as katalog_modul
@@ -442,14 +443,15 @@ def _fassung(fenster, eltern, eintrag, punkte, offen):
         koerper.pack(fill='x')
 
     from .hauptfenster import marke
+    # Alle Blasen so breit wie die längste Beschriftung — sonst flattern sie
+    # und die Texte daneben fangen an unterschiedlichen Stellen an.
+    breiteste = max(fenster.f_klein.measure(w) for w in _ART_WORT.values()) + 20
     for art, zeile in punkte:
         z = tk.Frame(koerper, bg=BG)
         z.pack(fill='x', pady=3)
-        halter = tk.Frame(z, bg=BG, width=92)
-        halter.pack(side='left', fill='y', anchor='n')
-        halter.pack_propagate(False)
-        marke(halter, _ART_WORT.get(art, ''), _ART_FARBE.get(art, SUB),
-              fenster.f_klein, grund=BG).pack(side='left', anchor='n')
+        marke(z, _ART_WORT.get(art, ''), _ART_FARBE.get(art, SUB),
+              fenster.f_klein, grund=BG,
+              mindestbreite=breiteste).pack(side='left', anchor='n', padx=(0, 14))
         # ⚠ `wraplength` muss zur wirklichen Breite passen. Stand er zu niedrig,
         # brach der Text zwar um — die Zeile blieb aber einzeilig hoch, und der
         # Rest war schlicht abgeschnitten. Deshalb wird die Breite beim Zeichnen
@@ -480,69 +482,206 @@ def _saubere_zeile(zeile):
     return zeile.strip()
 
 
+def _karte(eltern, **kw):
+    """Ein abgesetzter Kasten — hebt Zusammengehöriges vom Grund ab."""
+    aussen = tk.Frame(eltern, bg=LINIE)
+    aussen.pack(fill='x', **kw)
+    innen = tk.Frame(aussen, bg=FLAECHE)
+    innen.pack(fill='x', padx=1, pady=1)
+    return innen
+
+
+def _wertzeile(fenster, eltern, bez, wert, farbe=None):
+    z = tk.Frame(eltern, bg=FLAECHE)
+    z.pack(fill='x', padx=16, pady=3)
+    tk.Label(z, text=bez, bg=FLAECHE, fg=SUB, font=fenster.f_klein,
+             width=24, anchor='w').pack(side='left')
+    tk.Label(z, text=str(wert), bg=FLAECHE, fg=farbe or FG,
+             font=fenster.f_klein, anchor='w').pack(side='left')
+
+
+def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text=''):
+    """Eine Wahlmöglichkeit als Kasten — wie in der Vorschau.
+
+    Ein Schalter mit „an/aus" beantwortet die Frage nicht, die der Spieler hat:
+    *Was bedeutet das für mich?* Zwei Kästen mit je zwei Sätzen tun das.
+    """
+    from .hauptfenster import marke as blase
+    rand = tk.Frame(eltern, bg=ACCENT if gewaehlt else LINIE, cursor='hand2')
+    rand.pack(side='left', fill='both', expand=True, padx=(0, 10))
+    innen = tk.Frame(rand, bg=FLAECHE, cursor='hand2')
+    innen.pack(fill='both', expand=True, padx=1, pady=1)
+
+    kopf = tk.Frame(innen, bg=FLAECHE)
+    kopf.pack(fill='x', padx=14, pady=(12, 2))
+    tk.Label(kopf, text='●', bg=FLAECHE, fg=ACCENT if gewaehlt else '#3a4658',
+             font=fenster.f_klein).pack(side='left', padx=(0, 7))
+    tk.Label(kopf, text=titel, bg=FLAECHE, fg=FG,
+             font=fenster.f_fett).pack(side='left')
+    if marke_text:
+        blase(kopf, marke_text, GOLD, fenster.f_klein).pack(side='left', padx=8)
+
+    tk.Label(innen, text=text, bg=FLAECHE, fg=SUB, font=fenster.f_klein,
+             anchor='w', justify='left', wraplength=330).pack(
+                 fill='x', padx=14, pady=(0, 12))
+
+    for teil in (rand, innen, kopf):
+        teil.bind('<Button-1>', lambda e: tat())
+    for kind in innen.winfo_children() + kopf.winfo_children():
+        try:
+            kind.bind('<Button-1>', lambda e: tat())
+        except Exception:
+            pass
+    return rand
+
+
 def _ueber(fenster, rahmen):
+    from . import pfade
     _ueberschrift(fenster, rahmen, t('hf_ueber'),
-                  'Welche Fassung läuft, und wer sie gebaut hat.')
+                  'Welche Fassung läuft, wer sie gebaut hat — und ob du Neues '
+                  'vor allen anderen bekommen willst.')
     innen = _rollflaeche(rahmen)
 
-    from . import pfade
+    # --- Zustand ---
+    karte = _karte(innen, pady=(0, 6))
+    tk.Frame(karte, bg=FLAECHE, height=8).pack()
+    _wertzeile(fenster, karte, 'Fassung', fenster.version or '—', ACCENT)
+    _wertzeile(fenster, karte, 'Baupläne bekannt', _zahl_katalog())
+    _wertzeile(fenster, karte, 'Davon deine', _zahl_bestand())
     uebersicht = {}
     try:
         uebersicht = pfade.uebersicht() or {}
     except Exception:
         pass
-    for bez, wert in (('Fassung', fenster.version or '—'),
-                      ('Baupläne bekannt', _zahl_katalog()),
-                      ('Davon deine', _zahl_bestand()),
-                      ('Eigener Ordner', uebersicht.get('app_ordner') or '—')):
-        z = tk.Frame(innen, bg=BG)
-        z.pack(fill='x', padx=24, pady=2)
-        tk.Label(z, text=bez, bg=BG, fg=SUB, font=fenster.f_klein, width=22,
-                 anchor='w').pack(side='left')
-        tk.Label(z, text=str(wert), bg=BG, fg=FG, font=fenster.f_klein,
-                 anchor='w').pack(side='left')
+    _wertzeile(fenster, karte, 'Eigener Ordner',
+               uebersicht.get('app_ordner') or '—')
+    tk.Frame(karte, bg=FLAECHE, height=10).pack()
 
-    ziel = _feld(fenster, innen, t('e_vorab'), t('e_vorab_hilfe'))
-    schalter = tk.Label(ziel, text='', bg=FLAECHE, font=fenster.f_klein,
-                        cursor='hand2', padx=10, pady=4)
-    schalter.pack()
+    reihe = tk.Frame(innen, bg=BG)
+    reihe.pack(fill='x', pady=(10, 4))
+    _knopf(fenster, reihe, 'Jetzt nachsehen',
+           lambda: fenster.sagen('Suche nach einer neuen Fassung …'),
+           stark=True).pack(side='left')
+    _knopf(fenster, reihe, t('hf_wasistneu'),
+           lambda: fenster.oeffnen('wasistneu')).pack(side='left', padx=8)
+    _knopf(fenster, reihe, 'Einrichtung wiederholen',
+           fenster._einrichtung).pack(side='left')
+
+    ziel = _feld(fenster, innen, 'Täglich nach neuen Fassungen sehen',
+                 'Höchstens einmal am Tag, ausschließlich bei GitHub. Ist etwas '
+                 'da, färbt sich ⓘ in der Titelleiste.')
+    _schalter(fenster, ziel, 'update_pruefen', True)
+
+    # --- Testkanal: zwei Kästen statt eines Schalters ---
+    tk.Label(innen, text='Welche Fassungen willst du bekommen?', bg=BG, fg=FG,
+             font=fenster.f_titel, anchor='w').pack(fill='x', pady=(24, 2))
+    tk.Label(innen, text='Beim Testen mithelfen oder lieber Ruhe haben — beides '
+                         'ist in Ordnung, und du kannst jederzeit wechseln.',
+             bg=BG, fg=SUB, font=fenster.f_klein, anchor='w',
+             justify='left', wraplength=620).pack(fill='x', pady=(0, 12))
+
+    kaesten = tk.Frame(innen, bg=BG)
+    kaesten.pack(fill='x')
+
+    def kanal_setzen(wert):
+        pfade.einstellung_setzen('vorabversionen', wert)
+        fenster.sagen(t('e_vorab') + ': ' + (t('e_an') if wert else t('e_aus')))
+        for kind in kaesten.winfo_children():
+            kind.destroy()
+        kanal_zeichnen()
+
+    def kanal_zeichnen():
+        an = pfade.einstellung_wahrheit('vorabversionen', False)
+        _kanalkasten(fenster, kaesten, 'Nur fertige Fassungen',
+                     'Das Übliche. Du bekommst eine Meldung, wenn eine geprüfte '
+                     'Fassung erscheint — samstags, höchstens einmal die Woche.',
+                     not an, lambda: kanal_setzen(False))
+        _kanalkasten(fenster, kaesten, 'Auch Testfassungen',
+                     'Du siehst Neues als Erster und hilfst beim Prüfen. '
+                     'Testfassungen sind fertig gebaut und lauffähig, aber noch '
+                     'nicht lange erprobt — es kann etwas klemmen.',
+                     an, lambda: kanal_setzen(True), marke_text='rc')
+
+    kanal_zeichnen()
+
+    # --- Wer das gebaut hat ---
+    tk.Label(innen, text=t('hf_wer'), bg=BG, fg=FG, font=fenster.f_titel,
+             anchor='w').pack(fill='x', pady=(28, 2))
+    tk.Label(innen, text='Und woher die Daten kommen, ohne die es das Werkzeug '
+                         'nicht gäbe.', bg=BG, fg=SUB, font=fenster.f_klein,
+             anchor='w').pack(fill='x', pady=(0, 12))
+
+    autor = _karte(innen)
+    zeile = tk.Frame(autor, bg=FLAECHE)
+    zeile.pack(fill='x', padx=16, pady=14)
+    from .hauptfenster import _mitgeliefert
+    logo = _mitgeliefert(os.path.join('assets', 'xharig.png'))
+    if logo and os.path.exists(logo):
+        try:
+            voll = tk.PhotoImage(file=logo)
+            teiler = max(1, voll.width() // 64)
+            fenster._autorlogo = voll.subsample(teiler, teiler)
+            tk.Label(zeile, image=fenster._autorlogo, bg=FLAECHE).pack(
+                side='left', padx=(0, 16))
+        except Exception as ausnahme:
+            fehler.merken('seiten.ueber.logo', ausnahme)
+    rechts = tk.Frame(zeile, bg=FLAECHE)
+    rechts.pack(side='left', fill='x', expand=True)
+    tk.Label(rechts, text='Xharig', bg=FLAECHE, fg=ACCENT, font=fenster.f_titel,
+             anchor='w').pack(fill='x')
+    tk.Label(rechts, text='SC BP Watcher %s · GPL-3.0-only'
+             % (fenster.version or ''), bg=FLAECHE, fg=SUB,
+             font=fenster.f_klein, anchor='w').pack(fill='x')
+    tk.Label(rechts, text='github.com/Xharig-1/SC-BP-Watcher', bg=FLAECHE,
+             fg=ACCENT, font=fenster.f_klein, anchor='w').pack(fill='x',
+                                                               pady=(4, 0))
+
+    dank = _karte(innen, pady=(10, 0))
+    tk.Label(dank, text=t('hf_dank'), bg=FLAECHE, fg=FG, font=fenster.f_klein,
+             anchor='w').pack(fill='x', padx=16, pady=(12, 6))
+    for quelle, wofuer in (('scmdb.net', 'Bauplan-Katalog und Herkunft'),
+                           ('rjcncpt / SC Deutsch Launcher',
+                            'Übersetzung und Vertragsdaten'),
+                           ('MrKraken · StarStrings',
+                            'Vorbild für die Einspielung ins Spiel')):
+        z = tk.Frame(dank, bg=FLAECHE)
+        z.pack(fill='x', padx=16, pady=1)
+        tk.Label(z, text='·', bg=FLAECHE, fg=SUB,
+                 font=fenster.f_klein).pack(side='left', padx=(0, 6))
+        tk.Label(z, text=quelle, bg=FLAECHE, fg=FG,
+                 font=fenster.f_klein).pack(side='left')
+        tk.Label(z, text=' — ' + wofuer, bg=FLAECHE, fg=SUB,
+                 font=fenster.f_klein).pack(side='left')
+    tk.Label(dank, text=t('hf_nichts_dabei'), bg=FLAECHE, fg=SUB,
+             font=fenster.f_klein, anchor='w', justify='left',
+             wraplength=600).pack(fill='x', padx=16, pady=(8, 12))
+
+    tk.Label(innen, text=t('hf_fancontent'), bg=BG, fg=SUB,
+             font=fenster.f_klein, anchor='w', justify='left',
+             wraplength=620).pack(fill='x', pady=(14, 24))
+
+
+def _schalter(fenster, eltern, schluessel, standard):
+    """Ein An/Aus-Schalter, der sofort schreibt — es gibt keinen Speichern-Knopf."""
+    from . import pfade
+    k = tk.Label(eltern, text='', bg=FLAECHE, font=fenster.f_klein,
+                 cursor='hand2', padx=10, pady=4)
+    k.pack()
 
     def zeichnen():
-        an = pfade.einstellung_wahrheit('vorabversionen', False)
-        schalter.configure(text=' %s ' % (t('e_an') if an else t('e_aus')),
-                           fg=ACCENT if an else SUB)
+        an = pfade.einstellung_wahrheit(schluessel, standard)
+        k.configure(text=' %s ' % (t('e_an') if an else t('e_aus')),
+                    fg=ACCENT if an else SUB)
 
     def umschalten():
-        neu = not pfade.einstellung_wahrheit('vorabversionen', False)
-        pfade.einstellung_setzen('vorabversionen', neu)
+        neu = not pfade.einstellung_wahrheit(schluessel, standard)
+        pfade.einstellung_setzen(schluessel, neu)
         zeichnen()
-        fenster.sagen(t('e_vorab') + ': ' + (t('e_an') if neu else t('e_aus')))
+        fenster.sagen(t('e_an') if neu else t('e_aus'))
 
-    schalter.bind('<Button-1>', lambda e: umschalten())
+    k.bind('<Button-1>', lambda e: umschalten())
     zeichnen()
-
-    tk.Label(innen, text=t('hf_wer'), bg=BG, fg=FG, font=fenster.f_fett,
-             anchor='w').pack(fill='x', pady=(22, 6))
-    tk.Label(innen, text='Xharig', bg=BG, fg=ACCENT, font=fenster.f_titel,
-             anchor='w').pack(fill='x')
-    tk.Label(innen, text='SC BP Watcher · GPL-3.0-only\n'
-                         'github.com/Xharig-1/SC-BP-Watcher',
-             bg=BG, fg=SUB, font=fenster.f_klein, anchor='w',
-             justify='left').pack(fill='x', pady=(2, 12))
-
-    tk.Label(innen, text=t('hf_dank'), bg=BG, fg=FG, font=fenster.f_klein,
-             anchor='w').pack(fill='x')
-    tk.Label(innen, text='· scmdb.net — Bauplan-Katalog und Herkunft\n'
-                         '· rjcncpt / SC Deutsch Launcher — Übersetzung und Verträge\n'
-                         '· MrKraken · StarStrings — Vorbild für die Einspielung',
-             bg=BG, fg=SUB, font=fenster.f_klein, anchor='w',
-             justify='left').pack(fill='x', pady=(2, 8))
-    tk.Label(innen, text=t('hf_nichts_dabei'), bg=BG, fg=SUB,
-             font=fenster.f_klein, anchor='w', justify='left',
-             wraplength=620).pack(fill='x')
-    tk.Label(innen, text=t('hf_fancontent'), bg=BG, fg=SUB, font=fenster.f_klein,
-             anchor='w', justify='left', wraplength=620).pack(
-                 fill='x', pady=(14, 20))
+    return k
 
 
 def _erkennung(fenster, rahmen):
