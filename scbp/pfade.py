@@ -669,3 +669,38 @@ def uebersicht():
 if __name__ == '__main__':
     for k, v in uebersicht().items():
         print('%-14s %s' % (k, v))
+
+
+# --------------------------------------------------------- Namen vergleichen
+# Alle Anführungszeichen, die in Bauplan-Namen vorkommen — gerade,
+# typografische und die französischen. Beim Vergleichen werden sie auf ein
+# einfaches `'` gezogen.
+ANFUEHRUNG = str.maketrans({
+    '"': "'", '„': "'", '“': "'", '”': "'",
+    '‘': "'", '’': "'", '«': "'", '»': "'",
+})
+
+
+def namensform(s):
+    """Ein Bauplan-Name als Vergleichsschlüssel — die EINZIGE Stelle dafür.
+
+    ⚠ Diese Funktion stand dreimal im Programm: in `bestand.py`, `katalog.py`
+    und `merkliste.py`. Der Kommentar in `bestand.py` behauptete „identisch zum
+    Hauptprogramm" — und war es nicht mehr. Wer eine davon anfasst, verschiebt
+    stillschweigend, welche Baupläne noch zueinander finden.
+
+    Angeglichen wird dreierlei:
+
+    * **Groß- und Kleinschreibung.**
+    * **Geschützte und kaputte Leerzeichen** (`\xa0`, `\ufffd`).
+    * **Anführungszeichen.** Der SC Deutsch Launcher exportiert
+      `7MA "Lorica"` mit geraden doppelten, scmdb führt denselben Bauplan als
+      `7MA 'Lorica'` mit einfachen. Ohne Angleichung sind das zwei Schlüssel,
+      und der Bauplan gilt als „fehlt", obwohl er im Bestand steht. Gefunden
+      an einem echten Bestand mit 392 Bauplänen — genau einer fiel durch.
+    """
+    return (str(s).lower()
+.replace('\xa0', ' ')
+.replace('\ufffd', ' ')
+.translate(ANFUEHRUNG)
+.strip())

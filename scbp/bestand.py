@@ -62,8 +62,8 @@ RANG = {'log': 1, 'nachlese': 1, 'start': 2, 'hand': 3, 'launcher': 4}
 
 
 def norm(s):
-    """Vergleichsform eines Namens — identisch zum Hauptprogramm."""
-    return s.lower().replace('\xa0', ' ').replace('�', ' ').strip()
+    """Vergleichsform eines Namens — siehe `pfade.namensform`."""
+    return pfade.namensform(s)
 
 
 def _jetzt():

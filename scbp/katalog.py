@@ -119,8 +119,25 @@ def aktuelle_version():
 
 
 # ------------------------------------------------------------ Aufbereitung
+# Alle Anführungszeichen, die in Bauplan-Namen vorkommen — gerade, typografische
+# und die französischen. Sie werden beim Vergleichen auf ein einfaches `'`
+# gezogen.
+#
+# ⚠ Warum das nötig ist: Der SC Deutsch Launcher exportiert `7MA "Lorica"` mit
+# geraden doppelten Anführungszeichen, scmdb führt denselben Bauplan als
+# `7MA 'Lorica'` mit einfachen. Ohne Angleichung sind das zwei verschiedene
+# Schlüssel — der Bauplan galt als „fehlt", obwohl er im eigenen Bestand stand.
+# Gefunden an einem echten Bestand mit 392 Bauplänen: 391 wurden zugeordnet,
+# genau dieser eine nicht. An erfundenen Testdaten wäre das nie aufgefallen.
+ANFUEHRUNG = str.maketrans({
+    '"': "'", '„': "'", '“': "'", '”': "'",   # " „ " "
+    '‘': "'", '’': "'", '«': "'", '»': "'",  # ' ' « »
+})
+
+
 def _norm(s):
-    return str(s).lower().replace('\xa0', ' ').strip()
+    """Vergleichsform eines Namens — siehe `pfade.namensform`."""
+    return pfade.namensform(s)
 
 
 def _werte(rohe_items):

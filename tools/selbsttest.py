@@ -71,7 +71,11 @@ ERWARTET = {
     'attrition-5 repeater',
     "7ca 'nargun'",
     'arclight pistol battery (30 cap)',
-    'cf-117 bulldog "hazard-zone" repeater',
+    # ⚠ Einfache Anführungszeichen, obwohl die Log-Zeile oben doppelte hat:
+    # `pfade.namensform()` zieht alle Anführungszeichen auf ein einfaches `'`,
+    # damit derselbe Bauplan aus Launcher-Export und scmdb-Katalog denselben
+    # Schlüssel bekommt.
+    "cf-117 bulldog 'hazard-zone' repeater",
     'singe cannon (s2)',
     'scalpel sniper rifle magazine (12 schuss)',
 }
@@ -388,6 +392,22 @@ def main():
                'die Beispieldaten benutzen echte Art-Kennungen')
         for art in unbekannt[:5]:
             print('        · %s kennt katalog.ART_GRUPPE nicht' % art)
+
+        # ⚠ Die Namensform stand dreimal im Programm und lief auseinander.
+        # Folge: Der SC Deutsch Launcher schreibt 7MA "Lorica" mit geraden
+        # Anführungszeichen, scmdb mit einfachen — der Bauplan galt als
+        # „fehlt", obwohl er im Bestand stand. Hier wird geprüft, dass alle
+        # drei Module dieselbe Form liefern.
+        from scbp import bestand as b_norm, katalog as k_norm
+        from scbp import merkliste as m_norm, pfade as p_norm
+        proben = ('7MA "Lorica"', "7MA 'Lorica'", 'CF-117 „Hazard" Repeater',
+                  'Test\xa0Name')
+        gleich = all(b_norm.norm(x) == k_norm._norm(x) == m_norm._norm(x)
+                     == p_norm.namensform(x) for x in proben)
+        pruefe(gleich, 'alle Module vergleichen Namen gleich')
+        pruefe(p_norm.namensform('7MA "Lorica"')
+               == p_norm.namensform("7MA 'Lorica'"),
+               'gerade und einfache Anführungszeichen gelten als derselbe Name')
 
         formatfehler = probe_daten.formate_pruefen()
         pruefe(not formatfehler,

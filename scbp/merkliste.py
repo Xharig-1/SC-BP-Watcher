@@ -51,7 +51,8 @@ DATEI = 'watchlist.json'
 
 
 def _norm(s):
-    return str(s).lower().replace('\xa0', ' ').strip()
+    """Vergleichsform eines Namens — siehe `pfade.namensform`."""
+    return pfade.namensform(s)
 
 
 def pfad():
