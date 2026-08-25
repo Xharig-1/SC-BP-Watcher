@@ -360,7 +360,46 @@ class Einstellungsfenster:
         self._inj_lage_zeigen()
 
     def _inj_wechseln(self, quelle):
-        """Auf eine andere Textquelle umstellen — holen, einsetzen, auszeichnen."""
+        """Auf eine andere Textquelle umstellen — holen, einsetzen, auszeichnen.
+
+        ⚠ Vor dem ersten Einsetzen einer **fremden** Quelle wird gefragt. Grund
+        aus dem Test (Bomb20, 25.08.2026): „übrigens tauscht das tool — wenn auf
+        deutsch gestellt — auch im Spiel alles englische gegen deutsches aus."
+        Das ist so gewollt, aber niemand rechnet damit: Wer einen Bauplan-Melder
+        installiert, erwartet keine vollständige Spielübersetzung. Eine
+        Überraschung an der Spielinstallation ist genau das, was dieses
+        Werkzeug nicht sein will.
+
+        „Original" fragt nicht — das nimmt die Texte aus der eigenen
+        Installation und ändert die Sprache nicht.
+        """
+        if quelle in ('deutsch', 'starstrings') and not self._quelle_bestaetigt(quelle):
+            return
+        self._inj_wechseln_jetzt(quelle)
+
+    def _quelle_bestaetigt(self, quelle):
+        """Einmal je Quelle fragen, bevor die Textdatei ersetzt wird.
+
+        Einmal bestätigt, wird nicht wieder gefragt — wer die Quelle schon
+        benutzt, weiß, was sie tut. Gemerkt wird das in den Einstellungen.
+        """
+        gemerkt = pfade.einstellung('inj_bestaetigt') or ''
+        if quelle in gemerkt.split(','):
+            return True
+
+        from tkinter import messagebox
+        name = {'deutsch': t('s_sp_q_de'),
+                'starstrings': t('s_sp_q_ss')}.get(quelle, quelle)
+        if not messagebox.askyesno(t('s_sp_warnung_titel'),
+                                   t('s_sp_warnung') % name,
+                                   parent=self.root):
+            return False
+        neu = [x for x in gemerkt.split(',') if x] + [quelle]
+        pfade.einstellung_setzen('inj_bestaetigt', ','.join(neu))
+        return True
+
+    def _inj_wechseln_jetzt(self, quelle):
+        """Der eigentliche Wechsel — ohne Rückfrage."""
         def melde(x):
             self._melden(x)
             self._weiterarbeiten()

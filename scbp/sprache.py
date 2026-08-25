@@ -479,8 +479,20 @@ TEXTE = {
     's_sp_nichts_h':   ('Wähle unten eine Textquelle — der Rest passiert von selbst.',
                           'Pick a text source below — the rest happens on its own.'),
     's_sp_quelle':     ('Textquelle', 'Text source'),
-    's_sp_quelle_h':   ('Woher die Grundlage kommt, in die geschrieben wird. Ohne Übersetzung nimmt der Watcher die englischen Originaltexte aus deiner Installation. Übersetzung und StarStrings sind fremde Projekte — sie werden beim Klick von deren eigener Adresse geladen, nicht mitgeliefert.',
-                          'Where the base text comes from that gets written into. Without a translation the watcher uses the original English text from your installation. The translation and StarStrings are other projects — they are fetched from their own address when you click, not shipped along.'),
+    # ⚠ Der Satz „übersetzt das ganze Spiel" MUSS hier stehen bleiben. Beim
+    # Testen gemeldet (Bomb20, 25.08.2026): „übrigens tauscht das tool — wenn
+    # auf deutsch gestellt — auch im Spiel alles englische gegen deutsches
+    # aus." Das ist so gewollt (der Watcher braucht eine global.ini, in die er
+    # schreibt), aber niemand rechnet damit: Wer einen Bauplan-Melder
+    # installiert, erwartet keine Spielübersetzung.
+    's_sp_quelle_h':   ('Woher die Grundlage kommt, in die geschrieben wird. ⚠ Deutsch und StarStrings ersetzen die Textdatei des Spiels vollständig — danach ist das **ganze Spiel** in dieser Sprache, nicht nur die Bauplan-Angaben. „Original" lässt deine Installation, wie sie ist. Übersetzung und StarStrings sind fremde Projekte und werden beim Klick von deren eigener Adresse geladen, nicht mitgeliefert.',
+                          'Where the base text comes from that gets written into. ⚠ German and StarStrings replace the game’s text file completely — after that the **whole game** is in that language, not just the blueprint details. „Original" leaves your installation as it is. The translation and StarStrings are other projects and are fetched from their own address when you click, not shipped along.'),
+
+    # Rückfrage, bevor die Textdatei des Spiels zum ersten Mal ersetzt wird.
+    's_sp_warnung_titel': ('Das übersetzt das ganze Spiel',
+                          'This translates the whole game'),
+    's_sp_warnung':    ('„%s" ersetzt die Textdatei von Star Citizen vollständig. Danach ist das ganze Spiel in dieser Sprache — alle Menüs, alle Missionen, nicht nur die Bauplan-Angaben.\n\nDeine bisherige Textdatei wird vorher gesichert, und „Wieder entfernen" macht es rückgängig.\n\nEinsetzen?',
+                          '„%s" replaces Star Citizen’s text file completely. After that the whole game is in that language — every menu, every mission, not just the blueprint details.\n\nYour current text file is backed up first, and „Remove again" undoes it.\n\nInstall it?'),
     # Die Quellen mit Urheber benennen — im Assistenten steht es auch dort, und
     # es sind fremde Projekte, keine eigene Übersetzung.
     's_sp_q_de':       ('Deutsch (rjcncpt)', 'German (rjcncpt)'),
