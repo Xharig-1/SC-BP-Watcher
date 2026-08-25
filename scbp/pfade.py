@@ -55,6 +55,7 @@ Rangfolge, wenn mehrere Angaben da sind:
   3. die Suche an den üblichen Stellen
 """
 import glob
+import shutil
 import json
 import os
 import re
@@ -515,6 +516,80 @@ def spielordner_deuten(gewaehlt):
         if 'Game.log' in dateien:
             return basis
     return None
+
+
+
+def spielstarter():
+    """Womit sich Star Citizen starten lässt — oder `None`.
+
+    Auf beiden Systemen dieselbe Frage, nur ein anderer Ort:
+
+    * **Windows** — der RSI Launcher unter `%LOCALAPPDATA%\\Programs`. Das ist
+      derselbe Weg, den auch der SC-Deutsch-Launcher geht.
+    * **Linux** — der `lug-helper` der Star Citizen Linux Users Group. Er ist
+      dort der übliche Weg, bringt den passenden Wine-Unterbau mit und lässt
+      sich einfach aufrufen. Ein eigener Wine-Aufruf wäre hier falsch: Der
+      Helfer weiß, welches Präfix und welche Wine-Fassung gerade gelten.
+
+    Ein eigener Weg geht über die Einstellung `spielstarter` — wer Lutris oder
+    Heroic benutzt, trägt dort seinen Startbefehl ein.
+
+    Wird nichts gefunden, gibt es auch keinen Knopf. Ein Knopf, der nichts tut,
+    ist schlimmer als keiner.
+    """
+    eigen = (einstellung('spielstarter') or '').strip()
+    if eigen:
+        return eigen if os.path.exists(os.path.expanduser(eigen)) else eigen
+
+    if WINDOWS:
+        orte = []
+        for umgebung in ('LOCALAPPDATA', 'PROGRAMFILES', 'PROGRAMW6432'):
+            wurzel = os.environ.get(umgebung)
+            if not wurzel:
+                continue
+            orte.append(os.path.join(wurzel, 'Programs', 'RSI Launcher',
+                                     'RSI Launcher.exe'))
+            orte.append(os.path.join(wurzel, 'RSI Launcher',
+                                     'RSI Launcher.exe'))
+        for ort in orte:
+            if os.path.isfile(ort):
+                return ort
+        return None
+
+    # Linux: erst im Suchpfad, dann an den üblichen Ablagen.
+    name = 'lug-helper'
+    fertig = shutil.which(name)
+    if fertig:
+        return fertig
+    heim = os.path.expanduser('~')
+    for ort in (os.path.join(heim, '.local', 'bin', name),
+                os.path.join('/usr', 'bin', name),
+                os.path.join('/usr', 'local', 'bin', name),
+                os.path.join(heim, 'Games', name)):
+        if os.path.isfile(ort) and os.access(ort, os.X_OK):
+            return ort
+    return None
+
+
+def spiel_starten():
+    """Star Citizen starten. Gibt (True, '') oder (False, Grund) zurück."""
+    starter = spielstarter()
+    if not starter:
+        return False, 'kein Starter gefunden'
+    try:
+        import subprocess
+        # Losgelöst starten: Der Watcher soll weiterlaufen und nicht am Spiel
+        # hängen — und beim Beenden das Spiel nicht mitreißen.
+        zusatz = {}
+        if WINDOWS:
+            zusatz['creationflags'] = getattr(subprocess, 'DETACHED_PROCESS', 0)
+        else:
+            zusatz['start_new_session'] = True
+        subprocess.Popen([starter], stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL, **zusatz)
+        return True, ''
+    except Exception as ausnahme:
+        return False, str(ausnahme)
 
 
 def game_log(ordner=None):

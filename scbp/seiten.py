@@ -965,6 +965,26 @@ def _spiel(fenster, rahmen):
     innen = _rollflaeche(rahmen)
     e = _einstellungen(fenster)
 
+    # --- Spiel starten -------------------------------------------------------
+    # Wunsch von Morkhan (KRT), 25.08.2026: „so wie beim sc deutsch
+    # launcher das man spiel von dort aus starten kann".
+    #
+    # Der Knopf erscheint nur, wenn wirklich ein Weg gefunden wurde — unter
+    # Windows der RSI Launcher, unter Linux der lug-helper. Ein Knopf, der
+    # nichts tut, wäre schlimmer als keiner.
+    if pfade.spielstarter():
+        ziel_start = _feld(fenster, innen, t('s_sp_start'), t('s_sp_start_h'),
+                           breit=True)
+
+        def spiel_starten():
+            fenster.sagen(t('s_sp_start_lauft'))
+            ok, grund = pfade.spiel_starten()
+            if not ok:
+                fenster.sagen(t('s_sp_start_nein', grund))
+
+        _knopf(fenster, ziel_start, t('s_sp_start_knopf'), spiel_starten,
+               stark=True).pack()
+
     # Der Zustandskasten sitzt in einem eigenen Rahmen, damit er nach jeder
     # Aktion neu gefüllt werden kann, ohne die ganze Seite anzufassen.
     kasten = tk.Frame(innen, bg=BG)

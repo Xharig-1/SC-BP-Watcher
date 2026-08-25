@@ -36,6 +36,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **Star Citizen can be launched from the tool.** The „In-game details" page
+  has a button that starts the game the way you already do: the RSI Launcher on
+  Windows, `lug-helper` on Linux. If neither is found the button does not appear
+  at all — anyone using a different route (Lutris, Heroic) sets `spielstarter`
+  in the settings file. Suggested by Morkhan.
+
 - **The mouse brings the overlay back.** In pop-up mode just move to where it sits — it
   reappears by itself and stays as long as the pointer is on it. Previously you had to
   restart the program for that, which no other overlay asks of you.
@@ -324,6 +330,8 @@ notice problems, but to describe them precisely enough to be found:
 - **Bomb20** (SC4M) — the crash on the very first start (a bug only new users
   would ever have hit), the „check now" button that did nothing, and the note
   that the „German" text source translates the entire game.
+- **Morkhan** (KRT) — the suggestion to launch Star Citizen straight from
+  the tool.
 
 The blueprint details are based on the openly published contract data of the
 **SC Deutsch Launcher team** and on **scmdb.net**.

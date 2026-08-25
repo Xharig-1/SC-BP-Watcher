@@ -420,6 +420,17 @@ TEXTE = {
                           'Start trace of the last run (the last line shows how far it got)'),
     'b_fehler_alt':    ('(aus einer älteren Fassung — vermutlich längst behoben)',
                           '(from an older version — most likely fixed since)'),
+    's_sp_start':      ('Star Citizen starten', 'Launch Star Citizen'),
+    's_sp_start_h':    ('Startet das Spiel über den Weg, den du ohnehin '
+                        'benutzt — den RSI Launcher unter Windows, den '
+                        'lug-helper unter Linux. Wird keiner gefunden, steht '
+                        'hier nichts.',
+                        'Starts the game the way you already do — the RSI '
+                        'Launcher on Windows, lug-helper on Linux. If neither '
+                        'is found, nothing appears here.'),
+    's_sp_start_knopf': ('▶  Star Citizen starten', '▶  Launch Star Citizen'),
+    's_sp_start_lauft': ('Star Citizen wird gestartet …', 'Starting Star Citizen …'),
+    's_sp_start_nein': ('Start nicht möglich: %s', 'Could not start: %s'),
     'tray_zeigen':     ('Fenster zeigen', 'Show window'),
     'tray_beenden':    ('Beenden', 'Quit'),
     's_menue':         ('Eintrag im Startmenü', 'Entry in the application menu'),

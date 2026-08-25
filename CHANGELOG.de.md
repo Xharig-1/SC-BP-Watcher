@@ -36,6 +36,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Star Citizen lässt sich aus dem Werkzeug heraus starten.** Auf der Seite
+  „Angaben im Spiel" steht ein Knopf, der das Spiel über den Weg startet, den
+  man ohnehin benutzt: den RSI Launcher unter Windows, den `lug-helper` unter
+  Linux. Wird keiner der beiden gefunden, erscheint der Knopf gar nicht erst —
+  wer einen eigenen Weg hat (Lutris, Heroic), trägt ihn als `spielstarter` in
+  die Einstellungsdatei ein. Vorgeschlagen von Morkhan.
+
 - **Die Maus holt das Overlay zurück.** Im Aufblend-Betrieb genügt es, dorthin zu fahren, wo
   es steht — es kommt von selbst und bleibt, solange der Zeiger darauf ist. Vorher musste
   man das Programm dafür neu starten, und das verlangt kein anderes Overlay.
@@ -340,6 +347,8 @@ beschreiben, dass sie zu finden waren:
 - **Bomb20** (SC4M) — der Absturz beim allerersten Start (der Fehler, den nur
   neue Nutzer je gesehen hätten), der wirkungslose Knopf „Jetzt nachsehen" und
   der Hinweis, dass die Textquelle „Deutsch" das ganze Spiel übersetzt.
+- **Morkhan** (KRT) — der Vorschlag, Star Citizen gleich aus dem Werkzeug
+  heraus starten zu können.
 
 Die Bauplan-Angaben beruhen auf den offen veröffentlichten Vertragsdaten des
 **SC-Deutsch-Launcher-Teams** und auf **scmdb.net**.
