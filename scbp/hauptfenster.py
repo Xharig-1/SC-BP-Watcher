@@ -61,13 +61,16 @@ LINIE   = '#232c3d'
 GOLD    = '#e8c353'
 
 # Mindestgröße: Darunter bricht die Bedienung, und keine Layout-Regel hilft mehr.
-# Kleinste Größe, auf die sich das Fenster ziehen lässt. Bewusst großzügig:
-# `tools/randpruefung.py` zeigt, dass unterhalb von 1060 Pixel Breite Bedienelemente
-# auf den Seiten „Ordner", „Angaben im Spiel", „Bestand" und „Über" rechts
-# herausragen — auf Englisch früher als auf Deutsch, weil die Wörter länger sind.
-# Lieber ein Fenster, das sich nicht beliebig klein ziehen lässt, als abgeschnittene
-# Knöpfe, die niemand findet.
-MIN_BREITE, MIN_HOEHE = 1060, 700
+# Kleinste Größe, auf die sich das Fenster ziehen lässt — zugleich die Startgröße.
+#
+# Bewusst großzügig: `tools/randpruefung.py` zeigt, dass unterhalb von 1060 Pixel
+# Breite Bedienelemente auf den Seiten „Ordner", „Angaben im Spiel", „Bestand" und
+# „Über" rechts herausragen — auf Englisch früher als auf Deutsch, weil die Wörter
+# länger sind. Rücksicht auf kleine Laptop-Bildschirme braucht es nicht: Wer Star
+# Citizen spielt, sitzt nicht an einem 1366×768-Gerät. Ein Fenster, das sich nicht
+# beliebig klein ziehen lässt, macht weniger Ärger als abgeschnittene Knöpfe, die
+# niemand findet.
+MIN_BREITE, MIN_HOEHE = 1100, 760
 
 # Wie viel Streichweg auf dem Trackpad eine Zeile ergibt. Ein Trackpad meldet
 # viele kleine Schritte statt Rasten; ohne Teiler säuselt die Liste am Finger
@@ -501,21 +504,38 @@ def rundleiste(eltern, leinwand, grund=None, breite=10):
 
     lage = {'anfang': 0.0, 'ende': 1.0, 'griff_ab': 0, 'zieht': False}
 
+    def griff_lage():
+        """Wo der Griff **wirklich** gezeichnet ist — als (oben, unten, hoehe).
+
+        ⚠ Diese Rechnung muss an EINER Stelle stehen. Vorher zeichnete
+        `nachziehen` den Griff mit einer Mindesthöhe, während `springen` mit der
+        rechnerischen Höhe prüfte, ob man ihn getroffen hat. Bei 722 Bauplänen ist
+        der Griff rechnerisch rund zwölf Pixel hoch und gezeichnet vierundzwanzig:
+        Wer die untere Hälfte des sichtbaren Griffs anfasste, galt als „daneben“ —
+        die Leiste sprang, statt sich ziehen zu lassen. Sie sah also greifbar aus
+        und war es nicht.
+        """
+        hoehe = c.winfo_height() or 1
+        anfang, ende = lage['anfang'], lage['ende']
+        oben = anfang * hoehe
+        # Der Griff bleibt greifbar, auch wenn 700 Baupläne in der Liste
+        # stehen und er rechnerisch drei Pixel hoch wäre.
+        unten = max(oben + breite * 2.4, ende * hoehe)
+        if unten > hoehe:                 # am unteren Ende nach oben schieben
+            oben, unten = max(0.0, hoehe - (unten - oben)), hoehe
+        return oben, unten, hoehe
+
     def nachziehen(*_):
         hoehe = c.winfo_height()
         if hoehe < 4:
             return
         c.coords(rille, 0, 0, breite, hoehe)
-        anfang, ende = lage['anfang'], lage['ende']
-        if ende - anfang >= 0.999:   # nichts zu rollen — Griff verschwindet
+        if lage['ende'] - lage['anfang'] >= 0.999:   # nichts zu rollen
             c.itemconfigure(griff, state='hidden')
             return
         c.itemconfigure(griff, state='normal')
-        oben = anfang * hoehe
-        # Der Griff bleibt greifbar, auch wenn 700 Baupläne in der Liste
-        # stehen und er rechnerisch drei Pixel hoch wäre.
-        unten = max(oben + breite * 2.4, ende * hoehe)
-        c.coords(griff, *ecken(0, oben, breite, min(unten, hoehe), r))
+        oben, unten, _ = griff_lage()
+        c.coords(griff, *ecken(0, oben, breite, unten, r))
 
     def setzen(anfang, ende):
         """Ruft Tk auf, wenn sich der sichtbare Ausschnitt ändert."""
@@ -523,9 +543,8 @@ def rundleiste(eltern, leinwand, grund=None, breite=10):
         nachziehen()
 
     def springen(e):
-        hoehe = c.winfo_height() or 1
+        oben, unten, hoehe = griff_lage()
         spanne = lage['ende'] - lage['anfang']
-        oben, unten = lage['anfang'] * hoehe, lage['ende'] * hoehe
         if oben <= e.y <= unten:                  # auf dem Griff: ziehen
             lage['zieht'] = True
             lage['griff_ab'] = e.y - oben
@@ -534,10 +553,21 @@ def rundleiste(eltern, leinwand, grund=None, breite=10):
         leinwand.yview_moveto(ziel)
 
     def ziehen(e):
+        """Den Griff mitnehmen.
+
+        Gerechnet wird über den **Weg, den der Griff zurücklegen kann** — also die
+        Leistenhöhe minus Griffhöhe. Vorher wurde durch die volle Leistenhöhe
+        geteilt; weil der Griff eine Mindesthöhe hat, blieb das letzte Stück der
+        Liste unerreichbar: Man zog bis ganz nach unten und war trotzdem nicht am
+        Ende.
+        """
         if not lage['zieht']:
             return
-        hoehe = c.winfo_height() or 1
-        leinwand.yview_moveto(max(0.0, min(1.0, (e.y - lage['griff_ab']) / hoehe)))
+        oben, unten, hoehe = griff_lage()
+        weg = max(1.0, hoehe - (unten - oben))
+        spanne = lage['ende'] - lage['anfang']
+        anteil = (e.y - lage['griff_ab']) / weg
+        leinwand.yview_moveto(max(0.0, min(1.0, anteil * max(0.0, 1.0 - spanne))))
 
     def loslassen(_=None):
         lage['zieht'] = False
@@ -792,10 +822,9 @@ class Hauptfenster:
         self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
         self.root.title(t('hf_titel'))
         self.root.configure(bg=BG)
-        # Startgröße etwas über der Mindestgröße — sonst klebt das Fenster beim ersten
-        # Öffnen schon an seiner Untergrenze. Mittig auf dem Hauptbildschirm, damit es
-        # bei mehreren Monitoren nicht auf einer Kante landet.
-        self.root.geometry(bildschirm.mittig(self.root, 1100, 760))
+        # Start = Mindestgröße, mittig auf dem Hauptbildschirm. Mittig, damit das
+        # Fenster bei mehreren Monitoren nicht auf einer Kante landet.
+        self.root.geometry(bildschirm.mittig(self.root, MIN_BREITE, MIN_HOEHE))
         self.root.minsize(MIN_BREITE, MIN_HOEHE)
 
         self._schriften_anlegen()

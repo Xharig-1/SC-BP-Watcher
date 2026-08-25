@@ -72,6 +72,21 @@ GELB    = '#d8a03a'
 # 40 ist der Kompromiss: gut zwei Bildschirmhöhen sofort da, unter zwei
 # Sekunden Wartezeit. Wer mehr will, tippt oder klickt auf „weitere anzeigen".
 ZEILEN_ZUERST = 40
+
+# Wie hoch der Inhalt einer Rollfläche höchstens werden darf.
+#
+# ⚠ Das ist keine Geschmacksfrage, sondern eine harte Grenze des Fenstersystems:
+# X11 rechnet Fensterkoordinaten in **16 Bit**, es gibt also keine Position
+# jenseits von 32767 Pixeln. Ein Frame in einer Leinwand, der höher wird, sitzt
+# ab dort nicht mehr dort, wo Tk ihn hinrechnet — die Zeilen am Ende der Liste
+# **überlappen einander**. Gemessen mit einem echten Katalog bei 125 % Anzeige-
+# Skalierung: Inhalt 33452 px, davon 16 Elemente jenseits der Grenze — und genau
+# die überlagerten sich.
+#
+# Deshalb ein Sicherheitsabstand: Der Inhalt bleibt unter 32000 px. Wie viele
+# Zeilen das sind, hängt von Schriftgröße und Skalierung ab und wird gemessen,
+# nicht geraten (siehe `_zeilen_deckel`).
+HOECHSTE_INHALTSHOEHE = 32000
 # Die Programmversion wird vom Hauptprogramm gesetzt; sie landet im
 # scmdb-Export als Kennung des erzeugenden Werkzeugs.
 VERSION = ['']
@@ -776,30 +791,45 @@ class Bestandsfenster:
             self._hinweis_kein_katalog()
             return
 
+        # Zwei Grenzen: die freiwillige (erst 40 Zeilen, der Rest auf Klick) und
+        # die unumgängliche (X11 kann nichts jenseits von 32767 px positionieren).
+        deckel = self._zeilen_deckel() if self.alle_zeigen else ZEILEN_ZUERST
         gezeichnet = 0
         for art, treffer in gruppen:
-            if gezeichnet >= ZEILEN_ZUERST and not self.alle_zeigen:
+            if gezeichnet >= deckel:
                 break
             self._gruppenkopf(art, treffer, habe)
             for eintrag, drin in treffer:
-                if gezeichnet >= ZEILEN_ZUERST and not self.alle_zeigen:
+                if gezeichnet >= deckel:
                     break
                 self._zeile(eintrag, drin)
                 gezeichnet += 1
 
         rest = sum(len(t) for _, t in gruppen) - gezeichnet
-        if rest > 0:
+        if rest > 0 and not self.alle_zeigen:
             mehr = tk.Label(self.inhalt, text=t('weitere_anzeigen', rest),
                             bg=BG, fg=ACCENT, font=schrift(10), cursor='hand2',
                             pady=10)
             mehr.pack(fill='x')
             mehr.bind('<Button-1>', lambda e: self._alle())
+        elif rest > 0:
+            # Alles anzeigen war gewollt, geht aber nicht: mehr Zeilen würde das
+            # Fenstersystem falsch zeichnen. Lieber ehrlich sagen, was Sache ist,
+            # als am Ende der Liste übereinanderliegende Einträge zeigen.
+            tk.Label(self.inhalt, text=t('zu_lang', rest), bg=BG, fg=SUB,
+                     font=schrift(10), pady=10, wraplength=520,
+                     justify='center').pack(fill='x')
         self._treffer_zeigen(gruppen)
         if not gruppen:
             leer = (t('merkliste_leer') if self.filter == 'merk'
                     else t('nichts_gefunden'))
             tk.Label(self.inhalt, text=leer, bg=BG, fg=SUB, font=schrift(11),
                      pady=20, wraplength=520, justify='center').pack()
+
+        # Die Zeilenhöhe einmal nachmessen — sie bestimmt, wie viele Zeilen in eine
+        # Ansicht passen (siehe `_zeilen_deckel`).
+        if not getattr(self, '_zeilenhoehe', 0):
+            self.root.after_idle(self._zeilenhoehe_merken)
 
         if nach_oben:
             # Erst wenn Tk die neue Höhe kennt — sonst bezieht sich der Sprung
@@ -871,6 +901,32 @@ class Bestandsfenster:
     def _alle(self):
         self.alle_zeigen = True
         self._zeichnen()
+
+    def _zeilen_deckel(self):
+        """Wie viele Zeilen in eine Ansicht passen, ohne dass X11 aussteigt.
+
+        Gerechnet wird aus der **gemessenen** Höhe einer echten Zeile: Sie hängt
+        an Schriftgröße und Anzeige-Skalierung, ist also auf keinem Rechner gleich.
+        Solange noch nichts gemessen wurde, gilt ein vorsichtiger Wert — er wird
+        beim ersten Zeichnen sofort durch die echte Zahl ersetzt.
+        """
+        hoehe = getattr(self, '_zeilenhoehe', 0)
+        if not hoehe:
+            return 650
+        return max(ZEILEN_ZUERST, int(HOECHSTE_INHALTSHOEHE / hoehe))
+
+    def _zeilenhoehe_merken(self):
+        """Die Höhe einer Zeile einmal nachmessen, wenn Tk sie gezeichnet hat."""
+        try:
+            kinder = [k for k in self.inhalt.winfo_children()
+                      if k.winfo_height() > 1]
+            if len(kinder) >= 4:
+                # Der zweite bis vierte Eintrag: der erste ist ein Gruppenkopf
+                # und niedriger als eine Bauplan-Zeile.
+                hoehen = sorted(k.winfo_height() for k in kinder[1:4])
+                self._zeilenhoehe = hoehen[len(hoehen) // 2]
+        except tk.TclError:
+            pass
 
     def _hinweis_kein_katalog(self):
         tk.Label(self.inhalt, text=t('kein_katalog'),

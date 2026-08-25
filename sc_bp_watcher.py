@@ -1188,6 +1188,8 @@ class Overlay:
         self.as_lbl.bind('<Button-1>', lambda e: self._toggle_autostart())
         hinweis.anhaengen(self.as_lbl, self._hinweis_autostart)
         self._show_autostart()
+        # Mitschalten, wenn der Autostart in den Einstellungen umgestellt wird.
+        autostart.anzeige_anmelden(self._show_autostart)
         for w in (bar, bar.winfo_children()[0]):
             w.bind('<Button-1>', self._drag_start)
             w.bind('<B1-Motion>', self._drag_move)

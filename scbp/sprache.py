@@ -61,6 +61,13 @@ TEXTE = {
     'filter_fehlt':      ('fehlt mir', 'missing'),
     'nichts_gefunden':   ('Nichts gefunden.', 'Nothing found.'),
     'weitere_anzeigen':  ('… %d weitere anzeigen', '… show %d more'),
+    # Warum es überhaupt eine Obergrenze gibt: siehe HOECHSTE_INHALTSHOEHE in
+    # bestandsfenster.py — jenseits von 32767 Pixeln kann X11 nichts mehr
+    # richtig platzieren, die Zeilen würden übereinanderliegen.
+    'zu_lang':           ('%d weitere passen nicht in eine Ansicht — grenze die Liste '
+                          'mit der Suche oder den Auswahlfeldern ein.',
+                          '%d more do not fit in one view — narrow the list with the '
+                          'search field or the selectors.'),
     'von_gesamt':        ('· %d von %d (%d %%)', '· %d of %d (%d %%)'),
     'kein_katalog':      ('Noch kein Bauplan-Katalog vorhanden.',
                           'No blueprint catalogue yet.'),
@@ -716,8 +723,8 @@ TEXTE = {
     'hk_weitere':      ('%d weitere Wege zu diesem Bauplan',
                           '%d more ways to this blueprint'),
     'hk_zu':           ('Schließen', 'Close'),
-    'hk_nichts':       ('Klick auf eine Zeile — hier steht dann, woher der Bauplan kommt.',
-                          'Click a row — this shows where the blueprint comes from.'),
+    'hk_nichts':       ('Klick auf das ⓘ einer Zeile — hier steht dann, woher der Bauplan kommt.',
+                          'Click the ⓘ on a row — this shows where the blueprint comes from.'),
     'hk_start':        ('Den hat jeder von Anfang an — es gibt keinen Auftrag, der ihn ausschüttet.',
                           'Everyone has this from the start — no mission hands it out.'),
     'hk_topf':         ('Sonderquelle', 'Special source'),

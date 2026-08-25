@@ -447,7 +447,12 @@ def _allgemein(fenster, rahmen):
                           % (t('e_an') if neu_wert else t('e_aus')))
             return autostart.ist_an()
 
-        schiebeschalter(ziel, autostart.ist_an(), autostart_um).pack()
+        schalter = schiebeschalter(ziel, autostart.ist_an(), autostart_um)
+        schalter.pack()
+        # Mitschalten, wenn der Autostart woanders umgestellt wird — etwa am
+        # Symbol im Overlay, das ja gleichzeitig sichtbar ist.
+        autostart.anzeige_anmelden(
+            lambda: schalter.zeichnen(autostart.ist_an()))
     else:
         tk.Label(ziel, text=t('s_nicht_moegl'), bg=BG, fg=SUB,
                  font=fenster.f_klein).pack()
