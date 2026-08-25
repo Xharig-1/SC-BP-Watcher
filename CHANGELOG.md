@@ -12,6 +12,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **Tray icon stayed missing.** `Shell_NotifyIcon` fails while the taskbar is
+  not ready — on autostart, right after an installation and on every Explorer
+  restart. That was silently accepted, and the icon was gone for good. It is
+  now retried, re-registered when the taskbar reappears, and a final failure
+  shows up in the error report.
+
+
 - **Shorthand corrected in the docs.** The project page and roadmap still said
   `M/A/1` (class/grade/size); since v3.0.0 it reads `M/1/A` — class/size/grade,
   the way the game words it.

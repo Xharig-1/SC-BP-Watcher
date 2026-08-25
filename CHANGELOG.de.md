@@ -12,6 +12,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Symbol neben der Uhr blieb weg.** `Shell_NotifyIcon` scheitert, solange die
+  Taskleiste nicht bereit ist — beim Autostart, direkt nach einer Installation
+  und bei jedem Explorer-Neustart. Bisher wurde das stillschweigend
+  hingenommen, und das Symbol fehlte danach für immer. Jetzt wird es mehrfach
+  versucht und beim Neuentstehen der Taskleiste erneut angemeldet; ein
+  endgültiges Scheitern steht im Fehlerbericht.
+
+
 - **Kürzel in der Doku berichtigt.** Projektseite und Fahrplan nannten es noch
   `M/A/1` (Klasse/Grad/Größe); seit v3.0.0 steht dort `M/1/A` —
   Klasse/Größe/Grad, so wie es sich im Spiel liest.

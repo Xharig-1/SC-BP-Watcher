@@ -44,6 +44,7 @@ import ctypes
 import os
 import sys
 import threading
+import time
 
 WINDOWS = sys.platform.startswith('win')
 
@@ -66,6 +67,17 @@ IDI_APPLICATION = 32512
 
 TPM_RIGHTBUTTON = 0x0002
 MF_STRING = 0x0000
+
+# ⚠ Windows schickt diese Nachricht an ALLE obersten Fenster, wenn die
+# Taskleiste neu entsteht — beim Explorer-Neustart, aber auch, wenn ein
+# Programm sehr früh startet und die Taskleiste noch gar nicht da war. Ohne
+# darauf zu hören, ist das Symbol danach für immer weg.
+#
+# Genau so gemeldet (Haldjas, 25.08.2026): „mit rc20 hatte ich ein Symbol auf
+# der taskleiste, rc22 hat es nicht mehr". Ausgelöst hat es die neue
+# Installer-Einstellung `RestartApplications`, die das Programm direkt nach dem
+# Setup wieder startet — da ist die Taskleiste manchmal noch nicht bereit.
+WM_TASKBARCREATED = None          # wird beim Start registriert
 
 BEFEHL_ZEIGEN = 1001
 BEFEHL_BEENDEN = 1002
@@ -138,6 +150,37 @@ class Ablagesymbol(object):
         daten.hIcon = self._symbol
         daten.szTip = self.titel[:127]
         return daten
+
+    def _symbol_anlegen(self, versuche=5):
+        """Das Symbol bei Windows anmelden — mit Wiederholung.
+
+        ⚠ `Shell_NotifyIcon` schlägt fehl, solange die Taskleiste nicht bereit
+        ist. Das passiert öfter, als man denkt: beim Autostart, direkt nach
+        einer Installation (der Installer startet das Programm wieder) und bei
+        jedem Explorer-Neustart. Vorher wurde das Fehlschlagen stillschweigend
+        hingenommen — das Symbol fehlte dann für immer, ohne dass irgendwo
+        etwas darüber stand.
+
+        Fünf Versuche im Abstand von einer Sekunde. Reicht auch das nicht,
+        kommt später `WM_TASKBARCREATED` und es wird erneut versucht.
+        """
+        daten = self._daten(NIF_MESSAGE | NIF_ICON | NIF_TIP)
+        for versuch in range(versuche):
+            if ctypes.windll.shell32.Shell_NotifyIconW(NIM_ADD,
+                                                       ctypes.byref(daten)):
+                return True
+            if versuch + 1 < versuche:
+                time.sleep(1.0)
+        try:
+            from . import fehler
+            fehler.merken('ablagesymbol.anlegen',
+                          OSError('Shell_NotifyIcon: Fehler %d nach %d '
+                                  'Versuchen'
+                                  % (ctypes.windll.kernel32.GetLastError(),
+                                     versuche)))
+        except Exception:
+            pass
+        return False
 
     def _menue_zeigen(self):
         """Das Rechtsklick-Menü — zwei Punkte, mehr braucht niemand."""
@@ -247,16 +290,27 @@ class Ablagesymbol(object):
                 bereit.set()
                 return
 
+            # Die Nachricht anmelden, mit der Windows das Neuentstehen der
+            # Taskleiste meldet — siehe WM_TASKBARCREATED oben.
+            global WM_TASKBARCREATED
+            if WM_TASKBARCREATED is None:
+                WM_TASKBARCREATED = benutzer.RegisterWindowMessageW(
+                    'TaskbarCreated')
+
             self._symbol = self._symbol_laden()
-            daten = self._daten(NIF_MESSAGE | NIF_ICON | NIF_TIP)
-            self._geklappt = bool(
-                ctypes.windll.shell32.Shell_NotifyIconW(NIM_ADD,
-                                                        ctypes.byref(daten)))
+            self._geklappt = self._symbol_anlegen()
             self._laeuft = self._geklappt
             bereit.set()
 
             nachricht = wintypes.MSG()
             while benutzer.GetMessageW(ctypes.byref(nachricht), None, 0, 0) > 0:
+                # Taskleiste neu entstanden (Explorer-Neustart) — das Symbol ist
+                # damit weg und muss erneut angemeldet werden. Ohne das bleibt
+                # es bis zum nächsten Programmstart verschwunden.
+                if (WM_TASKBARCREATED
+                        and nachricht.message == WM_TASKBARCREATED):
+                    self._geklappt = self._symbol_anlegen(versuche=3)
+                    self._laeuft = self._geklappt
                 benutzer.TranslateMessage(ctypes.byref(nachricht))
                 benutzer.DispatchMessageW(ctypes.byref(nachricht))
         except Exception:
