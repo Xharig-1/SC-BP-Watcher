@@ -394,8 +394,28 @@ class Einstellungsfenster:
         self._inj_lage_zeigen()
 
     def _inj_ini(self):
-        """Die global.ini, um die es geht — nach der eingestellten Sprache."""
-        for quelle in ('deutsch', 'starstrings'):
+        """Die global.ini, um die es geht — nach der **gewählten** Textquelle.
+
+        ⚠ Hier stand eine feste Reihenfolge: erst „deutsch", dann „starstrings",
+        und die erste eingerichtete gewann. Wer beide einmal benutzt hatte und
+        dann auf StarStrings umstellte, bekam trotzdem weiter „Quelle: Deutsch
+        (rjcncpt)" angezeigt — die deutsche war ja auch noch eingerichtet. Genau
+        so gemeldet. Maßgeblich ist, was der Nutzer **gewählt** hat; die
+        Reihenfolge greift nur, solange nichts gewählt wurde.
+        """
+        gewaehlt = pfade.einstellung('inj_quelle')
+        reihenfolge = ['deutsch', 'starstrings']
+        if gewaehlt in reihenfolge:
+            reihenfolge.remove(gewaehlt)
+            reihenfolge.insert(0, gewaehlt)
+        elif gewaehlt == 'original':
+            # Die Originaltexte kommen aus dem Spiel selbst, nicht aus einem
+            # fremden Projekt — dort gibt es keine Fassung zu vermerken.
+            for sprache_ordner in ('english', 'german_(germany)'):
+                pfad = uebersetzung.ziel_ini(sprache_ordner)
+                if pfad and os.path.isfile(pfad):
+                    return pfad, sprache_ordner, None
+        for quelle in reihenfolge:
             if uebersetzung.installiert(quelle):
                 sprache_ordner = uebersetzung.QUELLEN[quelle]['sprache']
                 return uebersetzung.ziel_ini(sprache_ordner), sprache_ordner, quelle

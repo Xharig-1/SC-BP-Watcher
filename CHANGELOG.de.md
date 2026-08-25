@@ -81,6 +81,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Der Zustandskasten nannte die falsche Textquelle.** Wer beide einmal benutzt hatte und
+  dann auf StarStrings umstellte, las weiter „Quelle: Deutsch (rjcncpt)" — die Reihenfolge
+  im Code entschied, nicht die Wahl. Dazu wurde die Wahl erst **nach** dem Einrichten
+  gemerkt: Ging das Herunterladen schief, zeigte das Feld die neue Quelle, während der
+  Rest des Programms mit der alten weiterrechnete.
+
 - **Testfassungen hatten keine Release-Beschreibung.** Getaggt wird `v3.0.0-rc5`, im
   Changelog steht `## v3.0.0` — das Skript fand nichts und schrieb „siehe Changelog".
   Wer testen sollte, erfuhr also nicht, was zu testen ist. Jetzt steht der Abschnitt der

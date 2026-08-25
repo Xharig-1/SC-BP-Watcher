@@ -1065,10 +1065,15 @@ def _quelle_waehlen(fenster, e, wahl, kennung, danach):
     """
     from . import pfade
     wahl.setzen(kennung)
+    # ⚠ Die Wahl wird **vor** dem Einrichten gemerkt. Sie stand vorher dahinter,
+    # und wenn das Herunterladen schiefging (kein Netz, Zertifikat, Server weg),
+    # blieb die alte Quelle eingetragen — das Feld zeigte die neue, der Rest des
+    # Programms rechnete mit der alten. Erst gilt, was gewählt wurde; ob es auch
+    # eingerichtet werden konnte, sagt der Kasten darüber.
+    pfade.einstellung_setzen('inj_quelle', kennung)
     fenster.sagen(t('s_sp_hole') % t(_QUELLTEXT.get(kennung, 's_sp_q_or')))
     try:
         e._inj_wechseln(kennung)
-        pfade.einstellung_setzen('inj_quelle', kennung)
     except Exception as ausnahme:
         fehler.merken('seiten.spiel.quelle', ausnahme)
         fenster.sagen(t('inj_fehler', ausnahme))

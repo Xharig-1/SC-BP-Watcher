@@ -80,6 +80,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The status box named the wrong text source.** Anyone who had used both and then
+  switched to StarStrings kept reading „Source: German (rjcncpt)" — the order in the code
+  decided, not the choice. The choice was also only stored **after** installing: if the
+  download failed, the field showed the new source while the rest of the program still
+  used the old one.
+
 - **Test builds had no release description.** The tag is `v3.0.0-rc5` while the changelog
   says `## v3.0.0` — the script found nothing and wrote „see the changelog". Anyone meant
   to test did not learn what to test. The base version's section is now used, with a
