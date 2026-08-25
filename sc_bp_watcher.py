@@ -54,7 +54,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc2'
+__version__ = '3.0.0-rc3'
 
 
 def _mitgeliefert(name):
@@ -1133,6 +1133,7 @@ class Overlay:
         # setzen kann, ohne dass `seiten.py` das Hauptprogramm importieren müsste.
         bildschirm.OVERLAY[0] = self.root
         overlay.OVERLAY_FENSTER[0] = self.root
+        overlay.OVERLAY_STEUERUNG[0] = self
         self.root.title('SC BP Watcher')
         self.root.configure(bg=BG)
         self.root.overrideredirect(True)          # randloses Overlay
@@ -1624,6 +1625,12 @@ class Overlay:
     def _liste_zu(self):
         self._fenster = None
         self.liste_lbl.config(fg=SUB)
+        # ⚠ Genau hier zieht eine geänderte Anzeigeart. Stellt jemand in den
+        # Einstellungen auf „nur bei einem Neuzugang" um, darf das Overlay nicht
+        # sofort verschwinden — er steht ja noch davor und will das Ergebnis
+        # sehen. Beim Schließen des Fensters ist der richtige Moment: Wer fertig
+        # eingestellt hat, will zurück ins Spiel.
+        self.verhalten_anwenden()
 
     def _current_geom(self):
         # Aus winfo bauen (nicht root.geometry()): so bleibt negatives Y als absolute
@@ -1648,7 +1655,10 @@ class Overlay:
         """
         self.anzeigeart = pfade.einstellung('overlay_modus') or 'immer'
         if self.anzeigeart == 'popup':
-            self.root.withdraw()
+            # Läuft gerade eine Einblendung, wird sie nicht abgeschnitten — der
+            # Zähler räumt gleich selbst auf.
+            if self._popup_uhr is None:
+                self.root.withdraw()
         else:
             try:
                 self.root.deiconify()

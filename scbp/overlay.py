@@ -66,6 +66,10 @@ _waechter = [None]
 # Hauptprogramm importieren zu müssen (das gäbe einen Ringschluss).
 OVERLAY_FENSTER = [None]
 
+# Das Overlay-Objekt selbst (nicht nur sein Tk-Fenster). Darüber kann die
+# Einstellungsseite eine Änderung sofort anwenden lassen.
+OVERLAY_STEUERUNG = [None]
+
 
 # --------------------------------------------------------- Mausklicks durchreichen
 

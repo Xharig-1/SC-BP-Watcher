@@ -376,6 +376,8 @@ TEXTE = {
     's_ov_immer':      ('Immer sichtbar', 'Always visible'),
     's_ov_popup':      ('Nur bei einem Neuzugang', 'Only on a new blueprint'),
     's_ov_modus_sagen': ('Overlay: %s', 'Overlay: %s'),
+    's_ov_popup_gleich': ('Overlay: nur bei einem Neuzugang — es verschwindet, sobald du dieses Fenster schließt.',
+                          'Overlay: only on a new blueprint — it disappears as soon as you close this window.'),
     's_ov_dauer':      ('Wie lange es stehen bleibt (Sekunden)',
                           'How long it stays (seconds)'),
     's_ov_dauer_h':    ('Gilt nur für „Nur bei einem Neuzugang". Kommen mehrere Baupläne kurz nacheinander, zählt die Zeit von vorn.',

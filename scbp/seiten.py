@@ -751,8 +751,10 @@ def _overlay_modus(fenster, wahl, kennung):
                 wurzel.deiconify()
         except Exception as ausnahme:
             fehler.merken('seiten.overlay_modus', ausnahme)
-    fenster.sagen(t('s_ov_modus_sagen')
-                  % t('s_ov_popup' if kennung == 'popup' else 's_ov_immer'))
+    if kennung == 'popup':
+        fenster.sagen(t('s_ov_popup_gleich'))
+    else:
+        fenster.sagen(t('s_ov_modus_sagen') % t('s_ov_immer'))
 
 
 def saubere_umgebung():
