@@ -63,13 +63,21 @@ GOLD    = '#e8c353'
 # Mindestgröße: Darunter bricht die Bedienung, und keine Layout-Regel hilft mehr.
 # Kleinste Größe, auf die sich das Fenster ziehen lässt — zugleich die Startgröße.
 #
-# Bewusst großzügig: `tools/randpruefung.py` zeigt, dass unterhalb von 1060 Pixel
-# Breite Bedienelemente auf den Seiten „Ordner", „Angaben im Spiel", „Bestand" und
-# „Über" rechts herausragen — auf Englisch früher als auf Deutsch, weil die Wörter
-# länger sind. Rücksicht auf kleine Laptop-Bildschirme braucht es nicht: Wer Star
-# Citizen spielt, sitzt nicht an einem 1366×768-Gerät. Ein Fenster, das sich nicht
-# beliebig klein ziehen lässt, macht weniger Ärger als abgeschnittene Knöpfe, die
-# niemand findet.
+# **Breite:** `tools/randpruefung.py` zeigt, dass unterhalb von 1060 Pixel
+# Bedienelemente auf den Seiten „Ordner", „Angaben im Spiel", „Bestand" und „Über"
+# rechts herausragen — auf Englisch früher als auf Deutsch, weil die Wörter länger
+# sind. 1100 gibt etwas Luft.
+#
+# **Höhe:** Der Wert hier ist nur die Untergrenze. Die wirkliche Mindesthöhe wird
+# **gemessen** (siehe `_mindesthoehe_nachziehen`), denn wie viel Platz die
+# Seitenleiste braucht, hängt an Schriftgröße und Anzeige-Skalierung: bei 100 %
+# rund 674 Pixel, bei 125 % schon 842. Eine feste Zahl wäre auf dem einen
+# System zu klein — dann ist unten „Diagnose" abgeschnitten — und auf dem anderen
+# unnötig groß.
+#
+# Rücksicht auf kleine Laptop-Bildschirme braucht es nicht: Wer Star Citizen
+# spielt, sitzt nicht an einem 1366×768-Gerät. Ein Fenster, das sich nicht beliebig
+# klein ziehen lässt, macht weniger Ärger als abgeschnittene Knöpfe.
 MIN_BREITE, MIN_HOEHE = 1100, 760
 
 # Wie viel Streichweg auf dem Trackpad eine Zeile ergibt. Ein Trackpad meldet
@@ -840,6 +848,9 @@ class Hauptfenster:
         self._korpus()
 
         self.oeffnen('liste')
+        # Die Mindesthöhe hängt an Schriftgröße und Skalierung — einmal messen,
+        # sobald Tk die Seitenleiste gezeichnet hat.
+        self.root.after(50, self._mindesthoehe_nachziehen)
         self.root.protocol('WM_DELETE_WINDOW', self.schliessen)
 
     # ------------------------------------------------------------- Schriften
@@ -994,6 +1005,64 @@ class Hauptfenster:
             teil.bind('<Button-1>', lambda e, k=kennung: self.oeffnen(k))
         self.knoepfe[kennung] = (zeile, strich, z, b, marke_widget)
 
+    def _seitenleiste_bedarf(self):
+        """Wie viele Pixel Höhe die Seitenleiste für all ihre Einträge braucht.
+
+        Gerechnet wird über die Kinder, nicht über den Rahmen selbst: Die Leiste
+        hat eine feste Breite (`pack_propagate(False)`), und dann meldet Tk für den
+        Rahmen die gesetzte Größe statt der des Inhalts.
+        """
+        hoch = 0
+        for kind in self.leiste.winfo_children():
+            try:
+                polster = kind.pack_info().get('pady', 0)
+            except Exception:
+                polster = 0
+            if isinstance(polster, str):
+                polster = sum(int(teil) for teil in polster.split())
+            elif isinstance(polster, (tuple, list)):
+                polster = sum(int(teil) for teil in polster)
+            hoch += kind.winfo_reqheight() + 2 * int(polster or 0)
+        return hoch
+
+    def _mindesthoehe_nachziehen(self, versuch=0):
+        """Die Mindesthöhe an das anpassen, was die Seitenleiste braucht.
+
+        ⚠ Gerechnet wird immer für den **aufgeklappten** Zustand — auch solange
+        „Für Fortgeschrittene" noch zu ist. Sonst passte das Fenster genau, und beim
+        Aufklappen war „Diagnose" unten abgeschnitten: Die Reiter werden von oben
+        gepackt, der Klappteil von unten, und was dazwischen nicht hineinpasst,
+        fällt heraus. Genau so gemeldet. Ein Fenster, das beim Aufklappen von selbst
+        wächst, wäre die zweitbeste Lösung — es springt dann unter den Händen.
+
+        ⚠ Gemessen wird erst, wenn Tk die Leiste wirklich gezeichnet hat. Vorher ist
+        ihre Höhe 1 Pixel, und die Rechnung „Fenster minus Leiste" ergibt Unsinn —
+        im ersten Anlauf kam so eine Mindesthöhe von 1418 Pixeln heraus. Ist sie noch
+        nicht so weit, wird es kurz darauf noch einmal versucht.
+        """
+        try:
+            if self.leiste.winfo_height() < 50:
+                if versuch < 10:
+                    self.root.after(60, lambda: self._mindesthoehe_nachziehen(
+                        versuch + 1))
+                return
+            bedarf = self._seitenleiste_bedarf()
+            if not self.fortgeschritten_offen:
+                # Platz für die zwei Einträge mitrechnen, die beim Aufklappen
+                # dazukommen. Sie sind so hoch wie jeder andere Reiter.
+                zeile = self.knoepfe.get('liste')
+                if zeile:
+                    bedarf += 2 * zeile[0].winfo_reqheight()
+            kopf_und_fuss = max(0, self.root.winfo_height()
+                                - self.leiste.winfo_height())
+            noetig = max(MIN_HOEHE, bedarf + kopf_und_fuss)
+            self.root.minsize(MIN_BREITE, noetig)
+            if self.root.winfo_height() < noetig:
+                self.root.geometry('%dx%d' % (max(MIN_BREITE,
+                                                  self.root.winfo_width()), noetig))
+        except tk.TclError:
+            pass
+
     def _klapp_umschalten(self):
         self.fortgeschritten_offen = not self.fortgeschritten_offen
         if self.fortgeschritten_offen:
@@ -1005,6 +1074,10 @@ class Hauptfenster:
         else:
             self.klappinhalt.pack_forget()
             self.klappknopf.configure(text='▶ ' + t('hf_fortgeschritten'))
+        # Kurz warten, statt `after_idle`: Vorher hat Tk die neuen Einträge noch
+        # nicht vermessen — und `after_idle` kommt hier nicht zuverlässig dran,
+        # weil die Bauplan-Liste selbst Leerlauf-Aufgaben nachlegt.
+        self.root.after(30, self._mindesthoehe_nachziehen)
 
     # ------------------------------------------------------------ Seitenwahl
     def oeffnen(self, kennung):
