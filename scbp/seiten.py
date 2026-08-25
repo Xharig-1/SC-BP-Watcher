@@ -420,7 +420,7 @@ def _allgemein(fenster, rahmen):
     wahl = _wahl(fenster, ziel,
                  [('auto', t('sprache_auto')), ('de', 'Deutsch'), ('en', 'English')],
                  pfade.einstellungen().get('sprache') or 'auto',
-                 lambda k: e._sprache_waehlen(k))
+                 lambda k: (wahl.setzen(k), e._sprache_waehlen(k)))
     wahl.pack()
 
     ziel = _feld(fenster, innen, t('e_ton'),
@@ -481,7 +481,8 @@ def _anzeige(fenster, rahmen):
                  [(s, t('hf_s_' + s))
                   for s in ('klein', 'normal', 'gross', 'sehrgross')],
                  pfade.einstellung('schriftgroesse') or 'normal',
-                 lambda k: (fenster.schriftgroesse_setzen(k),
+                 lambda k: (wahl.setzen(k),
+                            fenster.schriftgroesse_setzen(k),
                             fenster.sagen('%s: %s' % (t('hf_schrift'),
                                                       t('hf_s_' + k)))))
     wahl.pack()
@@ -654,7 +655,8 @@ def _spiel(fenster, rahmen):
                  [('deutsch', t('s_sp_q_de')), ('starstrings', t('s_sp_q_ss')),
                   ('original', t('s_sp_q_or'))],
                  pfade.einstellung('inj_quelle') or '',
-                 lambda k: (e._inj_wechseln(k),
+                 lambda k: (wahl.setzen(k),
+                            e._inj_wechseln(k),
                             pfade.einstellung_setzen('inj_quelle', k),
                             fenster.sagen(t('s_sp_quelle_ist') % k)))
     wahl.pack()
