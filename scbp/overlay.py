@@ -19,7 +19,7 @@
 """
 Wie sich das Overlay im Spiel verhält.
 
-Anlass war eine Rückmeldung aus der Orga: „Das Overlay ist permanent zu sehen und
+Anlass war eine Rückmeldung von Haldjas (pr0citizen): „Das Overlay ist permanent zu sehen und
 nicht durchklickbar. Wenn ich im Kampf mit der Maus hineinkomme, wird das
 unangenehm." — Recht hat er. Ein Werkzeug, das beim Spielen im Weg steht, benutzt
 niemand, egal wie gut es sonst ist.

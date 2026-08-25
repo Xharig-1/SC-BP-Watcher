@@ -553,7 +553,7 @@ def _anzeige(fenster, rahmen):
     e = _einstellungen(fenster)
 
     # --- Wie sich das Overlay im Spiel verhält -------------------------------
-    # Angestoßen von einer Rückmeldung aus der Orga: „Das Overlay ist permanent
+    # Angestoßen von einer Rückmeldung von Haldjas (pr0citizen): „Das Overlay ist permanent
     # zu sehen und nicht durchklickbar. Wenn ich im Kampf mit der Maus
     # hineinkomme, wird das unangenehm."
     ziel = _feld(fenster, innen, t('s_ov_modus'), t('s_ov_modus_h'), breit=True)
