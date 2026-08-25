@@ -1,5 +1,19 @@
-# Veroeffentlicht samstags um 12 Uhr deutscher Zeit — aber nur, wenn wirklich
-# eine Fassung fertig ist.
+# Prueft, ob eine Fassung fertig ist — veroeffentlicht aber NICHTS von selbst.
+#
+# ⚠ Der Zeitplan ist am 25.08.2026 abgeschaltet worden. Gemeldet: "Release machen wir
+# jeden Samstag um 12 Uhr, stossen den aber selber an, kein Auto-Release, ist zu
+# vage, ist besser wir machen das selber." Und das stimmt: Ein Ablauf, der von
+# allein taggt, entscheidet anhand von Changelog-Datum und Versionsnummer — beides
+# sagt nichts darueber, ob die Fassung wirklich gut ist. Am Samstag steht ausserdem
+# oft ein frischer Spiel-Patch an; ob der noch mit hineingehoert, weiss nur ein
+# Mensch.
+#
+# Was bleibt: Der Ablauf laesst sich von Hand starten und sagt, ob alles beisammen
+# ist (Versionsnummer, beide Changelogs, Datum erreicht). Veroeffentlicht wird nur,
+# wenn man den Trockenlauf ausdruecklich abwaehlt.
+#
+# Der uebliche Weg zum Release ist und bleibt:
+#   git tag v3.0.0 && git push origin v3.0.0
 #
 # Warum es diesen Ablauf ueberhaupt gibt:
 #   Ein Tag, den ein Ablauf mit dem Standard-Token setzt, loest KEINEN weiteren
@@ -16,14 +30,14 @@
 # Von Hand ausprobieren: Actions -> "Release nach Zeitplan" -> Run workflow.
 # Der Trockenlauf ist dabei voreingestellt und veroeffentlicht nichts.
 
-name: Release nach Zeitplan
+name: Release-Bereitschaft pruefen
 
 on:
-  schedule:
-    # GitHub rechnet in UTC. Deutschland wechselt zweimal im Jahr, deshalb zwei
-    # Zeiten — die falsche steigt unten bei der Uhrzeitpruefung wieder aus.
-    - cron: '0 10 * * 6'      # Sommerzeit: samstags 12:00 in Deutschland
-    - cron: '0 11 * * 6'      # Winterzeit: samstags 12:00 in Deutschland
+  # ⚠ KEIN `schedule` mehr — siehe Kopf. Der Zeitplan stand hier:
+  #     - cron: '0 10 * * 6'   (Sommerzeit, samstags 12:00 deutscher Zeit)
+  #     - cron: '0 11 * * 6'   (Winterzeit)
+  # Wer ihn je wieder will, setzt beide Zeilen zurueck; die Uhrzeitpruefung
+  # weiter unten faengt die jeweils falsche ab.
   workflow_dispatch:
     inputs:
       trockenlauf:
