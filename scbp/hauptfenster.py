@@ -195,19 +195,36 @@ def rundrahmen(eltern, grund, rand, radius=8, grundfarbe=None):
     innen = tk.Frame(leinwand, bg=grund)
     form = _rundes_rechteck(leinwand, 1, 1, 100, 100, radius=radius,
                             fill=grund, outline=rand, width=1)
-    fenster_id = leinwand.create_window(1, 1, window=innen, anchor='nw')
+    # ⚠ Ein per `create_window` eingesetztes Widget liegt in Tk IMMER über
+    # allem Gemalten — die Zeichenreihenfolge gilt dafür nicht. Säße der Inhalt
+    # bündig in der Ecke, deckte sein rechteckiger Hintergrund die Rundung ab,
+    # und der Kasten sähe trotz gemaltem Bogen eckig aus. Deshalb rückt der
+    # Inhalt um die halbe Rundung ein; dort bleibt der Bogen frei.
+    einzug = max(2, radius // 2)
+    fenster_id = leinwand.create_window(einzug, einzug, window=innen,
+                                        anchor='nw')
 
     def nachziehen(_=None):
+        # ⚠ Solange nichts gezeichnet ist, meldet `winfo_width` eine 1. Dann
+        # die gewünschte Breite nehmen — sonst bliebe das Rechteck auf seinen
+        # Anfangskoordinaten stehen, seine Rundungen lägen außerhalb der
+        # Leinwand, und der Kasten sähe wieder eckig aus. Genau das ist bei den
+        # schmalen Zahlenfeldern passiert.
         breite = leinwand.winfo_width()
+        if breite < 10:
+            breite = leinwand.winfo_reqwidth()
         hoehe = innen.winfo_reqheight()
         if breite < 10:
             return
-        leinwand.configure(height=hoehe + 2)
-        leinwand.itemconfigure(fenster_id, width=breite - 2)
-        leinwand.coords(form, *ecken(1, 1, breite - 1, hoehe + 1, radius))
+        leinwand.configure(height=hoehe + einzug * 2)
+        leinwand.itemconfigure(fenster_id, width=breite - einzug * 2)
+        leinwand.coords(form, *ecken(1, 1, breite - 1,
+                                     hoehe + einzug * 2 - 1, radius))
 
     innen.bind('<Configure>', nachziehen)
     leinwand.bind('<Configure>', nachziehen)
+    leinwand.bind('<Map>', nachziehen)
+    innen.nachziehen = nachziehen
     innen.halter = halter
     innen.leinwand = leinwand
     innen.form = form
@@ -223,21 +240,42 @@ def rundes_feld(eltern, textvariable, schrift, grund, rand, akzent, fg,
     Hineinklicken wechselt der Rand auf die Akzentfarbe, damit man sieht, wo
     man schreibt.
     """
-    innen = rundrahmen(eltern, grund, rand, radius=8)
+    schrift = _als_schrift(schrift)
+    radius = 8
+    polster = 6
+    hoehe = schrift.metrics('linespace') + polster * 2
+    leinwand = tk.Canvas(eltern, height=hoehe, bg=eltern.cget('bg'),
+                         highlightthickness=0, bd=0)
+    form = _rundes_rechteck(leinwand, 1, 1, 100, hoehe - 1, radius=radius,
+                            fill=grund, outline=rand, width=1)
     if textvariable is not None:
         kw['textvariable'] = textvariable
-    feld = tk.Entry(innen, bg=grund, fg=fg, font=schrift, relief='flat', bd=0,
-                    highlightthickness=0, insertbackground=fg, **kw)
+    feld = tk.Entry(leinwand, bg=grund, fg=fg, font=schrift, relief='flat',
+                    bd=0, highlightthickness=0, insertbackground=fg, **kw)
+    fenster_id = leinwand.create_window(polster + 2, hoehe / 2.0, window=feld,
+                                        anchor='w')
+
+    def nachziehen(_=None):
+        b = leinwand.winfo_width()
+        if b < 10:
+            b = leinwand.winfo_reqwidth()
+        if b < 10:
+            return
+        leinwand.coords(form, *ecken(1, 1, b - 1, hoehe - 1, radius))
+        leinwand.itemconfigure(fenster_id, width=b - (polster + 2) * 2)
+
+    leinwand.bind('<Configure>', nachziehen)
+    leinwand.bind('<Map>', nachziehen)
     if breite:
-        feld.configure(width=breite)
-    feld.pack(fill='both', expand=True, padx=8, pady=5)
+        # Feste Breite: so viele Ziffern plus Luft. Ohne das zieht `fill='x'`
+        # der Zeile das Feld über die halbe Seite.
+        leinwand.configure(width=schrift.measure('0') * breite + polster * 4)
+    feld.halter = leinwand
+    leinwand.after(0, nachziehen)
     feld.bind('<FocusIn>',
-              lambda e: innen.leinwand.itemconfigure(innen.form, outline=akzent),
-              add='+')
+              lambda e: leinwand.itemconfigure(form, outline=akzent), add='+')
     feld.bind('<FocusOut>',
-              lambda e: innen.leinwand.itemconfigure(innen.form, outline=rand),
-              add='+')
-    feld.halter = innen.halter
+              lambda e: leinwand.itemconfigure(form, outline=rand), add='+')
     return feld
 
 

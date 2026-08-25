@@ -947,27 +947,15 @@ def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text=''):
     *Was bedeutet das für mich?* Zwei Kästen mit je zwei Sätzen tun das.
     """
     from .hauptfenster import marke as blase
-    from .hauptfenster import _rundes_rechteck
-    rand = tk.Frame(eltern, bg=BG, cursor='hand2')
+    from .hauptfenster import rundrahmen
+    innen = rundrahmen(eltern, FLAECHE, ACCENT if gewaehlt else LINIE,
+                       radius=8, grundfarbe=BG)
+    rand = innen.halter
     rand.pack(side='left', fill='both', expand=True, padx=(0, 10))
-    leinwand = tk.Canvas(rand, bg=BG, highlightthickness=0, bd=0, height=10,
-                         cursor='hand2')
-    leinwand.pack(fill='both', expand=True)
-    innen = tk.Frame(leinwand, bg=FLAECHE, cursor='hand2')
-    form = _rundes_rechteck(leinwand, 1, 1, 100, 100, radius=8, fill=FLAECHE,
-                            outline=ACCENT if gewaehlt else LINIE, width=1)
-    fid = leinwand.create_window(1, 1, window=innen, anchor='nw')
-
-    def nachziehen(_=None):
-        breite, hoehe = leinwand.winfo_width(), innen.winfo_reqheight()
-        if breite < 10:
-            return
-        leinwand.configure(height=hoehe + 2)
-        leinwand.itemconfigure(fid, width=breite - 2)
-        leinwand.coords(form, *_ecken(1, 1, breite - 1, hoehe + 1, 8))
-
-    innen.bind('<Configure>', nachziehen)
-    leinwand.bind('<Configure>', nachziehen)
+    rand.configure(cursor='hand2')
+    innen.configure(cursor='hand2')
+    innen.leinwand.configure(cursor='hand2')
+    leinwand = innen.leinwand
 
     kopf = tk.Frame(innen, bg=FLAECHE)
     kopf.pack(fill='x', padx=14, pady=(12, 2))
