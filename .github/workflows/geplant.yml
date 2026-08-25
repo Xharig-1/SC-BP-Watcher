@@ -16,14 +16,23 @@
 # Von Hand ausprobieren: Actions -> "Release nach Zeitplan" -> Run workflow.
 # Der Trockenlauf ist dabei voreingestellt und veroeffentlicht nichts.
 
-name: Release nach Zeitplan
+name: Release-Bereitschaft pruefen
 
 on:
-  schedule:
-    # GitHub rechnet in UTC. Deutschland wechselt zweimal im Jahr, deshalb zwei
-    # Zeiten — die falsche steigt unten bei der Uhrzeitpruefung wieder aus.
-    - cron: '0 10 * * 3'      # Sommerzeit: 12:00 in Deutschland
-    - cron: '0 11 * * 3'      # Winterzeit: 12:00 in Deutschland
+  # ⚠ KEIN Zeitplan mehr — abgeschaltet am 25.08.2026.
+  #
+  # Gemeldet: „Release machen wir jeden Samstag um 12 Uhr, stossen den aber selber
+  # an, kein Auto-Release, ist zu vage, ist besser wir machen das selber."
+  #
+  # Und es war knapp: Hier stand `* * 3` — **mittwochs**. Am 26.08.2026 haette
+  # dieser Ablauf `v2.1.0` veroeffentlicht, denn `__version__` stand auf 2.1.0 und
+  # im Changelog stand `## v2.1.0 - 2026-08-26`. Dass v2.1.0 laengst abgesagt ist
+  # (es wird v3.0.0), weiss die Pruefung nicht — sie sieht nur Nummer und Datum.
+  # Genau darum entscheidet das ab jetzt ein Mensch.
+  #
+  # Der Zeitplan stand hier:
+  #     - cron: '0 10 * * 3'   (Sommerzeit, 12:00 deutscher Zeit)
+  #     - cron: '0 11 * * 3'   (Winterzeit)
   workflow_dispatch:
     inputs:
       trockenlauf:
