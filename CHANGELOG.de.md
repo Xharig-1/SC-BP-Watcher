@@ -19,6 +19,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Fassung holen, direkt aus dem Fenster.** Unter jeder der beiden Karten („Nur fertige
+  Fassungen" / „Auch Testfassungen") steht ein Knopf über die volle Breite, der die letzte
+  Fassung dieses Kanals lädt und einspielt — auch zurück von einer Testfassung auf die
+  letzte fertige.
+
 - **Eintrag im Startmenü (Linux).** Der Assistent bietet ihn am Ende an, die Einstellungen
   jederzeit. Unter Windows macht das der Installer — unter Linux lag das AppImage bisher
   im Download-Ordner und stand in keinem Menü. Auf den Eintrag lässt sich außerdem eine
@@ -80,6 +85,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Kein Speichern-Knopf mehr** — Änderungen greifen sofort.
 
 ### Behoben
+
+- **Der aufgeklappte Text stand unter allen Versionen statt unter seiner.** Tk packt einen
+  Block ans Ende der Fläche, wenn man ihm nicht sagt, wohin — bei elf Fassungen erschien
+  der Inhalt von v3.0.0 also unterhalb von v1.0.0. Wer nicht weit genug rollt, hält die
+  Fassung für leer.
+- **Der GitHub-Link auf „Über" war keiner.** Er sah aus wie ein Link und tat nichts.
 
 - **Der Zustandskasten nannte die falsche Textquelle.** Wer beide einmal benutzt hatte und
   dann auf StarStrings umstellte, las weiter „Quelle: Deutsch (rjcncpt)" — die Reihenfolge

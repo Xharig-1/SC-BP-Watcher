@@ -196,6 +196,25 @@ def nachsehen(eigene_version, erzwingen=False):
     return bester
 
 
+def neueste(mit_vorab):
+    """Die neueste bekannte Freigabe eines Kanals — unabhängig von der eigenen Fassung.
+
+    ⚠ Nicht dasselbe wie `nachsehen()`. Das meldet nur, was **neuer** ist als die
+    laufende Fassung — richtig für eine Update-Meldung, unbrauchbar für einen
+    Knopf „hol mir die letzte fertige Fassung". Wer eine Testfassung fährt, will
+    ja gerade zurück auf die fertige können.
+    """
+    bester = None
+    for f in freigaben():
+        if not f.get('version'):
+            continue
+        if f.get('vorab') and not mit_vorab:
+            continue
+        if bester is None or ist_neuer(f['version'], bester['version']):
+            bester = f
+    return bester
+
+
 def freigaben():
     """Alle bekannten Freigaben, neueste zuerst — für das Änderungsprotokoll."""
     return _cache_lesen().get('freigaben') or []

@@ -19,6 +19,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **Get a release straight from the window.** Under each of the two cards („Stable
+  releases only" / „Test builds too") there is a full-width button that downloads and
+  installs the latest release of that channel — including going back from a test build to
+  the last stable one.
+
 - **Application menu entry (Linux).** The wizard offers it at the end, the settings any
   time. On Windows the installer handles this — on Linux the AppImage sat in the downloads
   folder and appeared in no menu. You can also put a keyboard shortcut on the entry to
@@ -79,6 +84,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **No more save button** — changes take effect right away.
 
 ### Fixed
+
+- **The expanded text sat below every version instead of below its own.** Tk packs a block
+  at the end of the area unless told otherwise — with eleven releases, the content of
+  v3.0.0 appeared below v1.0.0. Anyone not scrolling far enough thinks the release is
+  empty.
+- **The GitHub link on „About" was not a link.** It looked like one and did nothing.
 
 - **The status box named the wrong text source.** Anyone who had used both and then
   switched to StarStrings kept reading „Source: German (rjcncpt)" — the order in the code

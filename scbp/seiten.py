@@ -1407,7 +1407,13 @@ def _fassung(fenster, eltern, eintrag, punkte, offen):
         zustand['offen'] = not zustand['offen']
         pfeil.configure(text='▼' if zustand['offen'] else '▶')
         if zustand['offen']:
-            koerper.pack(fill='x')
+            # ⚠ `after=kopf` ist der ganze Witz. Ohne das packt Tk den Inhalt ans
+            # **Ende** der Fläche — also unter alle anderen Versionen. Bei elf
+            # Fassungen klappte man v3.0.0 auf und der Text erschien unterhalb von
+            # v1.0.0; wer nicht weit genug rollt, hält die Fassung für leer. Beim
+            # ersten Zeichnen fiel das nicht auf, weil dort Kopf und Inhalt
+            # ohnehin nacheinander gepackt werden.
+            koerper.pack(fill='x', after=kopf)
         else:
             koerper.pack_forget()
 
@@ -1449,8 +1455,79 @@ def _wertzeile(fenster, eltern, bez, wert, farbe=None):
              font=fenster.f_klein, anchor='w').pack(side='left')
 
 
+def _holen_text(mit_vorab):
+    """Die Beschriftung des Knopfes — mit der Fassung, die dahinter steckt.
+
+    Aus dem Zwischenspeicher, ohne ins Netz zu gehen: Die Seite soll sofort
+    stehen. Beim Klick wird ohnehin frisch nachgesehen; steht dann eine neuere
+    Fassung an, holt der Knopf diese.
+    """
+    from . import aktualisierung
+    try:
+        freigabe = aktualisierung.neueste(mit_vorab)
+    except Exception:
+        freigabe = None
+    if not freigabe:
+        return t('s_ub_holen_keine')
+    return t('s_ub_holen') % freigabe.get('version')
+
+
+def _fassung_holen(fenster, mit_vorab):
+    """Die neueste Fassung dieses Kanals holen und einspielen.
+
+    ⚠ Nicht `nachsehen()` benutzen: Das meldet nur, was **neuer** ist als die
+    laufende Fassung. Wer eine Testfassung fährt und zurück auf die letzte
+    fertige will, bekäme damit nichts. `neueste()` fragt den Kanal, nicht den
+    Abstand zur eigenen Fassung.
+
+    Heruntergeladen wird in einem eigenen Faden — es sind zwölf Megabyte, und
+    das Fenster darf so lange nicht einfrieren.
+    """
+    import threading
+    from . import aktualisierung
+    # ⚠ Erst nachsehen, dann greifen. Die Liste der Freigaben steht im
+    # Zwischenspeicher und frischt sich nur einmal am Tag auf — ohne diesen
+    # Schritt holt der Knopf die Fassung von gestern, obwohl heute eine neuere
+    # da ist. Gemessen: Der Knopf bot v3.0.0-rc2 an, während rc7 längst
+    # veröffentlicht war.
+    try:
+        aktualisierung.nachsehen(fenster.version or '0.0.0')
+    except Exception as ausnahme:
+        fehler.merken('seiten.fassung_holen.nachsehen', ausnahme)
+    freigabe = aktualisierung.neueste(mit_vorab)
+    if not freigabe:
+        fenster.sagen(t('s_ub_holen_keine'))
+        return
+    art = aktualisierung.verpackung()
+    if art == 'quellcode':
+        fenster.sagen(t('update_quellcode'))
+        return
+    datei = aktualisierung.passende_datei(freigabe)
+    if not datei:
+        fenster.sagen(t('selbst_holen'))
+        return
+
+    fenster.sagen(t('s_ub_holen_laeuft') % freigabe.get('version'))
+
+    def arbeit():
+        try:
+            ziel = aktualisierung.herunterladen(
+                datei, fortschritt=lambda p: fenster.root.after(
+                    0, lambda: fenster.sagen(t('wird_geladen', p))))
+            geklappt, grund = aktualisierung.einspielen(ziel)
+            fenster.root.after(0, lambda: fenster.sagen(
+                t('neustart_noetig') if geklappt else t('update_fehler', grund)))
+        except Exception as ausnahme:
+            grund = str(ausnahme)
+            fehler.merken('seiten.fassung_holen', ausnahme)
+            fenster.root.after(0, lambda: fenster.sagen(
+                t('update_fehler', grund)))
+
+    threading.Thread(target=arbeit, daemon=True).start()
+
+
 def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text='',
-                 untereinander=False):
+                 untereinander=False, holen=None, holen_text=''):
     """Eine Wahlmöglichkeit als Kasten — wie in der Vorschau.
 
     Ein Schalter mit „an/aus" beantwortet die Frage nicht, die der Spieler hat:
@@ -1497,6 +1574,13 @@ def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text='',
             kind.bind('<Button-1>', lambda e: tat())
         except Exception:
             pass
+
+    # Der Holen-Knopf ganz unten im Kasten, über die volle Breite. ⚠ **Nach** den
+    # Bindungen oben angelegt: Sonst würde ihn die Schleife mit „Kanal wählen"
+    # belegen, und ein Klick darauf täte etwas anderes als draufsteht.
+    if holen is not None:
+        knopf = _knopf(fenster, innen, holen_text, holen, stark=gewaehlt)
+        knopf.pack(fill='x', padx=14, pady=(0, 12))
     return rand
 
 
@@ -1564,10 +1648,14 @@ def _ueber(fenster, rahmen):
         eng = breite < SCHMAL
         kaesten.zuletzt_eng = eng
         _kanalkasten(fenster, kaesten, t('s_ub_fertig'), t('s_ub_fertig_h'),
-                     not an, lambda: kanal_setzen(False), untereinander=eng)
+                     not an, lambda: kanal_setzen(False), untereinander=eng,
+                     holen=lambda: _fassung_holen(fenster, False),
+                     holen_text=_holen_text(False))
         _kanalkasten(fenster, kaesten, t('s_ub_test'), t('s_ub_test_h'),
                      an, lambda: kanal_setzen(True), marke_text='rc',
-                     untereinander=eng)
+                     untereinander=eng,
+                     holen=lambda: _fassung_holen(fenster, True),
+                     holen_text=_holen_text(True))
 
     def kanal_pruefen(_=None):
         """Nur neu bauen, wenn die Anordnung wirklich kippt — sonst flackert es."""
@@ -1607,9 +1695,8 @@ def _ueber(fenster, rahmen):
     tk.Label(rechts, text='SC BP Watcher %s · GPL-3.0-only'
              % (fenster.version or ''), bg=FLAECHE, fg=SUB,
              font=fenster.f_klein, anchor='w').pack(fill='x')
-    tk.Label(rechts, text='github.com/Xharig-1/SC-BP-Watcher', bg=FLAECHE,
-             fg=ACCENT, font=fenster.f_klein, anchor='w').pack(fill='x',
-                                                               pady=(4, 0))
+    _adresse(fenster, rechts, 'github.com/Xharig-1/SC-BP-Watcher',
+             'https://github.com/Xharig-1/SC-BP-Watcher')
 
     dank = _karte(innen, pady=(10, 0))
     tk.Label(dank, text=t('hf_dank'), bg=FLAECHE, fg=FG, font=fenster.f_klein,
@@ -1632,6 +1719,61 @@ def _ueber(fenster, rahmen):
 
     _fliesstext(innen, t('hf_fancontent'), fenster.f_klein,
                 fill='x', pady=(14, 24))
+
+
+def _adresse(fenster, eltern, text, ziel, grund=None):
+    """Eine anklickbare Adresse — öffnet den Browser.
+
+    ⚠ Vorher war das ein gewöhnliches Label in der Akzentfarbe: Es **sah aus wie
+    ein Link** und tat nichts. Das ist schlimmer als schwarzer Text, weil es zum
+    Klicken einlädt. Jetzt ist der Mauszeiger eine Hand, die Adresse unterstreicht
+    sich beim Überfahren, und ein Klick öffnet sie.
+    """
+    grund = grund or FLAECHE
+    lbl = tk.Label(eltern, text=text, bg=grund, fg=ACCENT, font=fenster.f_klein,
+                   anchor='w', cursor='hand2')
+    lbl.pack(fill='x', pady=(4, 0))
+
+    def oeffnen(_=None):
+        import webbrowser
+        try:
+            # Im AppImage zeigen unsere eigenen Bibliothekspfade auf das entpackte
+            # Paket; ein daraus gestarteter Browser stirbt sofort. Deshalb dieselbe
+            # saubere Umgebung wie beim Ordner-Öffnen.
+            umgebung_alt = dict(os.environ)
+            os.environ.clear()
+            os.environ.update(saubere_umgebung())
+            try:
+                geklappt = webbrowser.open(ziel)
+            finally:
+                os.environ.clear()
+                os.environ.update(umgebung_alt)
+        except Exception as ausnahme:
+            fehler.merken('seiten.adresse', ausnahme, ziel)
+            geklappt = False
+        fenster.sagen(t('s_ub_auf') % ziel if geklappt else t('s_ub_auf_nein') % ziel)
+
+    def rein(_=None):
+        lbl.configure(font=_unterstrichen(fenster.f_klein))
+
+    def raus(_=None):
+        lbl.configure(font=fenster.f_klein)
+
+    lbl.bind('<Button-1>', oeffnen)
+    lbl.bind('<Enter>', rein)
+    lbl.bind('<Leave>', raus)
+    return lbl
+
+
+def _unterstrichen(schrift):
+    """Dieselbe Schrift, nur unterstrichen — für die Maus-über-Anzeige."""
+    import tkinter.font as tkfont
+    try:
+        kopie = tkfont.Font(font=schrift)
+        kopie.configure(underline=True)
+        return kopie
+    except tk.TclError:
+        return schrift
 
 
 def _schalter(fenster, eltern, schluessel, standard):
