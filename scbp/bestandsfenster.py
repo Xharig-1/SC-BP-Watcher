@@ -73,7 +73,7 @@ GELB    = '#d8a03a'
 # Sekunden Wartezeit. Wer mehr will, tippt oder klickt auf „weitere anzeigen".
 ZEILEN_ZUERST = 40
 
-# Wie hoch der Inhalt einer Rollfläche höchstens werden darf.
+# Ab welcher Inhaltshöhe die Liste in Blöcken gezeigt werden muss.
 #
 # ⚠ Das ist keine Geschmacksfrage, sondern eine harte Grenze des Fenstersystems:
 # X11 rechnet Fensterkoordinaten in **16 Bit**, es gibt also keine Position
@@ -83,10 +83,17 @@ ZEILEN_ZUERST = 40
 # Skalierung: Inhalt 33452 px, davon 16 Elemente jenseits der Grenze — und genau
 # die überlagerten sich.
 #
-# Deshalb ein Sicherheitsabstand: Der Inhalt bleibt unter 32000 px. Wie viele
-# Zeilen das sind, hängt von Schriftgröße und Skalierung ab und wird gemessen,
-# nicht geraten (siehe `_zeilen_deckel`).
+# Ein Sicherheitsabstand bis 32000 px. Wie viele Zeilen das sind, hängt von
+# Schriftgröße und Skalierung ab und wird gemessen, nicht geraten (siehe
+# `_zeilen_deckel`). Wird es mehr, übernimmt der Blockmodus — abgeschnitten wird
+# nichts, siehe „Lange Liste in Blöcken".
 HOECHSTE_INHALTSHOEHE = 32000
+
+# Wie viele Reihen in einen Block kommen, wenn die Liste in Blöcken gezeigt
+# wird (siehe „Lange Liste in Blöcken"). 120 Reihen sind rund 5000 Pixel —
+# klein genug, dass immer nur wenige Blöcke gleichzeitig gebaut sein müssen,
+# und groß genug, dass beim Rollen nicht dauernd neu gebaut wird.
+BLOCK_REIHEN = 120
 # Die Programmversion wird vom Hauptprogramm gesetzt; sie landet im
 # scmdb-Export als Kennung des erzeugenden Werkzeugs.
 VERSION = ['']
@@ -668,6 +675,14 @@ class Bestandsfenster:
         self._herkunft_zeichnen()
 
     def _liste(self):
+        # Anfangswerte für den Blockmodus. Müssen stehen, **bevor** die Leinwand
+        # existiert: Ihr `yscrollcommand` feuert schon beim ersten Zeichnen.
+        self._blockteile = {}
+        self._reihen = []
+        self._block_start, self._block_y, self._block_h = [], [], []
+        self._gesamthoehe = 0
+        self._pflege_laeuft = False
+
         rahmen = tk.Frame(self.root, bg=BG)
         rahmen.pack(fill='both', expand=True, padx=14, pady=(0, 10))
         self.leinwand = tk.Canvas(rahmen, bg=BG, highlightthickness=0)
@@ -677,9 +692,14 @@ class Bestandsfenster:
         self.inhalt.bind('<Configure>', lambda e: self._rollbereich_anmelden())
         self.fenster = self.leinwand.create_window((0, 0), window=self.inhalt,
                                                    anchor='nw')
-        self.leinwand.bind('<Configure>', lambda e: self.leinwand.itemconfigure(
-            self.fenster, width=e.width))
-        self.leinwand.configure(yscrollcommand=rolle.set)
+        self.leinwand.bind('<Configure>', lambda e: self._leinwand_breit(e.width))
+        # ⚠ Zwischen Leinwand und Rollleiste gehängt: Beim Rollen müssen im
+        # Blockmodus die Blöcke nachgezogen werden, die neu ins Bild kommen.
+        def gerollt(anfang, ende):
+            rolle.set(anfang, ende)
+            self._bloecke_pflegen()
+
+        self.leinwand.configure(yscrollcommand=gerollt)
         self.leinwand.pack(side='left', fill='both', expand=True)
         rolle.pack(side='right', fill='y')
         # ⚠ Hier stand `bind_all` OHNE `add='+'`. Das ersetzt jede vorher
@@ -689,6 +709,15 @@ class Bestandsfenster:
         # sie gar nicht zu sehen war.
         from .hauptfenster import rad_anschliessen
         rad_anschliessen(self.leinwand)
+
+    def _leinwand_breit(self, breite):
+        """Der Inhalt ist so breit wie die Leinwand — im Blockmodus auch die Blöcke."""
+        try:
+            self.leinwand.itemconfigure(self.fenster, width=breite)
+            for wid, _rahmen in getattr(self, '_blockteile', {}).values():
+                self.leinwand.itemconfigure(wid, width=breite)
+        except tk.TclError:
+            pass
 
     # ----------------------------------------------------------------- Zeichnen
     def _filter_setzen(self, welcher):
@@ -791,34 +820,45 @@ class Bestandsfenster:
             self._hinweis_kein_katalog()
             return
 
-        # Zwei Grenzen: die freiwillige (erst 40 Zeilen, der Rest auf Klick) und
-        # die unumgängliche (X11 kann nichts jenseits von 32767 px positionieren).
-        deckel = self._zeilen_deckel() if self.alle_zeigen else ZEILEN_ZUERST
-        gezeichnet = 0
-        for art, treffer in gruppen:
-            if gezeichnet >= deckel:
-                break
-            self._gruppenkopf(art, treffer, habe)
-            for eintrag, drin in treffer:
+        # Zwei Wege, je nachdem wie lang die Liste wird:
+        #
+        # * **Kurz** (der Normalfall — beim Start 40 Zeilen, mit Suche oder Filter
+        #   fast immer): alles in einen Rahmen packen. Erprobt und einfach.
+        # * **Lang** („alle anzeigen" ohne Filter, über 700 Zeilen): in Blöcken,
+        #   weil ein einzelner Rahmen sonst höher würde, als X11 Fenster
+        #   platzieren kann — siehe „Lange Liste in Blöcken".
+        gesamt_zeilen = sum(len(paare) for _, paare in gruppen)
+        in_bloecken = self.alle_zeigen and gesamt_zeilen > self._zeilen_deckel()
+
+        if in_bloecken:
+            reihen = []
+            for art, treffer in gruppen:
+                reihen.append(('kopf', art, treffer))
+                for eintrag, drin in treffer:
+                    reihen.append(('zeile', eintrag, drin))
+            self.root.after_idle(lambda r=reihen: self._bloecke_aufbauen(r))
+            gezeichnet = gesamt_zeilen
+        else:
+            self._bloecke_abraeumen()
+            deckel = self._zeilen_deckel() if self.alle_zeigen else ZEILEN_ZUERST
+            gezeichnet = 0
+            for art, treffer in gruppen:
                 if gezeichnet >= deckel:
                     break
-                self._zeile(eintrag, drin)
-                gezeichnet += 1
+                self._gruppenkopf(art, treffer, habe)
+                for eintrag, drin in treffer:
+                    if gezeichnet >= deckel:
+                        break
+                    self._zeile(eintrag, drin)
+                    gezeichnet += 1
 
-        rest = sum(len(t) for _, t in gruppen) - gezeichnet
-        if rest > 0 and not self.alle_zeigen:
-            mehr = tk.Label(self.inhalt, text=t('weitere_anzeigen', rest),
-                            bg=BG, fg=ACCENT, font=schrift(10), cursor='hand2',
-                            pady=10)
-            mehr.pack(fill='x')
-            mehr.bind('<Button-1>', lambda e: self._alle())
-        elif rest > 0:
-            # Alles anzeigen war gewollt, geht aber nicht: mehr Zeilen würde das
-            # Fenstersystem falsch zeichnen. Lieber ehrlich sagen, was Sache ist,
-            # als am Ende der Liste übereinanderliegende Einträge zeigen.
-            tk.Label(self.inhalt, text=t('zu_lang', rest), bg=BG, fg=SUB,
-                     font=schrift(10), pady=10, wraplength=520,
-                     justify='center').pack(fill='x')
+            rest = gesamt_zeilen - gezeichnet
+            if rest > 0:
+                mehr = tk.Label(self.inhalt, text=t('weitere_anzeigen', rest),
+                                bg=BG, fg=ACCENT, font=schrift(10),
+                                cursor='hand2', pady=10)
+                mehr.pack(fill='x')
+                mehr.bind('<Button-1>', lambda e: self._alle())
         self._treffer_zeigen(gruppen)
         if not gruppen:
             leer = (t('merkliste_leer') if self.filter == 'merk'
@@ -870,6 +910,12 @@ class Bestandsfenster:
 
         def rechnen():
             self._rollbereich_faellig = False
+            # ⚠ Im Blockmodus NICHT aus `bbox('all')` rechnen: Dort liegen immer
+            # nur die Blöcke in der Nähe des Ausschnitts in der Leinwand, die
+            # Hülle wäre also viel zu klein und das Rollen bräche zusammen.
+            # Dort gilt die vorher gerechnete Gesamthöhe.
+            if getattr(self, '_block_start', None):
+                return
             try:
                 self.leinwand.configure(scrollregion=self.leinwand.bbox('all'))
             except tk.TclError:
@@ -891,8 +937,11 @@ class Bestandsfenster:
           auf die bezieht sich `yview_moveto`.
         """
         try:
-            bereich = self.leinwand.bbox('all')
-            gesamt = float(bereich[3]) if bereich else 0.0
+            if getattr(self, '_block_start', None):
+                gesamt = float(self._gesamthoehe)
+            else:
+                bereich = self.leinwand.bbox('all')
+                gesamt = float(bereich[3]) if bereich else 0.0
             if gesamt > 1:
                 self.leinwand.yview_moveto(max(0.0, min(1.0, oben_px / gesamt)))
         except tk.TclError:
@@ -901,6 +950,135 @@ class Bestandsfenster:
     def _alle(self):
         self.alle_zeigen = True
         self._zeichnen()
+
+    # ------------------------------------------------- Lange Liste in Blöcken
+    #
+    # Warum das nötig ist: X11 kann kein Fenster jenseits von 32767 Pixeln
+    # platzieren (16-Bit-Koordinaten). Alle 722 Baupläne in **einen** Rahmen zu
+    # packen ergibt bei üblicher Schrift gut 33000 Pixel — die letzten Zeilen
+    # überlagerten sich. Ein Deckel wäre die einfache Antwort, kostet aber genau
+    # das, wofür die Liste da ist.
+    #
+    # Die Lösung: Die Reihen werden in Blöcke zu je `BLOCK_REIHEN` aufgeteilt.
+    # Jeder Block ist ein eigener Rahmen in der Leinwand, und **nur die Blöcke in
+    # der Nähe des sichtbaren Ausschnitts liegen wirklich dort**. Was weit weg
+    # ist, wird abgeräumt und beim Zurückrollen neu gebaut. Damit bleibt jede
+    # Fensterkoordinate klein, egal wie lang die Liste wird.
+    #
+    # Die Höhen werden **vorher** gerechnet, nicht nachträglich gemessen: Nur so
+    # steht jede Position von Anfang an fest und nichts springt beim Rollen.
+    # Gemessen wird einmal, wie hoch ein Gruppenkopf und eine Zeile sind (mit und
+    # ohne zweite Zeile darunter) — der Rest ist Rechnen.
+
+    def _reihenhoehen_messen(self):
+        """Einmal nachsehen, wie hoch Kopf und Zeilen wirklich sind.
+
+        Die Werte hängen an Schriftgröße und Anzeige-Skalierung; raten geht
+        schief. Gemessen wird an unsichtbaren Probestücken, damit nichts blinkt.
+        """
+        if getattr(self, '_hoehen', None):
+            return self._hoehen
+        probe = tk.Frame(self.leinwand, bg=BG)
+        beispiel = {'n': 'Xxxxxxxxxxxxxxxx', 'q': None}
+        self._gruppenkopf('PROBE', [(beispiel, False)], set(), eltern=probe)
+        self._zeile(beispiel, False, eltern=probe)
+        mit_zusatz = dict(beispiel)
+        mit_zusatz['m'] = 'Probe'
+        self._zeile(mit_zusatz, False, eltern=probe)
+        probe.update_idletasks()
+        kinder = probe.winfo_children()
+        hoehen = [k.winfo_reqheight() + 2 for k in kinder]   # +2 für das pady
+        probe.destroy()
+        if len(hoehen) < 3 or min(hoehen) < 4:
+            self._hoehen = (34, 45, 58)         # Notnagel, falls nichts messbar
+        else:
+            self._hoehen = (hoehen[0] + 16, hoehen[1], hoehen[2])
+        return self._hoehen
+
+    def _reihenhoehe(self, reihe):
+        kopf_h, zeile_h, zeile_zusatz_h = self._reihenhoehen_messen()
+        if reihe[0] == 'kopf':
+            return kopf_h
+        eintrag = reihe[1]
+        hat_zusatz = bool(kuerzel(eintrag) or eintrag.get('m'))
+        return zeile_zusatz_h if hat_zusatz else zeile_h
+
+    def _bloecke_aufbauen(self, reihen):
+        """Das Gerüst anlegen: Wo liegt welcher Block, und wie hoch ist alles."""
+        self._bloecke_abraeumen()
+        self._reihen = reihen
+        self._block_start = list(range(0, len(reihen), BLOCK_REIHEN))
+        self._block_y, self._block_h = [], []
+        y = 0
+        for start in self._block_start:
+            hoch = sum(self._reihenhoehe(r)
+                       for r in reihen[start:start + BLOCK_REIHEN])
+            self._block_y.append(y)
+            self._block_h.append(hoch)
+            y += hoch
+        self._gesamthoehe = y
+        breite = max(1, self.leinwand.winfo_width())
+        self.leinwand.configure(scrollregion=(0, 0, breite, y))
+        self._bloecke_pflegen()
+
+    def _bloecke_abraeumen(self):
+        """Alle Blöcke aus der Leinwand nehmen — beim Neuzeichnen der Liste."""
+        for wid, rahmen in getattr(self, '_blockteile', {}).values():
+            try:
+                self.leinwand.delete(wid)
+                rahmen.destroy()
+            except tk.TclError:
+                pass
+        self._blockteile = {}
+        self._reihen = []
+        self._block_start, self._block_y, self._block_h = [], [], []
+        self._gesamthoehe = 0
+
+    def _block_bauen(self, nummer):
+        start = self._block_start[nummer]
+        rahmen = tk.Frame(self.leinwand, bg=BG)
+        habe = bestand_datei.schluessel(self.bestand)
+        for reihe in self._reihen[start:start + BLOCK_REIHEN]:
+            if reihe[0] == 'kopf':
+                self._gruppenkopf(reihe[1], reihe[2], habe, eltern=rahmen)
+            else:
+                self._zeile(reihe[1], reihe[2], eltern=rahmen)
+        breite = max(1, self.leinwand.winfo_width())
+        wid = self.leinwand.create_window((0, self._block_y[nummer]),
+                                          window=rahmen, anchor='nw',
+                                          width=breite)
+        self._blockteile[nummer] = (wid, rahmen)
+
+    def _bloecke_pflegen(self, *_):
+        """Blöcke im Sichtfeld bauen, weit entfernte wieder abräumen."""
+        if not self._block_start or getattr(self, '_pflege_laeuft', False):
+            return
+        self._pflege_laeuft = True
+        try:
+            oben = self.leinwand.canvasy(0)
+            unten = oben + max(1, self.leinwand.winfo_height())
+            # Ein Block Vorlauf nach oben und unten: So ist beim Rollen schon
+            # gezeichnet, was gleich ins Bild kommt.
+            rand = max(self._block_h) if self._block_h else 0
+            gebraucht = set()
+            for nummer, y in enumerate(self._block_y):
+                if y + self._block_h[nummer] >= oben - rand and y <= unten + rand:
+                    gebraucht.add(nummer)
+            for nummer in list(self._blockteile):
+                if nummer not in gebraucht:
+                    wid, rahmen = self._blockteile.pop(nummer)
+                    try:
+                        self.leinwand.delete(wid)
+                        rahmen.destroy()
+                    except tk.TclError:
+                        pass
+            for nummer in sorted(gebraucht):
+                if nummer not in self._blockteile:
+                    self._block_bauen(nummer)
+        except tk.TclError:
+            pass
+        finally:
+            self._pflege_laeuft = False
 
     def _zeilen_deckel(self):
         """Wie viele Zeilen in eine Ansicht passen, ohne dass X11 aussteigt.
@@ -934,18 +1112,19 @@ class Bestandsfenster:
         tk.Label(self.inhalt, bg=BG, fg=SUB, font=schrift(10), justify='left',
                  text=t('kein_katalog_hilfe')).pack()
 
-    def _gruppenkopf(self, art, treffer, habe):
+    def _gruppenkopf(self, art, treffer, habe, eltern=None):
         drin = sum(1 for _, d in treffer if d)
-        kopf = tk.Frame(self.inhalt, bg=BG)
+        kopf = tk.Frame(eltern if eltern is not None else self.inhalt, bg=BG)
         kopf.pack(fill='x', pady=(14, 4))
         tk.Label(kopf, text=art.upper(), bg=BG, fg=ACCENT, font=schrift(9, True),
                  anchor='w').pack(side='left')
         tk.Label(kopf, text='  %d/%d' % (drin, len(treffer)), bg=BG, fg=SUB,
                  font=schrift(9), anchor='w').pack(side='left')
 
-    def _zeile(self, eintrag, drin):
+    def _zeile(self, eintrag, drin, eltern=None):
         name = eintrag['n']
-        zeile = tk.Frame(self.inhalt, bg=FLAECHE)
+        zeile = tk.Frame(eltern if eltern is not None else self.inhalt,
+                         bg=FLAECHE)
         zeile.pack(fill='x', pady=1)
 
         haken = tk.Label(zeile, text='✔' if drin else '○', bg=FLAECHE,
