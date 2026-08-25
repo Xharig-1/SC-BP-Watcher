@@ -57,7 +57,21 @@ GELB    = '#d8a03a'
 # Ab wie vielen Zeilen nur noch der Anfang gezeigt wird. 714 Zeilen einzeln zu
 # bauen dauert in tkinter spürbar lange, und niemand scrollt durch 714 Zeilen —
 # wer etwas sucht, tippt. Der Rest kommt auf Knopfdruck.
-ZEILEN_ZUERST = 120
+#
+# ⚠ Der Wert ist **gemessen**, nicht geschätzt. Das erste Zeichnen wächst
+# überproportional, weil Tk alle Widgets auf einmal darstellen muss (gemessen
+# auf dem Mac, Tk 9.0, echter Katalog mit 722 Bauplänen):
+#
+#     10 Zeilen   0,45 s        60 Zeilen    5,05 s
+#     30 Zeilen   1,14 s       120 Zeilen   30,36 s
+#
+# Bei 120 waren es 801 Widgets und eine halbe Minute, in der das Fenster steht
+# — gemeldet als „Fenster geht auf, dauert aber ewig". Jedes weitere Zeichnen
+# danach dauert nur 0,4 s; teuer ist ausschließlich der erste Aufbau.
+#
+# 40 ist der Kompromiss: gut zwei Bildschirmhöhen sofort da, unter zwei
+# Sekunden Wartezeit. Wer mehr will, tippt oder klickt auf „weitere anzeigen".
+ZEILEN_ZUERST = 40
 # Die Programmversion wird vom Hauptprogramm gesetzt; sie landet im
 # scmdb-Export als Kennung des erzeugenden Werkzeugs.
 VERSION = ['']
@@ -380,6 +394,60 @@ class Bestandsfenster:
         self.treffer_lbl = tk.Label(reihe, text='', bg=BG, fg=SUB,
                                     font=schrift(9))
         self.treffer_lbl.pack(side='right')
+        self._umbruch_anhaengen(reihe)
+
+    def _umbruch_anhaengen(self, reihe):
+        """Die Filterreihe in mehrere Zeilen umbrechen, wenn es eng wird.
+
+        ⚠ Tk bricht eine Reihe nicht um; es schneidet ab. Gemeldet: „rechts
+        ist was abgeschnitten, da es genau dort bleibt wenn man das Fenster
+        kleiner macht" — das fünfte Auswahlfeld stand nur noch halb da, der
+        Trefferzähler war ganz weg. Im Entwurf löst das `flex-wrap: wrap`;
+        hier wird es von Hand nachgebaut.
+
+        Gepackt wird in `tk.Frame`-Zeilen: Was nicht mehr passt, kommt in die
+        nächste.
+        """
+        felder = [self.fein_felder[k] for k in
+                  ('art', 'klasse', 'groesse', 'quelle', 'grad')
+                  if k in self.fein_felder]
+
+        def ordnen(_=None):
+            platz = reihe.winfo_width()
+            if platz <= 1:
+                return
+            # Rechts bleibt Raum für den Trefferzähler.
+            platz -= self.treffer_lbl.winfo_reqwidth() + 12
+            zeilen, laufend, breite = [], [], 0
+            for feld in felder:
+                braucht = feld.winfo_reqwidth() + 6
+                if laufend and breite + braucht > platz:
+                    zeilen.append(laufend)
+                    laufend, breite = [], 0
+                laufend.append(feld)
+                breite += braucht
+            if laufend:
+                zeilen.append(laufend)
+            if len(zeilen) == getattr(reihe, 'zuletzt_zeilen', None):
+                return                      # nichts geändert, nicht neu packen
+            reihe.zuletzt_zeilen = len(zeilen)
+
+            for halter in getattr(reihe, 'halter', []):
+                halter.destroy()
+            reihe.halter = []
+            for nummer, gruppe in enumerate(zeilen):
+                halter = tk.Frame(reihe, bg=BG)
+                halter.pack(fill='x', pady=(0 if nummer == 0 else 4, 0))
+                reihe.halter.append(halter)
+                for feld in gruppe:
+                    feld.pack_forget()
+                    # ⚠ Das Feld muss in den neuen Halter umziehen, sonst
+                    # packt Tk es weiter in die alte Reihe.
+                    feld.master = halter
+                    feld.pack(in_=halter, side='left', padx=(0, 6))
+
+        reihe.bind('<Configure>', ordnen, add='+')
+        reihe.after_idle(ordnen)
 
     # --- Woraus die Auswahlfelder ihre Einträge nehmen ---
     def _kat_werte(self, feld):
@@ -579,8 +647,7 @@ class Bestandsfenster:
         from .hauptfenster import rundleiste
         rolle = rundleiste(rahmen, self.leinwand, grund=BG)
         self.inhalt = tk.Frame(self.leinwand, bg=BG)
-        self.inhalt.bind('<Configure>', lambda e: self.leinwand.configure(
-            scrollregion=self.leinwand.bbox('all')))
+        self.inhalt.bind('<Configure>', lambda e: self._rollbereich_anmelden())
         self.fenster = self.leinwand.create_window((0, 0), window=self.inhalt,
                                                    anchor='nw')
         self.leinwand.bind('<Configure>', lambda e: self.leinwand.itemconfigure(
@@ -727,7 +794,46 @@ class Bestandsfenster:
             # noch auf die Scrollfläche von vorher und landet daneben.
             self.root.after_idle(lambda: self.leinwand.yview_moveto(0))
         elif oben_px is not None:
-            self.root.after_idle(lambda: self._zurueck_zu(oben_px))
+            # ⚠ ZWEIMAL `after_idle`, und drinnen KEIN `update_idletasks()`.
+            # Der erste Durchgang packt die Zeilen, der zweite läuft, wenn Tk
+            # sie vermessen hat — dann stimmt `bbox('all')` von selbst.
+            #
+            # Mit `update_idletasks()` innerhalb des Idle-Handlers dauerte das
+            # Zeichnen **29,6 Sekunden** statt einem Sechstel davon: Der Aufruf
+            # arbeitet mitten im Zeichnen alle offenen Aufgaben ab und stößt
+            # bei 120 Zeilen eine Kaskade an. Gemessen mit cProfile — 29,4 der
+            # 29,6 Sekunden steckten in dieser einen Zeile.
+            self.root.after_idle(
+                lambda: self.root.after_idle(lambda: self._zurueck_zu(oben_px)))
+
+    def _rollbereich_anmelden(self):
+        """Die Scrollfläche neu vermessen — aber höchstens einmal je Runde.
+
+        ⚠ Hier lag der Grund, warum die Liste **30 Sekunden** zum Aufbau
+        brauchte. Vorher hing am `<Configure>` des Inhalts direkt ein
+        `bbox('all')`. Jedes gepackte Widget löst so ein Ereignis aus, und
+        `bbox('all')` läuft über **alle** bisherigen — bei 801 Widgets in der
+        Liste wird daraus quadratischer Aufwand.
+
+        Gemessen mit dem echten Katalog (722 Baupläne, 400 im Bestand):
+        30,0 s vorher. Mit 13 Testbauplänen fiel das nie auf — der Fehler war
+        also schon lange da und wurde erst mit echten Daten sichtbar.
+
+        Jetzt wird nur gemerkt, dass etwas zu tun ist, und einmal im Leerlauf
+        gerechnet. Hundert Ereignisse ergeben eine Messung.
+        """
+        if getattr(self, '_rollbereich_faellig', False):
+            return
+        self._rollbereich_faellig = True
+
+        def rechnen():
+            self._rollbereich_faellig = False
+            try:
+                self.leinwand.configure(scrollregion=self.leinwand.bbox('all'))
+            except tk.TclError:
+                pass
+
+        self.root.after_idle(rechnen)
 
     def _zurueck_zu(self, oben_px):
         """Denselben Pixel wieder nach oben holen, egal wie lang die Liste ist.
@@ -743,7 +849,6 @@ class Bestandsfenster:
           auf die bezieht sich `yview_moveto`.
         """
         try:
-            self.leinwand.update_idletasks()
             bereich = self.leinwand.bbox('all')
             gesamt = float(bereich[3]) if bereich else 0.0
             if gesamt > 1:
