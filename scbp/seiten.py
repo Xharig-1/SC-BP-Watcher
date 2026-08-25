@@ -486,6 +486,46 @@ def _anzeige(fenster, rahmen):
     innen = _rollflaeche(rahmen)
     e = _einstellungen(fenster)
 
+    # --- Wie sich das Overlay im Spiel verhält -------------------------------
+    # Angestoßen von einer Rückmeldung aus der Orga: „Das Overlay ist permanent
+    # zu sehen und nicht durchklickbar. Wenn ich im Kampf mit der Maus
+    # hineinkomme, wird das unangenehm."
+    ziel = _feld(fenster, innen, t('s_ov_modus'), t('s_ov_modus_h'), breit=True)
+    modus = _wahl(fenster, ziel,
+                  [('immer', t('s_ov_immer')), ('popup', t('s_ov_popup'))],
+                  pfade.einstellung('overlay_modus') or 'immer',
+                  lambda k: _overlay_modus(fenster, modus, k))
+    modus.pack()
+
+    ziel = _feld(fenster, innen, t('s_ov_dauer'), t('s_ov_dauer_h'))
+    from .hauptfenster import rundes_feld as _zahlfeld
+    dauer = _zahlfeld(ziel, None, fenster.f_klein, '#0c1017', LINIE, ACCENT, FG,
+                      breite=6, justify='right')
+    dauer.insert(0, str(pfade.einstellung_zahl('popup_sekunden', 6, 2, 60)))
+    dauer.halter.pack()
+
+    def dauer_merken(_=None):
+        try:
+            wert = max(2, min(60, int(dauer.get())))
+            pfade.einstellung_setzen('popup_sekunden', wert)
+            fenster.sagen(t('s_ov_dauer_sagen') % wert)
+        except ValueError:
+            pass
+
+    dauer.bind('<FocusOut>', dauer_merken)
+    dauer.bind('<Return>', dauer_merken)
+
+    ziel = _feld(fenster, innen, t('s_ov_durch'), t('s_ov_durch_h'), breit=True)
+    if _durchklick_moeglich():
+        schiebeschalter(ziel, pfade.einstellung_wahrheit('durchklickbar', False),
+                        lambda: _durchklick_um(fenster)).pack()
+    else:
+        # Ehrlich statt still: Unter nativem Wayland kann ein gewöhnliches Fenster
+        # keine Klicks weiterreichen. Ein Schalter, der nichts bewirkt, wäre
+        # schlimmer als gar keiner.
+        tk.Label(ziel, text=t('s_ov_durch_nein'), bg=BG, fg=SUB,
+                 font=fenster.f_klein, anchor='w', justify='left').pack(fill='x')
+
     ziel = _feld(fenster, innen, t('hf_schrift'), t('hf_schrift_hilfe'),
                  breit=True)
     wahl = _wahl(fenster, ziel,
@@ -622,8 +662,9 @@ def _ordner(fenster, rahmen):
             fenster.sagen(t('e_neustart_noetig'))
 
     _pfadfeld(fenster, innen, e.spiel, spiel_waehlen,
-              oeffnen=lambda: (_ordner_zeigen(e.spiel.get()),
-                               fenster.sagen(t('s_or_geoeffnet'))))
+              oeffnen=lambda: fenster.sagen(
+                  t('s_or_geoeffnet') if _ordner_zeigen(e.spiel.get())
+                  else t('s_or_nicht_auf')))
 
     tk.Label(innen, text=t('s_eigene'), bg=BG, fg=FG, font=fenster.f_fett,
              anchor='w').pack(fill='x', pady=(20, 0))
@@ -631,8 +672,10 @@ def _ordner(fenster, rahmen):
     ablage = tk.StringVar(value=pfade.app_ordner())
 
     def ablage_oeffnen():
-        _ordner_zeigen(pfade.app_ordner())
-        fenster.sagen(t('s_or_geoeffnet'))
+        # Nur melden, was auch stimmt: „Ordner geöffnet" zu sagen, während gar
+        # nichts aufgeht, ist schlimmer als eine ehrliche Fehlanzeige.
+        fenster.sagen(t('s_or_geoeffnet') if _ordner_zeigen(pfade.app_ordner())
+                      else t('s_or_nicht_auf'))
 
     def ablage_waehlen():
         # ⚠ Hier stand nur ein Hinweis in der Fußzeile („lässt sich in den
@@ -661,6 +704,80 @@ def _ordner(fenster, rahmen):
               platzhalter=t('s_or_leer'))
 
 
+def _durchklick_moeglich():
+    from . import overlay
+    try:
+        return overlay.durchklickbar_moeglich()
+    except Exception:
+        return False
+
+
+def _durchklick_um(fenster):
+    """Klicks durchreichen ein- oder ausschalten — und sofort anwenden."""
+    from . import overlay, pfade
+    neu_wert = not pfade.einstellung_wahrheit('durchklickbar', False)
+    pfade.einstellung_setzen('durchklickbar', neu_wert)
+    geklappt = True
+    wurzel = overlay.OVERLAY_FENSTER[0] if overlay.OVERLAY_FENSTER else None
+    if wurzel is not None:
+        try:
+            geklappt = overlay.durchklickbar_setzen(wurzel, neu_wert)
+        except Exception as ausnahme:
+            fehler.merken('seiten.durchklick', ausnahme)
+            geklappt = False
+    if neu_wert and not geklappt:
+        fenster.sagen(t('ov_durchklick_geht_nicht'))
+        pfade.einstellung_setzen('durchklickbar', False)
+        return False
+    fenster.sagen(t('s_ov_durch_sagen')
+                  % (t('e_an') if neu_wert else t('e_aus')))
+    return neu_wert
+
+
+def _overlay_modus(fenster, wahl, kennung):
+    """Zwischen „immer sichtbar" und „nur bei Neuzugang" umstellen."""
+    from . import overlay, pfade
+    wahl.setzen(kennung)
+    pfade.einstellung_setzen('overlay_modus', kennung)
+    wurzel = overlay.OVERLAY_FENSTER[0] if overlay.OVERLAY_FENSTER else None
+    if wurzel is not None:
+        try:
+            if kennung == 'popup':
+                # Nicht sofort verstecken — sonst ist das Fenster weg, während
+                # man noch in den Einstellungen steht. Es verschwindet beim
+                # nächsten Mal von selbst.
+                pass
+            else:
+                wurzel.deiconify()
+        except Exception as ausnahme:
+            fehler.merken('seiten.overlay_modus', ausnahme)
+    fenster.sagen(t('s_ov_modus_sagen')
+                  % t('s_ov_popup' if kennung == 'popup' else 's_ov_immer'))
+
+
+def saubere_umgebung():
+    """Umgebung für fremde Programme — ohne unsere eigenen Bibliothekspfade.
+
+    ⚠ Das ist im AppImage entscheidend. Dort zeigen `LD_LIBRARY_PATH`, `PYTHONHOME`
+    und `PYTHONPATH` in das entpackte Paket. Startet man daraus ein Systemprogramm
+    wie `zenity`, lädt es unsere mitgelieferten Bibliotheken statt seiner eigenen
+    und stirbt sofort — der Dialog erscheint nicht, und für den Nutzer sieht es
+    aus, als täte der Knopf nichts. AppImage setzt die ursprünglichen Werte unter
+    `*_ORIG` ab; die gelten hier wieder.
+    """
+    import os
+    umgebung = dict(os.environ)
+    for name in ('LD_LIBRARY_PATH', 'PYTHONHOME', 'PYTHONPATH', 'PYTHONDONTWRITEBYTECODE',
+                 'QT_PLUGIN_PATH', 'GTK_PATH', 'GDK_PIXBUF_MODULE_FILE',
+                 'GI_TYPELIB_PATH', 'XDG_DATA_DIRS', 'PERLLIB', 'GSETTINGS_SCHEMA_DIR'):
+        urspruenglich = umgebung.pop(name + '_ORIG', None)
+        if urspruenglich:
+            umgebung[name] = urspruenglich
+        else:
+            umgebung.pop(name, None)
+    return umgebung
+
+
 def ordner_waehlen(titel, start=None):
     """Einen Ordner auswählen lassen — möglichst mit dem Dialog des Systems.
 
@@ -673,26 +790,39 @@ def ordner_waehlen(titel, start=None):
     fast überall vorhanden) gesucht. Beide sehen aus wie der Rest des Systems.
     Gibt es keines von beiden, bleibt der Tk-Dialog als Rückfall — hässlich, aber
     funktionierend ist besser als gar nichts.
+
+    ⚠ Rückgabecodes auseinanderhalten: **1 heißt „abgebrochen"** und ist eine
+    gültige Antwort — dann ist der Nutzer fertig und wir hören auf. Jeder andere
+    Code heißt, das Werkzeug selbst ist gescheitert; dann wird das nächste
+    versucht und am Ende der Tk-Dialog. Vorher galt beides als Abbruch, und ein
+    im AppImage abgestürztes `zenity` sah aus wie ein Knopf ohne Funktion.
     """
     import subprocess
     if not sys.platform.startswith(('win', 'darwin')):
-        for befehl in (['kdialog', '--getexistingdirectory', start or os.path.expanduser('~'),
-                        '--title', titel],
-                       ['zenity', '--file-selection', '--directory',
-                        '--title', titel]
-                       + (['--filename', start.rstrip('/') + '/'] if start else [])):
-            werkzeug = befehl[0]
+        umgebung = saubere_umgebung()
+        befehle = [
+            ['kdialog', '--getexistingdirectory',
+             start or os.path.expanduser('~'), '--title', titel],
+            ['zenity', '--file-selection', '--directory', '--title', titel]
+            + (['--filename', start.rstrip('/') + '/'] if start else []),
+        ]
+        for befehl in befehle:
+            if not _im_pfad(befehl[0]):
+                continue
             try:
-                if not _im_pfad(werkzeug):
-                    continue
                 fertig = subprocess.run(befehl, capture_output=True, text=True,
-                                        timeout=300)
-                gewaehlt = (fertig.stdout or '').strip()
-                if fertig.returncode == 0 and gewaehlt:
-                    return gewaehlt
-                return ''          # bewusst abgebrochen
+                                        timeout=600, env=umgebung)
             except Exception as ausnahme:
-                fehler.merken('seiten.ordner_waehlen:%s' % werkzeug, ausnahme)
+                fehler.merken('seiten.ordner_waehlen:%s' % befehl[0], ausnahme)
+                continue
+            gewaehlt = (fertig.stdout or '').strip()
+            if fertig.returncode == 0 and gewaehlt:
+                return gewaehlt
+            if fertig.returncode == 1:
+                return ''                      # bewusst abgebrochen
+            fehler.merken('seiten.ordner_waehlen:%s' % befehl[0],
+                          RuntimeError('Code %s: %s' % (fertig.returncode,
+                                                        (fertig.stderr or '')[:200])))
     from tkinter import filedialog
     return filedialog.askdirectory(title=titel, initialdir=start or None) or ''
 
@@ -704,15 +834,22 @@ def _im_pfad(name):
 
 
 def _ordner_zeigen(pfad):
-    """Den Ordner im Dateiverwalter öffnen — auf jedem System anders."""
+    """Den Ordner im Dateiverwalter öffnen — auf jedem System anders.
+
+    ⚠ Auch hier die saubere Umgebung: Im AppImage würde `xdg-open` sonst unsere
+    mitgelieferten Bibliotheken laden und sofort sterben — der Dateiverwalter
+    ginge nicht auf, ohne dass irgendetwas darauf hinweist.
+    """
     import subprocess
+    if not pfad or not os.path.isdir(pfad):
+        return False
     try:
         if sys.platform.startswith('win'):
             os.startfile(pfad)                      # noqa: S606
         elif sys.platform == 'darwin':
             subprocess.Popen(['open', pfad])
         else:
-            subprocess.Popen(['xdg-open', pfad])
+            subprocess.Popen(['xdg-open', pfad], env=saubere_umgebung())
         return True
     except Exception as ausnahme:
         fehler.merken('seiten.ordner_zeigen', ausnahme, pfad)

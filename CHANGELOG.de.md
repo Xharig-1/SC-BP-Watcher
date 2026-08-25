@@ -19,6 +19,18 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Das Overlay kann sich zurückhalten.** Neu wählbar: dauerhaft sichtbar wie bisher,
+  oder nur kurz aufblenden, wenn wirklich ein Bauplan dazukommt. Zurück holt man es,
+  indem man das Programm noch einmal startet — auf die Verknüpfung lässt sich eine
+  Tastenkombination des Systems legen. Angeregt von Haldjas aus der Orga: „Wenn ich im
+  Kampf mit der Maus ins Overlay komme, wird das unangenehm."
+- **Mausklicks lassen sich ins Spiel durchreichen.** Das Overlay bleibt sichtbar, fängt
+  aber keine Klicks mehr ab. Unter Windows über `WS_EX_TRANSPARENT`, unter Linux über die
+  XShape-Erweiterung; unter nativem Wayland geht es nicht, und das sagt die Einstellung
+  dann auch statt einen wirkungslosen Schalter zu zeigen.
+- **Ein zweiter Programmstart öffnet keine zweite Fassung mehr,** sondern holt die
+  laufende hervor.
+
 - **Ein Fenster mit Reitern.** Oben die Baupläne, darunter die Einstellungen, ganz unten
   eingeklappt, was nur Fortgeschrittene brauchen. Das Overlay bleibt klein wie bisher;
   dieses Fenster ist das, was sich dahinter öffnet.

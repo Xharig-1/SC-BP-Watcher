@@ -19,6 +19,18 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **The overlay can hold back.** Now selectable: permanently visible as before, or only
+  popping up briefly when a blueprint actually arrives. You bring it back by starting the
+  program again — you can put a system keyboard shortcut on the shortcut. Suggested by
+  Haldjas from the org: „when I get into the overlay with my mouse during combat, that
+  will be unpleasant."
+- **Mouse clicks can be passed through to the game.** The overlay stays visible but no
+  longer catches clicks. On Windows via `WS_EX_TRANSPARENT`, on Linux via the XShape
+  extension; under native Wayland it is not possible, and the setting says so instead of
+  showing a switch that does nothing.
+- **Starting the program a second time no longer opens a second copy** — it brings the
+  running one to the front.
+
 - **One window with tabs.** Blueprints on top, settings below, and everything only
   advanced users need collapsed at the bottom. The overlay stays as small as before; this
   window is what opens behind it.

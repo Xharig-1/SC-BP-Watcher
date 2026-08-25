@@ -43,7 +43,7 @@ from tkinter import font as tkfont
 # unterscheidet — der Rest dieser Datei muss das Betriebssystem nicht kennen.
 from scbp import sprache
 from scbp import fehler
-from scbp import (aktualisierung, assistent, autostart, bildschirm,
+from scbp import (aktualisierung, assistent, autostart, bildschirm, overlay,
                   bestand as bestand_datei, bestandsfenster as bestandsfenster_modul,
                   einstellungsfenster, hinweis, injektion,
                   katalog as katalog_modul, logquelle, merkliste,
@@ -1132,10 +1132,16 @@ class Overlay:
         # Damit der Knopf „Fensterlage zurücksetzen" das Overlay sofort in die Mitte
         # setzen kann, ohne dass `seiten.py` das Hauptprogramm importieren müsste.
         bildschirm.OVERLAY[0] = self.root
+        overlay.OVERLAY_FENSTER[0] = self.root
         self.root.title('SC BP Watcher')
         self.root.configure(bg=BG)
         self.root.overrideredirect(True)          # randloses Overlay
         self.root.attributes('-topmost', True)    # immer im Vordergrund
+        # Wie sich das Fenster im Spiel verhält — siehe scbp/overlay.py.
+        # 'immer' = steht dauerhaft da (wie bisher), 'popup' = zeigt sich nur,
+        # wenn wirklich ein Bauplan dazukommt.
+        self.anzeigeart = pfade.einstellung('overlay_modus') or 'immer'
+        self._popup_uhr = None
         # Durchsichtigkeit einstellbar (30–100 %). Wer nur **einen** Monitor hat,
         # legt das Overlay zwangsläufig übers Spiel — dann muss man hindurchsehen
         # können. 93 % bleibt der Standard, das ist auf zwei Bildschirmen richtig.
@@ -1409,6 +1415,7 @@ class Overlay:
         self._trim()
         self.canvas.yview_moveto(0)
         signalton()
+        self._popup_zeigen()
 
     def add_hinweis(self, text):
         """Eine Zeile, die keine Freischaltung meldet, sondern etwas erklärt —
@@ -1632,7 +1639,102 @@ class Overlay:
         self.watcher.stop()
         self.root.destroy()
 
+    # ------------------------------------------------- Verhalten im Spiel
+    def verhalten_anwenden(self):
+        """Pop-up-Betrieb und Durchklickbarkeit setzen — nach dem Aufbau.
+
+        ⚠ Erst hier, nicht im Aufbau: Beides fasst das fertige Fenster an. Vorher
+        hat es unter X11 noch keine Kennung, die man einer Maske geben könnte.
+        """
+        self.anzeigeart = pfade.einstellung('overlay_modus') or 'immer'
+        if self.anzeigeart == 'popup':
+            self.root.withdraw()
+        else:
+            try:
+                self.root.deiconify()
+            except tk.TclError:
+                pass
+        self.durchklick_anwenden()
+
+    def durchklick_anwenden(self):
+        """Klicks durchreichen, wenn eingestellt — und melden, wenn es nicht geht."""
+        an = pfade.einstellung_wahrheit('durchklickbar', False)
+        if not an and not getattr(self, '_durchklick_war_an', False):
+            return                       # nie eingeschaltet gewesen: nichts zu tun
+        self._durchklick_war_an = an
+        try:
+            geklappt = overlay.durchklickbar_setzen(self.root, an)
+        except Exception as ausnahme:
+            fehler.merken('overlay.durchklick', ausnahme)
+            geklappt = False
+        if an and not geklappt:
+            self.status.config(text=sprache.t('ov_durchklick_geht_nicht'))
+
+    def _popup_zeigen(self):
+        """Das Overlay kurz einblenden — im Pop-up-Betrieb nach einem Fund.
+
+        Der Zähler wird bei jedem neuen Fund neu gestellt: Wer drei Baupläne
+        hintereinander bekommt, soll nicht dreimal ein Fenster aufblitzen sehen,
+        sondern eines, das stehen bleibt, solange etwas passiert.
+        """
+        if self.anzeigeart != 'popup':
+            return
+        try:
+            self.root.deiconify()
+            self.root.lift()
+            self.root.attributes('-topmost', True)
+        except tk.TclError:
+            return
+        if self._popup_uhr is not None:
+            try:
+                self.root.after_cancel(self._popup_uhr)
+            except (tk.TclError, ValueError):
+                pass
+        sekunden = pfade.einstellung_zahl('popup_sekunden', 6, 2, 60)
+        self._popup_uhr = self.root.after(sekunden * 1000, self._popup_verstecken)
+
+    def _popup_verstecken(self):
+        self._popup_uhr = None
+        if self.anzeigeart != 'popup':
+            return
+        # Solange ein Fenster davor offen ist, bleibt auch das Overlay stehen —
+        # sonst verschwindet es unter den Händen, während man die Liste liest.
+        for name in ('listenfenster', 'hauptfenster'):
+            fenster = getattr(self, name, None)
+            try:
+                if fenster is not None and fenster.root.winfo_exists():
+                    self._popup_uhr = self.root.after(2000, self._popup_verstecken)
+                    return
+            except (tk.TclError, AttributeError):
+                pass
+        try:
+            self.root.withdraw()
+        except tk.TclError:
+            pass
+
+    def hervorholen(self):
+        """Von außen gerufen: Fenster her, egal in welchem Betrieb.
+
+        Das ist der Rückweg aus dem Pop-up-Betrieb. Ausgelöst wird er dadurch,
+        dass jemand das Programm ein zweites Mal startet (siehe
+        `scbp/overlay.py`) — auf die Verknüpfung lässt sich eine ganz normale
+        Tastenkombination des Systems legen.
+        """
+        try:
+            self.root.deiconify()
+            self.root.lift()
+            self.root.attributes('-topmost', True)
+            self.liste_oeffnen()
+        except Exception as ausnahme:
+            fehler.merken('overlay.hervorholen', ausnahme)
+
     def run(self):
+        self.verhalten_anwenden()
+        # Ein zweiter Start soll das vorhandene Fenster hervorholen, statt eine
+        # zweite Fassung zu öffnen. Der Rückruf kommt aus einem eigenen Faden —
+        # deshalb die Arbeit per `after` an Tk übergeben, nicht dort erledigen.
+        overlay.waechter_starten(
+            lambda: self.root.after(0, self.hervorholen))
         self.root.mainloop()
 
 
@@ -1647,6 +1749,12 @@ if __name__ == '__main__':
     #      bekommt der Spieler seinen ganzen bisherigen Bestand geschenkt.
     #   3. Erst danach darf von Hand nachgetragen werden, und nur das, was
     #      wirklich keine Logdatei mehr hergibt.
+    # ⚠ Läuft schon eine Fassung? Dann keine zweite öffnen, sondern der
+    # vorhandenen sagen, sie soll sich zeigen. Genau darüber führt der Weg zurück,
+    # wenn das Overlay im Pop-up-Betrieb unsichtbar ist.
+    if overlay.zeigen_bitte():
+        sys.exit(0)
+
     zeige_liste = False
     if assistent.noetig():
         fertig, zeige_liste = assistent.starten()
