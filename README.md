@@ -6,7 +6,7 @@
 
 **Live overlay that shows new Star Citizen blueprints the moment you unlock them**
 
-<sub>Windows · Linux · no account, no cloud, no installation</sub>
+<sub>Windows · Linux · no account, no cloud — installer or a single file</sub>
 
 [![Version](https://img.shields.io/github/v/release/Xharig-1/SC-BP-Watcher?label=Version&color=5fa522)](../../releases)
 [![License](https://img.shields.io/badge/License-GPL--3.0-5fa522)](LICENSE)
@@ -20,7 +20,7 @@
 
 ---
 
-A small, borderless overlay that tells you **in real time** when a new blueprint drops — name, type and time. No account, no cloud, no installation. Runs on **Windows and Linux**.
+A small, borderless overlay that tells you **in real time** when a new blueprint drops — name, type and time. No account, no cloud. Runs on **Windows and Linux**.
 
 > 🧪 **Trying a test build.** Before every release there are **pre-releases** (`-rc`) under [Releases](../../releases) — each one says what it brings and what changed since the previous one. They are **never offered as an update** to anyone: if you want one, you download it there. If you try one and find something, please open an [issue](../../issues) — that is exactly what they are for.
 
@@ -149,7 +149,7 @@ On top of that: class, grade and size are right there in the line (`M/A/1`), the
 - **Windows or Linux**
 - **Star Citizen** installed — the folder containing `Game.log` is what's looked for. On Linux the usual Wine prefixes are searched (lug-helper, Lutris, Bottles, Heroic). If nothing is found, the wizard asks.
 
-Nothing else. No Python, no account, no installation.
+Nothing else. No Python, no account — and whether you install is your call (see below).
 
 **Optional:** the **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** (Windows only). With it, finds are additionally confirmed and names come in German.
 
@@ -157,14 +157,15 @@ Nothing else. No Python, no account, no installation.
 
 1. Download the file for your system from the **[releases page](../../releases)**:
 
-   | System | File |
-   |---|---|
-   | Windows | `SC-BP-Watcher.exe` |
-   | Linux | `SC-BP-Watcher-x86_64.AppImage` |
+   | System | File | What happens |
+   |---|---|---|
+   | **Windows, the easy way** | `SC-BP-Watcher-Setup.exe` | Installs with a start menu entry, optional desktop icon and autostart — and uninstalls cleanly |
+   | **Windows, nothing installed** | `SC-BP-Watcher.exe` | A single file. Nothing is installed, nothing is left behind |
+   | **Linux** | `SC-BP-Watcher-x86_64.AppImage` | A single file. The wizard offers an application menu entry if you want one |
 
 2. Run it. Done.
 
-No Python, no installation, no extra packages — a single file you can also just delete again. On Linux, make it executable once (right click → Properties → *Executable as program*, or `chmod +x SC-BP-Watcher-x86_64.AppImage`).
+**You do not have to install anything.** The installer is just the more convenient route on Windows; the plain `.exe` and the AppImage do the same and can simply be deleted again. No Python, no extra packages. On Linux, make the AppImage executable once (right click → Properties → *Executable as program*, or `chmod +x SC-BP-Watcher-x86_64.AppImage`).
 
 On first start a **wizard** walks you through setup: language, finding Star Citizen, collecting your existing blueprints. It takes a minute, and then your inventory is there.
 
