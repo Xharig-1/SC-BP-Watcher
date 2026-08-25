@@ -543,6 +543,32 @@ def spielstarter():
 
     if WINDOWS:
         orte = []
+
+        # ⚠ **Zuerst neben dem Spielordner suchen** — das ist der einzige Ort,
+        # den wir sicher kennen. Der Launcher legt sich standardmäßig neben die
+        # Spielinstallation:
+        #
+        #     …\Roberts Space Industries\StarCitizen\LIVE   ← das Spiel
+        #     …\Roberts Space Industries\RSI Launcher\      ← der Launcher
+        #
+        # Vorher wurden nur feste Orte unter %LOCALAPPDATA% und %PROGRAMFILES%
+        # abgesucht. Bei Haldjas liegt das Spiel in
+        # `C:\Program Files\Roberts Space Industries\…` — der Launcher damit an
+        # einer Stelle, die nicht in der Liste stand, und der Knopf erschien gar
+        # nicht erst: „nicht sicher wo sich die funktion versteckt, aber ich hab
+        # sie nicht gefunden" (25.08.2026).
+        #
+        # Vom Spielordner aus zu suchen trifft jede Installation, egal wohin sie
+        # gelegt wurde — statt immer neue feste Pfade nachzutragen.
+        spiel = spiel_ordner()
+        if spiel:
+            # …\StarCitizen\LIVE  →  zwei Ebenen hoch  →  …\Roberts Space Industries
+            rsi = os.path.dirname(os.path.dirname(spiel))
+            orte.append(os.path.join(rsi, 'RSI Launcher', 'RSI Launcher.exe'))
+            # Eine Ebene weiter hoch, falls jemand ohne Zweig-Ordner installiert
+            orte.append(os.path.join(os.path.dirname(rsi), 'RSI Launcher',
+                                     'RSI Launcher.exe'))
+
         for umgebung in ('LOCALAPPDATA', 'PROGRAMFILES', 'PROGRAMW6432'):
             wurzel = os.environ.get(umgebung)
             if not wurzel:
@@ -551,6 +577,8 @@ def spielstarter():
                                      'RSI Launcher.exe'))
             orte.append(os.path.join(wurzel, 'RSI Launcher',
                                      'RSI Launcher.exe'))
+            orte.append(os.path.join(wurzel, 'Roberts Space Industries',
+                                     'RSI Launcher', 'RSI Launcher.exe'))
         for ort in orte:
             if os.path.isfile(ort):
                 return ort

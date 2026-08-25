@@ -55,7 +55,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc30'
+__version__ = '3.0.0-rc31'
 
 
 def _mitgeliefert(name):
@@ -1925,17 +1925,33 @@ class Overlay:
         einem Fund ein, braucht es einen Weg zurück. Unter Linux ist das der
         Startmenü-Eintrag, unter Windows dieses Symbol.
         """
+        # ⚠ Jeder Ausgang wird in den Startverlauf geschrieben. Zweimal wurde
+        # hier auf Verdacht repariert (rc24, rc29), weil niemand sagen konnte,
+        # ob das Symbol scheitert oder gar nicht erst versucht wird — Haldjas'
+        # Bericht zeigte weder einen Fehler noch eine Spur. Eine Zeile im
+        # Startverlauf beantwortet das beim nächsten Bericht sofort.
         if not ablagesymbol.moeglich():
+            fehler.spur('Ablagesymbol: entfällt (nicht Windows)')
             return
         if not pfade.einstellung_wahrheit('tray', True):
+            fehler.spur('Ablagesymbol: abgeschaltet (Einstellung „tray")')
             return
         try:
             self._ablage = ablagesymbol.Ablagesymbol(
                 beim_zeigen=lambda: self.root.after(0, self.hervorholen),
                 beim_beenden=lambda: self.root.after(0, self._ganz_beenden))
-            self._ablage.starten(sprache.t('tray_zeigen'),
-                                 sprache.t('tray_beenden'))
+            geklappt = self._ablage.starten(sprache.t('tray_zeigen'),
+                                            sprache.t('tray_beenden'))
+            fehler.spur('Ablagesymbol: %s'
+                        % ('steht' if geklappt else 'NICHT angelegt'))
+            if not geklappt:
+                # Der Rückgabewert wurde bisher weggeworfen. Ein „nein" ist
+                # aber genau die Auskunft, die in den Bericht gehört.
+                fehler.merken('overlay.ablagesymbol',
+                              OSError('Ablagesymbol.starten() meldet, dass es '
+                                      'nicht angelegt werden konnte'))
         except Exception as ausnahme:
+            fehler.spur('Ablagesymbol: Fehler beim Anlegen')
             fehler.merken('overlay.ablagesymbol', ausnahme)
 
     def run(self):

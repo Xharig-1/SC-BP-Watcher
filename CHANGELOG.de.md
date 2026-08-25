@@ -144,6 +144,18 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Der Knopf „Star Citizen starten" fehlte, wo das Spiel unter
+  `Program Files` liegt.** Gesucht wurde an festen Orten; der Launcher liegt
+  aber neben der Spielinstallation, und die kann überall sein. Jetzt wird vom
+  bekannten Spielordner aus gesucht — das trifft jede Installation, statt immer
+  neue feste Pfade nachzutragen. Gemeldet von Haldjas.
+- **Fehler beim Symbol neben der Uhr wurden verschluckt.** Der Faden, der es
+  anlegt, fing jeden Fehler ab, ohne ihn zu melden; scheiterte etwas vor dem
+  eigentlichen Anlegen (Fensterklasse, Fenster), stand im Bericht „keine
+  Fehler", während das Symbol fehlte. Beide Stellen melden jetzt, der bisher
+  weggeworfene Rückgabewert wird ausgewertet, und der Startverlauf sagt in einer
+  Zeile, was mit dem Symbol war — angelegt, abgeschaltet oder gescheitert.
+
 - **Das Rechtsklick-Menü am Symbol neben der Uhr war leer.** Die
   Windows-Funktionen wurden ohne Signatur aufgerufen; ctypes hält den Rückgabewert
   dann für eine 32-Bit-Zahl, während Fenster-, Icon- und Menü-Kennungen

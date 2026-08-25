@@ -139,6 +139,18 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The „Launch Star Citizen" button was missing where the game sits under
+  `Program Files`.** It searched fixed locations, but the launcher lives next to
+  the game installation, and that can be anywhere. It now searches outward from
+  the known game folder, which covers every installation instead of requiring
+  new fixed paths forever. Reported by Haldjas.
+- **Failures of the tray icon were swallowed.** The thread that creates it
+  caught every error without reporting it; if something failed before the icon
+  itself (window class, window), the report said „no errors" while the icon was
+  missing. Both places now report, the previously discarded return value is
+  evaluated, and the start trace states in one line what happened to the icon —
+  created, disabled or failed.
+
 - **The tray icon's right-click menu was empty.** The Windows functions were
   called without signatures; ctypes then treats the return value as a 32-bit
   number, while window, icon and menu handles are pointer-sized. The truncated

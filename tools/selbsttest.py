@@ -743,6 +743,60 @@ def main():
             akt.verpackung = echte_verpackung
             akt._TAUSCH_LAEUFT[0] = merker_vorher
 
+        # Den Spiel-Starter neben dem Spielordner finden. Feste Pfadlisten
+        # gehen genau dann schief, wenn jemand woanders installiert hat — und
+        # das ist der Normalfall, nicht die Ausnahme.
+        starter_basis = os.path.join(basis, 'starterprobe')
+        rsi = os.path.join(starter_basis, 'Program Files',
+                           'Roberts Space Industries')
+        spiel_pfad = os.path.join(rsi, 'StarCitizen', 'LIVE')
+        os.makedirs(spiel_pfad)
+        os.makedirs(os.path.join(rsi, 'RSI Launcher'))
+        launcher = os.path.join(rsi, 'RSI Launcher', 'RSI Launcher.exe')
+        open(launcher, 'w').close()
+
+        from scbp import pfade as pf_start
+        alt_windows = pf_start.WINDOWS
+        alt_ordner = pf_start.spiel_ordner
+        alt_einst = pf_start.einstellung
+        try:
+            pf_start.WINDOWS = True
+            pf_start.spiel_ordner = lambda: spiel_pfad
+            pf_start.einstellung = lambda name: None
+            pruefe(pf_start.spielstarter() == launcher,
+                   'der Launcher wird neben dem Spielordner gefunden')
+
+            # Ohne Launcher darf KEIN Pfad zurückkommen — sonst erschiene ein
+            # Knopf, der nichts tut.
+            os.remove(launcher)
+            pruefe(pf_start.spielstarter() is None,
+                   'ohne Launcher gibt es keinen Knopf')
+        finally:
+            pf_start.WINDOWS = alt_windows
+            pf_start.spiel_ordner = alt_ordner
+            pf_start.einstellung = alt_einst
+
+        # Jeder Ausgang beim Ablagesymbol muss im Startverlauf landen. Der
+        # Fehler war zweimal nicht zu finden, weil weder ein Fehler noch eine
+        # Spur im Bericht stand — geprüft wird hier deshalb, dass überhaupt
+        # gemeldet wird, nicht was dabei herauskommt (das geht nur unter
+        # Windows).
+        quelle_start = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
+                            encoding='utf-8').read()
+        block = quelle_start.split('def ablagesymbol_starten')[1].split('\n    def ')[0]
+        for erwartet, wofuer in (
+                ("fehler.spur('Ablagesymbol: entfällt", 'nicht Windows'),
+                ("fehler.spur('Ablagesymbol: abgeschaltet", 'abgeschaltet'),
+                ("fehler.spur('Ablagesymbol: %s'", 'angelegt oder nicht'),
+                ("fehler.spur('Ablagesymbol: Fehler", 'Ausnahme')):
+            pruefe(erwartet in block,
+                   'Ablagesymbol meldet den Fall „%s"' % wofuer)
+
+        symbol_quelle = open(os.path.join(WURZEL, 'scbp', 'ablagesymbol.py'),
+                             encoding='utf-8').read()
+        pruefe('except Exception:\n            bereit.set()' not in symbol_quelle,
+               'der Faden verschluckt Fehler nicht mehr stillschweigend')
+
         # Der Notausgang darf nicht an Tk hängen: Feuert der `after`-Rückruf
         # nicht, würde ein dort gestarteter Faden nie laufen — und der Prozess
         # liefe weiter, während sein Temp-Ordner schon abgeräumt wird.

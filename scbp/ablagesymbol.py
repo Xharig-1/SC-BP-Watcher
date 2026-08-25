@@ -357,6 +357,15 @@ class Ablagesymbol(object):
                 0, klasse.lpszClassName, klasse.lpszClassName, 0,
                 0, 0, 0, 0, None, None, klasse.hInstance, None)
             if not self.fenster:
+                # ⚠ Bisher ging es hier **stumm** zurück. Im Fehlerbericht stand
+                # dann „keine Fehler" und trotzdem fehlte das Symbol — genau so
+                # bei Haldjas am 25.08.2026 gemeldet. Ohne Meldung ist eine
+                # Nutzerrückmeldung wertlos.
+                from . import fehler
+                fehler.merken('ablagesymbol.fenster',
+                              OSError('CreateWindowExW lieferte kein Fenster, '
+                                      'Fehler %d'
+                                      % ctypes.windll.kernel32.GetLastError()))
                 bereit.set()
                 return
 
@@ -383,7 +392,16 @@ class Ablagesymbol(object):
                     self._laeuft = self._geklappt
                 benutzer.TranslateMessage(ctypes.byref(nachricht))
                 benutzer.DispatchMessageW(ctypes.byref(nachricht))
-        except Exception:
+        except Exception as ausnahme:
+            # ⚠ Dieser Zweig hat jeden Fehler verschluckt: Fensterklasse,
+            # Fenster, Symbol — alles, was **vor** `_symbol_anlegen` schiefging,
+            # verschwand spurlos. Der Bericht meldete „none recorded", während
+            # das Symbol fehlte, und jede Ursachensuche lief ins Leere.
+            try:
+                from . import fehler
+                fehler.merken('ablagesymbol.schleife', ausnahme)
+            except Exception:
+                pass                  # selbst das Melden darf nichts umwerfen
             bereit.set()
         finally:
             self._laeuft = False
