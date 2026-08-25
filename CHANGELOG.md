@@ -12,6 +12,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **Shorthand corrected in the docs.** The project page and roadmap still said
+  `M/A/1` (class/grade/size); since v3.0.0 it reads `M/1/A` — class/size/grade,
+  the way the game words it.
+
+
 - **Updating on Windows spawned console windows.** The helper script that
   swaps the running `.exe` looped forever while the file was locked — and it
   stays locked until the program quits. Every further click on „get" started

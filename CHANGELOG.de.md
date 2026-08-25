@@ -12,6 +12,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Kürzel in der Doku berichtigt.** Projektseite und Fahrplan nannten es noch
+  `M/A/1` (Klasse/Grad/Größe); seit v3.0.0 steht dort `M/1/A` —
+  Klasse/Größe/Grad, so wie es sich im Spiel liest.
+
+
 - **Update unter Windows spuckte Konsolenfenster aus.** Das Hilfsskript, das die
   laufende `.exe` austauscht, lief in einer Endlosschleife weiter, solange die
   Datei gesperrt war — und sie bleibt gesperrt, bis das Programm beendet wird.

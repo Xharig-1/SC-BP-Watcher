@@ -121,7 +121,7 @@ There are several blueprint lists. Four things make the difference day to day:
 - **It tells you where to get what's missing.** For **655 of the 722** blueprints it shows which faction offers it, in which contract, from which standing, and what it pays — sorted by the easiest route. "I'm missing X" is half the information; "X drops at Foxwell from Veteran Contractor" is all of it.
 - **Nothing leaves your machine.** No account, no sign-in, no cloud. It reads files that are already on your disk and writes nothing back into the game.
 
-On top of that: class, grade and size are right there in the line (`M/A/1`), the interface speaks German and English, and the whole thing runs on the plain Python standard library — no extra packages, no dependencies that break tomorrow.
+On top of that: class, size and grade are right there in the line (`M/1/A`), the interface speaks German and English, and the whole thing runs on the plain Python standard library — no extra packages, no dependencies that break tomorrow.
 
 ## Features
 
@@ -133,7 +133,7 @@ On top of that: class, grade and size are right there in the line (`M/A/1`), the
 | 🧙 **Setup wizard** | Four steps on first start — and **repeatable any time**, no digging through menus |
 | 🔵 **Catalogue watch** | Also reports when something becomes **newly craftable in the game** — a blueprint CIG added that did not exist before |
 | ⭐ **Watchlist** | Click the star next to anything you are waiting for. When it shows up it is announced in gold — and **removed from the watchlist by itself** |
-| 🏷️ **Size · grade · class** | Compact tag `class/grade/size` per blueprint, e.g. `M/A/1` (Military · Grade A · Size 1) |
+| 🏷️ **Class · size · grade** | Compact tag `class/size/grade` per blueprint, e.g. `M/1/A` (Military · Size 1 · Grade A) |
 | 🔔 **Sound** | A short beep on every find — you don't have to watch the window |
 | 🧷 **Always on top** | Borderless, slightly translucent overlay above the game |
 | 🖱️ **Movable & resizable** | Drag the title bar, resize at the ◢ handle — **position and size are remembered** |
@@ -242,7 +242,7 @@ What the coloured dots mean:
 1. **On start** the tool goes through the stored logs of earlier sessions (`logbackups/`) and quietly adds everything it finds to your inventory — nothing is lost if you played without the watcher running. Those blueprints are **not** reported as new. If the stored logs don't reach far enough back, the watcher says so as an ℹ line instead of passing off an incomplete list as complete.
 2. **In the background** the **`Game.log`** is read — every 3 seconds, adjustable. *(The wording of the blueprint message depends on your game language — the watcher works it out by itself, see below.)* When the game writes `Added notification "Blueprint Received: <name>: "` on unlock, the blueprint is in the list **immediately** (🟢) and in your inventory.
    - **If the SC Deutsch Launcher is installed as well**, reporting is two-stage: first 🟡 *provisional* from the log, then 🟢 *confirmed* once the launcher catches up and supplies its data. Without the launcher there is no intermediate stage — the log message is the answer.
-3. Every new line is inserted at the top (name · type · `M/A/1` · time) and a short sound plays.
+3. Every new line is inserted at the top (name · type · `M/1/A` · time) and a short sound plays.
    - **Once a minute** the craftable catalogue is checked. If it grew, CIG made something **newly craftable** with a patch → 🔵 line. This has nothing to do with your own unlocks.
 4. **Type, size, grade and class** come from scmdb.net's crafting data and from the bundled game data. If the SC Deutsch Launcher is present, its maintained catalogue takes precedence (German names). Above all of it are your own corrections from `bp-overrides.json`.
 5. **Your inventory** grows along and stays in `bestand.json` — with a note where each blueprint came from (log, catch-up, launcher).
