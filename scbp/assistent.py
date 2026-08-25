@@ -366,10 +366,43 @@ class Assistent:
         self._absatz(f, '☰  ' + t('tipp_liste'), SUB, 10, oben=18)
         self._absatz(f, '⟳  ' + t('tipp_erneut'), SUB, 10, oben=8)
 
+        self._menueeintrag_anbieten(f)
+
         knopf = tk.Label(f, text=' %s ' % t('liste_oeffnen'), bg=FLAECHE, fg=FG,
                          font=schrift(10), cursor='hand2', padx=12, pady=7)
         knopf.pack(anchor='w', pady=(22, 0))
         knopf.bind('<Button-1>', lambda e: self._mit_liste())
+
+    def _menueeintrag_anbieten(self, flaeche):
+        """Unter Linux einen Startmenü-Eintrag anbieten.
+
+        ⚠ Warum überhaupt: Unter Windows legt der Installer alles an. Unter Linux
+        lädt man ein AppImage herunter — das liegt dann im Download-Ordner, steht
+        in keinem Menü und ist nach einem Neustart erst einmal verschwunden. Wer
+        es nicht selbst einträgt, sucht es jedes Mal.
+
+        Der Eintrag ist zugleich die Stelle, auf die sich ein Tastenkürzel legen
+        lässt; zusammen mit dem Einzelinstanz-Wächter holt das im Pop-up-Betrieb
+        das Overlay zurück.
+        """
+        from . import verknuepfung
+        if not verknuepfung.moeglich() or verknuepfung.vorhanden():
+            return
+        self._absatz(flaeche, t('as_menue_frage'), FG, 11, oben=18)
+        meldung = tk.Label(flaeche, text='', bg=BG, fg=SUB, font=schrift(9),
+                           anchor='w', justify='left')
+
+        def anlegen(_=None):
+            geklappt, wohin = verknuepfung.anlegen()
+            meldung.configure(text=(t('as_menue_da') % wohin) if geklappt
+                              else t('as_menue_nein') % wohin,
+                              fg=ACCENT if geklappt else SUB)
+
+        knopf = tk.Label(flaeche, text=' %s ' % t('as_menue_knopf'), bg=FLAECHE,
+                         fg=FG, font=schrift(10), cursor='hand2', padx=12, pady=6)
+        knopf.pack(anchor='w', pady=(8, 0))
+        knopf.bind('<Button-1>', anlegen)
+        meldung.pack(anchor='w', pady=(6, 0), fill='x')
 
     def _schritt_fertig_ohne_spiel(self):
         """Der Abschluss, wenn kein Spielordner eingetragen wurde.

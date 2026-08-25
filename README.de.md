@@ -22,6 +22,8 @@
 
 Ein kleines, randloses Overlay, das beim Spielen **in Echtzeit** meldet, sobald ein neuer Bauplan (Blueprint) dazukommt — inklusive Name, Art und Uhrzeit. Ohne Account, ohne Cloud, ohne Installation. Läuft unter **Windows und Linux**.
 
+> 🧪 **Testfassungen ausprobieren.** Vor jeder Veröffentlichung gibt es **Vorabversionen** (`-rc`) unter [Releases](../../releases) — dort steht bei jeder, was sie bringt und was sich seit der vorigen geändert hat. Sie werden **niemandem als Update angeboten**: Wer sie will, lädt sie dort herunter. Wer eine ausprobiert und etwas findet, macht bitte ein [Issue](../../issues) auf — genau dafür sind sie da.
+
 > ℹ️ **Der SC Deutsch Launcher ist nicht mehr Voraussetzung.** Die eigentliche Quelle ist die `Game.log` von Star Citizen — dort steht jeder freigeschaltete Bauplan im Klartext. Ist der Launcher da, wird er weiter genutzt: Er bestätigt die Funde und liefert deutsche Bezeichnungen. Ist er nicht da (unter Linux immer), läuft der Watcher trotzdem.
 
 <table>

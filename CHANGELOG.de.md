@@ -19,6 +19,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Eintrag im Startmenü (Linux).** Der Assistent bietet ihn am Ende an, die Einstellungen
+  jederzeit. Unter Windows macht das der Installer — unter Linux lag das AppImage bisher
+  im Download-Ordner und stand in keinem Menü. Auf den Eintrag lässt sich außerdem eine
+  Tastenkombination legen, mit der das Overlay zurückkommt.
+- **Symbol im Infobereich (Windows).** Linksklick holt das Fenster, Rechtsklick zeigt ein
+  kleines Menü. Der Schalter dafür stand schon in den Einstellungen; das Symbol selbst
+  gab es nie.
+
 - **Das Overlay kann sich zurückhalten.** Neu wählbar: dauerhaft sichtbar wie bisher,
   oder nur kurz aufblenden, wenn wirklich ein Bauplan dazukommt. Zurück holt man es,
   indem man das Programm noch einmal startet — auf die Verknüpfung lässt sich eine
@@ -72,6 +80,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Kein Speichern-Knopf mehr** — Änderungen greifen sofort.
 
 ### Behoben
+
+- **Testfassungen hatten keine Release-Beschreibung.** Getaggt wird `v3.0.0-rc5`, im
+  Changelog steht `## v3.0.0` — das Skript fand nichts und schrieb „siehe Changelog".
+  Wer testen sollte, erfuhr also nicht, was zu testen ist. Jetzt steht der Abschnitt der
+  Grundversion darunter, mit einem Testfassungs-Hinweis und einem Link auf die Änderungen
+  seit der vorigen Vorabversion.
+- **„Handfeuerwaffe" und „FPS-Waffe" waren zwei Gruppen für dieselbe Sache** — 87 unter
+  der einen Kennung, zwei unter der anderen.
 
 - **Die Seite „Auftragstexte" tat überhaupt nichts.** Alle Rückmeldungen gingen an ein
   Label, das es im eingebetteten Fenster gar nicht gibt — jeder Klick auf eine Textquelle,

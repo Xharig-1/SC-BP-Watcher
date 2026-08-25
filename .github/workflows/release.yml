@@ -157,6 +157,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        # ⚠ Mit voller Historie und Tags: `release_text.py` sucht die vorige
+        # Testfassung, um „was hat sich seit dann geändert" zu verlinken. Ein
+        # flacher Klon kennt keine Tags, und der Link fiele still weg.
+        with: { fetch-depth: 0 }
       - uses: actions/download-artifact@v4
         with: { path: dateien }
 

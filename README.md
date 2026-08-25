@@ -22,6 +22,8 @@
 
 A small, borderless overlay that tells you **in real time** when a new blueprint drops — name, type and time. No account, no cloud, no installation. Runs on **Windows and Linux**.
 
+> 🧪 **Trying a test build.** Before every release there are **pre-releases** (`-rc`) under [Releases](../../releases) — each one says what it brings and what changed since the previous one. They are **never offered as an update** to anyone: if you want one, you download it there. If you try one and find something, please open an [issue](../../issues) — that is exactly what they are for.
+
 > ℹ️ **The SC Deutsch Launcher is no longer required.** The actual source is Star Citizen's own `Game.log` — every unlocked blueprint is written there in plain text. If the launcher is installed it is still used: it confirms finds and supplies German names. If it isn't (always the case on Linux), the watcher works anyway.
 
 <table>

@@ -43,7 +43,8 @@ from tkinter import font as tkfont
 # unterscheidet — der Rest dieser Datei muss das Betriebssystem nicht kennen.
 from scbp import sprache
 from scbp import fehler
-from scbp import (aktualisierung, assistent, autostart, bildschirm, overlay,
+from scbp import (ablagesymbol, aktualisierung, assistent, autostart,
+                  bildschirm, overlay,
                   bestand as bestand_datei, bestandsfenster as bestandsfenster_modul,
                   einstellungsfenster, hinweis, injektion,
                   katalog as katalog_modul, logquelle, merkliste,
@@ -54,7 +55,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc5'
+__version__ = '3.0.0-rc6'
 
 
 def _mitgeliefert(name):
@@ -1738,8 +1739,29 @@ class Overlay:
         except Exception as ausnahme:
             fehler.merken('overlay.hervorholen', ausnahme)
 
+    def ablagesymbol_starten(self):
+        """Das Symbol neben der Uhr — nur unter Windows und nur, wenn gewünscht.
+
+        ⚠ Es gehört zum Pop-up-Betrieb: Blendet sich das Overlay nur noch bei
+        einem Fund ein, braucht es einen Weg zurück. Unter Linux ist das der
+        Startmenü-Eintrag, unter Windows dieses Symbol.
+        """
+        if not ablagesymbol.moeglich():
+            return
+        if not pfade.einstellung_wahrheit('tray', True):
+            return
+        try:
+            self._ablage = ablagesymbol.Ablagesymbol(
+                beim_zeigen=lambda: self.root.after(0, self.hervorholen),
+                beim_beenden=lambda: self.root.after(0, self.root.destroy))
+            self._ablage.starten(sprache.t('tray_zeigen'),
+                                 sprache.t('tray_beenden'))
+        except Exception as ausnahme:
+            fehler.merken('overlay.ablagesymbol', ausnahme)
+
     def run(self):
         self.verhalten_anwenden()
+        self.ablagesymbol_starten()
         # Ein zweiter Start soll das vorhandene Fenster hervorholen, statt eine
         # zweite Fassung zu öffnen. Der Rückruf kommt aus einem eigenen Faden —
         # deshalb die Arbeit per `after` an Tk übergeben, nicht dort erledigen.

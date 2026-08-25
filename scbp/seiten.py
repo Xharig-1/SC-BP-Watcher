@@ -527,6 +527,8 @@ def _allgemein(fenster, rahmen):
         tk.Label(ziel, text=t('s_nicht_moegl'), bg=BG, fg=SUB,
                  font=fenster.f_klein).pack()
 
+    _menueeintrag_feld(fenster, innen)
+
     ziel = _feld(fenster, innen, t('s_tray'),
                  t('s_tray_h'))
     if sys.platform.startswith('win'):
@@ -766,6 +768,39 @@ def _ordner(fenster, rahmen):
 
     _pfadfeld(fenster, innen, e.launcher, launcher_waehlen,
               platzhalter=t('s_or_leer'))
+
+
+def _menueeintrag_feld(fenster, innen):
+    """Startmenü-Eintrag anlegen oder entfernen — nur unter Linux sinnvoll.
+
+    Unter Windows erledigt das der Installer; dort wäre der Punkt nur Ballast.
+    """
+    from . import verknuepfung
+    if not verknuepfung.moeglich():
+        return
+    ziel = _feld(fenster, innen, t('s_menue'), t('s_menue_h'), breit=True)
+    reihe = tk.Frame(ziel, bg=BG)
+    reihe.pack()
+    stand = tk.Label(reihe, text='', bg=BG, fg=SUB, font=fenster.f_klein)
+
+    def zeigen():
+        stand.configure(text=t('s_menue_steht') if verknuepfung.vorhanden() else '')
+
+    def anlegen():
+        geklappt, wohin = verknuepfung.anlegen()
+        fenster.sagen((t('as_menue_da') % wohin) if geklappt
+                      else t('as_menue_nein') % wohin)
+        zeigen()
+
+    def weg():
+        verknuepfung.entfernen()
+        fenster.sagen(t('s_menue_weg_ok'))
+        zeigen()
+
+    _knopf(fenster, reihe, t('s_menue_anlegen'), anlegen).pack(side='left')
+    _knopf(fenster, reihe, t('s_menue_weg'), weg).pack(side='left', padx=8)
+    stand.pack(side='left', padx=(10, 0))
+    zeigen()
 
 
 def _durchklick_moeglich():

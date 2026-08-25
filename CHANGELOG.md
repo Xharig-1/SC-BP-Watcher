@@ -19,6 +19,14 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **Application menu entry (Linux).** The wizard offers it at the end, the settings any
+  time. On Windows the installer handles this — on Linux the AppImage sat in the downloads
+  folder and appeared in no menu. You can also put a keyboard shortcut on the entry to
+  bring the overlay back.
+- **Notification area icon (Windows).** Left click brings the window back, right click
+  opens a small menu. The switch for it was already in the settings; the icon itself never
+  existed.
+
 - **The overlay can hold back.** Now selectable: permanently visible as before, or only
   popping up briefly when a blueprint actually arrives. You bring it back by starting the
   program again — you can put a system keyboard shortcut on the shortcut. Suggested by
@@ -71,6 +79,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **No more save button** — changes take effect right away.
 
 ### Fixed
+
+- **Test builds had no release description.** The tag is `v3.0.0-rc5` while the changelog
+  says `## v3.0.0` — the script found nothing and wrote „see the changelog". Anyone meant
+  to test did not learn what to test. The base version's section is now used, with a
+  pre-release note and a link to what changed since the previous one.
+- **„Personal weapon" and „FPS weapon" were two groups for the same thing** — 87 under one
+  key, two under the other.
 
 - **The „Mission text" page did nothing at all.** Every message went to a label that does
   not exist in the embedded window — each click on a text source, on „Refresh now" or
