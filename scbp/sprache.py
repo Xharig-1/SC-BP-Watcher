@@ -416,8 +416,8 @@ TEXTE = {
                           'catalogue. Nothing is taken over until you press the '
                           'button.'),
     # -- Seite „Angaben im Spiel" --
-    's_sp_lead':       ('Der Watcher schreibt zu jedem Auftrag, welche Baupläne er ausschüttet — mit Haken für das, was du schon hast. Sichtbar direkt im Missionstext.',
-                          'The watcher notes on every mission which blueprints it hands out — with a tick for the ones you already have. Visible right in the mission text.'),
+    's_sp_lead':       ('Der Watcher schreibt in die Auftragstexte des Spiels, welche Baupläne ein Auftrag ausschüttet — mit Haken für das, was du schon hast. Hier wählst du auch, aus welcher Quelle diese Texte kommen.',
+                          'The watcher writes into the game\'s mission text which blueprints a mission hands out — with a tick for the ones you already have. This is also where you pick which source those texts come from.'),
     's_sp_drin':       ('%d Textstellen eingetragen.',
                           '%d text passages written.'),
     's_sp_quelle_ist': ('Quelle: %s', 'Source: %s'),
@@ -760,7 +760,11 @@ TEXTE = {
     'hf_allgemein':      ('Allgemein', 'General'),
     'hf_anzeige':        ('Anzeige', 'Display'),
     'hf_ordner':         ('Ordner', 'Folders'),
-    'hf_spiel':          ('Angaben im Spiel', 'In-game details'),
+    # „Angaben im Spiel" sagte nicht, worum es geht — dahinter stecken die
+    # Textquelle (Übersetzung, StarStrings oder Original) und das Eintragen der
+    # Bauplan-Angaben in die Auftragstexte. Beides betrifft die Texte der
+    # Aufträge, also heißt der Punkt jetzt danach.
+    'hf_spiel':          ('Auftragstexte', 'Mission text'),
     'hf_bestand':        ('Bestand', 'Inventory'),
     'hf_ueber':          ('Über', 'About'),
     'hf_erkennung':      ('Erkennung', 'Detection'),

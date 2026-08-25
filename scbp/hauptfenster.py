@@ -80,6 +80,12 @@ GOLD    = '#e8c353'
 # klein ziehen lässt, macht weniger Ärger als abgeschnittene Knöpfe.
 MIN_BREITE, MIN_HOEHE = 1100, 760
 
+# Startbreite der Seitenleiste. Auch sie ist nur eine Untergrenze: Wie breit
+# „Angaben im Spiel" oder das englische „In-game details" wirklich wird, hängt
+# wieder an Schrift und Skalierung — bei 125 % ragte der Text aus der Leiste
+# heraus und war abgeschnitten.
+LEISTE_BREITE = 210
+
 # Wie viel Streichweg auf dem Trackpad eine Zeile ergibt. Ein Trackpad meldet
 # viele kleine Schritte statt Rasten; ohne Teiler säuselt die Liste am Finger
 # vorbei. Der Wert ist ein Startwert zum Nachjustieren — größer heißt ruhiger.
@@ -937,7 +943,9 @@ class Hauptfenster:
 
     # ----------------------------------------------------------------- Korpus
     def _korpus(self):
-        self.leiste = tk.Frame(self.root, bg=FLAECHE, width=210)
+        # 210 ist nur der Startwert — die wirkliche Breite wird gemessen, sobald
+        # die Einträge stehen (siehe `_leistenbreite_nachziehen`).
+        self.leiste = tk.Frame(self.root, bg=FLAECHE, width=LEISTE_BREITE)
         self.leiste.pack(side='left', fill='y')
         self.leiste.pack_propagate(False)
 
@@ -1025,6 +1033,42 @@ class Hauptfenster:
             hoch += kind.winfo_reqheight() + 2 * int(polster or 0)
         return hoch
 
+    def _leistenbreite_nachziehen(self):
+        """Die Seitenleiste so breit machen, dass der längste Eintrag hineinpasst.
+
+        ⚠ Die Leiste hat eine feste Breite (`pack_propagate(False)`) — sonst würde
+        sie mit dem Inhalt wandern. Feste Breite heißt aber auch: Was nicht
+        hineinpasst, wird **abgeschnitten**, ohne Hinweis. Bei 125 % Anzeige-
+        Skalierung traf das „Angaben im Spiel"; auf Englisch sind mehrere Einträge
+        noch länger. Deshalb wird die Breite aus den Einträgen gemessen.
+        """
+        try:
+            breiten = []
+            for eintrag in self.knoepfe.values():
+                if not eintrag or not eintrag[0]:
+                    continue
+                zeile, _strich, _z, beschriftung, _marke = eintrag
+                # ⚠ Der **aktive** Reiter wird fett gezeichnet, und fett ist breiter.
+                # Gemessen wird aber der Zustand, in dem die Zeile gerade ist — wer
+                # nur `winfo_reqwidth()` nimmt, misst bei allen anderen die schmale
+                # Fassung und macht die Leiste zu knapp. Genau deshalb war „Angaben
+                # im Spiel" abgeschnitten, sobald die Seite offen war.
+                zusatz = 0
+                try:
+                    text = beschriftung.cget('text')
+                    zusatz = max(0, self.f_fett.measure(text)
+                                 - self.f_grund.measure(text))
+                except tk.TclError:
+                    pass
+                breiten.append(zeile.winfo_reqwidth() + zusatz)
+            breiten.append(self.klappknopf.winfo_reqwidth())
+            noetig = max(LEISTE_BREITE, max(breiten) + 12)
+            if noetig != self.leiste.winfo_width():
+                self.leiste.configure(width=noetig)
+            return noetig
+        except (tk.TclError, ValueError):
+            return LEISTE_BREITE
+
     def _mindesthoehe_nachziehen(self, versuch=0):
         """Die Mindesthöhe an das anpassen, was die Seitenleiste braucht.
 
@@ -1056,10 +1100,14 @@ class Hauptfenster:
             kopf_und_fuss = max(0, self.root.winfo_height()
                                 - self.leiste.winfo_height())
             noetig = max(MIN_HOEHE, bedarf + kopf_und_fuss)
-            self.root.minsize(MIN_BREITE, noetig)
-            if self.root.winfo_height() < noetig:
-                self.root.geometry('%dx%d' % (max(MIN_BREITE,
-                                                  self.root.winfo_width()), noetig))
+            # Wird die Leiste breiter, braucht auch das Fenster mehr — sonst geht
+            # der Platz auf Kosten des Inhalts daneben.
+            leiste_breit = self._leistenbreite_nachziehen()
+            breit = MIN_BREITE + max(0, leiste_breit - LEISTE_BREITE)
+            self.root.minsize(breit, noetig)
+            if self.root.winfo_height() < noetig or self.root.winfo_width() < breit:
+                self.root.geometry('%dx%d' % (max(breit, self.root.winfo_width()),
+                                              max(noetig, self.root.winfo_height())))
         except tk.TclError:
             pass
 
@@ -1098,6 +1146,10 @@ class Hauptfenster:
         self.seiten[kennung].pack(fill='both', expand=True)
         self.aktuell = kennung
         self._reiter_faerben()
+        # Der aktive Reiter wird fett — und fett ist breiter. Die Leiste muss
+        # deshalb bei jedem Wechsel nachmessen, sonst wird der längste Eintrag
+        # genau dann abgeschnitten, wenn man auf ihm steht.
+        self._leistenbreite_nachziehen()
 
         # Die „neu"-Marke hat ihren Zweck erfüllt, sobald man drin war.
         if neuheiten.ist_neu(kennung, self.version):
