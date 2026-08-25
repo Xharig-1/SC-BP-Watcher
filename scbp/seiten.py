@@ -976,14 +976,35 @@ def _fassung(fenster, eltern, eintrag, punkte, offen):
         marke(z, _ART_WORT.get(art, ''), _ART_FARBE.get(art, SUB),
               fenster.f_klein, grund=BG,
               mindestbreite=breiteste).pack(side='left', anchor='n', padx=(0, 14))
-        # ⚠ `wraplength` muss zur wirklichen Breite passen. Stand er zu niedrig,
-        # brach der Text zwar um — die Zeile blieb aber einzeilig hoch, und der
-        # Rest war schlicht abgeschnitten. Deshalb wird die Breite beim Zeichnen
-        # aus dem Fenster genommen statt geraten.
-        breite = max(360, (fenster.root.winfo_width() or 980) - 340)
-        tk.Label(z, text=_saubere_zeile(zeile), bg=BG, fg=FG,
-                 font=fenster.f_klein, anchor='w', justify='left',
-                 wraplength=breite).pack(side='left', fill='x', expand=True)
+        # ⚠ `wraplength` muss zur wirklichen Breite passen. Steht er zu hoch, bricht
+        # der Text zu spät um und der Rest wird stumm abgeschnitten.
+        #
+        # Vorher stand hier „Fensterbreite minus 340" — ein geschätzter Abzug für
+        # Seitenleiste, Ränder und die Art-Blase davor. Die Schätzung ging schief,
+        # sobald sich eines davon änderte: Seit die Seitenleiste ihre Breite selbst
+        # misst, fehlten rund 50 Pixel, und `tools/randpruefung.py` meldete die
+        # Zeilen bei **jeder** Fenstergröße als beschnitten.
+        #
+        # Jetzt wird nicht mehr gerechnet, sondern genommen, was das Label
+        # tatsächlich bekommt — und bei jeder Größenänderung neu. Damit stimmt es
+        # auch, wenn jemand das Fenster zieht.
+        etikett = tk.Label(z, text=_saubere_zeile(zeile), bg=BG, fg=FG,
+                           font=fenster.f_klein, anchor='w', justify='left',
+                           wraplength=max(360, (fenster.root.winfo_width()
+                                                or 980) - 340))
+        etikett.pack(side='left', fill='x', expand=True)
+
+        def umbruch_anpassen(ereignis, lab=etikett):
+            # Die Abfrage verhindert eine Schleife: Ein neuer Umbruch ändert die
+            # Höhe, das löst wieder ein <Configure> aus.
+            passend = max(200, ereignis.width - 8)
+            try:
+                if abs(int(lab.cget('wraplength')) - passend) > 4:
+                    lab.configure(wraplength=passend)
+            except tk.TclError:
+                pass
+
+        etikett.bind('<Configure>', umbruch_anpassen)
 
     def umschalten(*_):
         zustand['offen'] = not zustand['offen']

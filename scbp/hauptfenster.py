@@ -45,6 +45,7 @@ der Nutzen des Knopfes."
 """
 import os
 import sys
+import time
 import tkinter as tk
 import tkinter.font as tkfont
 
@@ -667,7 +668,7 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
     """
     grund = grund or BG
     s = _als_schrift(schrift)
-    zustand = {'wert': gewaehlt, 'liste': None}
+    zustand = {'wert': gewaehlt, 'liste': None, 'zu_seit': 0.0}
 
     def beschriftung_zu(wert):
         for w, text in eintraege:
@@ -702,6 +703,7 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
             except tk.TclError:
                 pass
             zustand['liste'] = None
+            zustand['zu_seit'] = time.time()
 
     def waehlen(wert):
         zuklappen()
@@ -713,6 +715,12 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
     def aufklappen(_=None):
         if zustand['liste'] is not None:
             zuklappen()
+            return
+        # ⚠ Ein Klick, der die Liste gerade eben geschlossen hat, darf sie nicht
+        # sofort wieder öffnen. Schließt das Fenster über `<FocusOut>`, kommt der
+        # Klick anschließend hier an — man sah die Liste aufblitzen und sofort
+        # wieder verschwinden, und erst der zweite Klick hielt sie offen.
+        if time.time() - zustand['zu_seit'] < 0.25:
             return
         fenster = tk.Toplevel(c)
         fenster.overrideredirect(True)        # kein Titelbalken, kein Rahmen
@@ -768,10 +776,24 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
 
         fenster.geometry('%dx%d+%d+%d' % (gebraucht_breite, sicht + 2, x, y))
         fenster.lift()
-        # Ein Klick irgendwo anders schließt die Liste — sonst bleibt sie
-        # stehen, sobald man es sich anders überlegt.
-        fenster.bind('<FocusOut>', zuklappen)
         fenster.focus_set()
+
+        # Ein Klick irgendwo anders schließt die Liste — sonst bleibt sie stehen,
+        # sobald man es sich anders überlegt.
+        #
+        # ⚠ Die Bindung wird **verzögert** gesetzt. Direkt nach einer Auswahl baut
+        # die Bauplan-Liste sich neu auf (bis zu 670 Zeilen), und dabei wandert der
+        # Fokus noch einmal. Hing `<FocusOut>` sofort am frischen Fenster, fing es
+        # genau dieses Nachzucken ab und schloss sich von selbst: Wer nach einer
+        # Auswahl gleich das nächste Feld anklickte, sah die Liste aufblitzen und
+        # verschwinden — erst der zweite Klick hielt. Genau so gemeldet.
+        def wache_setzen():
+            try:
+                fenster.bind('<FocusOut>', zuklappen)
+            except tk.TclError:
+                pass
+
+        fenster.after(250, wache_setzen)
 
     def stumm_setzen(wert):
         """Anzeige umstellen, ohne den Rückruf auszulösen.
