@@ -85,6 +85,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **In game only the number showed, not which blueprints.** A contract has one title but
+  often a dozen descriptions — one for „to the ruin station", one for „to the distribution
+  centre" and so on. The contract data names only **one** of them; the rest stayed empty.
+  The title said „[BP 0/12]", and anyone opening the description to see *which* twelve
+  found nothing. Measured: 51 Covalex descriptions in the game, 7 of them with details.
+  They are now filled via the shared key prefix.
+
 - **The expanded text sat below every version instead of below its own.** Tk packs a block
   at the end of the area unless told otherwise — with eleven releases, the content of
   v3.0.0 appeared below v1.0.0. Anyone not scrolling far enough thinks the release is

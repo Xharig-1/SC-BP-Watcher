@@ -279,6 +279,22 @@ def _kaestchen_setzen(text, habe):
     return '\\n'.join(zeilen), meine, gesamt
 
 
+def _stamm(schluessel):
+    """Der Namensanfang, den Titel und Beschreibungen eines Auftrags teilen.
+
+    Aus `Covalex_HaulCargo_AToB_title` und `Covalex_HaulCargo_AtoB_desc_ToRuinStation`
+    wird beide Male `covalex_haulcargo_atob`. Alles ab `_title` bzw. `_desc` fällt
+    weg, der Rest wird kleingeschrieben — in den Spieldaten wechselt die
+    Schreibweise mitten im Wort.
+    """
+    klein = (schluessel or '').lower()
+    for trenner in ('_title', '_desc'):
+        stelle = klein.find(trenner)
+        if stelle > 0:
+            return klein[:stelle]
+    return ''
+
+
 def einspielen_scdl(ini_pfad, sprachkuerzel, bestand=None):
     """Injektion aus den SCDL-Vertragsdaten — der vollständigere Weg.
 
@@ -314,6 +330,27 @@ def einspielen_scdl(ini_pfad, sprachkuerzel, bestand=None):
     except OSError as e:
         return False, 0, 'Lesen fehlgeschlagen: %s' % e
 
+    # ⚠ Ein Auftrag hat EINEN Titel, aber oft ein Dutzend Beschreibungen: je eine
+    # für „zur Ruinenstation", „zum Verteilzentrum", „von A nach B" und so weiter.
+    # Die Vertragsdaten nennen dazu immer nur **eine** — die übrigen blieben leer.
+    # Im Spiel stand dann im Titel „[BP 0/12]", und wer die Beschreibung öffnete,
+    # um zu sehen *welche* zwölf, fand nichts. Genau so gemeldet.
+    #
+    # Gemessen an einer echten Installation: allein bei Covalex 51 Beschreibungen im
+    # Spiel, davon 7 mit Angaben.
+    #
+    # Deshalb ein zweiter Weg über den gemeinsamen Namensanfang: Zu jedem Titel,
+    # der Angaben bekommt, werden alle Beschreibungen desselben Auftrags mit
+    # demselben Block versehen. Groß- und Kleinschreibung zählt dabei nicht —
+    # in den Spieldaten steht `Covalex_HaulCargo_AToB_title` neben
+    # `Covalex_HaulCargo_AtoB_desc_ToRuinStation`, mit unterschiedlichem „to".
+    stamm_an = {}
+    for e in daten['entries']:
+        block = text_an.get(e.get('descriptionLocKey') or '')
+        stamm = _stamm(e.get('titleLocKey') or e.get('descriptionLocKey') or '')
+        if block and stamm and stamm not in stamm_an:
+            stamm_an[stamm] = block
+
     neu = []
     for zeile in zeilen:
         teile = _zeile_zerlegen(zeile)
@@ -328,6 +365,13 @@ def einspielen_scdl(ini_pfad, sprachkuerzel, bestand=None):
         elif schluessel in text_an:
             sauber += AUF + text_an[schluessel] + ZU
             geaendert += 1
+        elif '_desc' in schluessel.lower():
+            # Keine eigene Angabe — aber vielleicht gehört die Beschreibung zu
+            # einem Auftrag, für den wir welche haben.
+            block = stamm_an.get(_stamm(schluessel))
+            if block:
+                sauber += AUF + block + ZU
+                geaendert += 1
         neu.append('%s%s=%s' % (schluessel, zusatz, sauber))
 
     try:

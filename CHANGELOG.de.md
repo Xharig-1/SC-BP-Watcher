@@ -86,6 +86,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Im Spiel stand nur die Zahl, nicht welche Baupläne.** Ein Auftrag hat einen Titel, aber
+  oft ein Dutzend Beschreibungen — je eine für „zur Ruinenstation", „zum Verteilzentrum"
+  und so weiter. Die Vertragsdaten nennen dazu nur **eine**; die übrigen blieben leer. Im
+  Titel stand „[BP 0/12]", und wer die Beschreibung öffnete, um zu sehen *welche* zwölf,
+  fand nichts. Gemessen: allein bei Covalex 51 Beschreibungen im Spiel, davon 7 mit
+  Angaben. Sie werden jetzt über den gemeinsamen Namensanfang mitversorgt.
+
 - **Der aufgeklappte Text stand unter allen Versionen statt unter seiner.** Tk packt einen
   Block ans Ende der Fläche, wenn man ihm nicht sagt, wohin — bei elf Fassungen erschien
   der Inhalt von v3.0.0 also unterhalb von v1.0.0. Wer nicht weit genug rollt, hält die
