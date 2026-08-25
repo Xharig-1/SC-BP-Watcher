@@ -1161,7 +1161,13 @@ class Overlay:
         wrap = tk.Frame(self.root, bg=BG)
         wrap.pack(fill='both', expand=True, padx=6, pady=(0, 6))
         self.canvas = tk.Canvas(wrap, bg=BG, highlightthickness=0)
-        sb = tk.Scrollbar(wrap, orient='vertical', command=self.canvas.yview)
+        # ⚠ Keine tk.Scrollbar: Die reicht Tk an das System durch — unter Linux
+        # grau, auf dem Mac hellweiss, und damit der einzige Fleck, der aus dem
+        # Bild faellt. Genau so gemeldet: "scrollbalken im watcher selber ist
+        # auch nicht passend". Die vier Rollbereiche im Hauptfenster hatten den
+        # Umbau schon; hier stand er noch aus.
+        from scbp.hauptfenster import rundleiste
+        sb = rundleiste(wrap, self.canvas, grund=BG)
         self.list = tk.Frame(self.canvas, bg=BG)
         self.list.bind('<Configure>',
                        lambda e: self.canvas.configure(scrollregion=self.canvas.bbox('all')))
