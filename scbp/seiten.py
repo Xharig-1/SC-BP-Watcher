@@ -1625,11 +1625,19 @@ def _fassung_holen(fenster, mit_vorab):
         # Sekunde immer noch etwas hängt (ein Faden, ein Overlay), hart raus.
         # Der Prozess ist an dieser Stelle ohnehin am Ende — die neue Fassung
         # läuft schon.
+        # ⚠ Der Notausgang wird SOFORT scharf gestellt — nicht erst im
+        # `after`-Rückruf. Stand er dort, hing er an Tk: Feuert der Rückruf
+        # nicht (weil die Ereignisschleife schon endete oder das Fenster weg
+        # ist), wurde der Faden nie gestartet, und der Prozess lief weiter.
+        # Genau so gemeldet (Haldjas, 25.08.2026): „er schließt den prozess
+        # nicht komplett … als hätte er nur das symbol von der taskleiste
+        # gekillt". Der halb aufgeräumte Rest meldete danach
+        # „No such file or directory: …\_MEI000006f02\base_library.zip".
+        #
+        # Ein eigener Faden hängt an nichts und läuft in jedem Fall ab.
+        threading.Timer(2.0, lambda: os._exit(0)).start()
+
         def _abtreten():
-            # ⚠ Der Notausgang muss VOR dem Zerstören stehen und darf nicht an
-            # Tk hängen: Nach `destroy()` gibt es kein `after` mehr, der Timer
-            # käme nie. Ein eigener Faden läuft unabhängig weiter.
-            threading.Timer(1.5, lambda: os._exit(0)).start()
             try:
                 fenster.root.quit()
                 fenster.root.destroy()

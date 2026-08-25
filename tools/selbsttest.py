@@ -34,6 +34,7 @@ hier als Fälle drin, damit ein Umbau sie nicht unbemerkt wieder einreißt.
 import importlib
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -698,6 +699,58 @@ def main():
             katalog_namen=['Scalpel Sniper Rifle Magazine (12 cap)'])
         pruefe(v2['unbekannt'] == [],
                'abweichender Klammer-Zusatz gilt nicht als unbekannt')
+
+        # ------------------------------------------------------------------ 16
+        # Neustart nach dem Update. Dieser Fehler ist dreimal aufgetreten und
+        # war jedes Mal schwer zu sehen, weil er nur in der verpackten Fassung
+        # unter Windows auftritt — hier wird deshalb die Entscheidung geprüft,
+        # nicht das Ergebnis.
+        print()
+        print('16. Neustart nach dem Update')
+        from scbp import aktualisierung as akt
+
+        gestartet = []
+
+        class _FalschesPopen(object):
+            def __init__(self, *a, **k):
+                gestartet.append(a[0] if a else None)
+
+        echtes_popen = subprocess.Popen
+        echte_verpackung = akt.verpackung
+        merker_vorher = akt._TAUSCH_LAEUFT[0]
+        try:
+            subprocess.Popen = _FalschesPopen
+            akt.verpackung = lambda: 'exe'
+
+            # Wartet ein Hilfsskript auf den Dateitausch, darf `neu_starten()`
+            # NICHT selbst starten: Auf der Platte liegt dann noch die ALTE
+            # `.exe`, und ein eigener Start fährt genau die wieder hoch. Sie
+            # hält danach den Temp-Ordner fest, der Tausch scheitert endgültig,
+            # und der Nutzer sieht die alte Fassung weiterlaufen.
+            akt._TAUSCH_LAEUFT[0] = True
+            akt.neu_starten()
+            pruefe(gestartet == [],
+                   'wartet ein Dateitausch, wird nichts selbst gestartet')
+
+            # Ohne wartenden Tausch (AppImage: schon getauscht) muss gestartet
+            # werden — sonst bliebe das Programm nach dem Update einfach zu.
+            akt._TAUSCH_LAEUFT[0] = False
+            akt.neu_starten()
+            pruefe(len(gestartet) == 1,
+                   'ohne wartenden Tausch startet die neue Fassung')
+        finally:
+            subprocess.Popen = echtes_popen
+            akt.verpackung = echte_verpackung
+            akt._TAUSCH_LAEUFT[0] = merker_vorher
+
+        # Der Notausgang darf nicht an Tk hängen: Feuert der `after`-Rückruf
+        # nicht, würde ein dort gestarteter Faden nie laufen — und der Prozess
+        # liefe weiter, während sein Temp-Ordner schon abgeräumt wird.
+        quelle = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                      encoding='utf-8').read()
+        vor_abtreten = quelle.split('def _abtreten')[0]
+        pruefe('threading.Timer(2.0, lambda: os._exit(0)).start()' in vor_abtreten,
+               'der Notausgang steht vor dem Tk-Rückruf, nicht darin')
 
     finally:
         shutil.rmtree(basis, ignore_errors=True)

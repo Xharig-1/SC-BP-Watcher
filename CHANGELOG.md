@@ -133,6 +133,21 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The update never actually arrived on Windows.** „Restart now" started the
+  **old** version again: the file is only swapped once the program is gone — a
+  helper script waits for that and starts the new version itself afterwards. So
+  the extra start reached for the old `.exe`, which in turn blocked the swap
+  until the helper gave up. The result: a warning about an undeletable temp
+  folder, a program left sitting in memory, and after all that still the old
+  version. Reported by Haldjas — „it stays on rc25".
+- **The restart's emergency exit depended on the interface.** It was only armed
+  inside a Tk callback; if that never fired, the process kept running while its
+  working folder was already being cleared away („No such file or directory:
+  …\_MEI…\base_library.zip"). It now runs independently.
+- **„Quit" in the tray icon did not really quit.** It only closed the window;
+  running threads kept the program in memory. It now shuts down cleanly and, if
+  something still hangs after three seconds, exits hard.
+
 - **The chosen font size did not apply to the overlay.** It only affected the
   main window; the overlay had fixed sizes. Anyone raising it because the lines
   were hard to read in game changed everything except the window they meant. The

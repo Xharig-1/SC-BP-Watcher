@@ -137,6 +137,22 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Das Update kam unter Windows gar nicht an.** Der Knopf „Jetzt neu starten"
+  fuhr die **alte** Fassung erneut hoch: Getauscht wird die Datei erst, wenn
+  das Programm weg ist — ein Hilfsskript wartet darauf und startet die neue
+  Fassung danach selbst. Der zusätzliche eigene Start griff also zur alten
+  `.exe`, die dann ihrerseits den Tausch blockierte, bis das Hilfsskript
+  aufgab. Ergebnis: Warnung über einen nicht löschbaren Temp-Ordner, ein
+  Programm, das im Speicher stehenblieb, und nach allem immer noch die alte
+  Fassung. Gemeldet von Haldjas — „da bleibt er bei rc25".
+- **Der Notausgang beim Neustart hing an der Oberfläche.** Er wurde erst in
+  einem Tk-Rückruf scharf gestellt; kam der nicht, lief der Prozess weiter,
+  während sein Arbeitsordner schon abgeräumt wurde („No such file or
+  directory: …\_MEI…\base_library.zip"). Jetzt läuft er unabhängig.
+- **„Beenden" im Symbol neben der Uhr beendete nicht wirklich.** Es schloss nur
+  das Fenster; laufende Fäden hielten das Programm im Speicher. Jetzt wird
+  sauber zugemacht und nach drei Sekunden notfalls hart beendet.
+
 - **Die eingestellte Schriftgröße galt nicht fürs Overlay.** Sie wirkte nur im
   großen Fenster; im Overlay standen feste Größen. Wer sie hochstellte, weil er
   die Zeilen im Spiel schlecht lesen konnte, änderte ausgerechnet das Fenster

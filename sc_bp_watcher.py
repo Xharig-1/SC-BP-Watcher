@@ -55,7 +55,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc26'
+__version__ = '3.0.0-rc27'
 
 
 def _mitgeliefert(name):
@@ -1348,6 +1348,25 @@ class Overlay:
             except Exception as ausnahme:
                 fehler.merken('overlay.schriftgroesse', ausnahme)
 
+    def _ganz_beenden(self):
+        """Beenden über das Symbol neben der Uhr — und zwar wirklich.
+
+        ⚠ `destroy()` allein hat das Fenster geschlossen und den Prozess leben
+        lassen: Es beendet die Ereignisschleife, nicht das Programm. Läuft noch
+        ein Faden (Watcher, Netzabruf), bleibt das Ganze im Speicher stehen —
+        genau das, was Haldjas am 25.08.2026 gesehen hat („als hätte er nur das
+        symbol von der taskleiste gekillt").
+
+        Zuerst wird sauber zugemacht, damit der Bestand geschrieben wird. Wer
+        nach drei Sekunden immer noch hängt, wird hart beendet — bis dahin ist
+        alles Wichtige auf der Platte.
+        """
+        threading.Timer(3.0, lambda: os._exit(0)).start()
+        try:
+            self.root.destroy()
+        except Exception:
+            pass
+
     def _icon_setzen(self):
         """Fenster- und Taskleisten-Icon — auf beiden Systemen und für alle Fenster.
 
@@ -1913,7 +1932,7 @@ class Overlay:
         try:
             self._ablage = ablagesymbol.Ablagesymbol(
                 beim_zeigen=lambda: self.root.after(0, self.hervorholen),
-                beim_beenden=lambda: self.root.after(0, self.root.destroy))
+                beim_beenden=lambda: self.root.after(0, self._ganz_beenden))
             self._ablage.starten(sprache.t('tray_zeigen'),
                                  sprache.t('tray_beenden'))
         except Exception as ausnahme:

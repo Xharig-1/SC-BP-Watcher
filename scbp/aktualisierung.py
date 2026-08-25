@@ -507,6 +507,19 @@ def herunterladen(datei, fortschritt=None):
 VERSUCHE_TAUSCH = 120
 
 
+# ⚠ Unter Windows tauscht ein Hilfsskript die Datei, NACHDEM wir weg sind — und
+# startet die neue Fassung gleich selbst (`start "" …` am Ende des Skripts).
+# `neu_starten()` darf dann NICHT auch noch starten: Zu dem Zeitpunkt liegt auf
+# der Platte noch die **alte** `.exe`, der Tausch kommt ja erst nach unserem
+# Ende. Ein eigener Start fährt also die alte Fassung erneut hoch — und die
+# hält dann den Temp-Ordner fest und blockiert den Tausch endgültig.
+#
+# Genau das hat Haldjas am 25.08.2026 gesehen: „der watcher ist irgendwie noch
+# am leben als rc25", dazu „Failed to remove temporary directory". Zwei
+# Symptome, eine Ursache — der doppelte Start.
+_TAUSCH_LAEUFT = [False]
+
+
 def einspielen(neue_datei):
     """Die laufende Fassung durch die neue ersetzen.
 
@@ -590,6 +603,7 @@ def einspielen(neue_datei):
                     'del "%%~f0"\r\n'
                     'exit /b 1\r\n'
                     % (VERSUCHE_TAUSCH, neue_datei, ziel, ziel))
+        _TAUSCH_LAEUFT[0] = True
         subprocess.Popen(['cmd', '/c', skript],
                          creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
         return True, ''
@@ -637,6 +651,13 @@ def neu_starten():
         return False
     try:
         overlay_modul.waechter_stoppen()
+
+        # Wartet ein Hilfsskript darauf, die Datei zu tauschen, ist unser Teil
+        # hier **erledigt** — es startet die neue Fassung selbst. Siehe die
+        # Erklärung über `_TAUSCH_LAEUFT`.
+        if _TAUSCH_LAEUFT[0]:
+            return True
+
         umgebung = dict(os.environ)
         # Die Variablen des laufenden AppImage gehören der **alten** Fassung.
         for name in ('APPIMAGE', 'APPDIR', 'OWD', 'ARGV0'):
