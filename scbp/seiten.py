@@ -1455,6 +1455,47 @@ def _wertzeile(fenster, eltern, bez, wert, farbe=None):
              font=fenster.f_klein, anchor='w').pack(side='left')
 
 
+def _kanaele_auffrischen(fenster, kaesten, neu_zeichnen):
+    """Im Hintergrund nachsehen und die Knöpfe nachziehen — höchstens einmal.
+
+    Läuft in einem eigenen Faden: Die Abfrage geht ins Netz und darf die Seite
+    nicht aufhalten. Gezeichnet wird ausschließlich im Tk-Faden (`after`) — alles
+    andere endet früher oder später in einem Absturz.
+    """
+    import threading
+    from . import aktualisierung
+    if getattr(kaesten, 'schon_gefragt', False):
+        return
+    kaesten.schon_gefragt = True
+    vorher = (_holen_text(False), _holen_text(True))
+
+    def arbeit():
+        try:
+            aktualisierung.nachsehen(fenster.version or '0.0.0')
+        except Exception as ausnahme:
+            fehler.merken('seiten.kanaele_auffrischen', ausnahme)
+            return
+
+        def nachziehen():
+            try:
+                if not kaesten.winfo_exists():
+                    return
+                if (_holen_text(False), _holen_text(True)) == vorher:
+                    return              # nichts Neues, kein Flackern
+                for kind in kaesten.winfo_children():
+                    kind.destroy()
+                neu_zeichnen()
+            except tk.TclError:
+                pass
+
+        try:
+            fenster.root.after(0, nachziehen)
+        except Exception:
+            pass
+
+    threading.Thread(target=arbeit, daemon=True).start()
+
+
 def _holen_text(mit_vorab):
     """Die Beschriftung des Knopfes — mit der Fassung, die dahinter steckt.
 
@@ -1656,6 +1697,14 @@ def _ueber(fenster, rahmen):
                      untereinander=eng,
                      holen=lambda: _fassung_holen(fenster, True),
                      holen_text=_holen_text(True))
+        # ⚠ Die Beschriftungen kommen aus dem Zwischenspeicher, damit die Seite
+        # sofort steht. Der frischt sich aber nur einmal am Tag auf — auf einem
+        # Bildschirmfoto vom 25.08.2026 bot der Knopf „v3.0.0-rc9 holen" an,
+        # während rc12 lief und rc13 schon draußen war. Der Knopf holt zwar die
+        # richtige Fassung (er sieht vorher nach), aber was draufsteht, führt in
+        # die Irre. Deshalb einmal im Hintergrund nachsehen und die Kästen neu
+        # zeichnen, wenn sich etwas geändert hat.
+        _kanaele_auffrischen(fenster, kaesten, kanal_zeichnen)
 
     def kanal_pruefen(_=None):
         """Nur neu bauen, wenn die Anordnung wirklich kippt — sonst flackert es."""

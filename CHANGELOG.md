@@ -93,6 +93,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The „get release" buttons showed an outdated number.** They come from the cache so the
+  page appears instantly — but that only refreshes once a day. In a screenshot the button
+  offered `v3.0.0-rc9` while rc12 was running and rc13 was already out. The right release
+  was always fetched, but the label was misleading. The page now checks once in the
+  background and updates the label.
+
 - **Crash on the very first start** (`SIGSEGV`), reported by Bomb20. The wizard created its
   **own** Tk instance and destroyed it at the end; the overlay then created a second one.
   After the first is destroyed, fonts, images and pending callbacks live on pointing at a

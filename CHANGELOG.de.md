@@ -96,6 +96,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Die Knöpfe „Fassung holen" zeigten eine veraltete Nummer.** Sie kommen aus dem
+  Zwischenspeicher, damit die Seite sofort steht — der frischt sich aber nur einmal am Tag
+  auf. Auf einem Bildschirmfoto bot der Knopf `v3.0.0-rc9` an, während rc12 lief und rc13
+  schon draußen war. Geholt wurde immer die richtige Fassung, aber was draufstand, führte
+  in die Irre. Die Seite sieht jetzt einmal im Hintergrund nach und zieht die Beschriftung
+  nach.
+
 - **Absturz beim allerersten Start** (`SIGSEGV`), gemeldet von Bomb20. Der Assistent legte
   eine **eigene** Tk-Instanz an und zerstörte sie am Ende; das Overlay legte danach eine
   zweite an. Nach dem `destroy()` der ersten leben Schriften, Bilder und offene Aufträge
