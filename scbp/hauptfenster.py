@@ -1065,6 +1065,25 @@ class Hauptfenster:
             self.root.destroy()
 
     def run(self):
+        """Das Fenster zeigen und auf Eingaben warten.
+
+        ⚠ Erst nach vorn holen. Ein frisch gestartetes Fenster liegt sonst
+        hinter dem, was gerade offen war — gemeldet als „es startet, aber ich
+        sehe nichts", während das Fenster nachweislich gebaut und sichtbar
+        war (1040×760, Zustand „normal"), nur eben verdeckt. Besonders auf
+        dem Mac: Wird das Programm aus einem Terminal gestartet, behält das
+        Terminal den Vordergrund.
+
+        `-topmost` wird gleich wieder abgeschaltet — es soll nach vorn
+        kommen, aber nicht dauerhaft über allem kleben.
+        """
+        try:
+            self.root.lift()
+            self.root.attributes('-topmost', True)
+            self.root.after(400, lambda: self.root.attributes('-topmost', False))
+            self.root.focus_force()
+        except tk.TclError:
+            pass                     # ohne Fenstermanager nicht möglich
         self.root.mainloop()
 
 
