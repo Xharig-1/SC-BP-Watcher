@@ -51,19 +51,22 @@ HIER = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Benannte Argumente, deren Wert auf dem Bildschirm landet.
 SICHTBAR = ('text', 'title', 'label', 'placeholder', 'platzhalter', 'lead')
 
-# Hausbausteine, die ihren Text an fester Stelle bekommen (nicht als `text=`).
-# Dahinter steht, das wievielte Argument der Mensch liest — gezählt ab null.
-# Ein Blick in die Signatur genügt, um hier etwas nachzutragen; wer das
-# vergisst, bekommt eine grüne Prüfung trotz deutscher Brocken im Englischen.
-BAUSTEINE = {
-    '_ueberschrift': (2, 3),      # (fenster, rahmen, titel, lead)
-    '_knopf':        (2,),        # (fenster, eltern, text, tat, …)
-    '_status':       (3, 4),      # (fenster, eltern, zeichen, fett, rest, …)
-    '_feld':         (2, 3),      # (fenster, eltern, bezeichnung, hilfe, …)
-    'rundknopf':     (1,),        # (eltern, text, tat, …)
-    'marke':         (1,),
-    '_chip':         (1,),
+# Bausteine aus anderen Dateien — die stehen hier, weil ihre Signatur nicht
+# in derselben Datei zu finden ist. Die Zahl ist das wievielte Argument, das
+# der Mensch liest, gezählt ab null.
+FREMDE_BAUSTEINE = {
+    'rundknopf': (1,),            # (eltern, text, tat, …)
+    'marke':     (1,),
+    '_chip':     (1,),
 }
+
+# Parameternamen, hinter denen ein sichtbarer Text steckt. Bausteine der
+# geprüften Datei werden darüber **selbst gefunden** — sonst müsste man die
+# Tabelle bei jedem neuen Baustein von Hand nachziehen, und genau das geht
+# schief: `_wertzeile` fehlte, und deshalb stand „Baupläne bekannt" monatelang
+# unübersetzt auf der englischen Über-Seite, während die Prüfung grün meldete.
+TEXTNAMEN = ('text', 'titel', 'bez', 'bezeichnung', 'hilfe', 'lead', 'fett',
+             'rest', 'beschriftung', 'wofuer', 'platzhalter')
 
 # Methoden, die eine Meldung in die Statuszeile schreiben.
 MELDER = ('sagen',)
@@ -77,6 +80,9 @@ WAHL = '_wahl'
 KEINE_TEXTE = (
     'win', 'darwin', 'linux', 'version', 'datum', 'offen', 'unbekannt',
     'Xharig', 'SC BP Watcher', 'normal', 'bold', 'center', 'left', 'right',
+    # Argumente von `decode`/`open` — sie stehen an einer Stelle, die sonst
+    # Text trägt, sind aber keiner.
+    'utf-8', 'utf-8-sig', 'latin-1', 'ignore', 'strict', 'replace', 'surrogateescape',
     # Der Sprachumschalter selbst: Jede Sprache steht dort in ihrer eigenen
     # Schreibweise, sonst findet sich niemand wieder. Wer Englisch spricht und
     # versehentlich auf Deutsch gelandet ist, sucht „English" — nicht
@@ -129,10 +135,28 @@ def _ist_satz(text):
     return True
 
 
+def _bausteine_finden(baum):
+    """Welche Funktionen dieser Datei bekommen sichtbaren Text — und wo?
+
+    Gelesen wird die Signatur: Heißt ein Parameter `titel`, `hilfe`, `text`
+    (siehe TEXTNAMEN), steht an seiner Stelle etwas, das ein Mensch liest.
+    """
+    gefunden = dict(FREMDE_BAUSTEINE)
+    for knoten in ast.walk(baum):
+        if not isinstance(knoten, ast.FunctionDef):
+            continue
+        stellen = tuple(nummer for nummer, arg in enumerate(knoten.args.args)
+                        if arg.arg in TEXTNAMEN)
+        if stellen:
+            gefunden[knoten.name] = stellen
+    return gefunden
+
+
 def pruefe(pfad):
     """Liefert die Fundstellen einer Datei als (Zeile, Stelle, Text)."""
     quelle = io.open(pfad, encoding='utf-8').read()
     baum = ast.parse(quelle)
+    BAUSTEINE = _bausteine_finden(baum)
     funde = set()
 
     for knoten in ast.walk(baum):

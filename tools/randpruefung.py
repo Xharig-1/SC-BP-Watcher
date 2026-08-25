@@ -82,8 +82,17 @@ def _durchgehen(w, gefunden):
             # Rollflächen, Text- und Eingabefelder dürfen absichtlich
             # schmaler sein als ihr Inhalt: Dort rollt man oder tippt weiter.
             # Gesucht sind Beschriftungen, die stumm verstümmelt werden.
-            rollend = (kind.winfo_class() in ('Canvas', 'Text', 'Listbox',
-                                              'Entry', 'Scrollbar')
+            #
+            # ⚠ `Canvas` darf NICHT pauschal durchgehen. Jeder Knopf des
+            # Hauses ist ein Canvas mit fest gerechneter Breite — genau die
+            # Elemente, für die diese Prüfung gebaut wurde. Solange sie
+            # ausgenommen waren, meldete sie nichts, während auf der
+            # Über-Seite sichtbar „Einrichtung wiederho…" stand. Knöpfe
+            # tragen deshalb die Markierung `ist_knopf` und werden geprüft.
+            knopf = getattr(kind, 'ist_knopf', False)
+            rollend = ((kind.winfo_class() in ('Canvas', 'Text', 'Listbox',
+                                               'Entry', 'Scrollbar')
+                        and not knopf)
                        or getattr(kind, 'auf_mass_gesetzt', False))
             if gebraucht - bekommen > LUFT and not rollend:
                 gefunden.append((_beschriftung(kind), gebraucht - bekommen,

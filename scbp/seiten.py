@@ -70,9 +70,13 @@ def _ueberschrift(fenster, rahmen, titel, lead=''):
     tk.Label(rahmen, text=titel, bg=BG, fg=FG, font=fenster.f_titel,
              anchor='w').pack(fill='x', padx=24, pady=(20, 2))
     if lead:
-        tk.Label(rahmen, text=lead, bg=BG, fg=SUB, font=fenster.f_klein,
-                 anchor='w', justify='left', wraplength=620).pack(
-                     fill='x', padx=24, pady=(0, 14))
+        # `abzug=48` sind die beiden Ränder von je 24 — ohne sie rechnet der
+        # Umbruch mit Platz, den es nicht gibt, und die letzten Wörter fallen
+        # trotzdem heraus.
+        einleitung = tk.Label(rahmen, text=lead, bg=BG, fg=SUB,
+                              font=fenster.f_klein, anchor='w', justify='left')
+        einleitung.pack(fill='x', padx=24, pady=(0, 14))
+        _umbruch(einleitung, abzug=48)
 
 
 def _rollflaeche(rahmen, rand=24):
@@ -143,6 +147,7 @@ def _knopf(fenster, eltern, text, tat, stark=False, gefahr=False):
     c.bind('<Enter>', rein)
     c.bind('<Leave>', raus)
     c.bind('<Button-1>', lambda e: tat())
+    c.ist_knopf = True          # damit tools/randpruefung.py ihn prüft
     return c
 
 
@@ -166,6 +171,7 @@ def _wahl(fenster, eltern, eintraege, aktiv, tat):
                                fill=ACCENT if an else SUB, font=schrift)
         c.teile = (flaeche, beschr)
         c.bind('<Button-1>', lambda e, k=kennung: tat(k))
+        c.ist_knopf = True      # damit tools/randpruefung.py ihn prüft
         knoepfe[kennung] = c
 
     def setzen(gewaehlt):
@@ -189,11 +195,15 @@ def _status(fenster, eltern, zeichen, fett, rest, farbe=None):
              font=fenster.f_grund).pack(side='left', padx=(0, 10), anchor='n')
     text = tk.Frame(zeile, bg=FLAECHE)
     text.pack(side='left', fill='x', expand=True)
-    tk.Label(text, text=fett, bg=FLAECHE, fg=FG, font=fenster.f_fett,
-             anchor='w', justify='left', wraplength=560).pack(fill='x')
+    oben = tk.Label(text, text=fett, bg=FLAECHE, fg=FG, font=fenster.f_fett,
+                    anchor='w', justify='left')
+    oben.pack(fill='x')
+    _umbruch(oben)
     if rest:
-        tk.Label(text, text=rest, bg=FLAECHE, fg=SUB, font=fenster.f_klein,
-                 anchor='w', justify='left', wraplength=560).pack(fill='x')
+        unten = tk.Label(text, text=rest, bg=FLAECHE, fg=SUB,
+                         font=fenster.f_klein, anchor='w', justify='left')
+        unten.pack(fill='x')
+        _umbruch(unten)
     return innen
 
 
@@ -213,7 +223,7 @@ def _pfadfeld(fenster, eltern, wert, waehlen, oeffnen=None, platzhalter=''):
 
 
 
-def _umbruch(label, anteil=1.0, abzug=0):
+def _umbruch(label, anteil=1.0, abzug=0, bezug=None, neben=None):
     """Den Zeilenumbruch an die tatsächliche Breite hängen.
 
     ⚠ Feste Werte wie `wraplength=560` sind der Grund, warum Text bei kleinem
@@ -222,15 +232,82 @@ def _umbruch(label, anteil=1.0, abzug=0):
     Mindestgröße zieht oder auf Englisch umstellt, sieht Stümpfe.
 
     `anteil` ist für nebeneinanderliegende Kästen (zwei Spalten → 0.5).
+
+    `bezug` ist der Rahmen, an dem gemessen wird — normalerweise der eigene
+    Elternrahmen. ⚠ Er taugt nicht immer: Steht rechts noch ein Bedienelement,
+    hat der linke Rahmen bereits die **zu große** Breite, die den Überlauf
+    überhaupt erst verursacht. Dann wird am gemeinsamen Elternrahmen gemessen.
+
+    `neben` ist genau dieses Bedienelement. Seine gebrauchte Breite wird
+    abgezogen, denn diesen Platz gibt es für den Text nicht.
     """
+    ziel = bezug if bezug is not None else label.master
+
     def nachziehen(_=None):
-        breite = label.master.winfo_width()
+        breite = ziel.winfo_width()
+        if neben is not None:
+            try:
+                breite -= neben.winfo_reqwidth()
+            except tk.TclError:
+                pass
         if breite > 40:
             label.configure(wraplength=max(160, int(breite * anteil) - abzug))
 
-    label.master.bind('<Configure>', nachziehen, add='+')
+    ziel.bind('<Configure>', nachziehen, add='+')
+    # ⚠ `<Configure>` allein reicht nicht. Seiten werden gebaut, während sie
+    # noch versteckt sind — dort meldet Tk Breite 1, und wenn beim späteren
+    # Einblenden die Fenstergröße zufällig gleich bleibt, kommt nie ein
+    # `<Configure>` mehr. Der Umbruch bliebe dann auf dem Notwert stehen.
+    # `<Map>` feuert genau dann, wenn das Element wirklich sichtbar wird.
+    label.bind('<Map>', nachziehen, add='+')
     label.after(0, nachziehen)
     return label
+
+
+def _knopfreihe(eltern, knoepfe, abstand=8):
+    """Knöpfe nebeneinander — und untereinander, sobald der Platz nicht reicht.
+
+    ⚠ Tk bricht eine Knopfreihe nicht um. Passt sie nicht, schneidet es den
+    letzten Knopf einfach ab: Auf der Über-Seite stand bei Mindestbreite
+    sichtbar „Einrichtung wiederho…". Aufgefallen ist das erst auf einem
+    Bildschirmfoto — die Randprüfung hatte Knöpfe als Rollflächen ausgenommen,
+    weil jeder Knopf hier ein `Canvas` ist.
+    """
+    def ordnen(_=None):
+        platz = eltern.winfo_width()
+        gebraucht = sum(k.winfo_reqwidth() for k in knoepfe) \
+            + abstand * (len(knoepfe) - 1)
+        nebeneinander = platz <= 1 or gebraucht <= platz
+        if nebeneinander == getattr(eltern, 'zuletzt_nebeneinander', None):
+            return
+        eltern.zuletzt_nebeneinander = nebeneinander
+        for nummer, knopf in enumerate(knoepfe):
+            knopf.pack_forget()
+            if nebeneinander:
+                knopf.pack(side='left', padx=(0 if nummer == 0 else abstand, 0))
+            else:
+                knopf.pack(side='top', anchor='w',
+                           pady=(0 if nummer == 0 else 6, 0))
+
+    eltern.bind('<Configure>', ordnen, add='+')
+    eltern.after(0, ordnen)
+    return eltern
+
+
+def _fliesstext(eltern, text, schrift, farbe=SUB, grund=BG, abzug=0, **pack):
+    """Ein Absatz, der mit dem Fenster mitgeht.
+
+    Der Regelweg für jeden mehrzeiligen Text. Wer stattdessen `wraplength=600`
+    schreibt, baut den Fehler wieder ein, den diese Funktion behebt: Der Wert
+    passt für die eine Fenstergröße, bei der er entstanden ist.
+
+    `abzug` ist der waagerechte Rand, den der Text nicht benutzen darf —
+    üblicherweise das Doppelte des `padx` beim Packen.
+    """
+    label = tk.Label(eltern, text=text, bg=grund, fg=farbe, font=schrift,
+                     anchor='w', justify='left')
+    label.pack(**pack)
+    return _umbruch(label, abzug=abzug)
 
 
 def _feld(fenster, eltern, bezeichnung, hilfe, breit=False):
@@ -239,20 +316,32 @@ def _feld(fenster, eltern, bezeichnung, hilfe, breit=False):
     zeile.pack(fill='x', pady=(12, 0))
     links = tk.Frame(zeile, bg=BG)
     links.pack(side='left', fill='x', expand=True)
-    tk.Label(links, text=bezeichnung, bg=BG, fg=FG, font=fenster.f_fett,
-             anchor='w').pack(fill='x')
+    beschriftung = tk.Label(links, text=bezeichnung, bg=BG, fg=FG,
+                            font=fenster.f_fett, anchor='w')
+    beschriftung.pack(fill='x')
+    erklaerung = None
     if hilfe:
-        tk.Label(links, text=hilfe, bg=BG, fg=SUB, font=fenster.f_klein,
-                 anchor='w', justify='left', wraplength=520).pack(fill='x')
+        erklaerung = tk.Label(links, text=hilfe, bg=BG, fg=SUB,
+                              font=fenster.f_klein, anchor='w', justify='left')
+        erklaerung.pack(fill='x')
     if breit:
         # Breite Bedienelemente unter die Beschreibung statt daneben: Auf
         # Englisch sind die Wörter länger, und rechts wurde der letzte Knopf
         # abgeschnitten („Ve…" statt „Very large").
         rechts = tk.Frame(links, bg=BG)
         rechts.pack(fill='x', anchor='w', pady=(8, 0))
+        if erklaerung is not None:
+            _umbruch(erklaerung, bezug=zeile)
     else:
         rechts = tk.Frame(zeile, bg=BG)
         rechts.pack(side='right', padx=(16, 0))
+        # ⚠ Hier NICHT an `links` messen: Der Rahmen ist in genau dem Moment
+        # zu breit, in dem der Text überläuft — er würde den Fehler bestätigen
+        # statt ihn zu beheben. Gemessen wird am gemeinsamen Elternrahmen
+        # abzüglich des Bedienelements, das rechts steht.
+        if erklaerung is not None:
+            _umbruch(erklaerung, bezug=zeile, neben=rechts, abzug=16)
+        _umbruch(beschriftung, bezug=zeile, neben=rechts, abzug=16)
     tk.Frame(eltern, bg=LINIE, height=1).pack(fill='x', pady=(12, 0))
     return rechts
 
@@ -499,17 +588,13 @@ def _ordner(fenster, rahmen):
 
     tk.Label(innen, text=t('e_spiel'), bg=BG, fg=FG, font=fenster.f_fett,
              anchor='w').pack(fill='x', pady=(6, 0))
-    tk.Label(innen, text=t('e_spiel_hilfe'), bg=BG, fg=SUB,
-             font=fenster.f_klein, anchor='w', justify='left',
-             wraplength=600).pack(fill='x')
+    _fliesstext(innen, t('e_spiel_hilfe'), fenster.f_klein, fill='x')
     _pfadfeld(fenster, innen, e.spiel,
               lambda: e._waehlen(e.spiel, t('e_spiel')))
 
     tk.Label(innen, text=t('s_eigene'), bg=BG, fg=FG, font=fenster.f_fett,
              anchor='w').pack(fill='x', pady=(20, 0))
-    tk.Label(innen, text=t('s_eigene_h'),
-             bg=BG, fg=SUB, font=fenster.f_klein, anchor='w', justify='left',
-             wraplength=600).pack(fill='x')
+    _fliesstext(innen, t('s_eigene_h'), fenster.f_klein, fill='x')
     ablage = tk.StringVar(value=pfade.app_ordner())
 
     def ablage_oeffnen():
@@ -522,9 +607,7 @@ def _ordner(fenster, rahmen):
 
     tk.Label(innen, text='%s  —  %s' % (t('e_launcher'), t('s_optional')), bg=BG, fg=FG,
              font=fenster.f_fett, anchor='w').pack(fill='x', pady=(20, 0))
-    tk.Label(innen, text=t('e_launcher_hilfe'), bg=BG, fg=SUB,
-             font=fenster.f_klein, anchor='w', justify='left',
-             wraplength=600).pack(fill='x')
+    _fliesstext(innen, t('e_launcher_hilfe'), fenster.f_klein, fill='x')
     _pfadfeld(fenster, innen, e.launcher,
               lambda: e._waehlen(e.launcher, t('e_launcher')),
               platzhalter=t('s_or_leer'))
@@ -615,9 +698,8 @@ def _bestand(fenster, rahmen):
     anzahl = _zahl_bestand()
     tk.Label(innen, text=t('s_be_aus'), bg=BG, fg=FG,
              font=fenster.f_titel, anchor='w').pack(fill='x', pady=(0, 2))
-    tk.Label(innen, text=t('s_be_aus_h'),
-             bg=BG, fg=SUB, font=fenster.f_klein, anchor='w',
-             justify='left', wraplength=600).pack(fill='x', pady=(0, 12))
+    _fliesstext(innen, t('s_be_aus_h'), fenster.f_klein,
+                fill='x', pady=(0, 12))
 
     karte = _karte(innen)
     for name, wofuer in (('KRT Profit Basetool', t('s_be_n_bp') % anzahl),
@@ -665,9 +747,8 @@ def _bestand(fenster, rahmen):
 
     tk.Label(innen, text=t('s_be_ein'), bg=BG, fg=FG,
              font=fenster.f_titel, anchor='w').pack(fill='x', pady=(28, 2))
-    tk.Label(innen, text=t('s_be_ein_h'),
-             bg=BG, fg=SUB, font=fenster.f_klein, anchor='w',
-             justify='left', wraplength=600).pack(fill='x', pady=(0, 12))
+    _fliesstext(innen, t('s_be_ein_h'), fenster.f_klein,
+                fill='x', pady=(0, 12))
 
     vorschau_platz = tk.Frame(innen, bg=BG)
 
@@ -690,9 +771,8 @@ def _bestand(fenster, rahmen):
 
     _knopf(fenster, innen, t('s_be_waehlen'), einlesen,
            stark=True).pack(anchor='w')
-    tk.Label(innen, text=t('s_be_erkannt'),
-             bg=BG, fg=SUB, font=fenster.f_klein, anchor='w', justify='left',
-             wraplength=600).pack(fill='x', pady=(10, 0))
+    _fliesstext(innen, t('s_be_erkannt'), fenster.f_klein,
+                fill='x', pady=(10, 0))
     vorschau_platz.pack(fill='x', pady=(14, 20))
     # Der Kasten steht von Anfang an da — sonst wirkt die Seite unfertig, und
     # niemand weiß, dass vor dem Übernehmen noch eine Vorschau kommt.
@@ -705,9 +785,8 @@ def _leere_vorschau(fenster, eltern):
     tk.Label(innen, text=t('s_vorschau_leer'), bg=FLAECHE, fg=FG,
              font=fenster.f_fett, anchor='w').pack(fill='x', padx=16,
                                                    pady=(12, 2))
-    tk.Label(innen, text=t('s_vorschau_leer_h'), bg=FLAECHE, fg=SUB,
-             font=fenster.f_klein, anchor='w', justify='left',
-             wraplength=560).pack(fill='x', padx=16, pady=(0, 12))
+    _fliesstext(innen, t('s_vorschau_leer_h'), fenster.f_klein,
+                grund=FLAECHE, abzug=32, fill='x', padx=16, pady=(0, 12))
     return innen
 
 
@@ -746,10 +825,8 @@ def _vorschau_zeigen(fenster, eltern, art, eintraege, v):
                  justify='left', wraplength=560).pack(fill='x', padx=16,
                                                       pady=(0, 8))
 
-    tk.Label(innen, text=t('s_be_merge'),
-             bg=FLAECHE, fg=SUB, font=fenster.f_klein, anchor='w',
-             justify='left', wraplength=560).pack(fill='x', padx=16,
-                                                  pady=(0, 10))
+    _fliesstext(innen, t('s_be_merge'), fenster.f_klein,
+                grund=FLAECHE, abzug=32, fill='x', padx=16, pady=(0, 10))
 
     reihe = tk.Frame(innen, bg=FLAECHE)
     reihe.pack(fill='x', padx=16, pady=(0, 14))
@@ -930,18 +1007,28 @@ def _wertzeile(fenster, eltern, bez, wert, farbe=None):
              font=fenster.f_klein, anchor='w').pack(side='left')
 
 
-def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text=''):
+def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text='',
+                 untereinander=False):
     """Eine Wahlmöglichkeit als Kasten — wie in der Vorschau.
 
     Ein Schalter mit „an/aus" beantwortet die Frage nicht, die der Spieler hat:
     *Was bedeutet das für mich?* Zwei Kästen mit je zwei Sätzen tun das.
+
+    ⚠ `untereinander` ist kein Schönheitsgriff. Nebeneinander brauchen die
+    beiden Kästen mehr Platz, als die Mindestfensterbreite hergibt — Tk
+    verteilt dann nicht etwa gerecht, sondern gibt dem ersten seine volle
+    Wunschbreite und quetscht den zweiten auf 49 Pixel zusammen. Gemessen bei
+    720×520: 329 Pixel fehlten.
     """
     from .hauptfenster import marke as blase
     from .hauptfenster import rundrahmen
     innen = rundrahmen(eltern, FLAECHE, ACCENT if gewaehlt else LINIE,
                        radius=8, grundfarbe=BG)
     rand = innen.halter
-    rand.pack(side='left', fill='both', expand=True, padx=(0, 10))
+    if untereinander:
+        rand.pack(side='top', fill='x', expand=False, pady=(0, 10))
+    else:
+        rand.pack(side='left', fill='both', expand=True, padx=(0, 10))
     rand.configure(cursor='hand2')
     innen.configure(cursor='hand2')
     innen.leinwand.configure(cursor='hand2')
@@ -979,27 +1066,27 @@ def _ueber(fenster, rahmen):
     # --- Zustand ---
     karte = _karte(innen, pady=(0, 6))
     tk.Frame(karte, bg=FLAECHE, height=8).pack()
-    _wertzeile(fenster, karte, 'Fassung', fenster.version or '—', ACCENT)
-    _wertzeile(fenster, karte, 'Baupläne bekannt', _zahl_katalog())
-    _wertzeile(fenster, karte, 'Davon deine', _zahl_bestand())
+    _wertzeile(fenster, karte, t('s_ub_fassung'), fenster.version or '—', ACCENT)
+    _wertzeile(fenster, karte, t('s_ub_bekannt'), _zahl_katalog())
+    _wertzeile(fenster, karte, t('s_ub_davon'), _zahl_bestand())
     uebersicht = {}
     try:
         uebersicht = pfade.uebersicht() or {}
     except Exception:
         pass
-    _wertzeile(fenster, karte, 'Eigener Ordner',
+    _wertzeile(fenster, karte, t('b_ordner'),
                uebersicht.get('app_ordner') or '—')
     tk.Frame(karte, bg=FLAECHE, height=10).pack()
 
     reihe = tk.Frame(innen, bg=BG)
     reihe.pack(fill='x', pady=(10, 4))
-    _knopf(fenster, reihe, t('s_ub_nachsehen'),
-           lambda: fenster.sagen(t('s_ub_sucht')),
-           stark=True).pack(side='left')
-    _knopf(fenster, reihe, t('hf_wasistneu'),
-           lambda: fenster.oeffnen('wasistneu')).pack(side='left', padx=8)
-    _knopf(fenster, reihe, t('s_ub_einrichtung'),
-           fenster._einrichtung).pack(side='left')
+    _knopfreihe(reihe, [
+        _knopf(fenster, reihe, t('s_ub_nachsehen'),
+               lambda: fenster.sagen(t('s_ub_sucht')), stark=True),
+        _knopf(fenster, reihe, t('hf_wasistneu'),
+               lambda: fenster.oeffnen('wasistneu')),
+        _knopf(fenster, reihe, t('s_ub_einrichtung'), fenster._einrichtung),
+    ])
 
     ziel = _feld(fenster, innen, t('s_ub_taeglich'), t('s_ub_taeglich_h'))
     _schalter(fenster, ziel, 'update_pruefen', True)
@@ -1007,9 +1094,8 @@ def _ueber(fenster, rahmen):
     # --- Testkanal: zwei Kästen statt eines Schalters ---
     tk.Label(innen, text=t('s_ub_kanal'), bg=BG, fg=FG,
              font=fenster.f_titel, anchor='w').pack(fill='x', pady=(24, 2))
-    tk.Label(innen, text=t('s_ub_kanal_h'),
-             bg=BG, fg=SUB, font=fenster.f_klein, anchor='w',
-             justify='left', wraplength=620).pack(fill='x', pady=(0, 12))
+    _fliesstext(innen, t('s_ub_kanal_h'), fenster.f_klein,
+                fill='x', pady=(0, 12))
 
     kaesten = tk.Frame(innen, bg=BG)
     kaesten.pack(fill='x')
@@ -1021,19 +1107,36 @@ def _ueber(fenster, rahmen):
             kind.destroy()
         kanal_zeichnen()
 
+    # Unterhalb dieser Breite stehen die beiden Kästen untereinander. 620 ist
+    # gemessen, nicht geschätzt: Darunter reicht der Platz nicht mehr für zwei
+    # nebeneinander, und Tk quetscht den zweiten zusammen, statt umzubrechen.
+    SCHMAL = 620
+
     def kanal_zeichnen():
         an = pfade.einstellung_wahrheit('vorabversionen', False)
-        _kanalkasten(fenster, kaesten, 'Nur fertige Fassungen',
-                     'Das Übliche. Du bekommst eine Meldung, wenn eine geprüfte '
-                     'Fassung erscheint — samstags, höchstens einmal die Woche.',
-                     not an, lambda: kanal_setzen(False))
-        _kanalkasten(fenster, kaesten, 'Auch Testfassungen',
-                     'Du siehst Neues als Erster und hilfst beim Prüfen. '
-                     'Testfassungen sind fertig gebaut und lauffähig, aber noch '
-                     'nicht lange erprobt — es kann etwas klemmen.',
-                     an, lambda: kanal_setzen(True), marke_text='rc')
+        breite = kaesten.winfo_width()
+        # Vor dem ersten Zeichnen meldet Tk eine 1 — dann entscheidet das
+        # Fenster, nicht der Platzhalter.
+        if breite <= 1:
+            breite = kaesten.winfo_toplevel().winfo_width()
+        eng = breite < SCHMAL
+        kaesten.zuletzt_eng = eng
+        _kanalkasten(fenster, kaesten, t('s_ub_fertig'), t('s_ub_fertig_h'),
+                     not an, lambda: kanal_setzen(False), untereinander=eng)
+        _kanalkasten(fenster, kaesten, t('s_ub_test'), t('s_ub_test_h'),
+                     an, lambda: kanal_setzen(True), marke_text='rc',
+                     untereinander=eng)
+
+    def kanal_pruefen(_=None):
+        """Nur neu bauen, wenn die Anordnung wirklich kippt — sonst flackert es."""
+        eng = kaesten.winfo_width() < SCHMAL
+        if eng != getattr(kaesten, 'zuletzt_eng', None):
+            for kind in kaesten.winfo_children():
+                kind.destroy()
+            kanal_zeichnen()
 
     kanal_zeichnen()
+    kaesten.bind('<Configure>', kanal_pruefen, add='+')
 
     # --- Wer das gebaut hat ---
     tk.Label(innen, text=t('hf_wer'), bg=BG, fg=FG, font=fenster.f_titel,
@@ -1069,11 +1172,11 @@ def _ueber(fenster, rahmen):
     dank = _karte(innen, pady=(10, 0))
     tk.Label(dank, text=t('hf_dank'), bg=FLAECHE, fg=FG, font=fenster.f_klein,
              anchor='w').pack(fill='x', padx=16, pady=(12, 6))
-    for quelle, wofuer in (('scmdb.net', 'Bauplan-Katalog und Herkunft'),
+    for quelle, wofuer in (('scmdb.net', t('s_ub_q_katalog')),
                            ('rjcncpt / SC Deutsch Launcher',
-                            'Übersetzung und Vertragsdaten'),
+                            t('s_ub_q_uebersetzung')),
                            ('MrKraken · StarStrings',
-                            'Vorbild für die Einspielung ins Spiel')):
+                            t('s_ub_q_vorbild'))):
         z = tk.Frame(dank, bg=FLAECHE)
         z.pack(fill='x', padx=16, pady=1)
         tk.Label(z, text='·', bg=FLAECHE, fg=SUB,
@@ -1082,13 +1185,11 @@ def _ueber(fenster, rahmen):
                  font=fenster.f_klein).pack(side='left')
         tk.Label(z, text=' — ' + wofuer, bg=FLAECHE, fg=SUB,
                  font=fenster.f_klein).pack(side='left')
-    tk.Label(dank, text=t('hf_nichts_dabei'), bg=FLAECHE, fg=SUB,
-             font=fenster.f_klein, anchor='w', justify='left',
-             wraplength=600).pack(fill='x', padx=16, pady=(8, 12))
+    _fliesstext(dank, t('hf_nichts_dabei'), fenster.f_klein,
+                grund=FLAECHE, abzug=32, fill='x', padx=16, pady=(8, 12))
 
-    tk.Label(innen, text=t('hf_fancontent'), bg=BG, fg=SUB,
-             font=fenster.f_klein, anchor='w', justify='left',
-             wraplength=620).pack(fill='x', pady=(14, 24))
+    _fliesstext(innen, t('hf_fancontent'), fenster.f_klein,
+                fill='x', pady=(14, 24))
 
 
 def _schalter(fenster, eltern, schluessel, standard):
@@ -1157,9 +1258,8 @@ def _erkennung(fenster, rahmen):
     except Exception as ausnahme:
         fehler.merken('seiten.erkennung.phrasen', ausnahme)
     kasten = _karte(ziel)
-    tk.Label(kasten, text=gefunden, bg=FLAECHE, fg=FG, font=fenster.f_klein,
-             anchor='w', justify='left', wraplength=520).pack(
-                 fill='x', padx=12, pady=8)
+    _fliesstext(kasten, gefunden, fenster.f_klein, farbe=FG,
+                grund=FLAECHE, abzug=24, fill='x', padx=12, pady=8)
 
     ziel = _feld(fenster, innen, t('s_er_kat'), t('s_er_kat_h'))
 
@@ -1229,12 +1329,13 @@ def _diagnose(fenster, rahmen):
         fenster.sagen(t('s_di_gespeichert') % os.path.basename(ziel_datei)
                       if ziel_datei else t('s_di_speich_weg'))
 
-    _knopf(fenster, reihe, t('s_di_melden'), melden,
-           stark=True).pack(side='left')
-    _knopf(fenster, reihe, t('s_di_kopieren'), kopieren).pack(side='left', padx=8)
-    _knopf(fenster, reihe, t('s_di_speichern'), speichern).pack(side='left')
-    _knopf(fenster, reihe, t('s_di_ordner'),
-           lambda: _ordner_zeigen(pfade.app_ordner())).pack(side='left', padx=8)
+    _knopfreihe(reihe, [
+        _knopf(fenster, reihe, t('s_di_melden'), melden, stark=True),
+        _knopf(fenster, reihe, t('s_di_kopieren'), kopieren),
+        _knopf(fenster, reihe, t('s_di_speichern'), speichern),
+        _knopf(fenster, reihe, t('s_di_ordner'),
+               lambda: _ordner_zeigen(pfade.app_ordner())),
+    ])
 
     _status(fenster, innen, '✓', t('s_di_sicher'), t('s_di_sicher_h'))
 

@@ -56,6 +56,7 @@ import time
 import urllib.request
 
 from . import pfade, sprache
+from .sprache import t
 
 BASIS = 'https://scmdb.net/data'
 CACHE = 'katalog-cache.json'
@@ -403,18 +404,18 @@ def erzeugen(version=None, fortschritt=None, aus_datei=None):
     if not version:
         return 0, ''
 
-    melde('Werte werden geholt …')
+    melde(t('z_werte'))
     werte = _werte(_hole('%s/crafting_items-%s.json' % (BASIS, version)))
 
     if aus_datei:                       # nur für Entwicklung und Selbsttest
-        melde('Bauplan-Herkunft wird aus %s gelesen …' % os.path.basename(aus_datei))
+        melde(t('z_herkunft_datei') % os.path.basename(aus_datei))
         with open(aus_datei, encoding='utf-8') as f:
             merged = json.load(f)
     else:
-        melde('Bauplan-Herkunft wird geholt (etwa 12 MB) …')
+        melde(t('z_herkunft_netz'))
         merged = _hole('%s/merged-%s.json' % (BASIS, version))
 
-    melde('Wird ausgewertet …')
+    melde(t('z_auswerten'))
     pools, quellen = _herkunft(merged)
     topf_namen = {}
     for topf in (merged.get('blueprintPools') or {}).values():
@@ -441,7 +442,7 @@ def erzeugen(version=None, fortschritt=None, aus_datei=None):
 
     # Startbaupläne dazu — sie stehen in keinem Belohnungs-Pool und würden
     # sonst fehlen. Vorhandene Einträge werden nicht überschrieben.
-    melde('Startbaupläne werden geholt …')
+    melde(t('z_startbp'))
     for e in _startbauplaene(version):
         k = _norm(e['n'])
         if k in bauplaene:

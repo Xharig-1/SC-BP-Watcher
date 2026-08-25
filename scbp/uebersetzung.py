@@ -259,7 +259,7 @@ def holen(quelle, fortschritt=None, spielordner=None):
         return False, letzter_fehler[0] or t('m_keine_fassung')
     kennung, adresse, groesse = neu
 
-    melde('%s wird geladen (%.1f MB) …' % (q['name'], groesse / 1048576.0))
+    melde(t('z_laedt') % (q['name'], groesse / 1048576.0))
     try:
         inhalt = _hole(adresse, roh=True)
     except Exception as e:
@@ -273,7 +273,7 @@ def holen(quelle, fortschritt=None, spielordner=None):
     if not ziel:
         return False, 'Star-Citizen-Ordner unbekannt'
 
-    melde('wird eingesetzt …')
+    melde(t('z_einsetzen'))
     try:
         os.makedirs(os.path.dirname(ziel), exist_ok=True)
         with open(ziel + '.tmp', 'wb') as f:

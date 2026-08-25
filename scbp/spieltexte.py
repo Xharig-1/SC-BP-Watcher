@@ -201,7 +201,7 @@ def holen(sprache='english', spielordner=None, fortschritt=None):
     if os.path.isfile(ziel):
         return True, 'vorhandene Datei behalten'
 
-    melde('Originaltexte werden aus dem Spiel geholt …')
+    melde(t('z_originaltexte'))
     try:
         groesse = os.path.getsize(archiv)
         with open(archiv, 'rb') as f:
@@ -214,7 +214,7 @@ def holen(sprache='english', spielordner=None, fortschritt=None):
         # entpacke_zstd gibt (Daten, benutztes Verfahren) zurück
         if methode == 100:
             daten, weg = entpacke_zstd(roh, rs)
-            melde('entpackt mit %s' % weg)
+            melde(t('z_entpackt') % weg)
         else:
             daten = roh
         if not daten:

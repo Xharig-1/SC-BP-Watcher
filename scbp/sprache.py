@@ -579,6 +579,22 @@ TEXTE = {
                           'Help with testing or rather have some quiet — both are fine, and you can switch at any time.'),
     's_ub_wer_h':      ('Und woher die Daten kommen, ohne die es das Werkzeug nicht gäbe.',
                           'And where the data comes from, without which this tool would not exist.'),
+    's_ub_fertig':     ('Nur fertige Fassungen', 'Finished versions only'),
+    's_ub_fertig_h':   ('Das Übliche. Du bekommst eine Meldung, wenn eine geprüfte Fassung erscheint — samstags, höchstens einmal die Woche.',
+                          'The usual. You get a notice when a tested version appears — on Saturdays, at most once a week.'),
+    's_ub_test':       ('Auch Testfassungen', 'Test versions too'),
+    's_ub_test_h':     ('Du siehst Neues als Erster und hilfst beim Prüfen. Testfassungen sind fertig gebaut und lauffähig, aber noch nicht lange erprobt — es kann etwas klemmen.',
+                          'You see new things first and help with testing. Test versions are fully built and run, but have not been tried for long — something may be stuck.'),
+    # Die Herkunftsangaben im Dank-Block. ⚠ Sie standen als Datentabelle im
+    # Code und liefen über Variablen ins Fenster — `tools/texte_pruefen.py`
+    # sieht so etwas nicht, weil dort kein fester Text an einem Bausteinargument
+    # steht. Gefunden nur durch Hinsehen auf der englischen Seite.
+    's_ub_q_katalog':  ('Bauplan-Katalog und Herkunft',
+                          'blueprint catalogue and origins'),
+    's_ub_q_uebersetzung': ('Übersetzung und Vertragsdaten',
+                          'translation and mission data'),
+    's_ub_q_vorbild':  ('Vorbild für die Einspielung ins Spiel',
+                          'the model for writing into the game'),
 
     # -- Fehlerbericht (bericht.py) --
     # Der Bericht steht im Fenster und wird von dort in ein öffentliches Issue
@@ -643,6 +659,30 @@ TEXTE = {
     'm_erster_datum':  ('%d.%m.%Y', '%Y-%m-%d'),
     'm_bericht_gekuerzt': ('\n\n… gekürzt. Der vollständige Bericht liegt unter "Als Datei speichern" und kann angehängt werden.',
                           '\n\n… shortened. The full report is available under "Save as a file" and can be attached.'),
+
+    # -- Zwischenmeldungen beim Holen (Katalog, Spieltexte, Übersetzung) --
+    # Sie stehen im Fenster, während etwas dauert. Ein stummes Programm sieht
+    # aus wie ein hängendes — ein deutsch sprechendes auf einer englischen
+    # Oberfläche aber auch wie ein halbfertiges.
+    'z_werte':         ('Werte werden geholt …', 'Fetching values …'),
+    'z_herkunft_datei': ('Bauplan-Herkunft wird aus %s gelesen …',
+                          'Reading blueprint origins from %s …'),
+    'z_herkunft_netz': ('Bauplan-Herkunft wird geholt (etwa 12 MB) …',
+                          'Fetching blueprint origins (about 12 MB) …'),
+    'z_auswerten':     ('Wird ausgewertet …', 'Evaluating …'),
+    'z_startbp':       ('Startbaupläne werden geholt …',
+                          'Fetching starting blueprints …'),
+    'z_originaltexte': ('Originaltexte werden aus dem Spiel geholt …',
+                          'Fetching the original texts from the game …'),
+    'z_entpackt':      ('entpackt mit %s', 'unpacked with %s'),
+    'z_laedt':         ('%s wird geladen (%.1f MB) …',
+                          'Loading %s (%.1f MB) …'),
+    'z_einsetzen':     ('wird eingesetzt …', 'installing …'),
+
+    # -- Kennzahlen auf der Über-Seite --
+    's_ub_fassung':    ('Fassung', 'Version'),
+    's_ub_bekannt':    ('Baupläne bekannt', 'Blueprints known'),
+    's_ub_davon':      ('Davon deine', 'Of those yours'),
 
     # --- Hauptfenster: Reiter und Rahmen (ab v3.0.0) ---
     'hf_titel':          ('SC BP Watcher', 'SC BP Watcher'),

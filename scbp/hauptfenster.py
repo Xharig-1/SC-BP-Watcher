@@ -374,6 +374,7 @@ def rundknopf(eltern, text, tat, schrift, grund, fuellung, rand, fg,
     c.setzen = setzen
     c.form = form
     c.beschriftung = beschriftung
+    c.ist_knopf = True          # damit tools/randpruefung.py ihn prüft
     if tat:
         c.bind('<Button-1>', lambda e: tat())
     return c
