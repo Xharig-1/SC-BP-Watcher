@@ -224,6 +224,42 @@ class Einstellungsfenster:
         knopf.pack(side='left')
         knopf.bind('<Button-1>', lambda e, v=variable, ti=titel: self._waehlen(v, ti))
 
+    # ------------------------------------------------------- Rückmeldungen
+    #
+    # ⚠ Hier lag ein Totalausfall: Alle Rückmeldungen gingen direkt an
+    # `self.meldung` — das Label im Fuß des **eigenständigen** Einstellungsfensters.
+    # Eingebettet in das Hauptfenster wird dieser Fuß nie gebaut, das Label gibt es
+    # also gar nicht. Jeder Klick auf „Jetzt auffrischen", „Prüfen" oder eine
+    # Textquelle brach sofort mit `AttributeError` ab — noch **vor** der eigentlichen
+    # Arbeit. Die Seite sah vollständig aus und tat nichts.
+    #
+    # Deshalb laufen alle Meldungen jetzt durch `_melden()`. Eingebettet gehen sie
+    # an den Rückruf, den das Hauptfenster setzt (seine Fußzeile), sonst an das
+    # eigene Label.
+    melder = None                 # setzt das Hauptfenster beim Einbetten
+    lage_melder = None            # dito, für den Zustandsblock der Seite
+
+    def _melden(self, text, farbe=None):
+        if getattr(self, 'melder', None):
+            try:
+                self.melder(text)
+                return
+            except Exception:
+                pass
+        label = getattr(self, 'meldung', None)
+        if label is not None:
+            try:
+                label.configure(text=text, fg=farbe or SUB)
+            except tk.TclError:
+                pass
+
+    def _weiterarbeiten(self):
+        """Tk Gelegenheit geben, die Meldung wirklich zu zeigen."""
+        try:
+            self.root.update()
+        except tk.TclError:
+            pass
+
     def _waehlen(self, variable, titel):
         ordner = filedialog.askdirectory(title=titel, parent=self.root,
                                          initialdir=variable.get() or None)
@@ -287,10 +323,10 @@ class Einstellungsfenster:
         jeder Spiel-Patch schreibt die `global.ini` neu — die Angaben sind dann
         stillschweigend weg. Deshalb steht hier immer, ob sie gerade drin sind."""
         self._titel(eltern, t('schritt_spiel_texte'), t('inj_wie'))
-        self.inj_lage = tk.Label(eltern, text='', bg=BG, fg=SUB,
+        self.inj_lage_lbl = tk.Label(eltern, text='', bg=BG, fg=SUB,
                                  font=schrift(10), anchor='w', justify='left',
                                  wraplength=600)
-        self.inj_lage.pack(fill='x', pady=(0, 8))
+        self.inj_lage_lbl.pack(fill='x', pady=(0, 8))
 
         # Quelle wechseln — dieselben drei Wege wie im Einrichtungsassistenten.
         # Wer sich später umentscheidet (etwa vom deutschen auf den englischen
@@ -326,8 +362,8 @@ class Einstellungsfenster:
     def _inj_wechseln(self, quelle):
         """Auf eine andere Textquelle umstellen — holen, einsetzen, auszeichnen."""
         def melde(x):
-            self.meldung.configure(text=x, fg=SUB)
-            self.root.update()
+            self._melden(x)
+            self._weiterarbeiten()
 
         melde(t('inj_laeuft'))
         try:
@@ -337,7 +373,7 @@ class Einstellungsfenster:
                 sprache_ordner = 'english'
                 ok, meldung = spieltexte.holen(sprache_ordner, fortschritt=melde)
                 if not ok:
-                    self.meldung.configure(text=t('inj_fehler', meldung), fg=ROT)
+                    self._melden(t('inj_fehler', meldung), ROT)
                     return
                 ziel = uebersetzung.ziel_ini(sprache_ordner)
                 uebersetzung.user_cfg_setzen(sprache_ordner)
@@ -345,17 +381,16 @@ class Einstellungsfenster:
             else:
                 ok, meldung = uebersetzung.holen(quelle, fortschritt=melde)
                 if not ok:
-                    self.meldung.configure(text=t('inj_fehler', meldung), fg=ROT)
+                    self._melden(t('inj_fehler', meldung), ROT)
                     return
                 sprache_ordner = uebersetzung.QUELLEN[quelle]['sprache']
                 ziel = uebersetzung.ziel_ini(sprache_ordner)
             ok, n, meldung = injektion.einrichten(ziel, sprache_ordner,
                                                   fortschritt=melde)
-            self.meldung.configure(
-                text=t('inj_aktiv', n) if ok else t('inj_fehler', meldung),
-                fg=SUB if ok else ROT)
+            self._melden(t('inj_aktiv', n) if ok else t('inj_fehler', meldung),
+                         SUB if ok else ROT)
         except Exception as e:
-            self.meldung.configure(text=t('inj_fehler', e), fg=ROT)
+            self._melden(t('inj_fehler', e), ROT)
         self._inj_lage_zeigen()
 
     def _inj_ini(self):
@@ -371,32 +406,46 @@ class Einstellungsfenster:
                 return p, sprache_ordner, None
         return None, 'english', None
 
+    def inj_lage(self=None):
+        """Steht etwas im Spiel, und aus welcher Quelle? (dict für die Seite)"""
+        pfad, _sprache, quelle = self._inj_ini()
+        da = bool(pfad and os.path.isfile(pfad))
+        drin = bool(da and injektion.ist_drin(pfad))
+        return {'datei': pfad, 'drin': drin, 'quelle': quelle,
+                'stand': uebersetzung.installiert(quelle) if quelle else None}
+
     def _inj_lage_zeigen(self):
-        pfad, _, quelle = self._inj_ini()
-        if not pfad or not os.path.isfile(pfad):
-            self.inj_lage.configure(text='—', fg=SUB)
-            return
-        drin = injektion.ist_drin(pfad)
-        stand = uebersetzung.installiert(quelle) if quelle else None
-        text = t('inj_steht') if drin else t('inj_steht_nicht')
-        if stand:
-            text += ' · %s' % stand
-        self.inj_lage.configure(text=text, fg=ACCENT if drin else SUB)
+        lage = self.inj_lage()
+        text = t('inj_steht') if lage['drin'] else t('inj_steht_nicht')
+        if lage['stand']:
+            text += ' · %s' % lage['stand']
+        if not lage['datei']:
+            text = '—'
+        label = getattr(self, 'inj_lage_lbl', None)
+        if label is not None:
+            try:
+                label.configure(text=text,
+                                fg=ACCENT if lage['drin'] else SUB)
+            except tk.TclError:
+                pass
+        if getattr(self, 'lage_melder', None):
+            try:
+                self.lage_melder()
+            except Exception:
+                pass
 
     def _inj_erneuern(self):
         pfad, sprache_ordner, _ = self._inj_ini()
         if not pfad:
-            self.meldung.configure(text=t('inj_fehler', 'global.ini'), fg=ROT)
+            self._melden(t('inj_fehler', 'global.ini'), ROT)
             return
-        self.meldung.configure(text=t('inj_laeuft'), fg=SUB)
-        self.root.update()
+        self._melden(t('inj_laeuft'))
+        self._weiterarbeiten()
         ok, n, meldung = injektion.aktualisieren(
             pfad, sprache_ordner,
-            fortschritt=lambda x: (self.meldung.configure(text=x),
-                                   self.root.update()))
-        self.meldung.configure(text=t('inj_aktiv', n) if ok
-                               else t('inj_fehler', meldung),
-                               fg=SUB if ok else ROT)
+            fortschritt=lambda x: (self._melden(x), self._weiterarbeiten()))
+        self._melden(t('inj_aktiv', n) if ok else t('inj_fehler', meldung),
+                     SUB if ok else ROT)
         self._inj_lage_zeigen()
 
     def _inj_entfernen(self):
@@ -404,20 +453,27 @@ class Einstellungsfenster:
         if not pfad:
             return
         ok, n, meldung = injektion.entfernen(pfad, sprache_ordner)
-        self.meldung.configure(text=meldung, fg=SUB if ok else ROT)
+        self._melden(meldung, SUB if ok else ROT)
         self._inj_lage_zeigen()
 
     def _inj_pruefen(self):
         """Gibt es bei der benutzten Quelle etwas Neues?"""
-        _, _, quelle = self._inj_ini()
+        pfad, _sprache, quelle = self._inj_ini()
+        drin = bool(pfad and os.path.isfile(pfad) and injektion.ist_drin(pfad))
         if not quelle:
-            self.meldung.configure(text=t('inj_aktuell'), fg=SUB)
+            # Keine Übersetzung vermerkt — dann bleibt nur die Aussage, ob die
+            # Angaben gerade im Spiel stehen.
+            self._melden(t('inj_steht') if drin else t('inj_steht_nicht'))
             return
-        self.meldung.configure(text=t('inj_laeuft'), fg=SUB)
-        self.root.update()
+        self._melden(t('inj_laeuft'))
+        self._weiterarbeiten()
         neu, kennung = uebersetzung.update_da(quelle)
-        self.meldung.configure(
-            text=t('inj_update_da', kennung) if neu else t('inj_aktuell'), fg=SUB)
+        stand = uebersetzung.installiert(quelle)
+        teile = [t('inj_steht') if drin else t('inj_steht_nicht')]
+        if stand:
+            teile.append(str(stand))
+        teile.append(t('inj_update_da', kennung) if neu else t('inj_aktuell'))
+        self._melden(' · '.join(teile))
 
     def _fuss(self):
         fuss = tk.Frame(self.root, bg=BG)
@@ -471,7 +527,7 @@ class Einstellungsfenster:
         for variable in (self.spiel, self.launcher):
             wert = variable.get().strip()
             if wert and not os.path.isdir(os.path.expanduser(wert)):
-                self.meldung.configure(text=t('e_pfad_fehlt'), fg=ROT)
+                self._melden(t('e_pfad_fehlt'), ROT)
                 return
 
         try:
@@ -491,7 +547,7 @@ class Einstellungsfenster:
         # Ehrlich sagen, was sofort gilt und was nicht: Die Sprache schaltet
         # dieses Fenster gerade selbst um, Ordner und Takt liest der laufende
         # Watcher-Thread aber nur beim Start.
-        self.meldung.configure(text=t('e_neustart_noetig'), fg=SUB)
+        self._melden(t('e_neustart_noetig'))
 
     def schliessen(self):
         self.root.destroy()

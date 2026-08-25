@@ -96,7 +96,21 @@ POLL_SEC = pfade.einstellung_zahl('pruefintervall_sekunden', 3, 1, 60)
 # Signalton bei einem Fund — manche wollen im Spiel keinen zusätzlichen Ton.
 TON_AN = pfade.einstellung_wahrheit('signalton', True)
 DECKKRAFT = pfade.einstellung_zahl('deckkraft_prozent', 93, 30, 100)
-MAX_ROWS = 200          # so viele Neuzugänge max. in der Liste behalten
+# So viele Neuzugänge bleiben im Overlay stehen, ältere rutschen heraus.
+#
+# ⚠ Zweierlei war hier falsch. Erstens war die Zahl **fest** — die Einstellung
+# „Zeilen im Overlay" wurde brav gespeichert und dann nie gelesen. Zweitens war
+# die Vorgabe 200: So viele Baupläne sammelt in einer Spielsitzung niemand, und
+# ein Overlay, das theoretisch 200 Zeilen hoch werden kann, steht im Weg.
+# Jetzt gilt die Einstellung, mit 20 als Vorgabe.
+MAX_ROWS_VORGABE = 20
+
+
+def max_zeilen():
+    """Wie viele Zeilen das Overlay behält — jedes Mal frisch gelesen, damit
+    eine Änderung in den Einstellungen sofort wirkt und nicht erst nach einem
+    Neustart."""
+    return pfade.einstellung_zahl('max_zeilen', MAX_ROWS_VORGABE, 5, 100)
 
 # --- Katalog-Wache (ab v1.3.0) ---------------------------------------------
 # `bp_item_types.json` listet, was im Spiel überhaupt craftbar ist. Der Launcher
@@ -706,6 +720,19 @@ class Watcher(threading.Thread):
         Läuft im **eigenen** Thread — es sind mehrere Megabyte, und die
         Log-Erkennung darf dafür nicht stehenbleiben."""
         if SCMDB_AUS or self.texte_laeuft or time.time() < self.texte_next:
+            return
+        # ⚠ Zwei Schalter, und beide müssen hier gelten:
+        #   `inj_an`   — schreibt das Werkzeug überhaupt in die Auftragstexte?
+        #                Aus lassen will, wer gerade auf PTU spielt oder seine
+        #                Textdatei in Ruhe haben möchte.
+        #   `inj_auto` — hält es sich von selbst aktuell?
+        # Der erste fehlte ganz: Ausschalten ging nur über „Wieder entfernen",
+        # und beim nächsten Start schrieb das Werkzeug wieder hinein.
+        if not pfade.einstellung_wahrheit('inj_an', True):
+            self.texte_next = time.time() + TEXTE_POLL_SEC
+            return
+        if not pfade.einstellung_wahrheit('inj_auto', True):
+            self.texte_next = time.time() + TEXTE_POLL_SEC
             return
         quelle = next((q for q in uebersetzung.QUELLEN
                        if uebersetzung.installiert(q)), None)
@@ -1448,9 +1475,10 @@ class Overlay:
         self.rows[_norm(key)] = r
 
     def _trim(self):
-        """Nur MAX_ROWS Zeilen behalten — älteste (unten im Fenster) fliegen raus."""
+        """Nur so viele Zeilen behalten wie eingestellt — älteste fliegen raus."""
         rows = self.list.pack_slaves()
-        while len(rows) > MAX_ROWS:
+        grenze = max_zeilen()
+        while len(rows) > grenze:
             old = rows.pop()
             self.rows.pop(getattr(old, '_bpkey', None), None)
             old.destroy()

@@ -404,6 +404,12 @@ def _einstellungen(fenster):
         fenster._einst = einstellungsfenster.Einstellungsfenster(rahmen=leer)
         # Ohne diesen Rückruf öffnet ein Sprachwechsel ein zweites Fenster.
         fenster._einst.beim_sprachwechsel = fenster.neu_aufbauen
+        # ⚠ Und ohne diesen laufen alle Rückmeldungen ins Leere: Eingebettet gibt
+        # es den Fuß des Einstellungsfensters nicht, also auch sein Meldungs-Label
+        # nicht. Jeder Klick auf „Jetzt auffrischen", „Übersetzung prüfen" oder eine
+        # Textquelle brach deshalb mit `AttributeError` ab, **bevor** überhaupt
+        # etwas passierte — die Seite sah fertig aus und tat nichts.
+        fenster._einst.melder = fenster.sagen
     return fenster._einst
 
 
@@ -542,13 +548,13 @@ def _anzeige(fenster, rahmen):
     from .hauptfenster import rundes_feld
     zahl = rundes_feld(ziel, None, fenster.f_klein, '#0c1017', LINIE, ACCENT, FG,
                        breite=6, justify='right')
-    zahl.insert(0, str(pfade.einstellung_zahl('max_zeilen', 200, 10, 2000)))
+    zahl.insert(0, str(pfade.einstellung_zahl('max_zeilen', 20, 5, 100)))
     zahl.halter.pack()
 
     def zahl_merken(_=None):
         try:
             pfade.einstellung_setzen('max_zeilen',
-                                     max(10, min(2000, int(zahl.get()))))
+                                     max(5, min(100, int(zahl.get()))))
             fenster.sagen(t('s_an_zeilen') % zahl.get())
         except ValueError:
             pass
@@ -604,8 +610,20 @@ def _ordner(fenster, rahmen):
     tk.Label(innen, text=t('e_spiel'), bg=BG, fg=FG, font=fenster.f_fett,
              anchor='w').pack(fill='x', pady=(6, 0))
     _fliesstext(innen, t('e_spiel_hilfe'), fenster.f_klein, fill='x')
-    _pfadfeld(fenster, innen, e.spiel,
-              lambda: e._waehlen(e.spiel, t('e_spiel')))
+
+    def spiel_waehlen():
+        # ⚠ Vorher lief das über `e._waehlen(...)`, und das übergibt
+        # `parent=self.root` — eingebettet ist das ein Rahmen, der nie gepackt
+        # wird. Der Dialog erschien deshalb nicht: „beim Klick passiert nichts".
+        gewaehlt = ordner_waehlen(t('e_spiel'), e.spiel.get())
+        if gewaehlt:
+            e.spiel.set(gewaehlt)
+            e._speichern()
+            fenster.sagen(t('e_neustart_noetig'))
+
+    _pfadfeld(fenster, innen, e.spiel, spiel_waehlen,
+              oeffnen=lambda: (_ordner_zeigen(e.spiel.get()),
+                               fenster.sagen(t('s_or_geoeffnet'))))
 
     tk.Label(innen, text=t('s_eigene'), bg=BG, fg=FG, font=fenster.f_fett,
              anchor='w').pack(fill='x', pady=(20, 0))
@@ -616,16 +634,73 @@ def _ordner(fenster, rahmen):
         _ordner_zeigen(pfade.app_ordner())
         fenster.sagen(t('s_or_geoeffnet'))
 
-    _pfadfeld(fenster, innen, ablage,
-              lambda: fenster.sagen(t('s_or_eigener_ort')),
-              oeffnen=ablage_oeffnen)
+    def ablage_waehlen():
+        # ⚠ Hier stand nur ein Hinweis in der Fußzeile („lässt sich in den
+        # Einstellungen hinterlegen") — auf der Seite, die genau diese Einstellung
+        # IST. Für den Nutzer sah es aus, als täte der Knopf nichts.
+        gewaehlt = ordner_waehlen(t('s_eigene'), ablage.get())
+        if not gewaehlt:
+            return
+        pfade.einstellung_setzen('ablage_ordner', gewaehlt)
+        ablage.set(gewaehlt)
+        fenster.sagen(t('e_neustart_noetig'))
+
+    _pfadfeld(fenster, innen, ablage, ablage_waehlen, oeffnen=ablage_oeffnen)
 
     tk.Label(innen, text='%s  —  %s' % (t('e_launcher'), t('s_optional')), bg=BG, fg=FG,
              font=fenster.f_fett, anchor='w').pack(fill='x', pady=(20, 0))
     _fliesstext(innen, t('e_launcher_hilfe'), fenster.f_klein, fill='x')
-    _pfadfeld(fenster, innen, e.launcher,
-              lambda: e._waehlen(e.launcher, t('e_launcher')),
+    def launcher_waehlen():
+        gewaehlt = ordner_waehlen(t('e_launcher'), e.launcher.get())
+        if gewaehlt:
+            e.launcher.set(gewaehlt)
+            e._speichern()
+            fenster.sagen(t('e_neustart_noetig'))
+
+    _pfadfeld(fenster, innen, e.launcher, launcher_waehlen,
               platzhalter=t('s_or_leer'))
+
+
+def ordner_waehlen(titel, start=None):
+    """Einen Ordner auswählen lassen — möglichst mit dem Dialog des Systems.
+
+    ⚠ Tk bringt unter Linux einen eigenen Dialog mit, und der stammt optisch aus
+    den Neunzigern: graue Motif-Knöpfe, eigene Schrift, nichts davon passt zum
+    Rest des Fensters. Unter Windows und macOS ruft Tk dagegen den **echten**
+    Systemdialog auf — dort ist alles in Ordnung.
+
+    Deshalb wird unter Linux zuerst nach `kdialog` (KDE) und `zenity` (GNOME und
+    fast überall vorhanden) gesucht. Beide sehen aus wie der Rest des Systems.
+    Gibt es keines von beiden, bleibt der Tk-Dialog als Rückfall — hässlich, aber
+    funktionierend ist besser als gar nichts.
+    """
+    import subprocess
+    if not sys.platform.startswith(('win', 'darwin')):
+        for befehl in (['kdialog', '--getexistingdirectory', start or os.path.expanduser('~'),
+                        '--title', titel],
+                       ['zenity', '--file-selection', '--directory',
+                        '--title', titel]
+                       + (['--filename', start.rstrip('/') + '/'] if start else [])):
+            werkzeug = befehl[0]
+            try:
+                if not _im_pfad(werkzeug):
+                    continue
+                fertig = subprocess.run(befehl, capture_output=True, text=True,
+                                        timeout=300)
+                gewaehlt = (fertig.stdout or '').strip()
+                if fertig.returncode == 0 and gewaehlt:
+                    return gewaehlt
+                return ''          # bewusst abgebrochen
+            except Exception as ausnahme:
+                fehler.merken('seiten.ordner_waehlen:%s' % werkzeug, ausnahme)
+    from tkinter import filedialog
+    return filedialog.askdirectory(title=titel, initialdir=start or None) or ''
+
+
+def _im_pfad(name):
+    """Gibt es dieses Programm auf dem Rechner?"""
+    import shutil
+    return bool(shutil.which(name))
 
 
 def _ordner_zeigen(pfad):
@@ -645,38 +720,70 @@ def _ordner_zeigen(pfad):
 
 
 def _spiel(fenster, rahmen):
-    from . import injektion, pfade
+    """Auftragstexte — Textquelle wählen und die Bauplan-Angaben eintragen."""
+    from . import pfade
     from .hauptfenster import schiebeschalter
     _ueberschrift(fenster, rahmen, t('hf_spiel'), t('s_sp_lead'))
     innen = _rollflaeche(rahmen)
     e = _einstellungen(fenster)
 
-    # Zustand: steht etwas im Spiel, und woher stammt es?
-    stellen, quelle = 0, ''
-    try:
-        lage = injektion.lage() if hasattr(injektion, 'lage') else None
-        if isinstance(lage, dict):
-            stellen = lage.get('stellen') or 0
-            quelle = lage.get('quelle') or ''
-    except Exception:
-        pass
-    if stellen:
-        _status(fenster, innen, '✓', t('s_sp_drin') % stellen,
-                (t('s_sp_quelle_ist') % quelle) if quelle else '')
-    else:
-        _status(fenster, innen, '○', t('s_sp_nichts'), t('s_sp_nichts_h'),
-                farbe=SUB)
+    # Der Zustandskasten sitzt in einem eigenen Rahmen, damit er nach jeder
+    # Aktion neu gefüllt werden kann, ohne die ganze Seite anzufassen.
+    kasten = tk.Frame(innen, bg=BG)
+    kasten.pack(fill='x')
 
+    def lage_zeigen():
+        for kind in kasten.winfo_children():
+            kind.destroy()
+        try:
+            lage = e.inj_lage()
+        except Exception as ausnahme:
+            fehler.merken('seiten.spiel.lage', ausnahme)
+            return
+        if not pfade.einstellung_wahrheit('inj_an', True):
+            _status(fenster, kasten, '○', t('s_sp_aus_hinweis'), '', farbe=SUB)
+            return
+        if lage['drin']:
+            zusatz = []
+            if lage['quelle']:
+                zusatz.append(t('s_sp_quelle_ist')
+                              % t(_QUELLTEXT.get(lage['quelle'], 's_sp_q_or')))
+            if lage['stand']:
+                zusatz.append(str(lage['stand']))
+            _status(fenster, kasten, '✓', t('s_sp_steht'), ' · '.join(zusatz))
+        else:
+            _status(fenster, kasten, '○', t('s_sp_nichts'), t('s_sp_nichts_h'),
+                    farbe=SUB)
+
+    # Damit auch Aktionen im Einstellungsobjekt den Kasten auffrischen.
+    e.lage_melder = lage_zeigen
+    lage_zeigen()
+
+    # --- An oder aus ---------------------------------------------------------
+    # ⚠ Der Schalter fehlte ganz. Wer auf PTU spielt oder die Textdatei in Ruhe
+    # lassen will, hatte keine Möglichkeit außer „Wieder entfernen" — und beim
+    # nächsten Start schrieb das Werkzeug wieder hinein.
+    ziel = _feld(fenster, innen, t('s_sp_an'), t('s_sp_an_h'), breit=True)
+
+    def inj_an_um():
+        neu_wert = not pfade.einstellung_wahrheit('inj_an', True)
+        pfade.einstellung_setzen('inj_an', neu_wert)
+        fenster.sagen(t('s_sp_an_sagen')
+                      % (t('e_an') if neu_wert else t('e_aus')))
+        lage_zeigen()
+        return neu_wert
+
+    schiebeschalter(ziel, pfade.einstellung_wahrheit('inj_an', True),
+                    inj_an_um).pack()
+
+    # --- Textquelle ----------------------------------------------------------
     ziel = _feld(fenster, innen, t('s_sp_quelle'), t('s_sp_quelle_h'),
                  breit=True)
     wahl = _wahl(fenster, ziel,
                  [('deutsch', t('s_sp_q_de')), ('starstrings', t('s_sp_q_ss')),
                   ('original', t('s_sp_q_or'))],
                  pfade.einstellung('inj_quelle') or '',
-                 lambda k: (wahl.setzen(k),
-                            e._inj_wechseln(k),
-                            pfade.einstellung_setzen('inj_quelle', k),
-                            fenster.sagen(t('s_sp_quelle_ist') % k)))
+                 lambda k: _quelle_waehlen(fenster, e, wahl, k, lage_zeigen))
     wahl.pack()
 
     ziel = _feld(fenster, innen, t('s_sp_auto'), t('s_sp_auto_h'))
@@ -695,15 +802,39 @@ def _spiel(fenster, rahmen):
     reihe = tk.Frame(ziel, bg=BG)
     reihe.pack()
     _knopf(fenster, reihe, t('s_sp_jetzt'),
-           lambda: (e._inj_erneuern(), fenster.sagen(t('s_sp_frisch'))),
+           lambda: (e._inj_erneuern(), lage_zeigen()),
            stark=True).pack(side='left')
     _knopf(fenster, reihe, t('s_sp_pruefen'),
-           lambda: e._inj_pruefen()).pack(side='left', padx=8)
+           lambda: (e._inj_pruefen(), lage_zeigen())).pack(side='left', padx=8)
     _knopf(fenster, reihe, t('s_sp_weg'),
-           lambda: (e._inj_entfernen(), fenster.sagen(t('s_sp_weg_ok'))),
+           lambda: (e._inj_entfernen(), lage_zeigen()),
            gefahr=True).pack(side='left')
 
     _status(fenster, innen, '!', t('s_sp_warn'), t('s_sp_warn_h'), farbe=GOLD)
+
+
+# Welche Beschriftung zu welcher Quelle gehört — für den Zustandskasten.
+_QUELLTEXT = {'deutsch': 's_sp_q_de', 'starstrings': 's_sp_q_ss',
+              'original': 's_sp_q_or'}
+
+
+def _quelle_waehlen(fenster, e, wahl, kennung, danach):
+    """Eine Textquelle einrichten — das dauert, also erst ansagen.
+
+    ⚠ Ohne Ansage sieht es aus, als sei nichts passiert: Das Herunterladen und
+    Einsetzen braucht mehrere Sekunden, und in dieser Zeit stand vorher nichts
+    im Fenster.
+    """
+    from . import pfade
+    wahl.setzen(kennung)
+    fenster.sagen(t('s_sp_hole') % t(_QUELLTEXT.get(kennung, 's_sp_q_or')))
+    try:
+        e._inj_wechseln(kennung)
+        pfade.einstellung_setzen('inj_quelle', kennung)
+    except Exception as ausnahme:
+        fehler.merken('seiten.spiel.quelle', ausnahme)
+        fenster.sagen(t('inj_fehler', ausnahme))
+    danach()
 
 
 def _bestand(fenster, rahmen):
