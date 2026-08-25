@@ -227,6 +227,11 @@ def rundrahmen(eltern, grund, rand, radius=8, grundfarbe=None):
     innen.bind('<Configure>', nachziehen)
     leinwand.bind('<Configure>', nachziehen)
     leinwand.bind('<Map>', nachziehen)
+    # Merkmal für die Randprüfung: Dieser Rahmen wird bewusst auf die
+    # Kastenbreite gezwungen — sein Wunsch nach mehr Platz ist kein Fehler,
+    # der Text darin bricht um. Ohne die Markierung meldet jede Karte einen
+    # Fehlalarm.
+    innen.auf_mass_gesetzt = True
     innen.nachziehen = nachziehen
     innen.halter = halter
     innen.leinwand = leinwand

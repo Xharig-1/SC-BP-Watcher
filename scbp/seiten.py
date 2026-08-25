@@ -212,6 +212,27 @@ def _pfadfeld(fenster, eltern, wert, waehlen, oeffnen=None, platzhalter=''):
     return reihe
 
 
+
+def _umbruch(label, anteil=1.0, abzug=0):
+    """Den Zeilenumbruch an die tatsächliche Breite hängen.
+
+    ⚠ Feste Werte wie `wraplength=560` sind der Grund, warum Text bei kleinem
+    Fenster abgeschnitten statt umgebrochen wurde: Sie stimmen genau für die
+    eine Fenstergröße, bei der sie eingetragen wurden. Wer das Fenster auf die
+    Mindestgröße zieht oder auf Englisch umstellt, sieht Stümpfe.
+
+    `anteil` ist für nebeneinanderliegende Kästen (zwei Spalten → 0.5).
+    """
+    def nachziehen(_=None):
+        breite = label.master.winfo_width()
+        if breite > 40:
+            label.configure(wraplength=max(160, int(breite * anteil) - abzug))
+
+    label.master.bind('<Configure>', nachziehen, add='+')
+    label.after(0, nachziehen)
+    return label
+
+
 def _feld(fenster, eltern, bezeichnung, hilfe, breit=False):
     """Eine Einstellungszeile: Bezeichnung, Erklärung, Platz für das Bedienelement."""
     zeile = tk.Frame(eltern, bg=BG)
@@ -559,7 +580,7 @@ def _spiel(fenster, rahmen):
                  'Übersetzung nimmt der Watcher die englischen Originaltexte aus '
                  'deiner Installation. Übersetzung und StarStrings sind fremde '
                  'Projekte — sie werden beim Klick von deren eigener Adresse '
-                 'geladen, nicht mitgeliefert.')
+                 'geladen, nicht mitgeliefert.', breit=True)
     wahl = _wahl(fenster, ziel,
                  [('deutsch', 'Deutsch'), ('starstrings', 'StarStrings'),
                   ('original', 'Original')],
@@ -586,7 +607,7 @@ def _spiel(fenster, rahmen):
 
     ziel = _feld(fenster, innen, 'Von Hand',
                  'Alles Eingefügte steht zwischen Marken und lässt sich auf den '
-                 'Buchstaben genau wieder entfernen.')
+                 'Buchstaben genau wieder entfernen.', breit=True)
     reihe = tk.Frame(ziel, bg=BG)
     reihe.pack()
     _knopf(fenster, reihe, 'Jetzt auffrischen',
@@ -966,9 +987,10 @@ def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text=''):
     if marke_text:
         blase(kopf, marke_text, GOLD, fenster.f_klein).pack(side='left', padx=8)
 
-    tk.Label(innen, text=text, bg=FLAECHE, fg=SUB, font=fenster.f_klein,
-             anchor='w', justify='left', wraplength=330).pack(
-                 fill='x', padx=14, pady=(0, 12))
+    beschreibung = tk.Label(innen, text=text, bg=FLAECHE, fg=SUB,
+                            font=fenster.f_klein, anchor='w', justify='left')
+    beschreibung.pack(fill='x', padx=14, pady=(0, 12))
+    _umbruch(beschreibung, abzug=28)
 
     for teil in (rand, leinwand, innen, kopf):
         teil.bind('<Button-1>', lambda e: tat())
@@ -1161,17 +1183,27 @@ def _erkennung(fenster, rahmen):
     zahl.bind('<FocusOut>', takt_merken)
     zahl.bind('<Return>', takt_merken)
 
+    # ⚠ `breit=True`: Die gefundenen Sätze sind lang. Rechts neben der
+    # Beschreibung lief der Kasten über die Fensterkante hinaus und war an
+    # beiden Enden abgeschnitten — lesbar war weder Anfang noch Ende.
     ziel = _feld(fenster, innen, 'Erkannte Meldung',
                  'Der Satz, den das Spiel schreibt. Der Watcher leitet ihn selbst '
-                 'aus deinen Protokollen ab — hier steht, was gefunden wurde.')
+                 'aus deinen Protokollen ab — hier steht, was gefunden wurde.',
+                 breit=True)
+    # ⚠ `sammeln()` gibt ein Paar zurueck: die Liste der Saetze und woher sie
+    # stammt. Wer das Paar einfach zusammenschreibt, bekommt rohe
+    # Python-Schreibweise ins Fenster — eckige Klammern, Anfuehrungszeichen,
+    # am Ende ein loses „tabelle". Genau so stand es dort.
     gefunden = '—'
     try:
-        alle = phrasen.sammeln() or []
-        gefunden = ' · '.join(str(x) for x in alle[:2]) or '—'
-    except Exception:
-        pass
-    tk.Label(ziel, text=gefunden, bg='#0c1017', fg=FG, font=fenster.f_klein,
-             padx=10, pady=5).pack()
+        saetze, woher = phrasen.sammeln()
+        gefunden = ' · '.join(str(x) for x in (saetze or [])) or '—'
+    except Exception as ausnahme:
+        fehler.merken('seiten.erkennung.phrasen', ausnahme)
+    kasten = _karte(ziel)
+    tk.Label(kasten, text=gefunden, bg=FLAECHE, fg=FG, font=fenster.f_klein,
+             anchor='w', justify='left', wraplength=520).pack(
+                 fill='x', padx=12, pady=8)
 
     ziel = _feld(fenster, innen, 'Katalog auffrischen',
                  'Welche Baupläne es gibt und woher sie kommen. Wird beim Start '
