@@ -555,10 +555,23 @@ def _anzeige(fenster, rahmen):
                  t('s_lage_h'))
 
     def lage_weg():
+        # Die gemerkte Lage wegwerfen reicht nicht: Ohne Positionsangabe stellt Tk
+        # das Fenster nach `+0+0`, und bei einem hochkant stehenden Monitor links
+        # außen liegt dort gar kein Bild — der Knopf hätte das Overlay also wieder
+        # dorthin geschickt, wo man es sucht. Deshalb wird aktiv die Standardlage
+        # gesetzt: mittig auf dem Hauptbildschirm. Wie viele Bildschirme jemand hat,
+        # wissen wir nicht; die Mitte des Hauptbildschirms passt überall.
+        from . import bildschirm
         try:
             os.remove(pfade.app_datei('watcher.json'))
         except OSError:
             pass
+        overlay = bildschirm.OVERLAY[0]
+        if overlay is not None:
+            try:
+                overlay.geometry(bildschirm.mittig(overlay, 440, 1000))
+            except Exception as ausnahme:
+                fehler.merken('seiten.lage_weg', ausnahme)
         fenster.sagen(t('s_an_lage_weg'))
 
     _knopf(fenster, ziel, t('s_zuruecksetzen'), lage_weg).pack()

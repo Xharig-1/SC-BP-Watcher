@@ -43,7 +43,7 @@ from tkinter import font as tkfont
 # unterscheidet — der Rest dieser Datei muss das Betriebssystem nicht kennen.
 from scbp import sprache
 from scbp import fehler
-from scbp import (aktualisierung, assistent, autostart,
+from scbp import (aktualisierung, assistent, autostart, bildschirm,
                   bestand as bestand_datei, bestandsfenster as bestandsfenster_modul,
                   einstellungsfenster, hinweis, injektion,
                   katalog as katalog_modul, logquelle, merkliste,
@@ -149,6 +149,10 @@ GRADE_LETTER = {1: 'A', 2: 'B', 3: 'C', 4: 'D'}
 # stürzt Tk dabei sogar ab. Tk sucht sich beim ersten Mal selbst eine Stelle,
 # danach gilt die zuletzt gemerkte (siehe `geometrie_pruefen`).
 # Wer sie fest vorgeben will, setzt SC_BP_GEOMETRIE (Format BxH+X+Y).
+# Nur die **Größe** — die Position wird beim Start ausgerechnet (mittig auf dem
+# Hauptbildschirm, siehe `startlage`). Eine feste Position wäre auf jedem anderen
+# Rechner falsch, und gar keine Position lässt Tk nach `+0+0` platzieren — bei einem
+# hochkant stehenden Monitor links außen ist dort schlicht kein Bild.
 DEFAULT_GEOM  = os.environ.get('SC_BP_GEOMETRIE') or '440x1000'
 SETTINGS_FILE = pfade.app_datei('watcher.json')
 
@@ -485,11 +489,16 @@ def _loose(name):
 
 # ------------------------------------------------ Fensterposition merken/laden
 def load_geometry():
+    """Die gemerkte Fensterlage — oder `None`, wenn es noch keine gibt.
+
+    Bewusst `None` statt der Standardgröße: Nur so unterscheidet der Aufrufer
+    „der Nutzer hat sein Fenster irgendwohin gestellt" von „erster Start", und
+    nur beim ersten Start soll das Fenster mittig gesetzt werden.
+    """
     try:
-        g = json.load(open(SETTINGS_FILE, encoding='utf-8')).get('geometry')
-        return g or DEFAULT_GEOM
+        return json.load(open(SETTINGS_FILE, encoding='utf-8')).get('geometry') or None
     except Exception:
-        return DEFAULT_GEOM
+        return None
 
 
 GEOM_RE = re.compile(r'^(\d+)x(\d+)(?:\+(-?\d+)\+(-?\d+))?$')
@@ -531,6 +540,35 @@ def geometrie_pruefen(geom, root):
     if -2 * sb <= int(x) <= 3 * sb and -2 * sh <= int(y) <= 3 * sh:
         return geom
     return '%sx%s' % (breite, hoehe)
+
+
+def standardlage(root):
+    """Die Lage, mit der jeder anfängt: mittig auf dem **Hauptbildschirm**.
+
+    Dieselbe Lage stellt auch der Knopf „Fensterlage zurücksetzen" wieder her.
+    Wie viele Bildschirme jemand hat, weiß niemand vorher — die Mitte des
+    Hauptbildschirms ist die einzige Stelle, die überall sinnvoll ist.
+    """
+    m = GEOM_RE.match(DEFAULT_GEOM or '')
+    breite, hoehe = (int(m.group(1)), int(m.group(2))) if m else (440, 1000)
+    return bildschirm.mittig(root, breite, hoehe)
+
+
+def startlage(root):
+    """Wohin das Overlay beim Start gehört.
+
+    Gemerkte Lage, wenn es eine gibt und sie auf diesem Rechner plausibel ist;
+    sonst die Standardlage. `geometrie_pruefen` gibt bei einer unglaubwürdigen
+    Lage nur noch die Größe zurück — auch dann wird mittig gesetzt, statt Tk
+    raten zu lassen.
+    """
+    gemerkt = load_geometry()
+    if not gemerkt:
+        return standardlage(root)
+    geprueft = geometrie_pruefen(gemerkt, root)
+    if '+' not in geprueft:
+        return standardlage(root)
+    return geprueft
 
 
 def save_geometry(geom):
@@ -1064,6 +1102,9 @@ class Overlay:
         # sieht in einer .exe oder einem AppImage niemand.
         fehler.haken_setzen(self.root)
         _WURZEL[0] = self.root                    # damit signalton() klingeln kann
+        # Damit der Knopf „Fensterlage zurücksetzen" das Overlay sofort in die Mitte
+        # setzen kann, ohne dass `seiten.py` das Hauptprogramm importieren müsste.
+        bildschirm.OVERLAY[0] = self.root
         self.root.title('SC BP Watcher')
         self.root.configure(bg=BG)
         self.root.overrideredirect(True)          # randloses Overlay
@@ -1072,7 +1113,7 @@ class Overlay:
         # legt das Overlay zwangsläufig übers Spiel — dann muss man hindurchsehen
         # können. 93 % bleibt der Standard, das ist auf zwei Bildschirmen richtig.
         self.root.attributes('-alpha', DECKKRAFT / 100.0)
-        self.root.geometry(geometrie_pruefen(load_geometry(), self.root))
+        self.root.geometry(startlage(self.root))
         self._icon_setzen()
         self.count = 0
         self.rows = {}          # normalisierter Name -> Zeilen-Widgets (für die Bestätigung)

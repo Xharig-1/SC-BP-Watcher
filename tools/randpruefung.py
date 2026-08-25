@@ -30,7 +30,7 @@ from scbp import hauptfenster, sprache                        # noqa: E402
 SEITEN = ['liste', 'fortschritt', 'allgemein', 'anzeige', 'ordner', 'spiel',
           'bestand', 'wasistneu', 'ueber', 'erkennung', 'diagnose']
 
-GROESSEN = ('720x520', '1000x700')
+GROESSEN = ('1060x700', '1280x800')
 
 LUFT = 4          # Pixel Toleranz: ein Rahmen darf bündig abschließen.
 

@@ -48,7 +48,7 @@ import sys
 import tkinter as tk
 import tkinter.font as tkfont
 
-from . import fehler, hinweis, neuheiten, pfade
+from . import bildschirm, fehler, hinweis, neuheiten, pfade
 from .sprache import t
 
 BG      = '#10141c'
@@ -61,7 +61,13 @@ LINIE   = '#232c3d'
 GOLD    = '#e8c353'
 
 # Mindestgröße: Darunter bricht die Bedienung, und keine Layout-Regel hilft mehr.
-MIN_BREITE, MIN_HOEHE = 720, 520
+# Kleinste Größe, auf die sich das Fenster ziehen lässt. Bewusst großzügig:
+# `tools/randpruefung.py` zeigt, dass unterhalb von 1060 Pixel Breite Bedienelemente
+# auf den Seiten „Ordner", „Angaben im Spiel", „Bestand" und „Über" rechts
+# herausragen — auf Englisch früher als auf Deutsch, weil die Wörter länger sind.
+# Lieber ein Fenster, das sich nicht beliebig klein ziehen lässt, als abgeschnittene
+# Knöpfe, die niemand findet.
+MIN_BREITE, MIN_HOEHE = 1060, 700
 
 # Wie viel Streichweg auf dem Trackpad eine Zeile ergibt. Ein Trackpad meldet
 # viele kleine Schritte statt Rasten; ohne Teiler säuselt die Liste am Finger
@@ -786,7 +792,10 @@ class Hauptfenster:
         self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
         self.root.title(t('hf_titel'))
         self.root.configure(bg=BG)
-        self.root.geometry('980x700')
+        # Startgröße etwas über der Mindestgröße — sonst klebt das Fenster beim ersten
+        # Öffnen schon an seiner Untergrenze. Mittig auf dem Hauptbildschirm, damit es
+        # bei mehreren Monitoren nicht auf einer Kante landet.
+        self.root.geometry(bildschirm.mittig(self.root, 1100, 760))
         self.root.minsize(MIN_BREITE, MIN_HOEHE)
 
         self._schriften_anlegen()
