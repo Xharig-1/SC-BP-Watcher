@@ -44,6 +44,7 @@ from .sprache import t
 BG      = '#10141c'
 FLAECHE = '#161c28'
 BAR     = '#1b2230'
+LINIE   = '#2a3345'   # Rand runder Kästen und Felder — überall dieselbe Linie
 FG      = '#e6edf3'
 SUB     = '#8b98a5'
 ACCENT  = '#9ce430'
@@ -164,9 +165,9 @@ class Assistent:
         self.pfad.trace_add('write', lambda *_: self._pfad_pruefen())
         zeile = tk.Frame(f, bg=BG)
         zeile.pack(fill='x', pady=(18, 0))
-        feld = tk.Entry(zeile, textvariable=self.pfad, bg=FLAECHE, fg=FG,
-                        insertbackground=FG, relief='flat', font=mono(10))
-        feld.pack(side='left', fill='x', expand=True, ipady=7, padx=(0, 8))
+        from .hauptfenster import rundes_feld
+        feld = rundes_feld(zeile, self.pfad, mono(10), FLAECHE, LINIE, ACCENT, FG)
+        feld.halter.pack(side='left', fill='x', expand=True, padx=(0, 8))
         knopf = tk.Label(zeile, text=' %s ' % t('durchsuchen'), bg=BAR, fg=FG,
                          font=schrift(10), cursor='hand2', padx=8, pady=6)
         knopf.pack(side='right')

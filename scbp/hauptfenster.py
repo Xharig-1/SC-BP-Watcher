@@ -164,6 +164,136 @@ def regler(eltern, von, bis, wert, beim_ziehen, breite=190, grund=None):
     return c
 
 
+
+def ecken(x1, y1, x2, y2, r):
+    """Die Punktfolge eines abgerundeten Rechtecks — für `coords`.
+
+    Wird gebraucht, wenn ein schon gezeichnetes Rechteck seine Größe ändert:
+    `create_polygon` legt die Punkte einmal fest, `coords` schiebt sie nach.
+    """
+    return [x1 + r, y1, x2 - r, y1, x2, y1, x2, y1 + r, x2, y2 - r, x2, y2,
+            x2 - r, y2, x1 + r, y2, x1, y2, x1, y2 - r, x1, y1 + r, x1, y1]
+
+
+def rundrahmen(eltern, grund, rand, radius=8, grundfarbe=None):
+    """Ein Kasten mit runden Ecken, in den beliebiger Inhalt kommt.
+
+    Tk kann Rahmen nur eckig — deshalb liegt hinter dem Inhalt eine Leinwand
+    mit einem gemalten Rechteck, und der Inhalt sitzt als Fenster darauf. Die
+    Leinwand zieht ihre Höhe nach, sobald der Inhalt steht; sonst bliebe sie
+    auf ihrer Anfangsgröße und schnitte alles ab.
+
+    Zurück kommt der innere Rahmen — dort hinein wird gepackt wie gewohnt.
+    Am Rückgabewert hängen `.leinwand` und `.form`, falls die Randfarbe später
+    wechseln soll (etwa bei einer Auswahl).
+    """
+    grundfarbe = grundfarbe or eltern.cget('bg')
+    halter = tk.Frame(eltern, bg=grundfarbe)
+    leinwand = tk.Canvas(halter, bg=grundfarbe, highlightthickness=0, bd=0,
+                         height=10)
+    leinwand.pack(fill='both', expand=True)
+    innen = tk.Frame(leinwand, bg=grund)
+    form = _rundes_rechteck(leinwand, 1, 1, 100, 100, radius=radius,
+                            fill=grund, outline=rand, width=1)
+    fenster_id = leinwand.create_window(1, 1, window=innen, anchor='nw')
+
+    def nachziehen(_=None):
+        breite = leinwand.winfo_width()
+        hoehe = innen.winfo_reqheight()
+        if breite < 10:
+            return
+        leinwand.configure(height=hoehe + 2)
+        leinwand.itemconfigure(fenster_id, width=breite - 2)
+        leinwand.coords(form, *ecken(1, 1, breite - 1, hoehe + 1, radius))
+
+    innen.bind('<Configure>', nachziehen)
+    leinwand.bind('<Configure>', nachziehen)
+    innen.halter = halter
+    innen.leinwand = leinwand
+    innen.form = form
+    return innen
+
+
+def rundes_feld(eltern, textvariable, schrift, grund, rand, akzent, fg,
+                breite=None, **kw):
+    """Ein Eingabefeld mit runden Ecken — überall im Programm dasselbe.
+
+    Das Feld selbst bleibt ein gewöhnliches `Entry` (nur so lässt sich tippen),
+    aber ohne eigenen Rand; den runden Rand malt die Leinwand darunter. Beim
+    Hineinklicken wechselt der Rand auf die Akzentfarbe, damit man sieht, wo
+    man schreibt.
+    """
+    innen = rundrahmen(eltern, grund, rand, radius=8)
+    if textvariable is not None:
+        kw['textvariable'] = textvariable
+    feld = tk.Entry(innen, bg=grund, fg=fg, font=schrift, relief='flat', bd=0,
+                    highlightthickness=0, insertbackground=fg, **kw)
+    if breite:
+        feld.configure(width=breite)
+    feld.pack(fill='both', expand=True, padx=8, pady=5)
+    feld.bind('<FocusIn>',
+              lambda e: innen.leinwand.itemconfigure(innen.form, outline=akzent),
+              add='+')
+    feld.bind('<FocusOut>',
+              lambda e: innen.leinwand.itemconfigure(innen.form, outline=rand),
+              add='+')
+    feld.halter = innen.halter
+    return feld
+
+
+
+def _als_schrift(schrift):
+    """Eine Schrift als messbares Objekt.
+
+    Die älteren Fenster geben ihre Schrift als Tupel `('Helvetica', 10)`
+    weiter — damit lässt sich zeichnen, aber nicht messen. Ein gemalter Knopf
+    braucht aber die Breite des Wortes, sonst schneidet er es ab. Also hier
+    einmal umwandeln, statt an jeder Stelle daran zu denken.
+    """
+    if isinstance(schrift, (tuple, list)):
+        return tkfont.Font(family=schrift[0], size=schrift[1],
+                           weight=schrift[2] if len(schrift) > 2 else 'normal')
+    return schrift
+
+
+def rundknopf(eltern, text, tat, schrift, grund, fuellung, rand, fg,
+              radius=6, polster=(10, 5), cursor='hand2'):
+    """Ein klickbarer Knopf mit runden Ecken — der Standard im ganzen Programm.
+
+    Ein `Label` mit Hintergrundfarbe wäre einfacher, sähe aber überall eckig
+    aus; das Programm hat aber genau eine Formensprache. Deshalb wieder eine
+    kleine Leinwand mit gemaltem Rechteck.
+
+    Am Rückgabewert hängt `.setzen(fuellung, rand, fg)` — damit lässt sich der
+    Knopf später umfärben (an/aus, ausgewählt/nicht), ohne ihn neu zu bauen.
+    """
+    schrift = _als_schrift(schrift)
+    breite = schrift.measure(text) + polster[0] * 2
+    hoehe = schrift.metrics('linespace') + polster[1] * 2
+    c = tk.Canvas(eltern, width=breite, height=hoehe, bg=grund,
+                  highlightthickness=0, bd=0, cursor=cursor)
+    form = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1, radius=radius,
+                            fill=fuellung, outline=rand, width=1)
+    beschriftung = c.create_text(breite / 2.0, hoehe / 2.0, text=text,
+                                 fill=fg, font=schrift, anchor='center')
+
+    def setzen(fuellung=None, neuer_rand=None, neues_fg=None):
+        neue_fuellung = fuellung
+        if neue_fuellung:
+            c.itemconfigure(form, fill=neue_fuellung)
+        if neuer_rand:
+            c.itemconfigure(form, outline=neuer_rand)
+        if neues_fg:
+            c.itemconfigure(beschriftung, fill=neues_fg)
+
+    c.setzen = setzen
+    c.form = form
+    c.beschriftung = beschriftung
+    if tat:
+        c.bind('<Button-1>', lambda e: tat())
+    return c
+
+
 def marke(eltern, text, farbe, schrift, grund=None, mindestbreite=0):
     """Eine abgerundete Blase mit farbigem Rand — „neu", „behoben" und Verwandte.
 

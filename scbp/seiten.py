@@ -182,12 +182,7 @@ def _wahl(fenster, eltern, eintraege, aktiv, tat):
 def _status(fenster, eltern, zeichen, fett, rest, farbe=None):
     """Ein Statuskasten mit farbigem Balken links — wie in der Vorschau."""
     farbe = farbe or ACCENT
-    aussen = tk.Frame(eltern, bg=LINIE)
-    aussen.pack(fill='x', pady=(0, 14))
-    balken = tk.Frame(aussen, bg=farbe, width=3)
-    balken.pack(side='left', fill='y')
-    innen = tk.Frame(aussen, bg=FLAECHE)
-    innen.pack(side='left', fill='both', expand=True, padx=(0, 1), pady=1)
+    innen = _karte(eltern, rand=farbe, pady=(0, 14))
     zeile = tk.Frame(innen, bg=FLAECHE)
     zeile.pack(fill='x', padx=14, pady=12)
     tk.Label(zeile, text=zeichen, bg=FLAECHE, fg=farbe,
@@ -199,27 +194,25 @@ def _status(fenster, eltern, zeichen, fett, rest, farbe=None):
     if rest:
         tk.Label(text, text=rest, bg=FLAECHE, fg=SUB, font=fenster.f_klein,
                  anchor='w', justify='left', wraplength=560).pack(fill='x')
-    return aussen
+    return innen
 
 
 def _pfadfeld(fenster, eltern, wert, waehlen, oeffnen=None, platzhalter=''):
     """Ein Pfad mit Knopf daneben."""
     reihe = tk.Frame(eltern, bg=BG)
     reihe.pack(fill='x', pady=(8, 0))
-    feld = tk.Entry(reihe, textvariable=wert, bg='#0c1017', fg=FG,
-                    font=fenster.f_klein, relief='flat', bd=0,
-                    insertbackground=FG, highlightthickness=1,
-                    highlightbackground=LINIE, highlightcolor=ACCENT)
-    feld.pack(side='left', fill='x', expand=True, ipady=6, padx=(0, 8))
+    from .hauptfenster import rundes_feld
+    feld = rundes_feld(reihe, wert, fenster.f_klein, '#0c1017', LINIE, ACCENT, FG)
+    feld.halter.pack(side='left', fill='x', expand=True, padx=(0, 8))
     if platzhalter and not wert.get():
         feld.configure(fg=SUB)
-    _knopf(fenster, reihe, 'Durchsuchen …', waehlen).pack(side='left')
+    _knopf(fenster, reihe, t('s_durchsuchen'), waehlen).pack(side='left')
     if oeffnen:
-        _knopf(fenster, reihe, 'Öffnen', oeffnen).pack(side='left', padx=(8, 0))
+        _knopf(fenster, reihe, t('s_oeffnen'), oeffnen).pack(side='left', padx=(8, 0))
     return reihe
 
 
-def _feld(fenster, eltern, bezeichnung, hilfe):
+def _feld(fenster, eltern, bezeichnung, hilfe, breit=False):
     """Eine Einstellungszeile: Bezeichnung, Erklärung, Platz für das Bedienelement."""
     zeile = tk.Frame(eltern, bg=BG)
     zeile.pack(fill='x', pady=(12, 0))
@@ -230,8 +223,15 @@ def _feld(fenster, eltern, bezeichnung, hilfe):
     if hilfe:
         tk.Label(links, text=hilfe, bg=BG, fg=SUB, font=fenster.f_klein,
                  anchor='w', justify='left', wraplength=520).pack(fill='x')
-    rechts = tk.Frame(zeile, bg=BG)
-    rechts.pack(side='right', padx=(16, 0))
+    if breit:
+        # Breite Bedienelemente unter die Beschreibung statt daneben: Auf
+        # Englisch sind die Wörter länger, und rechts wurde der letzte Knopf
+        # abgeschnitten („Ve…" statt „Very large").
+        rechts = tk.Frame(links, bg=BG)
+        rechts.pack(fill='x', anchor='w', pady=(8, 0))
+    else:
+        rechts = tk.Frame(zeile, bg=BG)
+        rechts.pack(side='right', padx=(16, 0))
     tk.Frame(eltern, bg=LINIE, height=1).pack(fill='x', pady=(12, 0))
     return rechts
 
@@ -314,13 +314,12 @@ def _allgemein(fenster, rahmen):
     from . import autostart, pfade
     from .hauptfenster import schiebeschalter
     _ueberschrift(fenster, rahmen, t('hf_allgemein'),
-                  'Was fast jeder einmal einstellt und danach nie wieder anfasst.')
+                  t('s_allg_lead'))
     innen = _rollflaeche(rahmen)
     e = _einstellungen(fenster)
 
-    ziel = _feld(fenster, innen, t('e_sprache'),
-                 'Betrifft nur die Anzeige des Werkzeugs. Welche Sprache Star '
-                 'Citizen spricht, erkennt der Watcher selbst.')
+    ziel = _feld(fenster, innen, t('e_sprache'), t('s_sprache_h'),
+                 breit=True)
     wahl = _wahl(fenster, ziel,
                  [('auto', t('sprache_auto')), ('de', 'Deutsch'), ('en', 'English')],
                  pfade.einstellungen().get('sprache') or 'auto',
@@ -328,8 +327,7 @@ def _allgemein(fenster, rahmen):
     wahl.pack()
 
     ziel = _feld(fenster, innen, t('e_ton'),
-                 'Kurzer Ton, wenn ein Bauplan hereinkommt — hilfreich, wenn das '
-                 'Overlay verdeckt ist.')
+                 t('s_ton_h'))
 
     def ton_um():
         neu_wert = not pfade.einstellung_wahrheit('signalton', True)
@@ -343,8 +341,7 @@ def _allgemein(fenster, rahmen):
     ziel = _feld(fenster, innen,
                  t('autostart_win') if sys.platform.startswith('win')
                  else t('autostart_linux'),
-                 'Der Watcher startet mit angemeldetem Benutzer und wartet im '
-                 'Hintergrund auf das Spiel.')
+                 t('s_autostart_h'))
     if autostart.moeglich():
         def autostart_um():
             neu_wert = not autostart.ist_an()
@@ -355,12 +352,11 @@ def _allgemein(fenster, rahmen):
 
         schiebeschalter(ziel, autostart.ist_an(), autostart_um).pack()
     else:
-        tk.Label(ziel, text='hier nicht möglich', bg=BG, fg=SUB,
+        tk.Label(ziel, text=t('s_nicht_moegl'), bg=BG, fg=SUB,
                  font=fenster.f_klein).pack()
 
-    ziel = _feld(fenster, innen, 'Symbol in der Ablage neben der Uhr',
-                 'Beim Schließen verschwindet das Fenster in die Ablage statt zu '
-                 'beenden. Ein Klick holt es zurück.')
+    ziel = _feld(fenster, innen, t('s_tray'),
+                 t('s_tray_h'))
     if sys.platform.startswith('win'):
         def tray_um():
             neu_wert = not pfade.einstellung_wahrheit('tray', True)
@@ -370,7 +366,7 @@ def _allgemein(fenster, rahmen):
         schiebeschalter(ziel, pfade.einstellung_wahrheit('tray', True),
                         tray_um).pack()
     else:
-        tk.Label(ziel, text='nur unter Windows', bg=BG, fg=SUB,
+        tk.Label(ziel, text=t('s_nur_win'), bg=BG, fg=SUB,
                  font=fenster.f_klein).pack()
 
 
@@ -378,12 +374,12 @@ def _anzeige(fenster, rahmen):
     from . import pfade
     from .hauptfenster import schiebeschalter
     _ueberschrift(fenster, rahmen, t('hf_anzeige'),
-                  'Wie das Overlay über dem Spiel liegt. Wer nur einen Bildschirm '
-                  'hat, findet hier das Wichtigste.')
+                  t('s_anz_lead'))
     innen = _rollflaeche(rahmen)
     e = _einstellungen(fenster)
 
-    ziel = _feld(fenster, innen, t('hf_schrift'), t('hf_schrift_hilfe'))
+    ziel = _feld(fenster, innen, t('hf_schrift'), t('hf_schrift_hilfe'),
+                 breit=True)
     wahl = _wahl(fenster, ziel,
                  [(s, t('hf_s_' + s))
                   for s in ('klein', 'normal', 'gross', 'sehrgross')],
@@ -394,8 +390,7 @@ def _anzeige(fenster, rahmen):
     wahl.pack()
 
     ziel = _feld(fenster, innen, t('e_deckkraft'),
-                 'Weniger heißt durchsichtiger. Wird sofort vorgeführt, während '
-                 'du ziehst.')
+                 t('s_deck_h'))
     from .hauptfenster import regler as schieberegler
     reihe = tk.Frame(ziel, bg=BG)
     reihe.pack()
@@ -415,10 +410,8 @@ def _anzeige(fenster, rahmen):
                   deckkraft_setzen).pack(side='left')
     wertlabel.pack(side='left', padx=(8, 0))
 
-    ziel = _feld(fenster, innen, 'Eingeklappt starten',
-                 'Das Overlay schiebt sich beim Start auf die Titelleiste '
-                 'zusammen und gibt die Sicht frei. Der Pfeil ▾ klappt es '
-                 'jederzeit wieder auf.')
+    ziel = _feld(fenster, innen, t('s_klapp'),
+                 t('s_klapp_h'))
 
     def klapp_um():
         neu_wert = not pfade.einstellung_wahrheit('eingeklappt', False)
@@ -428,9 +421,8 @@ def _anzeige(fenster, rahmen):
     schiebeschalter(ziel, pfade.einstellung_wahrheit('eingeklappt', False),
                     klapp_um).pack()
 
-    ziel = _feld(fenster, innen, 'Immer im Vordergrund',
-                 'Bleibt über dem Spiel sichtbar. Ausschalten, wenn das Overlay '
-                 'im Weg ist.')
+    ziel = _feld(fenster, innen, t('s_vorne'),
+                 t('s_vorne_h'))
 
     def vorne_um():
         neu_wert = not pfade.einstellung_wahrheit('immer_vorne', True)
@@ -442,15 +434,13 @@ def _anzeige(fenster, rahmen):
     schiebeschalter(ziel, pfade.einstellung_wahrheit('immer_vorne', True),
                     vorne_um).pack()
 
-    ziel = _feld(fenster, innen, 'Zeilen im Overlay',
-                 'So viele Neuzugänge bleiben stehen, ältere rutschen heraus. Die '
-                 'vollständige Liste steht ohnehin im Bauplan-Fenster.')
-    zahl = tk.Entry(ziel, width=6, bg='#0c1017', fg=FG, font=fenster.f_klein,
-                    relief='flat', bd=0, justify='right', insertbackground=FG,
-                    highlightthickness=1, highlightbackground=LINIE,
-                    highlightcolor=ACCENT)
+    ziel = _feld(fenster, innen, t('s_zeilen'),
+                 t('s_zeilen_h'))
+    from .hauptfenster import rundes_feld
+    zahl = rundes_feld(ziel, None, fenster.f_klein, '#0c1017', LINIE, ACCENT, FG,
+                       breite=6, justify='right')
     zahl.insert(0, str(pfade.einstellung_zahl('max_zeilen', 200, 10, 2000)))
-    zahl.pack(ipady=5)
+    zahl.halter.pack()
 
     def zahl_merken(_=None):
         try:
@@ -463,9 +453,8 @@ def _anzeige(fenster, rahmen):
     zahl.bind('<FocusOut>', zahl_merken)
     zahl.bind('<Return>', zahl_merken)
 
-    ziel = _feld(fenster, innen, 'Fensterlage vergessen',
-                 'Setzt Größe und Position zurück, falls das Overlay einmal '
-                 'außerhalb des Bildschirms gelandet ist.')
+    ziel = _feld(fenster, innen, t('s_lage'),
+                 t('s_lage_h'))
 
     def lage_weg():
         try:
@@ -474,14 +463,13 @@ def _anzeige(fenster, rahmen):
             pass
         fenster.sagen('Fensterlage zurückgesetzt — gilt ab dem nächsten Start')
 
-    _knopf(fenster, ziel, 'Zurücksetzen', lage_weg).pack()
+    _knopf(fenster, ziel, t('s_zuruecksetzen'), lage_weg).pack()
 
 
 def _ordner(fenster, rahmen):
     from . import pfade
     _ueberschrift(fenster, rahmen, t('hf_ordner'),
-                  'Wo Star Citizen liegt und wohin das Werkzeug seine eigenen '
-                  'Dateien schreibt. Leer heißt: selbst suchen.')
+                  t('s_ordner_lead'))
     innen = _rollflaeche(rahmen)
     e = _einstellungen(fenster)
 
@@ -491,12 +479,11 @@ def _ordner(fenster, rahmen):
     except Exception:
         pass
     if gefunden:
-        _status(fenster, innen, '✓', 'Star Citizen gefunden.',
+        _status(fenster, innen, '✓', t('s_sc_da'),
                 'Die Game.log wird mitgelesen: %s' % gefunden)
     else:
-        _status(fenster, innen, '!', 'Star Citizen nicht gefunden.',
-                'Trag den Ordner unten ein — der LIVE-Ordner reicht, auch der '
-                'darüber oder das Wine-Präfix.', farbe=GOLD)
+        _status(fenster, innen, '!', t('s_sc_weg'),
+                t('s_sc_weg_h'), farbe=GOLD)
 
     tk.Label(innen, text=t('e_spiel'), bg=BG, fg=FG, font=fenster.f_fett,
              anchor='w').pack(fill='x', pady=(6, 0))
@@ -506,10 +493,9 @@ def _ordner(fenster, rahmen):
     _pfadfeld(fenster, innen, e.spiel,
               lambda: e._waehlen(e.spiel, t('e_spiel')))
 
-    tk.Label(innen, text='Eigene Dateien', bg=BG, fg=FG, font=fenster.f_fett,
+    tk.Label(innen, text=t('s_eigene'), bg=BG, fg=FG, font=fenster.f_fett,
              anchor='w').pack(fill='x', pady=(20, 0))
-    tk.Label(innen, text='Hier liegen dein Bauplan-Bestand, die Merkliste und '
-                         'die ausgegebenen Dateien — in getrennten Unterordnern.',
+    tk.Label(innen, text=t('s_eigene_h'),
              bg=BG, fg=SUB, font=fenster.f_klein, anchor='w', justify='left',
              wraplength=600).pack(fill='x')
     ablage = tk.StringVar(value=pfade.app_ordner())
@@ -523,7 +509,7 @@ def _ordner(fenster, rahmen):
                                     'Einstellungen hinterlegen'),
               oeffnen=ablage_oeffnen)
 
-    tk.Label(innen, text='%s  —  optional' % t('e_launcher'), bg=BG, fg=FG,
+    tk.Label(innen, text='%s  —  %s' % (t('e_launcher'), t('s_optional')), bg=BG, fg=FG,
              font=fenster.f_fett, anchor='w').pack(fill='x', pady=(20, 0))
     tk.Label(innen, text=t('e_launcher_hilfe'), bg=BG, fg=SUB,
              font=fenster.f_klein, anchor='w', justify='left',
@@ -723,18 +709,28 @@ def _bestand(fenster, rahmen):
              bg=BG, fg=SUB, font=fenster.f_klein, anchor='w', justify='left',
              wraplength=600).pack(fill='x', pady=(10, 0))
     vorschau_platz.pack(fill='x', pady=(14, 20))
+    # Der Kasten steht von Anfang an da — sonst wirkt die Seite unfertig, und
+    # niemand weiß, dass vor dem Übernehmen noch eine Vorschau kommt.
+    _leere_vorschau(fenster, vorschau_platz)
+
+
+def _leere_vorschau(fenster, eltern):
+    """Der Vorschau-Kasten, bevor eine Datei gewählt wurde."""
+    innen = _karte(eltern, rand=SUB)
+    tk.Label(innen, text=t('s_vorschau_leer'), bg=FLAECHE, fg=FG,
+             font=fenster.f_fett, anchor='w').pack(fill='x', padx=16,
+                                                   pady=(12, 2))
+    tk.Label(innen, text=t('s_vorschau_leer_h'), bg=FLAECHE, fg=SUB,
+             font=fenster.f_klein, anchor='w', justify='left',
+             wraplength=560).pack(fill='x', padx=16, pady=(0, 12))
+    return innen
 
 
 def _vorschau_zeigen(fenster, eltern, art, eintraege, v):
     """Was der Import täte — erst nach dem Knopf passiert wirklich etwas."""
     from . import importieren
     from .hauptfenster import marke as blase
-    aussen = tk.Frame(eltern, bg=LINIE)
-    aussen.pack(fill='x')
-    balken = tk.Frame(aussen, bg=ACCENT, width=3)
-    balken.pack(side='left', fill='y')
-    innen = tk.Frame(aussen, bg=FLAECHE)
-    innen.pack(side='left', fill='both', expand=True, padx=(0, 1), pady=1)
+    innen = _karte(eltern, rand=ACCENT)
 
     kopf = tk.Frame(innen, bg=FLAECHE)
     kopf.pack(fill='x', padx=16, pady=(12, 10))
@@ -777,13 +773,13 @@ def _vorschau_zeigen(fenster, eltern, art, eintraege, v):
     def uebernehmen():
         dazu = importieren.uebernehmen(eintraege)
         fenster.sagen('%d Baupläne übernommen' % dazu)
-        aussen.destroy()
+        innen.halter.destroy()
 
     k = _knopf(fenster, reihe, '%d Baupläne übernehmen' % len(v['neu']),
                uebernehmen, stark=True)
     k.configure(bg=FLAECHE)
     k.pack(side='left')
-    k2 = _knopf(fenster, reihe, 'Abbrechen', aussen.destroy)
+    k2 = _knopf(fenster, reihe, 'Abbrechen', innen.halter.destroy)
     k2.configure(bg=FLAECHE)
     k2.pack(side='left', padx=8)
 
@@ -935,12 +931,11 @@ def _saubere_zeile(zeile):
     return zeile.strip()
 
 
-def _karte(eltern, **kw):
-    """Ein abgesetzter Kasten — hebt Zusammengehöriges vom Grund ab."""
-    aussen = tk.Frame(eltern, bg=LINIE)
-    aussen.pack(fill='x', **kw)
-    innen = tk.Frame(aussen, bg=FLAECHE)
-    innen.pack(fill='x', padx=1, pady=1)
+def _karte(eltern, rand=None, **kw):
+    """Ein abgesetzter Kasten mit runden Ecken (siehe `hauptfenster.rundrahmen`)."""
+    from .hauptfenster import rundrahmen
+    innen = rundrahmen(eltern, FLAECHE, rand or LINIE, radius=8, grundfarbe=BG)
+    innen.halter.pack(fill='x', **kw)
     return innen
 
 
@@ -960,10 +955,27 @@ def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text=''):
     *Was bedeutet das für mich?* Zwei Kästen mit je zwei Sätzen tun das.
     """
     from .hauptfenster import marke as blase
-    rand = tk.Frame(eltern, bg=ACCENT if gewaehlt else LINIE, cursor='hand2')
+    from .hauptfenster import _rundes_rechteck
+    rand = tk.Frame(eltern, bg=BG, cursor='hand2')
     rand.pack(side='left', fill='both', expand=True, padx=(0, 10))
-    innen = tk.Frame(rand, bg=FLAECHE, cursor='hand2')
-    innen.pack(fill='both', expand=True, padx=1, pady=1)
+    leinwand = tk.Canvas(rand, bg=BG, highlightthickness=0, bd=0, height=10,
+                         cursor='hand2')
+    leinwand.pack(fill='both', expand=True)
+    innen = tk.Frame(leinwand, bg=FLAECHE, cursor='hand2')
+    form = _rundes_rechteck(leinwand, 1, 1, 100, 100, radius=8, fill=FLAECHE,
+                            outline=ACCENT if gewaehlt else LINIE, width=1)
+    fid = leinwand.create_window(1, 1, window=innen, anchor='nw')
+
+    def nachziehen(_=None):
+        breite, hoehe = leinwand.winfo_width(), innen.winfo_reqheight()
+        if breite < 10:
+            return
+        leinwand.configure(height=hoehe + 2)
+        leinwand.itemconfigure(fid, width=breite - 2)
+        leinwand.coords(form, *_ecken(1, 1, breite - 1, hoehe + 1, 8))
+
+    innen.bind('<Configure>', nachziehen)
+    leinwand.bind('<Configure>', nachziehen)
 
     kopf = tk.Frame(innen, bg=FLAECHE)
     kopf.pack(fill='x', padx=14, pady=(12, 2))
@@ -978,7 +990,7 @@ def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text=''):
              anchor='w', justify='left', wraplength=330).pack(
                  fill='x', padx=14, pady=(0, 12))
 
-    for teil in (rand, innen, kopf):
+    for teil in (rand, leinwand, innen, kopf):
         teil.bind('<Button-1>', lambda e: tat())
     for kind in innen.winfo_children() + kopf.winfo_children():
         try:
@@ -1150,12 +1162,11 @@ def _erkennung(fenster, rahmen):
                  'heißt schneller und kostet etwas mehr Rechenzeit.')
     reihe = tk.Frame(ziel, bg=BG)
     reihe.pack()
-    zahl = tk.Entry(reihe, width=5, bg='#0c1017', fg=FG, font=fenster.f_klein,
-                    relief='flat', bd=0, justify='right', insertbackground=FG,
-                    highlightthickness=1, highlightbackground=LINIE,
-                    highlightcolor=ACCENT)
+    from .hauptfenster import rundes_feld
+    zahl = rundes_feld(reihe, None, fenster.f_klein, '#0c1017', LINIE, ACCENT, FG,
+                       breite=5, justify='right')
     zahl.insert(0, str(pfade.einstellung_zahl('pruefintervall_sekunden', 3, 1, 60)))
-    zahl.pack(side='left', ipady=5)
+    zahl.halter.pack(side='left')
     tk.Label(reihe, text=' Sek.', bg=BG, fg=SUB,
              font=fenster.f_klein).pack(side='left')
 
@@ -1225,8 +1236,9 @@ def _diagnose(fenster, rahmen):
     except Exception as ausnahme:
         fehler.merken('seiten.diagnose', ausnahme)
 
-    kasten = tk.Frame(innen, bg=LINIE)
-    kasten.pack(fill='both', expand=True)
+    from .hauptfenster import rundrahmen
+    kasten = rundrahmen(innen, '#0c1017', LINIE, radius=8, grundfarbe=BG)
+    kasten.halter.pack(fill='both', expand=True)
     feld = tk.Text(kasten, bg='#0c1017', fg=FG, font=('Consolas', 10),
                    height=16, wrap='none', relief='flat', bd=0,
                    insertbackground=FG, padx=14, pady=12)
@@ -1294,7 +1306,7 @@ def _diagnose(fenster, rahmen):
         except OSError as ausnahme:
             fehler.merken('seiten.diagnose.zuruecksetzen', ausnahme)
 
-    _knopf(fenster, ziel, 'Zurücksetzen', zuruecksetzen, gefahr=True).pack()
+    _knopf(fenster, ziel, t('s_zuruecksetzen'), zuruecksetzen, gefahr=True).pack()
 
     _status(fenster, innen, '!', 'Zurücksetzen löscht deinen Bauplan-Stand.',
             'Der Watcher liest ihn danach aus den noch vorhandenen Protokollen '

@@ -50,6 +50,7 @@ from .sprache import t
 BG      = '#10141c'
 FLAECHE = '#161c28'
 BAR     = '#1b2230'
+LINIE   = '#2a3345'   # Rand runder Kästen und Felder — überall dieselbe Linie
 FG      = '#e6edf3'
 SUB     = '#8b98a5'
 ACCENT  = '#9ce430'
@@ -215,9 +216,9 @@ class Einstellungsfenster:
         self._titel(eltern, titel, hilfe)
         reihe = tk.Frame(eltern, bg=BG)
         reihe.pack(fill='x')
-        feld = tk.Entry(reihe, textvariable=variable, bg=FLAECHE, fg=FG,
-                        insertbackground=FG, relief='flat', font=schrift(10))
-        feld.pack(side='left', fill='x', expand=True, ipady=6, padx=(0, 8))
+        from .hauptfenster import rundes_feld
+        feld = rundes_feld(reihe, variable, schrift(10), FLAECHE, LINIE, ACCENT, FG)
+        feld.halter.pack(side='left', fill='x', expand=True, padx=(0, 8))
         knopf = tk.Label(reihe, text=' %s ' % t('e_durchsuchen'), bg=FLAECHE,
                          fg=FG, font=schrift(10), cursor='hand2', padx=8, pady=6)
         knopf.pack(side='left')
@@ -231,9 +232,10 @@ class Einstellungsfenster:
 
     def _intervallfeld(self, eltern):
         self._titel(eltern, t('e_intervall'), t('e_intervall_hilfe'))
-        tk.Entry(eltern, textvariable=self.intervall, bg=FLAECHE, fg=FG,
-                 insertbackground=FG, relief='flat', font=schrift(10),
-                 width=8).pack(anchor='w', ipady=6)
+        from .hauptfenster import rundes_feld
+        feld = rundes_feld(eltern, self.intervall, schrift(10), FLAECHE, LINIE,
+                           ACCENT, FG, breite=8)
+        feld.halter.pack(anchor='w')
 
     def _tonfeld(self, eltern):
         self._titel(eltern, t('e_ton'), t('e_ton_hilfe'))

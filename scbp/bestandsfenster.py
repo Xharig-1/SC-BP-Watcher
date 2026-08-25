@@ -48,6 +48,7 @@ from .sprache import t
 BG      = '#10141c'
 FLAECHE = '#161c28'
 BAR     = '#1b2230'
+LINIE   = '#2a3345'   # Rand runder Kästen und Felder — überall dieselbe Linie
 FG      = '#e6edf3'
 SUB     = '#8b98a5'
 ACCENT  = '#9ce430'
@@ -206,8 +207,8 @@ class Bestandsfenster:
         for text, tat, abstand in (
                 (t('export_ablage'), self._in_ablage, (0, 14)),
                 (t('export_einzeln'), lambda: self._exportieren('basetool'), (0, 6))):
-            k = tk.Label(bar, text=' %s ' % text, bg=FLAECHE, fg=FG,
-                         font=schrift(9), cursor='hand2', padx=8, pady=4)
+            from .hauptfenster import rundknopf
+            k = rundknopf(bar, text, None, schrift(9), BAR, FLAECHE, LINIE, FG)
             k.pack(side='right', padx=abstand)
             k.bind('<Button-1>', lambda e, f=tat: f())
             hinweis.anhaengen(k, lambda: t('hinweis_export'))
@@ -269,10 +270,12 @@ class Bestandsfenster:
 
         # Suchfeld mit Löschkreuz: Das ✕ liegt im selben Kasten wie das Feld,
         # damit es dazugehörig aussieht und nicht wie ein weiterer Knopf.
-        kasten = tk.Frame(leiste, bg=FLAECHE)
-        kasten.pack(side='left', fill='x', expand=True, padx=(0, 10))
+        from .hauptfenster import rundrahmen
+        kasten = rundrahmen(leiste, FLAECHE, LINIE, radius=8, grundfarbe=BG)
+        kasten.halter.pack(side='left', fill='x', expand=True, padx=(0, 10))
         feld = tk.Entry(kasten, textvariable=self.suche, bg=FLAECHE, fg=FG,
-                        insertbackground=FG, relief='flat', font=schrift(11))
+                        insertbackground=FG, relief='flat', bd=0,
+                        highlightthickness=0, font=schrift(11))
         feld.pack(side='left', fill='x', expand=True, ipady=6, padx=(8, 0))
         feld.focus_set()
         self.loeschen_lbl = tk.Label(kasten, text='✕', bg=FLAECHE, fg=SUB,
@@ -288,8 +291,9 @@ class Bestandsfenster:
                                  ('habe', t('filter_habe')),
                                  ('fehlt', t('filter_fehlt')),
                                  ('merk', '⭐ ' + t('filter_merk'))):
-            k = tk.Label(leiste, text=' %s ' % text, bg=FLAECHE, fg=SUB,
-                         font=schrift(10), cursor='hand2', padx=8, pady=5)
+            from .hauptfenster import rundknopf
+            k = rundknopf(leiste, text, None, schrift(10), BG, FLAECHE, LINIE,
+                          SUB)
             k.pack(side='left', padx=2)
             k.bind('<Button-1>', lambda e, s=schluessel: self._filter_setzen(s))
             self.knoepfe[schluessel] = k
@@ -301,8 +305,9 @@ class Bestandsfenster:
         bereiche.pack(fill='x', padx=14, pady=(0, 8))
         self.bereich_knoepfe = {}
         for og in katalog_modul.OBERGRUPPEN:
-            k = tk.Label(bereiche, text=' %s ' % t('gruppe_%s' % og), bg=FLAECHE,
-                         fg=SUB, font=schrift(10), cursor='hand2', padx=8, pady=5)
+            from .hauptfenster import rundknopf
+            k = rundknopf(bereiche, t('gruppe_%s' % og), None, schrift(10), BG,
+                          FLAECHE, LINIE, SUB)
             k.pack(side='left', padx=(0, 4))
             k.bind('<Button-1>', lambda e, g=og: self._bereich_umschalten(g))
             hinweis.anhaengen(k, lambda: t('hinweis_bereich'))
@@ -412,13 +417,16 @@ class Bestandsfenster:
 
         for schluessel, knopf in self.knoepfe.items():
             an = schluessel == self.filter
-            knopf.configure(fg=BG if an else SUB, bg=ACCENT if an else FLAECHE)
+            knopf.setzen(fuellung=ACCENT if an else FLAECHE,
+                         neuer_rand=ACCENT if an else LINIE,
+                         neues_fg=BG if an else SUB)
 
         # Ausgeblendete Bereiche werden abgedunkelt, nicht entfernt — man muss
         # sehen, dass man selbst etwas weggeklickt hat.
         for og, knopf in self.bereich_knoepfe.items():
             aus = og in self.bereiche_aus
-            knopf.configure(fg=SUB if aus else FG, bg=BG if aus else FLAECHE)
+            knopf.setzen(fuellung=BG if aus else FLAECHE,
+                         neuer_rand=LINIE, neues_fg=SUB if aus else FG)
         self._loeschkreuz_zeigen()
 
         gruppen = self._auswahl()
