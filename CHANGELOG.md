@@ -19,6 +19,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **Restart right after an update.** It used to say „the new version runs on next start" —
+  you had to quit and start it yourself. The fetch button now turns into **„⟳ Restart now"**
+  once the download is done. The single-instance guard is closed first, otherwise the new
+  copy would think it is the second one and quit immediately.
+
 - **Start trace in the problem report.** A crash ends the program instantly — no report gets
   written, and all that remains is „it crashes". Every startup step is now written straight
   to disk; the last line in the report shows how far it got.

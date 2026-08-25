@@ -1524,6 +1524,11 @@ def _holen_text(mit_vorab, eigene=''):
     if not freigabe:
         return t('s_ub_holen_keine')
     fassung = freigabe.get('version') or ''
+    # Nach einem geglückten Update ist die neue Fassung auf der Platte, aber der
+    # laufende Prozess hält noch die alte. Statt „beim nächsten Start" zu sagen,
+    # wird der Knopf zum Neustart-Knopf.
+    if _BEREIT[0] and _BEREIT[0] == fassung:
+        return t('s_ub_neustart')
     if eigene:
         sauber = fassung.lstrip('v')
         if sauber == eigene.lstrip('v'):
@@ -1531,6 +1536,10 @@ def _holen_text(mit_vorab, eigene=''):
         if aktualisierung.ist_neuer(eigene, fassung):
             return t('s_ub_holen_zurueck') % fassung
     return t('s_ub_holen') % fassung
+
+
+# Welche Fassung geholt und eingespielt wurde und nur noch einen Neustart braucht.
+_BEREIT = [None]
 
 
 def _fassung_holen(fenster, mit_vorab):
@@ -1559,6 +1568,17 @@ def _fassung_holen(fenster, mit_vorab):
     if not freigabe:
         fenster.sagen(t('s_ub_holen_keine'))
         return
+    # Schon geholt? Dann ist der Knopf jetzt der Neustart-Knopf.
+    if _BEREIT[0] and _BEREIT[0] == (freigabe.get('version') or ''):
+        fenster.sagen(t('s_ub_startet_neu'))
+        if not aktualisierung.neu_starten():
+            fenster.sagen(t('s_ub_neustart_nein'))
+            return
+        try:
+            fenster.root.after(400, fenster.root.quit)
+        except Exception:
+            pass
+        return
     art = aktualisierung.verpackung()
     if art == 'quellcode':
         fenster.sagen(t('update_quellcode'))
@@ -1576,8 +1596,14 @@ def _fassung_holen(fenster, mit_vorab):
                 datei, fortschritt=lambda p: fenster.root.after(
                     0, lambda: fenster.sagen(t('wird_geladen', p))))
             geklappt, grund = aktualisierung.einspielen(ziel)
+            if geklappt:
+                _BEREIT[0] = freigabe.get('version') or ''
             fenster.root.after(0, lambda: fenster.sagen(
-                t('neustart_noetig') if geklappt else t('update_fehler', grund)))
+                t('s_ub_bereit') if geklappt else t('update_fehler', grund)))
+            if geklappt:
+                # Den Kasten neu zeichnen, damit aus „holen" ein „Jetzt neu
+                # starten" wird — sonst müsste man raten, wie es weitergeht.
+                fenster.root.after(50, fenster.neu_aufbauen)
         except Exception as ausnahme:
             grund = str(ausnahme)
             fehler.merken('seiten.fassung_holen', ausnahme)

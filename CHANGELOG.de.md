@@ -19,6 +19,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Neustart direkt nach dem Update.** Bisher hieß es „beim nächsten Start läuft die neue
+  Fassung" — man musste selbst beenden und wieder starten. Jetzt wird der Holen-Knopf nach
+  dem Laden zu **„⟳ Jetzt neu starten"**. Der Einzelinstanz-Wächter wird dabei zuerst
+  geschlossen, sonst hielte sich die neue Fassung für die zweite und beendete sich sofort.
+
 - **Startverlauf im Diagnose-Bericht.** Ein Absturz beendet das Programm sofort — kein
   Fehlerbericht wird mehr geschrieben, und es bleibt nur „es stürzt ab". Jeder Startschritt
   wird jetzt sofort auf die Platte geschrieben; die letzte Zeile im Bericht sagt, wie weit

@@ -229,6 +229,24 @@ def waechter_starten(beim_ruf):
     return True
 
 
+def waechter_stoppen():
+    """Den Horcher schließen — nötig vor einem Neustart des Programms.
+
+    ⚠ Ohne das kann sich das Programm nicht selbst neu starten: Die frisch
+    gestartete Fassung sieht den belegten Port, hält sich für die zweite Instanz,
+    sagt der alten „zeig dich" und beendet sich. Man bliebe ewig auf der alten
+    Fassung sitzen und wüsste nicht, warum.
+    """
+    horcher = _waechter[0]
+    _waechter[0] = None
+    if horcher is None:
+        return
+    try:
+        horcher.close()
+    except OSError:
+        pass
+
+
 def zeigen_bitte():
     """Einer laufenden Fassung sagen, sie soll sich zeigen. True = ausgerichtet."""
     try:

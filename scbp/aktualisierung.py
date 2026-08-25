@@ -53,6 +53,7 @@ import tempfile
 import time
 import urllib.request
 
+from . import fehler
 from . import pfade
 
 REPO = 'Xharig-1/SC-BP-Watcher'
@@ -568,6 +569,36 @@ if __name__ == '__main__':
 # Der Schlüssel liegt unter HKCU (der Installer schreibt in den Benutzerzweig),
 # deshalb braucht das **keine Administratorrechte**.
 INNO_KENNUNG = '{7C4B1E93-2A6F-4D58-B0E1-9F3A5C8D2461}_is1'
+
+
+def neu_starten():
+    """Das Programm durch die frisch eingespielte Fassung ersetzen.
+
+    Nach einem Update läuft weiter die alte Fassung — der Prozess hält seine alte
+    Inode. „Beim nächsten Start läuft die neue" stimmt zwar, heißt aber: selbst
+    beenden und selbst wieder starten. Das nimmt dieser Weg ab.
+
+    ⚠ Reihenfolge: erst den Einzelinstanz-Wächter schließen, dann starten. Sonst
+    sieht die neue Fassung den belegten Port, hält sich für die zweite Instanz und
+    beendet sich sofort wieder.
+    """
+    import subprocess
+    from . import overlay as overlay_modul
+    ziel = eigenes_appimage() or sys.executable
+    if verpackung() == 'quellcode':
+        return False
+    try:
+        overlay_modul.waechter_stoppen()
+        umgebung = dict(os.environ)
+        # Die Variablen des laufenden AppImage gehören der **alten** Fassung.
+        for name in ('APPIMAGE', 'APPDIR', 'OWD', 'ARGV0'):
+            umgebung.pop(name, None)
+        subprocess.Popen([ziel], env=umgebung, start_new_session=True,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return True
+    except Exception as ausnahme:
+        fehler.merken('aktualisierung.neu_starten', ausnahme)
+        return False
 
 
 def windows_eintrag_pflegen(eigene_version):
