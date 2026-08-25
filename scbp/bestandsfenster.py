@@ -351,12 +351,13 @@ class Bestandsfenster:
         self.leinwand.configure(yscrollcommand=rolle.set)
         self.leinwand.pack(side='left', fill='both', expand=True)
         rolle.pack(side='right', fill='y')
-        for ereignis in ('<MouseWheel>', '<Button-4>', '<Button-5>'):
-            self.leinwand.bind_all(ereignis, self._rollen)
-
-    def _rollen(self, e):
-        richtung = -1 if getattr(e, 'num', 0) == 4 or getattr(e, 'delta', 0) > 0 else 1
-        self.leinwand.yview_scroll(richtung, 'units')
+        # ⚠ Hier stand `bind_all` OHNE `add='+'`. Das ersetzt jede vorher
+        # gesetzte Bindung im ganzen Fenster — und weil diese Liste die
+        # Startseite ist, war die Bindung aller anderen Seiten sofort wieder
+        # weg. Danach rollte das Rad überall nur noch diese Liste, auch wenn
+        # sie gar nicht zu sehen war.
+        from .hauptfenster import rad_anschliessen
+        rad_anschliessen(self.leinwand)
 
     # ----------------------------------------------------------------- Zeichnen
     def _filter_setzen(self, welcher):

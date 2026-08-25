@@ -215,10 +215,8 @@ class Versionsfenster:
         leinwand.configure(yscrollcommand=rolle.set)
         leinwand.pack(side='left', fill='both', expand=True)
         rolle.pack(side='right', fill='y')
-        for ereignis in ('<MouseWheel>', '<Button-4>', '<Button-5>'):
-            leinwand.bind_all(ereignis, lambda e: leinwand.yview_scroll(
-                -1 if getattr(e, 'num', 0) == 4 or getattr(e, 'delta', 0) > 0
-                else 1, 'units'))
+        from .hauptfenster import rad_anschliessen
+        rad_anschliessen(leinwand)
 
         eintraege = aktualisierung.protokoll()
         if not eintraege:

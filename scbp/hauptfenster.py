@@ -341,6 +341,86 @@ def rundbalken(eltern, hoehe, anteil, grund, leer, voll, breite=None):
     return c
 
 
+def rad_anschliessen(leinwand):
+    """Das Mausrad an eine Rollfläche hängen — für das ganze Fenster.
+
+    ⚠ Zwei Fehler steckten hier, und beide zusammen ließen das Rad wirkungslos
+    aussehen, während der Rollbalken von Hand funktionierte:
+
+    1. **Die Rechnung.** Vorher stand hier `int(-1 * e.delta / 120)`. Windows
+       meldet ±120, Linux meldet sich über Button-4/5 — beides ging auf.
+       macOS meldet aber **±1**, und `int(-1/120)` ist **0**: kein Ausschlag.
+       Deshalb zählt jetzt nur die Richtung, nie der Betrag.
+
+    2. **Die Bindung.** Vorher hingen die Ereignisse an drei Widgets
+       (Leinwand, Innenrahmen, Polster). Tk schickt das Rad aber an das
+       Element **unter dem Zeiger**, und das ist fast immer eine Beschriftung
+       oder ein Kasten darin — dort war nichts gebunden. Also greift die
+       Bindung jetzt am ganzen Fenster, und der Griff sucht sich die
+       Rollfläche unter dem Zeiger.
+
+    3. **Und der Grund, warum das trotzdem nicht wirkte:** Die Bauplan-Liste
+       rief `bind_all` **ohne** `add='+'` auf. Das ersetzt jede vorher
+       gesetzte Bindung im ganzen Fenster — und weil die Liste die Startseite
+       ist, war die Bindung der Seiten sofort wieder weg. Danach rollte das
+       Rad überall nur noch die Liste, auch wenn die gar nicht zu sehen war.
+       Deshalb hängen jetzt **alle** Rollflächen an dieser einen Stelle.
+
+    4. **Trackpad.** Ein Mausrad rastet; ein Trackpad streicht. macOS meldet
+       für eine sanfte Streichgeste Beträge weit unter 1 — mit „ein Ereignis,
+       eine Zeile" wäre jeder Wisch ein voller Sprung, und rechnet man
+       stattdessen `int(betrag)`, kommt bei kleinen Werten **null** heraus und
+       gar nichts bewegt sich. Deshalb werden die Beträge **aufaddiert**, bis
+       eine ganze Zeile zusammenkommt; der Rest bleibt für das nächste
+       Ereignis stehen. Damit rollt beides sauber — Rad wie Trackpad.
+    """
+    wurzel = leinwand.winfo_toplevel()
+    if not hasattr(wurzel, 'rollflaechen'):
+        wurzel.rollflaechen = []
+        # Was noch keine ganze Zeile ergeben hat, wartet hier auf den Rest.
+        angesammelt = {'wert': 0.0}
+
+        def schritte_aus(e):
+            """Wie viele Zeilen sollen es sein? Negativ heißt nach oben."""
+            nummer = getattr(e, 'num', 0)
+            if nummer == 4:                      # Linux: Rad nach oben
+                return -1
+            if nummer == 5:                      # Linux: Rad nach unten
+                return 1
+            betrag = float(getattr(e, 'delta', 0) or 0)
+            if betrag == 0:
+                return 0
+            if abs(betrag) >= 120:               # Windows: eine Raste = 120
+                betrag /= 120.0
+            angesammelt['wert'] += betrag
+            ganze = int(angesammelt['wert'])     # schneidet Richtung null ab
+            angesammelt['wert'] -= ganze
+            return -ganze                        # nach oben = negativ
+
+        def rollen(e):
+            unter = wurzel.winfo_containing(e.x_root, e.y_root)
+            while unter is not None:
+                if unter in wurzel.rollflaechen:
+                    break
+                unter = getattr(unter, 'master', None)
+            if unter is None:
+                return
+            schritte = schritte_aus(e)
+            if not schritte:
+                return
+            try:
+                unter.yview_scroll(schritte, 'units')
+            except tk.TclError:
+                pass
+
+        for ereignis in ('<MouseWheel>', '<Button-4>', '<Button-5>'):
+            wurzel.bind_all(ereignis, rollen, add='+')
+
+    if leinwand not in wurzel.rollflaechen:
+        wurzel.rollflaechen.append(leinwand)
+
+
+
 def rundleiste(eltern, leinwand, grund=None, breite=10):
     """Eine Rollleiste mit runden Enden — statt der des Betriebssystems.
 
