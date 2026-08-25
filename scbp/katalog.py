@@ -530,12 +530,20 @@ ART_GRUPPE = {
     'DockingCollar': 'schiff', 'Cargo': 'schiff',
     # Was man in die Hand nimmt
     'WeaponPersonal': 'fps', 'WeaponAttachment': 'fps',
+    # ⚠ scmdb führt einige Einträge unter kleingeschriebenen Sammelbegriffen
+    # statt unter der sonst üblichen Kennung. Ohne diese vier Zeilen landeten
+    # die S-38 Pistol und das P4-AR Rifle unter „Sonstiges", während der
+    # Filter „nur FPS-Waffen" nichts anzeigte — dasselbe für den Field Recon
+    # Suit unter „Rüstung". Betroffen sind 10 der 722 Baupläne; wer nur auf
+    # die Gesamtzahl sieht, merkt davon nichts.
+    'weapons': 'fps', 'ammo': 'fps',
     # Was man am Körper trägt
     'Char_Armor_Helmet': 'ruestung', 'Char_Armor_Torso': 'ruestung',
     'Char_Armor_Legs': 'ruestung', 'Char_Armor_Arms': 'ruestung',
     'Char_Armor_Backpack': 'ruestung', 'Char_Armor_Undersuit': 'ruestung',
     'Char_Clothing_Torso_0': 'ruestung', 'Char_Clothing_Torso_1': 'ruestung',
     'Char_Clothing_Legs': 'ruestung', 'Char_Clothing_Feet': 'ruestung',
+    'armour': 'ruestung',
 }
 
 

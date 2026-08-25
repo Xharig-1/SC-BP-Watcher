@@ -14,6 +14,14 @@ import sys
 
 # Ein kleiner, aber echter Ausschnitt: verschiedene Arten, Klassen, Größen,
 # mit und ohne Bezugsquelle. Genug, um Liste, Filter und Herkunft zu beurteilen.
+#
+# ⚠ Die Art MUSS die echte Kennung aus dem scmdb-Katalog sein — `WeaponGun`,
+# nicht „Ship weapon". Hier standen ausgedachte Namen, und weil
+# `katalog.ART_GRUPPE` die nicht kennt, landete alles in „Sonstiges": Der
+# Filter „nur FPS-Waffen" zeigte nichts, „nur Schiffsteile" zeigte nichts, und
+# unter Sonstiges tauchte ein Netzteil namens XL-1 auf. Die Oberfläche war in
+# Ordnung — die Testdaten waren es nicht. `_arten_pruefen()` unten lässt das
+# nicht wieder durchgehen.
 BEISPIELE = [
     ("7CA 'Nargun'", 'Cooler', 'Military', 'A', '1', True,
      [('Foxwell Enforcement', 'Red Lvl. Contract: Protect Fuel Tanks',
@@ -22,22 +30,22 @@ BEISPIELE = [
      [('Covalex', 'Hauling: Priority Freight', 'Associate', 6000, 18000, 'Stanton')]),
     ('Blizzard', 'Cooler', 'Military', 'A', '3', False,
      [('Headhunters', 'Bounty: Hostile Gunship', 'Enforcer', 24000, 61000, 'Pyro')]),
-    ('Attrition-5 Repeater', 'Ship weapon', None, None, '3', True,
+    ('Attrition-5 Repeater', 'WeaponGun', None, None, '3', True,
      [('Bit-Zeros', 'Salvage: Derelict Sweep', 'Trusted Hand', 9000, 32000, 'Pyro')]),
-    ('Singe Cannon (S2)', 'Ship weapon', None, None, '2', False,
+    ('Singe Cannon (S2)', 'WeaponGun', None, None, '2', False,
      [('Foxwell Enforcement', 'Red Lvl. Contract: Hold the Line',
        'Contractor', 11000, 38000, 'Stanton')]),
-    ('P4-AR Rifle', 'FPS weapon', None, None, None, True, []),
-    ('S-38 Pistol', 'FPS weapon', None, None, None, True, []),
-    ('Manticore Helmet', 'Helmet', None, None, None, True,
+    ('P4-AR Rifle', 'WeaponPersonal', None, None, None, True, []),
+    ('S-38 Pistol', 'WeaponPersonal', None, None, None, True, []),
+    ('Manticore Helmet', 'Char_Armor_Helmet', None, None, None, True,
      [('Headhunters', 'Bounty: Vanduul Scout Party', 'Enforcer', 22500, 55000, 'Pyro')]),
-    ('Aves Shrike Helmet', 'Helmet', None, None, None, False,
+    ('Aves Shrike Helmet', 'Char_Armor_Helmet', None, None, None, False,
      [('Bit-Zeros', 'Mercenary: Clear the Outpost',
        'Veteran Contractor', 15000, 44000, 'Pyro'),
       ('Covalex', 'Hauling: Priority Freight', 'Associate', 6000, 18000, 'Stanton')]),
-    ('BUL-H4 Armor', 'Torso', None, None, None, False, []),      # XenoThreat
+    ('BUL-H4 Armor', 'Char_Armor_Torso', None, None, None, False, []),      # XenoThreat
     ('Purgatory Camo', 'Pattern', None, None, None, False, []),  # RedWind
-    ('XL-1', 'Power Plant', 'Industrial', 'B', '2', False,
+    ('XL-1', 'PowerPlant', 'Industrial', 'B', '2', False,
      [('Rayari', 'Research: Sample Retrieval', 'Associate', 7500, 21000, 'Stanton')]),
     ('Breton Shield', 'Shield', 'Military', 'A', '2', False,
      [('Headhunters', 'Bounty: Marked Target', 'Contractor', 12000, 30000, 'Pyro')]),
@@ -93,6 +101,25 @@ def main():
         return 0
 
     return _beispiele(ziel)
+
+
+def arten_pruefen():
+    """Stehen alle Beispiel-Arten wirklich im Katalog-Schema?
+
+    Liefert die Arten, die `katalog.ART_GRUPPE` nicht kennt und die deshalb
+    in „Sonstiges" verschwinden würden — bis auf `Pattern`, das absichtlich
+    dort landet, damit auch dieser Bereich etwas zu zeigen hat.
+
+    Der Selbsttest ruft das auf. Grund: Ausgedachte Art-Namen in den Testdaten
+    sehen aus wie ein Fehler der Oberfläche. Genau so ist es einmal gelaufen —
+    „nur FPS-Waffen" zeigte nichts, und gesucht wurde tagelang am Filter.
+    """
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from scbp import katalog
+
+    absicht = ('Pattern',)
+    return sorted({art for _, art, _, _, _, _, _ in BEISPIELE
+                   if art not in katalog.ART_GRUPPE and art not in absicht})
 
 
 def _beispiele(ziel):

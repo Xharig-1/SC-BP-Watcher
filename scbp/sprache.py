@@ -846,6 +846,11 @@ TEXTE = {
     'art_Shield':               ('Schild', 'Shield'),
     'art_Radar':                ('Radar', 'Radar'),
     'art_Misc':                 ('Sonstiges', 'Other'),
+    # scmdb führt einige Baupläne unter kleingeschriebenen Sammelbegriffen.
+    # Ohne diese drei Zeilen stünde in der Liste wörtlich „weapons".
+    'art_weapons':              ('Handfeuerwaffe', 'Personal weapon'),
+    'art_ammo':                 ('Magazin', 'Magazine'),
+    'art_armour':               ('Anzug', 'Suit'),
     'art_Cargo':                ('Frachtmodul', 'Cargo module'),
     'art_Char_Clothing_Torso_0': ('Kleidung (Oberkörper)', 'Clothing (torso)'),
     'art_Char_Clothing_Torso_1': ('Kleidung (Jacke)', 'Clothing (jacket)'),

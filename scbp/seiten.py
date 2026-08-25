@@ -111,14 +111,57 @@ def _rollflaeche(rahmen, rand=24):
     else:
         innen_ziel = innen
 
-    def rollen(e):
-        leinwand.yview_scroll(int(-1 * (e.delta or (120 if e.num == 4 else -120)) / 120),
-                              'units')
-    for ziel in (leinwand, innen, innen_ziel):
-        ziel.bind('<MouseWheel>', rollen)
-        ziel.bind('<Button-4>', rollen)
-        ziel.bind('<Button-5>', rollen)
+    _rad_anschliessen(leinwand)
     return innen_ziel
+
+
+def _rad_anschliessen(leinwand):
+    """Das Mausrad an eine Rollfläche hängen — für das ganze Fenster.
+
+    ⚠ Zwei Fehler steckten hier, und beide zusammen ließen das Rad wirkungslos
+    aussehen, während der Rollbalken von Hand funktionierte:
+
+    1. **Die Rechnung.** Vorher stand hier `int(-1 * e.delta / 120)`. Windows
+       meldet ±120, Linux meldet sich über Button-4/5 — beides ging auf.
+       macOS meldet aber **±1**, und `int(-1/120)` ist **0**: kein Ausschlag.
+       Deshalb zählt jetzt nur die Richtung, nie der Betrag — genau so machen
+       es die drei älteren Fenster auch.
+
+    2. **Die Bindung.** Vorher hingen die Ereignisse an drei Widgets
+       (Leinwand, Innenrahmen, Polster). Tk schickt das Rad aber an das
+       Element **unter dem Zeiger**, und das ist fast immer eine Beschriftung
+       oder ein Kasten darin — dort war nichts gebunden. Also greift die
+       Bindung jetzt am ganzen Fenster, und der Griff sucht sich die
+       Rollfläche unter dem Zeiger.
+    """
+    wurzel = leinwand.winfo_toplevel()
+    if not hasattr(wurzel, 'rollflaechen'):
+        wurzel.rollflaechen = []
+
+        def rollen(e):
+            unter = wurzel.winfo_containing(e.x_root, e.y_root)
+            while unter is not None:
+                if unter in wurzel.rollflaechen:
+                    break
+                unter = getattr(unter, 'master', None)
+            if unter is None:
+                return
+            if getattr(e, 'num', 0) == 4:
+                richtung = -1
+            elif getattr(e, 'num', 0) == 5:
+                richtung = 1
+            else:
+                richtung = -1 if getattr(e, 'delta', 0) > 0 else 1
+            try:
+                unter.yview_scroll(richtung, 'units')
+            except tk.TclError:
+                pass
+
+        for ereignis in ('<MouseWheel>', '<Button-4>', '<Button-5>'):
+            wurzel.bind_all(ereignis, rollen, add='+')
+
+    if leinwand not in wurzel.rollflaechen:
+        wurzel.rollflaechen.append(leinwand)
 
 
 def _knopf(fenster, eltern, text, tat, stark=False, gefahr=False):

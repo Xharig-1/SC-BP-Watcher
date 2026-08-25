@@ -362,6 +362,16 @@ def main():
         for b in beanstandungen[:5]:
             print('        ·', b)
 
+        # Testdaten mit ausgedachten Art-Kennungen sehen aus wie ein Fehler
+        # der Oberfläche: Alles landet in „Sonstiges", und der Filter „nur
+        # FPS-Waffen" zeigt nichts. Genau so ist es einmal gelaufen.
+        import probe_daten
+        unbekannt = probe_daten.arten_pruefen()
+        pruefe(not unbekannt,
+               'die Beispieldaten benutzen echte Art-Kennungen')
+        for art in unbekannt[:5]:
+            print('        · %s kennt katalog.ART_GRUPPE nicht' % art)
+
         # Die Dokumente allein reichen nicht: Die Oberfläche zeigte an über
         # hundert Stellen deutschen Text, während oben alles grün meldete.
         import texte_pruefen
