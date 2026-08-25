@@ -28,16 +28,89 @@ A small, borderless overlay that tells you **in real time** when a new blueprint
 
 <table>
 <tr>
-<td width="45%" valign="top" align="center">
+<td width="32%" valign="top" align="center">
 <img src="assets/screenshot-overlay.png" alt="The overlay while playing" width="100%"><br>
 <sub>The overlay — narrow, always on top, opacity adjustable</sub>
 </td>
-<td width="55%" valign="top" align="center">
-<img src="assets/screenshot-fenster.png" alt="The window with the blueprint list" width="100%"><br>
-<sub>The blueprint list — filters, sections, and where each contract is available</sub>
+<td width="68%" valign="top" align="center">
+<img src="assets/screenshot-liste.png" alt="The window with the blueprint list" width="100%"><br>
+<sub>The blueprint list — search, five filters, and where each blueprint comes from</sub>
 </td>
 </tr>
 </table>
+
+### In game, without tabbing out
+
+The watcher writes into the game's mission text **which** blueprints a contract hands out — with `[x]` for the ones you already have. The count is in the title, the names are in the description.
+
+<table>
+<tr>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-ingame-teils.jpg" alt="Contract with some blueprints already owned" width="100%"><br>
+<sub><b>3 of 6</b> — <code>[x]</code> you have, <code>[&nbsp;&nbsp;]</code> still missing</sub>
+</td>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-ingame-keine.jpg" alt="Contract with none of the blueprints owned" width="100%"><br>
+<sub><b>0 of 12</b> — nothing here that you already own</sub>
+</td>
+</tr>
+</table>
+
+### The window
+
+> [!NOTE]
+> The screenshots below show **v3.0.0** (currently a test build, `v3.0.0-rc`, under [Releases](../../releases)). In v2.0.0 the window still looks different — if you are looking for something shown here and cannot find it, that is the older version, not a bug.
+
+<table>
+<tr>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-fortschritt.png" alt="Progress by area" width="100%"><br>
+<sub><b>Progress</b> — per area, details on click</sub>
+</td>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-auftragstexte.png" alt="Mission text settings" width="100%"><br>
+<sub><b>Mission text</b> — pick a text source, switch it on and off</sub>
+</td>
+</tr>
+<tr>
+<td valign="top" align="center">
+<img src="assets/screenshot-bestand.png" alt="Export and import your inventory" width="100%"><br>
+<sub><b>Inventory</b> — export for the basetool, or import an existing one</sub>
+</td>
+<td valign="top" align="center">
+<img src="assets/screenshot-anzeige.png" alt="Display settings" width="100%"><br>
+<sub><b>Display</b> — pop-up mode, click-through, font size</sub>
+</td>
+</tr>
+<tr>
+<td valign="top" align="center">
+<img src="assets/screenshot-ueber.png" alt="About and update channel" width="100%"><br>
+<sub><b>About</b> — stable releases or test builds, with a button to fetch one</sub>
+</td>
+<td valign="top" align="center">
+<img src="assets/screenshot-wasistneu.png" alt="What's new" width="100%"><br>
+<sub><b>What's new</b> — every release expandable, filtered by kind</sub>
+</td>
+</tr>
+</table>
+
+<details>
+<summary>And the rest: General and Paths</summary>
+
+<table>
+<tr>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-allgemein.png" alt="General settings" width="100%"><br>
+<sub><b>General</b> — language, sound, autostart, menu entry</sub>
+</td>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-pfade.png" alt="Paths" width="100%"><br>
+<sub><b>Paths</b> — where Star Citizen lives and where the tool writes</sub>
+</td>
+</tr>
+</table>
+
+</details>
 
 ## Why this tool
 

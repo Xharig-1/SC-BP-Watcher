@@ -28,16 +28,89 @@ Ein kleines, randloses Overlay, das beim Spielen **in Echtzeit** meldet, sobald 
 
 <table>
 <tr>
-<td width="45%" valign="top" align="center">
+<td width="32%" valign="top" align="center">
 <img src="assets/screenshot-overlay.png" alt="Das Overlay beim Spielen" width="100%"><br>
 <sub>Das Overlay — schmal, immer im Vordergrund, Durchsichtigkeit einstellbar</sub>
 </td>
-<td width="55%" valign="top" align="center">
-<img src="assets/screenshot-fenster.png" alt="Das Fenster mit der Bauplan-Liste" width="100%"><br>
-<sub>Die Bauplan-Liste — Filter, Bereiche und wo man den Auftrag annimmt</sub>
+<td width="68%" valign="top" align="center">
+<img src="assets/screenshot-liste.png" alt="Das Fenster mit der Bauplan-Liste" width="100%"><br>
+<sub>Die Bauplan-Liste — Suche, fünf Filter und die Herkunft je Bauplan</sub>
 </td>
 </tr>
 </table>
+
+### Im Spiel, ohne herauszutabben
+
+Der Watcher schreibt in die Auftragstexte des Spiels, **welche** Baupläne ein Auftrag ausschüttet — mit `[x]` für das, was du schon hast. Die Zählung steht schon im Titel, die Namen in der Beschreibung.
+
+<table>
+<tr>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-ingame-teils.jpg" alt="Auftrag mit teilweise vorhandenen Bauplänen" width="100%"><br>
+<sub><b>3 von 6</b> — <code>[x]</code> hast du, <code>[&nbsp;&nbsp;]</code> fehlt noch</sub>
+</td>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-ingame-keine.jpg" alt="Auftrag ohne vorhandene Baupläne" width="100%"><br>
+<sub><b>0 von 12</b> — hier ist noch nichts dabei, was du hast</sub>
+</td>
+</tr>
+</table>
+
+### Das Fenster
+
+> [!NOTE]
+> Die folgenden Bilder zeigen **v3.0.0** (derzeit als Testfassung `v3.0.0-rc` unter [Releases](../../releases)). In v2.0.0 sieht das Fenster noch anders aus — wer dort etwas sucht, was hier zu sehen ist, findet es nicht. Das ist kein Fehler, sondern die ältere Fassung.
+
+<table>
+<tr>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-fortschritt.png" alt="Fortschritt nach Bereichen" width="100%"><br>
+<sub><b>Fortschritt</b> — je Bereich, Einzelheiten auf Klick</sub>
+</td>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-auftragstexte.png" alt="Einstellungen für die Auftragstexte" width="100%"><br>
+<sub><b>Auftragstexte</b> — Textquelle wählen, ein- und ausschalten</sub>
+</td>
+</tr>
+<tr>
+<td valign="top" align="center">
+<img src="assets/screenshot-bestand.png" alt="Bestand ausgeben und einlesen" width="100%"><br>
+<sub><b>Bestand</b> — ausgeben fürs Basetool, oder einen vorhandenen einlesen</sub>
+</td>
+<td valign="top" align="center">
+<img src="assets/screenshot-anzeige.png" alt="Anzeige-Einstellungen" width="100%"><br>
+<sub><b>Anzeige</b> — Aufblend-Betrieb, Klicks durchreichen, Schriftgröße</sub>
+</td>
+</tr>
+<tr>
+<td valign="top" align="center">
+<img src="assets/screenshot-ueber.png" alt="Über und Update-Kanal" width="100%"><br>
+<sub><b>Über</b> — fertige Fassungen oder Testfassungen, mit Knopf zum Holen</sub>
+</td>
+<td valign="top" align="center">
+<img src="assets/screenshot-wasistneu.png" alt="Was ist neu" width="100%"><br>
+<sub><b>Was ist neu</b> — jede Fassung aufklappbar, gefiltert nach Art</sub>
+</td>
+</tr>
+</table>
+
+<details>
+<summary>Und der Rest: Allgemein und Pfade</summary>
+
+<table>
+<tr>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-allgemein.png" alt="Allgemeine Einstellungen" width="100%"><br>
+<sub><b>Allgemein</b> — Sprache, Signalton, Autostart, Startmenü-Eintrag</sub>
+</td>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-pfade.png" alt="Pfade" width="100%"><br>
+<sub><b>Pfade</b> — wo Star Citizen liegt und wohin das Werkzeug schreibt</sub>
+</td>
+</tr>
+</table>
+
+</details>
 
 ## Warum dieses Tool
 
