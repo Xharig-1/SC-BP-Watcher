@@ -96,6 +96,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Das Selbst-Update scheiterte unter Linux immer.** Geladen wurde nach `/tmp`,
+  eingespielt mit `os.replace()` — und `/tmp` ist auf so gut wie jedem Linux ein eigenes
+  Dateisystem. Über Dateisystemgrenzen kann `os.replace` nicht verschieben, das endet mit
+  „[Errno 18] Invalid cross-device link". Der Kommentar im Code versprach schon immer
+  „neben das laufende Programm" — jetzt tut es der Code auch, und das Einspielen ist
+  nebenbei atomar geworden.
+
 - **Die Knöpfe „Fassung holen" zeigten eine veraltete Nummer.** Sie kommen aus dem
   Zwischenspeicher, damit die Seite sofort steht — der frischt sich aber nur einmal am Tag
   auf. Auf einem Bildschirmfoto bot der Knopf `v3.0.0-rc9` an, während rc12 lief und rc13

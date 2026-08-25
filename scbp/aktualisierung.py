@@ -45,6 +45,7 @@ Geladen wird ausschließlich von `github.com`; eine Datei von woanders wird
 abgelehnt, selbst wenn die API sie nennen würde.
 """
 import json
+import errno
 import os
 import re
 import sys
@@ -408,6 +409,31 @@ def _url_ok(url):
         return False
 
 
+def _ablageort_fuer_update(name):
+    """Wohin die neue Fassung geladen wird — **neben** die laufende.
+
+    ⚠ Hier lag ein Fehler, der jedes Selbst-Update unter Linux scheitern ließ:
+    Geladen wurde nach `/tmp`, eingespielt mit `os.replace()`. Auf so gut wie jedem
+    Linux ist `/tmp` ein eigenes Dateisystem (tmpfs), und `os.replace` kann nicht
+    über Dateisystemgrenzen verschieben — es endet mit
+    „[Errno 18] Invalid cross-device link". Gemeldet am 25.08.2026 direkt aus dem
+    Fenster.
+
+    Der Docstring versprach schon immer „neben das laufende Programm"; jetzt tut es
+    der Code auch. Nebenbei ist das Einspielen dadurch **atomar**: Innerhalb eines
+    Dateisystems ist `os.replace` unteilbar, es gibt keinen Moment, in dem die Datei
+    halb da ist.
+
+    Ist der Zielordner nicht beschreibbar, bleibt `/tmp` als Rückfall — dann greift
+    beim Einspielen der Umweg über `shutil.move`.
+    """
+    laufende = os.environ.get('APPIMAGE') or sys.executable
+    ordner = os.path.dirname(os.path.abspath(laufende))
+    if os.access(ordner, os.W_OK):
+        return os.path.join(ordner, '.' + (name or 'update.bin') + '.neu')
+    return os.path.join(tempfile.gettempdir(), name or 'update.bin')
+
+
 def herunterladen(datei, fortschritt=None):
     """Lädt die neue Fassung in eine Nebendatei. Gibt deren Pfad zurück.
 
@@ -416,7 +442,7 @@ def herunterladen(datei, fortschritt=None):
     url = datei.get('url')
     if not _url_ok(url):
         raise ValueError('Datei kommt nicht von GitHub')
-    ziel = os.path.join(tempfile.gettempdir(), datei.get('name') or 'update.bin')
+    ziel = _ablageort_fuer_update(datei.get('name'))
     req = urllib.request.Request(url, headers={'User-Agent': KENNUNG})
     with urllib.request.urlopen(req, timeout=120) as r, open(ziel, 'wb') as f:
         gesamt = int(r.headers.get('Content-Length') or 0)
@@ -447,7 +473,19 @@ def einspielen(neue_datei):
             # Unter Linux darf die laufende Datei ersetzt werden, solange man sie
             # austauscht statt hineinzuschreiben: Der laufende Prozess hält die
             # alte Inode, die neue liegt sofort am Platz.
-            os.replace(neue_datei, ziel)
+            #
+            # ⚠ `os.replace` schafft das nur **innerhalb eines Dateisystems**.
+            # Deshalb wird gleich daneben geladen (siehe `_ablageort_fuer_update`).
+            # Liegt die Datei doch woanders — Zielordner schreibgeschützt, eigener
+            # Pfad über `SC_BP_APPIMAGE` —, tut es `shutil.move`: Das kopiert bei
+            # Bedarf und räumt danach auf. Langsamer, aber es funktioniert.
+            try:
+                os.replace(neue_datei, ziel)
+            except OSError as grund:
+                if getattr(grund, 'errno', None) != errno.EXDEV:
+                    raise
+                import shutil
+                shutil.move(neue_datei, ziel)
             os.chmod(ziel, 0o755)
             return True, ''
         # Windows: die laufende .exe ist gesperrt. Also ein Hilfsskript, das

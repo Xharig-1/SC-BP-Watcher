@@ -93,6 +93,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **Self-update always failed on Linux.** The download went to `/tmp` and was installed
+  with `os.replace()` — and on virtually every Linux `/tmp` is a separate filesystem.
+  `os.replace` cannot move across filesystems; it ends in „[Errno 18] Invalid cross-device
+  link". The comment in the code always promised „next to the running program" — now the
+  code does too, and installing became atomic along the way.
+
 - **The „get release" buttons showed an outdated number.** They come from the cache so the
   page appears instantly — but that only refreshes once a day. In a screenshot the button
   offered `v3.0.0-rc9` while rc12 was running and rc13 was already out. The right release
