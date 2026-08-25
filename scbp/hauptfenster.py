@@ -200,7 +200,10 @@ def rundrahmen(eltern, grund, rand, radius=8, grundfarbe=None):
     # bündig in der Ecke, deckte sein rechteckiger Hintergrund die Rundung ab,
     # und der Kasten sähe trotz gemaltem Bogen eckig aus. Deshalb rückt der
     # Inhalt um die halbe Rundung ein; dort bleibt der Bogen frei.
-    einzug = max(2, radius // 2)
+    # Der ganze Radius, nicht die Hälfte: Bei halbem Einzug deckt der Inhalt
+    # die obere Hälfte des Bogens ab, und im Kasten sitzt sichtbar eine zweite,
+    # eckige Kante — das sah nach doppeltem Rahmen aus.
+    einzug = radius
     fenster_id = leinwand.create_window(einzug, einzug, window=innen,
                                         anchor='nw')
 

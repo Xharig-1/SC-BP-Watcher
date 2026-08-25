@@ -1219,10 +1219,13 @@ def _diagnose(fenster, rahmen):
     from .hauptfenster import rundrahmen
     kasten = rundrahmen(innen, '#0c1017', LINIE, radius=8, grundfarbe=BG)
     kasten.halter.pack(fill='both', expand=True)
+    # ⚠ `highlightthickness` steht bei Text und Entry auf 1 und wird auf dem
+    # Mac als helle Linie gezeichnet — im runden Kasten sah das aus wie ein
+    # zweiter, eckiger Rahmen. `relief='flat'` und `bd=0` schalten das NICHT ab.
     feld = tk.Text(kasten, bg='#0c1017', fg=FG, font=('Consolas', 10),
                    height=16, wrap='none', relief='flat', bd=0,
-                   insertbackground=FG, padx=14, pady=12)
-    feld.pack(fill='both', expand=True, padx=1, pady=1)
+                   highlightthickness=0, insertbackground=FG, padx=14, pady=12)
+    feld.pack(fill='both', expand=True)
     feld.insert('1.0', text)
     feld.configure(state='disabled')
 
