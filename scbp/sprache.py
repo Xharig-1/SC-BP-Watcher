@@ -598,7 +598,8 @@ TEXTE = {
                           'The watcher then rebuilds it from the logs that remain — anything older is gone. Export it under "Inventory" first.'),
 
     # -- Seiten „Fortschritt", „Allgemein", „Anzeige", „Ordner" (Reste) --
-    's_fo_lead':       ('Wie weit du je Art bist.', 'How far along you are per type.'),
+    's_fo_lead':       ('Zuerst der Stand je Bereich — klick einen an, um die Kategorien darin zu sehen.',
+                          'The state of each area first — click one to see the categories inside.'),
     's_fo_von':        ('  von %d Bauplänen · %.0f %%',
                           '  of %d blueprints · %.0f %%'),
     's_al_autostart':  ('Autostart: %s', 'Autostart: %s'),
