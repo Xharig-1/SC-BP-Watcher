@@ -132,8 +132,8 @@ class Einstellungsfenster:
         rahmen = tk.Frame(self.root, bg=BG)
         rahmen.pack(fill='both', expand=True)
         self.leinwand = tk.Canvas(rahmen, bg=BG, highlightthickness=0)
-        rolle = tk.Scrollbar(rahmen, orient='vertical',
-                             command=self.leinwand.yview)
+        from .hauptfenster import rundleiste
+        rolle = rundleiste(rahmen, self.leinwand, grund=BG)
         innen = tk.Frame(self.leinwand, bg=BG)
         innen.bind('<Configure>', lambda e: self.leinwand.configure(
             scrollregion=self.leinwand.bbox('all')))

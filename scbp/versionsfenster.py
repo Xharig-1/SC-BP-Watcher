@@ -204,7 +204,8 @@ class Versionsfenster:
         rahmen = tk.Frame(self.root, bg=BG)
         rahmen.pack(fill='both', expand=True, padx=14, pady=12)
         leinwand = tk.Canvas(rahmen, bg=BG, highlightthickness=0)
-        rolle = tk.Scrollbar(rahmen, orient='vertical', command=leinwand.yview)
+        from .hauptfenster import rundleiste
+        rolle = rundleiste(rahmen, leinwand, grund=BG)
         inhalt = tk.Frame(leinwand, bg=BG)
         inhalt.bind('<Configure>', lambda e: leinwand.configure(
             scrollregion=leinwand.bbox('all')))

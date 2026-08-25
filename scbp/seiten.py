@@ -93,7 +93,8 @@ def _rollflaeche(rahmen, rand=24):
     aussen = tk.Frame(rahmen, bg=BG)
     aussen.pack(fill='both', expand=True)
     leinwand = tk.Canvas(aussen, bg=BG, highlightthickness=0)
-    balken = tk.Scrollbar(aussen, orient='vertical', command=leinwand.yview)
+    from .hauptfenster import rundleiste
+    balken = rundleiste(aussen, leinwand, grund=BG)
     innen = tk.Frame(leinwand, bg=BG)
     innen.bind('<Configure>',
                lambda e: leinwand.configure(scrollregion=leinwand.bbox('all')))

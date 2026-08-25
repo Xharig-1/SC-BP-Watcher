@@ -341,6 +341,92 @@ def rundbalken(eltern, hoehe, anteil, grund, leer, voll, breite=None):
     return c
 
 
+def rundleiste(eltern, leinwand, grund=None, breite=10):
+    """Eine Rollleiste mit runden Enden — statt der des Betriebssystems.
+
+    ⚠ `tk.Scrollbar` ist das einzige Bedienelement, das sich nicht einfärben
+    lässt: Tk reicht es an das System durch. Unter Linux ist sie grau, auf dem
+    Mac hellweiß — und damit der einzige Fleck im Fenster, der aus dem Bild
+    fällt. Die Entwurfsvorschau hatte dort eine schmale, abgerundete Leiste in
+    `#2b3547`; genau die wird hier nachgebaut.
+
+    Bedienung wie gewohnt: ziehen, und ein Klick daneben springt eine Seite
+    weiter. `leinwand` ist die Rollfläche, an der sie hängt.
+    """
+    grund = grund or BG
+    rille_farbe, griff_farbe, griff_hell = BG, '#2b3547', '#3a4658'
+    r = breite / 2.0
+
+    c = tk.Canvas(eltern, width=breite, bg=grund, highlightthickness=0, bd=0)
+    rille = c.create_rectangle(0, 0, breite, 10, fill=rille_farbe, outline='')
+    griff = _rundes_rechteck(c, 0, 0, breite, 30, radius=r,
+                             fill=griff_farbe, outline='')
+    c.auf_mass_gesetzt = True        # die Randprüfung soll sie nicht melden
+
+    lage = {'anfang': 0.0, 'ende': 1.0, 'griff_ab': 0, 'zieht': False}
+
+    def nachziehen(*_):
+        hoehe = c.winfo_height()
+        if hoehe < 4:
+            return
+        c.coords(rille, 0, 0, breite, hoehe)
+        anfang, ende = lage['anfang'], lage['ende']
+        if ende - anfang >= 0.999:   # nichts zu rollen — Griff verschwindet
+            c.itemconfigure(griff, state='hidden')
+            return
+        c.itemconfigure(griff, state='normal')
+        oben = anfang * hoehe
+        # Der Griff bleibt greifbar, auch wenn 700 Baupläne in der Liste
+        # stehen und er rechnerisch drei Pixel hoch wäre.
+        unten = max(oben + breite * 2.4, ende * hoehe)
+        c.coords(griff, *ecken(0, oben, breite, min(unten, hoehe), r))
+
+    def setzen(anfang, ende):
+        """Ruft Tk auf, wenn sich der sichtbare Ausschnitt ändert."""
+        lage['anfang'], lage['ende'] = float(anfang), float(ende)
+        nachziehen()
+
+    def springen(e):
+        hoehe = c.winfo_height() or 1
+        spanne = lage['ende'] - lage['anfang']
+        oben, unten = lage['anfang'] * hoehe, lage['ende'] * hoehe
+        if oben <= e.y <= unten:                  # auf dem Griff: ziehen
+            lage['zieht'] = True
+            lage['griff_ab'] = e.y - oben
+            return
+        ziel = max(0.0, min(1.0, (e.y / hoehe) - spanne / 2.0))
+        leinwand.yview_moveto(ziel)
+
+    def ziehen(e):
+        if not lage['zieht']:
+            return
+        hoehe = c.winfo_height() or 1
+        leinwand.yview_moveto(max(0.0, min(1.0, (e.y - lage['griff_ab']) / hoehe)))
+
+    def loslassen(_=None):
+        lage['zieht'] = False
+
+    def rein(_=None):
+        c.itemconfigure(griff, fill=griff_hell)
+
+    def raus(_=None):
+        if not lage['zieht']:
+            c.itemconfigure(griff, fill=griff_farbe)
+
+    c.bind('<Configure>', nachziehen)
+    c.bind('<Button-1>', springen)
+    c.bind('<B1-Motion>', ziehen)
+    c.bind('<ButtonRelease-1>', loslassen)
+    c.bind('<Enter>', rein)
+    c.bind('<Leave>', raus)
+    # ⚠ `set` heißt hier englisch, weil Tk selbst diesen Namen aufruft:
+    # `leinwand.configure(yscrollcommand=leiste.set)`. `setzen` steht daneben,
+    # damit der Rest des Programms bei seiner Sprache bleiben kann.
+    c.set = setzen
+    c.setzen = setzen
+    return c
+
+
 def rundknopf(eltern, text, tat, schrift, grund, fuellung, rand, fg,
               radius=6, polster=(10, 5), cursor='hand2'):
     """Ein klickbarer Knopf mit runden Ecken — der Standard im ganzen Programm.

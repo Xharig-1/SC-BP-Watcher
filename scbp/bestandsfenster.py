@@ -339,8 +339,8 @@ class Bestandsfenster:
         rahmen = tk.Frame(self.root, bg=BG)
         rahmen.pack(fill='both', expand=True, padx=14, pady=(0, 10))
         self.leinwand = tk.Canvas(rahmen, bg=BG, highlightthickness=0)
-        rolle = tk.Scrollbar(rahmen, orient='vertical',
-                             command=self.leinwand.yview)
+        from .hauptfenster import rundleiste
+        rolle = rundleiste(rahmen, self.leinwand, grund=BG)
         self.inhalt = tk.Frame(self.leinwand, bg=BG)
         self.inhalt.bind('<Configure>', lambda e: self.leinwand.configure(
             scrollregion=self.leinwand.bbox('all')))
