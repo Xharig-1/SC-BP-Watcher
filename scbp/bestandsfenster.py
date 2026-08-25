@@ -330,17 +330,25 @@ class Bestandsfenster:
         # nur ein Zeichen, das nichts tut.
         self._loeschkreuz_zeigen()
 
+        # ⚠ Eigene Zeile für die Zähler-Knöpfe. Vorher teilten sie sich die
+        # Zeile mit dem Suchfeld, das `expand=True` hat — wurde das Fenster
+        # schmaler, schnitt Tk den letzten Knopf ab: „⭐ be…" statt
+        # „⭐ beobachtet". Der Entwurf trennt das ebenfalls in eigene Zeilen.
+        knopfzeile = tk.Frame(self.root, bg=BG)
+        knopfzeile.pack(fill='x', padx=14, pady=(0, 6))
+
         self.knoepfe = {}
         for schluessel, text in (('alle', t('filter_alle')),
                                  ('habe', t('filter_habe')),
                                  ('fehlt', t('filter_fehlt')),
                                  ('merk', '⭐ ' + t('filter_merk'))):
             from .hauptfenster import rundknopf
-            k = rundknopf(leiste, text, None, schrift(10), BG, FLAECHE, LINIE,
-                          SUB)
-            k.pack(side='left', padx=2)
+            k = rundknopf(knopfzeile, text, None, schrift(10), BG, FLAECHE,
+                          LINIE, SUB)
             k.bind('<Button-1>', lambda e, s=schluessel: self._filter_setzen(s))
             self.knoepfe[schluessel] = k
+        # Auch diese Reihe bricht um, falls selbst die eigene Zeile nicht reicht.
+        self._reihe_umbrechen(knopfzeile, list(self.knoepfe.values()))
 
         self._feinfilter()
 
@@ -363,13 +371,19 @@ class Bestandsfenster:
         self.fein = {'art': '', 'klasse': '', 'groesse': '', 'quelle': '',
                      'grad': ''}
 
+        # ⚠ Eigener Rahmen für die Auswahlfelder. Sie werden per `grid`
+        # angeordnet (damit sie umbrechen können), und Tk verträgt `grid` und
+        # `pack` nicht im selben Elternteil — daneben liegen aber der
+        # Trefferzähler und „zurücksetzen", die gepackt sind.
+        self.fein_rahmen = tk.Frame(reihe, bg=BG)
+        self.fein_rahmen.pack(side='left', fill='x', expand=True)
+
         def feld(schluessel, eintraege):
             if len(eintraege) <= 1:      # nichts zu wählen — Feld weglassen
                 return
-            w = rundwahl(reihe, eintraege, '',
+            w = rundwahl(self.fein_rahmen, eintraege, '',
                          lambda wert, s=schluessel: self._fein_setzen(s, wert),
                          schrift(10), grund=BG)
-            w.pack(side='left', padx=(0, 6))
             self.fein_felder[schluessel] = w
 
         self.fein_felder = {}
@@ -394,60 +408,58 @@ class Bestandsfenster:
         self.treffer_lbl = tk.Label(reihe, text='', bg=BG, fg=SUB,
                                     font=schrift(9))
         self.treffer_lbl.pack(side='right')
-        self._umbruch_anhaengen(reihe)
+        self._reihe_umbrechen(
+            self.fein_rahmen,
+            [self.fein_felder[k] for k in
+             ('art', 'klasse', 'groesse', 'quelle', 'grad')
+             if k in self.fein_felder],
+            rechts_frei=self.treffer_lbl)
 
-    def _umbruch_anhaengen(self, reihe):
-        """Die Filterreihe in mehrere Zeilen umbrechen, wenn es eng wird.
+    def _reihe_umbrechen(self, rahmen, elemente, rechts_frei=None):
+        """Eine Reihe von Bedienelementen umbrechen lassen, wenn es eng wird.
 
-        ⚠ Tk bricht eine Reihe nicht um; es schneidet ab. Gemeldet: „rechts
-        ist was abgeschnitten, da es genau dort bleibt wenn man das Fenster
-        kleiner macht" — das fünfte Auswahlfeld stand nur noch halb da, der
-        Trefferzähler war ganz weg. Im Entwurf löst das `flex-wrap: wrap`;
-        hier wird es von Hand nachgebaut.
+        ⚠ Tk bricht nicht um, es schneidet ab. Gemeldet für beide Reihen der
+        Bauplan-Liste: „rechts ist was abgeschnitten" (das fünfte Auswahlfeld
+        stand halb da) und bei Mindestbreite blieben von vier Zähler-Knöpfen
+        nur zwei übrig — „und das werden User sicherlich nutzen". Im Entwurf
+        macht das `flex-wrap: wrap`; hier ist es von Hand nachgebaut.
 
-        Gepackt wird in `tk.Frame`-Zeilen: Was nicht mehr passt, kommt in die
-        nächste.
+        `rechts_frei` ist ein Widget, für das rechts Platz bleiben soll (der
+        Trefferzähler).
+
+        ⚠ Angeordnet wird per `grid`, nicht per `pack` mit Zwischenrahmen. Ein
+        erster Anlauf hängte die Elemente in neue Halter (`feld.master = …`) —
+        den Elternteil eines Tk-Widgets kann man aber nicht nachträglich
+        umsetzen, und die fünf Auswahlfelder verschwanden daraufhin
+        vollständig aus dem Fenster. Mit `grid` bleibt jedes Element, wo es
+        gebaut wurde, und wechselt nur Zeile und Spalte.
         """
-        felder = [self.fein_felder[k] for k in
-                  ('art', 'klasse', 'groesse', 'quelle', 'grad')
-                  if k in self.fein_felder]
-
         def ordnen(_=None):
-            platz = reihe.winfo_width()
+            platz = rahmen.winfo_width()
             if platz <= 1:
                 return
-            # Rechts bleibt Raum für den Trefferzähler.
-            platz -= self.treffer_lbl.winfo_reqwidth() + 12
-            zeilen, laufend, breite = [], [], 0
-            for feld in felder:
-                braucht = feld.winfo_reqwidth() + 6
-                if laufend and breite + braucht > platz:
-                    zeilen.append(laufend)
-                    laufend, breite = [], 0
-                laufend.append(feld)
+            if rechts_frei is not None:
+                try:
+                    platz -= rechts_frei.winfo_reqwidth() + 12
+                except tk.TclError:
+                    pass
+            plaetze, zeile, spalte, breite = [], 0, 0, 0
+            for element in elemente:
+                braucht = element.winfo_reqwidth() + 6
+                if spalte and breite + braucht > platz:
+                    zeile, spalte, breite = zeile + 1, 0, 0
+                plaetze.append((element, zeile, spalte))
+                spalte += 1
                 breite += braucht
-            if laufend:
-                zeilen.append(laufend)
-            if len(zeilen) == getattr(reihe, 'zuletzt_zeilen', None):
-                return                      # nichts geändert, nicht neu packen
-            reihe.zuletzt_zeilen = len(zeilen)
+            if plaetze == getattr(rahmen, 'zuletzt', None):
+                return                  # unverändert — nicht neu setzen
+            rahmen.zuletzt = plaetze
+            for element, z, s in plaetze:
+                element.grid(row=z, column=s, sticky='w',
+                             padx=(0, 6), pady=(0 if z == 0 else 4, 0))
 
-            for halter in getattr(reihe, 'halter', []):
-                halter.destroy()
-            reihe.halter = []
-            for nummer, gruppe in enumerate(zeilen):
-                halter = tk.Frame(reihe, bg=BG)
-                halter.pack(fill='x', pady=(0 if nummer == 0 else 4, 0))
-                reihe.halter.append(halter)
-                for feld in gruppe:
-                    feld.pack_forget()
-                    # ⚠ Das Feld muss in den neuen Halter umziehen, sonst
-                    # packt Tk es weiter in die alte Reihe.
-                    feld.master = halter
-                    feld.pack(in_=halter, side='left', padx=(0, 6))
-
-        reihe.bind('<Configure>', ordnen, add='+')
-        reihe.after_idle(ordnen)
+        rahmen.bind('<Configure>', ordnen, add='+')
+        rahmen.after_idle(ordnen)
 
     # --- Woraus die Auswahlfelder ihre Einträge nehmen ---
     def _kat_werte(self, feld):
