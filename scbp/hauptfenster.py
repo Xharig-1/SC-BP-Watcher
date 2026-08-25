@@ -86,6 +86,84 @@ def _rundes_rechteck(leinwand, x1, y1, x2, y2, radius, **kw):
     return leinwand.create_polygon(punkte, smooth=True, **kw)
 
 
+def schiebeschalter(eltern, an, umschalten, grund=None):
+    """Ein runder Schiebeschalter — an oder aus, auf einen Blick.
+
+    Tk kennt nur Kästchen zum Ankreuzen, und die sehen auf jedem System anders
+    aus. Auf einer kleinen Leinwand lässt sich dagegen genau das zeichnen, was
+    heute jeder erwartet: eine Kapsel, in der ein Punkt nach rechts wandert.
+
+    `umschalten()` wird beim Klick aufgerufen und muss den neuen Zustand
+    zurückgeben — gezeichnet wird erst danach, damit nichts leuchtet, was gar
+    nicht gespeichert wurde.
+    """
+    grund = grund or BG
+    breite, hoehe = 44, 24
+    c = tk.Canvas(eltern, width=breite, height=hoehe, bg=grund,
+                  highlightthickness=0, bd=0, cursor='hand2')
+    kapsel = _rundes_rechteck(c, 2, 3, breite - 2, hoehe - 3, radius=9,
+                              fill='#2b3547', outline='')
+    punkt = c.create_oval(5, 6, 19, 20, fill=SUB, outline='')
+
+    def zeichnen(zustand):
+        c.itemconfigure(kapsel, fill='#2a3a1c' if zustand else '#2b3547')
+        c.itemconfigure(punkt, fill=ACCENT if zustand else SUB)
+        x = (breite - 24) if zustand else 0
+        c.coords(punkt, 5 + x, 6, 19 + x, 20)
+
+    def klick(_=None):
+        zeichnen(bool(umschalten()))
+
+    c.bind('<Button-1>', klick)
+    zeichnen(bool(an))
+    c.zeichnen = zeichnen
+    return c
+
+
+def regler(eltern, von, bis, wert, beim_ziehen, breite=190, grund=None):
+    """Ein Schieberegler in der Machart des Fensters.
+
+    Tk bringt zwar `Scale` mit, aber das ist ein Systemelement: Auf dem Mac ein
+    graues Kästchen, unter Windows ein anderes, unter Linux je nach Oberfläche
+    wieder anders. Selbst gezeichnet sieht es überall gleich aus — und passt zu
+    den Schaltern daneben.
+    """
+    grund = grund or BG
+    hoehe = 26
+    c = tk.Canvas(eltern, width=breite, height=hoehe, bg=grund,
+                  highlightthickness=0, bd=0, cursor='hand2')
+    y = hoehe // 2
+    _rundes_rechteck(c, 0, y - 3, breite, y + 3, radius=3,
+                     fill='#2b3547', outline='')
+    gefuellt = _rundes_rechteck(c, 0, y - 3, 10, y + 3, radius=3,
+                                fill=ACCENT, outline='')
+    knopf = c.create_oval(0, y - 8, 16, y + 8, fill=ACCENT, outline='')
+
+    spanne = float(max(1, bis - von))
+
+    def zeichnen(w):
+        anteil = max(0.0, min(1.0, (w - von) / spanne))
+        x = 8 + anteil * (breite - 16)
+        c.coords(gefuellt, *([0, y - 3, x, y - 3, x, y - 3, x, y + 3,
+                              x, y + 3, 0, y + 3, 0, y + 3, 0, y - 3]))
+        c.coords(knopf, x - 8, y - 8, x + 8, y + 8)
+
+    def aus_x(ereignis):
+        anteil = max(0.0, min(1.0, (ereignis.x - 8) / float(breite - 16)))
+        return int(round(von + anteil * spanne))
+
+    def ziehen(ereignis):
+        neuer = aus_x(ereignis)
+        zeichnen(neuer)
+        beim_ziehen(neuer)
+
+    c.bind('<Button-1>', ziehen)
+    c.bind('<B1-Motion>', ziehen)
+    zeichnen(wert)
+    c.zeichnen = zeichnen
+    return c
+
+
 def marke(eltern, text, farbe, schrift, grund=None, mindestbreite=0):
     """Eine abgerundete Blase mit farbigem Rand — „neu", „behoben" und Verwandte.
 

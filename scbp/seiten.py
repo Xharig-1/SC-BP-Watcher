@@ -29,6 +29,7 @@ Die großen Seiten leihen sich die vorhandenen Fenster: `bestandsfenster` und
 zeichnen, statt ein eigenes Fenster aufzumachen.
 """
 import os
+import sys
 import tkinter as tk
 
 from . import bericht, bestand as bestand_datei, fehler, katalog as katalog_modul
@@ -42,6 +43,7 @@ SUB     = '#8b98a5'
 ACCENT  = '#9ce430'
 LINIE   = '#232c3d'
 GOLD    = '#e8c353'
+ROT     = '#e05252'
 
 
 def bauen(fenster, kennung, rahmen):
@@ -115,12 +117,106 @@ def _rollflaeche(rahmen, rand=24):
     return innen_ziel
 
 
-def _knopf(fenster, eltern, text, tat, stark=False):
-    k = tk.Label(eltern, text=' %s ' % text, bg=FLAECHE,
-                 fg=ACCENT if stark else FG, font=fenster.f_klein,
-                 cursor='hand2', padx=10, pady=5)
-    k.bind('<Button-1>', lambda e: tat())
-    return k
+def _knopf(fenster, eltern, text, tat, stark=False, gefahr=False):
+    """Ein Knopf im Stil der Vorschau — Rand, Farbe beim Überfahren."""
+    from .hauptfenster import _rundes_rechteck
+    schrift = fenster.f_klein
+    hoehe = schrift.metrics('linespace') + 16
+    breite = schrift.measure(text) + 30
+    farbe = ACCENT if stark else FG
+    c = tk.Canvas(eltern, width=breite, height=hoehe, bg=BG,
+                  highlightthickness=0, bd=0, cursor='hand2')
+    flaeche = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1, radius=5,
+                               fill='#1d2a14' if stark else FLAECHE,
+                               outline=ACCENT if stark else LINIE, width=1)
+    beschriftung = c.create_text(breite / 2.0, hoehe / 2.0, text=text,
+                                 fill=farbe, font=schrift, anchor='center')
+
+    def rein(_=None):
+        c.itemconfigure(flaeche, outline=ROT if gefahr else ACCENT)
+        c.itemconfigure(beschriftung, fill=ROT if gefahr else ACCENT)
+
+    def raus(_=None):
+        c.itemconfigure(flaeche, outline=ACCENT if stark else LINIE)
+        c.itemconfigure(beschriftung, fill=farbe)
+
+    c.bind('<Enter>', rein)
+    c.bind('<Leave>', raus)
+    c.bind('<Button-1>', lambda e: tat())
+    return c
+
+
+def _wahl(fenster, eltern, eintraege, aktiv, tat):
+    """Mehrere Möglichkeiten nebeneinander — die gewählte trägt den Akzentrand."""
+    from .hauptfenster import _rundes_rechteck
+    reihe = tk.Frame(eltern, bg=BG)
+    knoepfe = {}
+    schrift = fenster.f_klein
+    for kennung, text in eintraege:
+        an = (kennung == aktiv)
+        hoehe = schrift.metrics('linespace') + 14
+        breite = schrift.measure(text) + 26
+        c = tk.Canvas(reihe, width=breite, height=hoehe, bg=BG,
+                      highlightthickness=0, bd=0, cursor='hand2')
+        c.pack(side='left', padx=(0, 6))
+        flaeche = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1, radius=5,
+                                   fill=FLAECHE, outline=ACCENT if an else LINIE,
+                                   width=1)
+        beschr = c.create_text(breite / 2.0, hoehe / 2.0, text=text,
+                               fill=ACCENT if an else SUB, font=schrift)
+        c.teile = (flaeche, beschr)
+        c.bind('<Button-1>', lambda e, k=kennung: tat(k))
+        knoepfe[kennung] = c
+
+    def setzen(gewaehlt):
+        for kennung, c in knoepfe.items():
+            an = (kennung == gewaehlt)
+            flaeche, beschr = c.teile
+            c.itemconfigure(flaeche, outline=ACCENT if an else LINIE)
+            c.itemconfigure(beschr, fill=ACCENT if an else SUB)
+
+    reihe.setzen = setzen
+    return reihe
+
+
+def _status(fenster, eltern, zeichen, fett, rest, farbe=None):
+    """Ein Statuskasten mit farbigem Balken links — wie in der Vorschau."""
+    farbe = farbe or ACCENT
+    aussen = tk.Frame(eltern, bg=LINIE)
+    aussen.pack(fill='x', pady=(0, 14))
+    balken = tk.Frame(aussen, bg=farbe, width=3)
+    balken.pack(side='left', fill='y')
+    innen = tk.Frame(aussen, bg=FLAECHE)
+    innen.pack(side='left', fill='both', expand=True, padx=(0, 1), pady=1)
+    zeile = tk.Frame(innen, bg=FLAECHE)
+    zeile.pack(fill='x', padx=14, pady=12)
+    tk.Label(zeile, text=zeichen, bg=FLAECHE, fg=farbe,
+             font=fenster.f_grund).pack(side='left', padx=(0, 10), anchor='n')
+    text = tk.Frame(zeile, bg=FLAECHE)
+    text.pack(side='left', fill='x', expand=True)
+    tk.Label(text, text=fett, bg=FLAECHE, fg=FG, font=fenster.f_fett,
+             anchor='w', justify='left', wraplength=560).pack(fill='x')
+    if rest:
+        tk.Label(text, text=rest, bg=FLAECHE, fg=SUB, font=fenster.f_klein,
+                 anchor='w', justify='left', wraplength=560).pack(fill='x')
+    return aussen
+
+
+def _pfadfeld(fenster, eltern, wert, waehlen, oeffnen=None, platzhalter=''):
+    """Ein Pfad mit Knopf daneben."""
+    reihe = tk.Frame(eltern, bg=BG)
+    reihe.pack(fill='x', pady=(8, 0))
+    feld = tk.Entry(reihe, textvariable=wert, bg='#0c1017', fg=FG,
+                    font=fenster.f_klein, relief='flat', bd=0,
+                    insertbackground=FG, highlightthickness=1,
+                    highlightbackground=LINIE, highlightcolor=ACCENT)
+    feld.pack(side='left', fill='x', expand=True, ipady=6, padx=(0, 8))
+    if platzhalter and not wert.get():
+        feld.configure(fg=SUB)
+    _knopf(fenster, reihe, 'Durchsuchen …', waehlen).pack(side='left')
+    if oeffnen:
+        _knopf(fenster, reihe, 'Öffnen', oeffnen).pack(side='left', padx=(8, 0))
+    return reihe
 
 
 def _feld(fenster, eltern, bezeichnung, hilfe):
@@ -215,124 +311,481 @@ def _einstellungen(fenster):
 
 
 def _allgemein(fenster, rahmen):
+    from . import autostart, pfade
+    from .hauptfenster import schiebeschalter
     _ueberschrift(fenster, rahmen, t('hf_allgemein'),
                   'Was fast jeder einmal einstellt und danach nie wieder anfasst.')
     innen = _rollflaeche(rahmen)
     e = _einstellungen(fenster)
-    for baustein in ('_sprachwahl', '_tonfeld'):
-        try:
-            getattr(e, baustein)(innen)
-        except Exception as ausnahme:
-            fehler.merken('seiten.allgemein:%s' % baustein, ausnahme)
+
+    ziel = _feld(fenster, innen, t('e_sprache'),
+                 'Betrifft nur die Anzeige des Werkzeugs. Welche Sprache Star '
+                 'Citizen spricht, erkennt der Watcher selbst.')
+    wahl = _wahl(fenster, ziel,
+                 [('auto', t('sprache_auto')), ('de', 'Deutsch'), ('en', 'English')],
+                 pfade.einstellungen().get('sprache') or 'auto',
+                 lambda k: e._sprache_waehlen(k))
+    wahl.pack()
+
+    ziel = _feld(fenster, innen, t('e_ton'),
+                 'Kurzer Ton, wenn ein Bauplan hereinkommt — hilfreich, wenn das '
+                 'Overlay verdeckt ist.')
+
+    def ton_um():
+        neu_wert = not pfade.einstellung_wahrheit('signalton', True)
+        pfade.einstellung_setzen('signalton', neu_wert)
+        fenster.sagen('%s: %s' % (t('e_ton'), t('e_an') if neu_wert else t('e_aus')))
+        return neu_wert
+
+    schiebeschalter(ziel, pfade.einstellung_wahrheit('signalton', True),
+                    ton_um).pack()
+
+    ziel = _feld(fenster, innen,
+                 t('autostart_win') if sys.platform.startswith('win')
+                 else t('autostart_linux'),
+                 'Der Watcher startet mit angemeldetem Benutzer und wartet im '
+                 'Hintergrund auf das Spiel.')
+    if autostart.moeglich():
+        def autostart_um():
+            neu_wert = not autostart.ist_an()
+            autostart.setzen(neu_wert)
+            fenster.sagen('Autostart: %s'
+                          % (t('e_an') if neu_wert else t('e_aus')))
+            return autostart.ist_an()
+
+        schiebeschalter(ziel, autostart.ist_an(), autostart_um).pack()
+    else:
+        tk.Label(ziel, text='hier nicht möglich', bg=BG, fg=SUB,
+                 font=fenster.f_klein).pack()
+
+    ziel = _feld(fenster, innen, 'Symbol in der Ablage neben der Uhr',
+                 'Beim Schließen verschwindet das Fenster in die Ablage statt zu '
+                 'beenden. Ein Klick holt es zurück.')
+    if sys.platform.startswith('win'):
+        def tray_um():
+            neu_wert = not pfade.einstellung_wahrheit('tray', True)
+            pfade.einstellung_setzen('tray', neu_wert)
+            return neu_wert
+
+        schiebeschalter(ziel, pfade.einstellung_wahrheit('tray', True),
+                        tray_um).pack()
+    else:
+        tk.Label(ziel, text='nur unter Windows', bg=BG, fg=SUB,
+                 font=fenster.f_klein).pack()
 
 
 def _anzeige(fenster, rahmen):
+    from . import pfade
+    from .hauptfenster import schiebeschalter
     _ueberschrift(fenster, rahmen, t('hf_anzeige'),
-                  'Wie das Overlay über dem Spiel liegt.')
+                  'Wie das Overlay über dem Spiel liegt. Wer nur einen Bildschirm '
+                  'hat, findet hier das Wichtigste.')
     innen = _rollflaeche(rahmen)
+    e = _einstellungen(fenster)
 
-    # Schriftgröße zuerst — sie betrifft alles andere auf dieser Seite.
     ziel = _feld(fenster, innen, t('hf_schrift'), t('hf_schrift_hilfe'))
+    wahl = _wahl(fenster, ziel,
+                 [(s, t('hf_s_' + s))
+                  for s in ('klein', 'normal', 'gross', 'sehrgross')],
+                 pfade.einstellung('schriftgroesse') or 'normal',
+                 lambda k: (fenster.schriftgroesse_setzen(k),
+                            fenster.sagen('%s: %s' % (t('hf_schrift'),
+                                                      t('hf_s_' + k)))))
+    wahl.pack()
+
+    ziel = _feld(fenster, innen, t('e_deckkraft'),
+                 'Weniger heißt durchsichtiger. Wird sofort vorgeführt, während '
+                 'du ziehst.')
+    from .hauptfenster import regler as schieberegler
     reihe = tk.Frame(ziel, bg=BG)
     reihe.pack()
-    aktuell = {'wert': None}
-    knoepfe = {}
+    wertlabel = tk.Label(reihe, text='%d %%' % e.deckkraft.get(), bg=BG,
+                         fg=ACCENT, font=fenster.f_klein, width=6, anchor='e')
 
-    def waehlen(stufe):
-        fenster.schriftgroesse_setzen(stufe)
-        aktuell['wert'] = stufe
-        for s, k in knoepfe.items():
-            k.configure(fg=ACCENT if s == stufe else SUB)
-        fenster.sagen('%s: %s' % (t('hf_schrift'), t('hf_s_' + stufe)))
+    def deckkraft_setzen(w):
+        e.deckkraft.set(w)
+        wertlabel.configure(text='%d %%' % w)
+        try:
+            e._deckkraft_vorfuehren(w)
+        except Exception:
+            pass
+        pfade.einstellung_setzen('deckkraft_prozent', w)
 
-    for stufe in ('klein', 'normal', 'gross', 'sehrgross'):
-        k = tk.Label(reihe, text=' %s ' % t('hf_s_' + stufe), bg=FLAECHE, fg=SUB,
-                     font=fenster.f_klein, cursor='hand2', padx=8, pady=4)
-        k.pack(side='left', padx=2)
-        k.bind('<Button-1>', lambda ev, s=stufe: waehlen(s))
-        knoepfe[stufe] = k
-    from . import pfade
-    jetzt = pfade.einstellung('schriftgroesse') or 'normal'
-    if jetzt in knoepfe:
-        knoepfe[jetzt].configure(fg=ACCENT)
+    schieberegler(reihe, 30, 100, e.deckkraft.get(),
+                  deckkraft_setzen).pack(side='left')
+    wertlabel.pack(side='left', padx=(8, 0))
 
-    e = _einstellungen(fenster)
-    try:
-        e._deckkraftfeld(innen)
-    except Exception as ausnahme:
-        fehler.merken('seiten.anzeige.deckkraft', ausnahme)
+    ziel = _feld(fenster, innen, 'Eingeklappt starten',
+                 'Das Overlay schiebt sich beim Start auf die Titelleiste '
+                 'zusammen und gibt die Sicht frei. Der Pfeil ▾ klappt es '
+                 'jederzeit wieder auf.')
+
+    def klapp_um():
+        neu_wert = not pfade.einstellung_wahrheit('eingeklappt', False)
+        pfade.einstellung_setzen('eingeklappt', neu_wert)
+        return neu_wert
+
+    schiebeschalter(ziel, pfade.einstellung_wahrheit('eingeklappt', False),
+                    klapp_um).pack()
+
+    ziel = _feld(fenster, innen, 'Immer im Vordergrund',
+                 'Bleibt über dem Spiel sichtbar. Ausschalten, wenn das Overlay '
+                 'im Weg ist.')
+
+    def vorne_um():
+        neu_wert = not pfade.einstellung_wahrheit('immer_vorne', True)
+        pfade.einstellung_setzen('immer_vorne', neu_wert)
+        fenster.sagen('Immer im Vordergrund: %s'
+                      % (t('e_an') if neu_wert else t('e_aus')))
+        return neu_wert
+
+    schiebeschalter(ziel, pfade.einstellung_wahrheit('immer_vorne', True),
+                    vorne_um).pack()
+
+    ziel = _feld(fenster, innen, 'Zeilen im Overlay',
+                 'So viele Neuzugänge bleiben stehen, ältere rutschen heraus. Die '
+                 'vollständige Liste steht ohnehin im Bauplan-Fenster.')
+    zahl = tk.Entry(ziel, width=6, bg='#0c1017', fg=FG, font=fenster.f_klein,
+                    relief='flat', bd=0, justify='right', insertbackground=FG,
+                    highlightthickness=1, highlightbackground=LINIE,
+                    highlightcolor=ACCENT)
+    zahl.insert(0, str(pfade.einstellung_zahl('max_zeilen', 200, 10, 2000)))
+    zahl.pack(ipady=5)
+
+    def zahl_merken(_=None):
+        try:
+            pfade.einstellung_setzen('max_zeilen',
+                                     max(10, min(2000, int(zahl.get()))))
+            fenster.sagen('Zeilen im Overlay: %s' % zahl.get())
+        except ValueError:
+            pass
+
+    zahl.bind('<FocusOut>', zahl_merken)
+    zahl.bind('<Return>', zahl_merken)
+
+    ziel = _feld(fenster, innen, 'Fensterlage vergessen',
+                 'Setzt Größe und Position zurück, falls das Overlay einmal '
+                 'außerhalb des Bildschirms gelandet ist.')
+
+    def lage_weg():
+        try:
+            os.remove(pfade.app_datei('watcher.json'))
+        except OSError:
+            pass
+        fenster.sagen('Fensterlage zurückgesetzt — gilt ab dem nächsten Start')
+
+    _knopf(fenster, ziel, 'Zurücksetzen', lage_weg).pack()
 
 
 def _ordner(fenster, rahmen):
+    from . import pfade
     _ueberschrift(fenster, rahmen, t('hf_ordner'),
-                  'Wo Star Citizen liegt und wohin das Werkzeug schreibt.')
+                  'Wo Star Citizen liegt und wohin das Werkzeug seine eigenen '
+                  'Dateien schreibt. Leer heißt: selbst suchen.')
     innen = _rollflaeche(rahmen)
     e = _einstellungen(fenster)
+
+    gefunden = None
     try:
-        e._ordnerfeld(innen, t('e_spiel'), t('e_spiel_hilfe'), e.spiel)
-        e._ordnerfeld(innen, t('e_launcher'), t('e_launcher_hilfe'), e.launcher)
+        gefunden = pfade.spiel_ordner()
+    except Exception:
+        pass
+    if gefunden:
+        _status(fenster, innen, '✓', 'Star Citizen gefunden.',
+                'Die Game.log wird mitgelesen: %s' % gefunden)
+    else:
+        _status(fenster, innen, '!', 'Star Citizen nicht gefunden.',
+                'Trag den Ordner unten ein — der LIVE-Ordner reicht, auch der '
+                'darüber oder das Wine-Präfix.', farbe=GOLD)
+
+    tk.Label(innen, text=t('e_spiel'), bg=BG, fg=FG, font=fenster.f_fett,
+             anchor='w').pack(fill='x', pady=(6, 0))
+    tk.Label(innen, text=t('e_spiel_hilfe'), bg=BG, fg=SUB,
+             font=fenster.f_klein, anchor='w', justify='left',
+             wraplength=600).pack(fill='x')
+    _pfadfeld(fenster, innen, e.spiel,
+              lambda: e._waehlen(e.spiel, t('e_spiel')))
+
+    tk.Label(innen, text='Eigene Dateien', bg=BG, fg=FG, font=fenster.f_fett,
+             anchor='w').pack(fill='x', pady=(20, 0))
+    tk.Label(innen, text='Hier liegen dein Bauplan-Bestand, die Merkliste und '
+                         'die ausgegebenen Dateien — in getrennten Unterordnern.',
+             bg=BG, fg=SUB, font=fenster.f_klein, anchor='w', justify='left',
+             wraplength=600).pack(fill='x')
+    ablage = tk.StringVar(value=pfade.app_ordner())
+
+    def ablage_oeffnen():
+        _ordner_zeigen(pfade.app_ordner())
+        fenster.sagen('Ordner geöffnet')
+
+    _pfadfeld(fenster, innen, ablage,
+              lambda: fenster.sagen('Ein eigener Ort lässt sich in den '
+                                    'Einstellungen hinterlegen'),
+              oeffnen=ablage_oeffnen)
+
+    tk.Label(innen, text='%s  —  optional' % t('e_launcher'), bg=BG, fg=FG,
+             font=fenster.f_fett, anchor='w').pack(fill='x', pady=(20, 0))
+    tk.Label(innen, text=t('e_launcher_hilfe'), bg=BG, fg=SUB,
+             font=fenster.f_klein, anchor='w', justify='left',
+             wraplength=600).pack(fill='x')
+    _pfadfeld(fenster, innen, e.launcher,
+              lambda: e._waehlen(e.launcher, t('e_launcher')),
+              platzhalter='leer — wird selbst gesucht')
+
+
+def _ordner_zeigen(pfad):
+    """Den Ordner im Dateiverwalter öffnen — auf jedem System anders."""
+    import subprocess
+    try:
+        if sys.platform.startswith('win'):
+            os.startfile(pfad)                      # noqa: S606
+        elif sys.platform == 'darwin':
+            subprocess.Popen(['open', pfad])
+        else:
+            subprocess.Popen(['xdg-open', pfad])
+        return True
     except Exception as ausnahme:
-        fehler.merken('seiten.ordner', ausnahme)
+        fehler.merken('seiten.ordner_zeigen', ausnahme, pfad)
+        return False
 
 
 def _spiel(fenster, rahmen):
+    from . import injektion, pfade
+    from .hauptfenster import schiebeschalter
     _ueberschrift(fenster, rahmen, t('hf_spiel'),
-                  'Bauplan-Angaben in den Missionstexten.')
+                  'Der Watcher schreibt zu jedem Auftrag, welche Baupläne er '
+                  'ausschüttet — mit Haken für das, was du schon hast. Sichtbar '
+                  'direkt im Missionstext.')
     innen = _rollflaeche(rahmen)
     e = _einstellungen(fenster)
+
+    # Zustand: steht etwas im Spiel, und woher stammt es?
+    stellen, quelle = 0, ''
     try:
-        e._injektionsfeld(innen)
-    except Exception as ausnahme:
-        fehler.merken('seiten.spiel', ausnahme)
+        lage = injektion.lage() if hasattr(injektion, 'lage') else None
+        if isinstance(lage, dict):
+            stellen = lage.get('stellen') or 0
+            quelle = lage.get('quelle') or ''
+    except Exception:
+        pass
+    if stellen:
+        _status(fenster, innen, '✓', '%d Textstellen eingetragen.' % stellen,
+                ('Quelle: %s' % quelle) if quelle else '')
+    else:
+        _status(fenster, innen, '○', 'Zurzeit stehen keine Angaben im Spiel.',
+                'Wähle unten eine Textquelle — der Rest passiert von selbst.',
+                farbe=SUB)
+
+    ziel = _feld(fenster, innen, 'Textquelle',
+                 'Woher die Grundlage kommt, in die geschrieben wird. Ohne '
+                 'Übersetzung nimmt der Watcher die englischen Originaltexte aus '
+                 'deiner Installation. Übersetzung und StarStrings sind fremde '
+                 'Projekte — sie werden beim Klick von deren eigener Adresse '
+                 'geladen, nicht mitgeliefert.')
+    wahl = _wahl(fenster, ziel,
+                 [('deutsch', 'Deutsch'), ('starstrings', 'StarStrings'),
+                  ('original', 'Original')],
+                 pfade.einstellung('inj_quelle') or '',
+                 lambda k: (e._inj_wechseln(k),
+                            pfade.einstellung_setzen('inj_quelle', k),
+                            fenster.sagen('Quelle: %s' % k)))
+    wahl.pack()
+
+    ziel = _feld(fenster, innen, 'Selbst aktuell halten',
+                 'Prüft beim Start und alle sechs Stunden. Ohne das sind die '
+                 'Angaben nach jedem Spiel-Patch still verschwunden — jedes '
+                 'Update schreibt die Textdatei neu.')
+
+    def inj_auto_um():
+        neu_wert = not pfade.einstellung_wahrheit('inj_auto', True)
+        pfade.einstellung_setzen('inj_auto', neu_wert)
+        fenster.sagen('Selbst aktuell halten: %s'
+                      % (t('e_an') if neu_wert else t('e_aus')))
+        return neu_wert
+
+    schiebeschalter(ziel, pfade.einstellung_wahrheit('inj_auto', True),
+                    inj_auto_um).pack()
+
+    ziel = _feld(fenster, innen, 'Von Hand',
+                 'Alles Eingefügte steht zwischen Marken und lässt sich auf den '
+                 'Buchstaben genau wieder entfernen.')
+    reihe = tk.Frame(ziel, bg=BG)
+    reihe.pack()
+    _knopf(fenster, reihe, 'Jetzt auffrischen',
+           lambda: (e._inj_erneuern(), fenster.sagen('Angaben aufgefrischt')),
+           stark=True).pack(side='left')
+    _knopf(fenster, reihe, 'Prüfen, ob noch drin',
+           lambda: e._inj_pruefen()).pack(side='left', padx=8)
+    _knopf(fenster, reihe, 'Wieder entfernen',
+           lambda: (e._inj_entfernen(), fenster.sagen('Angaben entfernt')),
+           gefahr=True).pack(side='left')
+
+    _status(fenster, innen, '!',
+            'Jedes Übersetzungs-Update und jeder Spiel-Patch löscht die Angaben.',
+            'Beide schreiben die Textdatei neu. Deshalb gibt es „Jetzt '
+            'auffrischen" und die Prüfung — ohne das denkt man, es funktioniere, '
+            'und es ist längst weg.', farbe=GOLD)
 
 
 def _bestand(fenster, rahmen):
+    from . import export, importieren
     _ueberschrift(fenster, rahmen, t('hf_bestand'),
-                  'Deinen Bauplan-Stand ausgeben — oder einen vorhandenen einlesen.')
+                  'Deinen Bauplan-Stand ausgeben — oder einen vorhandenen '
+                  'einlesen.')
     innen = _rollflaeche(rahmen)
 
-    from . import export, importieren
-    ziel = _feld(fenster, innen, 'Bestand ausgeben',
-                 'Drei Formate: KRT Profit Basetool, scmdb.net und eine vollständige '
-                 'Sicherung. Hochgeladen wird nichts.')
-    reihe = tk.Frame(ziel, bg=BG)
-    reihe.pack()
+    anzahl = _zahl_bestand()
+    tk.Label(innen, text='Bestand ausgeben', bg=BG, fg=FG,
+             font=fenster.f_titel, anchor='w').pack(fill='x', pady=(0, 2))
+    tk.Label(innen, text='Zum Hochladen oder als eigene Sicherung. '
+                         'Hochgeladen wird nichts — das machst du selbst.',
+             bg=BG, fg=SUB, font=fenster.f_klein, anchor='w',
+             justify='left', wraplength=600).pack(fill='x', pady=(0, 12))
+
+    karte = _karte(innen)
+    for name, wofuer in (('KRT Profit Basetool', '%s Baupläne' % anzahl),
+                         ('scmdb.net', '%s Baupläne' % anzahl),
+                         ('Vollständige Sicherung',
+                          'mit Art, Klasse, Größe, Gütegrad')):
+        z = tk.Frame(karte, bg=FLAECHE)
+        z.pack(fill='x', padx=16, pady=5)
+        tk.Label(z, text=name, bg=FLAECHE, fg=FG, font=fenster.f_klein,
+                 width=26, anchor='w').pack(side='left')
+        tk.Label(z, text=wofuer, bg=FLAECHE, fg=SUB,
+                 font=fenster.f_klein).pack(side='left')
+
+    reihe = tk.Frame(innen, bg=BG)
+    reihe.pack(fill='x', pady=(12, 0))
 
     def in_ablage():
         try:
-            ordner, wieviele = export.ablegen()
-            fenster.sagen('%d Dateien abgelegt' % wieviele if wieviele else '—')
+            ergebnis = export.ablegen()
+            wieviele = ergebnis[1] if isinstance(ergebnis, tuple) else ergebnis
+            fenster.sagen('%s Dateien in die Ablage geschrieben' % wieviele)
+            _ordner_zeigen(export.ablage_ordner())
         except Exception as ausnahme:
             fehler.merken('seiten.bestand.ablegen', ausnahme)
             fenster.sagen('Ausgeben hat nicht geklappt')
 
-    _knopf(fenster, reihe, 'In die Ablage', in_ablage, stark=True).pack(side='left')
+    def einzeln():
+        from tkinter import filedialog
+        ziel = filedialog.asksaveasfilename(
+            title='Bestand speichern', defaultextension='.json',
+            initialfile=export.vorschlag('basetool'))
+        if not ziel:
+            return
+        try:
+            export.schreiben(ziel, art='basetool')
+            fenster.sagen('Gespeichert: %s' % os.path.basename(ziel))
+        except Exception as ausnahme:
+            fehler.merken('seiten.bestand.einzeln', ausnahme)
 
-    ziel2 = _feld(fenster, innen, 'Bestand einlesen',
-                  'Aus dem Basetool, von scmdb, aus der Launcher-Datei oder einer '
-                  'Sicherung. Das Format wird selbst erkannt, zusammengeführt statt '
-                  'ersetzt.')
-    reihe2 = tk.Frame(ziel2, bg=BG)
-    reihe2.pack()
+    _knopf(fenster, reihe, 'Alle drei in die Ablage', in_ablage,
+           stark=True).pack(side='left')
+    _knopf(fenster, reihe, 'Einzeln speichern …', einzeln).pack(side='left',
+                                                                padx=8)
+    _knopf(fenster, reihe, 'Ablage öffnen',
+           lambda: _ordner_zeigen(export.ablage_ordner())).pack(side='left')
+
+    tk.Label(innen, text='Bestand einlesen', bg=BG, fg=FG,
+             font=fenster.f_titel, anchor='w').pack(fill='x', pady=(28, 2))
+    tk.Label(innen, text='Du hast deinen Stand schon woanders — im Basetool, bei '
+                         'scmdb, im SC Deutsch Launcher oder als Sicherung? Datei '
+                         'wählen, der Rest geht von selbst.',
+             bg=BG, fg=SUB, font=fenster.f_klein, anchor='w',
+             justify='left', wraplength=600).pack(fill='x', pady=(0, 12))
+
+    vorschau_platz = tk.Frame(innen, bg=BG)
 
     def einlesen():
         from tkinter import filedialog
         pfad = filedialog.askopenfilename(
-            title='Bestand einlesen', filetypes=[('JSON', '*.json'), ('Alle', '*.*')])
+            title='Bestand einlesen',
+            filetypes=[('JSON', '*.json'), ('Alle Dateien', '*.*')])
         if not pfad:
             return
         art, eintraege = importieren.lesen(pfad)
+        for kind in vorschau_platz.winfo_children():
+            kind.destroy()
         if not art:
-            fenster.sagen('Diese Datei kenne ich nicht')
+            _status(fenster, vorschau_platz, '!', 'Diese Datei kenne ich nicht.',
+                    'Erwartet werden: eigene Sicherung, KRT Profit Basetool, '
+                    'scmdb.net oder sc_bp_erledigt.json des Launchers.',
+                    farbe=ROT)
             return
-        vorschau = importieren.vorschau(eintraege)
-        dazu = importieren.uebernehmen(eintraege)
-        fenster.sagen('%s: %d neu, %d schon da%s'
-                      % (art, dazu, len(vorschau['schon_da']),
-                         (', %d nicht im Katalog' % len(vorschau['unbekannt']))
-                         if vorschau['unbekannt'] else ''))
+        v = importieren.vorschau(eintraege)
+        _vorschau_zeigen(fenster, vorschau_platz, art, eintraege, v)
 
-    _knopf(fenster, reihe2, 'Datei wählen …', einlesen, stark=True).pack(side='left')
+    _knopf(fenster, innen, 'Datei wählen …', einlesen, stark=True).pack(anchor='w')
+    tk.Label(innen, text='Erkannt werden: eigene Sicherung · KRT Profit Basetool · '
+                         'scmdb.net · sc_bp_erledigt.json des Launchers. Welches '
+                         'Format vorliegt, findet das Werkzeug selbst heraus.',
+             bg=BG, fg=SUB, font=fenster.f_klein, anchor='w', justify='left',
+             wraplength=600).pack(fill='x', pady=(10, 0))
+    vorschau_platz.pack(fill='x', pady=(14, 20))
+
+
+def _vorschau_zeigen(fenster, eltern, art, eintraege, v):
+    """Was der Import täte — erst nach dem Knopf passiert wirklich etwas."""
+    from . import importieren
+    from .hauptfenster import marke as blase
+    aussen = tk.Frame(eltern, bg=LINIE)
+    aussen.pack(fill='x')
+    balken = tk.Frame(aussen, bg=ACCENT, width=3)
+    balken.pack(side='left', fill='y')
+    innen = tk.Frame(aussen, bg=FLAECHE)
+    innen.pack(side='left', fill='both', expand=True, padx=(0, 1), pady=1)
+
+    kopf = tk.Frame(innen, bg=FLAECHE)
+    kopf.pack(fill='x', padx=16, pady=(12, 10))
+    tk.Label(kopf, text='Vorschau — nichts ist bisher übernommen', bg=FLAECHE,
+             fg=FG, font=fenster.f_fett).pack(side='left')
+    blase(kopf, {'eigen': 'Eigene Sicherung', 'basetool': 'KRT Profit Basetool',
+                 'scmdb': 'scmdb.net',
+                 'launcher': 'SC Deutsch Launcher'}.get(art, art),
+          ACCENT, fenster.f_klein).pack(side='right')
+
+    zahlen = tk.Frame(innen, bg=FLAECHE)
+    zahlen.pack(fill='x', padx=16, pady=(0, 10))
+    for wert, wofuer, farbe in ((len(v['neu']), 'kommen dazu', ACCENT),
+                                (len(v['schon_da']), 'hast du schon', FG),
+                                (len(v['unbekannt']), 'nicht im Katalog', GOLD)):
+        s = tk.Frame(zahlen, bg=FLAECHE)
+        s.pack(side='left', padx=(0, 30))
+        tk.Label(s, text=str(wert), bg=FLAECHE, fg=farbe,
+                 font=fenster.f_titel).pack(anchor='w')
+        tk.Label(s, text=wofuer, bg=FLAECHE, fg=SUB,
+                 font=fenster.f_klein).pack(anchor='w')
+
+    if v['unbekannt']:
+        tk.Label(innen, text='Nicht im Katalog — kommen trotzdem mit:  '
+                             + ' · '.join(v['unbekannt'][:6])
+                             + (' …' if len(v['unbekannt']) > 6 else ''),
+                 bg=FLAECHE, fg=SUB, font=fenster.f_klein, anchor='w',
+                 justify='left', wraplength=560).pack(fill='x', padx=16,
+                                                      pady=(0, 8))
+
+    tk.Label(innen, text='Vorhandenes bleibt unangetastet — es wird '
+                         'zusammengeführt, nie ersetzt.',
+             bg=FLAECHE, fg=SUB, font=fenster.f_klein, anchor='w',
+             justify='left', wraplength=560).pack(fill='x', padx=16,
+                                                  pady=(0, 10))
+
+    reihe = tk.Frame(innen, bg=FLAECHE)
+    reihe.pack(fill='x', padx=16, pady=(0, 14))
+
+    def uebernehmen():
+        dazu = importieren.uebernehmen(eintraege)
+        fenster.sagen('%d Baupläne übernommen' % dazu)
+        aussen.destroy()
+
+    k = _knopf(fenster, reihe, '%d Baupläne übernehmen' % len(v['neu']),
+               uebernehmen, stark=True)
+    k.configure(bg=FLAECHE)
+    k.pack(side='left')
+    k2 = _knopf(fenster, reihe, 'Abbrechen', aussen.destroy)
+    k2.configure(bg=FLAECHE)
+    k2.pack(side='left', padx=8)
 
 
 def _wasistneu(fenster, rahmen):
@@ -685,21 +1138,85 @@ def _schalter(fenster, eltern, schluessel, standard):
 
 
 def _erkennung(fenster, rahmen):
+    from . import katalog as katalog_modul, pfade, phrasen
     _ueberschrift(fenster, rahmen, t('hf_erkennung'),
                   'Wie der Watcher merkt, dass ein Bauplan hereingekommen ist. '
-                  'Die Standardwerte passen für fast jeden.')
+                  'Die Standardwerte passen für fast jeden — hier nur ändern, '
+                  'wenn etwas klemmt.')
     innen = _rollflaeche(rahmen)
-    e = _einstellungen(fenster)
+
+    ziel = _feld(fenster, innen, 'Wie oft nachsehen',
+                 'Sekunden zwischen zwei Blicken in die Protokolldatei. Kleiner '
+                 'heißt schneller und kostet etwas mehr Rechenzeit.')
+    reihe = tk.Frame(ziel, bg=BG)
+    reihe.pack()
+    zahl = tk.Entry(reihe, width=5, bg='#0c1017', fg=FG, font=fenster.f_klein,
+                    relief='flat', bd=0, justify='right', insertbackground=FG,
+                    highlightthickness=1, highlightbackground=LINIE,
+                    highlightcolor=ACCENT)
+    zahl.insert(0, str(pfade.einstellung_zahl('pruefintervall_sekunden', 3, 1, 60)))
+    zahl.pack(side='left', ipady=5)
+    tk.Label(reihe, text=' Sek.', bg=BG, fg=SUB,
+             font=fenster.f_klein).pack(side='left')
+
+    def takt_merken(_=None):
+        try:
+            pfade.einstellung_setzen('pruefintervall_sekunden',
+                                     max(1, min(60, int(zahl.get()))))
+            fenster.sagen('Takt: %s Sekunden' % zahl.get())
+        except ValueError:
+            pass
+
+    zahl.bind('<FocusOut>', takt_merken)
+    zahl.bind('<Return>', takt_merken)
+
+    ziel = _feld(fenster, innen, 'Erkannte Meldung',
+                 'Der Satz, den das Spiel schreibt. Der Watcher leitet ihn selbst '
+                 'aus deinen Protokollen ab — hier steht, was gefunden wurde.')
+    gefunden = '—'
     try:
-        e._intervallfeld(innen)
-    except Exception as ausnahme:
-        fehler.merken('seiten.erkennung', ausnahme)
+        alle = phrasen.sammeln() or []
+        gefunden = ' · '.join(str(x) for x in alle[:2]) or '—'
+    except Exception:
+        pass
+    tk.Label(ziel, text=gefunden, bg='#0c1017', fg=FG, font=fenster.f_klein,
+             padx=10, pady=5).pack()
+
+    ziel = _feld(fenster, innen, 'Katalog auffrischen',
+                 'Welche Baupläne es gibt und woher sie kommen. Wird beim Start '
+                 'geholt, wenn eine neue Spielversion erschienen ist.')
+
+    def katalog_neu():
+        fenster.sagen('Katalog wird geholt …')
+        try:
+            katalog_modul.aktualisieren()
+            fenster.sagen('Katalog aufgefrischt: %s Baupläne' % _zahl_katalog())
+        except Exception as ausnahme:
+            fehler.merken('seiten.erkennung.katalog', ausnahme)
+            fenster.sagen('Katalog holen ging nicht')
+
+    _knopf(fenster, ziel, 'Jetzt neu holen', katalog_neu).pack()
+
+    ziel = _feld(fenster, innen, 'Frühere Protokolle nachlesen',
+                 'Liest die aufgehobenen Spielprotokolle noch einmal von vorn. '
+                 'Nützlich nach einem Umzug oder wenn der Bestand Lücken hat.')
+
+    def nachlesen():
+        try:
+            os.remove(pfade.app_datei('logstand.json'))
+        except OSError:
+            pass
+        fenster.sagen('Beim nächsten Start werden die Protokolle neu gelesen')
+
+    _knopf(fenster, ziel, 'Von vorn lesen', nachlesen).pack()
 
 
 def _diagnose(fenster, rahmen):
+    from . import pfade
+    from .hauptfenster import schiebeschalter
     _ueberschrift(fenster, rahmen, t('hf_diagnose'),
                   'Wenn etwas klemmt: Dieser Block sagt in einem Rutsch, woran es '
-                  'liegen könnte.')
+                  'liegen könnte. Kopieren, in ein Issue einfügen, fertig.')
     innen = _rollflaeche(rahmen)
 
     text = ''
@@ -708,15 +1225,17 @@ def _diagnose(fenster, rahmen):
     except Exception as ausnahme:
         fehler.merken('seiten.diagnose', ausnahme)
 
-    kasten = tk.Text(innen, bg='#0c1017', fg=FG, font=('Consolas', 9),
-                     height=18, wrap='none', relief='flat',
-                     insertbackground=FG, padx=12, pady=10)
-    kasten.pack(fill='both', expand=True, pady=(0, 10))
-    kasten.insert('1.0', text)
-    kasten.configure(state='disabled')
+    kasten = tk.Frame(innen, bg=LINIE)
+    kasten.pack(fill='both', expand=True)
+    feld = tk.Text(kasten, bg='#0c1017', fg=FG, font=('Consolas', 10),
+                   height=16, wrap='none', relief='flat', bd=0,
+                   insertbackground=FG, padx=14, pady=12)
+    feld.pack(fill='both', expand=True, padx=1, pady=1)
+    feld.insert('1.0', text)
+    feld.configure(state='disabled')
 
     reihe = tk.Frame(innen, bg=BG)
-    reihe.pack(fill='x', pady=(0, 16))
+    reihe.pack(fill='x', pady=(12, 0))
 
     def melden():
         if bericht.issue_oeffnen(text):
@@ -729,12 +1248,58 @@ def _diagnose(fenster, rahmen):
             fenster.sagen('Angaben kopiert')
 
     def speichern():
-        ziel = bericht.speichern(text)
-        fenster.sagen('Gespeichert: %s' % ziel if ziel else 'Speichern ging nicht')
+        ziel_datei = bericht.speichern(text)
+        fenster.sagen('Gespeichert: %s' % os.path.basename(ziel_datei)
+                      if ziel_datei else 'Speichern ging nicht')
 
     _knopf(fenster, reihe, 'Fehler melden …', melden, stark=True).pack(side='left')
     _knopf(fenster, reihe, 'Angaben kopieren', kopieren).pack(side='left', padx=8)
     _knopf(fenster, reihe, 'Als Datei speichern …', speichern).pack(side='left')
+    _knopf(fenster, reihe, 'Eigenen Ordner öffnen',
+           lambda: _ordner_zeigen(pfade.app_ordner())).pack(side='left', padx=8)
+
+    _status(fenster, innen, '✓', 'Du siehst vorher genau, was du verschickst.',
+            'Der Block oben ist der ganze Inhalt — nichts wird im Hintergrund '
+            'übertragen, und Pfade sind gekürzt, damit kein Benutzername in '
+            'einem öffentlichen Issue landet.')
+
+    ziel = _feld(fenster, innen, 'Fehler mitschreiben',
+                 'Hält die letzten 50 unerwarteten Fehler mit Zeitpunkt und '
+                 'Stelle fest. Kostet nichts und ist der Unterschied zwischen '
+                 '„geht nicht" und einer Behebung.')
+
+    def mitschreiben_um():
+        neu_wert = not pfade.einstellung_wahrheit('fehler_mitschreiben', True)
+        pfade.einstellung_setzen('fehler_mitschreiben', neu_wert)
+        return neu_wert
+
+    schiebeschalter(ziel, pfade.einstellung_wahrheit('fehler_mitschreiben', True),
+                    mitschreiben_um).pack()
+
+    ziel = _feld(fenster, innen, 'Bestand zurücksetzen',
+                 'Baut den Bauplan-Bestand aus den vorhandenen Spielprotokollen '
+                 'neu auf.')
+
+    def zuruecksetzen():
+        from tkinter import messagebox
+        if not messagebox.askyesno(
+                'Bestand zurücksetzen',
+                'Dein Bauplan-Stand wird gelöscht und aus den vorhandenen '
+                'Protokollen neu aufgebaut.\n\nWas älter ist als deine '
+                'Protokolle, kommt nicht zurück. Fortfahren?'):
+            return
+        try:
+            os.remove(pfade.app_datei('bestand.json'))
+            fenster.sagen('Bestand zurückgesetzt — beim nächsten Start neu gelesen')
+        except OSError as ausnahme:
+            fehler.merken('seiten.diagnose.zuruecksetzen', ausnahme)
+
+    _knopf(fenster, ziel, 'Zurücksetzen', zuruecksetzen, gefahr=True).pack()
+
+    _status(fenster, innen, '!', 'Zurücksetzen löscht deinen Bauplan-Stand.',
+            'Der Watcher liest ihn danach aus den noch vorhandenen Protokollen '
+            'neu auf — was älter ist, ist weg. Vorher unter „Bestand" ausgeben.',
+            farbe=GOLD)
 
 
 def _zahl_katalog():

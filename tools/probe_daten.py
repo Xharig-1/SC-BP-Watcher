@@ -46,12 +46,57 @@ TOPF = {'BUL-H4 Armor': 'XenoThreat', 'Purgatory Camo': 'RedWind'}
 
 
 def main():
+    """Echten Katalog holen und einen plausiblen Bestand dazu erfinden.
+
+    Mit dreizehn Beispielen lässt sich nichts beurteilen — Filter, Gruppen und
+    Zähler zeigen erst mit dem vollen Katalog, ob sie taugen. Der Katalog kommt
+    deshalb wirklich von scmdb.net (einmal geholt, danach aus dem Zwischen-
+    speicher). Nur der Besitzstand ist erfunden: Wer welche Baupläne hat, weiß
+    nur der eigene Rechner.
+    """
     ziel = sys.argv[1] if len(sys.argv) > 1 else None
     if not ziel:
         print(__doc__.strip())
         return 2
     os.makedirs(ziel, exist_ok=True)
+    os.environ['SC_BP_HOME'] = ziel
 
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from scbp import katalog as katalog_modul
+
+    katalog = katalog_modul.laden()
+    if not (katalog.get('bauplaene') or {}):
+        print('Hole den Bauplan-Katalog von scmdb.net (etwa 12 MB, einmalig) …')
+        try:
+            katalog_modul.aktualisieren(fortschritt=lambda x: print('  ' + str(x)))
+            katalog = katalog_modul.laden()
+        except Exception as ausnahme:
+            print('Ging nicht (%s) — es bleibt bei den Beispielen.' % ausnahme)
+
+    bauplaene = katalog.get('bauplaene') or {}
+    if bauplaene:
+        # Besitz gleichmäßig verteilt, aber immer gleich: Wer den Testlauf
+        # zweimal startet, soll nicht plötzlich andere Baupläne besitzen.
+        import hashlib
+        bestand = {}
+        for schluessel, e in bauplaene.items():
+            wuerfel = int(hashlib.md5(schluessel.encode()).hexdigest(), 16) % 100
+            if wuerfel < 55:
+                bestand[schluessel] = {'name': e.get('n') or schluessel,
+                                       'quelle': 'log',
+                                       'zeit': '2026-08-25 01:14:03'}
+        with open(os.path.join(ziel, 'bestand.json'), 'w', encoding='utf-8') as f:
+            json.dump({'version': 1, 'stand': '2026-08-25 01:14:03',
+                       'bauplaene': bestand}, f, ensure_ascii=False)
+        print('Echter Katalog: %d Baupläne, davon %d im Testbestand'
+              % (len(bauplaene), len(bestand)))
+        return 0
+
+    return _beispiele(ziel)
+
+
+def _beispiele(ziel):
+    """Rückfall ohne Netz: ein kleiner, aber vielfältiger Ausschnitt."""
     bauplaene, bestand = {}, {}
     for name, art, klasse, grad, groesse, habe, quellen in BEISPIELE:
         k = name.lower().strip()

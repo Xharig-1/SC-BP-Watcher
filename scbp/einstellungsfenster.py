@@ -204,7 +204,10 @@ class Einstellungsfenster:
         self._neu_beschriften()
 
     def _sprach_knoepfe_faerben(self):
-        for wert, knopf in self.sprach_knoepfe.items():
+        # Im Hauptfenster zeichnet `seiten.py` die Sprachwahl selbst — dort gibt
+        # es diese Knöpfe gar nicht. Ohne die Prüfung stirbt der Sprachwechsel
+        # mit einem Attributfehler, und zwar mitten im Umschalten.
+        for wert, knopf in getattr(self, 'sprach_knoepfe', {}).items():
             an = wert == self.sprache_wahl.get()
             knopf.configure(fg=BG if an else SUB, bg=ACCENT if an else FLAECHE)
 
