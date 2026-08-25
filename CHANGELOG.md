@@ -86,6 +86,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
+- **In pop-up mode the overlay leaves a narrow green strip behind.** Hover it and the
+  overlay is back. The first attempt polled the mouse position — which cannot work under
+  Wayland: measured, Tk reported the same coordinates twelve times in a row while the mouse
+  moved across the screen. An application only learns the pointer position there while it is
+  over one of **its own** windows. The strip is such a window — and it is more honest than
+  an invisible magic zone: you can see where the overlay is waiting.
+
 - **The problem report says which version an error came from** — and marks those from an
   older one. The store keeps the last ten across restarts; after an update it listed errors
   that had long been fixed, making the report look like nothing worked.

@@ -55,7 +55,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc19'
+__version__ = '3.0.0-rc20'
 
 
 def _mitgeliefert(name):
@@ -517,20 +517,6 @@ def load_geometry():
 
 
 GEOM_RE = re.compile(r'^(\d+)x(\d+)(?:\+(-?\d+)\+(-?\d+))?$')
-
-
-def _in_bereich(geom, x, y, rand=6):
-    """Liegt der Punkt (x, y) in dieser Fensterlage? `rand` gibt etwas Zugabe.
-
-    Die Zugabe ist Absicht: Wer sein Overlay zurückholen will, zielt grob. Ein
-    paar Pixel Toleranz sind der Unterschied zwischen „geht" und „geht manchmal".
-    """
-    m = GEOM_RE.match(geom or '')
-    if not m or m.group(3) is None:
-        return False
-    breite, hoehe, links, oben = (int(z) for z in m.groups())
-    return (links - rand <= x <= links + breite + rand
-            and oben - rand <= y <= oben + hoehe + rand)
 
 
 def geometrie_pruefen(geom, root):
@@ -1162,6 +1148,12 @@ class Overlay:
         # setzen kann, ohne dass `seiten.py` das Hauptprogramm importieren müsste.
         bildschirm.OVERLAY[0] = self.root
         overlay.OVERLAY_FENSTER[0] = self.root
+        # Merken, ob der Zeiger auf dem Overlay steht — das entscheidet, ob eine
+        # Einblendung stehen bleibt. Echte Ereignisse statt Positionsabfrage.
+        self.root.bind('<Enter>', lambda e: setattr(self, '_maus_drauf', True),
+                       add='+')
+        self.root.bind('<Leave>', lambda e: setattr(self, '_maus_drauf', False),
+                       add='+')
         overlay.OVERLAY_STEUERUNG[0] = self
         # Damit jeder festgehaltene Fehler weiß, aus welcher Fassung er stammt.
         fehler.VERSION[0] = __version__
@@ -1175,6 +1167,8 @@ class Overlay:
         self.anzeigeart = pfade.einstellung('overlay_modus') or 'immer'
         self._popup_uhr = None
         self._letzte_lage = ''
+        self._anfasser = None
+        self._maus_drauf = False
         # Durchsichtigkeit einstellbar (30–100 %). Wer nur **einen** Monitor hat,
         # legt das Overlay zwangsläufig übers Spiel — dann muss man hindurchsehen
         # können. 93 % bleibt der Standard, das ist auf zwei Bildschirmen richtig.
@@ -1699,7 +1693,9 @@ class Overlay:
             # Zähler räumt gleich selbst auf.
             if self._popup_uhr is None:
                 self.root.withdraw()
+                self._anfasser_zeigen()
         else:
+            self._anfasser_weg()
             try:
                 self.root.deiconify()
             except tk.TclError:
@@ -1720,44 +1716,70 @@ class Overlay:
         if an and not geklappt:
             self.status.config(text=sprache.t('ov_durchklick_geht_nicht'))
 
-    # ---------------------------------------------- Maus holt es zurück
+    # ---------------------------------------------- Der Anfasser holt es zurück
     #
     # Gemeldet am 25.08.2026: „Wie schaut es aus, das Fenster bei Mouseover sichtbar
     # zu machen, damit man den Umweg nicht gehen muss es erneut zu starten? Die
     # Logik kenne ich bisher ohnehin nicht bei anderen Programmen dieser Art."
     #
-    # Er hat recht. „Zum Zurückholen das Programm noch einmal starten" ist ein
-    # Umweg, den kein anderes Overlay verlangt. Wer weiß, wo sein Overlay steht,
-    # fährt mit der Maus dorthin — und dann soll es da sein.
+    # Er hat recht — „zum Zurückholen das Programm neu starten" verlangt kein
+    # anderes Overlay.
     #
-    # ⚠ Ein verstecktes Fenster bekommt keine Maus-Ereignisse; ein `<Enter>` kann
-    # es also nicht geben. `winfo_pointerxy()` liefert die Mausposition aber
-    # **global**, auch ohne eigenes Fenster darunter. Deshalb wird sie in Ruhe
-    # abgefragt: viermal in der Sekunde, und nur solange das Overlay wirklich
-    # versteckt ist.
-    MAUSPRUEFUNG_MS = 250
+    # ⚠ Der erste Anlauf fragte die Mausposition ab (`winfo_pointerxy`) und blendete
+    # ein, sobald sie im Bereich lag. Das **kann unter Wayland nicht gehen**:
+    # Gemessen auf einem Rechner meldete Tk zwölfmal hintereinander exakt
+    # dieselben Koordinaten, während die Maus quer über den Schirm fuhr. Eine
+    # Anwendung erfährt die Zeigerposition dort nur, solange er über einem **ihrer
+    # eigenen** Fenster steht — und ein verstecktes Fenster ist keines.
+    #
+    # Also bleibt ein Fenster stehen: ein schmaler Streifen an der oberen Kante der
+    # letzten Position. Der bekommt echte `<Enter>`-Ereignisse, unter Wayland wie
+    # unter X11 und Windows. Nebenbei ist er ehrlicher als eine unsichtbare
+    # Zauberzone — man **sieht**, wo das Overlay wartet.
+    ANFASSER_BREITE = 54
+    ANFASSER_HOEHE = 5
 
-    def _mauswache(self):
-        """Nachsehen, ob die Maus dort steht, wo das Overlay wäre."""
+    def _anfasser_zeigen(self):
+        """Den Streifen an die letzte Position des Overlays legen."""
+        if self.anzeigeart != 'popup':
+            return self._anfasser_weg()
+        lage = self._letzte_lage or ''
+        m = GEOM_RE.match(lage)
+        if not m or m.group(3) is None:
+            return
+        breite, _hoehe, links, oben = (int(z) for z in m.groups())
+        x = links + max(0, (breite - self.ANFASSER_BREITE) // 2)
+        y = max(0, oben)
         try:
-            if self.anzeigeart == 'popup' and self._versteckt():
-                x, y = self.root.winfo_pointerxy()
-                lage = self._letzte_lage or self._current_geom()
-                if _in_bereich(lage, x, y):
-                    self._popup_zeigen(wegen_maus=True)
-        except Exception:
-            pass
-        finally:
-            try:
-                self.root.after(self.MAUSPRUEFUNG_MS, self._mauswache)
-            except tk.TclError:
-                pass
-
-    def _versteckt(self):
-        try:
-            return self.root.state() == 'withdrawn'
+            if self._anfasser is None or not self._anfasser.winfo_exists():
+                self._anfasser = tk.Toplevel(self.root)
+                self._anfasser.overrideredirect(True)
+                self._anfasser.attributes('-topmost', True)
+                self._anfasser.configure(bg=ACCENT, cursor='hand2')
+                try:
+                    self._anfasser.attributes('-alpha', 0.55)
+                except tk.TclError:
+                    pass
+                self._anfasser.bind('<Enter>',
+                                    lambda e: self._popup_zeigen(wegen_maus=True))
+                self._anfasser.bind('<Button-1>',
+                                    lambda e: self._popup_zeigen(wegen_maus=True))
+                hinweis.anhaengen(self._anfasser,
+                                  lambda: sprache.t('hinweis_anfasser'))
+            self._anfasser.geometry('%dx%d+%d+%d'
+                                    % (self.ANFASSER_BREITE, self.ANFASSER_HOEHE,
+                                       x, y))
+            self._anfasser.deiconify()
+            self._anfasser.lift()
         except tk.TclError:
-            return False
+            pass
+
+    def _anfasser_weg(self):
+        try:
+            if self._anfasser is not None and self._anfasser.winfo_exists():
+                self._anfasser.withdraw()
+        except tk.TclError:
+            pass
 
     def _popup_zeigen(self, wegen_maus=False):
         """Das Overlay kurz einblenden — im Pop-up-Betrieb nach einem Fund.
@@ -1769,6 +1791,7 @@ class Overlay:
         if self.anzeigeart != 'popup':
             return
         try:
+            self._anfasser_weg()
             self.root.deiconify()
             self.root.lift()
             self.root.attributes('-topmost', True)
@@ -1794,15 +1817,13 @@ class Overlay:
         # Solange die Maus darauf steht, bleibt es stehen. Ein Fenster, das unter
         # dem Mauszeiger verschwindet, während man es ansieht, ist ärgerlicher als
         # eines, das zu lange bleibt.
-        if getattr(self, '_wegen_maus', False):
-            try:
-                x, y = self.root.winfo_pointerxy()
-                if _in_bereich(self._current_geom(), x, y):
-                    self._popup_uhr = self.root.after(800, self._popup_verstecken)
-                    return
-            except Exception:
-                pass
-            self._wegen_maus = False
+        # ⚠ Über `<Enter>`/`<Leave>` am Fenster, **nicht** über die Mausposition.
+        # Die abzufragen geht unter Wayland nicht: Sobald der Zeiger kein eigenes
+        # Fenster mehr berührt, meldet Tk denselben Wert weiter, und das Overlay
+        # bliebe für immer stehen.
+        if getattr(self, '_maus_drauf', False):
+            self._popup_uhr = self.root.after(800, self._popup_verstecken)
+            return
         # Solange ein Fenster davor offen ist, bleibt auch das Overlay stehen —
         # sonst verschwindet es unter den Händen, während man die Liste liest.
         for name in ('listenfenster', 'hauptfenster'):
@@ -1821,6 +1842,7 @@ class Overlay:
             if '+' in jetzt and not jetzt.startswith('1x1'):
                 self._letzte_lage = jetzt
             self.root.withdraw()
+            self._anfasser_zeigen()
         except tk.TclError:
             pass
 
@@ -1863,7 +1885,6 @@ class Overlay:
     def run(self):
         self.verhalten_anwenden()
         self.ablagesymbol_starten()
-        self.root.after(self.MAUSPRUEFUNG_MS, self._mauswache)
         # Ein zweiter Start soll das vorhandene Fenster hervorholen, statt eine
         # zweite Fassung zu öffnen. Der Rückruf kommt aus einem eigenen Faden —
         # deshalb die Arbeit per `after` an Tk übergeben, nicht dort erledigen.

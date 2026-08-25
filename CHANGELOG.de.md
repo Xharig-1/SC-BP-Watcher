@@ -88,6 +88,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Geändert
 
+- **Das Overlay hinterlässt im Aufblend-Betrieb einen schmalen grünen Streifen.** Maus
+  darauf, und es ist wieder da. Der erste Versuch fragte dafür die Mausposition ab — das
+  kann unter Wayland nicht funktionieren: Gemessen meldete Tk zwölfmal denselben Wert,
+  während die Maus quer über den Schirm fuhr. Eine Anwendung erfährt die Zeigerposition
+  dort nur, solange er über einem **ihrer eigenen** Fenster steht. Der Streifen ist so ein
+  Fenster — und nebenbei ehrlicher als eine unsichtbare Zauberzone: Man sieht, wo das
+  Overlay wartet.
+
 - **Der Fehlerbericht sagt, aus welcher Fassung ein Fehler stammt** — und markiert die, die
   aus einer älteren kommen. Der Speicher hebt die letzten zehn über Programmstarts hinweg
   auf; nach einem Update standen dort Fehler, die längst behoben waren, und der Bericht sah
