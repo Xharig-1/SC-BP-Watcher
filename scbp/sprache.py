@@ -684,6 +684,20 @@ TEXTE = {
     's_ub_bekannt':    ('Baupläne bekannt', 'Blueprints known'),
     's_ub_davon':      ('Davon deine', 'Of those yours'),
 
+    # -- Einrichtung ohne Spielordner --
+    # Ohne diesen Ausweg sitzt fest, wer Star Citizen (noch) nicht auf diesem
+    # Rechner hat: Der Weiter-Knopf blieb grau, und der Assistent kam bei jedem
+    # Start wieder. Das Werkzeug kann auch ohne Spiel etwas — Liste ansehen,
+    # Bestand einlesen, Merkliste pflegen.
+    'ohne_spiel':      ('Erst mal ohne — ich richte das später ein',
+                          'Continue without it — I will set this up later'),
+    'ohne_spiel_titel': ('Ohne Spielordner eingerichtet',
+                          'Set up without a game folder'),
+    'ohne_spiel_text': ('Der Watcher kann jetzt nicht mitlesen, wenn ein Bauplan hereinkommt — dafür braucht er die Game.log. Alles andere geht: die Bauplan-Liste durchsehen, einen vorhandenen Bestand einlesen und die Merkliste pflegen.',
+                          'The watcher cannot follow along when a blueprint arrives — that needs the Game.log. Everything else works: browsing the blueprint list, importing an existing inventory and keeping the watchlist.'),
+    'ohne_spiel_wo':   ('Nachtragen kannst du den Ordner jederzeit unter Einstellungen → Ordner.',
+                          'You can add the folder any time under Settings → Folders.'),
+
     # --- Hauptfenster: Reiter und Rahmen (ab v3.0.0) ---
     'hf_titel':          ('SC BP Watcher', 'SC BP Watcher'),
     'hf_gruppe_bp':      ('Baupläne', 'Blueprints'),

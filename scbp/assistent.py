@@ -182,7 +182,26 @@ class Assistent:
             for ort in pfade.gesuchte_spielorte(4):
                 tk.Label(f, text=ort, bg=BG, fg=SUB, font=mono(8), anchor='w',
                          justify='left', wraplength=560).pack(fill='x')
+
+            # ⚠ Ohne diesen Ausweg sitzt fest, wer Star Citizen nicht auf
+            # diesem Rechner hat: Der Weiter-Knopf bleibt grau, und weil
+            # `noetig()` am fehlenden Spielordner hängt, kommt der Assistent
+            # bei jedem Start wieder. Genau so ging es beim Ansehen auf einem
+            # Zweitrechner — man kam nie über diese Seite hinaus.
+            ohne = tk.Label(f, text=t('ohne_spiel'), bg=BG, fg=SUB,
+                            font=schrift(10), cursor='hand2')
+            ohne.pack(anchor='w', pady=(18, 0))
+            ohne.bind('<Button-1>', lambda e: self._ohne_spiel())
+            ohne.bind('<Enter>', lambda e: ohne.configure(fg=ACCENT))
+            ohne.bind('<Leave>', lambda e: ohne.configure(fg=SUB))
         self._pfad_pruefen()
+
+    def _ohne_spiel(self):
+        """Weiter ohne Spielordner — bewusst und einmalig gemerkt."""
+        self.ohne_spielordner = True
+        pfade.einstellung_setzen('einrichtung_ohne_spiel', True)
+        self.schritt = SCHRITTE
+        self._zeichnen()
 
     def _waehlen(self):
         ordner = filedialog.askdirectory(title=t('spielordner'), parent=self.root)
@@ -320,6 +339,9 @@ class Assistent:
 
     # -------------------------------------------------------- 5. Fertig
     def _schritt_fertig(self):
+        if getattr(self, 'ohne_spielordner', False):
+            self._schritt_fertig_ohne_spiel()
+            return
         self.titel.configure(text=t('schritt_fertig'))
         f = self._flaeche()
         b = bestand_datei.laden()
@@ -328,6 +350,22 @@ class Assistent:
         self._absatz(f, t('schritt_fertig_text'), FG, 11, oben=14)
         self._absatz(f, '☰  ' + t('tipp_liste'), SUB, 10, oben=18)
         self._absatz(f, '⟳  ' + t('tipp_erneut'), SUB, 10, oben=8)
+
+        knopf = tk.Label(f, text=' %s ' % t('liste_oeffnen'), bg=FLAECHE, fg=FG,
+                         font=schrift(10), cursor='hand2', padx=12, pady=7)
+        knopf.pack(anchor='w', pady=(22, 0))
+        knopf.bind('<Button-1>', lambda e: self._mit_liste())
+
+    def _schritt_fertig_ohne_spiel(self):
+        """Der Abschluss, wenn kein Spielordner eingetragen wurde.
+
+        Ehrlich sagen, was jetzt nicht geht — und was sehr wohl. Ein
+        „fertig eingerichtet" wäre gelogen, ein Abbruch wäre unnötig.
+        """
+        self.titel.configure(text=t('ohne_spiel_titel'))
+        f = self._flaeche()
+        self._absatz(f, t('ohne_spiel_text'), FG, 11)
+        self._absatz(f, t('ohne_spiel_wo'), SUB, 10, oben=14)
 
         knopf = tk.Label(f, text=' %s ' % t('liste_oeffnen'), bg=FLAECHE, fg=FG,
                          font=schrift(10), cursor='hand2', padx=12, pady=7)
@@ -372,7 +410,15 @@ class Assistent:
 
 
 def noetig():
-    """Muss der Assistent laufen? Beim ersten Mal, oder wenn das Spiel fehlt."""
+    """Muss der Assistent laufen? Beim ersten Mal, oder wenn das Spiel fehlt.
+
+    ⚠ Wer bewusst ohne Spielordner weitergemacht hat, bekommt ihn nicht bei
+    jedem Start erneut vorgesetzt. Vorher hing die Frage allein am gefundenen
+    Spiel — auf einem Rechner ohne Star Citizen hieß das: jedes Mal wieder von
+    vorn, und über die zweite Seite kam man nie hinaus.
+    """
+    if pfade.einstellung_wahrheit('einrichtung_ohne_spiel', False):
+        return False
     return (not os.path.exists(pfade.app_datei('logstand.json'))
             or not pfade.spiel_ordner())
 

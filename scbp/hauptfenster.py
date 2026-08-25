@@ -448,8 +448,12 @@ def rad_anschliessen(leinwand):
             angesammelt['wert'] -= ganze
             if not ganze:
                 return
+            # ⚠ Kein Minus wie beim Rad: `<TouchpadScroll>` zählt andersherum
+            # als `<MouseWheel>`. Mit dem Vorzeichen des Rades rollte die Liste
+            # genau falsch herum. Die vom Nutzer eingestellte Richtung
+            # („natürliches Scrollen") hat das System da schon eingerechnet.
             try:
-                ziel.yview_scroll(-ganze, 'units')
+                ziel.yview_scroll(ganze, 'units')
             except tk.TclError:
                 pass
 
