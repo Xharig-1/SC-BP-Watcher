@@ -64,6 +64,7 @@ import urllib.request
 from . import fehler, bestand as bestand_datei
 from . import katalog as katalog_modul
 from . import pfade
+from .sprache import t
 
 # ---------------------------------------------------------------------------
 # Zweite, bessere Datenquelle: das SCDL-Team veröffentlicht seine aufbereiteten
@@ -284,9 +285,9 @@ def einspielen_scdl(ini_pfad, sprachkuerzel, bestand=None):
     Gibt (Erfolg, Anzahl, Meldung) zurück wie `einspielen()`."""
     daten = scdl_laden(sprachkuerzel)
     if not daten:
-        return False, 0, 'keine SCDL-Bauplan-Daten'
+        return False, 0, t('m_keine_scdl')
     if not ini_pfad or not os.path.isfile(ini_pfad):
-        return False, 0, 'global.ini nicht gefunden'
+        return False, 0, t('m_keine_ini')
 
     habe = bestand_datei.schluessel(bestand if bestand is not None
                                     else bestand_datei.laden())
@@ -347,12 +348,12 @@ def einspielen(ini_pfad, sprache, katalog=None, bestand=None, nur_entfernen=Fals
     erst vollständig neu geschrieben und dann umbenannt — bricht etwas ab,
     bleibt die alte Fassung unversehrt."""
     if not ini_pfad or not os.path.isfile(ini_pfad):
-        return False, 0, 'global.ini nicht gefunden'
+        return False, 0, t('m_keine_ini')
 
     katalog = katalog if katalog is not None else katalog_modul.laden()
     missionen = katalog.get('missionen') or {}
     if not missionen and not nur_entfernen:
-        return False, 0, 'Katalog kennt keine Missionen'
+        return False, 0, t('m_keine_missionen')
 
     habe = bestand_datei.schluessel(bestand if bestand is not None
                                     else bestand_datei.laden())

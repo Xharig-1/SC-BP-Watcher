@@ -44,6 +44,7 @@ import sys
 from datetime import datetime
 
 from . import fehler, pfade
+from .sprache import t
 
 
 def _sicher(f, standard='—'):
@@ -81,6 +82,19 @@ def _tk_fassung():
     return str(tkinter.TkVersion)
 
 
+def _verpackung_lesbar():
+    """Die Kennung aus `aktualisierung` in einen lesbaren Namen übersetzen.
+
+    ⚠ Nur hier, nur für die Anzeige: Die Kennung selbst wird anderswo
+    verglichen (`art == 'quellcode'`) und bleibt deshalb, wie sie ist.
+    """
+    art = __import__('scbp.aktualisierung',
+                     fromlist=['verpackung']).verpackung()
+    return {'quellcode': t('b_v_quellcode'),
+            'exe': t('b_v_exe'),
+            'appimage': t('b_v_appimage')}.get(art, art)
+
+
 def _bildschirme(wurzel):
     """Größe und Skalierung — hier lagen schon zwei Fehler begraben."""
     if wurzel is None:
@@ -89,7 +103,7 @@ def _bildschirme(wurzel):
     hoehe = wurzel.winfo_screenheight()
     # 72 Punkte je Zoll ist Tks Bezug; daraus wird die Skalierung lesbar.
     skalierung = round(float(wurzel.tk.call('tk', 'scaling')) * 72 / 96 * 100)
-    return '%d×%d · Skalierung %d %%' % (breite, hoehe, skalierung)
+    return t('b_skalierung') % (breite, hoehe, skalierung)
 
 
 def bauen(version='', wurzel=None, fehleranzahl=8):
@@ -99,56 +113,61 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
     def zeile(bez, wert):
         zeilen.append('%-18s%s' % (bez, pfade.kuerzen(wert)))
 
-    zeilen.append('SC BP Watcher %s · Bericht vom %s'
-                  % (version or '—', datetime.now().strftime('%d.%m.%Y, %H:%M')))
+    zeilen.append(t('b_kopf')
+                  % (version or '—', datetime.now().strftime(t('b_datum'))))
     zeilen.append('')
 
     uebersicht = _sicher(pfade.uebersicht, {})
     if not isinstance(uebersicht, dict):
         uebersicht = {}
 
-    zeile('System', _sicher(_system))
-    zeile('Verpackung', _sicher(lambda: __import__(
-        'scbp.aktualisierung', fromlist=['verpackung']).verpackung()))
-    zeile('Python / Tk', '%s / %s' % (platform.python_version(), _sicher(_tk_fassung)))
-    zeile('Bildschirm', _sicher(lambda: _bildschirme(wurzel)))
+    zeile(t('b_system'), _sicher(_system))
+    zeile(t('b_verpackung'), _sicher(_verpackung_lesbar))
+    zeile(t('b_python'), '%s / %s' % (platform.python_version(),
+                                      _sicher(_tk_fassung)))
+    zeile(t('b_bildschirm'), _sicher(lambda: _bildschirme(wurzel)))
     zeilen.append('')
 
-    zeile('Spiel', _sicher(lambda: uebersicht.get('spiel_ordner') or 'nicht gefunden'))
-    zeile('Game.log', _sicher(lambda: uebersicht.get('game_log') or 'nicht gefunden'))
-    zeile('Sicherungen', _sicher(lambda: '%s Protokolle' % uebersicht.get('sicherungen')))
-    zeile('Launcher', _sicher(lambda: uebersicht.get('launcher') or 'nicht vorhanden'))
-    zeile('Spielsprache', _sicher(lambda: ', '.join(
+    zeile(t('b_spiel'), _sicher(lambda: uebersicht.get('spiel_ordner')
+                                 or t('b_nicht_gefunden')))
+    zeile(t('b_gamelog'), _sicher(lambda: uebersicht.get('game_log')
+                                   or t('b_nicht_gefunden')))
+    zeile(t('b_sicherungen'), _sicher(
+        lambda: t('b_protokolle') % uebersicht.get('sicherungen')))
+    zeile(t('b_launcher'), _sicher(lambda: uebersicht.get('launcher')
+                                    or t('b_nicht_da')))
+    zeile(t('b_spielsprache'), _sicher(lambda: ', '.join(
         __import__('scbp.phrasen', fromlist=['sammeln']).sammeln()) or '—'))
     zeilen.append('')
 
-    zeile('Bestand', _sicher(lambda: '%s Baupläne' % _json_groesse(
+    zeile(t('b_bestand'), _sicher(lambda: t('b_n_bauplaene') % _json_groesse(
         __import__('scbp.bestand', fromlist=['pfad']).pfad(), 'blueprints')))
-    zeile('Merkliste', _sicher(lambda: '%s Einträge' % _json_groesse(
+    zeile(t('b_merkliste'), _sicher(lambda: t('b_n_eintraege') % _json_groesse(
         __import__('scbp.merkliste', fromlist=['pfad']).pfad(), 'eintraege')))
-    zeile('Katalogstand', _sicher(lambda: __import__(
+    zeile(t('b_katalog'), _sicher(lambda: __import__(
         'scbp.katalog', fromlist=['aktuelle_version']).aktuelle_version()))
     zeilen.append('')
 
-    zeile('Eigener Ordner', _sicher(lambda: uebersicht.get('app_ordner')))
-    zeile('Einstellungen', _sicher(lambda: ', '.join(
+    zeile(t('b_ordner'), _sicher(lambda: uebersicht.get('app_ordner')))
+    zeile(t('b_einstellungen'), _sicher(lambda: ', '.join(
         '%s=%s' % (k, v) for k, v in sorted(
-            (uebersicht.get('selbst_gesetzt') or {}).items())) or 'alle auf Standard'))
+            (uebersicht.get('selbst_gesetzt') or {}).items()))
+        or t('b_standard')))
 
     letzte = _sicher(lambda: fehler.letzte(fehleranzahl), [])
     gesamt = _sicher(fehler.anzahl, 0)
     zeilen.append('')
     if letzte:
-        zeilen.append('Letzte Fehler (%s von %s aufgehoben)' % (len(letzte), gesamt))
+        zeilen.append(t('b_fehler') % (len(letzte), gesamt))
         for e in letzte:
             zeilen.append('  %s  %-24s %s: %s'
                           % (e.get('zeit', '—'), e.get('stelle', '—'),
                              e.get('art', '—'), e.get('meldung', '—')))
     else:
-        zeilen.append('Letzte Fehler        keine aufgezeichnet')
+        zeilen.append(t('b_fehler_keine'))
 
     zeilen.append('')
-    zeilen.append('Pfade gekürzt (<heim>, <benutzer>) · keine Namen, keine Zugangsdaten')
+    zeilen.append(t('b_fuss'))
     return '\n'.join(zeilen)
 
 
@@ -197,9 +216,7 @@ def issue_adresse(text, titel='', vorlage=None):
 
     koerper = text or ''
     if len(koerper) > URL_GRENZE:
-        koerper = (koerper[:URL_GRENZE]
-                   + '\n\n… gekürzt. Der vollständige Bericht liegt unter '
-                     '"Als Datei speichern" und kann angehängt werden.')
+        koerper = koerper[:URL_GRENZE] + t('m_bericht_gekuerzt')
 
     werte = {'template': vorlage or _vorlage_zur_sprache(), 'bericht': koerper}
     if titel:

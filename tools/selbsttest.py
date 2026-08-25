@@ -362,6 +362,22 @@ def main():
         for b in beanstandungen[:5]:
             print('        ·', b)
 
+        # Die Dokumente allein reichen nicht: Die Oberfläche zeigte an über
+        # hundert Stellen deutschen Text, während oben alles grün meldete.
+        import texte_pruefen
+        feste = []
+        for name in sorted(os.listdir(os.path.join(WURZEL, 'scbp'))):
+            if name.endswith('.py'):
+                feste += texte_pruefen.pruefe(
+                    os.path.join(WURZEL, 'scbp', name))
+        pruefe(not feste,
+               'jeder sichtbare Text der Oberfläche läuft durch t()')
+        # ⚠ Nicht `zeile` als Schleifenvariable — so heißt weiter oben eine
+        # Hilfsfunktion, und Python macht daraus für die ganze Funktion eine
+        # lokale Variable. Der Selbsttest stirbt dann Hunderte Zeilen früher.
+        for nr, stelle, roh in feste[:5]:
+            print('        · Zeile %d (%s): %s' % (nr, stelle, roh[:50]))
+
         print('\n11. Fensterlage von einem fremden Rechner')
         if ANZEIGE:
             kaputt = w.geometrie_pruefen('440x1098+999999+-999999', _wurzel())

@@ -43,6 +43,7 @@ import re
 import time
 
 from . import pfade, phrasen
+from .sprache import t
 
 # Schiffskomponenten stehen im Log MIT Zusatz „(Klasse/Size/Grade)", z. B.
 # „7CA 'Nargun' (Civ/3/A)" — der Launcher-Schlüssel ist aber „7CA 'Nargun'".
@@ -238,16 +239,14 @@ def _luecke_pruefen(vorher, alle):
         als die zuletzt gelesene Sitzung. Dazwischen hat Star Citizen Logs
         weggeräumt, die niemand mehr hat."""
     if not alle:
-        return {'luecke': True,
-                'grund': 'Keine Log-Sicherungen gefunden — der bisherige Bestand '
-                         'lässt sich nicht nachlesen.'}
+        return {'luecke': True, 'grund': t('m_keine_logs')}
     aeltester = min((os.path.getmtime(p) for p in alle
                      if os.path.exists(p)), default=0.0)
     if not vorher:
         return {'luecke': True,
-                'grund': 'Erster Lauf: nachgelesen wurde ab %s. Was davor '
-                         'freigeschaltet wurde, muss von Hand abgehakt werden.'
-                         % time.strftime('%d.%m.%Y', time.localtime(aeltester))}
+                'grund': t('m_erster_lauf')
+                % time.strftime(t('m_erster_datum'),
+                                time.localtime(aeltester))}
     if aeltester > vorher + 60:
         return {'luecke': True,
                 'grund': 'Zwischen %s und %s hat Star Citizen Logs weggeräumt — '

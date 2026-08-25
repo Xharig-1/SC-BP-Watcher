@@ -50,6 +50,7 @@ import urllib.request
 import zipfile
 
 from . import pfade
+from .sprache import t
 
 MERKDATEI = 'uebersetzung.json'
 KENNUNG = 'SC-BP-Watcher (+https://github.com/Xharig-1/SC-BP-Watcher)'
@@ -112,8 +113,7 @@ def neueste(quelle):
         # Nichttechniker unlesbar, die Ursache aber immer dieselbe.
         text = str(e)
         if 'CERTIFICATE' in text.upper() or 'SSL' in text.upper():
-            letzter_fehler[0] = ('Sichere Verbindung fehlgeschlagen — die '
-                                 'Zertifikate des Systems wurden nicht gefunden')
+            letzter_fehler[0] = t('m_kein_zertifikat')
         else:
             letzter_fehler[0] = text
         return None
@@ -256,7 +256,7 @@ def holen(quelle, fortschritt=None, spielordner=None):
         return False, 'unbekannte Quelle'
     neu = neueste(quelle)
     if not neu:
-        return False, letzter_fehler[0] or 'Fassung nicht gefunden'
+        return False, letzter_fehler[0] or t('m_keine_fassung')
     kennung, adresse, groesse = neu
 
     melde('%s wird geladen (%.1f MB) …' % (q['name'], groesse / 1048576.0))
@@ -267,7 +267,7 @@ def holen(quelle, fortschritt=None, spielordner=None):
 
     ini = _ini_aus_zip(inhalt, q['sprache'])
     if not ini:
-        return False, 'global.ini im Archiv nicht gefunden'
+        return False, t('m_keine_ini_archiv')
 
     ziel = ziel_ini(q['sprache'], spielordner)
     if not ziel:
