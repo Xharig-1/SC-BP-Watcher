@@ -80,7 +80,12 @@ def art_lesbar(roh):
 # gemeldet als „Magazin für Waffen fehlen quasi alle Waffen bis auf 2": Der
 # Filter „Magazin" zeigte die zwei, die 32 anderen standen unter
 # „Waffenaufsatz".
-ART_ZUSAMMEN = {'ammo': 'WeaponAttachment'}
+#
+# ⚠ Derselbe Fall bei den Handfeuerwaffen: 87 stehen als `WeaponPersonal` da, die
+# S-38 Pistol und das P4-AR Rifle als `weapons`. Im Fenster ergab das zwei
+# Gruppen — „FPS-Waffe (87)" und „Handfeuerwaffe (2)" — für ein und dieselbe
+# Sache. Wer nach FPS-Waffen filtert, sucht auch die beiden.
+ART_ZUSAMMEN = {'ammo': 'WeaponAttachment', 'weapons': 'WeaponPersonal'}
 
 
 def art_kennung(eintrag_oder_roh):
@@ -575,6 +580,9 @@ ART_GRUPPE = {
     # Filter „nur FPS-Waffen" nichts anzeigte — dasselbe für den Field Recon
     # Suit unter „Rüstung". Betroffen sind 10 der 722 Baupläne; wer nur auf
     # die Gesamtzahl sieht, merkt davon nichts.
+    # Beide fallen inzwischen über `ART_ZUSAMMEN` mit ihrer richtigen Kennung
+    # zusammen; die Zeile bleibt für den Fall, dass `obergruppe()` einmal eine
+    # rohe Kennung bekommt, die nicht durch `art_kennung()` gelaufen ist.
     'weapons': 'fps', 'ammo': 'fps',
     # Was man am Körper trägt
     'Char_Armor_Helmet': 'ruestung', 'Char_Armor_Torso': 'ruestung',
