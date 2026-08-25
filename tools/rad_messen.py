@@ -67,12 +67,36 @@ def main():
                          % (quelle, delta, nummer))
         protokoll.see('end')
 
+    def streichen(e):
+        """Trackpad: dx und dy stecken gepackt in einer Zahl."""
+        roh = int(getattr(e, 'delta', 0) or 0)
+        waagerecht = roh & 0xFFFF
+        senkrecht = (roh >> 16) & 0xFFFF
+        if waagerecht >= 0x8000:
+            waagerecht -= 0x10000
+        if senkrecht >= 0x8000:
+            senkrecht -= 0x10000
+        ereignisse.append(('TouchpadScroll', senkrecht, None))
+        protokoll.insert('end', 'Touchpad     roh=%-10s hoch/runter=%-5s '
+                         'seitlich=%s\n' % (roh, senkrecht, waagerecht))
+        protokoll.see('end')
+
     wurzel.bind_all('<MouseWheel>', lambda e: notieren(e, 'MouseWheel'))
     wurzel.bind_all('<Button-4>', lambda e: notieren(e, 'Button-4'))
     wurzel.bind_all('<Button-5>', lambda e: notieren(e, 'Button-5'))
     # macOS kennt zusätzlich waagerechtes Rollen — hier nur, um zu sehen,
     # ob es überhaupt auftaucht.
     wurzel.bind_all('<Shift-MouseWheel>', lambda e: notieren(e, 'Shift-Wheel'))
+    # ⚠ Der eigentliche Grund für dieses Werkzeug: Vom Trackpad kam kein
+    # einziges <MouseWheel> an. Seit Tk 8.7 gibt es dafür ein eigenes
+    # Ereignis; ältere Fassungen kennen es nicht und werfen beim Binden.
+    try:
+        wurzel.bind_all('<TouchpadScroll>', streichen, add='+')
+        kopf.configure(text=kopf.cget('text') + '\n(Tk %s — Trackpad-Ereignis '
+                       'ist angeschlossen.)' % tk.TkVersion)
+    except tk.TclError:
+        kopf.configure(text=kopf.cget('text') + '\n(Tk %s kennt '
+                       '<TouchpadScroll> nicht.)' % tk.TkVersion)
 
     wurzel.mainloop()
 

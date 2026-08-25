@@ -63,6 +63,11 @@ GOLD    = '#e8c353'
 # Mindestgröße: Darunter bricht die Bedienung, und keine Layout-Regel hilft mehr.
 MIN_BREITE, MIN_HOEHE = 720, 520
 
+# Wie viel Streichweg auf dem Trackpad eine Zeile ergibt. Ein Trackpad meldet
+# viele kleine Schritte statt Rasten; ohne Teiler säuselt die Liste am Finger
+# vorbei. Der Wert ist ein Startwert zum Nachjustieren — größer heißt ruhiger.
+TRACKPAD_TEILER = 12
+
 # Schriftgrößen als **eine** Stellschraube. Anlass: Das ⟳ in der Titelleiste war
 # mit Brille kaum zu erkennen. Alle Widgets teilen sich diese Font-Objekte —
 # `configure(size=…)` zieht damit die ganze Oberfläche mit, statt dass jede
@@ -366,13 +371,20 @@ def rad_anschliessen(leinwand):
        Rad überall nur noch die Liste, auch wenn die gar nicht zu sehen war.
        Deshalb hängen jetzt **alle** Rollflächen an dieser einen Stelle.
 
-    4. **Trackpad.** Ein Mausrad rastet; ein Trackpad streicht. macOS meldet
-       für eine sanfte Streichgeste Beträge weit unter 1 — mit „ein Ereignis,
-       eine Zeile" wäre jeder Wisch ein voller Sprung, und rechnet man
-       stattdessen `int(betrag)`, kommt bei kleinen Werten **null** heraus und
-       gar nichts bewegt sich. Deshalb werden die Beträge **aufaddiert**, bis
+    4. **Trackpad.** Gemessen mit `tools/rad_messen.py`: Vom Trackpad kommt
+       **kein einziges** `<MouseWheel>` an — nicht etwa ein zu kleiner Wert,
+       sondern gar nichts. Seit Tk 8.7 gibt es dafür ein eigenes Ereignis,
+       `<TouchpadScroll>`, und erst das liefert die Streichgesten. Es feuert
+       viel häufiger als eine Radraste und trägt beide Richtungen in **einer**
+       Zahl: untere 16 Bit waagerecht, obere 16 Bit senkrecht.
+
+       Ältere Tk-Fassungen (8.6, verbreitet unter Linux) kennen das Ereignis
+       nicht — dort wirft das Binden einen Fehler, der abgefangen wird. Dort
+       melden sich Trackpads ohnehin als Button-4/5.
+
+       Weil beide Wege kleine Beträge liefern, werden sie **aufaddiert**, bis
        eine ganze Zeile zusammenkommt; der Rest bleibt für das nächste
-       Ereignis stehen. Damit rollt beides sauber — Rad wie Trackpad.
+       Ereignis stehen.
     """
     wurzel = leinwand.winfo_toplevel()
     if not hasattr(wurzel, 'rollflaechen'):
@@ -397,24 +409,58 @@ def rad_anschliessen(leinwand):
             angesammelt['wert'] -= ganze
             return -ganze                        # nach oben = negativ
 
-        def rollen(e):
+        def flaeche_unter(e):
+            """Die registrierte Rollfläche unter dem Mauszeiger — oder nichts."""
             unter = wurzel.winfo_containing(e.x_root, e.y_root)
             while unter is not None:
                 if unter in wurzel.rollflaechen:
-                    break
+                    return unter
                 unter = getattr(unter, 'master', None)
-            if unter is None:
+            return None
+
+        def rollen(e):
+            ziel = flaeche_unter(e)
+            if ziel is None:
                 return
             schritte = schritte_aus(e)
             if not schritte:
                 return
             try:
-                unter.yview_scroll(schritte, 'units')
+                ziel.yview_scroll(schritte, 'units')
+            except tk.TclError:
+                pass
+
+        def streichen(e):
+            """Trackpad: beide Richtungen stecken gepackt in einer Zahl."""
+            ziel = flaeche_unter(e)
+            if ziel is None:
+                return
+            roh = int(getattr(e, 'delta', 0) or 0)
+            senkrecht = (roh >> 16) & 0xFFFF
+            if senkrecht >= 0x8000:          # als vorzeichenbehaftet lesen
+                senkrecht -= 0x10000
+            if not senkrecht:
+                return
+            # Ein Streich meldet viele kleine Schritte. `TEILER` bestimmt, wie
+            # weit eine Geste trägt — kleiner heißt schneller.
+            angesammelt['wert'] += senkrecht / float(TRACKPAD_TEILER)
+            ganze = int(angesammelt['wert'])
+            angesammelt['wert'] -= ganze
+            if not ganze:
+                return
+            try:
+                ziel.yview_scroll(-ganze, 'units')
             except tk.TclError:
                 pass
 
         for ereignis in ('<MouseWheel>', '<Button-4>', '<Button-5>'):
             wurzel.bind_all(ereignis, rollen, add='+')
+        try:
+            wurzel.bind_all('<TouchpadScroll>', streichen, add='+')
+        except tk.TclError:
+            # Tk 8.6 und älter kennen das Ereignis nicht. Dort melden sich
+            # Trackpads als Button-4/5, also fehlt nichts.
+            pass
 
     if leinwand not in wurzel.rollflaechen:
         wurzel.rollflaechen.append(leinwand)
