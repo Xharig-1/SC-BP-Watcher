@@ -102,6 +102,15 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **„Check now" did not check.** The button showed „Looking for a new version …" and did
+  nothing else. Anyone with a stale cache could not get out of it — one tester was still
+  offered rc12 while running rc18. It now really asks, reports the result and updates the
+  display.
+- **The mouse did not bring the overlay back when it started hidden.** A window that has
+  never been shown reports its position as `1x1+0+0`, so the watch looked for the pointer in
+  the top-left corner of the screen instead of where the overlay sits — exactly the case
+  when starting in pop-up mode.
+
 - **Self-update took the Windows path on Linux** and reported „[Errno 2] No such file or
   directory: 'cmd'". The guard against foreign programs compared our own code against
   `APPDIR` — but PyInstaller extracts into a directory of its own, so the comparison always

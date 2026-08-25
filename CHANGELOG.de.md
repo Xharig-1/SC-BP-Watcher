@@ -105,6 +105,15 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **„Jetzt nachsehen" hat nicht nachgesehen.** Der Knopf zeigte die Meldung „Suche nach
+  einer neuen Fassung …" und suchte nicht. Wessen Zwischenspeicher veraltet war, kam damit
+  nicht heraus — ein Tester bekam auf rc18 weiterhin rc12 angeboten. Jetzt wird wirklich
+  gefragt, das Ergebnis gesagt und die Anzeige nachgezogen.
+- **Die Maus holte das Overlay nicht zurück, wenn es beim Start versteckt war.** Ein
+  Fenster, das noch nie zu sehen war, meldet seine Lage als `1x1+0+0` — die Wache suchte
+  den Zeiger also in der linken oberen Bildschirmecke statt dort, wo das Overlay steht.
+  Genau der Fall beim Start im Aufblend-Betrieb.
+
 - **Das Selbst-Update ging unter Linux in den Windows-Zweig** und meldete „[Errno 2] No such
   file or directory: 'cmd'". Der Riegel gegen fremde Programme verglich den eigenen Code mit
   `APPDIR` — nur entpackt sich PyInstaller in ein **eigenes** Verzeichnis, der Vergleich

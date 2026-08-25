@@ -1455,6 +1455,50 @@ def _wertzeile(fenster, eltern, bez, wert, farbe=None):
              font=fenster.f_klein, anchor='w').pack(side='left')
 
 
+def _jetzt_nachsehen(fenster):
+    """Wirklich bei GitHub nachfragen und sagen, was dabei herauskam.
+
+    ⚠ Hier stand nur `fenster.sagen(t('s_ub_sucht'))` — der Knopf **meldete**, dass
+    er sucht, und suchte nicht. Ein Nutzer (Bomb20, 25.08.2026) hatte deshalb auf
+    rc18 weiterhin rc12 als neueste Fassung angeboten bekommen: Sein
+    Zwischenspeicher blieb auf dem alten Stand, und der einzige Knopf, der ihn
+    hätte auffrischen können, tat nichts.
+
+    Läuft im eigenen Faden — die Abfrage geht ins Netz. Gezeichnet wird nur im
+    Tk-Faden.
+    """
+    import threading
+    from . import aktualisierung
+    fenster.sagen(t('s_ub_sucht'))
+
+    def arbeit():
+        try:
+            neuere = aktualisierung.nachsehen(fenster.version or '0.0.0',
+                                              erzwingen=True)
+        except Exception as ausnahme:
+            fehler.merken('seiten.jetzt_nachsehen', ausnahme)
+            fenster.root.after(0, lambda: fenster.sagen(t('s_ub_sucht_fehler')))
+            return
+
+        def melden():
+            if neuere:
+                fenster.sagen(t('s_ub_gefunden') % neuere.get('version'))
+            else:
+                fenster.sagen(t('s_ub_aktuell'))
+            # Die Kanal-Kästen tragen die Fassungsnummern — sie müssen mitziehen.
+            try:
+                fenster.neu_aufbauen()
+            except Exception:
+                pass
+
+        try:
+            fenster.root.after(0, melden)
+        except Exception:
+            pass
+
+    threading.Thread(target=arbeit, daemon=True).start()
+
+
 def _kanaele_auffrischen(fenster, kaesten, neu_zeichnen):
     """Im Hintergrund nachsehen und die Knöpfe nachziehen — höchstens einmal.
 
@@ -1695,7 +1739,7 @@ def _ueber(fenster, rahmen):
     reihe.pack(fill='x', pady=(10, 4))
     _knopfreihe(reihe, [
         _knopf(fenster, reihe, t('s_ub_nachsehen'),
-               lambda: fenster.sagen(t('s_ub_sucht')), stark=True),
+               lambda: _jetzt_nachsehen(fenster), stark=True),
         _knopf(fenster, reihe, t('hf_wasistneu'),
                lambda: fenster.oeffnen('wasistneu')),
         _knopf(fenster, reihe, t('s_ub_einrichtung'), fenster._einrichtung),

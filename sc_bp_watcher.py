@@ -55,7 +55,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc18'
+__version__ = '3.0.0-rc19'
 
 
 def _mitgeliefert(name):
@@ -1687,6 +1687,14 @@ class Overlay:
         """
         self.anzeigeart = pfade.einstellung('overlay_modus') or 'immer'
         if self.anzeigeart == 'popup':
+            # ⚠ Die Lage merken, **bevor** versteckt wird. Ein Fenster, das noch
+            # nie zu sehen war, meldet `1x1+0+0` — die Mauswache suchte dann in der
+            # linken oberen Bildschirmecke statt dort, wo das Overlay steht, und
+            # ging nie an. Beim Start im Aufblend-Betrieb ist genau das der Fall.
+            self._letzte_lage = self._current_geom()
+            if '+' not in self._letzte_lage or self._letzte_lage.startswith('1x1'):
+                # Noch nie gezeichnet: dann gilt, was gespeichert ist.
+                self._letzte_lage = load_geometry() or startlage(self.root)
             # Läuft gerade eine Einblendung, wird sie nicht abgeschnitten — der
             # Zähler räumt gleich selbst auf.
             if self._popup_uhr is None:
@@ -1809,7 +1817,9 @@ class Overlay:
             # Die Lage merken, bevor das Fenster verschwindet — danach meldet Tk
             # für ein verstecktes Fenster keine brauchbaren Werte mehr, und die
             # Mauswache wüsste nicht, wo sie hinsehen soll.
-            self._letzte_lage = self._current_geom()
+            jetzt = self._current_geom()
+            if '+' in jetzt and not jetzt.startswith('1x1'):
+                self._letzte_lage = jetzt
             self.root.withdraw()
         except tk.TclError:
             pass
