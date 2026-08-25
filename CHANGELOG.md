@@ -8,47 +8,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
-> Collects until the next release day (Wednesdays).
-
-### Fixed
-
-- **The new version failed to start after an update.** „Can't find a usable
-  init.tcl" — it inherited the old version’s environment and looked for its Tcl
-  files in the old throwaway folder, which the old version was just cleaning
-  up. PyInstaller’s variables are now removed, the same way the AppImage ones
-  already were.
-- **The old window stayed open after the restart.** `quit()` only ends the
-  event loop, not the program. It now really quits.
-
-
-- **Tray icon stayed missing.** `Shell_NotifyIcon` fails while the taskbar is
-  not ready — on autostart, right after an installation and on every Explorer
-  restart. That was silently accepted, and the icon was gone for good. It is
-  now retried, re-registered when the taskbar reappears, and a final failure
-  shows up in the error report.
-
-
-- **Shorthand corrected in the docs.** The project page and roadmap still said
-  `M/A/1` (class/grade/size); since v3.0.0 it reads `M/1/A` — class/size/grade,
-  the way the game words it.
-
-
-- **Updating on Windows spawned console windows.** The helper script that
-  swaps the running `.exe` looped forever while the file was locked — and it
-  stays locked until the program quits. Every further click on „get" started
-  another window. It now gives up after two minutes, stays invisible, and an
-  already running helper is stopped first.
-- **Setup failed on the running file** („DeleteFile failed; code 32"). The
-  installer now closes the program first and restarts it afterwards.
-
-### Changed
-
-- **You are asked before a translation is installed.** „German" and
-  „StarStrings" replace the game’s text file completely — after that the whole
-  game is in that language, not just the blueprint details. That was documented
-  nowhere; now the help text says so, and a prompt appears before the first
-  install. Confirmed once, it does not ask again. „Original" does not ask,
-  because it does not change the language.
+> Collects until the next release day (Saturdays).
 
 ## v3.0.0 - 2026-08-29
 
@@ -56,6 +16,23 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 > separate windows, and you had to know which one held what. Now they sit together — tabs
 > on the left, a visible folder for your files, and an installer instead of dragging a
 > file somewhere by hand.
+
+### Upgrading from v2.0.0
+
+- **Your blueprint collection moves along by itself.** It used to sit hidden in
+  `%APPDATA%`, now it lives visibly in `Documents\SC BP Watcher`. On the first
+  start it is **copied**, not moved — the old folder stays untouched in case
+  something is missing after all.
+- **For this one update, use the setup rather than the button in the program.**
+  The button works, but it still runs v2.0.0's update path — and on Windows
+  that leaves a console window sitting there until you quit the program. A bug
+  in the update path cannot fix itself; from v3.0.0 on it is sorted and the
+  button is enough.
+- **If you put the `.exe` somewhere by hand, delete it after installing.** The
+  setup places the program in `%LOCALAPPDATA%\Programs\SC BP Watcher`. The old
+  file would otherwise stay behind, and one day you would start the old version
+  by accident.
+- **On Linux there is nothing to do** — the AppImage replaces itself.
 
 ### Added
 
@@ -126,6 +103,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
+- **You are asked before a translation is installed.** „German" and
+  „StarStrings" replace the game’s text file completely — after that the whole
+  game is in that language, not just the blueprint details. That was documented
+  nowhere; now the help text says so, and a prompt appears before the first
+  install. Confirmed once, it does not ask again. „Original" does not ask,
+  because it does not change the language.
+
 - **In pop-up mode the overlay leaves a narrow green strip behind.** Hover it and the
   overlay is back. The first attempt polled the mouse position — which cannot work under
   Wayland: measured, Tk reported the same coordinates twelve times in a row while the mouse
@@ -148,6 +132,32 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **No more save button** — changes take effect right away.
 
 ### Fixed
+
+- **The new version failed to start after an update.** „Can't find a usable
+  init.tcl" — it inherited the old version’s environment and looked for its Tcl
+  files in the old throwaway folder, which the old version was just cleaning
+  up. PyInstaller’s variables are now removed, the same way the AppImage ones
+  already were.
+- **The old window stayed open after the restart.** `quit()` only ends the
+  event loop, not the program. It now really quits.
+
+- **Tray icon stayed missing.** `Shell_NotifyIcon` fails while the taskbar is
+  not ready — on autostart, right after an installation and on every Explorer
+  restart. That was silently accepted, and the icon was gone for good. It is
+  now retried, re-registered when the taskbar reappears, and a final failure
+  shows up in the error report.
+
+- **Shorthand corrected in the docs.** The project page and roadmap still said
+  `M/A/1` (class/grade/size); since v3.0.0 it reads `M/1/A` — class/size/grade,
+  the way the game words it.
+
+- **Updating on Windows spawned console windows.** The helper script that
+  swaps the running `.exe` looped forever while the file was locked — and it
+  stays locked until the program quits. Every further click on „get" started
+  another window. It now gives up after two minutes, stays invisible, and an
+  already running helper is stopped first.
+- **Setup failed on the running file** („DeleteFile failed; code 32"). The
+  installer now closes the program first and restarts it afterwards.
 
 - **„Check now" did not check.** The button showed „Looking for a new version …" and did
   nothing else. Anyone with a stale cache could not get out of it — one tester was still

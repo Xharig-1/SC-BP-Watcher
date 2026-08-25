@@ -8,49 +8,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ## Unveröffentlicht
 
-> Sammelt sich bis zum nächsten Veröffentlichungstag (mittwochs).
-
-### Behoben
-
-- **Nach dem Update startete die neue Fassung nicht.** „Can't find a usable
-  init.tcl" — die neue Fassung erbte die Umgebung der alten und suchte ihre
-  Tcl-Dateien in deren Wegwerf-Ordner, den die alte beim Beenden gerade
-  aufräumte. Die Variablen von PyInstaller werden jetzt entfernt, so wie es
-  bei den AppImage-Variablen schon geschah.
-- **Das alte Fenster blieb nach dem Neustart stehen.** `quit()` beendet nur die
-  Ereignisschleife, nicht das Programm. Jetzt geht es wirklich.
-
-
-- **Symbol neben der Uhr blieb weg.** `Shell_NotifyIcon` scheitert, solange die
-  Taskleiste nicht bereit ist — beim Autostart, direkt nach einer Installation
-  und bei jedem Explorer-Neustart. Bisher wurde das stillschweigend
-  hingenommen, und das Symbol fehlte danach für immer. Jetzt wird es mehrfach
-  versucht und beim Neuentstehen der Taskleiste erneut angemeldet; ein
-  endgültiges Scheitern steht im Fehlerbericht.
-
-
-- **Kürzel in der Doku berichtigt.** Projektseite und Fahrplan nannten es noch
-  `M/A/1` (Klasse/Grad/Größe); seit v3.0.0 steht dort `M/1/A` —
-  Klasse/Größe/Grad, so wie es sich im Spiel liest.
-
-
-- **Update unter Windows spuckte Konsolenfenster aus.** Das Hilfsskript, das die
-  laufende `.exe` austauscht, lief in einer Endlosschleife weiter, solange die
-  Datei gesperrt war — und sie bleibt gesperrt, bis das Programm beendet wird.
-  Jeder weitere Klick auf „holen" startete noch ein Fenster. Jetzt ist nach zwei
-  Minuten Schluss, das Fenster bleibt unsichtbar, und ein schon laufendes
-  Hilfsskript wird vorher beendet.
-- **Setup brach an der laufenden Datei ab** („DeleteFile failed; code 32").
-  Der Installer schließt das Programm jetzt vorher und startet es danach wieder.
-
-### Geändert
-
-- **Vor dem Einsetzen einer Übersetzung wird gefragt.** „Deutsch" und
-  „StarStrings" ersetzen die Textdatei des Spiels vollständig — danach ist das
-  ganze Spiel in dieser Sprache, nicht nur die Bauplan-Angaben. Das stand
-  nirgends; jetzt sagt es der Erklärtext, und vor dem ersten Einsetzen kommt
-  eine Rückfrage. Einmal bestätigt, wird nicht wieder gefragt. „Original"
-  fragt nicht, weil es die Sprache nicht ändert.
+> Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
 ## v3.0.0 - 2026-08-29
 
@@ -58,6 +16,23 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 > getrennten Fenstern, und man musste wissen, in welchem etwas steckt. Jetzt liegen sie
 > zusammen — mit Reitern links, einer sichtbaren Ablage für deine Dateien und einem
 > Installer, statt eine Datei von Hand irgendwohin zu ziehen.
+
+### Beim Umstieg von v2.0.0
+
+- **Dein Bauplan-Bestand zieht von allein mit.** Er lag versteckt in
+  `%APPDATA%`, jetzt liegt er sichtbar unter `Dokumente\SC BP Watcher`. Beim
+  ersten Start wird er **kopiert**, nicht verschoben — der alte Ordner bleibt
+  unangetastet stehen, falls doch etwas fehlt.
+- **Nimm für dieses eine Update das Setup, nicht den Knopf im Programm.** Der
+  Knopf tut es auch, benutzt aber noch den Update-Weg von v2.0.0 — und der
+  lässt unter Windows ein Konsolenfenster stehen, bis du das Programm beendest.
+  Ein Fehler im Update-Weg kann sich nicht selbst reparieren; ab v3.0.0 ist das
+  erledigt, ab dann genügt der Knopf.
+- **Hast du die `.exe` bisher von Hand irgendwohin gelegt, lösch sie nach der
+  Installation.** Das Setup legt das Programm unter
+  `%LOCALAPPDATA%\Programs\SC BP Watcher` ab. Die alte Datei bleibt sonst
+  liegen, und irgendwann startest du versehentlich wieder die alte Fassung.
+- **Unter Linux ist nichts zu tun** — das AppImage tauscht sich selbst aus.
 
 ### Hinzugefügt
 
@@ -130,6 +105,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Geändert
 
+- **Vor dem Einsetzen einer Übersetzung wird gefragt.** „Deutsch" und
+  „StarStrings" ersetzen die Textdatei des Spiels vollständig — danach ist das
+  ganze Spiel in dieser Sprache, nicht nur die Bauplan-Angaben. Das stand
+  nirgends; jetzt sagt es der Erklärtext, und vor dem ersten Einsetzen kommt
+  eine Rückfrage. Einmal bestätigt, wird nicht wieder gefragt. „Original"
+  fragt nicht, weil es die Sprache nicht ändert.
+
 - **Das Overlay hinterlässt im Aufblend-Betrieb einen schmalen grünen Streifen.** Maus
   darauf, und es ist wieder da. Der erste Versuch fragte dafür die Mausposition ab — das
   kann unter Wayland nicht funktionieren: Gemessen meldete Tk zwölfmal denselben Wert,
@@ -154,6 +136,34 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Kein Speichern-Knopf mehr** — Änderungen greifen sofort.
 
 ### Behoben
+
+- **Nach dem Update startete die neue Fassung nicht.** „Can't find a usable
+  init.tcl" — die neue Fassung erbte die Umgebung der alten und suchte ihre
+  Tcl-Dateien in deren Wegwerf-Ordner, den die alte beim Beenden gerade
+  aufräumte. Die Variablen von PyInstaller werden jetzt entfernt, so wie es
+  bei den AppImage-Variablen schon geschah.
+- **Das alte Fenster blieb nach dem Neustart stehen.** `quit()` beendet nur die
+  Ereignisschleife, nicht das Programm. Jetzt geht es wirklich.
+
+- **Symbol neben der Uhr blieb weg.** `Shell_NotifyIcon` scheitert, solange die
+  Taskleiste nicht bereit ist — beim Autostart, direkt nach einer Installation
+  und bei jedem Explorer-Neustart. Bisher wurde das stillschweigend
+  hingenommen, und das Symbol fehlte danach für immer. Jetzt wird es mehrfach
+  versucht und beim Neuentstehen der Taskleiste erneut angemeldet; ein
+  endgültiges Scheitern steht im Fehlerbericht.
+
+- **Kürzel in der Doku berichtigt.** Projektseite und Fahrplan nannten es noch
+  `M/A/1` (Klasse/Grad/Größe); seit v3.0.0 steht dort `M/1/A` —
+  Klasse/Größe/Grad, so wie es sich im Spiel liest.
+
+- **Update unter Windows spuckte Konsolenfenster aus.** Das Hilfsskript, das die
+  laufende `.exe` austauscht, lief in einer Endlosschleife weiter, solange die
+  Datei gesperrt war — und sie bleibt gesperrt, bis das Programm beendet wird.
+  Jeder weitere Klick auf „holen" startete noch ein Fenster. Jetzt ist nach zwei
+  Minuten Schluss, das Fenster bleibt unsichtbar, und ein schon laufendes
+  Hilfsskript wird vorher beendet.
+- **Setup brach an der laufenden Datei ab** („DeleteFile failed; code 32").
+  Der Installer schließt das Programm jetzt vorher und startet es danach wieder.
 
 - **„Jetzt nachsehen" hat nicht nachgesehen.** Der Knopf zeigte die Meldung „Suche nach
   einer neuen Fassung …" und suchte nicht. Wessen Zwischenspeicher veraltet war, kam damit
@@ -418,8 +428,6 @@ selbst geführt, und zu den meisten Bauplänen steht dabei, woher man sie bekomm
 
 - **714 Baupläne, nicht 1573.** Die Datei `crafting_items` zählt alle craftbaren Gegenstände; ein Bauplan droppt nur für einen Teil davon. Für eine Liste zum Abhaken wäre die große Zahl irreführend — maßgeblich sind die `blueprintPools`.
 - **Die scmdb-Daten werden weiterhin nicht mitgeliefert** (CC BY-NC-ND), sondern beim Nutzer geholt. `SC_BP_NO_NET=1` schaltet es ab; ohne Katalog fehlt nur die Liste, die Erkennung läuft weiter.
-
-
 
 
 - **Läuft unter Linux.** Eine Codebasis für beide Systeme, keine zweite Fassung. Wo die Dateien liegen, entscheidet der neue Baustein `scbp/pfade.py`: unter Windows `%APPDATA%` und `C:\Program Files`, unter Linux `~/.config` und das Wine-Präfix (gesucht wird an den Stellen, an denen lug-helper, Lutris, Bottles und Heroic ihre Installationen ablegen). Eigene Wege gehen über `SC_BP_HOME`, `SC_INSTALL_DIR` und `SC_BP_LAUNCHER`.
