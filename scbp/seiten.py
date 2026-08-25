@@ -274,13 +274,9 @@ def _fortschritt(fenster, rahmen):
 
     # Ein Gesamtbalken direkt darunter — die Zahl allein sagt wenig, der Balken
     # zeigt auf einen Blick, wie weit der Weg noch ist.
-    gesamtbalken = tk.Frame(innen, bg='#222b3b', height=9)
-    gesamtbalken.pack(fill='x', pady=(6, 18))
-    gesamtbalken.pack_propagate(False)
-    innen.update_idletasks()
-    breite = max(200, innen.winfo_width() or 600)
-    tk.Frame(gesamtbalken, bg=ACCENT, height=9,
-             width=int(breite * meine_alle / float(gesamt_alle))).pack(side='left')
+    from .hauptfenster import rundbalken
+    rundbalken(innen, 9, meine_alle / float(gesamt_alle), BG, '#222b3b',
+               ACCENT).pack(fill='x', pady=(6, 18))
 
     for art, (gesamt, meine) in sorted(nach_art.items(),
                                        key=lambda x: -x[1][0]):
@@ -288,13 +284,9 @@ def _fortschritt(fenster, rahmen):
         zeile.pack(fill='x', pady=3)
         tk.Label(zeile, text=art, bg=BG, fg=FG, font=fenster.f_klein,
                  width=22, anchor='w').pack(side='left')
-        balken = tk.Frame(zeile, bg='#222b3b', height=7, width=260)
-        balken.pack(side='left', padx=8)
-        balken.pack_propagate(False)
         anteil = max(0.0, min(1.0, meine / float(gesamt or 1)))
-        if anteil > 0:
-            tk.Frame(balken, bg=ACCENT, height=7,
-                     width=max(2, int(260 * anteil))).pack(side='left')
+        rundbalken(zeile, 7, anteil, BG, '#222b3b', ACCENT,
+                   breite=260).pack(side='left', padx=8)
         tk.Label(zeile, text='%d / %d' % (meine, gesamt), bg=BG, fg=SUB,
                  font=fenster.f_klein, width=10, anchor='e').pack(side='right')
 

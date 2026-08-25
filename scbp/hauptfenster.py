@@ -256,6 +256,45 @@ def _als_schrift(schrift):
     return schrift
 
 
+
+def rundbalken(eltern, hoehe, anteil, grund, leer, voll, breite=None):
+    """Ein Fortschrittsbalken mit runden Enden.
+
+    Zwei ineinandergeschobene Rahmen wären einfacher, hätten aber scharfe
+    Kanten — im Rest des Programms ist nichts scharfkantig. Also wieder eine
+    Leinwand: eine Rille in ganzer Länge, darüber der gefüllte Teil.
+
+    Der gefüllte Teil zieht mit, wenn sich die Breite ändert (Fenster größer,
+    Seitenleiste ein- oder ausgeklappt) — deshalb `<Configure>` statt einer
+    einmal ausgerechneten Pixelzahl.
+    """
+    r = hoehe / 2.0
+    c = tk.Canvas(eltern, height=hoehe, bg=grund, highlightthickness=0, bd=0)
+    if breite:
+        c.configure(width=breite)
+    rille = _rundes_rechteck(c, 0, 0, 100, hoehe, radius=r, fill=leer,
+                             outline='')
+    fuellung = _rundes_rechteck(c, 0, 0, 10, hoehe, radius=r, fill=voll,
+                                outline='')
+
+    def nachziehen(_=None):
+        b = c.winfo_width()
+        if b < 4:
+            return
+        c.coords(rille, *ecken(0, 0, b, hoehe, r))
+        if anteil <= 0:
+            c.itemconfigure(fuellung, state='hidden')
+            return
+        c.itemconfigure(fuellung, state='normal')
+        # Mindestens so breit wie hoch: Ein Balken bei 1 % wäre sonst ein
+        # Strich, den man für einen Zeichenfehler hält.
+        voll_breite = max(hoehe, b * anteil)
+        c.coords(fuellung, *ecken(0, 0, voll_breite, hoehe, r))
+
+    c.bind('<Configure>', nachziehen)
+    return c
+
+
 def rundknopf(eltern, text, tat, schrift, grund, fuellung, rand, fg,
               radius=6, polster=(10, 5), cursor='hand2'):
     """Ein klickbarer Knopf mit runden Ecken — der Standard im ganzen Programm.
