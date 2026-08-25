@@ -641,6 +641,27 @@ def neu_starten():
         # Die Variablen des laufenden AppImage gehören der **alten** Fassung.
         for name in ('APPIMAGE', 'APPDIR', 'OWD', 'ARGV0'):
             umgebung.pop(name, None)
+
+        # ⚠ Dasselbe gilt unter Windows für die Variablen von PyInstaller — und
+        # dort ist es schlimmer, weil das Programm gar nicht mehr startet.
+        #
+        # Eine mit PyInstaller gebaute `.exe` entpackt sich beim Start nach
+        # `%TEMP%\_MEIxxxxxx` und zeigt mit `TCL_LIBRARY` und `TK_LIBRARY`
+        # dorthin. Erbt die neue Fassung diese Variablen, sucht sie ihre
+        # Tcl-Dateien im Ordner der **alten** — den die alte beim Beenden
+        # gerade aufräumt. Ergebnis, so beim Testen gemeldet (Haldjas,
+        # 25.08.2026):
+        #
+        #     Failed to execute script 'sc_bp_watcher' due to unhandled
+        #     exception: Can't find a usable init.tcl in the following
+        #     directories: C:\Users\…\AppData\Local\Temp\_MEI000067b42…
+        #
+        # Und gleich hinterher die Gegenseite: „Failed to remove temporary
+        # directory" — die alte Fassung kommt an ihren eigenen Ordner nicht
+        # mehr heran, weil die neue darin liest.
+        for name in ('_MEIPASS', '_MEIPASS2', 'TCL_LIBRARY', 'TK_LIBRARY',
+                     'TIX_LIBRARY', 'MATPLOTLIBDATA'):
+            umgebung.pop(name, None)
         subprocess.Popen([ziel], env=umgebung, start_new_session=True,
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return True

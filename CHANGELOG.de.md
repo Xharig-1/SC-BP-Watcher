@@ -12,6 +12,15 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Nach dem Update startete die neue Fassung nicht.** „Can't find a usable
+  init.tcl" — die neue Fassung erbte die Umgebung der alten und suchte ihre
+  Tcl-Dateien in deren Wegwerf-Ordner, den die alte beim Beenden gerade
+  aufräumte. Die Variablen von PyInstaller werden jetzt entfernt, so wie es
+  bei den AppImage-Variablen schon geschah.
+- **Das alte Fenster blieb nach dem Neustart stehen.** `quit()` beendet nur die
+  Ereignisschleife, nicht das Programm. Jetzt geht es wirklich.
+
+
 - **Symbol neben der Uhr blieb weg.** `Shell_NotifyIcon` scheitert, solange die
   Taskleiste nicht bereit ist — beim Autostart, direkt nach einer Installation
   und bei jedem Explorer-Neustart. Bisher wurde das stillschweigend

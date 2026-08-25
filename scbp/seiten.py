@@ -1618,8 +1618,26 @@ def _fassung_holen(fenster, mit_vorab):
         if not aktualisierung.neu_starten():
             fenster.sagen(t('s_ub_neustart_nein'))
             return
+        # ⚠ `quit()` allein reicht nicht: Es beendet die Ereignisschleife, nicht
+        # den Prozess. Gemeldet als „er schließt das fenster nicht selbst"
+        # (Haldjas, 25.08.2026) — die neue Fassung lief, die alte stand daneben.
+        # Also der Reihe nach: Fenster zu, Schleife beenden, und wenn nach einer
+        # Sekunde immer noch etwas hängt (ein Faden, ein Overlay), hart raus.
+        # Der Prozess ist an dieser Stelle ohnehin am Ende — die neue Fassung
+        # läuft schon.
+        def _abtreten():
+            # ⚠ Der Notausgang muss VOR dem Zerstören stehen und darf nicht an
+            # Tk hängen: Nach `destroy()` gibt es kein `after` mehr, der Timer
+            # käme nie. Ein eigener Faden läuft unabhängig weiter.
+            threading.Timer(1.5, lambda: os._exit(0)).start()
+            try:
+                fenster.root.quit()
+                fenster.root.destroy()
+            except Exception:
+                pass
+
         try:
-            fenster.root.after(400, fenster.root.quit)
+            fenster.root.after(400, _abtreten)
         except Exception:
             pass
         return

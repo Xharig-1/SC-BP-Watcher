@@ -12,6 +12,15 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The new version failed to start after an update.** „Can't find a usable
+  init.tcl" — it inherited the old version’s environment and looked for its Tcl
+  files in the old throwaway folder, which the old version was just cleaning
+  up. PyInstaller’s variables are now removed, the same way the AppImage ones
+  already were.
+- **The old window stayed open after the restart.** `quit()` only ends the
+  event loop, not the program. It now really quits.
+
+
 - **Tray icon stayed missing.** `Shell_NotifyIcon` fails while the taskbar is
   not ready — on autostart, right after an installation and on every Explorer
   restart. That was silently accepted, and the icon was gone for good. It is
