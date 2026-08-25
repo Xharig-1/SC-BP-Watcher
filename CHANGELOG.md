@@ -8,7 +8,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
-> Collecting until the next release day (Wednesdays).
+> Collects until the next release day (Wednesdays).
+
+### Changed
+
+- **You are asked before a translation is installed.** „German" and
+  „StarStrings" replace the game’s text file completely — after that the whole
+  game is in that language, not just the blueprint details. That was documented
+  nowhere; now the help text says so, and a prompt appears before the first
+  install. Confirmed once, it does not ask again. „Original" does not ask,
+  because it does not change the language.
 
 ## v3.0.0 - 2026-08-29
 

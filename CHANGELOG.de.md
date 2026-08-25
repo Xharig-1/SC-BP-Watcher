@@ -10,6 +10,15 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (mittwochs).
 
+### Geändert
+
+- **Vor dem Einsetzen einer Übersetzung wird gefragt.** „Deutsch" und
+  „StarStrings" ersetzen die Textdatei des Spiels vollständig — danach ist das
+  ganze Spiel in dieser Sprache, nicht nur die Bauplan-Angaben. Das stand
+  nirgends; jetzt sagt es der Erklärtext, und vor dem ersten Einsetzen kommt
+  eine Rückfrage. Einmal bestätigt, wird nicht wieder gefragt. „Original"
+  fragt nicht, weil es die Sprache nicht ändert.
+
 ## v3.0.0 - 2026-08-29
 
 > **Ein Fenster für alles.** Bauplan-Liste und Einstellungen lagen bisher in zwei
