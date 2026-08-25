@@ -398,6 +398,8 @@ Die Werte zu Art, Größe, Gütegrad und Klasse sowie die Herkunft je Bauplan st
 
 > Der Watcher **liefert diese Daten nicht mit**, sondern lädt sie auf deinem Rechner direkt bei scmdb.net — so wie es ein Browser täte. scmdb steht unter [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/); eine mitgelieferte Kopie wäre eine Weitergabe und würde sowohl dieser Lizenz als auch der GPL dieses Projekts widersprechen. Abgerufen wird sparsam: nur, wenn eine **neue Spielversion** vorliegt.
 
+Und Dank an **Haldjas** aus dem Kartell: Von ihm kam die Rückmeldung, dass ein Overlay, das dauernd im Bild steht und Mausklicks abfängt, im Kampf mehr stört als hilft. Aus seinem Vorschlag sind zwei Sachen geworden, die es ohne ihn nicht gäbe — das Overlay blendet auf Wunsch **nur noch bei einem neuen Bauplan** kurz auf, und Mausklicks lassen sich **ins Spiel durchreichen**. Beides steht unter *Anzeige*. Gute Idee, sauber getroffen. 🙏
+
 SC BP Watcher ist ein eigenständiges, inoffizielles Zusatz-Tool und steht in **keiner** offiziellen Verbindung zum SC Deutsch Launcher oder zu Cloud Imperium Games. Alle Marken- und Projektnamen gehören ihren jeweiligen Eigentümern.
 
 ## Author

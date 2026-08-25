@@ -91,6 +91,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Die Marken `[SCBPW]` waren im Spiel sichtbar.** Im Auftragstitel stand „Security
+  Patrol**[SCBPW]** [BP 3/6]**[/SCBPW]**". Sie sorgten dafür, dass sich Eingefügtes exakt
+  wieder entfernen lässt — nur will das niemand in seinem Spiel lesen. Jetzt steht gar
+  keine Marke mehr im Text: Der **Wortlaut vor der Einfügung** wird gemerkt, und das
+  Zurücksetzen stellt ihn wieder her. Das ist genauer als vorher. Geprüft mit
+  `tools/injektion_pruefen.py` an der echten Datei: einspielen und entfernen lässt 743
+  Textstellen auf das Zeichen genau so, wie sie waren.
+
 - **„Was ist neu" stand auf Englisch, obwohl die Oberfläche auf Deutsch steht.** Der
   Release-Text auf GitHub ist bewusst zweisprachig — Englisch oben, Deutsch aufklappbar
   darunter. Auf der Release-Seite ist das richtig; im Fenster wurde daraus eine englische

@@ -89,6 +89,14 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The `[SCBPW]` markers were visible in game.** The contract title read „Security
+  Patrol**[SCBPW]** [BP 3/6]**[/SCBPW]**". They made sure inserted text could be removed
+  exactly — but nobody wants to read that in their game. There is no marker in the text at
+  all now: the **wording before the insertion** is remembered, and removing restores it.
+  That is more precise than before. Verified with `tools/injektion_pruefen.py` against the
+  real file: inserting and removing leaves all 743 passages character-for-character as they
+  were.
+
 - **„What's new" showed English even with a German interface.** The GitHub release text is
   deliberately bilingual — English on top, German in a collapsible block. That is right for
   the release page; in the window it became an English list. The bundled changelog now
