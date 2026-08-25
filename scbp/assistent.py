@@ -53,9 +53,19 @@ GELB    = '#d8a03a'
 SCHRITTE = 5
 
 
-def schrift(groesse, fett=False):
+def schrift(groesse, fett=False, unterstrichen=False):
+    """Die Schrift des Assistenten.
+
+    `unterstrichen` ist für Textlinks — im Haus die Auszeichnung dafür, dass
+    man auf etwas klicken kann. Ohne sie sieht ein Textlink aus wie ein
+    Hinweis und wird übersehen.
+    """
     fam = 'Segoe UI' if pfade.WINDOWS else 'Helvetica'
-    return (fam, groesse, 'bold' if fett else 'normal')
+    teile = [fam, groesse]
+    stil = ' '.join(x for x, an in (('bold', fett),
+                                    ('underline', unterstrichen)) if an)
+    teile.append(stil or 'normal')
+    return tuple(teile)
 
 
 def mono(groesse):
@@ -188,12 +198,17 @@ class Assistent:
             # `noetig()` am fehlenden Spielordner hängt, kommt der Assistent
             # bei jedem Start wieder. Genau so ging es beim Ansehen auf einem
             # Zweitrechner — man kam nie über diese Seite hinaus.
-            ohne = tk.Label(f, text=t('ohne_spiel'), bg=BG, fg=SUB,
-                            font=schrift(10), cursor='hand2')
+            # ⚠ Als schlichter grauer Text sieht das aus wie ein Hinweis, nicht
+            # wie etwas zum Anklicken — genau so wurde er beim Ausprobieren
+            # übersehen. Deshalb unterstrichen und in der Akzentfarbe: Das ist
+            # im Haus die Auszeichnung für „hier kann man klicken".
+            ohne = tk.Label(f, text='→  ' + t('ohne_spiel'), bg=BG, fg=ACCENT,
+                            font=schrift(10, unterstrichen=True),
+                            cursor='hand2')
             ohne.pack(anchor='w', pady=(18, 0))
             ohne.bind('<Button-1>', lambda e: self._ohne_spiel())
-            ohne.bind('<Enter>', lambda e: ohne.configure(fg=ACCENT))
-            ohne.bind('<Leave>', lambda e: ohne.configure(fg=SUB))
+            ohne.bind('<Enter>', lambda e: ohne.configure(fg=FG))
+            ohne.bind('<Leave>', lambda e: ohne.configure(fg=ACCENT))
         self._pfad_pruefen()
 
     def _ohne_spiel(self):
