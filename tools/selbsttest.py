@@ -389,6 +389,12 @@ def main():
         for art in unbekannt[:5]:
             print('        · %s kennt katalog.ART_GRUPPE nicht' % art)
 
+        formatfehler = probe_daten.formate_pruefen()
+        pruefe(not formatfehler,
+               'die Beispieldaten haben die Formate des echten Katalogs')
+        for satz in formatfehler[:5]:
+            print('        · ' + satz)
+
         # Die Dokumente allein reichen nicht: Die Oberfläche zeigte an über
         # hundert Stellen deutschen Text, während oben alles grün meldete.
         import texte_pruefen

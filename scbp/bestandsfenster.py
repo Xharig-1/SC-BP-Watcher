@@ -80,14 +80,19 @@ def mono(groesse):
 
 
 def kuerzel(eintrag):
-    """Klasse/Grad/Größe als „M/A/1" — leer, wo es nichts zu zeigen gibt."""
+    """Klasse/Größe/Grad als „M/1/A" — leer, wo es nichts zu zeigen gibt.
+
+    ⚠ Die Reihenfolge ist **Klasse, Größe, Grad**, nicht Klasse, Grad, Größe.
+    So liest es sich wie im Spiel („Size 1, Grade A"), und die Größe ist beim
+    Suchen das Wichtigere: Ein Cooler der falschen Größe passt gar nicht,
+    einer mit anderem Grad passt schlechter.
+    """
     klasse, grad, groesse = eintrag.get('c'), eintrag.get('g'), eintrag.get('s')
     if not (klasse or grad or groesse):
         return ''
-    buchstabe = {'Military': 'M', 'Stealth': 'S', 'Industrial': 'I',
-                 'Civilian': 'C', 'Competition': 'K'}.get(klasse, '–')
-    grad_b = {1: 'A', 2: 'B', 3: 'C', 4: 'D'}.get(grad, '–')
-    return '%s/%s/%s' % (buchstabe, grad_b, groesse if groesse else '–')
+    buchstabe = KLASSE_BUCHSTABE.get(klasse, '–')
+    grad_b = GRAD_BUCHSTABE.get(grad, '–').upper()
+    return '%s/%s/%s' % (buchstabe, groesse if groesse else '–', grad_b)
 
 
 def quelle_text(q):
@@ -141,6 +146,21 @@ def ort_text(wo):
 # „Grade A" sucht, tippt den Buchstaben — also muss hier umgerechnet werden,
 # sonst findet die Suche nie etwas.
 GRAD_BUCHSTABE = {1: 'a', 2: 'b', 3: 'c', 4: 'd'}
+
+# Die Klassen, wie das Spiel sie kennt — mit ihrem Kürzel in der Zeile.
+KLASSE_BUCHSTABE = {'Military': 'M', 'Stealth': 'S', 'Industrial': 'I',
+                    'Civilian': 'C', 'Competition': 'K'}
+
+# ⚠ Klassen, Größen und Grade stehen hier **fest**, nicht aus dem Katalog
+# abgeleitet. Grund: Was gerade kein Bauplan hat, fehlte sonst in der Auswahl —
+# gemeldet für „Competition" (kommt im Katalog 4.9.0 nicht vor), für die Größen
+# 4 bis 6 und für die Grade B bis D. Ein Auswahlfeld, dessen Inhalt sich mit
+# jedem Spiel-Patch ändert, ist keins: Man sucht etwas und findet den Eintrag
+# nicht, ohne zu erfahren warum. Was der Katalog darüber hinaus hergibt, wird
+# unten trotzdem ergänzt — verlieren soll man nichts.
+KLASSEN_FEST = ('Military', 'Stealth', 'Industrial', 'Civilian', 'Competition')
+GROESSEN_FEST = ('1', '2', '3', '4', '5', '6')
+GRADE_FEST = ('1', '2', '3', '4')
 
 
 def _passt(eintrag, text):
@@ -372,16 +392,29 @@ class Bestandsfenster:
                 arten[roh] = katalog_modul.art_lesbar(roh)
         return sorted(arten.items(), key=lambda p: p[1].lower())
 
+    def _mit_katalog(self, fest, feld):
+        """Die feste Liste, ergänzt um alles, was der Katalog sonst noch hat.
+
+        So fehlt nichts, wenn ein Patch etwas Neues bringt — und nichts
+        verschwindet, nur weil es gerade keinen Bauplan dazu gibt.
+        """
+        werte = list(fest)
+        for wert in self._kat_werte(feld):
+            if str(wert) not in werte:
+                werte.append(str(wert))
+        return werte
+
     def _klassen(self):
-        return [(k, k) for k in self._kat_werte('c')]
+        return [(k, k) for k in self._mit_katalog(KLASSEN_FEST, 'c')]
 
     def _groessen(self):
-        return [(str(s), t('ff_groesse') % s) for s in self._kat_werte('s')]
+        return [(s, t('ff_groesse') % s)
+                for s in self._mit_katalog(GROESSEN_FEST, 's')]
 
     def _grade(self):
-        vorhanden = self._kat_werte('g')
-        return [(str(g), t('ff_grad') % GRAD_BUCHSTABE.get(g, g).upper())
-                for g in vorhanden]
+        return [(g, t('ff_grad') % GRAD_BUCHSTABE.get(int(g), g).upper()
+                 if g.isdigit() else g)
+                for g in self._mit_katalog(GRADE_FEST, 'g')]
 
     def _quellen(self):
         """Fraktionen und Sonderquellen — beides, wonach man wirklich sucht."""

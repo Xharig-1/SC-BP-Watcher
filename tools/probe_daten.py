@@ -15,6 +15,11 @@ import sys
 # Ein kleiner, aber echter Ausschnitt: verschiedene Arten, Klassen, Größen,
 # mit und ohne Bezugsquelle. Genug, um Liste, Filter und Herkunft zu beurteilen.
 #
+# ⚠ Alle Werte MÜSSEN im Format des echten scmdb-Katalogs stehen. Der
+# Gütegrad ist dort eine ZAHL (1–4), kein Buchstabe: Stand hier 'A', schlug
+# `kuerzel()` in einer Zahlen-Tabelle nach und schrieb „–" — in der Liste
+# stand „M/–/1" statt „M/1/A". `formate_pruefen()` unten faengt das ab.
+#
 # ⚠ Die Art MUSS die echte Kennung aus dem scmdb-Katalog sein — `WeaponGun`,
 # nicht „Ship weapon". Hier standen ausgedachte Namen, und weil
 # `katalog.ART_GRUPPE` die nicht kennt, landete alles in „Sonstiges": Der
@@ -23,12 +28,12 @@ import sys
 # Ordnung — die Testdaten waren es nicht. `_arten_pruefen()` unten lässt das
 # nicht wieder durchgehen.
 BEISPIELE = [
-    ("7CA 'Nargun'", 'Cooler', 'Military', 'A', '1', True,
+    ("7CA 'Nargun'", 'Cooler', 'Military', 1, '1', True,
      [('Foxwell Enforcement', 'Red Lvl. Contract: Protect Fuel Tanks',
        'Veteran Contractor', 15000, 48000, 'Stanton')]),
-    ('Aufeis', 'Cooler', 'Civilian', 'B', '2', True,
+    ('Aufeis', 'Cooler', 'Civilian', 2, '2', True,
      [('Covalex', 'Hauling: Priority Freight', 'Associate', 6000, 18000, 'Stanton')]),
-    ('Blizzard', 'Cooler', 'Military', 'A', '3', False,
+    ('Blizzard', 'Cooler', 'Military', 1, '3', False,
      [('Headhunters', 'Bounty: Hostile Gunship', 'Enforcer', 24000, 61000, 'Pyro')]),
     ('Attrition-5 Repeater', 'WeaponGun', None, None, '3', True,
      [('Bit-Zeros', 'Salvage: Derelict Sweep', 'Trusted Hand', 9000, 32000, 'Pyro')]),
@@ -45,9 +50,9 @@ BEISPIELE = [
       ('Covalex', 'Hauling: Priority Freight', 'Associate', 6000, 18000, 'Stanton')]),
     ('BUL-H4 Armor', 'Char_Armor_Torso', None, None, None, False, []),      # XenoThreat
     ('Purgatory Camo', 'Pattern', None, None, None, False, []),  # RedWind
-    ('XL-1', 'PowerPlant', 'Industrial', 'B', '2', False,
+    ('XL-1', 'PowerPlant', 'Industrial', 2, '2', False,
      [('Rayari', 'Research: Sample Retrieval', 'Associate', 7500, 21000, 'Stanton')]),
-    ('Breton Shield', 'Shield', 'Military', 'A', '2', False,
+    ('Breton Shield', 'Shield', 'Military', 1, '2', False,
      [('Headhunters', 'Bounty: Marked Target', 'Contractor', 12000, 30000, 'Pyro')]),
 ]
 TOPF = {'BUL-H4 Armor': 'XenoThreat', 'Purgatory Camo': 'RedWind'}
@@ -127,6 +132,32 @@ def arten_pruefen():
     absicht = ('Pattern',)
     return sorted({art for _, art, _, _, _, _, _ in BEISPIELE
                    if art not in katalog.ART_GRUPPE and art not in absicht})
+
+
+def formate_pruefen():
+    """Haben die Beispieldaten dieselben Formate wie der echte Katalog?
+
+    Bisher geprüft:
+
+    * **Gütegrad** als Zahl 1–4, nicht als Buchstabe. Stand hier 'A', schlug
+      `kuerzel()` in einer Zahlen-Tabelle nach, fand nichts und schrieb „–":
+      In der Liste stand „M/–/1" statt „M/1/A".
+    * **Klasse** als ausgeschriebener Name („Military"), nicht als Kürzel.
+
+    Beides ist derselbe Fehler wie die ausgedachten Art-Kennungen: Testdaten
+    in einem Format, das es echt nicht gibt — und die Oberfläche sieht dann
+    kaputt aus, obwohl sie stimmt.
+    """
+    beanstandet = []
+    for name, _, klasse, grad, groesse, _, _ in BEISPIELE:
+        if grad is not None and not isinstance(grad, int):
+            beanstandet.append('%s: Grad %r ist keine Zahl 1–4' % (name, grad))
+        if klasse is not None and len(str(klasse)) <= 2:
+            beanstandet.append('%s: Klasse %r ist ein Kürzel statt des Namens'
+                               % (name, klasse))
+        if groesse is not None and not str(groesse).isdigit():
+            beanstandet.append('%s: Größe %r ist keine Zahl' % (name, groesse))
+    return beanstandet
 
 
 def _beispiele(ziel):
