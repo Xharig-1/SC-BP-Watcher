@@ -10,6 +10,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Wednesdays).
 
+### Fixed
+
+- **Updating on Windows spawned console windows.** The helper script that
+  swaps the running `.exe` looped forever while the file was locked — and it
+  stays locked until the program quits. Every further click on „get" started
+  another window. It now gives up after two minutes, stays invisible, and an
+  already running helper is stopped first.
+- **Setup failed on the running file** („DeleteFile failed; code 32"). The
+  installer now closes the program first and restarts it afterwards.
+
 ### Changed
 
 - **You are asked before a translation is installed.** „German" and

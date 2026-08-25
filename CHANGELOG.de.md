@@ -10,6 +10,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (mittwochs).
 
+### Behoben
+
+- **Update unter Windows spuckte Konsolenfenster aus.** Das Hilfsskript, das die
+  laufende `.exe` austauscht, lief in einer Endlosschleife weiter, solange die
+  Datei gesperrt war — und sie bleibt gesperrt, bis das Programm beendet wird.
+  Jeder weitere Klick auf „holen" startete noch ein Fenster. Jetzt ist nach zwei
+  Minuten Schluss, das Fenster bleibt unsichtbar, und ein schon laufendes
+  Hilfsskript wird vorher beendet.
+- **Setup brach an der laufenden Datei ab** („DeleteFile failed; code 32").
+  Der Installer schließt das Programm jetzt vorher und startet es danach wieder.
+
 ### Geändert
 
 - **Vor dem Einsetzen einer Übersetzung wird gefragt.** „Deutsch" und

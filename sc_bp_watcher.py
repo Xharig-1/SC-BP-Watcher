@@ -55,7 +55,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc21'
+__version__ = '3.0.0-rc22'
 
 
 def _mitgeliefert(name):
@@ -1909,6 +1909,24 @@ if __name__ == '__main__':
     # wenn das Overlay im Pop-up-Betrieb unsichtbar ist.
     if overlay.zeigen_bitte():
         sys.exit(0)
+
+    # ⚠ Windows-Kennzeichen, damit der Installer uns findet und vor dem
+    # Überschreiben schließen kann. Ohne das bricht das Setup mitten im
+    # Kopieren ab: „DeleteFile failed; code 32 — Der Prozess kann nicht auf die
+    # Datei zugreifen, da sie von einem anderen Prozess verwendet wird."
+    # Beim Testen so gemeldet (Haldjas, 25.08.2026); die Installation blieb halb
+    # fertig liegen, und danach startete nur noch das Setup.
+    #
+    # Der Name muss mit `AppMutex` in `packaging/installer.iss` übereinstimmen.
+    # Das Kennzeichen wird nur gesetzt, nie abgefragt — den Einzelstart regelt
+    # `overlay.zeigen_bitte()` oben.
+    if pfade.WINDOWS:
+        try:
+            import ctypes
+            ctypes.windll.kernel32.CreateMutexW(
+                None, False, 'SC-BP-Watcher-Einzelstart')
+        except Exception as ausnahme:
+            fehler.merken('start.mutex', ausnahme)
 
     # ⚠ Die **eine** Tk-Instanz des Programms. Sie entsteht hier und wird an alles
     # weitergereicht — Assistent wie Overlay. Vorher legte der Assistent eine

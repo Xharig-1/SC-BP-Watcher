@@ -494,6 +494,19 @@ def herunterladen(datei, fortschritt=None):
     return ziel
 
 
+# Wie lange das Windows-Hilfsskript auf die Freigabe der .exe wartet (Sekunden).
+#
+# ⚠ Es MUSS eine Grenze geben. Vorher lief die Schleife ewig — und weil die
+# .exe erst frei wird, wenn der Nutzer das Programm beendet, lief sie bei jedem
+# Klick auf „holen" ein weiteres Mal. Beim Testen kamen so mehrere Fenster
+# zusammen, die nur der Task-Manager wieder losgeworden ist.
+#
+# 120 Sekunden sind großzügig: Wer nach zwei Minuten nicht beendet hat, macht
+# gerade etwas anderes. Das Update geht dabei nicht verloren — die neue Datei
+# bleibt liegen und wird beim nächsten Versuch genommen.
+VERSUCHE_TAUSCH = 120
+
+
 def einspielen(neue_datei):
     """Die laufende Fassung durch die neue ersetzen.
 
@@ -535,17 +548,50 @@ def einspielen(neue_datei):
             return True, ''
         # Windows: die laufende .exe ist gesperrt. Also ein Hilfsskript, das
         # wartet, bis wir weg sind, dann tauscht und neu startet.
+        #
+        # ⚠ Drei Fehler steckten hier, und zusammen ergaben sie das, was Haldjas
+        # beim Testen erlebt hat: „hat er mir erstmal nen haufen terminals
+        # ausgespuckt bis ich den prozess mit dem task manager gekillt hab".
+        #
+        # 1. **Das Fenster.** `DETACHED_PROCESS` gibt dem `cmd` eine eigene
+        #    Konsole — sichtbar. `CREATE_NO_WINDOW` nicht.
+        # 2. **Die Endlosschleife.** `|| goto warten` lief ewig weiter, solange
+        #    die `.exe` gesperrt blieb. Sie bleibt es aber, bis der Nutzer das
+        #    Programm beendet — und wer stattdessen nochmal auf „holen" klickt,
+        #    bekommt ein zweites ewig laufendes Fenster. Jetzt ist nach
+        #    VERSUCHE_TAUSCH Sekunden Schluss.
+        # 3. **Mehrfachstart.** Jeder Klick schrieb dieselbe Datei neu und
+        #    startete noch ein `cmd`. Jetzt wird ein laufendes vorher beendet.
+        import subprocess
         skript = os.path.join(tempfile.gettempdir(), 'sc-bp-watcher-update.cmd')
+
+        # Ein schon laufendes Update-Skript aus dem Weg räumen, bevor ein
+        # neues startet — sonst tauschen zwei gleichzeitig dieselbe Datei.
+        try:
+            subprocess.run(['taskkill', '/f', '/im', 'cmd.exe', '/fi',
+                            'WINDOWTITLE eq sc-bp-watcher-update*'],
+                           capture_output=True, timeout=5)
+        except Exception:
+            pass                      # kein laufendes da, oder taskkill fehlt
+
         with open(skript, 'w', encoding='ascii', errors='ignore') as f:
             f.write('@echo off\r\n'
+                    'title sc-bp-watcher-update\r\n'
+                    'set /a versuche=0\r\n'
                     ':warten\r\n'
+                    'set /a versuche+=1\r\n'
+                    'if %%versuche%% gtr %d goto aufgeben\r\n'
                     'timeout /t 1 /nobreak >nul\r\n'
                     'move /y "%s" "%s" >nul 2>&1 || goto warten\r\n'
                     'start "" "%s"\r\n'
-                    'del "%%~f0"\r\n' % (neue_datei, ziel, ziel))
-        import subprocess
+                    'del "%%~f0"\r\n'
+                    'exit /b 0\r\n'
+                    ':aufgeben\r\n'
+                    'del "%%~f0"\r\n'
+                    'exit /b 1\r\n'
+                    % (VERSUCHE_TAUSCH, neue_datei, ziel, ziel))
         subprocess.Popen(['cmd', '/c', skript],
-                         creationflags=getattr(subprocess, 'DETACHED_PROCESS', 0))
+                         creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
         return True, ''
     except Exception as fehler:
         return False, str(fehler)

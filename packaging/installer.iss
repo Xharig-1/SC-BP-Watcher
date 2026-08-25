@@ -46,6 +46,26 @@ AppSupportURL={#AppURL}/issues
 AppUpdatesURL={#AppURL}/releases
 VersionInfoVersion={#ZahlVersion}
 
+; ⚠ Das laufende Programm muss beendet werden, bevor die .exe ersetzt wird.
+; Ohne diese drei Zeilen bricht das Setup mitten im Kopieren ab:
+;
+;     An error occurred while trying to replace the existing file:
+;     DeleteFile failed; code 32.
+;     Der Prozess kann nicht auf die Datei zugreifen, da sie von einem
+;     anderen Prozess verwendet wird.
+;
+; Genau so beim Testen gemeldet (Haldjas, 25.08.2026) — mit der Folge, dass die
+; Installation halb fertig liegen blieb und der Watcher danach nur noch das
+; Setup startete. `CloseApplications` fragt den Nutzer und schließt das
+; Programm, `RestartApplications` startet es danach wieder.
+;
+; `AppMutex` ist die Voraussetzung dafür, dass Inno das laufende Programm
+; überhaupt erkennt — der Name muss mit dem übereinstimmen, den das Programm
+; beim Start setzt (siehe `sc_bp_watcher.py`).
+CloseApplications=yes
+RestartApplications=yes
+AppMutex=SC-BP-Watcher-Einzelstart
+
 ; Kein Administrator — siehe Kopf
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
