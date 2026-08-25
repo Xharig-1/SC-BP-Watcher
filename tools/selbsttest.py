@@ -362,6 +362,23 @@ def main():
         for b in beanstandungen[:5]:
             print('        ·', b)
 
+        # Der Bericht zählte einmal die Felder der Datei statt der Baupläne
+        # darin: „3 Baupläne" bei 394 im Bestand, weil die Datei drei Felder
+        # oben hat (version, stand, bauplaene). Eine falsche Zahl, die
+        # plausibel aussieht — genau die Sorte, die niemand nachprüft.
+        # Geprüft wird die Zählfunktion selbst, nicht der Bericht: Sie hängt
+        # nicht davon ab, wie viel gerade im Bestand steht.
+        import json as json_pruef
+        import scbp.bericht as bericht_pruef
+        probe = os.path.join(basis, 'zaehlprobe.json')
+        with open(probe, 'w', encoding='utf-8') as f:
+            json_pruef.dump({'version': 1, 'stand': 'x',
+                             'bauplaene': {'a': 1, 'b': 2, 'c': 3, 'd': 4}}, f)
+        pruefe(bericht_pruef._json_groesse(probe, 'bauplaene') == 4,
+               'die Zählung im Bericht nimmt die Einträge, nicht die Felder')
+        pruefe(bericht_pruef._json_groesse(probe, 'gibtsnicht') == '—',
+               'ein fehlender Schlüssel gibt „—" statt einer erfundenen Zahl')
+
         # Testdaten mit ausgedachten Art-Kennungen sehen aus wie ein Fehler
         # der Oberfläche: Alles landet in „Sonstiges", und der Filter „nur
         # FPS-Waffen" zeigt nichts. Genau so ist es einmal gelaufen.

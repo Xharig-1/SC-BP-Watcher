@@ -59,10 +59,22 @@ def _sicher(f, standard='—'):
 
 
 def _json_groesse(pfad_, schluessel):
-    """Wie viele Einträge stehen in einer unserer JSON-Dateien?"""
+    """Wie viele Einträge stehen in einer unserer JSON-Dateien?
+
+    ⚠ Hier stand `daten.get(schluessel, daten)` — fehlte der Schlüssel, wurde
+    also das **ganze** Wörterbuch gezählt. Der Bericht meldete damit „3
+    Baupläne", weil die Datei drei Felder oben hat (version, stand, bauplaene),
+    während darin 394 Baupläne standen. Eine falsche Zahl, die völlig plausibel
+    aussieht — genau die Sorte, die niemand nachprüft.
+
+    Fehlt der Schlüssel, steht jetzt `—` da. Lieber keine Angabe als eine
+    erfundene, gerade in einem Bericht, mit dem jemand einen Fehler sucht.
+    """
     with open(pfad_, encoding='utf-8') as f:
         daten = json.load(f)
-    wert = daten.get(schluessel, daten)
+    if schluessel not in daten:
+        return '—'
+    wert = daten[schluessel]
     return len(wert) if hasattr(wert, '__len__') else '—'
 
 
@@ -141,7 +153,7 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
     zeilen.append('')
 
     zeile(t('b_bestand'), _sicher(lambda: t('b_n_bauplaene') % _json_groesse(
-        __import__('scbp.bestand', fromlist=['pfad']).pfad(), 'blueprints')))
+        __import__('scbp.bestand', fromlist=['pfad']).pfad(), 'bauplaene')))
     zeile(t('b_merkliste'), _sicher(lambda: t('b_n_eintraege') % _json_groesse(
         __import__('scbp.merkliste', fromlist=['pfad']).pfad(), 'eintraege')))
     zeile(t('b_katalog'), _sicher(lambda: __import__(
