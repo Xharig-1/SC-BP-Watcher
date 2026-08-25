@@ -21,6 +21,17 @@
   #define AppVersion "0.0.0"
 #endif
 
+; ⚠ Windows verlangt für die Datei-Version eine reine Zahlenfolge. Eine
+; Vorabfassung wie "3.0.0-rc1" laesst Inno Setup mit "Value of [Setup] section
+; directive VersionInfoVersion is invalid" abbrechen — der ganze Bau schlug fehl,
+; als die erste Testfassung von v3.0.0 gebaut werden sollte. Deshalb wird hier
+; alles ab dem Bindestrich abgeschnitten: Angezeigt wird weiterhin die volle
+; Bezeichnung, nur die technische Datei-Version ist die nackte Zahl.
+#define ZahlVersion AppVersion
+#if Pos("-", ZahlVersion) > 0
+  #define ZahlVersion Copy(ZahlVersion, 1, Pos("-", ZahlVersion) - 1)
+#endif
+
 [Setup]
 ; ⚠ Diese Kennung bleibt für immer gleich. Ändert sie sich, hält Windows jede
 ; Fassung für ein anderes Programm — der Nutzer hätte drei Einträge in "Apps &
@@ -33,7 +44,7 @@ AppPublisher={#AppPublisher}
 AppPublisherURL={#AppURL}
 AppSupportURL={#AppURL}/issues
 AppUpdatesURL={#AppURL}/releases
-VersionInfoVersion={#AppVersion}
+VersionInfoVersion={#ZahlVersion}
 
 ; Kein Administrator — siehe Kopf
 PrivilegesRequired=lowest
