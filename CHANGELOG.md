@@ -73,6 +73,10 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
+- **The problem report says which version an error came from** — and marks those from an
+  older one. The store keeps the last ten across restarts; after an update it listed errors
+  that had long been fixed, making the report look like nothing worked.
+
 - **Up to twelve sources per blueprint** instead of three. Measured: more than half of
   all blueprints had sources cut off before. The easiest route is still shown first, the
   rest unfolds.

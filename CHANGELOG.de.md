@@ -74,6 +74,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Geändert
 
+- **Der Fehlerbericht sagt, aus welcher Fassung ein Fehler stammt** — und markiert die, die
+  aus einer älteren kommen. Der Speicher hebt die letzten zehn über Programmstarts hinweg
+  auf; nach einem Update standen dort Fehler, die längst behoben waren, und der Bericht sah
+  aus, als sei alles noch kaputt.
+
 - **Bis zu zwölf Bezugswege je Bauplan** statt drei. Gemessen: Über die Hälfte aller
   Baupläne hatte vorher abgeschnittene Wege. Angezeigt wird weiterhin der leichteste, der
   Rest klappt auf.
