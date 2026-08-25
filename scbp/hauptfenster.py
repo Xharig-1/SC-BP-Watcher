@@ -860,7 +860,8 @@ def marke(eltern, text, farbe, schrift, grund=None, mindestbreite=0):
 class Hauptfenster:
     """Der Rahmen mit der Reiterleiste. Die Seiten liefern andere Module."""
 
-    def __init__(self, eltern=None, beim_schliessen=None, version=''):
+    def __init__(self, eltern=None, beim_schliessen=None, version='',
+                 beim_schriftwechsel=None):
         self.beim_schliessen = beim_schliessen
         self.version = version
         self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
@@ -878,6 +879,9 @@ class Hauptfenster:
         self.knoepfe = {}         # kennung -> Reiter-Label
         self.aktuell = None
         self.fortgeschritten_offen = False
+        # Wer die Schriftgröße ändert, meint das ganze Programm — auch das
+        # Overlay. Das Fenster kennt es nicht, deshalb ein Rückruf.
+        self.beim_schriftwechsel = beim_schriftwechsel
 
         self._titelleiste()
         self._fusszeile()         # ⚠ vor dem Inhalt — sonst rutscht sie hinaus
@@ -906,6 +910,11 @@ class Hauptfenster:
                                (self.f_zeichen, 13)):
             schrift.configure(size=grund + n)
         pfade.einstellung_setzen('schriftgroesse', stufe)
+        if self.beim_schriftwechsel:
+            try:
+                self.beim_schriftwechsel(stufe)
+            except Exception as ausnahme:
+                fehler.merken('hauptfenster.schriftwechsel', ausnahme)
 
     # ------------------------------------------------------------ Titelleiste
     def _titelleiste(self):

@@ -314,6 +314,12 @@ class Assistent:
     def _texte_holen(self, quelle):
         """Herunterladen, einsetzen, Bauplan-Angaben eintragen — in einem Zug."""
         from . import injektion, spieltexte, uebersetzung
+        # ⚠ Die Wahl **vor** dem Einrichten merken — genau wie auf der
+        # Einstellungsseite. Fehlte das hier, holte der Assistent zwar die Texte,
+        # aber unter „Angaben im Spiel" stand danach keine der drei Quellen
+        # angewählt: Der Assistent schrieb `inj_quelle` nie. Gemeldet von
+        # Haldjas, 25.08.2026 — „alle 3 Buttons sind nicht ausgewählt".
+        pfade.einstellung_setzen('inj_quelle', quelle)
         self.inj_meldung.configure(text=t('inj_laeuft'), fg=SUB)
         self.root.update()
         try:

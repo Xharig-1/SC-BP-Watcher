@@ -137,6 +137,15 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Die eingestellte Schriftgröße galt nicht fürs Overlay.** Sie wirkte nur im
+  großen Fenster; im Overlay standen feste Größen. Wer sie hochstellte, weil er
+  die Zeilen im Spiel schlecht lesen konnte, änderte ausgerechnet das Fenster
+  nicht, um das es ihm ging. Jetzt zieht das Overlay mit — sofort, ohne
+  Neustart. Gemeldet von Haldjas.
+- **Der Assistent merkte sich die gewählte Textquelle nicht.** Er holte die
+  Texte und setzte sie ein, schrieb die Wahl aber nirgends hin — unter „Angaben
+  im Spiel" stand danach keine der drei Quellen angewählt. Gemeldet von Haldjas.
+
 - **Nach dem Update startete die neue Fassung nicht.** „Can't find a usable
   init.tcl" — die neue Fassung erbte die Umgebung der alten und suchte ihre
   Tcl-Dateien in deren Wegwerf-Ordner, den die alte beim Beenden gerade

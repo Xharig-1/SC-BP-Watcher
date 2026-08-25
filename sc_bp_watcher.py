@@ -55,7 +55,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc25'
+__version__ = '3.0.0-rc26'
 
 
 def _mitgeliefert(name):
@@ -1178,9 +1178,16 @@ class Overlay:
         self.count = 0
         self.rows = {}          # normalisierter Name -> Zeilen-Widgets (für die Bestätigung)
 
-        self.f_title = tkfont.Font(family='Segoe UI Semibold', size=10)
-        self.f_item  = tkfont.Font(family='Consolas', size=9)
-        self.f_sub   = tkfont.Font(family='Segoe UI', size=8)
+        # ⚠ Die Schriftgröße aus den Einstellungen gilt **auch hier**. Sie wirkte
+        # lange nur im großen Fenster; im Overlay standen feste Größen. Wer sie
+        # auf „groß" stellte, weil er die Zeilen im Spiel nicht lesen konnte,
+        # änderte damit ausgerechnet das Fenster nicht, um das es ihm ging.
+        # Gemeldet von Haldjas, 25.08.2026.
+        #
+        # Die Grundwerte liegen eins unter den früheren festen Größen, damit die
+        # Stufe „normal" (= 1) genau das bisherige Aussehen ergibt — niemand,
+        # der nichts eingestellt hat, sieht plötzlich ein anderes Overlay.
+        self.f_title, self.f_item, self.f_sub = self._schriften_anlegen()
 
         # --- Titelleiste (Drag-Griff + Schließen) ---
         bar = tk.Frame(self.root, bg=BAR, height=26)
@@ -1312,6 +1319,35 @@ class Overlay:
     # ---- Drag & Resize ----
     # ---- Schalter „mit dem Rechner starten" ----
     # ---- Erklärtexte, die ihren Zustand kennen ----
+    # --------------------------------------------------------- Schriftgrößen
+    OVERLAY_GRUND = (('f_title', 'Segoe UI Semibold', 9),
+                     ('f_item', 'Consolas', 8),
+                     ('f_sub', 'Segoe UI', 7))
+
+    def _stufe(self):
+        from scbp.hauptfenster import STUFEN
+        return STUFEN.get(pfade.einstellung('schriftgroesse') or 'normal', 1)
+
+    def _schriften_anlegen(self):
+        n = self._stufe()
+        return tuple(tkfont.Font(family=fam, size=grund + n)
+                     for _, fam, grund in self.OVERLAY_GRUND)
+
+    def schriftgroesse_anwenden(self, stufe=None):
+        """Zieht die Overlay-Schriften nach — sofort, ohne Neustart.
+
+        Tk-Font-Objekte sind benannt: Ein `configure` wirkt auf jedes Widget,
+        das die Schrift benutzt. Deshalb genügt es, die drei Objekte zu ändern,
+        statt die Zeilen neu zu bauen.
+        """
+        from scbp.hauptfenster import STUFEN
+        n = STUFEN.get(stufe, self._stufe()) if stufe else self._stufe()
+        for (name, _, grund) in self.OVERLAY_GRUND:
+            try:
+                getattr(self, name).configure(size=grund + n)
+            except Exception as ausnahme:
+                fehler.merken('overlay.schriftgroesse', ausnahme)
+
     def _icon_setzen(self):
         """Fenster- und Taskleisten-Icon — auf beiden Systemen und für alle Fenster.
 
@@ -1644,7 +1680,8 @@ class Overlay:
             except Exception:
                 pass                       # war schon zu
         self._fenster = Hauptfenster(self.root, beim_schliessen=self._liste_zu,
-                                     version=__version__)
+                                     version=__version__,
+                                     beim_schriftwechsel=self.schriftgroesse_anwenden)
         self._fenster.oeffnen(seite)
         self.liste_lbl.config(fg=ACCENT)
 

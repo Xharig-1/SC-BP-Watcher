@@ -133,6 +133,15 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The chosen font size did not apply to the overlay.** It only affected the
+  main window; the overlay had fixed sizes. Anyone raising it because the lines
+  were hard to read in game changed everything except the window they meant. The
+  overlay now follows along, immediately and without a restart. Reported by
+  Haldjas.
+- **The setup wizard did not remember the chosen text source.** It fetched and
+  installed the texts but never stored the choice — afterwards none of the three
+  sources was selected under „In-game details". Reported by Haldjas.
+
 - **The new version failed to start after an update.** „Can't find a usable
   init.tcl" — it inherited the old version’s environment and looked for its Tcl
   files in the old throwaway folder, which the old version was just cleaning
