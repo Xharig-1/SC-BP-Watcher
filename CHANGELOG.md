@@ -85,6 +85,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **„What's new" showed English even with a German interface.** The GitHub release text is
+  deliberately bilingual — English on top, German in a collapsible block. That is right for
+  the release page; in the window it became an English list. The bundled changelog now
+  takes precedence, because only it knows the language.
+
 - **In game only the number showed, not which blueprints.** A contract has one title but
   often a dozen descriptions — one for „to the ruin station", one for „to the distribution
   centre" and so on. The contract data names only **one** of them; the rest stayed empty.

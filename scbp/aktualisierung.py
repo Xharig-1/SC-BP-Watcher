@@ -317,22 +317,20 @@ def punkte_nach_art(text):
 def protokoll():
     """Die Versionsgeschichte als Liste, neueste zuerst.
 
-    Zusammengesetzt aus zwei Quellen: den Release-Texten von GitHub (die auch
-    Fassungen kennen, die neuer sind als die eigene) und der mitgelieferten
-    `CHANGELOG.md` (die auch ohne Netz da ist). Doppeltes wird zusammengeführt,
-    die GitHub-Fassung hat Vorrang — sie ist die veröffentlichte Wahrheit."""
-    eintraege, gesehen = [], {}
-    for f in freigaben():
-        schluessel = _teile(f.get('version'))
-        if schluessel in gesehen:
-            continue
-        eintrag = {'version': f.get('version') or '',
-                   'datum': f.get('datum') or '',
-                   'text': (f.get('text') or '').strip(),
-                   'quelle': 'github'}
-        gesehen[schluessel] = eintrag
-        eintraege.append(eintrag)
+    Zusammengesetzt aus zwei Quellen: der **mitgelieferten** `CHANGELOG.de.md`
+    bzw. `CHANGELOG.md` — je nach eingestellter Sprache — und den Release-Texten
+    von GitHub, die auch Fassungen kennen, die neuer sind als die eigene.
 
+    ⚠ Der mitgelieferte Changelog hat Vorrang, **weil nur er die Sprache kennt**.
+    Der Release-Text auf GitHub ist bewusst zweisprachig aufgebaut: Englisch oben,
+    Deutsch in einem aufklappbaren Block darunter. Auf der Release-Seite ist das
+    richtig — im Fenster wurde daraus eine englische Liste für jemanden, der die
+    Oberfläche auf Deutsch stehen hat. Genau so gemeldet.
+
+    GitHub springt nur dort ein, wo der Changelog nichts hat: bei Fassungen, die
+    neuer sind als die eigene.
+    """
+    eintraege, gesehen = [], {}
     datei = _changelog_datei()
     if datei:
         try:
@@ -350,26 +348,25 @@ def protokoll():
             m = re.search(r'(\d{4}-\d{2}-\d{2})', kopf)
             if m:
                 datum = m.group(1)
-            vorhanden = gesehen.get(schluessel)
-            if vorhanden is not None:
-                # ⚠ Diese Fassung kennen wir schon von GitHub. Das heißt aber nicht,
-                # dass dort auch etwas Lesbares steht: Eine Vorabfassung (v3.0.0-rc1)
-                # zählt als dieselbe Version wie v3.0.0, und ihr Release-Text ist oft
-                # nur ein Hinweis ohne Aufzählung. Dann fiel die Fassung im Fenster
-                # **ganz heraus** — „Was ist neu" zeigte v3.0.0 gar nicht mehr an.
-                # Deshalb: Wo GitHub nichts Zählbares liefert, springt der
-                # mitgelieferte Changelog ein.
-                bisheriger = vorhanden.get('text') or ''
-                if not punkte_nach_art(bisheriger):
-                    vorhanden['text'] = rest.strip()
-                    vorhanden['quelle'] = 'changelog'
-                    if datum and not vorhanden.get('datum'):
-                        vorhanden['datum'] = datum
+            if schluessel in gesehen:
                 continue
             eintrag = {'version': version, 'datum': datum,
                        'text': rest.strip(), 'quelle': 'changelog'}
             gesehen[schluessel] = eintrag
             eintraege.append(eintrag)
+
+    # Und nun alles, was der mitgelieferte Changelog noch nicht kennt — das sind
+    # die Fassungen, die nach dieser hier erschienen sind.
+    for f in freigaben():
+        schluessel = _teile(f.get('version'))
+        if schluessel in gesehen or not f.get('version'):
+            continue
+        eintrag = {'version': f.get('version'),
+                   'datum': f.get('datum') or '',
+                   'text': (f.get('text') or '').strip(),
+                   'quelle': 'github'}
+        gesehen[schluessel] = eintrag
+        eintraege.append(eintrag)
 
     eintraege.sort(key=lambda e: (_teile(e['version']), e['datum']), reverse=True)
     return eintraege

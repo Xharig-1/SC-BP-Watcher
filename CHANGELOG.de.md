@@ -86,6 +86,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **„Was ist neu" stand auf Englisch, obwohl die Oberfläche auf Deutsch steht.** Der
+  Release-Text auf GitHub ist bewusst zweisprachig — Englisch oben, Deutsch aufklappbar
+  darunter. Auf der Release-Seite ist das richtig; im Fenster wurde daraus eine englische
+  Liste. Jetzt hat der mitgelieferte Changelog Vorrang, denn nur der kennt die Sprache.
+
 - **Im Spiel stand nur die Zahl, nicht welche Baupläne.** Ein Auftrag hat einen Titel, aber
   oft ein Dutzend Beschreibungen — je eine für „zur Ruinenstation", „zum Verteilzentrum"
   und so weiter. Die Vertragsdaten nennen dazu nur **eine**; die übrigen blieben leer. Im
