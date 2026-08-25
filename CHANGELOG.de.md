@@ -61,6 +61,34 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Die Seite „Auftragstexte" tat überhaupt nichts.** Alle Rückmeldungen gingen an ein
+  Label, das es im eingebetteten Fenster gar nicht gibt — jeder Klick auf eine Textquelle,
+  auf „Jetzt auffrischen" oder „Prüfen" brach ab, **bevor** etwas passierte. Dazu zeigte
+  der Kasten oben immer „keine Angaben im Spiel", auch wenn 681 Textstellen eingetragen
+  waren: Er fragte eine Funktion ab, die es nicht gab.
+- **„Zeilen im Overlay" hatte keine Wirkung.** Die Einstellung wurde gespeichert und nie
+  gelesen; im Overlay galt fest die Zahl 200. Jetzt gilt der eingestellte Wert, mit 20 als
+  Vorgabe — 200 Baupläne sammelt in einer Sitzung ohnehin niemand.
+- **„Durchsuchen" öffnete keinen Dialog** — weder beim Star-Citizen-Ordner noch bei den
+  eigenen Dateien. Beide tun es jetzt, und unter Linux mit dem Dialog des Systems statt
+  dem grauen von Tk.
+- **Die letzten Baupläne der Liste lagen übereinander.** X11 rechnet Fensterkoordinaten in
+  16 Bit; alle 722 in einem Rahmen ergeben rund 33000 Pixel und damit 16 Zeilen jenseits
+  der Grenze. Die Liste wird jetzt bei Bedarf in Blöcken gezeigt — sichtbar bleibt alles.
+- **Die Rollleiste ließ sich nicht anfassen.** Gezeichnet wurde der Griff mit einer
+  Mindesthöhe, geprüft wurde mit der rechnerischen — wer die untere Hälfte traf, galt als
+  „daneben".
+- **Das Fenster startete außerhalb des Bildschirms.** Ohne gemerkte Lage stellte Tk es
+  nach `+0+0`; bei einem hochkant stehenden Monitor links außen liegt dort kein Bild.
+  Start und „Fensterlage zurücksetzen" setzen es jetzt mittig auf den Hauptbildschirm.
+- **Abgeschnittene Beschriftungen an sechzehn Stellen** — Seitenleiste, „Ordner",
+  „Bestand", „Über" und „Was ist neu". Mindestgröße, Seitenleistenbreite und
+  Zeilenumbruch werden jetzt gemessen statt geschätzt.
+- **Der Autostart war zwischen Overlay und Einstellungen nicht synchron.** Beide lasen
+  ihren Zustand nur beim Zeichnen.
+- **Auswahlfelder schlossen sich sofort wieder,** wenn man nach einer Auswahl gleich das
+  nächste anklickte.
+
 - **Das Fenster-Icon fehlte in jeder fertigen Fassung** — auf beiden Systemen. Die Datei
   lag zur Laufzeit gar nicht bei.
 - **Der Selbsttest schlug auf Rechnern mit installiertem Star Citizen fehl.** Zwei

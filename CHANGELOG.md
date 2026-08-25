@@ -60,6 +60,32 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The „Mission text" page did nothing at all.** Every message went to a label that does
+  not exist in the embedded window — each click on a text source, on „Refresh now" or
+  „Check" aborted **before** anything happened. The status box also always said „no
+  details in the game", even with 681 text passages in place: it queried a function that
+  did not exist.
+- **„Rows in the overlay" had no effect.** The setting was saved and never read; the
+  overlay used a fixed 200. The configured value now applies, with 20 as the default — no
+  one collects 200 blueprints in one session anyway.
+- **„Browse" opened no dialog** — neither for the Star Citizen folder nor for your own
+  files. Both do now, and on Linux with the system's dialog instead of Tk's grey one.
+- **The last blueprints in the list overlapped.** X11 uses 16-bit window coordinates; all
+  722 in one frame come to about 33000 pixels, putting 16 rows past the limit. The list is
+  now shown in blocks when needed — nothing is hidden.
+- **The scrollbar could not be grabbed.** The handle was drawn with a minimum height but
+  tested against the calculated one — hitting its lower half counted as „beside it".
+- **The window started off-screen.** With no remembered position Tk placed it at `+0+0`;
+  with a portrait monitor on the left there is no picture there. Startup and „Reset window
+  position" now centre it on the main screen.
+- **Truncated labels in sixteen places** — sidebar, „Folders", „Inventory", „About" and
+  „What's new". Minimum size, sidebar width and line wrapping are now measured, not
+  guessed.
+- **Autostart was out of sync between overlay and settings.** Both read their state only
+  when drawn.
+- **Dropdowns closed again immediately** when you clicked the next one right after making
+  a choice.
+
 - **The window icon was missing from every finished build** — on both systems. The file
   was not shipped with the program at all.
 - **The self-test failed on machines with Star Citizen installed.** Two checks expected
