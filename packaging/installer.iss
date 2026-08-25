@@ -62,7 +62,15 @@ VersionInfoVersion={#ZahlVersion}
 ; `AppMutex` ist die Voraussetzung dafür, dass Inno das laufende Programm
 ; überhaupt erkennt — der Name muss mit dem übereinstimmen, den das Programm
 ; beim Start setzt (siehe `sc_bp_watcher.py`).
-CloseApplications=yes
+; `force` statt `yes`: `yes` **bittet** das Programm zu schließen (der Restart
+; Manager schickt ein WM_CLOSE). Ein Programm, das nicht mehr reagiert, hört das
+; nicht — und danach scheitert das Kopieren wieder an „code 32". Genau so beim
+; Testen gemeldet (Haldjas, 25.08.2026): „der installer schafft es dann aber
+; immer noch nicht zu installieren, selber code 32 fehler wie am anfang".
+; `force` beendet die Anwendung notfalls hart. Das ist hier vertretbar: Der
+; Bauplan-Bestand liegt in `Dokumente\SC BP Watcher` und wird bei jeder Änderung
+; geschrieben, nicht erst beim Beenden.
+CloseApplications=force
 RestartApplications=yes
 AppMutex=SC-BP-Watcher-Einzelstart
 

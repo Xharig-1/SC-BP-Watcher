@@ -133,6 +133,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The setup could not get past a hung program.** It politely asked the running
+  version to close — something that no longer responds does not hear that, and
+  copying then failed with „code 32" again. It is now closed by force if needed.
+  The blueprint collection is unaffected; it lives outside the program folder.
+  Reported by Haldjas.
+
 - **The update never actually arrived on Windows.** „Restart now" started the
   **old** version again: the file is only swapped once the program is gone — a
   helper script waits for that and starts the new version itself afterwards. So
@@ -296,6 +302,23 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   the game *not* to be found — testing the environment instead of the program.
 - **Errors vanished without trace.** Over sixty places caught them and carried on; now
   the last fifty are kept and end up in the problem report.
+
+### Thanks
+
+This release owes a great deal to two testers who took the trouble not just to
+notice problems, but to describe them precisely enough to be found:
+
+- **Haldjas** (pr0citizen) — the pop-up mode suggestion; plus the setup that
+  failed on the running file, the console windows during updates, the missing
+  tray icon, the crash after restarting, the font size that never reached the
+  overlay, the text source the wizard forgot — and the observation that
+  explained everything: „it stays on rc25".
+- **Bomb20** (SC4M) — the crash on the very first start (a bug only new users
+  would ever have hit), the „check now" button that did nothing, and the note
+  that the „German" text source translates the entire game.
+
+The blueprint details are based on the openly published contract data of the
+**SC Deutsch Launcher team** and on **scmdb.net**.
 
 ## v2.0.0 - 2026-08-24
 

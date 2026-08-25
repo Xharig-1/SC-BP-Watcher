@@ -137,6 +137,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Das Setup kam an einem hängenden Programm nicht vorbei.** Es bat die
+  laufende Fassung höflich, sich zu schließen — wer nicht mehr reagiert, hört
+  das nicht, und danach scheiterte das Kopieren wieder an „code 32". Jetzt wird
+  notfalls hart beendet. Der Bauplan-Bestand ist davon nicht betroffen, er liegt
+  außerhalb des Programmordners. Gemeldet von Haldjas.
+
 - **Das Update kam unter Windows gar nicht an.** Der Knopf „Jetzt neu starten"
   fuhr die **alte** Fassung erneut hoch: Getauscht wird die Datei erst, wenn
   das Programm weg ist — ein Hilfsskript wartet darauf und startet die neue
@@ -311,6 +317,24 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   statt das Programm.
 - **Fehler verschwanden spurlos.** Über sechzig Stellen fingen sie ab und machten
   weiter; jetzt werden die letzten fünfzig festgehalten und landen im Fehlerbericht.
+
+### Dank
+
+Diese Fassung ist zu einem großen Teil das Verdienst von zwei Testern, die sich
+die Mühe gemacht haben, Fehler nicht nur zu bemerken, sondern sie so genau zu
+beschreiben, dass sie zu finden waren:
+
+- **Haldjas** (pr0citizen) — der Vorschlag mit dem Aufblend-Betrieb; dazu das
+  Setup, das an der laufenden Datei abbrach, die Konsolenfenster beim Update,
+  das verschwundene Symbol neben der Uhr, der Absturz nach dem Neustart, die
+  Schriftgröße, die das Overlay nicht erreichte, die vergessene Textquelle im
+  Assistenten — und der Fund, der alles erklärte: „da bleibt er bei rc25".
+- **Bomb20** (SC4M) — der Absturz beim allerersten Start (der Fehler, den nur
+  neue Nutzer je gesehen hätten), der wirkungslose Knopf „Jetzt nachsehen" und
+  der Hinweis, dass die Textquelle „Deutsch" das ganze Spiel übersetzt.
+
+Die Bauplan-Angaben beruhen auf den offen veröffentlichten Vertragsdaten des
+**SC-Deutsch-Launcher-Teams** und auf **scmdb.net**.
 
 ## v2.0.0 - 2026-08-24
 
