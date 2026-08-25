@@ -55,7 +55,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc31'
+__version__ = '3.0.0-rc32'
 
 
 def _mitgeliefert(name):
@@ -1247,6 +1247,29 @@ class Overlay:
         self.einst_lbl.bind('<Button-1>', lambda e: self.einstellungen_oeffnen())
         hinweis.anhaengen(self.einst_lbl, lambda: sprache.t('hinweis_einstellungen'))
         # „Was ist neu" — färbt sich grün, sobald es eine neuere Fassung gibt.
+        # ⚠ Der Startknopf gehört **hierher**, nicht auf eine Unterseite. Er saß
+        # erst unter „Angaben im Spiel" — also dort, wo es um Auftragstexte
+        # geht, und da sucht ihn niemand. Dazu: „wenn leute den suchen
+        # müssen ist er falsch platziert."
+        #
+        # Wer das Spiel starten will, hat das große Fenster nicht offen; er
+        # sieht das Overlay. Deshalb steht das Zeichen hier, in Grün und als
+        # erstes der Gruppe — und nur dann, wenn wirklich ein Weg gefunden
+        # wurde (siehe `pfade.spielstarter()`).
+        if pfade.spielstarter():
+            self.start_lbl = tk.Label(bar, text='▶', bg=BAR, fg=ACCENT,
+                                      font=self.f_title, cursor='hand2')
+            self.start_lbl.pack(side='right', padx=(0, 6))
+            self.start_lbl.bind('<Button-1>', lambda e: self._spiel_starten())
+            # Ein „▶" allein sagt niemandem, was passiert. Die Statuszeile
+            # darunter gibt es ohnehin — beim Überfahren steht dort im Klartext,
+            # was der Klick tut. Kein zusätzliches Sprechblasen-Werk nötig.
+            self.start_lbl.bind(
+                '<Enter>',
+                lambda e: self.status.config(text=sprache.t('s_sp_start')))
+            self.start_lbl.bind(
+                '<Leave>', lambda e: self.status.config(text=self._status_text))
+
         self.info_lbl = tk.Label(bar, text='ⓘ', bg=BAR, fg=SUB,
                                  font=self.f_title, cursor='hand2')
         self.info_lbl.pack(side='right', padx=(0, 6))
@@ -1263,6 +1286,7 @@ class Overlay:
             w.bind('<ButtonRelease-1>', self._save_geo)   # Position nach dem Ziehen merken
 
         # --- Statuszeile ---
+        self._status_text = 'Starte …'
         self.status = tk.Label(self.root, text='Starte …', bg=BG, fg=SUB,
                                font=self.f_sub, anchor='w')
         self.status.pack(fill='x', padx=8, pady=(4, 2))
@@ -1347,6 +1371,15 @@ class Overlay:
                 getattr(self, name).configure(size=grund + n)
             except Exception as ausnahme:
                 fehler.merken('overlay.schriftgroesse', ausnahme)
+
+    def _spiel_starten(self):
+        """Star Citizen starten — über den Weg, den der Spieler ohnehin nutzt."""
+        ok, grund = pfade.spiel_starten()
+        if ok:
+            self.status.config(text=sprache.t('s_sp_start_lauft'))
+        else:
+            self.status.config(text=sprache.t('s_sp_start_nein', grund))
+            fehler.merken('overlay.spiel_starten', OSError(str(grund)))
 
     def _ganz_beenden(self):
         """Beenden über das Symbol neben der Uhr — und zwar wirklich.

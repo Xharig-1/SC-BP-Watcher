@@ -112,6 +112,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Geändert
 
+- **Der Startknopf für Star Citizen saß an einer Stelle, an der ihn niemand
+  sucht.** Er stand unter „Angaben im Spiel", also dort, wo es um Auftragstexte
+  geht — selbst der Autor fand ihn nicht wieder. Jetzt sitzt er als grünes „▶"
+  oben im Overlay bei den übrigen Zeichen: Wer das Spiel starten will, hat das
+  große Fenster ohnehin nicht offen. Beim Überfahren sagt die Statuszeile, was
+  der Klick tut.
+
 - **Vor dem Einsetzen einer Übersetzung wird gefragt.** „Deutsch" und
   „StarStrings" ersetzen die Textdatei des Spiels vollständig — danach ist das
   ganze Spiel in dieser Sprache, nicht nur die Bauplan-Angaben. Das stand

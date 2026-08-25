@@ -109,6 +109,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
+- **The „launch Star Citizen" button sat where nobody would look for it.** It
+  was on the „In-game details" page, which is about mission text — even the
+  author could not find it again. It now sits as a green „▶" in the overlay's
+  top bar with the other icons: anyone who wants to start the game does not have
+  the main window open anyway. Hovering it explains what the click does.
+
 - **You are asked before a translation is installed.** „German" and
   „StarStrings" replace the game’s text file completely — after that the whole
   game is in that language, not just the blueprint details. That was documented
