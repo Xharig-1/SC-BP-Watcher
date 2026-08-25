@@ -172,9 +172,18 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
     if letzte:
         zeilen.append(t('b_fehler') % (len(letzte), gesamt))
         for e in letzte:
-            zeilen.append('  %s  %-24s %s: %s'
-                          % (e.get('zeit', '—'), e.get('stelle', '—'),
-                             e.get('art', '—'), e.get('meldung', '—')))
+            # ⚠ Die Fassung dazuschreiben und Altlasten kennzeichnen. Der Speicher
+            # hebt die letzten zehn Einträge über Programmstarts hinweg auf; nach
+            # einem Update stehen dort Fehler, die längst behoben sind. Ohne
+            # Kennzeichnung sucht der Nächste nach einem Fehler, den es nicht mehr
+            # gibt.
+            fassung = e.get('fassung') or '?'
+            alt_marke = ''
+            if version and fassung not in ('?', '') and fassung != version:
+                alt_marke = '  ' + t('b_fehler_alt')
+            zeilen.append('  %s  %-10s %-24s %s: %s%s'
+                          % (e.get('zeit', '—'), fassung, e.get('stelle', '—'),
+                             e.get('art', '—'), e.get('meldung', '—'), alt_marke))
     else:
         zeilen.append(t('b_fehler_keine'))
 

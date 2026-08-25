@@ -77,6 +77,17 @@ def _lesen():
         return []
 
 
+# Die laufende Fassung. Das Hauptprogramm trägt sie beim Start ein.
+#
+# ⚠ Warum das im Fehlerspeicher steht: Er hebt die letzten zehn Einträge auf,
+# über Programmstarts hinweg. Nach einem Update stehen dort also Fehler, die
+# längst behoben sind — und im Bericht sieht das aus, als sei alles noch kaputt.
+# Genau so passiert: Ein Bericht aus rc9 führte acht `AttributeError` auf, die in
+# rc1 behoben worden waren. Mit der Fassung daneben ist das auf einen Blick
+# erkennbar.
+VERSION = ['']
+
+
 def merken(stelle, ausnahme=None, hinweis=''):
     """Einen Fehler festhalten. Gibt True zurück, wenn es geklappt hat.
 
@@ -90,6 +101,7 @@ def merken(stelle, ausnahme=None, hinweis=''):
 
         eintrag = {
             'zeit': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'fassung': VERSION[0],
             'stelle': str(stelle),
             'art': type(ausnahme).__name__ if ausnahme else 'Hinweis',
             'meldung': pfade.kuerzen(str(ausnahme) if ausnahme else hinweis),

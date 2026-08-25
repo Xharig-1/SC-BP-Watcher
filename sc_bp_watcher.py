@@ -55,7 +55,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc10'
+__version__ = '3.0.0-rc11'
 
 
 def _mitgeliefert(name):
@@ -1135,6 +1135,8 @@ class Overlay:
         bildschirm.OVERLAY[0] = self.root
         overlay.OVERLAY_FENSTER[0] = self.root
         overlay.OVERLAY_STEUERUNG[0] = self
+        # Damit jeder festgehaltene Fehler weiß, aus welcher Fassung er stammt.
+        fehler.VERSION[0] = __version__
         self.root.title('SC BP Watcher')
         self.root.configure(bg=BG)
         self.root.overrideredirect(True)          # randloses Overlay
