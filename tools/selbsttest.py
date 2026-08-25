@@ -552,6 +552,15 @@ def main():
                 pruefe(hf.aktuell == 'allgemein',
                        'die geöffnete Seite bleibt geöffnet')
                 pruefe(len(hf.knoepfe) == 9, 'alle Reiter sind wieder da')
+
+                # Die Wahl muss festgehalten werden — ohne Speichern-Knopf gibt
+                # es keinen zweiten Versuch. Vorher stand die Markierung
+                # danach weiter auf der alten Sprache.
+                from scbp import pfade as pf4
+                pruefe(pf4.einstellung('sprache') == 'en',
+                       'die gewählte Sprache ist gespeichert')
+                pruefe(seitenmodul._einstellungen(hf).sprache_wahl.get() == 'en',
+                       'und die Markierung steht darauf')
             finally:
                 spr.setzen('de')
                 hf.root.destroy()

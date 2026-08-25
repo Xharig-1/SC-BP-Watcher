@@ -194,6 +194,12 @@ class Einstellungsfenster:
         ohne es zu übernehmen."""
         self.sprache_wahl.set(wert)
         sprache.setzen(wert)
+        # ⚠ Seit v3.0.0 gibt es keinen Speichern-Knopf mehr — also muss die Wahl
+        # hier festgehalten werden. Vorher wurde nur der laufende Betrieb
+        # umgestellt: Die Oberfläche sprach Deutsch, die Markierung stand
+        # weiter auf der alten Sprache, und nach einem Neustart war alles beim
+        # Alten. Das sah aus wie ein Anzeigefehler, war aber verlorene Eingabe.
+        pfade.einstellung_setzen('sprache', wert)
         self._sprach_knoepfe_faerben()
         self._neu_beschriften()
 
