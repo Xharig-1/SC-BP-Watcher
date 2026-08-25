@@ -186,6 +186,9 @@ class Bestandsfenster:
 
         self._kopf()
         self._werkzeugleiste()
+        # ⚠ Reihenfolge: erst der feste Block unten, dann die rollende Liste.
+        # Wer die Liste zuerst packt, schiebt den Block aus dem Fenster.
+        self._herkunftsbereich()
         self._liste()
         self._zeichnen()
 
@@ -334,6 +337,26 @@ class Bestandsfenster:
             self.bereiche_aus.add(gruppe)
         self.alle_zeigen = False
         self._zeichnen(nach_oben=True)
+
+    def _herkunftsbereich(self):
+        """Der feste Block unter der Liste — Herkunft des gewählten Bauplans.
+
+        ⚠ Muss **vor** der Liste gepackt werden. In tkinter bekommt das zuletzt
+        gepackte Element mit `expand=True` den Rest des Platzes; käme dieser
+        Block danach, schöbe die Liste ihn aus dem Fenster. Steht so auch in
+        der CLAUDE.md des Projekts — und ist dort schon zweimal passiert.
+
+        Warum überhaupt fest: Vorher klappte die Herkunft in der Zeile auf. Ein
+        Bauplan hat bis zu zwölf Bezugsquellen, der Block wurde über 700 Pixel
+        hoch, sichtbar sind 465 — er schob die ganze Liste weg, und man wusste
+        nicht mehr, wo man war. Genau so gemeldet: „dann gehen alle Orte auf …
+        ich kann nichts mehr bedienen."
+        """
+        self.herkunft_rahmen = tk.Frame(self.root, bg=BG)
+        self.herkunft_rahmen.pack(side='bottom', fill='x', padx=14,
+                                  pady=(0, 10))
+        self.gewaehlt = None
+        self._herkunft_zeichnen()
 
     def _liste(self):
         rahmen = tk.Frame(self.root, bg=BG)
@@ -590,27 +613,142 @@ class Bestandsfenster:
             hinweis.anhaengen(stern, lambda n=name: t('nicht_mehr_merken')
                               if merk.enthaelt(n) else t('merken'))
 
-        if name in self.offen:
-            self._herkunft(eintrag)
 
-    def _herkunft(self, eintrag):
-        kasten = tk.Frame(self.inhalt, bg=BG)
-        kasten.pack(fill='x', padx=(34, 0), pady=(0, 6))
-        for q in eintrag.get('q') or []:
-            kopf, auftrag, unten, wo = quelle_text(q)
-            block = tk.Frame(kasten, bg=BG)
-            block.pack(fill='x', pady=3)
-            tk.Label(block, text=kopf, bg=BG, fg=GELB, font=schrift(10),
-                     anchor='w').pack(fill='x')
+    def _herkunft_zeichnen(self):
+        """Den festen Block neu füllen — für den gerade gewählten Bauplan."""
+        for kind in self.herkunft_rahmen.winfo_children():
+            kind.destroy()
+
+        eintrag = self._gewaehlter_eintrag()
+        if eintrag is None:
+            # Ohne Auswahl nur eine Zeile, damit die Liste den Platz behält.
+            tk.Label(self.herkunft_rahmen, text=t('hk_nichts'), bg=BG, fg=SUB,
+                     font=schrift(10), anchor='w').pack(fill='x', pady=(6, 2))
+            return
+
+        # ⚠ `marke` misst die Textbreite und braucht deshalb ein Font-Objekt.
+        # Dieses Fenster reicht Schriften als Tupel weiter — `_als_schrift`
+        # wandelt um, sonst gibt es „'tuple' object has no attribute 'metrics'".
+        from .hauptfenster import marke as blase, rundrahmen, _als_schrift
+        quellen = list(eintrag.get('q') or [])
+        farbe = ACCENT if quellen else GELB
+        kasten = rundrahmen(self.herkunft_rahmen, FLAECHE, farbe, radius=8,
+                            grundfarbe=BG)
+        kasten.halter.pack(fill='x')
+
+        kopf = tk.Frame(kasten, bg=FLAECHE)
+        kopf.pack(fill='x', padx=14, pady=(10, 2))
+        tk.Label(kopf, text=eintrag['n'], bg=FLAECHE, fg=FG, font=schrift(12, True),
+                 anchor='w').pack(side='left')
+        zu = tk.Label(kopf, text='✕', bg=FLAECHE, fg=SUB, font=schrift(11),
+                      cursor='hand2', padx=6)
+        zu.pack(side='right')
+        zu.bind('<Button-1>', lambda e: self._auswaehlen(None))
+        hinweis.anhaengen(zu, lambda: t('hk_zu'))
+        if quellen:
+            blase(kopf, t('hk_ein_weg') if len(quellen) == 1
+                  else t('hk_wege') % len(quellen),
+                  ACCENT, _als_schrift(schrift(9))).pack(side='right',
+                                                        padx=8)
+
+        # Unterzeile: Art, Klasse, Besitz — und der Hinweis auf die Sortierung.
+        teile = [katalog_modul.art_lesbar(eintrag.get('a'))]
+        if eintrag.get('c'):
+            teile.append(eintrag['c'])
+        teile.append(t('hk_hast_du')
+                     if bestand_datei.enthaelt(self.bestand, eintrag['n'])
+                     else t('hk_fehlt_dir'))
+        if len(quellen) > 1:
+            teile.append(t('hk_leichtester'))
+        tk.Label(kasten, text=' · '.join(teile), bg=FLAECHE, fg=SUB,
+                 font=schrift(9), anchor='w').pack(fill='x', padx=14,
+                                                   pady=(0, 8))
+
+        if not quellen:
+            if eintrag.get('start'):
+                text = t('hk_start')
+            elif eintrag.get('topf'):
+                text = '%s: %s\n%s' % (t('hk_topf'), eintrag['topf'],
+                                       t('hk_topf_text'))
+            else:
+                text = t('hk_keine')
+            tk.Label(kasten, text=text, bg=FLAECHE, fg=SUB, font=schrift(10),
+                     anchor='w', justify='left', wraplength=620).pack(
+                         fill='x', padx=14, pady=(0, 12))
+            return
+
+        # Der einfachste Weg steht ausgeschrieben da — den braucht man zuerst.
+        self._weg_zeigen(kasten, quellen[0])
+
+        if len(quellen) > 1:
+            self._weitere_wege(kasten, quellen[1:])
+
+    def _gewaehlter_eintrag(self):
+        """Der Katalogeintrag zum gewählten Namen — oder nichts."""
+        if not getattr(self, 'gewaehlt', None):
+            return None
+        schluessel = katalog_modul._norm(self.gewaehlt)
+        return (self.katalog.get('bauplaene') or {}).get(schluessel)
+
+    def _weg_zeigen(self, eltern, q):
+        """Eine Bezugsquelle als beschriftete Zeilen — Auftrag, Fraktion, …"""
+        gitter = tk.Frame(eltern, bg=FLAECHE)
+        gitter.pack(fill='x', padx=14, pady=(0, 10))
+        gitter.columnconfigure(1, weight=1)
+
+        rang = q.get('rang') or '—'
+        if q.get('rep'):
+            rang += '  (%s)' % t('ruf_punkte',
+                                 f"{q['rep']:,}".replace(',', '.'))
+        zeilen = ((t('hk_auftrag'), q.get('auftrag') or '—'),
+                  (t('hk_fraktion'), q.get('fraktion') or '—'),
+                  (t('hk_annahme'), ort_text(q.get('wo')) or '—'),
+                  (t('hk_rang'), rang),
+                  (t('hk_belohnung'),
+                   ('%s aUEC' % f"{q['uec']:,}".replace(',', '.'))
+                   if q.get('uec') else '—'))
+        for nummer, (bez, wert) in enumerate(zeilen):
+            tk.Label(gitter, text=bez, bg=FLAECHE, fg=SUB, font=schrift(9),
+                     anchor='w').grid(row=nummer, column=0, sticky='w',
+                                      padx=(0, 14), pady=1)
+            tk.Label(gitter, text=wert, bg=FLAECHE, fg=FG, font=schrift(10),
+                     anchor='w', justify='left', wraplength=520).grid(
+                         row=nummer, column=1, sticky='w', pady=1)
+
+    def _weitere_wege(self, eltern, weitere):
+        """Die übrigen Wege — eingeklappt, damit sie den Block nicht sprengen."""
+        rahmen = tk.Frame(eltern, bg=FLAECHE)
+        rahmen.pack(fill='x', padx=14, pady=(0, 10))
+        tk.Frame(rahmen, bg=LINIE, height=1).pack(fill='x', pady=(0, 8))
+
+        kopf = tk.Label(rahmen, text='▶  ' + t('hk_weitere') % len(weitere),
+                        bg=FLAECHE, fg=SUB, font=schrift(10), cursor='hand2',
+                        anchor='w')
+        kopf.pack(fill='x')
+        inhalt = tk.Frame(rahmen, bg=FLAECHE)
+
+        def umschalten(_=None):
+            if inhalt.winfo_ismapped():
+                inhalt.pack_forget()
+                kopf.configure(text='▶  ' + t('hk_weitere') % len(weitere))
+            else:
+                inhalt.pack(fill='x', pady=(8, 0))
+                kopf.configure(text='▼  ' + t('hk_weitere') % len(weitere))
+
+        kopf.bind('<Button-1>', umschalten)
+        for q in weitere:
+            kopf_text, auftrag, unten, wo = quelle_text(q)
+            zeile = tk.Frame(inhalt, bg=FLAECHE)
+            zeile.pack(fill='x', pady=3)
+            tk.Label(zeile, text=kopf_text, bg=FLAECHE, fg=GELB,
+                     font=schrift(9), anchor='w').pack(fill='x')
             if auftrag:
-                tk.Label(block, text='„%s"' % auftrag, bg=BG, fg=FG,
-                         font=schrift(10), anchor='w',
-                         wraplength=600, justify='left').pack(fill='x')
-            if unten:
-                tk.Label(block, text=unten, bg=BG, fg=SUB, font=schrift(9),
-                         anchor='w').pack(fill='x')
-            if wo:
-                tk.Label(block, text=wo, bg=BG, fg=ACCENT, font=schrift(9),
+                tk.Label(zeile, text='„%s"' % auftrag, bg=FLAECHE, fg=FG,
+                         font=schrift(9), anchor='w', wraplength=600,
+                         justify='left').pack(fill='x')
+            rest = ' · '.join(x for x in (unten, wo) if x)
+            if rest:
+                tk.Label(zeile, text=rest, bg=FLAECHE, fg=SUB, font=schrift(9),
                          anchor='w', wraplength=600,
                          justify='left').pack(fill='x')
 
@@ -630,8 +768,20 @@ class Bestandsfenster:
         self._zeichnen()
 
     def _herkunft_umschalten(self, name):
-        self.offen.discard(name) if name in self.offen else self.offen.add(name)
-        self._zeichnen()
+        """Bauplan wählen — die Herkunft erscheint im festen Block unten.
+
+        ⚠ Hier wird die Liste **nicht** neu gebaut. Vorher tat sie das, weil
+        der Herkunftsblock zwischen den Zeilen stand: Jeder Klick baute 700
+        Zeilen neu auf, die Ansicht sprang, und der aufgeklappte Block schob
+        alles weg. Jetzt ändert sich nur der Block unten — die Liste bleibt
+        stehen, wo sie steht.
+        """
+        self._auswaehlen(None if name == getattr(self, 'gewaehlt', None)
+                         else name)
+
+    def _auswaehlen(self, name):
+        self.gewaehlt = name
+        self._herkunft_zeichnen()
 
     def schliessen(self):
         if getattr(self, 'eingebettet', False):

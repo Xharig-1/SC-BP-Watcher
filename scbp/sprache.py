@@ -698,6 +698,34 @@ TEXTE = {
     'ohne_spiel_wo':   ('Nachtragen kannst du den Ordner jederzeit unter Einstellungen → Ordner.',
                           'You can add the folder any time under Settings → Folders.'),
 
+    # -- Herkunftsblock an fester Stelle unter der Liste --
+    # Vorher hing er an jeder Zeile und klappte dort auf. Ein Bauplan hat bis
+    # zu zwölf Bezugsquellen; der Block wurde über 700 Pixel hoch, während nur
+    # 465 sichtbar sind — er schob die Liste komplett weg. Jetzt steht er fest
+    # unten, zeigt den einfachsten Weg, und der Rest kommt auf Klick.
+    'hk_ein_weg':      ('1 Weg', '1 way'),
+    'hk_wege':         ('%d Wege', '%d ways'),
+    'hk_leichtester':  ('leichtester Weg zuerst', 'easiest way first'),
+    'hk_hast_du':      ('hast du', 'you have it'),
+    'hk_fehlt_dir':    ('fehlt dir', 'you are missing it'),
+    'hk_auftrag':      ('Auftrag', 'Mission'),
+    'hk_fraktion':     ('Fraktion', 'Faction'),
+    'hk_annahme':      ('Annahme', 'Pick up at'),
+    'hk_rang':         ('Rang', 'Rank'),
+    'hk_belohnung':    ('Belohnung', 'Reward'),
+    'hk_weitere':      ('%d weitere Wege zu diesem Bauplan',
+                          '%d more ways to this blueprint'),
+    'hk_zu':           ('Schließen', 'Close'),
+    'hk_nichts':       ('Klick auf eine Zeile — hier steht dann, woher der Bauplan kommt.',
+                          'Click a row — this shows where the blueprint comes from.'),
+    'hk_start':        ('Den hat jeder von Anfang an — es gibt keinen Auftrag, der ihn ausschüttet.',
+                          'Everyone has this from the start — no mission hands it out.'),
+    'hk_topf':         ('Sonderquelle', 'Special source'),
+    'hk_topf_text':    ('Kein regulärer Auftrag schüttet ihn aus — er stammt aus diesem Belohnungstopf. Wann der wieder läuft, entscheidet CIG.',
+                          'No regular mission hands it out — it comes from this reward pool. When that runs again is up to CIG.'),
+    'hk_keine':        ('Zu diesem Bauplan ist keine Bezugsquelle bekannt.',
+                          'No source is known for this blueprint.'),
+
     # --- Hauptfenster: Reiter und Rahmen (ab v3.0.0) ---
     'hf_titel':          ('SC BP Watcher', 'SC BP Watcher'),
     'hf_gruppe_bp':      ('Baupläne', 'Blueprints'),
