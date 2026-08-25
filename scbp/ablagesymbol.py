@@ -83,6 +83,66 @@ BEFEHL_ZEIGEN = 1001
 BEFEHL_BEENDEN = 1002
 
 
+
+# ---------------------------------------------------------------------------
+# ⚠ Signaturen festlegen — sonst stimmen auf 64-Bit-Windows die Handles nicht.
+#
+# Ohne `restype` nimmt ctypes an, eine Windows-Funktion gebe ein `int` zurück,
+# und das ist auf 64 Bit **32 Bit breit**. Fenster-, Icon- und Menü-Handles sind
+# aber zeigergroß. Liegt so ein Handle über der 32-Bit-Grenze, kommt bei uns ein
+# abgeschnittener Wert an — und der zeigt auf nichts.
+#
+# Das ist kein theoretisches Problem: Windows vergibt Handles meist im unteren
+# Bereich, deshalb geht es fast immer gut. „Fast immer" heißt hier: Bei Haldjas
+# war am 25.08.2026 das Rechtsklick-Menü **leer** — `CreatePopupMenu` hatte ein
+# gekürztes Handle geliefert, und die beiden `AppendMenuW` liefen ins Leere,
+# ohne dass es jemand merkte (der Rückgabewert wurde nie geprüft).
+#
+# Dasselbe Muster erklärt vermutlich auch, warum das Symbol selbst gelegentlich
+# ausblieb. Dagegen half bisher nur, es mehrfach zu versuchen — das behandelte
+# das Symptom.
+def _signaturen_setzen():
+    """Einmal beim Laden: sagen, was die Windows-Funktionen wirklich liefern."""
+    if not WINDOWS:
+        return
+    from ctypes import wintypes
+    benutzer = ctypes.windll.user32
+    kern = ctypes.windll.kernel32
+
+    benutzer.CreatePopupMenu.restype = wintypes.HMENU
+    benutzer.CreatePopupMenu.argtypes = []
+
+    benutzer.AppendMenuW.restype = wintypes.BOOL
+    benutzer.AppendMenuW.argtypes = [wintypes.HMENU, wintypes.UINT,
+                                     ctypes.c_void_p, wintypes.LPCWSTR]
+
+    benutzer.TrackPopupMenu.restype = wintypes.BOOL
+    benutzer.TrackPopupMenu.argtypes = [wintypes.HMENU, wintypes.UINT,
+                                        ctypes.c_int, ctypes.c_int,
+                                        ctypes.c_int, wintypes.HWND,
+                                        ctypes.c_void_p]
+
+    benutzer.DestroyMenu.restype = wintypes.BOOL
+    benutzer.DestroyMenu.argtypes = [wintypes.HMENU]
+
+    benutzer.LoadImageW.restype = wintypes.HANDLE
+    benutzer.LoadImageW.argtypes = [wintypes.HINSTANCE, wintypes.LPCWSTR,
+                                    wintypes.UINT, ctypes.c_int, ctypes.c_int,
+                                    wintypes.UINT]
+
+    benutzer.CreateWindowExW.restype = wintypes.HWND
+    benutzer.SetForegroundWindow.argtypes = [wintypes.HWND]
+    kern.GetModuleHandleW.restype = wintypes.HMODULE
+    kern.GetModuleHandleW.argtypes = [wintypes.LPCWSTR]
+
+
+try:
+    _signaturen_setzen()
+except Exception:
+    # Läuft etwas davon auf einer alten Windows-Fassung nicht, ist das kein
+    # Grund, das Programm nicht zu starten — dann eben ohne Symbol.
+    pass
+
 def moeglich():
     return WINDOWS
 
@@ -189,8 +249,18 @@ class Ablagesymbol(object):
         if not menue:
             return
         try:
-            benutzer.AppendMenuW(menue, MF_STRING, BEFEHL_ZEIGEN, self._text_zeigen)
-            benutzer.AppendMenuW(menue, MF_STRING, BEFEHL_BEENDEN, self._text_beenden)
+            # Der Rückgabewert wurde bisher weggeworfen — deshalb fiel ein
+            # leeres Menü niemandem auf. Jetzt steht es im Fehlerbericht.
+            for kennung, beschriftung in ((BEFEHL_ZEIGEN, self._text_zeigen),
+                                          (BEFEHL_BEENDEN, self._text_beenden)):
+                if not benutzer.AppendMenuW(menue, MF_STRING, kennung,
+                                            beschriftung):
+                    from . import fehler
+                    fehler.merken('ablagesymbol.menue',
+                                  OSError('AppendMenuW ist gescheitert (%s), '
+                                          'Fehler %d'
+                                          % (beschriftung,
+                                             ctypes.windll.kernel32.GetLastError())))
             from ctypes import wintypes
 
             class POINT(ctypes.Structure):

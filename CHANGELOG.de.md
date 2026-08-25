@@ -137,6 +137,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Das Rechtsklick-Menü am Symbol neben der Uhr war leer.** Die
+  Windows-Funktionen wurden ohne Signatur aufgerufen; ctypes hält den Rückgabewert
+  dann für eine 32-Bit-Zahl, während Fenster-, Icon- und Menü-Kennungen
+  zeigergroß sind. Das gekürzte Menü-Kennzeichen zeigte auf nichts, und beide
+  Einträge liefen ins Leere — unbemerkt, weil der Rückgabewert nie geprüft wurde.
+  Dasselbe Muster erklärt vermutlich auch, warum das Symbol gelegentlich ganz
+  ausblieb. Gemeldet von Haldjas — „war bei mir letztens noch leer".
+
 - **Das Setup kam an einem hängenden Programm nicht vorbei.** Es bat die
   laufende Fassung höflich, sich zu schließen — wer nicht mehr reagiert, hört
   das nicht, und danach scheiterte das Kopieren wieder an „code 32". Jetzt wird

@@ -133,6 +133,14 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The tray icon's right-click menu was empty.** The Windows functions were
+  called without signatures; ctypes then treats the return value as a 32-bit
+  number, while window, icon and menu handles are pointer-sized. The truncated
+  menu handle pointed at nothing and both entries went nowhere — unnoticed,
+  because the return value was never checked. The same pattern probably explains
+  why the icon sometimes failed to appear at all. Reported by Haldjas — „it was
+  still empty for me the other day".
+
 - **The setup could not get past a hung program.** It politely asked the running
   version to close — something that no longer responds does not hear that, and
   copying then failed with „code 32" again. It is now closed by force if needed.
