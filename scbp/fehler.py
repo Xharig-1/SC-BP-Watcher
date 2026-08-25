@@ -88,6 +88,47 @@ def _lesen():
 VERSION = ['']
 
 
+SPUR_DATEI = 'start-spur.txt'
+
+
+def spur(schritt):
+    """Festhalten, wie weit der Start gekommen ist — überlebt einen Absturz.
+
+    ⚠ Wozu: Ein `SIGSEGV` beendet den Prozess **sofort**. Kein `except` greift,
+    kein Fehlerbericht wird geschrieben, und der Nutzer kann nur sagen „es stürzt
+    ab". Genau das ist am 25.08.2026 passiert: Ein Tester meldete einen Absturz
+    beim ersten Start, reproduzierbar bei ihm — und auf dem Entwicklungsrechner
+    ließ er sich nicht nachstellen. Ohne Spur bleibt nur Raten.
+
+    Deshalb schreibt jeder Startschritt eine Zeile, **sofort auf die Platte**
+    (`flush` + `fsync`, sonst steht bei einem Absturz nur ein leerer Puffer da).
+    Beim nächsten Start steht die letzte Zeile im Diagnose-Bericht: Was danach
+    käme, ist die Stelle, an der es geknallt hat.
+
+    Die Datei wird bei jedem Start neu angelegt — sie soll den letzten Lauf
+    zeigen, kein Tagebuch sein.
+    """
+    try:
+        pfad = pfade.app_datei(SPUR_DATEI)
+        art = 'a' if getattr(spur, '_offen', False) else 'w'
+        spur._offen = True
+        with open(pfad, art, encoding='utf-8') as f:
+            f.write('%s  %s\n' % (datetime.now().strftime('%H:%M:%S'), schritt))
+            f.flush()
+            os.fsync(f.fileno())
+    except Exception:
+        pass
+
+
+def letzte_spur():
+    """Die Startschritte des letzten Laufs — für den Diagnose-Bericht."""
+    try:
+        with open(pfade.app_datei(SPUR_DATEI), encoding='utf-8') as f:
+            return [z.rstrip() for z in f if z.strip()]
+    except Exception:
+        return []
+
+
 def merken(stelle, ausnahme=None, hinweis=''):
     """Einen Fehler festhalten. Gibt True zurück, wenn es geklappt hat.
 

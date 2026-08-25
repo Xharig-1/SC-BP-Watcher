@@ -37,6 +37,7 @@ import os
 import tkinter as tk
 from tkinter import filedialog
 
+from . import fehler
 from . import bestand as bestand_datei
 from . import logquelle, pfade, sprache
 from .sprache import t
@@ -258,6 +259,7 @@ class Assistent:
     def _nachlesen(self):
         """Läuft von selbst — hier muss niemand etwas tun."""
         self.nachlese_gelaufen = True
+        fehler.spur('Assistent: Logs nachlesen beginnt')
         try:
             anzahl_dateien = len(pfade.log_sicherungen())
             if anzahl_dateien:
@@ -271,6 +273,7 @@ class Assistent:
                     neu += 1
             if neu:
                 bestand_datei.speichern(b)
+            fehler.spur('Assistent: nachgelesen (%d neu)' % neu)
             self.ergebnis.configure(
                 text=t('nachgelesen_gross', neu, bericht.get('dateien', 0)),
                 fg=FG, font=schrift(12))

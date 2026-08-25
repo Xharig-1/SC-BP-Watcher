@@ -406,6 +406,8 @@ TEXTE = {
     's_ub_holen_laeuft': ('%s wird geholt …', 'Fetching %s …'),
     's_ub_auf':        ('Im Browser geöffnet: %s', 'Opened in the browser: %s'),
     's_ub_auf_nein':   ('Ließ sich nicht öffnen: %s', 'Could not be opened: %s'),
+    'b_spur':          ('Startverlauf des letzten Laufs (die letzte Zeile sagt, wie weit es kam)',
+                          'Start trace of the last run (the last line shows how far it got)'),
     'b_fehler_alt':    ('(aus einer älteren Fassung — vermutlich längst behoben)',
                           '(from an older version — most likely fixed since)'),
     'tray_zeigen':     ('Fenster zeigen', 'Show window'),

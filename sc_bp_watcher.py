@@ -55,7 +55,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc12'
+__version__ = '3.0.0-rc13'
 
 
 def _mitgeliefert(name):
@@ -1101,7 +1101,9 @@ def sicherer_cursor(name):
 
 
 class Overlay:
-    def __init__(self):
+    def __init__(self, wurzel=None):
+        """`wurzel` ist die eine Tk-Instanz des Programms — siehe unten, warum es
+        nur eine geben darf."""
         # ⚠ Vor allem anderen: Liegen die Dateien noch am alten Ort (bis v2.x
         # versteckt in %APPDATA% bzw. ~/.config), werden sie in den sichtbaren
         # Ordner unter Dokumente **kopiert**. Erst danach darf irgendetwas
@@ -1124,7 +1126,19 @@ class Overlay:
         except Exception as ausnahme:
             fehler.merken('start.umzug', ausnahme)
 
-        self.root = tk.Tk()
+        # ⚠ **Nur eine einzige `tk.Tk()` im ganzen Programm.** Vorher legte der
+        # Assistent eine eigene an, zerstörte sie am Ende — und hier entstand eine
+        # zweite. Das ist der Fall, den Tk nicht verlässlich verträgt: Nach dem
+        # `destroy()` der ersten leben Schriften, Bilder und offene `after`-Aufträge
+        # weiter und zeigen auf einen toten Interpreter. Ob das gutgeht, hängt am
+        # Zeitpunkt — bei einem Tester (Bomb20, 25.08.2026) endete der **erste**
+        # Programmstart reproduzierbar mit `SIGSEGV`, direkt nach dem Nachlesen der
+        # Logs. Sein Satz „mit Debugging an lief es durch" ist der Fingerabdruck
+        # eines solchen Zeitproblems: Langsamer läuft es zufällig richtig.
+        #
+        # Deshalb wird die Wurzel **einmal** erzeugt und weitergereicht; der
+        # Assistent ist seitdem ein `Toplevel` daran.
+        self.root = wurzel if wurzel is not None else tk.Tk()
         # Ab hier werden auch Fehler in Rückrufen der Oberfläche festgehalten.
         # Ohne diesen Haken schreibt Tk sie auf die Standardausgabe — und die
         # sieht in einer .exe oder einem AppImage niemand.
@@ -1789,12 +1803,34 @@ if __name__ == '__main__':
     if overlay.zeigen_bitte():
         sys.exit(0)
 
+    # ⚠ Die **eine** Tk-Instanz des Programms. Sie entsteht hier und wird an alles
+    # weitergereicht — Assistent wie Overlay. Vorher legte der Assistent eine
+    # eigene an und zerstörte sie am Ende; die zweite, die das Overlay danach
+    # anlegte, lief auf einem Interpreter, in dem noch Schriften und Bilder der
+    # ersten hingen. Ergebnis war ein `SIGSEGV` beim **ersten** Programmstart —
+    # also bei jedem neuen Nutzer, und nur dort, weil der Assistent nur einmal
+    # läuft. Gemeldet von Bomb20 am 25.08.2026.
+    #
+    # Sie bleibt versteckt, bis das Overlay sie übernimmt: Ein leeres graues
+    # Fenster hinter dem Assistenten hätte niemand erklären können.
+    fehler.spur('Start, Fassung %s, %s' % (__version__, sys.platform))
+    wurzel = tk.Tk()
+    wurzel.withdraw()
+    fehler.spur('Tk-Wurzel steht')
+
     zeige_liste = False
     if assistent.noetig():
-        fertig, zeige_liste = assistent.starten()
+        fehler.spur('Assistent beginnt')
+        fertig, zeige_liste = assistent.starten(eltern=wurzel)
+        fehler.spur('Assistent fertig (Liste zeigen: %s)' % zeige_liste)
         if not fertig:
             sys.exit(0)                 # Nutzer hat abgebrochen
-    fenster = Overlay()
+    fehler.spur('Overlay wird gebaut')
+    fenster = Overlay(wurzel=wurzel)
+    fehler.spur('Overlay steht')
     if zeige_liste:
+        fehler.spur('Bauplan-Liste wird geöffnet')
         fenster.liste_oeffnen()
+        fehler.spur('Bauplan-Liste steht')
+    fehler.spur('Hauptschleife läuft')
     fenster.run()

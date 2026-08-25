@@ -19,6 +19,10 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **Start trace in the problem report.** A crash ends the program instantly — no report gets
+  written, and all that remains is „it crashes". Every startup step is now written straight
+  to disk; the last line in the report shows how far it got.
+
 - **Get a release straight from the window.** Under each of the two cards („Stable
   releases only" / „Test builds too") there is a full-width button that downloads and
   installs the latest release of that channel — including going back from a test build to
@@ -88,6 +92,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **No more save button** — changes take effect right away.
 
 ### Fixed
+
+- **Crash on the very first start** (`SIGSEGV`), reported by Bomb20. The wizard created its
+  **own** Tk instance and destroyed it at the end; the overlay then created a second one.
+  After the first is destroyed, fonts, images and pending callbacks live on pointing at a
+  dead interpreter — whether that goes well is a matter of timing. His „it ran fine with
+  debugging on" is the fingerprint of exactly that. There is now only **one** Tk instance in
+  the whole program.
 
 - **The `[SCBPW]` markers were visible in game.** The contract title read „Security
   Patrol**[SCBPW]** [BP 3/6]**[/SCBPW]**". They made sure inserted text could be removed

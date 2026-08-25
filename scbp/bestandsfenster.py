@@ -37,6 +37,7 @@ Klick auf ⓘ klappt die Bezugsquellen aus.
 import tkinter as tk
 from tkinter import filedialog
 
+from . import fehler
 from . import bestand as bestand_datei
 from . import export as export_modul
 from . import hinweis
@@ -865,6 +866,7 @@ class Bestandsfenster:
         # gesetzt ist, und brauchen kein Nachziehen von außen.)
         self._loeschkreuz_zeigen()
 
+        fehler.spur('Liste: zeichnen beginnt')
         gruppen = self._auswahl()
         habe = bestand_datei.schluessel(self.bestand)
         gesamt = len(self.katalog['bauplaene'])

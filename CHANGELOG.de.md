@@ -19,6 +19,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Startverlauf im Diagnose-Bericht.** Ein Absturz beendet das Programm sofort — kein
+  Fehlerbericht wird mehr geschrieben, und es bleibt nur „es stürzt ab". Jeder Startschritt
+  wird jetzt sofort auf die Platte geschrieben; die letzte Zeile im Bericht sagt, wie weit
+  es kam.
+
 - **Fassung holen, direkt aus dem Fenster.** Unter jeder der beiden Karten („Nur fertige
   Fassungen" / „Auch Testfassungen") steht ein Knopf über die volle Breite, der die letzte
   Fassung dieses Kanals lädt und einspielt — auch zurück von einer Testfassung auf die
@@ -90,6 +95,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Kein Speichern-Knopf mehr** — Änderungen greifen sofort.
 
 ### Behoben
+
+- **Absturz beim allerersten Start** (`SIGSEGV`), gemeldet von Bomb20. Der Assistent legte
+  eine **eigene** Tk-Instanz an und zerstörte sie am Ende; das Overlay legte danach eine
+  zweite an. Nach dem `destroy()` der ersten leben Schriften, Bilder und offene Aufträge
+  weiter und zeigen auf einen toten Interpreter — ob das gutgeht, hängt am Zeitpunkt. Sein
+  Satz „mit Debugging an lief es durch" ist der Fingerabdruck dafür. Es gibt jetzt nur noch
+  **eine** Tk-Instanz im ganzen Programm.
 
 - **Die Marken `[SCBPW]` waren im Spiel sichtbar.** Im Auftragstitel stand „Security
   Patrol**[SCBPW]** [BP 3/6]**[/SCBPW]**". Sie sorgten dafür, dass sich Eingefügtes exakt

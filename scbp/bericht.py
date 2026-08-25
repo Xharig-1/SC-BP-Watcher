@@ -166,6 +166,16 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
             (uebersicht.get('selbst_gesetzt') or {}).items()))
         or t('b_standard')))
 
+    # ⚠ Die Startspur zuerst — bei einem Absturz ist sie das Einzige, was bleibt.
+    # Ein `SIGSEGV` beendet den Prozess sofort: kein `except`, kein Fehlerbericht,
+    # nur „es stürzt ab". Die letzte Zeile hier sagt, wie weit der Start kam.
+    spur = _sicher(fehler.letzte_spur, [])
+    if spur:
+        zeilen.append('')
+        zeilen.append(t('b_spur'))
+        for eintrag in spur[-12:]:
+            zeilen.append('  ' + eintrag)
+
     letzte = _sicher(lambda: fehler.letzte(fehleranzahl), [])
     gesamt = _sicher(fehler.anzahl, 0)
     zeilen.append('')
