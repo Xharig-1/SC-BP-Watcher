@@ -412,7 +412,21 @@ class Bestandsfenster:
 
         Beim Abhaken, Merken und Ausklappen bleibt die Position dagegen stehen —
         dort wäre ein Sprung nach oben ein Verlust, man arbeitet ja an einer
-        bestimmten Stelle."""
+        bestimmten Stelle.
+
+        ⚠ „Bleibt stehen" ging so nicht auf: Tk merkt sich den **Anteil** der
+        Scrollfläche, nicht die Pixelhöhe. Klappt man die Herkunft aus, wird
+        die Liste länger, derselbe Anteil zeigt plötzlich weiter oben — und die
+        angeklickte Zeile ist weg. Gemessen: 0,50 sprang auf 0,43, also ein
+        halbes Fenster weit. Deshalb wird hier die **Pixelhöhe** gemerkt und
+        danach zurückgerechnet."""
+        oben_px = None
+        if not nach_oben:
+            try:
+                oben_px = self.leinwand.canvasy(0)
+            except tk.TclError:
+                oben_px = None
+
         for kind in self.inhalt.winfo_children():
             kind.destroy()
 
@@ -470,6 +484,30 @@ class Bestandsfenster:
             # Erst wenn Tk die neue Höhe kennt — sonst bezieht sich der Sprung
             # noch auf die Scrollfläche von vorher und landet daneben.
             self.root.after_idle(lambda: self.leinwand.yview_moveto(0))
+        elif oben_px is not None:
+            self.root.after_idle(lambda: self._zurueck_zu(oben_px))
+
+    def _zurueck_zu(self, oben_px):
+        """Denselben Pixel wieder nach oben holen, egal wie lang die Liste ist.
+
+        ⚠ Zweimal aufgepasst werden muss hier:
+
+        * **Wann** gemessen wird. `after_idle` allein reicht nicht — die Zeilen
+          sind dann gepackt, aber noch nicht vermessen, und `winfo_reqheight`
+          meldet einen zu kleinen Wert. Damit wird aus jedem Anteil eine 1,0,
+          und die Liste springt ans Ende. Genau so gemessen: aus Pixel 1700
+          wurde 5202. Deshalb erst `update_idletasks`.
+        * **Woran** gemessen wird: an der Scrollfläche (`bbox('all')`), denn
+          auf die bezieht sich `yview_moveto`.
+        """
+        try:
+            self.leinwand.update_idletasks()
+            bereich = self.leinwand.bbox('all')
+            gesamt = float(bereich[3]) if bereich else 0.0
+            if gesamt > 1:
+                self.leinwand.yview_moveto(max(0.0, min(1.0, oben_px / gesamt)))
+        except tk.TclError:
+            pass
 
     def _alle(self):
         self.alle_zeigen = True
