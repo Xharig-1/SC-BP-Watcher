@@ -895,7 +895,11 @@ TEXTE = {
     'art_WeaponGun':            ('Schiffswaffe', 'Ship weapon'),
     'art_WeaponPersonal':       ('FPS-Waffe', 'FPS weapon'),
     'art_WeaponMining':         ('Mining-Laser', 'Mining laser'),
-    'art_WeaponAttachment':     ('Waffenaufsatz', 'Weapon attachment'),
+    # ⚠ Heißt „Magazin", nicht „Waffenaufsatz": Alle 32 Einträge dieser Art
+    # tragen den Subtyp „Magazine", etwas anderes steckt nicht darin. Die
+    # beiden Start-Magazine (Art `ammo`) werden über `katalog.ART_ZUSAMMEN`
+    # hier eingereiht, damit alle 34 an einer Stelle stehen.
+    'art_WeaponAttachment':     ('Magazin', 'Magazine'),
     'art_SalvageModifier':      ('Salvage-Modifikator', 'Salvage modifier'),
     'art_SalvageHead':          ('Salvage-Kopf', 'Salvage head'),
     'art_TractorBeam':          ('Traktorstrahl', 'Tractor beam'),

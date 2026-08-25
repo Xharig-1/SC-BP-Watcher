@@ -69,7 +69,29 @@ AUS = os.environ.get('SC_BP_NO_NET', '') not in ('', '0')
 # lesen sollte, und „Helm" nichts, was in einer englischen Liste stehen darf.
 def art_lesbar(roh):
     """Aus 'Char_Armor_Helmet' wird 'Helm' bzw. 'Helmet'."""
-    return sprache.art(roh)
+    return sprache.art(ART_ZUSAMMEN.get(roh, roh))
+
+
+# Arten, die dasselbe meinen und deshalb eine Gruppe bilden.
+#
+# ⚠ scmdb führt Magazine unter zwei Kennungen: 32 als `WeaponAttachment`
+# (alle mit Subtyp „Magazine", nichts anderes steckt darin) und die beiden
+# Start-Magazine als `ammo`. Für den Spieler ist das ein und dieselbe Sache —
+# gemeldet als „Magazin für Waffen fehlen quasi alle Waffen bis auf 2": Der
+# Filter „Magazin" zeigte die zwei, die 32 anderen standen unter
+# „Waffenaufsatz".
+ART_ZUSAMMEN = {'ammo': 'WeaponAttachment'}
+
+
+def art_kennung(eintrag_oder_roh):
+    """Die Art, unter der ein Bauplan einsortiert und gefiltert wird.
+
+    Nimmt einen Katalogeintrag oder die rohe Kennung. Zusammengehörende Arten
+    (siehe `ART_ZUSAMMEN`) werden auf eine gezogen.
+    """
+    roh = (eintrag_oder_roh.get('a')
+           if isinstance(eintrag_oder_roh, dict) else eintrag_oder_roh)
+    return ART_ZUSAMMEN.get(roh, roh)
 
 
 # So viele Bezugsquellen je Bauplan werden behalten.
@@ -600,7 +622,7 @@ def gruppen_geordnet(daten=None):
     im Kopf."""
     gruppen = {}
     for e in (daten or laden())['bauplaene'].values():
-        roh = e.get('a')
+        roh = art_kennung(e)
         gruppen.setdefault((obergruppe(roh), art_lesbar(roh)), []).append(e)
     for liste in gruppen.values():
         liste.sort(key=lambda e: e['n'].lower())

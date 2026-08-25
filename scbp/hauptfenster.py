@@ -669,8 +669,15 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
         fenster.configure(bg=LINIE)
         zustand['liste'] = fenster
 
-        innen = tk.Frame(fenster, bg=FLAECHE)
-        innen.pack(fill='both', expand=True, padx=1, pady=1)
+        # ⚠ Die Liste muss rollen können. Bei 25 Arten ist sie höher als der
+        # Platz unter dem Feld — steht das Fenster weit unten, waren die
+        # letzten Einträge unerreichbar. Also: Höhe begrenzen, eigene
+        # Rollfläche, und wenn unten kein Platz ist, klappt sie nach oben.
+        aussen = tk.Frame(fenster, bg=FLAECHE)
+        aussen.pack(fill='both', expand=True, padx=1, pady=1)
+        leinwand = tk.Canvas(aussen, bg=FLAECHE, highlightthickness=0, bd=0)
+        innen = tk.Frame(leinwand, bg=FLAECHE)
+        fenster_id = leinwand.create_window((0, 0), window=innen, anchor='nw')
 
         for wert, text in eintraege:
             an = (wert == zustand['wert'])
@@ -683,11 +690,33 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
             zeile.bind('<Leave>', lambda e, z=zeile: z.configure(bg=FLAECHE))
 
         c.update_idletasks()
+        innen.update_idletasks()
+        gebraucht_hoehe = innen.winfo_reqheight()
+        gebraucht_breite = max(breite, innen.winfo_reqwidth() + 2)
+
         x = c.winfo_rootx()
-        y = c.winfo_rooty() + hoehe + 2
-        fenster.geometry('%dx%d+%d+%d'
-                         % (max(breite, innen.winfo_reqwidth() + 2),
-                            innen.winfo_reqheight() + 2, x, y))
+        unten = c.winfo_rooty() + hoehe + 2
+        schirm = c.winfo_screenheight()
+        # So viel Platz ist nach unten bzw. nach oben — mit etwas Luft zum Rand.
+        platz_unten = schirm - unten - 20
+        platz_oben = c.winfo_rooty() - 20
+        nach_oben = gebraucht_hoehe > platz_unten and platz_oben > platz_unten
+        sicht = min(gebraucht_hoehe, max(platz_oben if nach_oben
+                                         else platz_unten, 120))
+        y = (c.winfo_rooty() - sicht - 2) if nach_oben else unten
+
+        leinwand.configure(width=gebraucht_breite - 2, height=sicht)
+        leinwand.pack(side='left', fill='both', expand=True)
+        if gebraucht_hoehe > sicht:
+            leiste = rundleiste(aussen, leinwand, grund=FLAECHE, breite=8)
+            leiste.pack(side='right', fill='y')
+            leinwand.configure(yscrollcommand=leiste.set)
+        leinwand.configure(scrollregion=(0, 0, gebraucht_breite,
+                                         gebraucht_hoehe))
+        leinwand.itemconfigure(fenster_id, width=gebraucht_breite - 2)
+        rad_anschliessen(leinwand)
+
+        fenster.geometry('%dx%d+%d+%d' % (gebraucht_breite, sicht + 2, x, y))
         fenster.lift()
         # Ein Klick irgendwo anders schließt die Liste — sonst bleibt sie
         # stehen, sobald man es sich anders überlegt.

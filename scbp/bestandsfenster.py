@@ -359,11 +359,18 @@ class Bestandsfenster:
             self.fein_felder[schluessel] = w
 
         self.fein_felder = {}
-        feld('art', [('', t('ff_alle_arten'))] + self._arten())
-        feld('klasse', [('', t('ff_alle_klassen'))] + self._klassen())
-        feld('groesse', [('', t('ff_alle_groessen'))] + self._groessen())
+        # Die Zahl hinter jedem Eintrag sagt, was einen erwartet — und erklärt
+        # eine Null, statt sie rätselhaft zu lassen.
+        feld('art', [('', t('ff_alle_arten'))]
+             + self._mit_zahl(self._arten(),
+                              self._anzahl_je('a', katalog_modul.art_kennung)))
+        feld('klasse', [('', t('ff_alle_klassen'))]
+             + self._mit_zahl(self._klassen(), self._anzahl_je('c')))
+        feld('groesse', [('', t('ff_alle_groessen'))]
+             + self._mit_zahl(self._groessen(), self._anzahl_je('s')))
         feld('quelle', [('', t('ff_alle_quellen'))] + self._quellen())
-        feld('grad', [('', t('ff_alle_grade'))] + self._grade())
+        feld('grad', [('', t('ff_alle_grade'))]
+             + self._mit_zahl(self._grade(), self._anzahl_je('g')))
 
         self.zuruecksetzen_lbl = tk.Label(
             reihe, text=t('ff_zuruecksetzen'), bg=BG, fg=SUB,
@@ -385,12 +392,39 @@ class Bestandsfenster:
         return sorted(werte, key=lambda x: str(x).lower())
 
     def _arten(self):
+        """Die Arten für das Auswahlfeld — zusammengehörende nur einmal.
+
+        ⚠ Über `art_kennung`, nicht über das rohe Feld: Sonst stehen `ammo`
+        und `WeaponAttachment` als zwei Einträge in der Liste, beide mit der
+        Beschriftung „Magazin" — einer mit 34 Bauplänen, einer mit null.
+        """
         arten = {}
         for e in (self.katalog.get('bauplaene') or {}).values():
-            roh = e.get('a')
+            roh = katalog_modul.art_kennung(e)
             if roh:
                 arten[roh] = katalog_modul.art_lesbar(roh)
         return sorted(arten.items(), key=lambda p: p[1].lower())
+
+    def _anzahl_je(self, feld, kennung=None):
+        """Wie viele Baupläne hat jeder Wert dieses Feldes?
+
+        Damit steht in der Auswahlliste, was einen erwartet — und eine Null
+        ist erklärt statt rätselhaft. Gemeldet wurde „Competition findet
+        nichts": Die Klasse steht zu Recht in der Liste (das Spiel kennt sie),
+        nur hat im Katalog 4.9.0 kein einziger Bauplan sie.
+        """
+        from collections import Counter
+        zaehler = Counter()
+        for e in (self.katalog.get('bauplaene') or {}).values():
+            wert = kennung(e) if kennung else e.get(feld)
+            if wert is not None and wert != '':
+                zaehler[str(wert)] += 1
+        return zaehler
+
+    def _mit_zahl(self, eintraege, zaehler):
+        """An jede Beschriftung die Anzahl hängen — „Military (38)"."""
+        return [(wert, '%s (%d)' % (text, zaehler.get(str(wert), 0)))
+                for wert, text in eintraege]
 
     def _mit_katalog(self, fest, feld):
         """Die feste Liste, ergänzt um alles, was der Katalog sonst noch hat.
@@ -584,7 +618,7 @@ class Bestandsfenster:
                 continue
             # Die Art ist ein Merkmal der ganzen Gruppe — einmal prüfen reicht,
             # statt für jede der bis zu 87 Zeilen darin.
-            if self.fein['art'] and (liste and liste[0].get('a')
+            if self.fein['art'] and (liste and katalog_modul.art_kennung(liste[0])
                                      != self.fein['art']):
                 continue
             # Suchwörter der Art: „Kühler" soll die Cooler finden, obwohl die
