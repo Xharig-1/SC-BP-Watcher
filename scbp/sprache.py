@@ -726,6 +726,22 @@ TEXTE = {
     'hk_keine':        ('Zu diesem Bauplan ist keine Bezugsquelle bekannt.',
                           'No source is known for this blueprint.'),
 
+    # -- Feinfilter über der Bauplan-Liste --
+    # Vorher waren es vier Knöpfe, die Bereiche ausblendeten — also das
+    # Gegenteil von dem, was man erwartet: Wer „nur FPS-Waffen" wollte, musste
+    # drei andere Bereiche wegklicken. Jetzt wird ausgewählt, was man sehen
+    # will, und zwar nach fünf Merkmalen.
+    'ff_alle_arten':   ('Alle Arten', 'All types'),
+    'ff_alle_klassen': ('Alle Klassen', 'All classes'),
+    'ff_alle_groessen': ('Alle Größen', 'All sizes'),
+    'ff_alle_quellen': ('Alle Quellen', 'All sources'),
+    'ff_alle_grade':   ('Alle Grade', 'All grades'),
+    'ff_groesse':      ('Größe %s', 'Size %s'),
+    'ff_grad':         ('Grad %s', 'Grade %s'),
+    'ff_zuruecksetzen': ('zurücksetzen', 'reset'),
+    'ff_treffer':      ('%d von %d Bauplänen', '%d of %d blueprints'),
+    'ff_alle_treffer': ('alle %d Baupläne', 'all %d blueprints'),
+
     # --- Hauptfenster: Reiter und Rahmen (ab v3.0.0) ---
     'hf_titel':          ('SC BP Watcher', 'SC BP Watcher'),
     'hf_gruppe_bp':      ('Baupläne', 'Blueprints'),

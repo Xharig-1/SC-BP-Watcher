@@ -63,9 +63,16 @@ ZEILEN_ZUERST = 120
 VERSION = ['']
 
 
-def schrift(groesse, fett=False):
+def schrift(groesse, fett=False, unterstrichen=False):
+    """Die Schrift dieses Fensters.
+
+    `unterstrichen` ist für Textlinks — im Haus die Auszeichnung dafür, dass
+    man klicken kann. Ohne sie sieht ein Textlink aus wie ein Hinweis.
+    """
     fam = 'Segoe UI' if pfade.WINDOWS else 'Helvetica'
-    return (fam, groesse, 'bold' if fett else 'normal')
+    stil = ' '.join(x for x, an in (('bold', fett),
+                                    ('underline', unterstrichen)) if an)
+    return (fam, groesse, stil or 'normal')
 
 
 def mono(groesse):
@@ -301,20 +308,160 @@ class Bestandsfenster:
             k.bind('<Button-1>', lambda e, s=schluessel: self._filter_setzen(s))
             self.knoepfe[schluessel] = k
 
-        # Zweite Reihe: die Bereiche. 25 Kategorien einzeln wären keine Hilfe —
-        # vier Knöpfe schon: Wer Rüstung sucht, blendet das Schiff weg und hat
-        # statt 714 Zeilen noch 316.
-        bereiche = tk.Frame(self.root, bg=BG)
-        bereiche.pack(fill='x', padx=14, pady=(0, 8))
-        self.bereich_knoepfe = {}
-        for og in katalog_modul.OBERGRUPPEN:
-            from .hauptfenster import rundknopf
-            k = rundknopf(bereiche, t('gruppe_%s' % og), None, schrift(10), BG,
-                          FLAECHE, LINIE, SUB)
-            k.pack(side='left', padx=(0, 4))
-            k.bind('<Button-1>', lambda e, g=og: self._bereich_umschalten(g))
-            hinweis.anhaengen(k, lambda: t('hinweis_bereich'))
-            self.bereich_knoepfe[og] = k
+        self._feinfilter()
+
+    def _feinfilter(self):
+        """Fünf Auswahlfelder: Art, Klasse, Größe, Quelle, Gütegrad.
+
+        ⚠ Hier standen vier Knöpfe, die Bereiche **ausblendeten** — also das
+        Gegenteil dessen, was man erwartet: Wer nur FPS-Waffen sehen wollte,
+        musste drei andere Bereiche wegklicken, und blendete man alle bis auf
+        einen aus, blieb die Liste manchmal leer, ohne dass der Grund
+        erkennbar war. Jetzt wird ausgewählt, was man sehen will.
+
+        Die Einträge kommen aus dem Katalog, nicht aus einer festen Liste: Was
+        es im Spiel nicht gibt, steht auch nicht zur Wahl.
+        """
+        from .hauptfenster import rundwahl
+
+        reihe = tk.Frame(self.root, bg=BG)
+        reihe.pack(fill='x', padx=14, pady=(0, 8))
+        self.fein = {'art': '', 'klasse': '', 'groesse': '', 'quelle': '',
+                     'grad': ''}
+
+        def feld(schluessel, eintraege):
+            if len(eintraege) <= 1:      # nichts zu wählen — Feld weglassen
+                return
+            w = rundwahl(reihe, eintraege, '',
+                         lambda wert, s=schluessel: self._fein_setzen(s, wert),
+                         schrift(10), grund=BG)
+            w.pack(side='left', padx=(0, 6))
+            self.fein_felder[schluessel] = w
+
+        self.fein_felder = {}
+        feld('art', [('', t('ff_alle_arten'))] + self._arten())
+        feld('klasse', [('', t('ff_alle_klassen'))] + self._klassen())
+        feld('groesse', [('', t('ff_alle_groessen'))] + self._groessen())
+        feld('quelle', [('', t('ff_alle_quellen'))] + self._quellen())
+        feld('grad', [('', t('ff_alle_grade'))] + self._grade())
+
+        self.zuruecksetzen_lbl = tk.Label(
+            reihe, text=t('ff_zuruecksetzen'), bg=BG, fg=SUB,
+            font=schrift(9, unterstrichen=True), cursor='hand2', padx=6)
+        self.zuruecksetzen_lbl.bind('<Button-1>', lambda e: self._fein_leeren())
+
+        self.treffer_lbl = tk.Label(reihe, text='', bg=BG, fg=SUB,
+                                    font=schrift(9))
+        self.treffer_lbl.pack(side='right')
+
+    # --- Woraus die Auswahlfelder ihre Einträge nehmen ---
+    def _kat_werte(self, feld):
+        """Alle im Katalog vorkommenden Werte eines Feldes, alphabetisch."""
+        werte = set()
+        for e in (self.katalog.get('bauplaene') or {}).values():
+            wert = e.get(feld)
+            if wert:
+                werte.add(wert)
+        return sorted(werte, key=lambda x: str(x).lower())
+
+    def _arten(self):
+        arten = {}
+        for e in (self.katalog.get('bauplaene') or {}).values():
+            roh = e.get('a')
+            if roh:
+                arten[roh] = katalog_modul.art_lesbar(roh)
+        return sorted(arten.items(), key=lambda p: p[1].lower())
+
+    def _klassen(self):
+        return [(k, k) for k in self._kat_werte('c')]
+
+    def _groessen(self):
+        return [(str(s), t('ff_groesse') % s) for s in self._kat_werte('s')]
+
+    def _grade(self):
+        vorhanden = self._kat_werte('g')
+        return [(str(g), t('ff_grad') % GRAD_BUCHSTABE.get(g, g).upper())
+                for g in vorhanden]
+
+    def _quellen(self):
+        """Fraktionen und Sonderquellen — beides, wonach man wirklich sucht."""
+        fraktionen, sonder = set(), set()
+        for e in (self.katalog.get('bauplaene') or {}).values():
+            for q in e.get('q') or []:
+                if q.get('fraktion'):
+                    fraktionen.add(q['fraktion'])
+            if e.get('topf'):
+                sonder.add(e['topf'])
+        eintraege = [('f:' + f, f) for f in sorted(fraktionen, key=str.lower)]
+        eintraege += [('t:' + s, s) for s in sorted(sonder, key=str.lower)]
+        return eintraege
+
+    def _treffer_zeigen(self, gruppen):
+        """Rechts die Zahl, links „zurücksetzen" — beides nur, wenn es zählt.
+
+        Die Zahl beantwortet die Frage, die sich sonst nur durch Scrollen klärt:
+        Habe ich gerade alles vor mir oder einen Ausschnitt? Und „zurücksetzen"
+        erscheint erst, wenn wirklich etwas gesetzt ist — ein Knopf, der nichts
+        tut, ist schlimmer als keiner.
+        """
+        if not hasattr(self, 'treffer_lbl'):
+            return
+        gezeigt = sum(len(treffer) for _, treffer in gruppen)
+        gesamt = len(self.katalog.get('bauplaene') or {})
+        eng = bool(self.suche.get().strip()) or self.filter != 'alle' \
+            or any(self.fein.values())
+        self.treffer_lbl.configure(
+            text=(t('ff_treffer') % (gezeigt, gesamt)) if eng
+            else (t('ff_alle_treffer') % gesamt))
+
+        if any(self.fein.values()):
+            self.zuruecksetzen_lbl.pack(side='left', padx=(4, 0))
+        else:
+            self.zuruecksetzen_lbl.pack_forget()
+
+    def _fein_passt(self, e):
+        """Kommt dieser Bauplan durch die fünf Auswahlfelder?
+
+        Ein leeres Feld heißt „alle" und lässt alles durch. Die Quelle prüft
+        zwei Dinge: `f:` eine Fraktion, die den Bauplan auslobt, `t:` einen
+        Belohnungstopf (XenoThreat und Verwandte).
+        """
+        if self.fein['klasse'] and e.get('c') != self.fein['klasse']:
+            return False
+        if self.fein['groesse'] and str(e.get('s')) != self.fein['groesse']:
+            return False
+        if self.fein['grad'] and str(e.get('g')) != self.fein['grad']:
+            return False
+        quelle = self.fein['quelle']
+        if quelle:
+            if quelle.startswith('f:'):
+                gesucht = quelle[2:]
+                if not any((q.get('fraktion') or '') == gesucht
+                           for q in e.get('q') or []):
+                    return False
+            elif quelle.startswith('t:'):
+                if (e.get('topf') or '') != quelle[2:]:
+                    return False
+        return True
+
+    def _fein_setzen(self, schluessel, wert):
+        self.fein[schluessel] = wert
+        self.alle_zeigen = False
+        self._zeichnen(nach_oben=True)
+
+    def _fein_leeren(self):
+        """Alle Auswahlfelder zurück auf „alle" — und EINMAL neu zeichnen.
+
+        ⚠ `setzen()` der Felder ruft den Rückruf mit auf. Fünf Felder
+        nacheinander zurückzustellen hieße fünfmal die ganze Liste neu bauen;
+        deshalb wird stumm gesetzt und am Ende einmal gezeichnet.
+        """
+        for schluessel in self.fein:
+            self.fein[schluessel] = ''
+        for feld in self.fein_felder.values():
+            feld.stumm_setzen('')
+        self.alle_zeigen = False
+        self._zeichnen(nach_oben=True)
 
     def _suche_leeren(self):
         self.suche.set('')
@@ -402,6 +549,11 @@ class Bestandsfenster:
         for og, art, liste in katalog_modul.gruppen_geordnet(self.katalog):
             if og in self.bereiche_aus:
                 continue
+            # Die Art ist ein Merkmal der ganzen Gruppe — einmal prüfen reicht,
+            # statt für jede der bis zu 87 Zeilen darin.
+            if self.fein['art'] and (liste and liste[0].get('a')
+                                     != self.fein['art']):
+                continue
             # Suchwörter der Art: „Kühler" soll die Cooler finden, obwohl die
             # Kategorie im Spiel englisch heißt.
             wortliste = katalog_modul.suchworte(liste[0].get('a')) if liste else ()
@@ -418,6 +570,8 @@ class Bestandsfenster:
                 if self.filter == 'merk' and k not in beobachtet:
                     continue
                 if text and not art_passt and not _passt(e, text):
+                    continue
+                if not self._fein_passt(e):
                     continue
                 treffer.append((e, drin))
             if treffer:
@@ -459,12 +613,9 @@ class Bestandsfenster:
                          neuer_rand=ACCENT if an else LINIE,
                          neues_fg=BG if an else SUB)
 
-        # Ausgeblendete Bereiche werden abgedunkelt, nicht entfernt — man muss
-        # sehen, dass man selbst etwas weggeklickt hat.
-        for og, knopf in self.bereich_knoepfe.items():
-            aus = og in self.bereiche_aus
-            knopf.setzen(fuellung=BG if aus else FLAECHE,
-                         neuer_rand=LINIE, neues_fg=SUB if aus else FG)
+        # (Hier standen die vier Bereichs-Knöpfe. Sie sind den fünf
+        # Auswahlfeldern gewichen — die färben sich selbst, sobald etwas
+        # gesetzt ist, und brauchen kein Nachziehen von außen.)
         self._loeschkreuz_zeigen()
 
         gruppen = self._auswahl()
@@ -497,6 +648,7 @@ class Bestandsfenster:
                             pady=10)
             mehr.pack(fill='x')
             mehr.bind('<Button-1>', lambda e: self._alle())
+        self._treffer_zeigen(gruppen)
         if not gruppen:
             leer = (t('merkliste_leer') if self.filter == 'merk'
                     else t('nichts_gefunden'))

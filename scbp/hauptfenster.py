@@ -596,6 +596,123 @@ def rundknopf(eltern, text, tat, schrift, grund, fuellung, rand, fg,
     return c
 
 
+def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
+             breite=None):
+    """Ein Auswahlfeld im Hausstil — Knopf mit ▾, der eine Liste aufklappt.
+
+    ⚠ Warum selbst gebaut: Tk bringt `OptionMenu` und `ttk.Combobox` mit, und
+    beide sind Systemelemente — auf dem Mac ein graues Aqua-Feld, unter Windows
+    ein anderes, unter Linux je nach Oberfläche wieder anders. Das Programm hat
+    aber genau eine Formensprache, und ein Auswahlfeld ist zu auffällig, um
+    davon ausgenommen zu werden.
+
+    `eintraege` sind Paare `(wert, beschriftung)`. Ein Eintrag mit dem Wert `''`
+    ist der „alle"-Fall; ist etwas anderes gewählt, färbt sich das Feld in der
+    Akzentfarbe — so sieht man auf einen Blick, dass ein Filter greift, ohne
+    jede Liste aufklappen zu müssen.
+
+    Die aufgeklappte Liste ist ein rahmenloses Fenster: Nur so kann sie über
+    den Rand ihres Elternrahmens hinausragen, und genau das muss sie, wenn
+    zwanzig Arten zur Wahl stehen.
+    """
+    grund = grund or BG
+    s = _als_schrift(schrift)
+    zustand = {'wert': gewaehlt, 'liste': None}
+
+    def beschriftung_zu(wert):
+        for w, text in eintraege:
+            if w == wert:
+                return text
+        return eintraege[0][1] if eintraege else ''
+
+    if breite is None:
+        breite = max(s.measure(text) for _, text in eintraege) + 42
+    hoehe = s.metrics('linespace') + 14
+
+    c = tk.Canvas(eltern, width=breite, height=hoehe, bg=grund,
+                  highlightthickness=0, bd=0, cursor='hand2')
+    form = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1, radius=5,
+                            fill='#0c1017', outline=LINIE, width=1)
+    text_id = c.create_text(11, hoehe / 2.0, text=beschriftung_zu(gewaehlt),
+                            fill=FG, font=s, anchor='w')
+    pfeil = c.create_text(breite - 12, hoehe / 2.0, text='▾', fill=SUB,
+                          font=s, anchor='e')
+    c.ist_knopf = True          # die Randprüfung soll ihn messen
+
+    def faerben():
+        gesetzt = bool(zustand['wert'])
+        c.itemconfigure(form, outline=ACCENT if gesetzt else LINIE)
+        c.itemconfigure(text_id, fill=ACCENT if gesetzt else FG)
+        c.itemconfigure(pfeil, fill=ACCENT if gesetzt else SUB)
+
+    def zuklappen(_=None):
+        if zustand['liste'] is not None:
+            try:
+                zustand['liste'].destroy()
+            except tk.TclError:
+                pass
+            zustand['liste'] = None
+
+    def waehlen(wert):
+        zuklappen()
+        zustand['wert'] = wert
+        c.itemconfigure(text_id, text=beschriftung_zu(wert))
+        faerben()
+        beim_waehlen(wert)
+
+    def aufklappen(_=None):
+        if zustand['liste'] is not None:
+            zuklappen()
+            return
+        fenster = tk.Toplevel(c)
+        fenster.overrideredirect(True)        # kein Titelbalken, kein Rahmen
+        fenster.configure(bg=LINIE)
+        zustand['liste'] = fenster
+
+        innen = tk.Frame(fenster, bg=FLAECHE)
+        innen.pack(fill='both', expand=True, padx=1, pady=1)
+
+        for wert, text in eintraege:
+            an = (wert == zustand['wert'])
+            zeile = tk.Label(innen, text=text, bg=FLAECHE,
+                             fg=ACCENT if an else FG, font=s, anchor='w',
+                             padx=11, pady=4, cursor='hand2')
+            zeile.pack(fill='x')
+            zeile.bind('<Button-1>', lambda e, w=wert: waehlen(w))
+            zeile.bind('<Enter>', lambda e, z=zeile: z.configure(bg=BAR))
+            zeile.bind('<Leave>', lambda e, z=zeile: z.configure(bg=FLAECHE))
+
+        c.update_idletasks()
+        x = c.winfo_rootx()
+        y = c.winfo_rooty() + hoehe + 2
+        fenster.geometry('%dx%d+%d+%d'
+                         % (max(breite, innen.winfo_reqwidth() + 2),
+                            innen.winfo_reqheight() + 2, x, y))
+        fenster.lift()
+        # Ein Klick irgendwo anders schließt die Liste — sonst bleibt sie
+        # stehen, sobald man es sich anders überlegt.
+        fenster.bind('<FocusOut>', zuklappen)
+        fenster.focus_set()
+
+    def stumm_setzen(wert):
+        """Anzeige umstellen, ohne den Rückruf auszulösen.
+
+        Gebraucht beim Zurücksetzen mehrerer Felder auf einmal: Sonst löst
+        jedes einzelne einen vollen Neuaufbau der Liste aus.
+        """
+        zuklappen()
+        zustand['wert'] = wert
+        c.itemconfigure(text_id, text=beschriftung_zu(wert))
+        faerben()
+
+    c.bind('<Button-1>', aufklappen)
+    faerben()
+    c.setzen = waehlen
+    c.stumm_setzen = stumm_setzen
+    c.wert = lambda: zustand['wert']
+    return c
+
+
 def marke(eltern, text, farbe, schrift, grund=None, mindestbreite=0):
     """Eine abgerundete Blase mit farbigem Rand — „neu", „behoben" und Verwandte.
 
