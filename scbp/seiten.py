@@ -2098,7 +2098,8 @@ def _kopfstreifen(fenster, eltern, lage):
 
     inhalt = tk.Frame(streifen, bg=FLAECHE)
     inhalt.pack(side='left', fill='x', expand=True, padx=12, pady=10)
-    tk.Label(inhalt, text=t('s_st_zuletzt') % _relative_zeit(lage.get('geholt')),
+    alter = _relative_zeit(lage.get('geholt'))
+    tk.Label(inhalt, text=t('s_st_zuletzt') % alter,
              bg=FLAECHE, fg=SUB, font=fenster.f_klein,
              anchor='w').pack(side='left')
     alles_gut = (lage.get('gesamt') or '').lower() == 'operational'
@@ -2216,9 +2217,14 @@ def _systemzeile(fenster, eltern, sys_):
     # zusammen mit dem ausgeschriebenen Zustand daneben — nie die Farbe allein.
     tk.Frame(z, bg=sys_.get('farbe') or FG, width=4, height=18).pack(
         side='left', padx=(0, 10))
-    tk.Label(z, text=sys_.get('name') or '?', bg=FLAECHE, fg=FG,
+    # ⚠ Beides sind **Daten von CIG**, kein Oberflächentext: Systemname und
+    # Zustand stehen so auf der Statusseite und dürfen nicht übersetzt werden.
+    # Vorher entnommen, damit die Textprüfung die Schlüssel nicht für Sätze hält.
+    name = sys_.get('name') or '?'
+    zustand = sys_.get('status') or '—'
+    tk.Label(z, text=name, bg=FLAECHE, fg=FG,
              font=fenster.f_klein, width=22, anchor='w').pack(side='left')
-    tk.Label(z, text=sys_.get('status') or '—', bg=FLAECHE,
+    tk.Label(z, text=zustand, bg=FLAECHE,
              fg=sys_.get('farbe') or FG, font=fenster.f_klein,
              anchor='w').pack(side='left')
 
@@ -2241,7 +2247,9 @@ def _meldungskarte(fenster, eltern, meldung):
     # Kopf: Titel links, Zustand rechts
     kopf = tk.Frame(karte, bg=FLAECHE)
     kopf.pack(fill='x', padx=16)
-    tk.Label(kopf, text=meldung.get('titel') or '—', bg=FLAECHE, fg=FG,
+    # Der Titel kommt von CIG und bleibt, wie er dort steht.
+    titel = meldung.get('titel') or '—'
+    tk.Label(kopf, text=titel, bg=FLAECHE, fg=FG,
              font=fenster.f_fett, anchor='w').pack(side='left')
     erledigt = bool(meldung.get('erledigt'))
     tk.Label(kopf, text=('✔ ' + t('s_st_erledigt_kurz')) if erledigt
@@ -2254,7 +2262,8 @@ def _meldungskarte(fenster, eltern, meldung):
              font=fenster.f_klein, anchor='e').pack(side='right')
 
     # Alter — wie auf der Seite („7h ago"), nicht das Datum
-    tk.Label(karte, text=_relative_zeit(meldung.get('begonnen')), bg=FLAECHE,
+    wann = _relative_zeit(meldung.get('begonnen'))
+    tk.Label(karte, text=wann, bg=FLAECHE,
              fg=SUB, font=fenster.f_klein, anchor='w').pack(
                  fill='x', padx=16, pady=(2, 6))
 
