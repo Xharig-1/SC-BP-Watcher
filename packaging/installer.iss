@@ -74,9 +74,21 @@ CloseApplications=force
 RestartApplications=yes
 AppMutex=SC-BP-Watcher-Einzelstart
 
-; Kein Administrator — siehe Kopf
+; Kein Administrator — siehe Kopf.
+;
+; ⚠ Hier stand einmal `PrivilegesRequiredOverridesAllowed=dialog`. Das lässt Inno
+; beim Installieren fragen, ob "für mich" oder "für alle Nutzer" — und wer "für
+; alle" wählt, bekommt seinen Eintrag im **Maschinenzweig** der Registry. Genau
+; das war am 26.08.2026 auf dem Testrechner passiert, mit zwei Folgen:
+;
+;   * `windows_eintrag_pflegen()` sucht unter HKCU und fand nichts. Die in
+;     "Apps & Features" angezeigte Fassung wurde nie nachgezogen.
+;   * Jedes Selbst-Update bräuchte eine Administrator-Abfrage, weil der
+;     Installer wieder in den Maschinenzweig schreiben will.
+;
+; Ohne die Zeile landet alles im Benutzerzweig — passend zum Ziel unter
+; `{localappdata}\Programs`, für das ohnehin nie Administratorrechte nötig sind.
 PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog
 DefaultDirName={localappdata}\Programs\{#AppName}
 DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes

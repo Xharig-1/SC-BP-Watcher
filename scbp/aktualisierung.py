@@ -419,16 +419,49 @@ def verpackung():
     return 'quellcode'
 
 
+# Welcher Anhang unter Windows geholt wird — und warum es der Installer ist.
+#
+# An jeder Freigabe hängen drei Dateien:
+#
+#     SC-BP-Watcher-Setup.exe          der Installer
+#     SC-BP-Watcher-x86_64.AppImage    Linux
+#     SC-BP-Watcher.exe                das nackte Programm
+#
+# ⚠ Bis rc39 wurde hier nach der **ersten** Datei auf `.exe` gesucht. GitHub
+# liefert sie alphabetisch, ein `-` (0x2D) steht vor einem `.` (0x2E), also kam
+# `-Setup.exe` zuerst — und die alte `einspielen()` schob diesen Fund roh über
+# die laufende `SC-BP-Watcher.exe`, ohne ihn je auszuführen. Nach dem Update lag
+# der Installer unter dem Namen des Programms. Am 26.08.2026 im Test bestätigt:
+# geladen wurden 14.812.324 Bytes statt 13.015.189.
+#
+# Seitdem ist es **Absicht**, den Installer zu holen — er wird jetzt gestartet
+# statt kopiert. Das erspart den ganzen Eigenbau ringsherum: Inno beendet das
+# laufende Programm selbst (`CloseApplications=force`), ersetzt die Datei,
+# pflegt den Eintrag in „Apps & Features" und startet den Watcher danach wieder.
+# Denselben Weg geht der SC-Deutsch-Launcher.
+#
+# Unter Linux bleibt es beim Tausch des AppImage — dort gibt es keinen
+# Installer, und ein laufendes AppImage darf ersetzt werden.
+WINDOWS_INSTALLER = ('-setup.exe', '-installer.exe')
+
+
 def passende_datei(freigabe, art=None):
     """Die zur eigenen Verpackung passende Datei aus einer Freigabe — oder None."""
     art = art or verpackung()
     if art == 'quellcode':
         return None                      # dort ist `git pull` der richtige Weg
-    endung = '.appimage' if art == 'appimage' else '.exe'
+    if art == 'appimage':
+        for datei in freigabe.get('dateien') or []:
+            name = (datei.get('name') or '').lower()
+            if name.endswith('.appimage') and _url_ok(datei.get('url') or ''):
+                return datei
+        return None
+    # Windows: **nur** der Installer. Findet sich keiner, gibt es lieber gar
+    # kein Update als das falsche — die nackte .exe wäre hier wertlos, weil
+    # niemand mehr da ist, der sie an ihren Platz legt.
     for datei in freigabe.get('dateien') or []:
         name = (datei.get('name') or '').lower()
-        url = datei.get('url') or ''
-        if name.endswith(endung) and _url_ok(url):
+        if name.endswith(WINDOWS_INSTALLER) and _url_ok(datei.get('url') or ''):
             return datei
     return None
 
@@ -446,27 +479,34 @@ def _url_ok(url):
 
 
 def _ablageort_fuer_update(name):
-    """Wohin die neue Fassung geladen wird — **neben** die laufende.
+    """Wohin die neue Fassung geladen wird.
+
+    **Windows** — in den Temp-Ordner. Geholt wird dort ein Installer, der nur
+    einmal gestartet und danach nie wieder gebraucht wird; Windows räumt den
+    Ordner von selbst auf. Früher lag er neben dem Programm, und wenn das Update
+    scheiterte, blieben dort 14 MB liegen, die niemand zuordnen konnte.
+
+    **Linux** — **neben** das laufende AppImage.
 
     ⚠ Hier lag ein Fehler, der jedes Selbst-Update unter Linux scheitern ließ:
-    Geladen wurde nach `/tmp`, eingespielt mit `os.replace()`. Auf so gut wie jedem
-    Linux ist `/tmp` ein eigenes Dateisystem (tmpfs), und `os.replace` kann nicht
-    über Dateisystemgrenzen verschieben — es endet mit
+    Geladen wurde nach `/tmp`, eingespielt mit `os.replace()`. Auf so gut wie
+    jedem Linux ist `/tmp` ein eigenes Dateisystem (tmpfs), und `os.replace` kann
+    nicht über Dateisystemgrenzen verschieben — es endet mit
     „[Errno 18] Invalid cross-device link". Gemeldet am 25.08.2026 direkt aus dem
     Fenster.
 
-    Der Docstring versprach schon immer „neben das laufende Programm"; jetzt tut es
-    der Code auch. Nebenbei ist das Einspielen dadurch **atomar**: Innerhalb eines
-    Dateisystems ist `os.replace` unteilbar, es gibt keinen Moment, in dem die Datei
-    halb da ist.
-
-    Ist der Zielordner nicht beschreibbar, bleibt `/tmp` als Rückfall — dann greift
-    beim Einspielen der Umweg über `shutil.move`.
+    Nebenbei ist das Einspielen dadurch **atomar**: Innerhalb eines Dateisystems
+    ist `os.replace` unteilbar, es gibt keinen Moment, in dem die Datei halb da
+    ist. Ist der Zielordner nicht beschreibbar, bleibt `/tmp` als Rückfall — dann
+    greift beim Einspielen der Umweg über `shutil.move`.
     """
+    if sys.platform.startswith('win'):
+        return os.path.join(tempfile.gettempdir(), name or 'update.bin')
     laufende = eigenes_appimage() or sys.executable
     ordner = os.path.dirname(os.path.abspath(laufende))
     if os.access(ordner, os.W_OK):
         return os.path.join(ordner, '.' + (name or 'update.bin') + '.neu')
+    return os.path.join(tempfile.gettempdir(), name or 'update.bin')
     return os.path.join(tempfile.gettempdir(), name or 'update.bin')
 
 
@@ -497,38 +537,46 @@ def herunterladen(datei, fortschritt=None):
     return ziel
 
 
-# Wie lange das Windows-Hilfsskript auf die Freigabe der .exe wartet (Sekunden).
+# ⚠ Hier stand einmal ein Hilfsskript, das die laufende `.exe` selbst tauschte —
+# und das ist am 26.08.2026 im Test auf eine Verklemmung gelaufen, die niemand
+# vorhergesehen hatte:
 #
-# ⚠ Es MUSS eine Grenze geben. Vorher lief die Schleife ewig — und weil die
-# .exe erst frei wird, wenn der Nutzer das Programm beendet, lief sie bei jedem
-# Klick auf „holen" ein weiteres Mal. Beim Testen kamen so mehrere Fenster
-# zusammen, die nur der Task-Manager wieder losgeworden ist.
+#   * Die App beendet sich, aber der PyInstaller-Bootloader lebt weiter: Er
+#     räumt seinen Ordner unter `%TEMP%` auf. Zwei Laufzeit-Bibliotheken
+#     (`VCRUNTIME140.dll`, `VCRUNTIME140_1.dll`) blieben gesperrt, und er stand
+#     im Fenster "Failed to remove temporary directory" still.
+#   * Solange dieses Fenster steht, hält der Bootloader die `.exe`.
+#   * Das Skript wartete also auf eine Freigabe, die erst kam, wenn der Nutzer
+#     eine Warnung wegklickte, von der er nicht wusste, dass sie zum Update
+#     gehört. Nach zwei Minuten gab es auf — und im Programmordner blieb eine
+#     verwaiste 14-MB-Datei liegen. **Bei jedem Versuch aufs Neue.**
 #
-# 120 Sekunden sind großzügig: Wer nach zwei Minuten nicht beendet hat, macht
-# gerade etwas anderes. Das Update geht dabei nicht verloren — die neue Datei
-# bleibt liegen und wird beim nächsten Versuch genommen.
-VERSUCHE_TAUSCH = 120
+# Der Eigenbau ist deshalb weg. Unter Windows startet jetzt der Installer, und
+# der kann all das, was hier mühsam nachgebaut war: Er beendet das laufende
+# Programm über den Restart Manager (`CloseApplications=force` in
+# `installer.iss`, erkannt über `AppMutex`), ersetzt die Datei, pflegt den
+# Eintrag in „Apps & Features" und startet den Watcher danach wieder
+# (`RestartApplications=yes`).
 
 
-# ⚠ Unter Windows tauscht ein Hilfsskript die Datei, NACHDEM wir weg sind — und
-# startet die neue Fassung gleich selbst (`start "" …` am Ende des Skripts).
-# `neu_starten()` darf dann NICHT auch noch starten: Zu dem Zeitpunkt liegt auf
-# der Platte noch die **alte** `.exe`, der Tausch kommt ja erst nach unserem
-# Ende. Ein eigener Start fährt also die alte Fassung erneut hoch — und die
-# hält dann den Temp-Ordner fest und blockiert den Tausch endgültig.
-#
-# Genau das hat Haldjas am 25.08.2026 gesehen: „der watcher ist irgendwie noch
-# am leben als rc25", dazu „Failed to remove temporary directory". Zwei
-# Symptome, eine Ursache — der doppelte Start.
+# ⚠ Unter Windows übernimmt der Installer auch den **Neustart**. `neu_starten()`
+# darf dann NICHT auch noch starten — sonst kommen zwei Fassungen hoch, und die
+# zweite legt sich über die Arbeit der ersten. Unter Linux bleibt es beim
+# Tausch, dort startet das Programm sich selbst neu.
 _TAUSCH_LAEUFT = [False]
 
 
 def einspielen(neue_datei):
     """Die laufende Fassung durch die neue ersetzen.
 
-    Gibt (True, '') zurück, wenn danach ein Neustart genügt — bei Windows
-    übernimmt ein Hilfsskript nach dem Beenden. Bei (False, Grund) muss der
-    Nutzer selbst ran."""
+    Zwei Wege, je nach Verpackung:
+
+    * **Linux** — das AppImage wird getauscht. Danach genügt ein Neustart.
+    * **Windows** — der Installer wird gestartet. Er beendet das laufende
+      Programm selbst, ersetzt die Datei und fährt den Watcher wieder hoch.
+
+    Gibt (True, '') zurück, wenn der Weg angetreten ist. Bei (False, Grund) muss
+    der Nutzer selbst ran."""
     art = verpackung()
     if art == 'quellcode':
         return False, 'quellcode'
@@ -562,60 +610,30 @@ def einspielen(neue_datei):
                 shutil.move(neue_datei, ziel)
             os.chmod(ziel, 0o755)
             return True, ''
-        # Windows: die laufende .exe ist gesperrt. Also ein Hilfsskript, das
-        # wartet, bis wir weg sind, dann tauscht und neu startet.
+        # Windows: den Installer starten. Er bringt alles mit, was hier früher
+        # von Hand nachgebaut war — siehe die Erklärung oben.
         #
-        # ⚠ Drei Fehler steckten hier, und zusammen ergaben sie das, was Haldjas
-        # beim Testen erlebt hat: „hat er mir erstmal nen haufen terminals
-        # ausgespuckt bis ich den prozess mit dem task manager gekillt hab".
-        #
-        # 1. **Das Fenster.** `DETACHED_PROCESS` gibt dem `cmd` eine eigene
-        #    Konsole — sichtbar. `CREATE_NO_WINDOW` nicht.
-        # 2. **Die Endlosschleife.** `|| goto warten` lief ewig weiter, solange
-        #    die `.exe` gesperrt blieb. Sie bleibt es aber, bis der Nutzer das
-        #    Programm beendet — und wer stattdessen nochmal auf „holen" klickt,
-        #    bekommt ein zweites ewig laufendes Fenster. Jetzt ist nach
-        #    VERSUCHE_TAUSCH Sekunden Schluss.
-        # 3. **Mehrfachstart.** Jeder Klick schrieb dieselbe Datei neu und
-        #    startete noch ein `cmd`. Jetzt wird ein laufendes vorher beendet.
+        # `/SILENT` zeigt nur einen Fortschrittsbalken statt des ganzen
+        # Assistenten; `/NORESTART` verbietet ihm, den Rechner neu zu starten.
+        # Die beiden anderen Schalter stehen zwar schon in `installer.iss`,
+        # werden hier aber mitgegeben: Wer eine ältere Fassung installiert hat,
+        # bekommt einen Installer, dessen Voreinstellungen wir nicht kennen.
         import subprocess
-        skript = os.path.join(tempfile.gettempdir(), 'sc-bp-watcher-update.cmd')
-
-        # Ein schon laufendes Update-Skript aus dem Weg räumen, bevor ein
-        # neues startet — sonst tauschen zwei gleichzeitig dieselbe Datei.
-        try:
-            # ⚠ Auch DIESER Aufruf braucht `CREATE_NO_WINDOW`. In rc22 wurde
-            # das Hilfsskript unsichtbar gemacht, der `taskkill` davor aber
-            # übersehen — er ist ein Konsolenprogramm und reißt aus einer
-            # Fensteranwendung heraus eine eigene Konsole auf. Morkhan hat es
-            # am 26.08.2026 gesehen: „öffnet sich ein fenster für ne
-            # milisekunde und nachdem es zugeht passiert nix".
-            subprocess.run(['taskkill', '/f', '/im', 'cmd.exe', '/fi',
-                            'WINDOWTITLE eq sc-bp-watcher-update*'],
-                           capture_output=True, timeout=5,
-                           creationflags=getattr(subprocess,
-                                                 'CREATE_NO_WINDOW', 0))
-        except Exception:
-            pass                      # kein laufendes da, oder taskkill fehlt
-
-        with open(skript, 'w', encoding='ascii', errors='ignore') as f:
-            f.write('@echo off\r\n'
-                    'title sc-bp-watcher-update\r\n'
-                    'set /a versuche=0\r\n'
-                    ':warten\r\n'
-                    'set /a versuche+=1\r\n'
-                    'if %%versuche%% gtr %d goto aufgeben\r\n'
-                    'timeout /t 1 /nobreak >nul\r\n'
-                    'move /y "%s" "%s" >nul 2>&1 || goto warten\r\n'
-                    'start "" "%s"\r\n'
-                    'del "%%~f0"\r\n'
-                    'exit /b 0\r\n'
-                    ':aufgeben\r\n'
-                    'del "%%~f0"\r\n'
-                    'exit /b 1\r\n'
-                    % (VERSUCHE_TAUSCH, neue_datei, ziel, ziel))
         _TAUSCH_LAEUFT[0] = True
-        subprocess.Popen(['cmd', '/c', skript],
+
+        # ⚠ Die Umgebung MUSS gesäubert werden, das Arbeitsverzeichnis ebenso.
+        # Sonst erbt der Installer die PyInstaller-Variablen der laufenden
+        # Fassung und sucht seine Bibliotheken in dem Ordner unter `%TEMP%`, den
+        # der Bootloader gleich aufräumen will. Genau diese Falle steht
+        # ausführlich bei `neu_starten()` — und genau sie hat die Verklemmung
+        # vom 26.08.2026 mit verursacht.
+        umgebung = dict(os.environ)
+        for name in ('_MEIPASS', '_MEIPASS2', 'TCL_LIBRARY', 'TK_LIBRARY',
+                     'TIX_LIBRARY', 'MATPLOTLIBDATA'):
+            umgebung.pop(name, None)
+        subprocess.Popen([neue_datei, '/SILENT', '/NORESTART',
+                          '/CLOSEAPPLICATIONS', '/RESTARTAPPLICATIONS'],
+                         env=umgebung, cwd=tempfile.gettempdir(),
                          creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
         return True, ''
     except Exception as fehler:
@@ -703,27 +721,49 @@ def neu_starten():
 
 
 def windows_eintrag_pflegen(eigene_version):
-    """Die angezeigte Fassung in Windows nachziehen. True, wenn geändert."""
+    """Die angezeigte Fassung in Windows nachziehen. True, wenn geändert.
+
+    ⚠ Der Schlüssel liegt **nicht** immer unter HKCU. Der Kommentar über
+    `INNO_KENNUNG` behauptete das jahrelang, und die Funktion suchte nur dort —
+    also fand sie am 26.08.2026 auf dem Testrechner gar nichts, obwohl der
+    Eintrag existierte. Er lag unter **HKLM**.
+
+    Grund: `installer.iss` hat zwar `PrivilegesRequired=lowest`, dazu aber
+    `PrivilegesRequiredOverridesAllowed=dialog`. Inno fragt damit beim
+    Installieren nach, und wer "für alle Nutzer" wählt, bekommt seinen Eintrag
+    im Maschinenzweig. Gesucht wird deshalb in beiden.
+
+    Schreiben klappt in HKLM ohne Administratorrechte nicht — das ist in Ordnung
+    und **kein Fehler**: Dann bleibt die angezeigte Nummer eben stehen, statt
+    dass eine Ausnahme das Update aufhält.
+    """
     if not sys.platform.startswith('win') or not eigene_version:
         return False
     try:
         import winreg
-        pfad = (r'Software\Microsoft\Windows\CurrentVersion\Uninstall\%s'
-                % INNO_KENNUNG)
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, pfad, 0,
-                            winreg.KEY_READ | winreg.KEY_WRITE) as schluessel:
-            try:
-                steht_da = winreg.QueryValueEx(schluessel, 'DisplayVersion')[0]
-            except FileNotFoundError:
-                steht_da = ''
-            if str(steht_da) == str(eigene_version):
-                return False
-            winreg.SetValueEx(schluessel, 'DisplayVersion', 0, winreg.REG_SZ,
-                              str(eigene_version))
-            return True
-    except FileNotFoundError:
-        return False          # nicht über den Installer installiert — in Ordnung
-    except Exception as ausnahme:
-        from . import fehler
-        fehler.merken('aktualisierung.windows_eintrag', ausnahme)
+    except ImportError:
         return False
+    pfad = (r'Software\Microsoft\Windows\CurrentVersion\Uninstall\%s'
+            % INNO_KENNUNG)
+    for zweig in (winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE):
+        try:
+            with winreg.OpenKey(zweig, pfad, 0,
+                                winreg.KEY_READ | winreg.KEY_WRITE) as schluessel:
+                try:
+                    steht_da = winreg.QueryValueEx(schluessel, 'DisplayVersion')[0]
+                except FileNotFoundError:
+                    steht_da = ''
+                if str(steht_da) == str(eigene_version):
+                    return False
+                winreg.SetValueEx(schluessel, 'DisplayVersion', 0, winreg.REG_SZ,
+                                  str(eigene_version))
+                return True
+        except FileNotFoundError:
+            continue          # in diesem Zweig nicht installiert
+        except PermissionError:
+            continue          # HKLM ohne Administratorrechte — hinnehmen
+        except Exception as ausnahme:
+            from . import fehler
+            fehler.merken('aktualisierung.windows_eintrag', ausnahme)
+            return False
+    return False

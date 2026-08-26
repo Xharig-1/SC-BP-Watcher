@@ -181,6 +181,47 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Das Selbst-Update unter Windows kam nie an.** Wer auf „holen" klickte, bekam
+  eine Warnung und danach passierte nichts — außer 14 MB verwaister Datei im
+  Programmordner, bei jedem Versuch aufs Neue. Dahinter steckten **zwei**
+  Fehler, von denen jeder allein schon gereicht hätte:
+
+  Geholt wurde die **falsche Datei**. An jeder Freigabe hängen drei Anhänge,
+  gesucht wurde die erste auf `.exe` — und weil GitHub alphabetisch sortiert und
+  ein `-` vor einem `.` steht, kam `SC-BP-Watcher-Setup.exe` zuerst. Der
+  Installer wurde also über die Programmdatei geschoben, ohne je ausgeführt zu
+  werden: Wer den Watcher danach öffnete, bekam ein Setup-Fenster.
+
+  Und der Tausch konnte ohnehin nicht stattfinden. Nach dem Beenden lebt der
+  Bootloader weiter und räumt seinen Ordner unter `%TEMP%` auf; blieb dabei eine
+  Datei gesperrt, stand er im Fenster „Failed to remove temporary directory"
+  still — und hielt damit die `.exe`, auf deren Freigabe das Hilfsskript wartete.
+  Nach zwei Minuten gab es auf. Der Nutzer hätte eine Warnung wegklicken müssen,
+  von der niemand wusste, dass sie zum Update gehört.
+
+  **Unter Windows startet jetzt der Installer**, statt dass das Programm seine
+  eigene Datei tauscht. Er beendet den laufenden Watcher selbst, ersetzt ihn,
+  pflegt den Eintrag in „Apps & Features" und fährt ihn wieder hoch. Unter Linux
+  bleibt es beim bewährten Tausch des AppImage.
+
+- **Das Symbol neben der Uhr erschien unter Windows nie.** Es wurde bei jedem
+  Start angelegt und scheiterte jedes Mal an derselben Stelle, sichtbar nur im
+  Fehlerbericht: `argument 11: OverflowError: int too long to convert`. Der
+  Aufruf zum Anlegen des Fensters hatte keine Typangaben, und ohne die reicht
+  Python jeden Wert als 32-Bit-Zahl weiter — die Kennung, um die es ging, ist
+  unter 64-Bit-Windows breiter. Derselbe Fehler steckte im Rückgabetyp der
+  Fensterfunktion. Beim Beenden räumt das Symbol sich jetzt auch wirklich auf:
+  Der bisherige Weg durfte von außen gar nicht greifen und lief still ins Leere.
+
+- **Die angezeigte Fassung in „Apps & Features" blieb stehen.** Nachgesehen
+  wurde nur im Benutzerzweig der Registry. Wer beim Installieren „für alle
+  Nutzer" gewählt hatte, dessen Eintrag liegt aber im Maschinenzweig — dort
+  wurde nie nachgezogen, und Windows zeigte weiter eine Nummer, die es nicht
+  mehr gab. Jetzt werden beide Zweige durchsucht. Zusätzlich fragt der Installer
+  nicht mehr nach „für mich" oder „für alle": Das Programm landet ohnehin im
+  eigenen Benutzerordner, damit entfällt die Rückfrage und jede
+  Administrator-Abfrage beim Aktualisieren.
+
 - **Das Overlay blieb beim Umschalten auf Englisch deutsch.** Wer die Sprache
   wechselte, bekam ein englisches Fenster und eine deutsche Melde-Leiste:
   „8 Baupläne · Log ✓ · ohne Launcher · geprüft", dazu „Warte auf neue

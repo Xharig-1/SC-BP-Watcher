@@ -172,6 +172,46 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **Self-update never arrived on Windows.** Clicking "get it" produced a warning
+  and then nothing at all — except an orphaned 14 MB file in the program folder,
+  once per attempt. Two separate bugs were behind it, either of which would have
+  been enough on its own:
+
+  The **wrong file** was fetched. Every release carries three assets, and the
+  code took the first one ending in `.exe`. GitHub sorts alphabetically and a
+  `-` sorts before a `.`, so `SC-BP-Watcher-Setup.exe` came first. The installer
+  was moved on top of the program file without ever being run: opening the
+  watcher afterwards gave you a setup window.
+
+  And the swap could not have happened anyway. After the app exits, the
+  bootloader stays alive to clean up its folder under `%TEMP%`; when a file
+  there stayed locked it sat in a "Failed to remove temporary directory" dialog
+  — holding the very `.exe` the helper script was waiting to be released. After
+  two minutes it gave up. The user would have had to dismiss a warning nobody
+  knew was part of the update.
+
+  **On Windows the installer is now launched** instead of the program swapping
+  its own file. It closes the running watcher itself, replaces it, keeps the
+  "Apps & Features" entry current and starts it back up. On Linux the proven
+  AppImage swap stays as it was.
+
+- **The tray icon never appeared on Windows.** It was created on every start and
+  failed at the same spot every time, visible only in the error report:
+  `argument 11: OverflowError: int too long to convert`. The call that creates
+  the window had no type declarations, and without them Python passes every
+  value as a 32-bit number — the handle involved is wider than that on 64-bit
+  Windows. The same mistake sat in the window procedure's return type. Shutdown
+  now cleans the icon up for real, too: the previous route was not allowed to
+  work from outside and failed silently.
+
+- **The version shown in "Apps & Features" stayed put.** Only the per-user
+  registry branch was checked. Anyone who picked "for all users" during install
+  has their entry in the machine branch, which was never updated — so Windows
+  kept showing a version that no longer existed. Both branches are searched now.
+  On top of that the installer no longer asks "just me" or "all users": the
+  program lands in your own user folder either way, which removes the question
+  and any administrator prompt when updating.
+
 - **The overlay stayed German when you switched to English.** Changing the
   language gave you an English window and a German status bar:
   „8 Baupläne · Log ✓ · ohne Launcher · geprüft", plus the waiting message and

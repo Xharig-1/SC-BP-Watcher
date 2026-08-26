@@ -54,6 +54,7 @@ WM_APP = 0x8000
 NACHRICHT = WM_APP + 17
 
 WM_DESTROY = 0x0002
+WM_CLOSE = 0x0010
 WM_COMMAND = 0x0111
 WM_LBUTTONUP = 0x0202
 WM_RBUTTONUP = 0x0205
@@ -130,8 +131,65 @@ def _signaturen_setzen():
                                     wintypes.UINT, ctypes.c_int, ctypes.c_int,
                                     wintypes.UINT]
 
+    # ⚠ Ab hier lag der Grund, warum unter Windows **nie** ein Symbol in der
+    # Ablage erschien. `CreateWindowExW` bekam zwar einen `restype`, aber
+    # **kein `argtypes`** — und ohne das rät ctypes: Es reicht jedes Argument
+    # als `c_int` weiter, also 32 Bit. Das Modulhandle in Argument 11 ist unter
+    # 64-Bit-Windows breiter, und der Aufruf endete mit
+    #
+    #     ArgumentError: argument 11: OverflowError: int too long to convert
+    #
+    # Im Fehlerbericht vom 26.08.2026 stand genau das, und in der Startspur
+    # dazu die Zeile „Ablagesymbol: NICHT angelegt".
+    #
+    # Deshalb bekommt hier **jede** benutzte Funktion ihre Signatur. Eine
+    # halb deklarierte Schnittstelle ist schlimmer als eine gar nicht
+    # deklarierte: Sie sieht richtig aus und trägt nur bis zum ersten Handle,
+    # das über zwei Milliarden liegt.
+    LRESULT = ctypes.c_ssize_t          # in wintypes gibt es den Typ nicht
+
     benutzer.CreateWindowExW.restype = wintypes.HWND
+    benutzer.CreateWindowExW.argtypes = [wintypes.DWORD, wintypes.LPCWSTR,
+                                         wintypes.LPCWSTR, wintypes.DWORD,
+                                         ctypes.c_int, ctypes.c_int,
+                                         ctypes.c_int, ctypes.c_int,
+                                         wintypes.HWND, wintypes.HMENU,
+                                         wintypes.HINSTANCE, wintypes.LPVOID]
+
+    benutzer.RegisterClassW.restype = wintypes.ATOM
+    benutzer.RegisterClassW.argtypes = [ctypes.c_void_p]
+
+    benutzer.DefWindowProcW.restype = LRESULT
+    benutzer.DefWindowProcW.argtypes = [wintypes.HWND, wintypes.UINT,
+                                        wintypes.WPARAM, wintypes.LPARAM]
+
+    benutzer.GetMessageW.restype = wintypes.BOOL
+    benutzer.GetMessageW.argtypes = [ctypes.c_void_p, wintypes.HWND,
+                                     wintypes.UINT, wintypes.UINT]
+
+    benutzer.PostMessageW.restype = wintypes.BOOL
+    benutzer.PostMessageW.argtypes = [wintypes.HWND, wintypes.UINT,
+                                      wintypes.WPARAM, wintypes.LPARAM]
+
+    benutzer.RegisterWindowMessageW.restype = wintypes.UINT
+    benutzer.RegisterWindowMessageW.argtypes = [wintypes.LPCWSTR]
+
+    benutzer.LoadIconW.restype = wintypes.HICON
+    benutzer.LoadIconW.argtypes = [wintypes.HINSTANCE, wintypes.LPCWSTR]
+
+    benutzer.GetCursorPos.restype = wintypes.BOOL
+    benutzer.GetCursorPos.argtypes = [ctypes.c_void_p]
+
+    benutzer.SetForegroundWindow.restype = wintypes.BOOL
     benutzer.SetForegroundWindow.argtypes = [wintypes.HWND]
+
+    benutzer.PostQuitMessage.restype = None
+    benutzer.PostQuitMessage.argtypes = [ctypes.c_int]
+
+    schale = ctypes.windll.shell32
+    schale.Shell_NotifyIconW.restype = wintypes.BOOL
+    schale.Shell_NotifyIconW.argtypes = [wintypes.DWORD, ctypes.c_void_p]
+
     kern.GetModuleHandleW.restype = wintypes.HMODULE
     kern.GetModuleHandleW.argtypes = [wintypes.LPCWSTR]
 
@@ -329,7 +387,10 @@ class Ablagesymbol(object):
             benutzer = ctypes.windll.user32
             kern = ctypes.windll.kernel32
 
-            WNDPROC = ctypes.WINFUNCTYPE(ctypes.c_long, wintypes.HWND,
+            # ⚠ `c_long` ist unter Windows **32 Bit**, der Rueckgabewert einer
+            # Fensterfunktion (`LRESULT`) unter 64-Bit-Windows aber 64. Was
+            # `DefWindowProcW` liefert, wurde hier also abgeschnitten.
+            WNDPROC = ctypes.WINFUNCTYPE(ctypes.c_ssize_t, wintypes.HWND,
                                          wintypes.UINT, wintypes.WPARAM,
                                          wintypes.LPARAM)
             self._fensterfunktion = WNDPROC(self._behandeln)
@@ -407,14 +468,28 @@ class Ablagesymbol(object):
             self._laeuft = False
 
     def stoppen(self):
-        """Symbol wieder wegnehmen — sonst bleibt eine tote Hülle neben der Uhr."""
+        """Symbol wieder wegnehmen — sonst bleibt eine tote Hülle neben der Uhr.
+
+        ⚠ `DestroyWindow` stand hier früher direkt im Aufruf, und das ging nicht
+        gut: Windows lässt ein Fenster **nur von dem Faden** zerstören, der es
+        erzeugt hat. Von hier aus scheiterte der Aufruf still im `except` — das
+        Symbol verschwand zwar (`Shell_NotifyIconW` darf fadenübergreifend), die
+        Nachrichtenschleife lief aber weiter.
+
+        Schlimm war das nie, weil der Faden ein Hintergrundfaden ist und beim
+        Programmende ohnehin mitgeht. Sauber ist es trotzdem nicht: Wer hier
+        aufräumt, will, dass danach nichts mehr läuft. Deshalb wird jetzt eine
+        Nachricht geschickt, statt fremd zuzugreifen — `WM_CLOSE` landet in der
+        Schleife, die von selbst zu `WM_DESTROY` und `PostQuitMessage` kommt.
+        """
         if not WINDOWS or not self.fenster:
             return
+        fenster = self.fenster
         try:
             daten = self._daten(NIF_MESSAGE)
             ctypes.windll.shell32.Shell_NotifyIconW(NIM_DELETE,
                                                     ctypes.byref(daten))
-            ctypes.windll.user32.DestroyWindow(self.fenster)
+            ctypes.windll.user32.PostMessageW(fenster, WM_CLOSE, 0, 0)
         except Exception:
             pass
         finally:
