@@ -1673,6 +1673,41 @@ def _holen_text(mit_vorab, eigene=''):
 _BEREIT = [None]
 
 
+def _abtreten(fenster, notausgang=2.0, gleich=400):
+    """Den Prozess beenden — verlaesslich, auch wenn Tk schon haengt.
+
+    ⚠ `quit()` allein reicht nicht: Es beendet die Ereignisschleife, nicht den
+    Prozess. Gemeldet als „er schliesst das fenster nicht selbst" (Haldjas,
+    25.08.2026) — die neue Fassung lief, die alte stand daneben. Also der Reihe
+    nach: Fenster zu, Schleife beenden, und wenn nach zwei Sekunden immer noch
+    etwas haengt (ein Faden, ein Overlay), hart raus.
+
+    ⚠ Der Notausgang wird **sofort** scharf gestellt, nicht erst im
+    `after`-Rueckruf. Stand er dort, hing er an Tk: Feuert der Rueckruf nicht,
+    weil die Ereignisschleife schon endete oder das Fenster weg ist, wurde der
+    Faden nie gestartet und der Prozess lief weiter — „als haette er nur das
+    symbol von der taskleiste gekillt", mit einem halb aufgeraeumten Rest, der
+    danach „No such file or directory: ...base_library.zip" meldete.
+
+    Ein eigener Faden haengt an nichts und laeuft in jedem Fall ab.
+    """
+    import threading
+    threading.Timer(notausgang, lambda: os._exit(0)).start()
+
+    def _weg():
+        try:
+            fenster.root.quit()
+            fenster.root.destroy()
+        except Exception:
+            pass
+
+    try:
+        fenster.root.after(gleich, _weg)
+    except Exception:
+        pass
+
+
+
 def _fassung_holen(fenster, mit_vorab):
     """Die neueste Fassung dieses Kanals holen und einspielen.
 
@@ -1705,36 +1740,7 @@ def _fassung_holen(fenster, mit_vorab):
         if not aktualisierung.neu_starten():
             fenster.sagen(t('s_ub_neustart_nein'))
             return
-        # ⚠ `quit()` allein reicht nicht: Es beendet die Ereignisschleife, nicht
-        # den Prozess. Gemeldet als „er schließt das fenster nicht selbst"
-        # (Haldjas, 25.08.2026) — die neue Fassung lief, die alte stand daneben.
-        # Also der Reihe nach: Fenster zu, Schleife beenden, und wenn nach einer
-        # Sekunde immer noch etwas hängt (ein Faden, ein Overlay), hart raus.
-        # Der Prozess ist an dieser Stelle ohnehin am Ende — die neue Fassung
-        # läuft schon.
-        # ⚠ Der Notausgang wird SOFORT scharf gestellt — nicht erst im
-        # `after`-Rückruf. Stand er dort, hing er an Tk: Feuert der Rückruf
-        # nicht (weil die Ereignisschleife schon endete oder das Fenster weg
-        # ist), wurde der Faden nie gestartet, und der Prozess lief weiter.
-        # Genau so gemeldet (Haldjas, 25.08.2026): „er schließt den prozess
-        # nicht komplett … als hätte er nur das symbol von der taskleiste
-        # gekillt". Der halb aufgeräumte Rest meldete danach
-        # „No such file or directory: …\_MEI000006f02\base_library.zip".
-        #
-        # Ein eigener Faden hängt an nichts und läuft in jedem Fall ab.
-        threading.Timer(2.0, lambda: os._exit(0)).start()
-
-        def _abtreten():
-            try:
-                fenster.root.quit()
-                fenster.root.destroy()
-            except Exception:
-                pass
-
-        try:
-            fenster.root.after(400, _abtreten)
-        except Exception:
-            pass
+        _abtreten(fenster)
         return
     art = aktualisierung.verpackung()
     if art == 'quellcode':
@@ -1753,14 +1759,48 @@ def _fassung_holen(fenster, mit_vorab):
                 datei, fortschritt=lambda p: fenster.root.after(
                     0, lambda: fenster.sagen(t('wird_geladen', p))))
             geklappt, grund = aktualisierung.einspielen(ziel)
-            if geklappt:
-                _BEREIT[0] = freigabe.get('version') or ''
-            fenster.root.after(0, lambda: fenster.sagen(
-                t('s_ub_bereit') if geklappt else t('update_fehler', grund)))
-            if geklappt:
-                # Den Kasten neu zeichnen, damit aus „holen" ein „Jetzt neu
-                # starten" wird — sonst müsste man raten, wie es weitergeht.
-                fenster.root.after(50, fenster.neu_aufbauen)
+            if not geklappt:
+                fenster.root.after(0, lambda: fenster.sagen(
+                    t('update_fehler', grund)))
+                return
+            _BEREIT[0] = freigabe.get('version') or ''
+
+            # ⚠ Unter Windows ist hier **Schluss** — kein zweiter Klick mehr.
+            #
+            # Der Ablauf mit „erst holen, dann auf ‚Jetzt neu starten' druecken"
+            # stammt aus der Zeit des Dateitauschs: Damals lag die neue Datei
+            # nur bereit, und getauscht wurde beim Beenden. Der Installer
+            # dagegen **laeuft schon** — und wartet darauf, dass wir endlich
+            # gehen.
+            #
+            # Genau das hat am 26.08.2026 die lange Pause verursacht, die
+            # der Autor gemeldet hat („wieso es solange dauert bis er alles
+            # geschlossen hat, das wirkt komisch auf user"). Im Inno-Protokoll
+            # steht sie auf die Millisekunde:
+            #
+            #     09:50:07.869  Shutting down applications using our files.
+            #     09:50:39.243  Directory for uninstall files: ...
+            #
+            # 31,4 Sekunden — der Standard-Timeout des Restart Managers. Er
+            # bittet erst hoeflich ums Schliessen und raeumt erst nach Ablauf
+            # hart ab. Wer waehrenddessen auf den Knopf schaut, sieht ein
+            # Programm, das nichts tut.
+            #
+            # Treten wir gleich ab, entfaellt das Warten vollstaendig, und der
+            # `[Run]`-Abschnitt des Installers faehrt uns danach wieder hoch.
+            if art == 'exe':
+                fenster.root.after(0, lambda: fenster.sagen(
+                    t('s_ub_startet_neu')))
+                _abtreten(fenster)
+                return
+
+            # Linux: Das AppImage ist getauscht, laufen tut aber noch die alte
+            # Fassung. Hier bleibt der zweite Klick sinnvoll — er beendet und
+            # startet neu.
+            fenster.root.after(0, lambda: fenster.sagen(t('s_ub_bereit')))
+            # Den Kasten neu zeichnen, damit aus „holen" ein „Jetzt neu
+            # starten" wird — sonst muesste man raten, wie es weitergeht.
+            fenster.root.after(50, fenster.neu_aufbauen)
         except Exception as ausnahme:
             grund = str(ausnahme)
             fehler.merken('seiten.fassung_holen', ausnahme)

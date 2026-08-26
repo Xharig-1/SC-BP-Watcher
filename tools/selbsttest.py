@@ -894,10 +894,17 @@ def main():
         # Der Notausgang darf nicht an Tk hängen: Feuert der `after`-Rückruf
         # nicht, würde ein dort gestarteter Faden nie laufen — und der Prozess
         # liefe weiter, während sein Temp-Ordner schon abgeräumt wird.
+        #
+        # ⚠ Geprüft wird **innerhalb** von `_abtreten()`. Früher lag der
+        # Notausgang direkt in `_fassung_holen`, und der Test schnitt die Quelle
+        # bei `def _abtreten` ab — damals der Name der dortigen *lokalen*
+        # Funktion. Seit `_abtreten()` eine eigene Funktion ist (beide
+        # Abtritts-Wege teilen sie sich), traf dieser Schnitt ins Leere.
         quelle = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
                       encoding='utf-8').read()
-        vor_abtreten = quelle.split('def _abtreten')[0]
-        pruefe('threading.Timer(2.0, lambda: os._exit(0)).start()' in vor_abtreten,
+        block = quelle.split('def _abtreten')[1].split('\ndef ')[0]
+        vor_rueckruf = block.split('fenster.root.after')[0]
+        pruefe('os._exit(0)' in vor_rueckruf,
                'der Notausgang steht vor dem Tk-Rückruf, nicht darin')
 
 

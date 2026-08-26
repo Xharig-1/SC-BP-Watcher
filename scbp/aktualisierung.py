@@ -610,29 +610,42 @@ def einspielen(neue_datei):
                 shutil.move(neue_datei, ziel)
             os.chmod(ziel, 0o755)
             return True, ''
-        # Windows: den Installer starten. Er bringt alles mit, was hier früher
-        # von Hand nachgebaut war — siehe die Erklärung oben.
+        # Windows: den Installer starten. Er bringt alles mit, was hier frueher
+        # von Hand nachgebaut war — siehe die Erklaerung oben.
         #
         # `/SILENT` zeigt nur einen Fortschrittsbalken statt des ganzen
-        # Assistenten; `/NORESTART` verbietet ihm, den Rechner neu zu starten.
-        # Die beiden anderen Schalter stehen zwar schon in `installer.iss`,
-        # werden hier aber mitgegeben: Wer eine ältere Fassung installiert hat,
-        # bekommt einen Installer, dessen Voreinstellungen wir nicht kennen.
+        # Assistenten, `/NORESTART` verbietet ihm, den Rechner neu zu starten,
+        # und `/CLOSEAPPLICATIONS` laesst ihn den laufenden Watcher schliessen.
+        #
+        # ⚠ **Kein `/RESTARTAPPLICATIONS`.** Das war ein Fehler und hat am
+        # 26.08.2026 den Selbststart zerschossen. Der Schalter uebersteuert
+        # `RestartApplications=no` aus `installer.iss` — und dann starten
+        # **zwei** Wege den Watcher: der Restart Manager und der
+        # `[Run]`-Abschnitt. Im Protokoll steht beides direkt untereinander:
+        #
+        #     Attempting to restart applications.
+        #     -- Run entry --   Filename: ...\SC-BP-Watcher.exe
+        #
+        # Wird das Setup dabei aus dem Watcher heraus gestartet, passt die
+        # Prozesskette fuer den Neustart des Restart Managers nicht, und Inno
+        # bricht mit „Security validation failure: parent process has different
+        # executable!" ab. Aus einer PowerShell heraus faellt das nicht auf —
+        # deshalb war der Fehler zuerst nicht nachstellbar. Den Neustart macht
+        # allein `[Run]`.
         import subprocess
         _TAUSCH_LAEUFT[0] = True
 
-        # ⚠ Die Umgebung MUSS gesäubert werden, das Arbeitsverzeichnis ebenso.
+        # ⚠ Die Umgebung MUSS gesaeubert werden, das Arbeitsverzeichnis ebenso.
         # Sonst erbt der Installer die PyInstaller-Variablen der laufenden
         # Fassung und sucht seine Bibliotheken in dem Ordner unter `%TEMP%`, den
-        # der Bootloader gleich aufräumen will. Genau diese Falle steht
-        # ausführlich bei `neu_starten()` — und genau sie hat die Verklemmung
-        # vom 26.08.2026 mit verursacht.
+        # der Bootloader gleich aufraeumen will. Genau diese Falle steht
+        # ausfuehrlich bei `neu_starten()`.
         umgebung = dict(os.environ)
         for name in ('_MEIPASS', '_MEIPASS2', 'TCL_LIBRARY', 'TK_LIBRARY',
                      'TIX_LIBRARY', 'MATPLOTLIBDATA'):
             umgebung.pop(name, None)
         subprocess.Popen([neue_datei, '/SILENT', '/NORESTART',
-                          '/CLOSEAPPLICATIONS', '/RESTARTAPPLICATIONS'],
+                          '/CLOSEAPPLICATIONS'],
                          env=umgebung, cwd=tempfile.gettempdir(),
                          creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
         return True, ''
