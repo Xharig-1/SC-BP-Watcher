@@ -42,6 +42,7 @@ from tkinter import font as tkfont
 # Eigene Bausteine. Sie kapseln alles, was sich zwischen Windows und Linux
 # unterscheidet — der Rest dieser Datei muss das Betriebssystem nicht kennen.
 from scbp import sprache
+from scbp import zeichen
 from scbp import fehler
 from scbp import (ablagesymbol, aktualisierung, assistent, autostart,
                   bildschirm, overlay,
@@ -55,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc48'
+__version__ = '3.0.0-rc49'
 
 
 def _mitgeliefert(name):
@@ -1227,10 +1228,13 @@ class Overlay:
         self.as_lbl.pack(side='right', padx=(0, 6))
         # Zwei Ansichten, ein Programm: die schmale Melde-Leiste bleibt, das
         # Verwaltungsfenster kommt auf Klick dazu.
-        self.liste_lbl = tk.Label(bar, text='☰', bg=BAR, fg=SUB,
-                                  font=self.f_title, cursor='hand2')
+        # ⚠ Ein Klemmbrett statt der drei Striche. Drei Striche heissen
+        # „irgendeine Liste", ein Klemmbrett heisst „deine gesammelten Sachen".
+        # der Autor nach dem Vergleich mit dem SC-Deutsch-Launcher (26.08.2026):
+        # „dieses klemmbrett für die BP ist auch besser."
+        self.liste_lbl = self._zeichenknopf(bar, zeichen.klemmbrett,
+                                            self.liste_oeffnen)
         self.liste_lbl.pack(side='right', padx=(0, 6))
-        self.liste_lbl.bind('<Button-1>', lambda e: self.liste_oeffnen())
         hinweis.anhaengen(self.liste_lbl, lambda: sprache.t('hinweis_liste'))
         # Einrichtung erneut — bewusst als eigener Knopf und nicht in einem
         # Einstellungsmenü versteckt: Wer sich nicht auskennt, soll etwas
@@ -1272,8 +1276,12 @@ class Overlay:
             # einem Mausschlenker damit überschrieben.
             hinweis.anhaengen(self.start_lbl, lambda: sprache.t('s_sp_start'))
 
-        self.info_lbl = tk.Label(bar, text='ⓘ', bg=BAR, fg=SUB,
-                                 font=self.f_title, cursor='hand2')
+        # ⚠ Eine Glocke statt des `ⓘ`. Ein „i" heisst „hier steht etwas", eine
+        # Glocke heisst „fuer dich ist etwas da" — und genau darum geht es hier,
+        # denn das Zeichen faerbt sich gruen, wenn eine neue Fassung bereitsteht.
+        # der Autor (26.08.2026): „Die Glocke für Updates ist auch besser."
+        self.info_lbl = self._zeichenknopf(
+            bar, zeichen.glocke, lambda: self.fenster_oeffnen('ueber'))
         self.info_lbl.pack(side='right', padx=(0, 6))
         # ⚠ Führt ins **Hauptfenster**, nicht mehr in ein eigenes Infofenster.
         # Es gab zwei Wege zu Änderungen und Updates, und nur einer war zu Ende
@@ -1284,7 +1292,6 @@ class Overlay:
         # meistens wissen, ob es etwas Neues gibt — und landet so direkt beim
         # Knopf. „Was ist neu" liegt einen Reiter daneben und ist einen Klick
         # entfernt.
-        self.info_lbl.bind('<Button-1>', lambda e: self.fenster_oeffnen('ueber'))
         hinweis.anhaengen(self.info_lbl, self._hinweis_info)
         self.as_lbl.bind('<Button-1>', lambda e: self._toggle_autostart())
         hinweis.anhaengen(self.as_lbl, self._hinweis_autostart)
@@ -1359,13 +1366,49 @@ class Overlay:
     # ---- Schalter „mit dem Rechner starten" ----
     # ---- Erklärtexte, die ihren Zustand kennen ----
     # --------------------------------------------------------- Schriftgrößen
-    OVERLAY_GRUND = (('f_title', 'Segoe UI Semibold', 9),
+    # ⚠ `f_title` traegt die Zeichen der Leiste. 9 Punkt waren zu klein —
+    # der Autor im Vergleich mit dem SC-Deutsch-Launcher (26.08.2026): „die
+    # button größe oben, ist auch deutlich angenehmer". Auf einem 4096 Pixel
+    # breiten Bildschirm bei 100 % Skalierung ist das keine Geschmacksfrage.
+    # Die beiden anderen bleiben, sie tragen Text und keine Zeichen.
+    OVERLAY_GRUND = (('f_title', 'Segoe UI Semibold', 11),
                      ('f_item', 'Consolas', 8),
                      ('f_sub', 'Segoe UI', 7))
 
     def _stufe(self):
         from scbp.hauptfenster import STUFEN
         return STUFEN.get(pfade.einstellung('schriftgroesse') or 'normal', 1)
+
+    def _zeichenknopf(self, eltern, maler, tat=None):
+        """Ein gemaltes Zeichen in der Leiste — statt eines Schriftzeichens.
+
+        ⚠ Warum nicht `tk.Label` mit einem Unicode-Zeichen: Die interessanten
+        Motive (Glocke, Klemmbrett, Papierkorb) liegen **ausserhalb der
+        Grundebene** und fehlen damit in der Oberflaechenschrift; im Fenster
+        stuende ein Fragezeichen. Dazu kommt, dass Schriftzeichen in der Groesse
+        gezeichnet werden, die die Schrift dafuer vorsieht — und die ist auf
+        einem breiten Bildschirm winzig. Siehe `scbp/zeichen.py`.
+
+        Zurueck kommt die Leinwand mit einem angehaengten `.malen(farbe)`, das
+        die Stelle von `configure(fg=...)` einnimmt: Ein Canvas hat kein `fg`,
+        seine Formen muessen neu gezeichnet werden.
+        """
+        kante = self.f_title.metrics('linespace') + 4
+        c = tk.Canvas(eltern, width=kante, height=kante, bg=BAR,
+                      highlightthickness=0, bd=0, cursor='hand2')
+        c.farbe = SUB
+
+        def malen(farbe=None):
+            if farbe:
+                c.farbe = farbe
+            c.delete('all')
+            maler(c, kante / 2.0, kante / 2.0, kante - 4, c.farbe)
+
+        c.malen = malen
+        malen()
+        if tat:
+            c.bind('<Button-1>', lambda e: tat())
+        return c
 
     def _schriften_anlegen(self):
         n = self._stufe()
@@ -1460,7 +1503,7 @@ class Overlay:
 
     def _hinweis_info(self):
         """ⓘ heißt zweierlei — Versionsgeschichte, und bei Grün: „es gibt Neues"."""
-        grün = str(self.info_lbl.cget('fg')).lower() == ACCENT.lower()
+        grün = str(self.info_lbl.farbe).lower() == ACCENT.lower()
         return sprache.t('hinweis_neue_version' if grün else 'hinweis_versionen')
 
     def _autostart_titel(self):
@@ -1708,7 +1751,7 @@ class Overlay:
 
     def _version_melden(self, neu):
         try:
-            self.info_lbl.config(fg=ACCENT)
+            self.info_lbl.malen(ACCENT)
             self.q.put(('hinweis', '%s — %s'
                         % (sprache.t('neue_version_da', neu['version']),
                            sprache.t('was_ist_neu'))))
@@ -1784,11 +1827,11 @@ class Overlay:
                                      version=__version__,
                                      beim_schriftwechsel=self.schriftgroesse_anwenden)
         self._fenster.oeffnen(seite)
-        self.liste_lbl.config(fg=ACCENT)
+        self.liste_lbl.malen(ACCENT)
 
     def _liste_zu(self):
         self._fenster = None
-        self.liste_lbl.config(fg=SUB)
+        self.liste_lbl.malen(SUB)
         # ⚠ Genau hier zieht eine geänderte Anzeigeart. Stellt jemand in den
         # Einstellungen auf „nur bei einem Neuzugang" um, darf das Overlay nicht
         # sofort verschwinden — er steht ja noch davor und will das Ergebnis
