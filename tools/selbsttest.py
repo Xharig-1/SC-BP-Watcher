@@ -481,6 +481,29 @@ def main():
         # 26.08.2026 gab `einstellungen_schreiben` nur `False` zurück — und
         # **kein einziger Aufrufer** wertet das aus. Eine Einstellung war nach
         # dem Neustart einfach wieder alt, ohne jeden Hinweis.
+        # ⚠ Jede Datei, die der Code über `_mitgeliefert()` lädt, muss der Bau
+        # auch einpacken. Sonst fehlt sie NUR in der fertigen Fassung — beim
+        # Start aus dem Quellcode fällt es nie auf. Genau so fehlte das Logo auf
+        # der Seite „Update & Über": Der Code lud `assets/xharig.png`, der Bau
+        # lieferte nur `assets/icon.png`. Gemeldet am 26.08.2026 ,
+        # dem es im Bild eines Testers auffiel.
+        import re as re_
+        bauplan = open(os.path.join(WURZEL, '.github', 'workflows',
+                                    'release.yml'), encoding='utf-8').read()
+        gebraucht = set()
+        for datei in ('sc_bp_watcher.py',) + tuple(
+                os.path.join('scbp', n) for n in os.listdir(
+                    os.path.join(WURZEL, 'scbp')) if n.endswith('.py')):
+            quelle_ = open(os.path.join(WURZEL, datei), encoding='utf-8').read()
+            for treffer in re_.finditer(
+                    r"_mitgeliefert\(\s*(?:os\.path\.join\()?([^)]+)\)", quelle_):
+                teile = re_.findall(r"'([^']+)'", treffer.group(1))
+                if teile:
+                    gebraucht.add(teile[-1])
+        for name in sorted(gebraucht):
+            pruefe(name in bauplan,
+                   'der Bau liefert „%s" mit' % name)
+
         # ⚠ Zwei Fallen stecken in diesem Test, beide am 26.08.2026 erlebt:
         #
         # 1. **Nicht per `chmod` sperren.** Auf den Bau-Rechnern läuft alles als

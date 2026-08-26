@@ -168,6 +168,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Das Logo fehlte in der fertigen Fassung.** Auf „Update & Über" lud das
+  Programm `assets/xharig.png`, der Bau packte diese Datei aber nie ein — beim
+  Start aus dem Quellcode fiel das nie auf, weil sie dort liegt. Gemeldet von
+  der Autor, dem es im Bildschirmfoto eines Testers auffiel.
+
 - **Das „ⓘ" am Overlay öffnete ein eigenes Fenster mit eigener Update-Logik** —
   und in dem fehlte der Neustart-Knopf. Wer darüber ging, lud die neue Fassung
   herunter und stand dann vor einem Satz statt vor einem Knopf. Jetzt führt es

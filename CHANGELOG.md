@@ -160,6 +160,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The logo was missing from the finished build.** On „Update & About" the
+  program loaded `assets/xharig.png`, but the build never packed that file — it
+  never showed when starting from source, where the file is present. Reported by
+  der Autor, who spotted it in a tester's screenshot.
+
 - **The „ⓘ" on the overlay opened a separate window with its own update logic** —
   and that one had no restart button. Anyone going that way downloaded the new
   version and was then left with a sentence instead of a button. It now opens the
