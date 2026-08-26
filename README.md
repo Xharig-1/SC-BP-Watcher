@@ -93,6 +93,17 @@ No Python, no installation, no extra packages — a single file you can also jus
 
 On first start a **wizard** walks you through setup: language, finding Star Citizen, collecting your existing blueprints. It takes a minute, and then your inventory is there.
 
+### Code signing
+
+This project has applied to the [SignPath Foundation](https://signpath.org/)
+for free code signing for open source projects. Once approved, released
+Windows binaries will be signed by SignPath, and Windows will show the
+publisher name instead of "unknown publisher".
+
+Builds are produced exclusively by a public GitHub Actions workflow — see
+[SECURITY.md](SECURITY.md) for how releases are built and what the program
+does and does not send.
+
 ### ⚠️ Windows says "Windows protected your PC"
 
 This appears on the first launch, and it is **not a virus detection**:
