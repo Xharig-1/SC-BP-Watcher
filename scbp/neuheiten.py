@@ -80,7 +80,12 @@ def _schreiben(daten):
         with open(pfade.app_datei(DATEI), 'w', encoding='utf-8') as f:
             json.dump(daten, f, ensure_ascii=False, indent=1)
         return True
-    except Exception:
+    except Exception as ausnahme:
+        try:
+            from . import fehler
+            fehler.merken('neuheiten.schreiben', ausnahme)
+        except Exception:
+            pass
         return False
 
 

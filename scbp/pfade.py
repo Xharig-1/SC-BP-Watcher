@@ -331,6 +331,25 @@ def _vorlage():
     }
 
 
+def _melden(stelle, ausnahme):
+    """Einen Fehler ins Protokoll geben, ohne dabei selbst zu scheitern.
+
+    ⚠ Der Import steht **absichtlich** in der Funktion: `scbp/fehler.py`
+    importiert seinerseits `pfade`. Auf Modulebene wäre das ein Zirkelbezug und
+    keines der beiden Module ließe sich mehr laden.
+
+    ⚠ Und das Melden hängt in einem eigenen `try`: Wenn schon das Schreiben der
+    Einstellungen scheitert, kann auch das Fehlerprotokoll klemmen. Dann ist der
+    ursprüngliche Fehler zwar verloren — aber das Programm läuft weiter, und
+    darum geht es.
+    """
+    try:
+        from . import fehler
+        fehler.merken(stelle, ausnahme)
+    except Exception:
+        pass
+
+
 def einstellungen():
     """Die selbst eingetragenen Pfade. Fehlt die Datei, ist sie leer."""
     try:
@@ -362,7 +381,12 @@ def einstellung_setzen(name, wert):
             json.dump(daten, f, ensure_ascii=False, indent=2)
         os.replace(temp, ziel)
         return True
-    except OSError:
+    except OSError as ausnahme:
+        # ⚠ Niemand prüft den Rückgabewert dieser Funktion — geprüft am
+        # 26.08.2026, alle Aufrufer werfen ihn weg. Scheitert das Schreiben
+        # (volle Platte, fehlende Rechte, Ordner weg), wäre die Einstellung
+        # nach dem Neustart einfach wieder alt, ohne jeden Hinweis.
+        _melden('pfade.einstellungen_schreiben', ausnahme)
         return False
 
 

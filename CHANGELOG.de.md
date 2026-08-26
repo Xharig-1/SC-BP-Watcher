@@ -165,6 +165,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Fünf Fehler scheiterten bisher lautlos.** Ließen sich Einstellungen, die
+  Merkliste, der „Neu"-Stand, der Autostart oder ein gespeicherter Bericht nicht
+  schreiben, passierte einfach nichts — die Einstellung war nach dem Neustart
+  wieder alt, und im Fehlerbericht stand nichts. Diese Stellen melden jetzt.
+
 - **Der Fehlerbericht ließ die Spielsprache leer.** Dort stand nur ein Strich,
   obwohl die Erkennung einwandfrei lief — die Abfrage lieferte zwei Werte, der
   Bericht erwartete einen, und der Fehler wurde stillschweigend verschluckt.

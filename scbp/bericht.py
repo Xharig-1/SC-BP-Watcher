@@ -304,7 +304,12 @@ def speichern(text, pfad_=None):
         with open(pfad_, 'w', encoding='utf-8') as f:
             f.write(text)
         return pfad_
-    except Exception:
+    except Exception as ausnahme:
+        try:
+            from . import fehler
+            fehler.merken('bericht.speichern', ausnahme)
+        except Exception:
+            pass
         return None
 
 

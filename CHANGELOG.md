@@ -157,6 +157,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **Five failures used to happen silently.** If the settings, the watchlist, the
+  „new" markers, the autostart entry or a saved report could not be written,
+  nothing happened at all — the setting was simply back to its old value after a
+  restart, and the error report said nothing. Those places now report.
+
 - **The error report left the game language empty.** It showed only a dash even
   though detection worked perfectly — the query returned two values, the report
   expected one, and the error was swallowed silently. It now states what is being

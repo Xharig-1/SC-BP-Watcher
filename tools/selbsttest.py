@@ -477,6 +477,34 @@ def main():
         text = bericht.bauen(version='0.0.0-test')
         pruefe(bool(text) and 'SC BP Watcher' in text, 'der Bericht wird gebaut')
 
+        # ⚠ Ein Schreibfehler darf nicht spurlos verschwinden. Bis zum
+        # 26.08.2026 gab `einstellungen_schreiben` nur `False` zurück — und
+        # **kein einziger Aufrufer** wertet das aus. Eine Einstellung war nach
+        # dem Neustart einfach wieder alt, ohne jeden Hinweis.
+        if not sys.platform.startswith('win'):   # chmod wirkt dort anders
+            import stat as stat_
+            sperr = os.path.join(basis, 'gesperrt')
+            os.makedirs(sperr, exist_ok=True)
+            alt_home = os.environ.get('SC_BP_HOME')
+            os.environ['SC_BP_HOME'] = sperr
+            try:
+                from scbp import pfade as pf_sperr
+                pruefe(pf_sperr.einstellung_setzen('probe', 1),
+                       'Einstellungen lassen sich normal schreiben')
+                fehlerbuch.leeren()
+                os.chmod(sperr, stat_.S_IRUSR | stat_.S_IXUSR)
+                geschrieben = pf_sperr.einstellung_setzen('probe', 2)
+                os.chmod(sperr, stat_.S_IRWXU)
+                pruefe(not geschrieben,
+                       'ein gesperrter Ordner meldet einen Fehlschlag')
+                stellen = [e.get('stelle') for e in fehlerbuch.letzte(3)]
+                pruefe('pfade.einstellungen_schreiben' in stellen,
+                       'und der Grund steht im Fehlerprotokoll')
+            finally:
+                os.chmod(sperr, stat_.S_IRWXU)
+                if alt_home:
+                    os.environ['SC_BP_HOME'] = alt_home
+
         # ⚠ Die Zeile „Spielsprache" stand drei Übergaben lang auf „—", weil
         # `phrasen.sammeln()` ein Tupel liefert und der Bericht es wie eine
         # Liste behandelte. Der TypeError wurde von `_sicher()` verschluckt.

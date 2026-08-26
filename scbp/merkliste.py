@@ -87,7 +87,12 @@ def speichern(daten):
             json.dump(daten, f, ensure_ascii=False, indent=1)
         os.replace(temp, ziel)
         return True
-    except OSError:
+    except OSError as ausnahme:
+        try:
+            from . import fehler
+            fehler.merken('merkliste.speichern', ausnahme)
+        except Exception:
+            pass
         try:
             os.remove(temp)
         except OSError:

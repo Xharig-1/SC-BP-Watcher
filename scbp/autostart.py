@@ -95,7 +95,14 @@ def _win_setzen(an):
                 except FileNotFoundError:
                     pass          # war schon aus
         return True
-    except Exception:
+    except Exception as ausnahme:
+        # Der Spieler hat den Schalter umgelegt und erwartet, dass es wirkt.
+        # Ohne Meldung sieht er beim nächsten Start nur, dass nichts passiert.
+        try:
+            from . import fehler
+            fehler.merken('autostart.setzen', ausnahme)
+        except Exception:
+            pass
         return False
 
 
