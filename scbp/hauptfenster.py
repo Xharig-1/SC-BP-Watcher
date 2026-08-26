@@ -1107,7 +1107,11 @@ class Hauptfenster:
         self.f_fett   = tkfont.Font(family='Segoe UI', size=10 + stufe, weight='bold')
         self.f_klein  = tkfont.Font(family='Segoe UI', size=9 + stufe)
         self.f_titel  = tkfont.Font(family='Segoe UI', size=12 + stufe, weight='bold')
-        self.f_zeichen = tkfont.Font(family='Segoe UI', size=13 + stufe)
+        # Siehe `Overlay.ZEICHEN_SCHRIFT`: `Segoe UI` enthält die Symbole nicht,
+        # Windows fällt sonst auf die **farbige** Segoe UI Emoji zurück.
+        self.f_zeichen = tkfont.Font(
+            family='Segoe UI Symbol' if pfade.WINDOWS else 'Segoe UI',
+            size=13 + stufe)
 
     def schriftgroesse_setzen(self, stufe):
         """Die ganze Oberfläche wächst oder schrumpft — sofort, ohne Neustart."""

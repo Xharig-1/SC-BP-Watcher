@@ -225,6 +225,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   program lands in your own user folder either way, which removes the question
   and any administrator prompt when updating.
 
+- **The icons in the bar looked mangled on Windows.** `Segoe UI` contains
+  **not one** of the fourteen glyphs — Windows picked a fallback per character
+  and reached for **Segoe UI Emoji**: colourful, square emoji images in a slim
+  dark bar, at uneven widths (10 to 21 pixels at the same size). That is also
+  why the icons could never be evened out via the font size — they came from
+  different font files. Windows now explicitly asks for **Segoe UI Symbol**:
+  all fourteen glyphs monochrome, in the configured text colour, with half the
+  spread. On Linux this was never a problem and nothing changes. Reported by
+  der Autor.
+
 - **The overlay stayed German when you switched to English.** Changing the
   language gave you an English window and a German status bar:
   „8 Baupläne · Log ✓ · ohne Launcher · geprüft", plus the waiting message and

@@ -1389,8 +1389,25 @@ class Overlay:
     #
     # Wer eine der Zahlen aendert, sieht sich die Leiste danach an — auf dem
     # Bildschirm, nicht im Code.
+    # ⚠ Die Zeichen brauchen eine **eigene Schriftfamilie**, und zwar aus einem
+    # handfesten Grund: In `Segoe UI` steckt **kein einziges** dieser Symbole
+    # drin (nachgemessen am 26.08.2026 an allen vierzehn). Windows sucht sich
+    # deshalb je Zeichen selbst eine Ersatzschrift — und greift dabei zu
+    # **Segoe UI Emoji**, einer Farb-Emoji-Schrift. Das Ergebnis sind bunte,
+    # quadratische Emoji-Bildchen in einer schlanken dunklen Leiste, in
+    # ungleichen Breiten (10–21 px bei gleicher Größe).
+    #
+    # `Segoe UI Symbol` enthält alle vierzehn Zeichen **einfarbig** — sie
+    # nehmen damit die eingestellte Textfarbe an, so wie es gedacht ist, und
+    # streuen nur noch halb so breit (10–15 px).
+    #
+    # Unter Linux bleibt es beim Bisherigen: Dort gibt es beide Schriften
+    # ohnehin nicht, fontconfig liefert einfarbige Symbole, und so sieht die
+    # Leiste dort gut aus. Was funktioniert, wird nicht angefasst.
+    ZEICHEN_SCHRIFT = 'Segoe UI Symbol' if pfade.WINDOWS else 'Segoe UI Semibold'
+
     OVERLAY_GRUND = (('f_title', 'Segoe UI Semibold', 11),
-                     ('f_zeichen', 'Segoe UI Semibold', 15),
+                     ('f_zeichen', ZEICHEN_SCHRIFT, 15),
                      ('f_item', 'Consolas', 8),
                      ('f_sub', 'Segoe UI', 7))
 

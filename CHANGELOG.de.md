@@ -235,6 +235,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   eigenen Benutzerordner, damit entfällt die Rückfrage und jede
   Administrator-Abfrage beim Aktualisieren.
 
+- **Die Symbole in der Leiste sahen unter Windows entstellt aus.** In
+  `Segoe UI` steckt **kein einziges** der vierzehn Zeichen — Windows suchte
+  sich je Zeichen selbst eine Ersatzschrift und griff dabei zu **Segoe UI
+  Emoji**: bunte, quadratische Emoji-Bildchen in einer schlanken dunklen
+  Leiste, dazu in ungleichen Breiten (10 bis 21 Pixel bei gleicher Größe).
+  Deshalb ließen sich die Symbole auch nie über die Schriftgröße angleichen —
+  sie kamen aus verschiedenen Schriftdateien. Jetzt wird unter Windows
+  ausdrücklich **Segoe UI Symbol** verlangt: alle vierzehn Zeichen einfarbig,
+  in der eingestellten Textfarbe, halb so breit gestreut. Unter Linux war es
+  nie ein Problem und bleibt unverändert. Gemeldet von der Autor.
+
 - **Das Overlay blieb beim Umschalten auf Englisch deutsch.** Wer die Sprache
   wechselte, bekam ein englisches Fenster und eine deutsche Melde-Leiste:
   „8 Baupläne · Log ✓ · ohne Launcher · geprüft", dazu „Warte auf neue
