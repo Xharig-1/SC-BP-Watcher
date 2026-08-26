@@ -709,9 +709,9 @@ def discord_zeichen(leinwand, x, mitte, hoehe, farbe):
         leinwand.create_polygon(strecke(auge), fill=grund, outline=grund)
 
 
-# ⚠ **Platzhalter — vor der Veröffentlichung durch die echte Adresse
-# ersetzen.** Ein Knopf, der auf eine tote Seite führt, ist schlimmer als
-# keiner: Wer ihn drückt, hält das Werkzeug für kaputt.
+# Von der Autor am 26.08.2026 bestätigt. ⚠ Wer sie ändert, prüft vorher, dass die
+# Seite wirklich erreichbar ist: Ein Knopf, der ins Leere führt, ist schlimmer
+# als keiner — wer ihn drückt, hält das Werkzeug für kaputt.
 KOFI_ADRESSE = 'https://ko-fi.com/xharig'
 
 
