@@ -121,6 +121,9 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
+- **The tab is now called „Update & About".** Nobody looking for an update finds
+  it under „About" — not even the author looked there.
+
 - **The „launch Star Citizen" button sat where nobody would look for it.** It
   was on the „In-game details" page, which is about mission text — even the
   author could not find it again. It now sits as a green „▶" in the overlay's
@@ -156,6 +159,14 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **No more save button** — changes take effect right away.
 
 ### Fixed
+
+- **The „ⓘ" on the overlay opened a separate window with its own update logic** —
+  and that one had no restart button. Anyone going that way downloaded the new
+  version and was then left with a sentence instead of a button. It now opens the
+  main window on „What's new", with the „Update & About" tab right beside it.
+  **One route instead of two.** Reported by Morkhan.
+- **Stretched buttons only filled half the width.** Mostly affected the buttons
+  below the two update boxes. Reported by Morkhan.
 
 - **Updating through the info window never arrived.** Anyone using the green
   „ⓘ" on the overlay instead of the settings page only got the line „the new

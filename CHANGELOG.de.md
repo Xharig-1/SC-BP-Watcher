@@ -126,6 +126,9 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Geändert
 
+- **Der Reiter heißt „Update & Über".** „Über" allein findet niemand, der ein
+  Update sucht — der Autor selbst hat dort nicht danach gesucht.
+
 - **Der Startknopf für Star Citizen saß an einer Stelle, an der ihn niemand
   sucht.** Er stand unter „Angaben im Spiel", also dort, wo es um Auftragstexte
   geht — selbst der Autor fand ihn nicht wieder. Jetzt sitzt er als grünes „▶"
@@ -164,6 +167,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Kein Speichern-Knopf mehr** — Änderungen greifen sofort.
 
 ### Behoben
+
+- **Das „ⓘ" am Overlay öffnete ein eigenes Fenster mit eigener Update-Logik** —
+  und in dem fehlte der Neustart-Knopf. Wer darüber ging, lud die neue Fassung
+  herunter und stand dann vor einem Satz statt vor einem Knopf. Jetzt führt es
+  ins Hauptfenster auf „Was ist neu"; der Reiter „Update & Über" liegt daneben.
+  **Ein Weg statt zwei.** Gemeldet von Morkhan.
+- **Gestreckte Knöpfe füllten nur die halbe Breite.** Betraf vor allem die
+  Knöpfe unter den beiden Update-Kästen. Gemeldet von Morkhan.
 
 - **Das Update über das Infofenster kam nie an.** Wer über das grüne „ⓘ" am
   Overlay ging statt über die Einstellungen, bekam nach dem Laden nur den Satz

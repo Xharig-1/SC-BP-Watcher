@@ -55,7 +55,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc35'
+__version__ = '3.0.0-rc36'
 
 
 def _mitgeliefert(name):
@@ -1273,12 +1273,15 @@ class Overlay:
         self.info_lbl = tk.Label(bar, text='ⓘ', bg=BAR, fg=SUB,
                                  font=self.f_title, cursor='hand2')
         self.info_lbl.pack(side='right', padx=(0, 6))
-        # ⚠ Führt ins **Hauptfenster**, nicht mehr in ein eigenes
-        # Infofenster. Es gab zwei Wege zum Update, und nur einer war zu Ende
+        # ⚠ Führt ins **Hauptfenster**, nicht mehr in ein eigenes Infofenster.
+        # Es gab zwei Wege zu Änderungen und Updates, und nur einer war zu Ende
         # gebaut: Im Infofenster fehlte der Neustart-Knopf, deshalb lud Morkhan
-        # am 26.08.2026 dreimal vergeblich. Ein Weg statt zwei — hier liegt
-        # der Knopf, der auch wirklich neu startet.
-        self.info_lbl.bind('<Button-1>', lambda e: self.fenster_oeffnen('ueber'))
+        # am 26.08.2026 dreimal vergeblich. Ein Weg statt zwei.
+        #
+        # Und zwar auf **„Was ist neu"** — das bedeutet dieses Zeichen, seit es
+        # das Zeichen gibt. Wer von hier aus ein Update sucht, sieht links den
+        # Reiter „Update & Über" und findet es in einem Klick.
+        self.info_lbl.bind('<Button-1>', lambda e: self.fenster_oeffnen('wasistneu'))
         hinweis.anhaengen(self.info_lbl, self._hinweis_info)
         self.as_lbl.bind('<Button-1>', lambda e: self._toggle_autostart())
         hinweis.anhaengen(self.as_lbl, self._hinweis_autostart)
