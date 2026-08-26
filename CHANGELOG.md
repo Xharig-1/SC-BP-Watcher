@@ -178,7 +178,9 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   the autostart text. English versions of those strings had existed all along —
   nobody used them, the code kept assembling the German ones. On top of that
   the overlay never heard about a language change at all; only the settings
-  window relabelled itself. Reported by der Autor.
+  window relabelled itself.
+  The catalogue watch message „newly craftable in game“ had the same
+  problem. Reported by der Autor.
 
 - **The hint on the ▶ launch button overwrote the status bar.** It was the only
   one of the ten icons without a tooltip; instead it wrote into the status bar
