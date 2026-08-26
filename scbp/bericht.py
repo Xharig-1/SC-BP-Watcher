@@ -93,7 +93,21 @@ def _json_groesse(pfad_, schluessel):
 
     Fehlt der Schlüssel, steht jetzt `—` da. Lieber keine Angabe als eine
     erfundene, gerade in einem Bericht, mit dem jemand einen Fehler sucht.
+    ⚠ Und: Eine Datei, die **es gar nicht gibt**, ist hier kein Fehler, sondern
+    der Normalfall. Wer noch nichts auf die Merkliste gesetzt hat, hat keine
+    `watchlist.json` — bis rc42 flog dabei ein `FileNotFoundError`, den `_sicher`
+    zwar auffing, aber als Fehler in den Bericht schrieb. Im Bericht vom
+    26.08.2026 stand er ganz oben, direkt über den echten Altlasten:
+
+        bericht.angabe  FileNotFoundError: .../Bauplaene/watchlist.json
+
+    Wer einen Fehler sucht, soll in dieser Liste keine Zeilen finden, die gar
+    keine sind. Der Docstring von `_sicher` sagt es schon: „Ein leerer Wert ist
+    normal (kein Spiel installiert, keine Merkliste) — eine Ausnahme ist es
+    nicht."
     """
+    if not os.path.exists(pfad_):
+        return '—'
     with open(pfad_, encoding='utf-8') as f:
         daten = json.load(f)
     if schluessel not in daten:
