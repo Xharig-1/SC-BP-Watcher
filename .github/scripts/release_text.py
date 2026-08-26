@@ -124,6 +124,10 @@ neither, and every new version starts from zero. The source is open, the file is
 **GitHub Actions** from exactly that source, and every asset above carries its SHA-256
 checksum. On Linux this message does not exist.
 
+This project has applied to the [SignPath Foundation](https://signpath.org/) for free code
+signing for open source projects. Once approved, the Windows binaries below will be signed
+by SignPath.
+
 <details>
 <summary><b>Deutsch</b></summary>
 
@@ -136,6 +140,10 @@ kostenloses Fan-Werkzeug hat beides nicht, und jede neue Fassung fängt wieder b
 Der Quellcode ist offen, die Datei wird **nicht von mir** gebaut, sondern von GitHub
 Actions aus genau diesem Quellcode, und jede Datei oben trägt ihre SHA-256-Prüfsumme.
 Unter Linux gibt es diese Meldung nicht.
+
+Für dieses Projekt ist eine kostenlose Code-Signatur bei der
+[SignPath Foundation](https://signpath.org/) beantragt. Sobald sie bewilligt ist, werden
+die Windows-Dateien oben von SignPath unterschrieben.
 
 </details>"""
 
