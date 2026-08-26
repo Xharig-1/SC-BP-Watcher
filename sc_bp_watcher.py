@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc49'
+__version__ = '3.0.0-rc50'
 
 
 def _mitgeliefert(name):
@@ -1192,7 +1192,8 @@ class Overlay:
         # Die Grundwerte liegen eins unter den früheren festen Größen, damit die
         # Stufe „normal" (= 1) genau das bisherige Aussehen ergibt — niemand,
         # der nichts eingestellt hat, sieht plötzlich ein anderes Overlay.
-        self.f_title, self.f_item, self.f_sub = self._schriften_anlegen()
+        (self.f_title, self.f_zeichen, self.f_item,
+         self.f_sub) = self._schriften_anlegen()
 
         # --- Titelleiste (Drag-Griff + Schließen) ---
         bar = tk.Frame(self.root, bg=BAR, height=26)
@@ -1202,12 +1203,12 @@ class Overlay:
                              fg=ACCENT, font=self.f_title)
         titel_lbl.pack(side='left', padx=8)
         hinweis.anhaengen(titel_lbl, lambda: sprache.t('hinweis_ziehen'))
-        zu_lbl = tk.Label(bar, text='✕', bg=BAR, fg=SUB, font=self.f_title,
+        zu_lbl = tk.Label(bar, text='✕', bg=BAR, fg=SUB, font=self.f_zeichen,
                           cursor='hand2')
         zu_lbl.pack(side='right', padx=8)
         zu_lbl.bind('<Button-1>', lambda e: self.quit())
         hinweis.anhaengen(zu_lbl, lambda: sprache.t('hinweis_schliessen'))
-        leeren_lbl = tk.Label(bar, text='🗑', bg=BAR, fg=SUB, font=self.f_title,
+        leeren_lbl = tk.Label(bar, text='🗑', bg=BAR, fg=SUB, font=self.f_zeichen,
                               cursor='hand2')
         leeren_lbl.pack(side='right')
         leeren_lbl.bind('<Button-1>', lambda e: self.clear())
@@ -1218,12 +1219,12 @@ class Overlay:
         # braucht. Ersetzt zugleich das nie gebaute Ablage-Symbol (Tray): Das
         # bräuchte Zusatzpakete, ein eingeklappter Streifen nicht.
         self.klapp_lbl = tk.Label(bar, text='▾', bg=BAR, fg=SUB,
-                                  font=self.f_title, cursor='hand2')
+                                  font=self.f_zeichen, cursor='hand2')
         self.klapp_lbl.pack(side='right', padx=(0, 6))
         self.klapp_lbl.bind('<Button-1>', lambda e: self.umklappen())
         hinweis.anhaengen(self.klapp_lbl, self._hinweis_klappen)
         # Schalter „mit Windows starten" — grün = an, grau = aus.
-        self.as_lbl = tk.Label(bar, text='⏻', bg=BAR, fg=SUB, font=self.f_title,
+        self.as_lbl = tk.Label(bar, text='⏻', bg=BAR, fg=SUB, font=self.f_zeichen,
                                cursor='hand2')
         self.as_lbl.pack(side='right', padx=(0, 6))
         # Zwei Ansichten, ein Programm: die schmale Melde-Leiste bleibt, das
@@ -1240,7 +1241,7 @@ class Overlay:
         # Einstellungsmenü versteckt: Wer sich nicht auskennt, soll etwas
         # nachstellen können, ohne zu wissen, wo es steckt.
         self.assi_lbl = tk.Label(bar, text='⟳', bg=BAR, fg=SUB,
-                                 font=self.f_title, cursor='hand2')
+                                 font=self.f_zeichen, cursor='hand2')
         self.assi_lbl.pack(side='right', padx=(0, 6))
         self.assi_lbl.bind('<Button-1>', lambda e: self.einrichtung_erneut())
         hinweis.anhaengen(self.assi_lbl, lambda: sprache.t('hinweis_assistent'))
@@ -1250,7 +1251,7 @@ class Overlay:
         # weiß, was er ändern will). Bis hierher gab es nur den Assistenten —
         # gemeldet als „ich finde den Einstellungs-Button gar nicht".
         self.einst_lbl = tk.Label(bar, text='⚙', bg=BAR, fg=SUB,
-                                  font=self.f_title, cursor='hand2')
+                                  font=self.f_zeichen, cursor='hand2')
         self.einst_lbl.pack(side='right', padx=(0, 6))
         self.einst_lbl.bind('<Button-1>', lambda e: self.einstellungen_oeffnen())
         hinweis.anhaengen(self.einst_lbl, lambda: sprache.t('hinweis_einstellungen'))
@@ -1266,7 +1267,7 @@ class Overlay:
         # wurde (siehe `pfade.spielstarter()`).
         if pfade.spielstarter():
             self.start_lbl = tk.Label(bar, text='▶', bg=BAR, fg=ACCENT,
-                                      font=self.f_title, cursor='hand2')
+                                      font=self.f_zeichen, cursor='hand2')
             self.start_lbl.pack(side='right', padx=(0, 6))
             self.start_lbl.bind('<Button-1>', lambda e: self._spiel_starten())
             # ⚠ Erklärung wie bei allen anderen Zeichen über `hinweis`,
@@ -1371,7 +1372,17 @@ class Overlay:
     # button größe oben, ist auch deutlich angenehmer". Auf einem 4096 Pixel
     # breiten Bildschirm bei 100 % Skalierung ist das keine Geschmacksfrage.
     # Die beiden anderen bleiben, sie tragen Text und keine Zeichen.
+    # ⚠ `f_zeichen` ist **eigens fuer die Symbole** da und deutlich groesser als
+    # `f_title`, das den Titeltext traegt. Beides an einer Schrift zu haengen,
+    # ging nicht auf: Die gemalten Zeichen (Glocke, Klemmbrett) bemessen sich an
+    # der Zeilenhoehe und wirkten dadurch groesser als die Schriftzeichen
+    # daneben. der Autor am 26.08.2026: „kannst du die restlichen Symbole auf die
+    # Größe der Glocke bringen damit alle wieder gleich groß sind."
+    #
+    # Wer eine der Zahlen aendert, sieht sich die Leiste danach an — auf dem
+    # Bildschirm, nicht im Code.
     OVERLAY_GRUND = (('f_title', 'Segoe UI Semibold', 11),
+                     ('f_zeichen', 'Segoe UI Semibold', 15),
                      ('f_item', 'Consolas', 8),
                      ('f_sub', 'Segoe UI', 7))
 
@@ -1393,7 +1404,9 @@ class Overlay:
         die Stelle von `configure(fg=...)` einnimmt: Ein Canvas hat kein `fg`,
         seine Formen muessen neu gezeichnet werden.
         """
-        kante = self.f_title.metrics('linespace') + 4
+        # Dieselbe Grundlage wie die Schriftzeichen daneben, damit alles
+        # in der Leiste gleich gross wirkt.
+        kante = self.f_zeichen.metrics('linespace') + 2
         c = tk.Canvas(eltern, width=kante, height=kante, bg=BAR,
                       highlightthickness=0, bd=0, cursor='hand2')
         c.farbe = SUB

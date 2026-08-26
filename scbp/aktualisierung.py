@@ -644,6 +644,34 @@ def einspielen(neue_datei):
         for name in ('_MEIPASS', '_MEIPASS2', 'TCL_LIBRARY', 'TK_LIBRARY',
                      'TIX_LIBRARY', 'MATPLOTLIBDATA'):
             umgebung.pop(name, None)
+
+        # ⚠ **`__COMPAT_LAYER` muss weg** — daran hing die Meldung
+        #
+        #     Security validation failure: parent process has different
+        #     executable!
+        #
+        # die vier Anläufe gekostet hat. Der Weg dahin, weil er sich sonst nicht
+        # wiederfinden lässt:
+        #
+        # Windows führt einen Kompatibilitäts-Speicher über Programme, die ihm
+        # auffällig vorkommen. `SC-BP-Watcher.exe` steht dort — kein Wunder, der
+        # Watcher wird bei jedem Update über `CloseApplications=force` hart
+        # beendet. Windows setzt dem Prozess daraufhin `__COMPAT_LAYER` in die
+        # Umgebung, und **jeder Kindprozess erbt die Variable**. Das Setup lief
+        # damit unter einem Shim, Inno erkannte einen fremden Zwischenprozess und
+        # brach ab.
+        #
+        # Nachgestellt und belegt (26.08.2026) — derselbe Aufruf, dieselbe Datei,
+        # derselbe Pfad, nur die Variable unterschiedlich:
+        #
+        #     gesetzt   →  Compatibility mode: Yes (DetectorsAppHealth)  → Fehler
+        #     entfernt  →  keine solche Zeile                            → läuft
+        #
+        # Genau deshalb war der Fehler aus einer PowerShell oder aus Python heraus
+        # **nie** nachstellbar: Dort ist die Variable nicht gesetzt. Drei frühere
+        # Erklärungen klangen schlüssig und wurden alle durch Messläufe widerlegt.
+        # Gefunden hat es erst das Setup-Protokoll aus rc48.
+        umgebung.pop('__COMPAT_LAYER', None)
         # ⚠ **Das Setup schreibt ein Protokoll**, und zwar immer — nicht nur im
         # Fehlerfall. Der Grund steht in der Geschichte dieser Funktion: Am
         # 26.08.2026 meldete Inno beim Update
