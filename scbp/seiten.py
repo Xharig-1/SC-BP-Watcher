@@ -326,8 +326,16 @@ def _feld(fenster, eltern, bezeichnung, hilfe, breit=False):
         # abgeschnitten („Ve…" statt „Very large").
         rechts = tk.Frame(links, bg=BG)
         rechts.pack(fill='x', anchor='w', pady=(8, 0))
+        # ⚠ Auch hier braucht es einen Abzug. Ohne ihn bekommt der Text die
+        # **volle** Breite der Zeile — die Ränder der Rollfläche darum sind
+        # damit nicht eingerechnet, und die letzten Pixel fallen weg
+        # (gemessen: 5, tools/randpruefung.py).
+        #
+        # Die Beschriftung braucht denselben Umbruch: Auf Englisch sind die
+        # Wörter länger, und bisher hatte sie in diesem Zweig gar keinen.
         if erklaerung is not None:
-            _umbruch(erklaerung, bezug=zeile)
+            _umbruch(erklaerung, bezug=zeile, abzug=10)
+        _umbruch(beschriftung, bezug=zeile, abzug=10)
     else:
         rechts = tk.Frame(zeile, bg=BG)
         rechts.pack(side='right', padx=(16, 0))
@@ -335,9 +343,14 @@ def _feld(fenster, eltern, bezeichnung, hilfe, breit=False):
         # zu breit, in dem der Text überläuft — er würde den Fehler bestätigen
         # statt ihn zu beheben. Gemessen wird am gemeinsamen Elternrahmen
         # abzüglich des Bedienelements, das rechts steht.
+        # ⚠ `abzug` deckt mehr ab als nur `padx=(16, 0)`: `winfo_reqwidth()`
+        # liefert die **gewünschte** Breite des Bedienelements, nicht die
+        # tatsächliche. Bei Schiebeschaltern und Zahlenfeldern liegen ein paar
+        # Pixel dazwischen — gemessen fehlten 5 (tools/randpruefung.py). Mit
+        # Luft bricht der Text minimal früher um, statt abgeschnitten zu werden.
         if erklaerung is not None:
-            _umbruch(erklaerung, bezug=zeile, neben=rechts, abzug=16)
-        _umbruch(beschriftung, bezug=zeile, neben=rechts, abzug=16)
+            _umbruch(erklaerung, bezug=zeile, neben=rechts, abzug=26)
+        _umbruch(beschriftung, bezug=zeile, neben=rechts, abzug=26)
     tk.Frame(eltern, bg=LINIE, height=1).pack(fill='x', pady=(12, 0))
     return rechts
 
@@ -1742,7 +1755,12 @@ def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text='',
     beschreibung = tk.Label(innen, text=text, bg=FLAECHE, fg=SUB,
                             font=fenster.f_klein, anchor='w', justify='left')
     beschreibung.pack(fill='x', padx=14, pady=(0, 12))
-    _umbruch(beschreibung, abzug=28)
+    # ⚠ 28 gleicht nur `padx=14` links und rechts aus. Rahmen und Leinwand
+    # brauchen darüber hinaus ein paar Pixel, die niemand mitgerechnet hat —
+    # gemessen fehlten 5 (tools/randpruefung.py). Mit etwas Luft bricht der Text
+    # ein paar Pixel früher um, was niemand sieht, statt abgeschnitten zu
+    # werden, was jeder sieht.
+    _umbruch(beschreibung, abzug=36)
 
     for teil in (rand, leinwand, innen, kopf):
         teil.bind('<Button-1>', lambda e: tat())

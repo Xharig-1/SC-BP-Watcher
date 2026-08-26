@@ -47,7 +47,7 @@ def _beschriftung(w, tiefe=0):
             return str(text)[:38]
     except Exception:
         pass
-    if tiefe < 3:
+    if tiefe < 6:      # 3 reichte nicht: verschachtelte Rahmen blieben „Frame"
         woerter = []
         for kind in w.winfo_children():
             wort = _beschriftung(kind, tiefe + 1)

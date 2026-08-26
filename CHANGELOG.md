@@ -157,6 +157,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The error report left the game language empty.** It showed only a dash even
+  though detection worked perfectly — the query returned two values, the report
+  expected one, and the error was swallowed silently. It now states what is being
+  searched for in the log **and where the wording comes from**: the game's
+  `global.ini` or the built-in table. That is the first question whenever someone
+  says „it doesn't detect my blueprints".
+- **Truncated descriptions in three places.** On a narrow window a few pixels
+  were missing and the last characters fell off. Affected were the update
+  channels, „Write details into mission text" and „How often to look".
+
 - **The setup wizard did not remember the chosen text source.** It fetched and
   installed the texts but never stored the choice — afterwards none of the three
   sources was selected under „In-game details". Reported by Haldjas.

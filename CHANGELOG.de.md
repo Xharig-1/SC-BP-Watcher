@@ -165,6 +165,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Der Fehlerbericht ließ die Spielsprache leer.** Dort stand nur ein Strich,
+  obwohl die Erkennung einwandfrei lief — die Abfrage lieferte zwei Werte, der
+  Bericht erwartete einen, und der Fehler wurde stillschweigend verschluckt.
+  Jetzt steht dort, wonach im Log gesucht wird **und woher die Formulierung
+  stammt**: aus der `global.ini` des Spiels oder aus der eingebauten Tabelle.
+  Das ist die erste Frage bei „er erkennt meine Baupläne nicht".
+- **Abgeschnittene Beschreibungen an drei Stellen.** Bei schmalem Fenster fehlten
+  wenige Pixel, und die letzten Zeichen fielen weg. Betroffen waren die
+  Update-Kanäle, „Angaben in die Auftragstexte schreiben" und „Wie oft
+  nachgesehen wird".
+
 - **Der Assistent merkte sich die gewählte Textquelle nicht.** Er holte die
   Texte und setzte sie ein, schrieb die Wahl aber nirgends hin — unter „Angaben
   im Spiel" stand danach keine der drei Quellen angewählt. Gemeldet von Haldjas.

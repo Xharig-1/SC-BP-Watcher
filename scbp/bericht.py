@@ -48,14 +48,38 @@ from .sprache import t
 
 
 def _sicher(f, standard='—'):
-    """Eine Angabe holen und dabei nichts riskieren."""
+    """Eine Angabe holen und dabei nichts riskieren.
+
+    ⚠ Ein leerer Wert ist normal (kein Spiel installiert, keine Merkliste) —
+    eine **Ausnahme** ist es nicht. Die wurde hier bisher stillschweigend
+    verschluckt, und im Bericht stand nur ein Strich. So blieb der Fehler bei
+    der Spielsprache drei Übergaben lang unentdeckt: Er sah aus wie „nichts
+    gefunden", war aber ein TypeError.
+    """
     try:
         wert = f()
         if wert is None or wert == '':
             return standard
         return wert
-    except Exception:
+    except Exception as ausnahme:
+        try:
+            from . import fehler
+            fehler.merken('bericht.angabe', ausnahme)
+        except Exception:
+            pass              # das Melden darf den Bericht nie umwerfen
         return standard
+
+
+def _spielsprache():
+    """Wonach im Log gesucht wird — und woher die Formulierung stammt."""
+    from . import phrasen as phrasen_modul
+    gefunden, herkunft = phrasen_modul.sammeln()
+    if not gefunden:
+        return None
+    woher = {'ini': 'aus der global.ini des Spiels',
+             'eigen': 'aus eigener Angabe',
+             'tabelle': 'aus der eingebauten Tabelle'}.get(herkunft, herkunft)
+    return '%s (%s)' % (', '.join(gefunden), woher)
 
 
 def _json_groesse(pfad_, schluessel):
@@ -148,8 +172,17 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
         lambda: t('b_protokolle') % uebersicht.get('sicherungen')))
     zeile(t('b_launcher'), _sicher(lambda: uebersicht.get('launcher')
                                     or t('b_nicht_da')))
-    zeile(t('b_spielsprache'), _sicher(lambda: ', '.join(
-        __import__('scbp.phrasen', fromlist=['sammeln']).sammeln()) or '—'))
+    # ⚠ `sammeln()` gibt ein **Tupel** zurück — (phrasen, herkunft). Hier stand
+    # `', '.join(sammeln())`, was eine Liste mit einem String zusammenfügen
+    # wollte und mit einem TypeError abbrach. `_sicher()` verschluckte den, und
+    # im Bericht stand nur ein Strich. Drei Übergaben lang galt das als
+    # ungeklärter Punkt; in Wahrheit war es diese eine fehlende `[0]`.
+    #
+    # Die Herkunft wird gleich mit ausgegeben: Sie sagt, ob die Formulierung aus
+    # der echten `global.ini` des Spielers stammt oder nur aus unserer Tabelle
+    # geraten ist — genau die Auskunft, die man bei „er erkennt meine Baupläne
+    # nicht" als Erstes braucht.
+    zeile(t('b_spielsprache'), _sicher(_spielsprache))
     zeilen.append('')
 
     zeile(t('b_bestand'), _sicher(lambda: t('b_n_bauplaene') % _json_groesse(

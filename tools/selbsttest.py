@@ -476,6 +476,21 @@ def main():
 
         text = bericht.bauen(version='0.0.0-test')
         pruefe(bool(text) and 'SC BP Watcher' in text, 'der Bericht wird gebaut')
+
+        # ⚠ Die Zeile „Spielsprache" stand drei Übergaben lang auf „—", weil
+        # `phrasen.sammeln()` ein Tupel liefert und der Bericht es wie eine
+        # Liste behandelte. Der TypeError wurde von `_sicher()` verschluckt.
+        # Geprüft wird deshalb der Wert selbst, nicht nur dass der Bericht baut.
+        pruefe(bericht._spielsprache() and 'Bauplan erhalten'
+               in bericht._spielsprache(),
+               'die Spielsprache-Zeile nennt die gesuchten Formulierungen')
+        for zeile_ in text.split('\n'):
+            if zeile_.startswith('Spielsprache') or zeile_.startswith('Game language'):
+                pruefe(zeile_.strip().rstrip() not in
+                       ('Spielsprache —', 'Game language —')
+                       and '—' != zeile_.split()[-1],
+                       'im Bericht steht bei der Spielsprache kein Strich')
+                break
         pruefe(len(name) < 3 or name.lower() not in text.lower(),
                'kein Benutzername im Bericht')
         pruefe('Letzte Fehler' in text, 'die letzten Fehler stehen im Bericht')
