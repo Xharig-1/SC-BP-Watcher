@@ -28,9 +28,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   liegen außerhalb der Grundebene; Windows malte sie über die Farb-Emoji-Schrift
   als bunte Klötzchen, die die eingestellte Farbe **ignorierten** — ausgerechnet
   an der Stelle, die man am häufigsten sieht.
-- **Symbole in doppelter Auflösung.** Auf Bildschirmen mit hoher Punktdichte
-  (Retina, oder Windows mit 125 %/150 % Skalierung) blieb ein kleines Bild
-  vorher weich. Die scharfe Fassung liegt jetzt daneben.
 - **Star Citizen starten heißt jetzt Rakete statt Abspielpfeil.** Ein `▶` heißt
   überall „Video ab", nicht „Programm starten". Gemeldet von der Autor.
 - **Meldungen wegräumen heißt jetzt Radiergummi statt Mülleimer.** Der Knopf

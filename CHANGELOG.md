@@ -26,9 +26,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   live outside the basic plane; Windows rendered them through the colour emoji
   font as coloured blocks that **ignored** the configured colour — in the very
   place you look at most often.
-- **Symbols at double resolution.** On high-density displays (Retina, or Windows
-  at 125 %/150 % scaling) a small image stayed soft. The sharp version now sits
-  alongside it.
 - **Launching Star Citizen now shows a rocket instead of a play arrow.** A `▶`
   means "play video" everywhere, not "start a program". Reported by der Autor.
 - **Clearing messages now shows an eraser instead of a bin.** The button deletes

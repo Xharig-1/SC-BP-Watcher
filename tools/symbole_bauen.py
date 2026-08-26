@@ -90,16 +90,17 @@ STRICH = 2.0
 KNOPF = {'klein': 18, 'normal': 22, 'gross': 26, 'sehrgross': 30}
 ZEILE = {'klein': 12, 'normal': 14, 'gross': 16, 'sehrgross': 18}
 
-# ⚠ Jede Größe zusätzlich in **doppelter** Auflösung. Grund: Tk bläst ein zu
-# kleines Bild stumpf auf, wenn der Bildschirm mehr Punkte je Zoll hat — das
-# trifft Retina-Macs ebenso wie Windows mit 125 % oder 150 % Skalierung, also
-# auch die des Autors: eigenen Rechner. Liegt die scharfe Fassung daneben, kann das
-# Programm sie nehmen, statt eine kleine hochzurechnen.
+# ⚠ **Kein 2×-Satz für hochauflösende Bildschirme.** Der Gedanke lag nahe —
+# Retina-Macs und Windows mit 125 % Skalierung blasen ein kleines Bild auf, eine
+# scharfe Fassung daneben müsste helfen. Am 27.08.2026 nachgemessen: **Tk kann
+# das nicht.** Es zeichnet einen Bildpunkt als einen Punkt, ohne umzurechnen —
+# ein 44-px-Symbol erscheint schlicht doppelt so groß, nicht doppelt so scharf.
+# Verkleinern ginge nur mit `PhotoImage.subsample()`, und das wirft jeden zweiten
+# Pixel weg, statt zu glätten: Das Ergebnis wäre schlechter als das direkt in der
+# Zielgröße gemalte Bild.
 #
-# Kostet fast nichts: Ein Symbol ist gut ein halbes Kilobyte. der Autor am
-# 27.08.2026: „1,7 mb finde ich ehrlichweiße nicht viel, wenn dafür die
-# qualität stimmt."
-DOPPELT = True
+# Wer mehr Schärfe will, muss also die Symbole **größer** machen (die Zahlen
+# oben), nicht feiner auflösen.
 
 # Die Farben stammen aus `scbp/hauptfenster.py`. Bleibt eine Farbe dort nicht
 # gleich, muss sie hier mitgezogen und das Skript neu gestartet werden.
@@ -478,8 +479,6 @@ def main():
         # Zahl haben — und die Farben aus derselben Maske schöpfen. Das spart
         # den teuersten Teil (das Malen in achtfacher Größe).
         noetig = set(satz.values())
-        if DOPPELT:
-            noetig |= set(g * 2 for g in satz.values())
         for px in sorted(noetig):
             maske = maske_malen(striche, px)
             ordner = os.path.join(ZIEL, str(px))
