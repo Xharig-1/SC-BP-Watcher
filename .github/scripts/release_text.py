@@ -20,19 +20,75 @@ import sys
 DATEIEN = {'en': 'CHANGELOG.md', 'de': 'CHANGELOG.de.md'}
 
 
+def grundversion(tag):
+    """Aus `v3.0.0-rc5` wird `3.0.0` — die Fassung, auf die es hinausläuft."""
+    return tag.lstrip('v').split('-', 1)[0]
+
+
+def ist_vorab(tag):
+    return any(w in tag for w in ('-rc', '-beta', '-alpha'))
+
+
 def abschnitt(pfad, tag):
-    """Der Block zur getaggten Version aus einer CHANGELOG-Datei."""
+    """Der Block zur getaggten Version aus einer CHANGELOG-Datei.
+
+    ⚠ Für eine **Vorabfassung** gibt es keinen eigenen Abschnitt: Im Changelog
+    steht `## v3.0.0`, getaggt wird aber `v3.0.0-rc5`. Vorher fand das Skript
+    dann gar nichts und schrieb den Rückfallsatz „siehe Changelog" ins Release —
+    wer testen soll, erfuhr also nicht, was zu testen ist. Deshalb wird bei einer
+    Vorabfassung der Abschnitt der Grundversion genommen.
+    """
     try:
         with open(pfad, encoding='utf-8') as f:
             text = f.read()
     except OSError:
         return ''
-    zahl = tag.lstrip('v')
-    for block in re.split(r'^## ', text, flags=re.M)[1:]:
-        kopf, _, rest = block.partition('\n')
-        if zahl in kopf:
-            return rest.strip()
+    kandidaten = [tag.lstrip('v')]
+    if ist_vorab(tag):
+        kandidaten.append(grundversion(tag))
+    for zahl in kandidaten:
+        for block in re.split(r'^## ', text, flags=re.M)[1:]:
+            kopf, _, rest = block.partition('\n')
+            # Auf Wortgrenze prüfen: „3.0.0" darf nicht in „3.0.0-rc1" fassen
+            # und umgekehrt.
+            if re.search(r'(?<![\w.-])v?%s(?![\w.-])' % re.escape(zahl), kopf):
+                return rest.strip()
     return ''
+
+
+def vorab_kopf(tag):
+    """Der Hinweis über einer Testfassung — was sie ist und was Tester brauchen."""
+    if not ist_vorab(tag):
+        return ''
+    grund = grundversion(tag)
+    vergleich = ('https://github.com/Xharig-1/SC-BP-Watcher/compare/'
+                 'v%s...%s' % (VORIGER[0], tag)) if VORIGER[0] else ''
+    zeilen = [
+        '> ### 🧪 Test build for v%s' % grund,
+        '>',
+        '> This is a **pre-release**. It is not offered as an update to anyone; '
+        'it is here to be tried out. The list below is everything v%s brings so '
+        'far — the parts already in this build.' % grund,
+    ]
+    if vergleich:
+        zeilen += ['>', '> **Changed since the previous test build:** %s' % vergleich]
+    zeilen += [
+        '>',
+        '> <details><summary><b>Deutsch</b></summary>',
+        '>',
+        '> Das ist eine **Testfassung** für v%s. Sie wird niemandem als Update '
+        'angeboten — sie ist zum Ausprobieren da. Darunter steht alles, was v%s '
+        'bisher bringt.' % (grund, grund),
+    ]
+    if vergleich:
+        zeilen += ['>', '> **Was sich seit der vorigen Testfassung geändert hat:** %s'
+                   % vergleich]
+    zeilen += ['>', '> </details>', '']
+    return '\n'.join(zeilen) + '\n'
+
+
+# Die vorige Vorabfassung — für den Vergleichslink. Wird in `main()` gesetzt.
+VORIGER = ['']
 
 
 def zusammensetzen(englisch, deutsch):
@@ -68,6 +124,10 @@ neither, and every new version starts from zero. The source is open, the file is
 **GitHub Actions** from exactly that source, and every asset above carries its SHA-256
 checksum. On Linux this message does not exist.
 
+This project has applied to the [SignPath Foundation](https://signpath.org/) for free code
+signing for open source projects. Once approved, the Windows binaries below will be signed
+by SignPath.
+
 <details>
 <summary><b>Deutsch</b></summary>
 
@@ -81,17 +141,44 @@ Der Quellcode ist offen, die Datei wird **nicht von mir** gebaut, sondern von Gi
 Actions aus genau diesem Quellcode, und jede Datei oben trägt ihre SHA-256-Prüfsumme.
 Unter Linux gibt es diese Meldung nicht.
 
+Für dieses Projekt ist eine kostenlose Code-Signatur bei der
+[SignPath Foundation](https://signpath.org/) beantragt. Sobald sie bewilligt ist, werden
+die Windows-Dateien oben von SignPath unterschrieben.
+
 </details>"""
+
+
+def voriger_tag(tag):
+    """Der Tag davor — für „was hat sich seit der letzten Testfassung getan".
+
+    Aus Git, nicht geraten. Fehlt die Historie (flacher Klon), bleibt der Link
+    einfach weg; er ist eine Zugabe, kein Muss.
+    """
+    import subprocess
+    try:
+        alle = subprocess.run(['git', 'tag', '--sort=-creatordate'],
+                              capture_output=True, text=True,
+                              timeout=30).stdout.split()
+    except Exception:
+        return ''
+    grund = grundversion(tag)
+    for kandidat in alle:
+        if kandidat == tag:
+            continue
+        if grundversion(kandidat) == grund and ist_vorab(kandidat):
+            return kandidat.lstrip('v')
+    return ''
 
 
 def main():
     tag = sys.argv[1] if len(sys.argv) > 1 else os.environ.get('GITHUB_REF_NAME', '')
+    VORIGER[0] = voriger_tag(tag)
     text = zusammensetzen(abschnitt(DATEIEN['en'], tag),
                           abschnitt(DATEIEN['de'], tag))
     if not text:
         text = ('See the [changelog](../blob/main/CHANGELOG.md) for what this '
                 'release brought.')
-    print(text + HINWEIS)
+    print(vorab_kopf(tag) + text + HINWEIS)
 
 
 if __name__ == '__main__':
