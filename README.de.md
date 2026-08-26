@@ -170,6 +170,18 @@ Sonst nichts. Kein Python, kein Konto — und ob du installieren willst, entsche
 
 Beim ersten Start führt dich ein **Assistent** durch die Einrichtung: Sprache, Star Citizen finden, bisherige Baupläne holen. Das dauert eine Minute, danach steht dein Bestand.
 
+### Signatur der Dateien
+
+Für dieses Projekt ist eine kostenlose Code-Signatur bei der
+[SignPath Foundation](https://signpath.org/) beantragt — einem Angebot für
+quelloffene Projekte. Sobald sie bewilligt ist, werden die Windows-Dateien
+von SignPath unterschrieben, und Windows zeigt statt „unbekannter
+Herausgeber" einen Namen an.
+
+Gebaut wird ausschließlich über einen öffentlichen GitHub-Actions-Ablauf —
+[SECURITY.md](SECURITY.md) beschreibt, wie eine Fassung entsteht und was das
+Programm sendet (und was nicht).
+
 ### ⚠️ Windows meldet „Der Computer wurde durch Windows geschützt"
 
 Das kommt beim ersten Start, und es ist **kein Virenfund**:
