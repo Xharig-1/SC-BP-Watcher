@@ -396,6 +396,15 @@ TEXTE = {
     's_ov_durch_sagen': ('Klicks durchreichen: %s', 'Clicks passed through: %s'),
     's_ov_durch_nein': ('Auf diesem System nicht möglich: Unter Wayland kann ein gewöhnliches Fenster keine Klicks weiterreichen.',
                           'Not possible on this system: under Wayland an ordinary window cannot pass clicks on.'),
+    # --- Texte der Melde-Leiste (Overlay) ------------------------------------
+    # Diese vier standen bis 26.08.2026 fest auf Deutsch im Code. Ergebnis: Wer
+    # auf Englisch umstellte, bekam ein englisches Hauptfenster und ein
+    # deutsches Overlay. Gemeldet von der Autor.
+    'ov_starte':       ('Starte \u2026', 'Starting \u2026'),
+    'ov_warte':        ('Warte auf neue Baupl\u00e4ne \u2026',
+                        'Waiting for new blueprints \u2026'),
+    'ov_as_fehler':    ('Autostart lie\u00df sich nicht \u00e4ndern.',
+                        'Could not change the autostart setting.'),
     'ov_durchklick_geht_nicht': ('Klicks durchreichen hat auf diesem System nicht geklappt.',
                           'Passing clicks through did not work on this system.'),
     's_zeilen':        ('Zeilen im Overlay',
@@ -1073,15 +1082,44 @@ def aktuelle():
     return _aktuell[0]
 
 
+_zuhoerer = []
+
+
+def anmelden(rueckruf):
+    """Beim Sprachwechsel benachrichtigt werden.
+
+    ⚠ Ein Fenster, das seine Texte **einmal** beim Bauen setzt, bleibt auf der
+    alten Sprache stehen — es merkt vom Umschalten nichts. Das Einstellungs-
+    fenster beschriftet sich selbst neu, das Overlay konnte das nicht: Wer auf
+    Englisch stellte, hatte danach ein englisches Hauptfenster und eine
+    deutsche Melde-Leiste. Wer hier anmeldet, wird mitgezogen.
+
+    Dasselbe Muster wie `autostart.anzeige_anmelden()`."""
+    if rueckruf not in _zuhoerer:
+        _zuhoerer.append(rueckruf)
+
+
 def setzen(sprache):
     """Sprache für diesen Lauf umstellen (ohne die Einstellung zu ändern).
 
     Das Speichern macht das Einstellungsfenster; hier geht es nur darum, dass
     ein Umschalten sofort sichtbar wird, ohne das Programm neu zu starten."""
+    vorher = _aktuell[0]
     if sprache in SPRACHEN:
         _aktuell[0] = sprache
     elif sprache == 'auto':
         _aktuell[0] = systemsprache()
+    if _aktuell[0] == vorher:
+        return
+    for rueckruf in list(_zuhoerer):
+        try:
+            rueckruf()
+        except Exception as ausnahme:
+            # Ein Fenster, das sich nicht neu beschriften lässt, darf die
+            # anderen nicht mitreißen — und stumm verschwinden soll es auch
+            # nicht.
+            from . import fehler                # lokal: sonst Zirkelbezug
+            fehler.merken('sprache.setzen', ausnahme)
 
 
 def t(schluessel, *werte):

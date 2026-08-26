@@ -597,8 +597,9 @@ def save_geometry(geom):
 # ------------------------------------------------ Mit dem Rechner starten
 # Steckt seit v1.6 in `scbp/autostart.py`: unter Windows ein Registry-Wert,
 # unter Linux eine `.desktop`-Datei in ~/.config/autostart/.
-AUTOSTART_TEXT = ('Mit Windows starten' if pfade.WINDOWS
-                  else 'Beim Anmelden starten')
+# ⚠ Keine Konstante mehr: Ein Text, der beim Programmstart **einmal**
+# festgelegt wird, kann nicht mehr auf einen Sprachwechsel reagieren. Der
+# Titel wird bei jedem Gebrauch frisch geholt (`_autostart_titel`).
 
 
 # ------------------------------------------------------------------ Signalton
@@ -1261,14 +1262,12 @@ class Overlay:
                                       font=self.f_title, cursor='hand2')
             self.start_lbl.pack(side='right', padx=(0, 6))
             self.start_lbl.bind('<Button-1>', lambda e: self._spiel_starten())
-            # Ein „▶" allein sagt niemandem, was passiert. Die Statuszeile
-            # darunter gibt es ohnehin — beim Überfahren steht dort im Klartext,
-            # was der Klick tut. Kein zusätzliches Sprechblasen-Werk nötig.
-            self.start_lbl.bind(
-                '<Enter>',
-                lambda e: self.status.config(text=sprache.t('s_sp_start')))
-            self.start_lbl.bind(
-                '<Leave>', lambda e: self.status.config(text=self._status_text))
+            # ⚠ Erklärung wie bei allen anderen Zeichen über `hinweis`,
+            # **nicht** über die Statuszeile: Die zeigt echte Meldungen, und
+            # der frühere Weg stellte danach `_status_text` wieder her — einen
+            # Merker, der nie fortgeschrieben wird. Ein Bauplanfund war nach
+            # einem Mausschlenker damit überschrieben.
+            hinweis.anhaengen(self.start_lbl, lambda: sprache.t('s_sp_start'))
 
         self.info_lbl = tk.Label(bar, text='ⓘ', bg=BAR, fg=SUB,
                                  font=self.f_title, cursor='hand2')
@@ -1289,14 +1288,18 @@ class Overlay:
         self._show_autostart()
         # Mitschalten, wenn der Autostart in den Einstellungen umgestellt wird.
         autostart.anzeige_anmelden(self._show_autostart)
+        # Dasselbe für die Sprache: Wer in den Einstellungen auf Englisch
+        # stellt, soll die Melde-Leiste **sofort** englisch sehen — nicht erst
+        # nach einem Neustart, und nicht halb.
+        sprache.anmelden(self._neu_beschriften)
         for w in (bar, bar.winfo_children()[0]):
             w.bind('<Button-1>', self._drag_start)
             w.bind('<B1-Motion>', self._drag_move)
             w.bind('<ButtonRelease-1>', self._save_geo)   # Position nach dem Ziehen merken
 
         # --- Statuszeile ---
-        self._status_text = 'Starte …'
-        self.status = tk.Label(self.root, text='Starte …', bg=BG, fg=SUB,
+        self._status_text = sprache.t('ov_starte')
+        self.status = tk.Label(self.root, text=self._status_text, bg=BG, fg=SUB,
                                font=self.f_sub, anchor='w')
         self.status.pack(fill='x', padx=8, pady=(4, 2))
 
@@ -1457,6 +1460,35 @@ class Overlay:
         grün = str(self.info_lbl.cget('fg')).lower() == ACCENT.lower()
         return sprache.t('hinweis_neue_version' if grün else 'hinweis_versionen')
 
+    def _autostart_titel(self):
+        """Wie der Schalter heißt — je nach System und **aktueller** Sprache."""
+        return sprache.t('autostart_win' if pfade.WINDOWS
+                         else 'autostart_linux')
+
+    def _neu_beschriften(self):
+        """Alle festen Texte der Melde-Leiste erneuern.
+
+        ⚠ Wird beim Sprachwechsel gerufen (angemeldet über
+        `sprache.anmelden`). Bis zum 26.08.2026 gab es das nicht: Das
+        Einstellungsfenster stellte sich um, das Overlay blieb deutsch stehen.
+        Wer die Sprache wechselt, sieht sonst zwei Sprachen nebeneinander —
+        und hält es zu Recht für kaputt.
+
+        Die Erklärblasen stehen hier nicht: Die holen ihren Text bei jedem
+        Überfahren neu (`lambda: sprache.t(...)`) und sind damit von allein
+        aktuell."""
+        try:
+            if getattr(self, '_ph', None) and self._ph.winfo_exists():
+                self._ph.config(text=sprache.t('ov_warte'))
+            # Die Statuszeile nur dann, wenn dort noch der Starttext steht —
+            # eine echte Meldung („3 Baupläne gefunden") wird nicht
+            # weggewischt, nur weil jemand die Sprache umstellt.
+            if self.status.cget('text') == self._status_text:
+                self._status_text = sprache.t('ov_starte')
+                self.status.config(text=self._status_text)
+        except Exception as ausnahme:
+            fehler.merken('overlay._neu_beschriften', ausnahme)
+
     def _show_autostart(self):
         an = autostart.ist_an()
         self.as_lbl.config(fg=ACCENT if an else SUB)
@@ -1468,10 +1500,11 @@ class Overlay:
         neu = not autostart.ist_an()
         if autostart.setzen(neu):
             self._show_autostart()
-            self.status.config(text='%s: %s' % (AUTOSTART_TEXT,
-                                                'an' if neu else 'aus'))
+            self.status.config(text='%s: %s' % (self._autostart_titel(),
+                                                sprache.t('e_an') if neu
+                                                else sprache.t('e_aus')))
         else:
-            self.status.config(text='Autostart ließ sich nicht ändern.')
+            self.status.config(text=sprache.t('ov_as_fehler'))
 
     def _drag_start(self, e): self._dx, self._dy = e.x, e.y
     def _drag_move(self, e):
@@ -1493,7 +1526,7 @@ class Overlay:
             lb.config(wraplength=max(160, w - 40))
 
     def _placeholder(self):
-        self._ph = tk.Label(self.list, text='Warte auf neue Baupläne …',
+        self._ph = tk.Label(self.list, text=sprache.t('ov_warte'),
                             bg=BG, fg=SUB, font=self.f_sub)
         self._ph.pack(anchor='w', padx=4, pady=6)
 
