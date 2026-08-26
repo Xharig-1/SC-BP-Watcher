@@ -644,31 +644,49 @@ def einspielen(neue_datei):
         for name in ('_MEIPASS', '_MEIPASS2', 'TCL_LIBRARY', 'TK_LIBRARY',
                      'TIX_LIBRARY', 'MATPLOTLIBDATA'):
             umgebung.pop(name, None)
-        # ⚠ **Nicht direkt starten.** Der Installer braucht einen Elternprozess,
-        # der ihn ueberlebt — und wir sind es nicht: Gleich nach diesem Aufruf
-        # tritt der Watcher ab, damit der Restart Manager nicht 30 Sekunden auf
-        # ihn wartet.
-        #
-        # Inno startet sich intern zweistufig (im Protokoll als `/SL5=...`
-        # sichtbar) und prueft dabei seinen Elternprozess. Ist der inzwischen
-        # weg und seine Prozessnummer neu vergeben, bricht es ab mit
+        # ⚠ **Das Setup schreibt ein Protokoll**, und zwar immer — nicht nur im
+        # Fehlerfall. Der Grund steht in der Geschichte dieser Funktion: Am
+        # 26.08.2026 meldete Inno beim Update
         #
         #     Security validation failure: parent process has different
         #     executable!
         #
-        # Genau das ist am 26.08.2026 zweimal passiert. Nicht nachstellbar war
-        # es aus einer PowerShell heraus — dort ist der Elternprozess zwar
-        # ebenfalls ein fremdes Programm, bleibt aber **am Leben**. Nicht die
-        # Fremdheit stoert, sondern der Tod.
+        # und **drei** Erklärungsversuche lagen daneben (vererbtes
+        # Arbeitsverzeichnis, `/RESTARTAPPLICATIONS`, sterbender
+        # Elternprozess). Jeder klang schlüssig, jeder wurde durch einen
+        # Messlauf widerlegt. Nachstellen ließ sich der Fehler nie: aus einer
+        # PowerShell oder aus Python heraus lief derselbe Aufruf sauber durch,
+        # mit lebendem wie mit sterbendem Elternprozess.
         #
-        # `cmd /c setup.exe` wartet auf das Setup und lebt damit genau so lange
-        # wie es. Dass der Watcher darunter wegstirbt, macht nichts: Windows
-        # nimmt einem verwaisten Prozess nichts weg.
+        # Ohne Protokoll bleibt in so einem Fall nur Raten — und Raten hat hier
+        # drei Fassungen gekostet. Mit Protokoll beantwortet der nächste
+        # Fehlerfall die Frage selbst, auch wenn er bei einem Nutzer auftritt,
+        # dessen Rechner niemand ansehen kann.
         #
-        # Die doppelten Anfuehrungszeichen sind cmd-Eigenart: `cmd /c "..."`
-        # streicht das aeussere Paar, deshalb braucht ein Pfad mit Leerzeichen
-        # ein eigenes. Ohne das scheitert jeder Benutzername mit Leerzeichen.
-        befehl = 'cmd /c ""%s" /SILENT /NORESTART /CLOSEAPPLICATIONS"' % neue_datei
+        # Es landet neben dem Fehlerbericht, wird also vom Diagnose-Bericht
+        # miterfasst. Eine Datei pro Lauf, die alte wird überschrieben — es geht
+        # um den letzten Versuch, nicht um ein Tagebuch.
+        protokoll_datei = ''
+        try:
+            from . import pfade
+            protokoll_datei = pfade.app_datei('update-setup.txt')
+        except Exception:
+            pass                     # ohne Protokoll ist der Weg derselbe
+
+        # ⚠ Der Umweg über `cmd` hält einen Elternprozess am Leben, solange das
+        # Setup läuft. Nachgemessen ist er **nicht** nötig — auch ein sofort
+        # abtretender Vater stört Inno nicht. Er bleibt trotzdem, weil er nichts
+        # kostet und der Fehler oben noch ungeklärt ist; fällt er weg, wäre es
+        # eine Änderung an einer Stelle, die gerade untersucht wird.
+        #
+        # Die doppelten Anführungszeichen sind cmd-Eigenart: `cmd /c "..."`
+        # streicht das äußere Paar, deshalb braucht ein Pfad mit Leerzeichen ein
+        # eigenes. Ohne das scheitert jeder Benutzername mit Leerzeichen —
+        # geprüft mit `C:\Users\Max Mustermann\...`.
+        schalter = '/SILENT /NORESTART /CLOSEAPPLICATIONS'
+        if protokoll_datei:
+            schalter += ' /LOG="%s"' % protokoll_datei
+        befehl = 'cmd /c ""%s" %s"' % (neue_datei, schalter)
         subprocess.Popen(befehl, env=umgebung, cwd=tempfile.gettempdir(),
                          creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
         return True, ''
