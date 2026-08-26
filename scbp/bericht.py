@@ -76,9 +76,9 @@ def _spielsprache():
     gefunden, herkunft = phrasen_modul.sammeln()
     if not gefunden:
         return None
-    woher = {'ini': 'aus der global.ini des Spiels',
-             'eigen': 'aus eigener Angabe',
-             'tabelle': 'aus der eingebauten Tabelle'}.get(herkunft, herkunft)
+    woher = {'ini': t('b_woher_ini'),
+             'eigen': t('b_woher_eigen'),
+             'tabelle': t('b_woher_tabelle')}.get(herkunft, herkunft)
     return '%s (%s)' % (', '.join(gefunden), woher)
 
 

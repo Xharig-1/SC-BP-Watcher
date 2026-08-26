@@ -627,7 +627,11 @@ def spiel_starten():
     """Star Citizen starten. Gibt (True, '') oder (False, Grund) zurück."""
     starter = spielstarter()
     if not starter:
-        return False, 'kein Starter gefunden'
+        # ⚠ Dieser Grund landet über `s_sp_start_nein` sichtbar in der
+        # Statuszeile — also übersetzen. `sprache` lokal holen: `pfade` wird
+        # sehr früh geladen, ein Import oben wäre ein Zirkelbezug.
+        from . import sprache
+        return False, sprache.t('s_sp_kein_starter')
     try:
         import subprocess
         # Losgelöst starten: Der Watcher soll weiterlaufen und nicht am Spiel

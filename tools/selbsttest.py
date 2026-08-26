@@ -976,6 +976,13 @@ def main():
                     for _teil in _ast.walk(_k):
                         if isinstance(_teil, _ast.Constant):
                             weg.add(id(_teil))
+                # Der `if __name__ == '__main__'`-Block ist der Aufruf von der
+                # Kommandozeile — den sieht kein Spieler, nur der Entwickler.
+                if (isinstance(_k, _ast.If) and isinstance(_k.test, _ast.Compare)
+                        and getattr(_k.test.left, 'id', '') == '__name__'):
+                    for _teil in _ast.walk(_k):
+                        if isinstance(_teil, _ast.Constant):
+                            weg.add(id(_teil))
             gefunden = []
             for k in _ast.walk(baum):
                 if not isinstance(k, _ast.Constant) or not isinstance(k.value, str):
@@ -1005,18 +1012,52 @@ def main():
         pruefe(not _treffer,
                'kein fest eingebauter Anzeigetext (%d gefunden)' % len(_treffer))
 
-        _oberflaeche = ['sc_bp_watcher.py', 'scbp/seiten.py',
-                        'scbp/hauptfenster.py', 'scbp/bestandsfenster.py',
-                        'scbp/assistent.py', 'scbp/einstellungsfenster.py',
-                        'scbp/versionsfenster.py']
+        # ⚠ ALLE Module, nicht nur die mit „Fenster" im Namen.
+        #
+        # Die erste Fassung prüfte eine Handauswahl von Oberflächen-Dateien —
+        # und ließ `logquelle.py` aus, weil das nach Hintergrund klingt. Genau
+        # von dort kam aber „Zwischen … hat Star Citizen Logs weggeräumt", und
+        # der Satz stand fest auf Deutsch im Overlay. Auch `pfade.py` gab „kein
+        # Starter gefunden" in die Statuszeile.
+        #
+        # Wer entscheidet, was „sichtbar" ist, irrt sich. Deshalb: alles
+        # prüfen, Ausnahmen einzeln benennen und begründen.
+        _AUSNAHMEN = {
+            # Suchwörter und Datenzuordnung — werden nie angezeigt
+            ('scbp/aktualisierung.py', 'geändert'),
+            ('scbp/aktualisierung.py', 'hinzugefügt'),
+            ('scbp/katalog.py', 'CDS-Rüstung'),
+            ('scbp/katalog.py', 'geschütz'),
+            # Datenfeld der Übersetzungsquellen, nirgends angezeigt (geprüft)
+            ('scbp/uebersetzung.py', 'Deutsche Übersetzung (rjcncpt)'),
+            ('scbp/uebersetzung.py', 'StarStrings (aufgeräumte englische Texte)'),
+        }
+        # Ganze Dateien, deren deutsche Texte begründet fest sind
+        _AUSNAHME_DATEIEN = {
+            # Was ins SPIEL geschrieben wird, folgt der Spielsprache — nicht
+            # der Sprache des Werkzeugs. Wer das deutsche Sprachpaket fährt,
+            # will deutsche Auftragstexte, auch wenn das Fenster englisch ist.
+            'scbp/injektion.py',
+            # `.desktop`-Dateien: Das Betriebssystem zeigt sie, nicht wir.
+            'scbp/autostart.py', 'scbp/verknuepfung.py',
+            # Kommentare in der einstellungen.json und eine Entwickler-Hilfe
+            # zum fehlenden Entpacker — beides kein Oberflächentext.
+            'scbp/pfade.py', 'scbp/spieltexte.py', 'scbp/phrasen.py',
+        }
+        _oberflaeche = ['sc_bp_watcher.py'] + [
+            'scbp/' + _n for _n in sorted(os.listdir(os.path.join(_wurzelpfad, 'scbp')))
+            if _n.endswith('.py') and _n not in ('sprache.py', 'fehler.py')
+            and ('scbp/' + _n) not in _AUSNAHME_DATEIEN]
         _saetze = []
         for _rel in _oberflaeche:
             _voll = os.path.join(_wurzelpfad, _rel)
             if not os.path.exists(_voll):
                 continue
             for _nr, _satz in _deutsche_saetze(_voll):
+                if (_rel, _satz) in _AUSNAHMEN:
+                    continue
                 _saetze.append('%s:%d  %r' % (_rel, _nr, _satz[:44]))
-        for _s in _saetze[:8]:
+        for _s in _saetze[:14]:
             print('       ' + _s)
         pruefe(not _saetze,
                'kein deutscher Satz fest in der Oberfläche (%d gefunden)'

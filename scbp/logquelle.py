@@ -249,10 +249,13 @@ def _luecke_pruefen(vorher, alle):
                                 time.localtime(aeltester))}
     if aeltester > vorher + 60:
         return {'luecke': True,
-                'grund': 'Zwischen %s und %s hat Star Citizen Logs weggeräumt — '
-                         'Baupläne aus dieser Zeit fehlen möglicherweise.'
-                         % (time.strftime('%d.%m.%Y', time.localtime(vorher)),
-                            time.strftime('%d.%m.%Y', time.localtime(aeltester)))}
+                # ⚠ Auch das Datumsformat übersetzen: Im Englischen steht
+                # das Jahr vorn (`m_erster_datum`), sonst liest sich eine
+                # englische Meldung mit deutschem Datum falsch.
+                'grund': t('m_luecke_logs')
+                % (time.strftime(t('m_erster_datum'), time.localtime(vorher)),
+                   time.strftime(t('m_erster_datum'),
+                                 time.localtime(aeltester)))}
     return {'luecke': False, 'grund': ''}
 
 

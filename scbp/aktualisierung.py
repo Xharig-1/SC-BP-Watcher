@@ -477,7 +477,10 @@ def herunterladen(datei, fortschritt=None):
     Leitung ab, ist die alte Fassung noch vollständig da."""
     url = datei.get('url')
     if not _url_ok(url):
-        raise ValueError('Datei kommt nicht von GitHub')
+        # ⚠ Der Text dieser Ausnahme landet über `str(fehler)` sichtbar
+        # beim Nutzer (siehe `return False, str(fehler)` weiter unten).
+        from . import sprache
+        raise ValueError(sprache.t('up_fremde_quelle'))
     ziel = _ablageort_fuer_update(datei.get('name'))
     req = urllib.request.Request(url, headers={'User-Agent': KENNUNG})
     with urllib.request.urlopen(req, timeout=120) as r, open(ziel, 'wb') as f:
@@ -537,8 +540,8 @@ def einspielen(neue_datei):
     # 25.08.2026 verhindert, bei dem ein fremdes AppImage überschrieben wurde,
     # weil `APPIMAGE` auf ein anderes Programm zeigte.
     if 'sc-bp-watcher' not in os.path.basename(ziel).lower():
-        return False, ('Zieldatei gehört nicht zu diesem Programm: %s'
-                       % os.path.basename(ziel))
+        from . import sprache
+        return False, sprache.t('up_fremde_datei', os.path.basename(ziel))
     try:
         if art == 'appimage':
             # Unter Linux darf die laufende Datei ersetzt werden, solange man sie
