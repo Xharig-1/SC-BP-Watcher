@@ -12,10 +12,22 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ## v3.0.0 - 2026-08-29
 
-> **One window for everything.** The blueprint list and the settings used to live in two
-> separate windows, and you had to know which one held what. Now they sit together — tabs
-> on the left, a visible folder for your files, and an installer instead of dragging a
-> file somewhere by hand.
+> **One window for everything.** The blueprint list and the settings used to live in
+> two separate windows, and you had to know which one held what. They are now together —
+> tabs on the left, a visible folder for your files, and an installer instead of
+> dragging a file somewhere by hand.
+
+### The short version
+
+- **An installer for Windows** — download, run, done. No more moving files around.
+- **One window instead of two**, with tabs on the left. Plus a tray icon to bring
+  it back whenever you need it.
+- **The overlay can step aside** and only appears when something is found — a
+  narrow green strip stays at the edge, and the mouse brings it back.
+- **Self-update now works on Linux too.** It used to fail there **every single
+  time**; anyone on the AppImage had to fetch each version by hand.
+- **Star Citizen can be launched from the tool**, and a diagnostic report collects
+  everything a bug report needs at the press of a button — no names, no paths.
 
 ### Upgrading from v2.0.0
 
@@ -145,124 +157,37 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
-- **The „Launch Star Citizen" button was missing where the game sits under
-  `Program Files`.** It searched fixed locations, but the launcher lives next to
-  the game installation, and that can be anywhere. It now searches outward from
-  the known game folder, which covers every installation instead of requiring
-  new fixed paths forever. Reported by Haldjas.
-- **Failures of the tray icon were swallowed.** The thread that creates it
-  caught every error without reporting it; if something failed before the icon
-  itself (window class, window), the report said „no errors" while the icon was
-  missing. Both places now report, the previously discarded return value is
-  evaluated, and the start trace states in one line what happened to the icon —
-  created, disabled or failed.
-
-- **The tray icon's right-click menu was empty.** The Windows functions were
-  called without signatures; ctypes then treats the return value as a 32-bit
-  number, while window, icon and menu handles are pointer-sized. The truncated
-  menu handle pointed at nothing and both entries went nowhere — unnoticed,
-  because the return value was never checked. The same pattern probably explains
-  why the icon sometimes failed to appear at all. Reported by Haldjas — „it was
-  still empty for me the other day".
-
-- **The setup could not get past a hung program.** It politely asked the running
-  version to close — something that no longer responds does not hear that, and
-  copying then failed with „code 32" again. It is now closed by force if needed.
-  The blueprint collection is unaffected; it lives outside the program folder.
-  Reported by Haldjas.
-
-- **The update never actually arrived on Windows.** „Restart now" started the
-  **old** version again: the file is only swapped once the program is gone — a
-  helper script waits for that and starts the new version itself afterwards. So
-  the extra start reached for the old `.exe`, which in turn blocked the swap
-  until the helper gave up. The result: a warning about an undeletable temp
-  folder, a program left sitting in memory, and after all that still the old
-  version. Reported by Haldjas — „it stays on rc25".
-- **The restart's emergency exit depended on the interface.** It was only armed
-  inside a Tk callback; if that never fired, the process kept running while its
-  working folder was already being cleared away („No such file or directory:
-  …\_MEI…\base_library.zip"). It now runs independently.
-- **„Quit" in the tray icon did not really quit.** It only closed the window;
-  running threads kept the program in memory. It now shuts down cleanly and, if
-  something still hangs after three seconds, exits hard.
-
-- **The chosen font size did not apply to the overlay.** It only affected the
-  main window; the overlay had fixed sizes. Anyone raising it because the lines
-  were hard to read in game changed everything except the window they meant. The
-  overlay now follows along, immediately and without a restart. Reported by
-  Haldjas.
 - **The setup wizard did not remember the chosen text source.** It fetched and
   installed the texts but never stored the choice — afterwards none of the three
   sources was selected under „In-game details". Reported by Haldjas.
-
-- **The new version failed to start after an update.** „Can't find a usable
-  init.tcl" — it inherited the old version’s environment and looked for its Tcl
-  files in the old throwaway folder, which the old version was just cleaning
-  up. PyInstaller’s variables are now removed, the same way the AppImage ones
-  already were.
-- **The old window stayed open after the restart.** `quit()` only ends the
-  event loop, not the program. It now really quits.
-
-- **Tray icon stayed missing.** `Shell_NotifyIcon` fails while the taskbar is
-  not ready — on autostart, right after an installation and on every Explorer
-  restart. That was silently accepted, and the icon was gone for good. It is
-  now retried, re-registered when the taskbar reappears, and a final failure
-  shows up in the error report.
-
-- **Shorthand corrected in the docs.** The project page and roadmap still said
-  `M/A/1` (class/grade/size); since v3.0.0 it reads `M/1/A` — class/size/grade,
-  the way the game words it.
-
 - **Updating on Windows spawned console windows.** The helper script that
   swaps the running `.exe` looped forever while the file was locked — and it
   stays locked until the program quits. Every further click on „get" started
   another window. It now gives up after two minutes, stays invisible, and an
   already running helper is stopped first.
-- **Setup failed on the running file** („DeleteFile failed; code 32"). The
-  installer now closes the program first and restarts it afterwards.
-
 - **„Check now" did not check.** The button showed „Looking for a new version …" and did
   nothing else. Anyone with a stale cache could not get out of it — one tester was still
   offered rc12 while running rc18. It now really asks, reports the result and updates the
   display.
-- **The mouse did not bring the overlay back when it started hidden.** A window that has
-  never been shown reports its position as `1x1+0+0`, so the watch looked for the pointer in
-  the top-left corner of the screen instead of where the overlay sits — exactly the case
-  when starting in pop-up mode.
-
 - **Self-update took the Windows path on Linux** and reported „[Errno 2] No such file or
   directory: 'cmd'". The guard against foreign programs compared our own code against
   `APPDIR` — but PyInstaller extracts into a directory of its own, so the comparison always
   failed. The filename decides now.
-
-- **The fetch button could take you backwards.** It showed the release from the cache, and
-  that only refreshes once a day — with rc15 running it offered „get v3.0.0-rc13". Clicking
-  it landed you on an **older** build. The page now really checks when opened, and the
-  button says where it leads: „⤺ back to v2.0.0" or „v3.0.0-rc16 is already installed".
 - **Self-update could have overwritten other programs.** It treated any file the `APPIMAGE`
   environment variable pointed at as its own — and that variable is set in **every** program
   started from an AppImage. Now our own code must come from the matching `APPDIR`, and a
   second guard rejects any target whose filename does not belong to this program.
-
 - **Self-update always failed on Linux.** The download went to `/tmp` and was installed
   with `os.replace()` — and on virtually every Linux `/tmp` is a separate filesystem.
   `os.replace` cannot move across filesystems; it ends in „[Errno 18] Invalid cross-device
   link". The comment in the code always promised „next to the running program" — now the
   code does too, and installing became atomic along the way.
-
-- **The „get release" buttons showed an outdated number.** They come from the cache so the
-  page appears instantly — but that only refreshes once a day. In a screenshot the button
-  offered `v3.0.0-rc9` while rc12 was running and rc13 was already out. The right release
-  was always fetched, but the label was misleading. The page now checks once in the
-  background and updates the label.
-
 - **Crash on the very first start** (`SIGSEGV`), reported by Bomb20. The wizard created its
   **own** Tk instance and destroyed it at the end; the overlay then created a second one.
   After the first is destroyed, fonts, images and pending callbacks live on pointing at a
   dead interpreter — whether that goes well is a matter of timing. His „it ran fine with
   debugging on" is the fingerprint of exactly that. There is now only **one** Tk instance in
   the whole program.
-
 - **The `[SCBPW]` markers were visible in game.** The contract title read „Security
   Patrol**[SCBPW]** [BP 3/6]**[/SCBPW]**". They made sure inserted text could be removed
   exactly — but nobody wants to read that in their game. There is no marker in the text at
@@ -270,43 +195,14 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   That is more precise than before. Verified with `tools/injektion_pruefen.py` against the
   real file: inserting and removing leaves all 743 passages character-for-character as they
   were.
-
-- **„What's new" showed English even with a German interface.** The GitHub release text is
-  deliberately bilingual — English on top, German in a collapsible block. That is right for
-  the release page; in the window it became an English list. The bundled changelog now
-  takes precedence, because only it knows the language.
-
 - **In game only the number showed, not which blueprints.** A contract has one title but
   often a dozen descriptions — one for „to the ruin station", one for „to the distribution
   centre" and so on. The contract data names only **one** of them; the rest stayed empty.
   The title said „[BP 0/12]", and anyone opening the description to see *which* twelve
   found nothing. Measured: 51 Covalex descriptions in the game, 7 of them with details.
   They are now filled via the shared key prefix.
-
-- **The expanded text sat below every version instead of below its own.** Tk packs a block
-  at the end of the area unless told otherwise — with eleven releases, the content of
-  v3.0.0 appeared below v1.0.0. Anyone not scrolling far enough thinks the release is
-  empty.
-- **The GitHub link on „About" was not a link.** It looked like one and did nothing.
-
-- **The status box named the wrong text source.** Anyone who had used both and then
-  switched to StarStrings kept reading „Source: German (rjcncpt)" — the order in the code
-  decided, not the choice. The choice was also only stored **after** installing: if the
-  download failed, the field showed the new source while the rest of the program still
-  used the old one.
-
-- **Test builds had no release description.** The tag is `v3.0.0-rc5` while the changelog
-  says `## v3.0.0` — the script found nothing and wrote „see the changelog". Anyone meant
-  to test did not learn what to test. The base version's section is now used, with a
-  pre-release note and a link to what changed since the previous one.
 - **„Personal weapon" and „FPS weapon" were two groups for the same thing** — 87 under one
   key, two under the other.
-
-- **The „Mission text" page did nothing at all.** Every message went to a label that does
-  not exist in the embedded window — each click on a text source, on „Refresh now" or
-  „Check" aborted **before** anything happened. The status box also always said „no
-  details in the game", even with 681 text passages in place: it queried a function that
-  did not exist.
 - **„Rows in the overlay" had no effect.** The setting was saved and never read; the
   overlay used a fixed 200. The configured value now applies, with 20 as the default — no
   one collects 200 blueprints in one session anyway.
@@ -320,20 +216,10 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **The window started off-screen.** With no remembered position Tk placed it at `+0+0`;
   with a portrait monitor on the left there is no picture there. Startup and „Reset window
   position" now centre it on the main screen.
-- **Truncated labels in sixteen places** — sidebar, „Folders", „Inventory", „About" and
-  „What's new". Minimum size, sidebar width and line wrapping are now measured, not
-  guessed.
 - **Autostart was out of sync between overlay and settings.** Both read their state only
   when drawn.
-- **Dropdowns closed again immediately** when you clicked the next one right after making
-  a choice.
-
 - **The window icon was missing from every finished build** — on both systems. The file
   was not shipped with the program at all.
-- **The self-test failed on machines with Star Citizen installed.** Two checks expected
-  the game *not* to be found — testing the environment instead of the program.
-- **Errors vanished without trace.** Over sixty places caught them and carried on; now
-  the last fifty are kept and end up in the problem report.
 
 ### Thanks
 

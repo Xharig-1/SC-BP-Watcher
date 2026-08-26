@@ -17,6 +17,20 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 > zusammen — mit Reitern links, einer sichtbaren Ablage für deine Dateien und einem
 > Installer, statt eine Datei von Hand irgendwohin zu ziehen.
 
+### Das Wichtigste in Kürze
+
+- **Ein Installer für Windows** — herunterladen, starten, fertig. Kein Herumschieben
+  von Dateien mehr.
+- **Ein Fenster statt zwei**, mit Reitern links. Dazu ein Symbol neben der Uhr,
+  über das du es jederzeit zurückholst.
+- **Das Overlay kann sich zurückhalten** und blendet sich nur bei einem Fund ein —
+  ein schmaler grüner Streifen bleibt am Rand, die Maus holt es zurück.
+- **Das Selbst-Update funktioniert jetzt auch unter Linux.** Dort scheiterte es
+  bisher **immer**; wer ein AppImage nutzt, musste jede Fassung von Hand holen.
+- **Star Citizen lässt sich aus dem Werkzeug heraus starten**, und ein
+  Diagnose-Bericht sammelt auf Knopfdruck alles, was eine Fehlermeldung braucht —
+  ohne Namen und ohne Pfade.
+
 ### Beim Umstieg von v2.0.0
 
 - **Dein Bauplan-Bestand zieht von allein mit.** Er lag versteckt in
@@ -151,131 +165,40 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
-- **Der Knopf „Star Citizen starten" fehlte, wo das Spiel unter
-  `Program Files` liegt.** Gesucht wurde an festen Orten; der Launcher liegt
-  aber neben der Spielinstallation, und die kann überall sein. Jetzt wird vom
-  bekannten Spielordner aus gesucht — das trifft jede Installation, statt immer
-  neue feste Pfade nachzutragen. Gemeldet von Haldjas.
-- **Fehler beim Symbol neben der Uhr wurden verschluckt.** Der Faden, der es
-  anlegt, fing jeden Fehler ab, ohne ihn zu melden; scheiterte etwas vor dem
-  eigentlichen Anlegen (Fensterklasse, Fenster), stand im Bericht „keine
-  Fehler", während das Symbol fehlte. Beide Stellen melden jetzt, der bisher
-  weggeworfene Rückgabewert wird ausgewertet, und der Startverlauf sagt in einer
-  Zeile, was mit dem Symbol war — angelegt, abgeschaltet oder gescheitert.
-
-- **Das Rechtsklick-Menü am Symbol neben der Uhr war leer.** Die
-  Windows-Funktionen wurden ohne Signatur aufgerufen; ctypes hält den Rückgabewert
-  dann für eine 32-Bit-Zahl, während Fenster-, Icon- und Menü-Kennungen
-  zeigergroß sind. Das gekürzte Menü-Kennzeichen zeigte auf nichts, und beide
-  Einträge liefen ins Leere — unbemerkt, weil der Rückgabewert nie geprüft wurde.
-  Dasselbe Muster erklärt vermutlich auch, warum das Symbol gelegentlich ganz
-  ausblieb. Gemeldet von Haldjas — „war bei mir letztens noch leer".
-
-- **Das Setup kam an einem hängenden Programm nicht vorbei.** Es bat die
-  laufende Fassung höflich, sich zu schließen — wer nicht mehr reagiert, hört
-  das nicht, und danach scheiterte das Kopieren wieder an „code 32". Jetzt wird
-  notfalls hart beendet. Der Bauplan-Bestand ist davon nicht betroffen, er liegt
-  außerhalb des Programmordners. Gemeldet von Haldjas.
-
-- **Das Update kam unter Windows gar nicht an.** Der Knopf „Jetzt neu starten"
-  fuhr die **alte** Fassung erneut hoch: Getauscht wird die Datei erst, wenn
-  das Programm weg ist — ein Hilfsskript wartet darauf und startet die neue
-  Fassung danach selbst. Der zusätzliche eigene Start griff also zur alten
-  `.exe`, die dann ihrerseits den Tausch blockierte, bis das Hilfsskript
-  aufgab. Ergebnis: Warnung über einen nicht löschbaren Temp-Ordner, ein
-  Programm, das im Speicher stehenblieb, und nach allem immer noch die alte
-  Fassung. Gemeldet von Haldjas — „da bleibt er bei rc25".
-- **Der Notausgang beim Neustart hing an der Oberfläche.** Er wurde erst in
-  einem Tk-Rückruf scharf gestellt; kam der nicht, lief der Prozess weiter,
-  während sein Arbeitsordner schon abgeräumt wurde („No such file or
-  directory: …\_MEI…\base_library.zip"). Jetzt läuft er unabhängig.
-- **„Beenden" im Symbol neben der Uhr beendete nicht wirklich.** Es schloss nur
-  das Fenster; laufende Fäden hielten das Programm im Speicher. Jetzt wird
-  sauber zugemacht und nach drei Sekunden notfalls hart beendet.
-
-- **Die eingestellte Schriftgröße galt nicht fürs Overlay.** Sie wirkte nur im
-  großen Fenster; im Overlay standen feste Größen. Wer sie hochstellte, weil er
-  die Zeilen im Spiel schlecht lesen konnte, änderte ausgerechnet das Fenster
-  nicht, um das es ihm ging. Jetzt zieht das Overlay mit — sofort, ohne
-  Neustart. Gemeldet von Haldjas.
 - **Der Assistent merkte sich die gewählte Textquelle nicht.** Er holte die
   Texte und setzte sie ein, schrieb die Wahl aber nirgends hin — unter „Angaben
   im Spiel" stand danach keine der drei Quellen angewählt. Gemeldet von Haldjas.
-
-- **Nach dem Update startete die neue Fassung nicht.** „Can't find a usable
-  init.tcl" — die neue Fassung erbte die Umgebung der alten und suchte ihre
-  Tcl-Dateien in deren Wegwerf-Ordner, den die alte beim Beenden gerade
-  aufräumte. Die Variablen von PyInstaller werden jetzt entfernt, so wie es
-  bei den AppImage-Variablen schon geschah.
-- **Das alte Fenster blieb nach dem Neustart stehen.** `quit()` beendet nur die
-  Ereignisschleife, nicht das Programm. Jetzt geht es wirklich.
-
-- **Symbol neben der Uhr blieb weg.** `Shell_NotifyIcon` scheitert, solange die
-  Taskleiste nicht bereit ist — beim Autostart, direkt nach einer Installation
-  und bei jedem Explorer-Neustart. Bisher wurde das stillschweigend
-  hingenommen, und das Symbol fehlte danach für immer. Jetzt wird es mehrfach
-  versucht und beim Neuentstehen der Taskleiste erneut angemeldet; ein
-  endgültiges Scheitern steht im Fehlerbericht.
-
-- **Kürzel in der Doku berichtigt.** Projektseite und Fahrplan nannten es noch
-  `M/A/1` (Klasse/Grad/Größe); seit v3.0.0 steht dort `M/1/A` —
-  Klasse/Größe/Grad, so wie es sich im Spiel liest.
-
 - **Update unter Windows spuckte Konsolenfenster aus.** Das Hilfsskript, das die
   laufende `.exe` austauscht, lief in einer Endlosschleife weiter, solange die
   Datei gesperrt war — und sie bleibt gesperrt, bis das Programm beendet wird.
   Jeder weitere Klick auf „holen" startete noch ein Fenster. Jetzt ist nach zwei
   Minuten Schluss, das Fenster bleibt unsichtbar, und ein schon laufendes
   Hilfsskript wird vorher beendet.
-- **Setup brach an der laufenden Datei ab** („DeleteFile failed; code 32").
-  Der Installer schließt das Programm jetzt vorher und startet es danach wieder.
-
 - **„Jetzt nachsehen" hat nicht nachgesehen.** Der Knopf zeigte die Meldung „Suche nach
   einer neuen Fassung …" und suchte nicht. Wessen Zwischenspeicher veraltet war, kam damit
   nicht heraus — ein Tester bekam auf rc18 weiterhin rc12 angeboten. Jetzt wird wirklich
   gefragt, das Ergebnis gesagt und die Anzeige nachgezogen.
-- **Die Maus holte das Overlay nicht zurück, wenn es beim Start versteckt war.** Ein
-  Fenster, das noch nie zu sehen war, meldet seine Lage als `1x1+0+0` — die Wache suchte
-  den Zeiger also in der linken oberen Bildschirmecke statt dort, wo das Overlay steht.
-  Genau der Fall beim Start im Aufblend-Betrieb.
-
 - **Das Selbst-Update ging unter Linux in den Windows-Zweig** und meldete „[Errno 2] No such
   file or directory: 'cmd'". Der Riegel gegen fremde Programme verglich den eigenen Code mit
   `APPDIR` — nur entpackt sich PyInstaller in ein **eigenes** Verzeichnis, der Vergleich
   schlug also immer fehl. Maßgeblich ist jetzt der Dateiname.
-
-- **Der Holen-Knopf konnte einen zurückwerfen.** Er zeigte die Fassung aus dem
-  Zwischenspeicher, und der frischt sich nur einmal am Tag auf — bei laufender rc15 stand
-  dort „v3.0.0-rc13 holen". Wer draufdrückte, landete auf einer **älteren** Fassung. Jetzt
-  wird beim Öffnen der Seite wirklich nachgesehen, und der Knopf sagt, wohin es geht:
-  „⤺ zurück auf v2.0.0" oder „v3.0.0-rc16 ist schon da".
 - **Das Selbst-Update hätte fremde Programme überschreiben können.** Es hielt jede Datei
   für sich selbst, auf die die Umgebungsvariable `APPIMAGE` zeigte — und die steht in
   **jedem** Programm, das aus einem AppImage heraus gestartet wurde. Jetzt muss auch der
   eigene Code aus dem zugehörigen `APPDIR` kommen, und ein zweiter Riegel lehnt jede
   Zieldatei ab, deren Name nicht zum Programm gehört.
-
 - **Das Selbst-Update scheiterte unter Linux immer.** Geladen wurde nach `/tmp`,
   eingespielt mit `os.replace()` — und `/tmp` ist auf so gut wie jedem Linux ein eigenes
   Dateisystem. Über Dateisystemgrenzen kann `os.replace` nicht verschieben, das endet mit
   „[Errno 18] Invalid cross-device link". Der Kommentar im Code versprach schon immer
   „neben das laufende Programm" — jetzt tut es der Code auch, und das Einspielen ist
   nebenbei atomar geworden.
-
-- **Die Knöpfe „Fassung holen" zeigten eine veraltete Nummer.** Sie kommen aus dem
-  Zwischenspeicher, damit die Seite sofort steht — der frischt sich aber nur einmal am Tag
-  auf. Auf einem Bildschirmfoto bot der Knopf `v3.0.0-rc9` an, während rc12 lief und rc13
-  schon draußen war. Geholt wurde immer die richtige Fassung, aber was draufstand, führte
-  in die Irre. Die Seite sieht jetzt einmal im Hintergrund nach und zieht die Beschriftung
-  nach.
-
 - **Absturz beim allerersten Start** (`SIGSEGV`), gemeldet von Bomb20. Der Assistent legte
   eine **eigene** Tk-Instanz an und zerstörte sie am Ende; das Overlay legte danach eine
   zweite an. Nach dem `destroy()` der ersten leben Schriften, Bilder und offene Aufträge
   weiter und zeigen auf einen toten Interpreter — ob das gutgeht, hängt am Zeitpunkt. Sein
   Satz „mit Debugging an lief es durch" ist der Fingerabdruck dafür. Es gibt jetzt nur noch
   **eine** Tk-Instanz im ganzen Programm.
-
 - **Die Marken `[SCBPW]` waren im Spiel sichtbar.** Im Auftragstitel stand „Security
   Patrol**[SCBPW]** [BP 3/6]**[/SCBPW]**". Sie sorgten dafür, dass sich Eingefügtes exakt
   wieder entfernen lässt — nur will das niemand in seinem Spiel lesen. Jetzt steht gar
@@ -283,44 +206,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Zurücksetzen stellt ihn wieder her. Das ist genauer als vorher. Geprüft mit
   `tools/injektion_pruefen.py` an der echten Datei: einspielen und entfernen lässt 743
   Textstellen auf das Zeichen genau so, wie sie waren.
-
-- **„Was ist neu" stand auf Englisch, obwohl die Oberfläche auf Deutsch steht.** Der
-  Release-Text auf GitHub ist bewusst zweisprachig — Englisch oben, Deutsch aufklappbar
-  darunter. Auf der Release-Seite ist das richtig; im Fenster wurde daraus eine englische
-  Liste. Jetzt hat der mitgelieferte Changelog Vorrang, denn nur der kennt die Sprache.
-
 - **Im Spiel stand nur die Zahl, nicht welche Baupläne.** Ein Auftrag hat einen Titel, aber
   oft ein Dutzend Beschreibungen — je eine für „zur Ruinenstation", „zum Verteilzentrum"
   und so weiter. Die Vertragsdaten nennen dazu nur **eine**; die übrigen blieben leer. Im
   Titel stand „[BP 0/12]", und wer die Beschreibung öffnete, um zu sehen *welche* zwölf,
   fand nichts. Gemessen: allein bei Covalex 51 Beschreibungen im Spiel, davon 7 mit
   Angaben. Sie werden jetzt über den gemeinsamen Namensanfang mitversorgt.
-
-- **Der aufgeklappte Text stand unter allen Versionen statt unter seiner.** Tk packt einen
-  Block ans Ende der Fläche, wenn man ihm nicht sagt, wohin — bei elf Fassungen erschien
-  der Inhalt von v3.0.0 also unterhalb von v1.0.0. Wer nicht weit genug rollt, hält die
-  Fassung für leer.
-- **Der GitHub-Link auf „Über" war keiner.** Er sah aus wie ein Link und tat nichts.
-
-- **Der Zustandskasten nannte die falsche Textquelle.** Wer beide einmal benutzt hatte und
-  dann auf StarStrings umstellte, las weiter „Quelle: Deutsch (rjcncpt)" — die Reihenfolge
-  im Code entschied, nicht die Wahl. Dazu wurde die Wahl erst **nach** dem Einrichten
-  gemerkt: Ging das Herunterladen schief, zeigte das Feld die neue Quelle, während der
-  Rest des Programms mit der alten weiterrechnete.
-
-- **Testfassungen hatten keine Release-Beschreibung.** Getaggt wird `v3.0.0-rc5`, im
-  Changelog steht `## v3.0.0` — das Skript fand nichts und schrieb „siehe Changelog".
-  Wer testen sollte, erfuhr also nicht, was zu testen ist. Jetzt steht der Abschnitt der
-  Grundversion darunter, mit einem Testfassungs-Hinweis und einem Link auf die Änderungen
-  seit der vorigen Vorabversion.
 - **„Handfeuerwaffe" und „FPS-Waffe" waren zwei Gruppen für dieselbe Sache** — 87 unter
   der einen Kennung, zwei unter der anderen.
-
-- **Die Seite „Auftragstexte" tat überhaupt nichts.** Alle Rückmeldungen gingen an ein
-  Label, das es im eingebetteten Fenster gar nicht gibt — jeder Klick auf eine Textquelle,
-  auf „Jetzt auffrischen" oder „Prüfen" brach ab, **bevor** etwas passierte. Dazu zeigte
-  der Kasten oben immer „keine Angaben im Spiel", auch wenn 681 Textstellen eingetragen
-  waren: Er fragte eine Funktion ab, die es nicht gab.
 - **„Zeilen im Overlay" hatte keine Wirkung.** Die Einstellung wurde gespeichert und nie
   gelesen; im Overlay galt fest die Zahl 200. Jetzt gilt der eingestellte Wert, mit 20 als
   Vorgabe — 200 Baupläne sammelt in einer Sitzung ohnehin niemand.
@@ -336,21 +229,10 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Das Fenster startete außerhalb des Bildschirms.** Ohne gemerkte Lage stellte Tk es
   nach `+0+0`; bei einem hochkant stehenden Monitor links außen liegt dort kein Bild.
   Start und „Fensterlage zurücksetzen" setzen es jetzt mittig auf den Hauptbildschirm.
-- **Abgeschnittene Beschriftungen an sechzehn Stellen** — Seitenleiste, „Ordner",
-  „Bestand", „Über" und „Was ist neu". Mindestgröße, Seitenleistenbreite und
-  Zeilenumbruch werden jetzt gemessen statt geschätzt.
 - **Der Autostart war zwischen Overlay und Einstellungen nicht synchron.** Beide lasen
   ihren Zustand nur beim Zeichnen.
-- **Auswahlfelder schlossen sich sofort wieder,** wenn man nach einer Auswahl gleich das
-  nächste anklickte.
-
 - **Das Fenster-Icon fehlte in jeder fertigen Fassung** — auf beiden Systemen. Die Datei
   lag zur Laufzeit gar nicht bei.
-- **Der Selbsttest schlug auf Rechnern mit installiertem Star Citizen fehl.** Zwei
-  Prüfungen erwarteten, dass kein Spiel gefunden wird — geprüft wurde damit die Umgebung
-  statt das Programm.
-- **Fehler verschwanden spurlos.** Über sechzig Stellen fingen sie ab und machten
-  weiter; jetzt werden die letzten fünfzig festgehalten und landen im Fehlerbericht.
 
 ### Dank
 
