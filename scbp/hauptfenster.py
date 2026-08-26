@@ -1227,7 +1227,6 @@ class Hauptfenster:
         self._gruppe(t('hf_gruppe_einst'))
         self._reiter('allgemein', '⚙', t('hf_allgemein'))
         self._reiter('anzeige', '▭', t('hf_anzeige'))
-        self._reiter('ordner', '❒', t('hf_ordner'))
         self._reiter('spiel', '✎', t('hf_spiel'))
         self._reiter('bestand', '↕', t('hf_bestand'))
 
@@ -1537,6 +1536,12 @@ class Hauptfenster:
         if self.fortgeschritten_offen:
             self.klappinhalt.pack(fill='x')
             if not self.klappinhalt.winfo_children():
+                # Pfade liegen hier unten, seit die Erkennung sie selbst
+                # findet: Spielordner und Launcher werden gesucht, und wer doch
+                # nachhelfen muss, wird vom Einrichtungsassistenten geführt —
+                # der erklärt, was die Seite nur als Felder zeigt. Ein Reiter,
+                # den fast niemand braucht, steht oben nur im Weg.
+                self._reiter('ordner', '❒', t('hf_ordner'), self.klappinhalt)
                 self._reiter('erkennung', '◎', t('hf_erkennung'), self.klappinhalt)
                 self._reiter('diagnose', '⚕', t('hf_diagnose'), self.klappinhalt)
             self.klappknopf.configure(text='▼ ' + t('hf_fortgeschritten'))

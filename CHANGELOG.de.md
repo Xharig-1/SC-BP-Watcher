@@ -164,6 +164,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Geändert
 
+- **„Pfade" ist zu den Fortgeschrittenen gewandert.** Spielordner und Launcher
+  werden gesucht und gefunden; wer doch nachhelfen muss, wird vom
+  Einrichtungsassistenten geführt, der erklärt, was die Seite nur als Felder
+  zeigt. Ein Reiter, den fast niemand braucht, stand oben nur im Weg.
+
 - **Star Citizen starten sitzt jetzt links unten**, im markanten Grün über
   „Für Fortgeschrittene". Vorher stand der Knopf auf der Seite „Auftragstexte" —
   dort, wo es um Bauplan-Angaben geht — und war danach nur im Overlay zu sehen,
@@ -236,9 +241,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Der Ziehgriff für die Fenstergröße deckte im eingeklappten Zustand das ✕
   zu.** Er sitzt unten rechts — bei einem auf Leistenhöhe geschrumpften Fenster
   ist das dieselbe Stelle wie oben rechts, und man musste zielen, um das
-  Werkzeug überhaupt schließen zu können. Er wird jetzt beim Einklappen
-  ausgeblendet; ein 26 Pixel hohes Fenster in der Höhe zu ziehen ergibt ohnehin
-  keinen Sinn.
+  Werkzeug überhaupt schließen zu können. Er hängt jetzt an der **Liste** statt
+  am Fenster — ist die eingeklappt, hat sie keine Höhe, und der Griff ist
+  zwangsläufig mit weg. Ihn stattdessen rechtzeitig auszublenden hat dreimal
+  nicht verlässlich geklappt: Ein Zustand, der sich aus dem Aufbau ergibt, ist
+  verlässlicher als einer, den man nachträglich herstellt.
 - **Bauplan-Namen waren ohne Launcher unlesbar** — „Golemmc4Orepod" statt
   „GOLEM MC-4 Ore Pod". Der Rückfall war `.title()` auf den Vergleichsschlüssel,
   in dem es keine Wortgrenzen mehr gibt; der lesbare Name lag die ganze Zeit

@@ -1381,10 +1381,31 @@ class Overlay:
         # legte sich dann über das ✕, und man musste zielen, um das Fenster
         # überhaupt schließen zu können. Ein 26 Pixel hohes Fenster in der Höhe
         # zu ziehen ergibt ohnehin keinen Sinn.
-        self.grip = tk.Label(self.root, text='◢', bg=BG, fg=SUB,
+        # ⚠ Der Griff hängt an der **Liste**, nicht am Fenster.
+        #
+        # Am Fenster (`self.root`) sitzt er auf `rely=1.0` — bei einem auf
+        # Leistenhöhe eingeklappten Overlay ist „unten rechts" dieselbe Zeile
+        # wie die Titelleiste, und er stand als Dreieck neben dem ✕. Ihn dort
+        # rechtzeitig auszublenden hat dreimal nicht verlässlich geklappt: Der
+        # Zustand hängt am Zeitpunkt des Aufbaus.
+        #
+        # Als Kind der Liste kann er dort gar nicht mehr auftauchen — ist sie
+        # eingeklappt, hat sie keine Höhe, und mit ihr ist er weg. Kein Timing,
+        # keine Sonderbehandlung. Ein Zustand, der sich aus dem Aufbau ergibt,
+        # ist verlässlicher als einer, den man nachträglich herstellt.
+        self.grip = tk.Label(wrap, text='◢', bg=BG, fg=SUB,
                              cursor=sicherer_cursor(CURSOR_GROESSE))
         self.grip.place(relx=1.0, rely=1.0, anchor='se')
         self.grip.bind('<B1-Motion>', self._resize)
+        # ⚠ Den Zustand **durchsetzen**, nicht einmal setzen. Zweimal wurde der
+        # Griff beim Start im eingeklappten Zustand trotzdem angezeigt, obwohl
+        # das Verstecken nachweislich aufgerufen wurde — irgendein Schritt im
+        # Aufbau stellt ihn danach wieder her. Statt diese Stelle weiter zu
+        # suchen, wird bei jedem Layout-Ereignis geprüft, ob der Griff zum
+        # Klappzustand passt. Das kostet nichts: Stimmt es schon, kehrt die
+        # Prüfung sofort zurück.
+        self.root.bind('<Configure>', self._grip_nachziehen, add='+')
+        self.root.bind('<Map>', self._grip_nachziehen, add='+')
         self.grip.bind('<ButtonRelease-1>', self._save_geo)   # Größe merken
         hinweis.anhaengen(self.grip, lambda: sprache.t('hinweis_groesse'))
 
@@ -1395,7 +1416,11 @@ class Overlay:
         self.eingeklappt = False
         self.hoehe_offen = None      # Fensterhöhe vor dem Einklappen
         if pfade.einstellung_wahrheit('eingeklappt', False):
-            self.root.after(120, self.umklappen)
+            # Zustand **setzen**, nicht umschalten — siehe `klappzustand_setzen`.
+            # `merken=False`: Es ist genau der Zustand, der schon gespeichert
+            # ist; ihn erneut zu schreiben wäre nur ein Schreibzugriff mehr.
+            self.root.after(120, lambda: self.klappzustand_setzen(True,
+                                                                 merken=False))
 
         self.q = queue.Queue()
         self.watcher = Watcher(self.q)
@@ -1878,26 +1903,32 @@ class Overlay:
                          else 'hinweis_einklappen')
 
     def umklappen(self):
-        """Auf die Titelleiste zusammenschieben — oder wieder aufmachen.
+        """Auf die Titelleiste zusammenschieben — oder wieder aufmachen."""
+        self.klappzustand_setzen(not self.eingeklappt)
 
-        Gemerkt wird die Höhe **vor** dem Einklappen, nicht eine feste Zahl:
-        Wer sich das Fenster auf 900 Pixel gezogen hat, will es beim Aufklappen
-        auch wieder so haben."""
+    def klappzustand_setzen(self, zu, merken=True):
+        """Den Klappzustand **herstellen** — nicht umschalten.
+
+        ⚠ Der Unterschied zählt. Beim Programmstart wurde bisher `umklappen()`
+        aufgerufen, also ein Umschalter, während das Fenster noch aufgebaut
+        wurde. Das Ergebnis hing davon ab, was Tk zu diesem Zeitpunkt schon
+        wusste: Der Ziehgriff blieb sichtbar und deckte das ✕ zu, bis man einmal
+        von Hand auf- und wieder zuklappte. Wer einen Zustand will, soll ihn
+        setzen und nicht auf das Gegenteil des gerade Vermuteten schalten.
+
+        Gemerkt wird die Höhe **vor** dem Einklappen, nicht eine feste Zahl: Wer
+        sich das Fenster auf 900 Pixel gezogen hat, will es beim Aufklappen auch
+        wieder so haben.
+        """
         try:
             leiste = self.root.winfo_children()[0]
             leistenhoehe = max(leiste.winfo_height(), 26)
-            if self.eingeklappt:
+            if not zu:
                 # ⚠ Mindesthöhe erzwingen. Stand in `hoehe_offen` versehentlich
                 # die Leistenhöhe, klappte das Fenster auf seine eigene Größe
                 # „auf" — der Knopf schaltete um, sichtbar passierte nichts, und
                 # das Overlay ließ sich nie wieder öffnen.
                 hoehe = max(self.hoehe_offen or 0, leistenhoehe + 120)
-                self.root.geometry('%dx%d+%d+%d' % (
-                    self.root.winfo_width(), hoehe,
-                    self.root.winfo_x(), self.root.winfo_y()))
-                self.klapp_lbl.configure(text='▾')
-                self.eingeklappt = False
-                self.grip.place(relx=1.0, rely=1.0, anchor='se')
             else:
                 # ⚠ Die offene Höhe nur merken, wenn das Fenster **wirklich**
                 # offen ist. Laufen Zustand und Geometrie einmal auseinander
@@ -1911,13 +1942,58 @@ class Overlay:
                 # Die Höhe der Titelleiste, nicht geraten: Ein fester Wert säße
                 # bei anderer Schriftgröße daneben.
                 hoehe = leistenhoehe
-                self.root.geometry('%dx%d+%d+%d' % (
-                    self.root.winfo_width(), hoehe,
-                    self.root.winfo_x(), self.root.winfo_y()))
-                self.klapp_lbl.configure(text='▸')
-                self.eingeklappt = True
-                self.grip.place_forget()      # sonst deckt er das ✕ zu
-            pfade.einstellung_setzen('eingeklappt', self.eingeklappt)
+
+            self.root.geometry('%dx%d+%d+%d' % (
+                self.root.winfo_width(), hoehe,
+                self.root.winfo_x(), self.root.winfo_y()))
+            self.klapp_lbl.configure(text='▸' if zu else '▾')
+            self.eingeklappt = zu
+            self._grip_nachziehen()
+            if merken:
+                pfade.einstellung_setzen('eingeklappt', zu)
+        except tk.TclError:
+            pass
+
+    def _grip_nachziehen(self, _e=None):
+        """Den Ziehgriff zeigen oder verstecken, je nach Klappzustand.
+
+        ⚠ Er sitzt unten rechts — bei einem auf Leistenhöhe geschrumpften
+        Fenster ist das dieselbe Stelle wie oben rechts, und er legt sich über
+        das ✕. Man muss dann zielen, um das Werkzeug überhaupt schließen zu
+        können. Ein 26 Pixel hohes Fenster in der Höhe zu ziehen ergibt ohnehin
+        keinen Sinn.
+
+        Bewusst eine eigene Methode: Sie wird auch beim ersten Anzeigen des
+        Fensters aufgerufen, damit der Zustand von Anfang an stimmt und nicht
+        erst nach dem ersten Umschalten.
+        """
+        try:
+            soll_sichtbar = not self.eingeklappt
+            # ⚠ `winfo_ismapped()` taugt hier NICHT. Solange das Fenster noch
+            # nicht angezeigt wird, meldet Tk für jedes Kind `False` — die
+            # Prüfung hielt den Griff dann für versteckt, kehrte zurück, und er
+            # erschien danach trotzdem, weil er per `place` verwaltet blieb.
+            # Gefragt werden muss nach der **Platzierung**, nicht nach der
+            # Sichtbarkeit.
+            ist_platziert = bool(self.grip.place_info())
+            if ist_platziert == soll_sichtbar:
+                return                      # schon richtig, nichts anfassen
+            if soll_sichtbar:
+                self.grip.place(relx=1.0, rely=1.0, anchor='se')
+            else:
+                self.grip.place_forget()
+            if os.environ.get('SC_BP_GRIFF_PROTOKOLL'):
+                # Nur auf Zuruf: schreibt mit, wer den Griff wann umstellt.
+                # Gedacht, um die Stelle zu finden, die ihn nach dem Start
+                # wieder einblendet — ohne dass man das Fenster sehen muss.
+                import traceback
+                with open(pfade.app_datei('griff-protokoll.txt'), 'a',
+                          encoding='utf-8') as f:
+                    f.write('%s  eingeklappt=%s  war_platziert=%s\n'
+                            % (time.strftime('%H:%M:%S'), self.eingeklappt,
+                               ist_platziert))
+                    f.write(''.join(traceback.format_stack()[-6:-1]))
+                    f.write('-' * 60 + '\n')
         except tk.TclError:
             pass
 

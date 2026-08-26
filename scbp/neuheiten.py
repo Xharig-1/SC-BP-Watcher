@@ -50,6 +50,7 @@ NEU_SEIT = {
     'wasistneu':   '3.0.0',    # Änderungen als eigener Reiter
     'ueber':       '3.0.0',    # Fassung, Testkanal, Autor
     'diagnose':    '3.0.0',    # Fehlerbericht und Melden
+    'serverstatus': '3.0.0',   # Lage der CIG-Server als eigener Reiter
 }
 
 

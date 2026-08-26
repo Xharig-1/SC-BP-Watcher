@@ -154,6 +154,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
+- **"Paths" moved to the advanced section.** The game folder and the launcher
+  are found automatically; anyone who does need to step in is guided by the
+  setup assistant, which explains what the page only shows as fields. A tab
+  almost nobody needs was just in the way at the top.
+
 - **Launching Star Citizen now sits at the bottom left**, in the accent green
   above "Advanced". The button used to live on the "Mission text" page — where
   blueprint wording is handled — and after that only in the overlay, so only
@@ -220,8 +225,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   really is open, and expanding enforces a minimum height.
 - **The resize grip covered the ✕ while collapsed.** It sits at the bottom
   right — on a window shrunk to title bar height that is the same spot as the
-  top right, and you had to aim to close the tool at all. It is now hidden while
-  collapsed; a 26 pixel window cannot be resized vertically anyway.
+  top right, and you had to aim to close the tool at all. It now belongs to the
+  **list** rather than the window — when the list is collapsed it has no height,
+  so the grip is necessarily gone with it. Hiding it in time instead failed
+  three times: a state that follows from how things are built is more reliable
+  than one restored afterwards.
 - **Blueprint names were unreadable without the launcher** — "Golemmc4Orepod"
   instead of "GOLEM MC-4 Ore Pod". The fallback ran `.title()` on the comparison
   key, which has no word boundaries left; the readable name sat right next to it
