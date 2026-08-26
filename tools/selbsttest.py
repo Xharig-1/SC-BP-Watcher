@@ -481,29 +481,37 @@ def main():
         # 26.08.2026 gab `einstellungen_schreiben` nur `False` zurück — und
         # **kein einziger Aufrufer** wertet das aus. Eine Einstellung war nach
         # dem Neustart einfach wieder alt, ohne jeden Hinweis.
-        if not sys.platform.startswith('win'):   # chmod wirkt dort anders
-            import stat as stat_
-            sperr = os.path.join(basis, 'gesperrt')
-            os.makedirs(sperr, exist_ok=True)
-            alt_home = os.environ.get('SC_BP_HOME')
-            os.environ['SC_BP_HOME'] = sperr
-            try:
-                from scbp import pfade as pf_sperr
-                pruefe(pf_sperr.einstellung_setzen('probe', 1),
-                       'Einstellungen lassen sich normal schreiben')
-                fehlerbuch.leeren()
-                os.chmod(sperr, stat_.S_IRUSR | stat_.S_IXUSR)
-                geschrieben = pf_sperr.einstellung_setzen('probe', 2)
-                os.chmod(sperr, stat_.S_IRWXU)
-                pruefe(not geschrieben,
-                       'ein gesperrter Ordner meldet einen Fehlschlag')
-                stellen = [e.get('stelle') for e in fehlerbuch.letzte(3)]
-                pruefe('pfade.einstellungen_schreiben' in stellen,
-                       'und der Grund steht im Fehlerprotokoll')
-            finally:
-                os.chmod(sperr, stat_.S_IRWXU)
-                if alt_home:
-                    os.environ['SC_BP_HOME'] = alt_home
+        # ⚠ Zwei Fallen stecken in diesem Test, beide am 26.08.2026 erlebt:
+        #
+        # 1. **Nicht per `chmod` sperren.** Auf den Bau-Rechnern läuft alles als
+        #    root, und root schreibt auch in einen Ordner mit entzogenen
+        #    Rechten. Der Test war dort grün, ohne etwas zu prüfen.
+        # 2. **Nicht den ganzen Ablageordner unbrauchbar machen.** Dann kann
+        #    auch das Fehlerprotokoll nicht mehr geschrieben werden — und genau
+        #    das soll ja geprüft werden.
+        #
+        # Deshalb wird **nur die Einstellungsdatei** blockiert: Dort, wo die
+        # Nebendatei `…json.tmp` entstehen müsste, liegt ein Ordner. Daran
+        # scheitert das Schreiben, unabhängig von Rechten und Benutzer — der
+        # Rest der Ablage bleibt heil.
+        sperr = os.path.join(basis, 'sperrprobe')
+        os.makedirs(sperr, exist_ok=True)
+        os.makedirs(os.path.join(sperr, 'einstellungen.json.tmp'),
+                    exist_ok=True)
+        alt_home = os.environ.get('SC_BP_HOME')
+        os.environ['SC_BP_HOME'] = sperr
+        try:
+            from scbp import pfade as pf_sperr
+            fehlerbuch.leeren()
+            geschrieben = pf_sperr.einstellung_setzen('probe', 2)
+            pruefe(not geschrieben,
+                   'ein blockiertes Ziel meldet einen Fehlschlag')
+            stellen = [e.get('stelle') for e in fehlerbuch.letzte(3)]
+            pruefe('pfade.einstellungen_schreiben' in stellen,
+                   'und der Grund steht im Fehlerprotokoll')
+        finally:
+            if alt_home:
+                os.environ['SC_BP_HOME'] = alt_home
 
         # ⚠ Die Zeile „Spielsprache" stand drei Übergaben lang auf „—", weil
         # `phrasen.sammeln()` ein Tupel liefert und der Bericht es wie eine
