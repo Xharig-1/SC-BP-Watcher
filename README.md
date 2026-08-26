@@ -10,6 +10,7 @@
 
 [![Version](https://img.shields.io/github/v/release/Xharig-1/SC-BP-Watcher?label=Version&color=5fa522)](../../releases)
 [![License](https://img.shields.io/badge/License-GPL--3.0-5fa522)](LICENSE)
+[![Discord](https://img.shields.io/badge/Discord-join-5fa522?logo=discord&logoColor=white)](https://discord.gg/g2E7e6XxZC)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-0a4a7a?logo=python&logoColor=white)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%C2%B7%20Linux-0a4a7a)](#requirements)
 [![Star Citizen](https://img.shields.io/badge/Star%20Citizen-compatible-0a4a7a)](https://robertsspaceindustries.com/)
@@ -21,6 +22,8 @@
 ---
 
 A small, borderless overlay that tells you **in real time** when a new blueprint drops — name, type and time. No account, no cloud. Runs on **Windows and Linux**.
+
+> 💬 **There is a Discord.** Questions, help with problems, new releases and a forum for bugs and wishes: **[discord.gg/g2E7e6XxZC](https://discord.gg/g2E7e6XxZC)**. If you would rather stay here, open an [issue](../../issues) — both are read.
 
 > 🧪 **Trying a test build.** Before every release there are **pre-releases** (`-rc`) under [Releases](../../releases) — each one says what it brings and what changed since the previous one. They are **never offered as an update** to anyone: if you want one, you download it there. If you try one and find something, please open an [issue](../../issues) — that is exactly what they are for.
 
@@ -332,9 +335,9 @@ In `einstellungen.json` in its own folder — a text file, not code. Restart the
 
 ## Helping to test
 
-New versions appear **on Wednesdays**. If you would rather not wait, you can get them earlier:
+New versions appear **on Saturdays**. If you would rather not wait, you can get them earlier:
 
-**Settings → About → "Offer test versions too"**
+**Info → Update & About → "Offer test versions too"**
 
 From then on the tool also reports test versions (recognisable by the `rc` in the number)
 — through the same update notice as always. Nothing to download by hand, nothing to hunt for.
@@ -347,9 +350,10 @@ From then on the tool also reports test versions (recognisable by the `rc` in th
 - **Without this setting you never see a test version.** If you want peace and quiet,
   do nothing — that is the default.
 
-Found something? An [issue](../../issues) helps more than any guess. Under
-**Settings → Diagnostics** there is "Copy details" — that block holds everything needed
-to track a problem down, without any personal information.
+Found something? An [issue](../../issues) helps more than any guess — or the **Report a bug**
+forum on [Discord](https://discord.gg/g2E7e6XxZC), if a screenshot is quicker than a description. Under
+**For advanced users → Diagnostics** there is "Copy details" — that block holds everything
+needed to track a problem down, without any personal information.
 
 ## Passing it on
 
@@ -382,7 +386,7 @@ If you fork this project, please keep the credit in the footer or mention the or
 
 Work continues — what exactly is not on a list. What a build brought you can read in [`CHANGELOG.md`](CHANGELOG.md) or right in the tool under **ⓘ „What's new"**.
 
-Wishes and bug reports are welcome as an [issue](../../issues) — suggestions make it into the next build more reliably than mind reading.
+Wishes and bug reports are welcome as an [issue](../../issues) or on [Discord](https://discord.gg/g2E7e6XxZC) — suggestions make it into the next build more reliably than mind reading.
 
 ## Star Citizen Fan Content
 

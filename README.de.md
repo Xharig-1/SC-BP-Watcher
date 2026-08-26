@@ -10,6 +10,7 @@
 
 [![Version](https://img.shields.io/github/v/release/Xharig-1/SC-BP-Watcher?label=Version&color=5fa522)](../../releases)
 [![Lizenz](https://img.shields.io/badge/Lizenz-GPL--3.0-5fa522)](LICENSE)
+[![Discord](https://img.shields.io/badge/Discord-beitreten-5fa522?logo=discord&logoColor=white)](https://discord.gg/g2E7e6XxZC)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-0a4a7a?logo=python&logoColor=white)](https://www.python.org/)
 [![System](https://img.shields.io/badge/System-Windows%20%C2%B7%20Linux-0a4a7a)](#voraussetzungen)
 [![Star Citizen](https://img.shields.io/badge/Star%20Citizen-kompatibel-0a4a7a)](https://robertsspaceindustries.com/)
@@ -21,6 +22,8 @@
 ---
 
 Ein kleines, randloses Overlay, das beim Spielen **in Echtzeit** meldet, sobald ein neuer Bauplan (Blueprint) dazukommt — inklusive Name, Art und Uhrzeit. Ohne Account, ohne Cloud. Läuft unter **Windows und Linux**.
+
+> 💬 **Es gibt einen Discord.** Fragen, Hilfe bei Problemen, neue Fassungen und ein Forum für Fehler und Wünsche: **[discord.gg/g2E7e6XxZC](https://discord.gg/g2E7e6XxZC)**. Wer lieber hier bleibt, macht ein [Issue](../../issues) auf — beides wird gelesen.
 
 > 🧪 **Testfassungen ausprobieren.** Vor jeder Veröffentlichung gibt es **Vorabversionen** (`-rc`) unter [Releases](../../releases) — dort steht bei jeder, was sie bringt und was sich seit der vorigen geändert hat. Sie werden **niemandem als Update angeboten**: Wer sie will, lädt sie dort herunter. Wer eine ausprobiert und etwas findet, macht bitte ein [Issue](../../issues) auf — genau dafür sind sie da.
 
@@ -376,9 +379,9 @@ Die Formulierungen, an denen ein Bauplan im Log erkannt wird, stehen nicht mehr 
 
 ## Beim Testen mithelfen
 
-Neue Fassungen erscheinen **mittwochs**. Wer nicht warten will, bekommt sie vorher:
+Neue Fassungen erscheinen **samstags**. Wer nicht warten will, bekommt sie vorher:
 
-**Einstellungen → Über → „Auch Testfassungen"**
+**Info → Update & Über → „Auch Testfassungen"**
 
 Danach meldet das Werkzeug auch Testfassungen (erkennbar am `rc` in der Nummer) — über
 dieselbe Update-Meldung wie sonst. Nichts von Hand herunterladen, nichts suchen.
@@ -391,9 +394,10 @@ dieselbe Update-Meldung wie sonst. Nichts von Hand herunterladen, nichts suchen.
 - **Ohne diese Einstellung merkst du von Testfassungen nichts.** Wer Ruhe will, muss
   nichts tun — das ist die Voreinstellung.
 
-Etwas gefunden? Ein [Issue](../../issues) hilft mehr als jede Vermutung. Unter
-**Einstellungen → Diagnose** gibt es „Angaben kopieren" — der Textblock enthält alles,
-was zur Fehlersuche gebraucht wird, ohne persönliche Angaben.
+Etwas gefunden? Ein [Issue](../../issues) hilft mehr als jede Vermutung — oder das Forum
+**Fehler-Melden** im [Discord](https://discord.gg/g2E7e6XxZC), wenn ein Bildschirmfoto schneller geht als eine
+Beschreibung. Unter **Für Fortgeschrittene → Diagnose** gibt es „Angaben kopieren" — der
+Textblock enthält alles, was zur Fehlersuche gebraucht wird, ohne persönliche Angaben.
 
 ## Weitergeben
 
@@ -426,7 +430,7 @@ If you fork this project, please keep the credit in the footer or mention the or
 
 Es wird weitergebaut — was genau, steht in keiner Liste. Was eine Fassung gebracht hat, liest du im [`CHANGELOG.de.md`](CHANGELOG.de.md) oder direkt im Werkzeug unter **ⓘ „Was ist neu"**.
 
-Wünsche und Fehlermeldungen gern als [Issue](../../issues) — Vorschläge landen eher im nächsten Bau als Gedankenlesen.
+Wünsche und Fehlermeldungen gern als [Issue](../../issues) oder im [Discord](https://discord.gg/g2E7e6XxZC) — Vorschläge landen eher im nächsten Bau als Gedankenlesen.
 
 ## Star Citizen Fan Content
 
