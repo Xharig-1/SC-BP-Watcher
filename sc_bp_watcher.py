@@ -1374,12 +1374,19 @@ class Overlay:
         self._placeholder()
 
         # Resize-Griff unten rechts
-        grip = tk.Label(self.root, text='◢', bg=BG, fg=SUB,
-                        cursor=sicherer_cursor(CURSOR_GROESSE))
-        grip.place(relx=1.0, rely=1.0, anchor='se')
-        grip.bind('<B1-Motion>', self._resize)
-        grip.bind('<ButtonRelease-1>', self._save_geo)    # Größe nach dem Skalieren merken
-        hinweis.anhaengen(grip, lambda: sprache.t('hinweis_groesse'))
+        #
+        # ⚠ Er wird beim Einklappen **ausgeblendet** (siehe `umklappen`). Er
+        # sitzt auf `rely=1.0`, und bei einem auf Leistenhöhe geschrumpften
+        # Fenster ist „unten rechts" dieselbe Stelle wie „oben rechts" — er
+        # legte sich dann über das ✕, und man musste zielen, um das Fenster
+        # überhaupt schließen zu können. Ein 26 Pixel hohes Fenster in der Höhe
+        # zu ziehen ergibt ohnehin keinen Sinn.
+        self.grip = tk.Label(self.root, text='◢', bg=BG, fg=SUB,
+                             cursor=sicherer_cursor(CURSOR_GROESSE))
+        self.grip.place(relx=1.0, rely=1.0, anchor='se')
+        self.grip.bind('<B1-Motion>', self._resize)
+        self.grip.bind('<ButtonRelease-1>', self._save_geo)   # Größe merken
+        hinweis.anhaengen(self.grip, lambda: sprache.t('hinweis_groesse'))
 
         # Watcher starten
         # Version an die Bauplan-Liste durchreichen — sie landet im
@@ -1877,24 +1884,39 @@ class Overlay:
         Wer sich das Fenster auf 900 Pixel gezogen hat, will es beim Aufklappen
         auch wieder so haben."""
         try:
+            leiste = self.root.winfo_children()[0]
+            leistenhoehe = max(leiste.winfo_height(), 26)
             if self.eingeklappt:
-                hoehe = self.hoehe_offen or 400
+                # ⚠ Mindesthöhe erzwingen. Stand in `hoehe_offen` versehentlich
+                # die Leistenhöhe, klappte das Fenster auf seine eigene Größe
+                # „auf" — der Knopf schaltete um, sichtbar passierte nichts, und
+                # das Overlay ließ sich nie wieder öffnen.
+                hoehe = max(self.hoehe_offen or 0, leistenhoehe + 120)
                 self.root.geometry('%dx%d+%d+%d' % (
                     self.root.winfo_width(), hoehe,
                     self.root.winfo_x(), self.root.winfo_y()))
                 self.klapp_lbl.configure(text='▾')
                 self.eingeklappt = False
+                self.grip.place(relx=1.0, rely=1.0, anchor='se')
             else:
-                self.hoehe_offen = self.root.winfo_height()
+                # ⚠ Die offene Höhe nur merken, wenn das Fenster **wirklich**
+                # offen ist. Laufen Zustand und Geometrie einmal auseinander
+                # (auf dem Mac genügen zwei schnelle Klicks — Tk kennt die neue
+                # Größe erst nach einem Durchlauf der Ereignisschleife), würde
+                # hier sonst die Leistenhöhe als „offen" festgeschrieben. Ab da
+                # ist das Overlay dauerhaft zu.
+                aktuell = self.root.winfo_height()
+                if aktuell > leistenhoehe + 40:
+                    self.hoehe_offen = aktuell
                 # Die Höhe der Titelleiste, nicht geraten: Ein fester Wert säße
                 # bei anderer Schriftgröße daneben.
-                leiste = self.root.winfo_children()[0]
-                hoehe = max(leiste.winfo_height(), 26)
+                hoehe = leistenhoehe
                 self.root.geometry('%dx%d+%d+%d' % (
                     self.root.winfo_width(), hoehe,
                     self.root.winfo_x(), self.root.winfo_y()))
                 self.klapp_lbl.configure(text='▸')
                 self.eingeklappt = True
+                self.grip.place_forget()      # sonst deckt er das ✕ zu
             pfade.einstellung_setzen('eingeklappt', self.eingeklappt)
         except tk.TclError:
             pass

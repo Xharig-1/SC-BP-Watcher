@@ -63,6 +63,17 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **A "Server status" tab of its own.** Is Star Citizen up? If you cannot get
+  into the game, you look for the fault on your own machine first — this
+  answers that beforehand. It shows what CIG reports on its status page: the
+  state of all three systems, plus the incidents of the last two months in full,
+  update lines included. The layout follows the status page, and the states stay
+  **in CIG's own wording** (`operational`, `maintenance`) — translating them
+  would be a statement RSI never made. While the tab is open it checks once a
+  minute; that costs almost nothing because it asks with `ETag` and an unchanged
+  page is answered without content. The source is linked below it.
+  ⚠️ These entries are **maintained by hand, not measured** — the page says so
+  too, so nobody mistakes it for a measurement.
 - **A button for „just give me the latest".** Until now you first had to
   understand what a channel is and pick the right one of the two boxes — anyone
   choosing the wrong one was offered nothing at all. There is now a full-width
@@ -200,6 +211,22 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **A collapsed overlay could not be opened again.** The button toggled, but
+  nothing happened on screen — the tool was shut and stayed shut. Cause: on
+  collapsing, the current window height was stored as the "open" height. Once
+  the stored state and the actual geometry drifted apart, the next collapse
+  wrote the **title bar height** as the open height; from then on the window
+  "expanded" to its own size. The height is now only remembered while the window
+  really is open, and expanding enforces a minimum height.
+- **The resize grip covered the ✕ while collapsed.** It sits at the bottom
+  right — on a window shrunk to title bar height that is the same spot as the
+  top right, and you had to aim to close the tool at all. It is now hidden while
+  collapsed; a 26 pixel window cannot be resized vertically anyway.
+- **Blueprint names were unreadable without the launcher** — "Golemmc4Orepod"
+  instead of "GOLEM MC-4 Ore Pod". The fallback ran `.title()` on the comparison
+  key, which has no word boundaries left; the readable name sat right next to it
+  in the cache the whole time. This affected **every Linux user**, because there
+  is never a launcher there.
 - **Self-update never arrived on Windows.** Clicking "get it" produced a warning
   and then nothing at all — except an orphaned 14 MB file in the program folder,
   once per attempt. Two separate bugs were behind it, either of which would have

@@ -215,6 +215,24 @@ def rundrahmen(eltern, grund, rand, radius=8, grundfarbe=None):
     Zurück kommt der innere Rahmen — dort hinein wird gepackt wie gewohnt.
     Am Rückgabewert hängen `.leinwand` und `.form`, falls die Randfarbe später
     wechseln soll (etwa bei einer Auswahl).
+
+    ⚠⚠ **Nur für Kästen, die ohnehin die volle Breite bekommen — nie für kleine
+    Elemente.**
+
+    Der Inhalt sitzt per `create_window` auf der Leinwand und zählt damit
+    **nicht** zur Wunschgröße des Kastens. Ein `rundrahmen` weiß also nicht,
+    wie groß er sein müsste: Er dehnt sich auf den verfügbaren Platz und bleibt
+    in der Höhe auf seinem Anfangswert, bis ihn jemand nachzieht.
+
+    Bei einer Karte über die volle Breite fällt das nicht auf — genau dafür ist
+    er gebaut. Bei allem, was seine eigene Größe haben soll, ist es der falsche
+    Baustein: Aus kompakten Etiketten wurden Balken über die halbe Karte, ein
+    Statusstreifen erschien als leerer Rahmen ohne Inhalt. Beides am 26.08.2026
+    im Serverstatus, und beides schon am Vormittag desselben Tages an anderer
+    Stelle.
+
+    **Für kleine Elemente ein schlichtes `tk.Label` mit `bg` und `padx/pady`
+    nehmen.** Eckig, aber richtig bemessen.
     """
     grundfarbe = grundfarbe or eltern.cget('bg')
     halter = tk.Frame(eltern, bg=grundfarbe)
@@ -1218,6 +1236,10 @@ class Hauptfenster:
         self._gruppe(t('hf_gruppe_info'))
         self._reiter('wasistneu', '✦', t('hf_wasistneu'))
         self._reiter('ueber', 'ⓘ', t('hf_ueber'))
+        # Direkt unter „Update & Über": Wer nicht ins Spiel kommt, sucht den
+        # Fehler zuerst bei sich. Ein eigener Reiter beantwortet das, statt die
+        # Auskunft unten an eine andere Seite zu hängen, wo niemand sie sucht.
+        self._reiter('serverstatus', '◉', t('hf_serverstatus'))
 
         # Fortgeschrittenes sitzt unten und ist zugeklappt — sichtbar, aber
         # nicht im Weg. Wer es sucht, findet es; wer es nicht kennt, wird nicht

@@ -113,22 +113,46 @@ def _hole(pfad, etag=None):
 
 
 def _text_aus_html(roh):
-    """Aus dem Meldungstext lesbare Zeilen machen.
+    """Aus dem Meldungstext lesbare Zeilen machen — **mit** der Hervorhebung.
 
-    Der Text kommt als HTML — jede Update-Zeile ein eigener Absatz
-    (`<p>1415 UTC - Initial Notice, Matchmaking disabled.</p>`). Die Absätze
-    sind die Gliederung der Meldung und müssen erhalten bleiben, sonst wird aus
-    einem Verlauf ein Textklumpen.
+    Rückgabe: `[(text, fett), …]`.
 
-    Bewusst kein HTML-Parser: Es geht um Absätze, Zeilenumbrüche und Entities,
-    nicht um verschachtelte Auszeichnung."""
+    Der Text kommt als HTML, jede Zeile ein Absatz. CIG hebt darin genau das
+    hervor, was man tun soll: „**Players are strongly advised to safely stow
+    their vehicles**". Wer das Fett wegwirft, macht aus einer Warnung einen
+    Satz unter vielen — deshalb wird `<strong>`/`<b>` mitgenommen und in der
+    Anzeige wieder fett gesetzt.
+
+    Bewusst kein HTML-Parser: Es geht um Absätze, Zeilenumbrüche, Fettung und
+    Entities, nicht um verschachtelte Auszeichnung. `<!-- raw HTML omitted -->`
+    steht als Kommentar drin und fällt beim Entfernen der Tags von selbst weg.
+    """
     if not roh:
         return []
-    text = re.sub(r'(?i)<br\s*/?>', '\n', roh)
+    text = re.sub(r'(?i)<!--.*?-->', '', roh, flags=re.S)
+    text = re.sub(r'(?i)<br\s*/?>', '\n', text)
     text = re.sub(r'(?i)</p\s*>', '\n\n', text)
-    text = re.sub(r'<[^>]+>', '', text)
-    text = html.unescape(text)
-    return [z.strip() for z in text.split('\n') if z.strip()]
+
+    zeilen = []
+    for stueck in text.split('\n'):
+        if not stueck.strip():
+            continue
+        # Fett ist die Zeile, wenn ihr sichtbarer Text vollständig in einer
+        # Hervorhebung steckt. Ein einzelnes fettes Wort mitten im Satz
+        # bekäme sonst die ganze Zeile fett — falsch gewichtet.
+        ohne_tags = re.sub(r'<[^>]+>', '', stueck).strip()
+        # Verglichen wird der Text **innerhalb** der Hervorhebung mit dem
+        # gesamten sichtbaren Text. Nur wenn beide gleich sind, ist die ganze
+        # Zeile hervorgehoben.
+        hervor = ' '.join(
+            re.sub(r'<[^>]+>', '', treffer)
+            for treffer in re.findall(r'(?is)<(?:strong|b)\s*>(.*?)</(?:strong|b)\s*>',
+                                      stueck)).strip()
+        fett = bool(hervor) and hervor == ohne_tags
+        sauber = html.unescape(ohne_tags)
+        if sauber:
+            zeilen.append((sauber, fett))
+    return zeilen
 
 
 def _zeitstempel(roh):
@@ -179,7 +203,15 @@ def _cache_schreiben(daten):
         pass
 
 
-def lage(erzwingen=False):
+def gespeicherte_lage():
+    """Der zuletzt geholte Stand — **ohne** ins Netz zu gehen.
+
+    Damit steht beim Öffnen der Seite sofort etwas da, während der frische
+    Abruf noch läuft. Gab es nie einen Abruf, kommt `{}` zurück."""
+    return (_cache_lesen().get('lage') or {})
+
+
+def lage(erzwingen=False, frist=None):
     """Die Lage aller Systeme — aus dem Netz oder aus dem Zwischenspeicher.
 
     Rückgabe:
@@ -195,7 +227,12 @@ def lage(erzwingen=False):
     `{}` zurück — dann zeigt die Oberfläche nichts an, statt zu raten."""
     gespeichert = _cache_lesen()
     alt = gespeichert.get('lage') or {}
-    frisch = (time.time() - (alt.get('geholt') or 0)) < FRISCHE_SEK
+    # `frist` sagt, wie alt der gespeicherte Stand sein darf, bevor überhaupt
+    # gefragt wird. Der Live-Takt setzt sie auf 0: Er fragt jede Minute, aber
+    # **mit** ETag — unverändert antwortet der Server mit 304 und ohne Inhalt.
+    # Das ist der billige Fall und darf deshalb oft passieren.
+    grenze = FRISCHE_SEK if frist is None else frist
+    frisch = (time.time() - (alt.get('geholt') or 0)) < grenze
     if alt and frisch and not erzwingen:
         return alt
 
@@ -245,6 +282,35 @@ def lage(erzwingen=False):
     return neu
 
 
+def nachfragen():
+    """Ein Blick, ob sich etwas geändert hat — für den laufenden Takt.
+
+    Fragt **mit** ETag. Hat CIG nichts angefasst, kommt ein 304 ohne Inhalt
+    zurück; das kostet kaum etwas und darf deshalb jede Minute passieren. Nur
+    wenn sich wirklich etwas geändert hat, wird gelesen und gespeichert.
+
+    Gibt `(lage, veraendert)` zurück — `veraendert` sagt der Oberfläche, ob sie
+    überhaupt neu zeichnen muss. Ohne das würde die Anzeige jede Minute
+    zerlegt und neu aufgebaut, obwohl sich nichts getan hat: Wer gerade eine
+    Meldung liest, verlöre dabei seine Rollposition."""
+    vorher = gespeicherte_lage()
+    neu = lage(frist=0)
+    return neu, _kern(neu) != _kern(vorher)
+
+
+def _kern(lage_):
+    """Woran man erkennt, ob sich inhaltlich etwas geändert hat.
+
+    Bewusst **ohne** `geholt` — das ändert sich bei jedem Blick und würde jede
+    Nachfrage als Änderung ausgeben."""
+    if not lage_:
+        return None
+    return (lage_.get('gesamt'),
+            tuple((s.get('name'), s.get('status'),
+                   tuple(sorted(m.get('titel') or '' for m in s.get('meldungen') or [])))
+                  for s in lage_.get('systeme') or []))
+
+
 def _vorfall_kurz(roh):
     """Die Angaben zu einem Vorfall, wie sie in der Systemliste mitkommen."""
     return {
@@ -275,6 +341,52 @@ def vorfall(datei):
     e = _vorfall_kurz(daten)
     e['zeilen'] = _text_aus_html(daten.get('body'))
     return e
+
+
+def meldungen(monate=2, hoechstens=12):
+    """Die Meldungen der letzten Monate — im Volltext, wie auf der Statusseite.
+
+    Die Seite zeigt unter „Latest incidents" **auch erledigte** Vorfälle. Das ist
+    der eigentliche Nutzen: Wer abends nicht ins Spiel kommt, will sehen, ob es
+    heute Nachmittag eine Wartung gab — nicht nur, ob gerade eine läuft.
+
+    ⚠ **Jeder Volltext ist ein eigener Abruf.** Deshalb werden sie
+    zwischengespeichert und nur einmal geholt: Eine erledigte Meldung von
+    vorletzter Woche ändert sich nicht mehr. Ohne den Zwischenspeicher liefen
+    bei jedem Öffnen des Reiters ein Dutzend Abrufe los.
+
+    Zwei Monate sind Absicht, nicht die ganze Historie: Sie liegt vollständig
+    unter der verlinkten Adresse, und 265 Vorfälle im Fenster hülfen niemandem."""
+    grenze = time.time() - monate * 30 * 86400
+    zwischen = _cache_lesen()
+    volltexte = zwischen.get('volltexte') or {}
+    ergebnis, neu_geholt = [], False
+
+    for kurz in historie(60):
+        wann = kurz.get('begonnen') or 0
+        if wann and wann < grenze:
+            break                      # die Liste ist nach Datum sortiert
+        datei = kurz.get('datei') or ''
+        if datei in volltexte:
+            voll = volltexte[datei]
+        else:
+            voll = vorfall(datei)
+            if voll:
+                # Nur Erledigtes darf dauerhaft liegen bleiben. Eine offene
+                # Meldung bekommt weitere Update-Zeilen — die würden wir sonst
+                # nie wieder sehen.
+                if voll.get('erledigt'):
+                    volltexte[datei] = voll
+                    neu_geholt = True
+        if voll:
+            ergebnis.append(voll)
+        if len(ergebnis) >= hoechstens:
+            break
+
+    if neu_geholt:
+        zwischen['volltexte'] = volltexte
+        _cache_schreiben(zwischen)
+    return ergebnis
 
 
 def historie(hoechstens=20):

@@ -901,6 +901,56 @@ TEXTE = {
     # ⚠ „Über“ allein findet niemand, der ein Update sucht.
     # Gemeldet am 26.08.2026: „ich suche updates auch nicht bei Über“.
     'hf_ueber':          ('Update & Über', 'Update & About'),
+    'hf_serverstatus':   ('Serverstatus', 'Server status'),
+    's_st_lead':         ('Läuft Star Citizen gerade? Was CIG auf seiner '
+                          'Statusseite meldet.',
+                          'Is Star Citizen up? What CIG reports on its status page.'),
+    's_st_gesamt':       ('Gesamtlage', 'Overall'),
+    # Die Kopfzeile bildet nach, was oben auf der Statusseite steht:
+    # „Last updated just now" links, „No issues detected" rechts.
+    's_st_zuletzt':      ('Zuletzt aktualisiert %s', 'Last updated %s'),
+    's_st_gerade':       ('gerade eben', 'just now'),
+    's_st_vor_min':      ('vor %d Min.', '%d min ago'),
+    's_st_vor_std':      ('vor %d Std.', '%dh ago'),
+    # ⚠ Einzahl und Mehrzahl getrennt. „vor 1 Tagen" ist schlicht falsch, und
+    # im Englischen ebenso („1 days ago").
+    's_st_vor_tag':      ('vor %d Tagen', '%d days ago'),
+    's_st_vor_tag_1':    ('vor 1 Tag', '1 day ago'),
+    's_st_vor_monat':    ('vor %d Monaten', '%d months ago'),
+    's_st_vor_monat_1':  ('vor 1 Monat', '1 month ago'),
+    's_st_vor_min_1':    ('vor 1 Min.', '1 min ago'),
+    's_st_vor_std_1':    ('vor 1 Std.', '1h ago'),
+    's_st_ok':           ('Keine Störung gemeldet', 'No issues detected'),
+    's_st_stoerung':     ('Störung gemeldet', 'Issues reported'),
+    's_st_letzte':       ('Letzte Meldungen', 'Latest incidents'),
+    's_st_erledigt_kurz': ('Erledigt', 'Resolved'),
+    's_st_offen':        ('Offen', 'Open'),
+    's_st_alle_zeigen':  ('Alle Meldungen auf der Statusseite ansehen',
+                          'See all incidents on the status page'),
+    's_st_stand':        ('Stand der Seite', 'Page updated'),
+    's_st_geholt':       ('Abgerufen', 'Fetched'),
+    's_st_quelle':       ('Quelle', 'Source'),
+    's_st_nachsehen':    ('Jetzt aktualisieren', 'Refresh now'),
+    's_st_laedt':        ('Serverstatus wird geholt …', 'Fetching server status …'),
+    's_st_keine':        ('Keine offene Meldung.', 'No open incidents.'),
+    's_st_leer':         ('Noch nichts abgerufen. Klick auf „Jetzt nachsehen".',
+                          'Nothing fetched yet. Click "Check now".'),
+    's_st_fehler':       ('Die Statusseite war nicht erreichbar.',
+                          'The status page could not be reached.'),
+    's_st_betroffen':    ('Betroffen', 'Affected'),
+    's_st_seit':         ('seit', 'since'),
+    's_st_erledigt':     ('erledigt', 'resolved'),
+    # ⚠ Dieser Hinweis gehört unter jede Anzeige und darf nicht wegfallen:
+    # Die Seite ist von Hand gepflegt. Ohne den Satz liest sich die Anzeige
+    # wie eine Messung, und das wäre eine Aussage, die niemand gemacht hat.
+    's_st_hinweis':      ('Diese Angaben stammen von CIG und werden von Hand '
+                          'gepflegt — sie sind keine Messung. Läuft etwas '
+                          'nicht, obwohl hier „operational" steht, kann beides '
+                          'stimmen.',
+                          'These entries come from CIG and are maintained by '
+                          'hand — they are not a measurement. If something is '
+                          'broken while this says "operational", both can be '
+                          'true.'),
     'hf_erkennung':      ('Erkennung', 'Detection'),
     'hf_diagnose':       ('Diagnose', 'Diagnostics'),
     'hf_neu':            ('neu', 'new'),

@@ -58,6 +58,7 @@ def bauen(fenster, kennung, rahmen):
         'bestand':     _bestand,
         'wasistneu':   _wasistneu,
         'ueber':       _ueber,
+        'serverstatus': _serverstatus,
         'erkennung':   _erkennung,
         'diagnose':    _diagnose,
     }.get(kennung)
@@ -1918,6 +1919,470 @@ def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text='',
         auskunft.bind('<Button-1>', lambda e: tat())
         auskunft.configure(cursor='hand2')
     return rand
+
+
+def _serverstatus(fenster, rahmen):
+    """Läuft Star Citizen gerade? — was CIG auf seiner Statusseite meldet.
+
+    ⚠ **Erst zeigen, dann holen.** Beim Öffnen steht sofort der letzte bekannte
+    Stand da, das Auffrischen läuft im Hintergrund. Wer die Seite öffnet und
+    fünfzehn Sekunden auf eine leere Fläche sieht, hält sie für kaputt — und
+    genau so lange darf ein Abruf dauern, bevor er aufgibt.
+
+    ⚠ **Der Abruf läuft nie im Tk-Faden.** Ein hängendes Netz würde sonst das
+    ganze Fenster einfrieren, Overlay eingeschlossen.
+    """
+    import threading
+    from . import serverstatus
+
+    _ueberschrift(fenster, rahmen, t('hf_serverstatus'), t('s_st_lead'))
+    innen = _rollflaeche(rahmen)
+
+    # ⚠ Der Behälter wird hier nur **erzeugt**, gepackt wird er weiter unten —
+    # nach dem Knopf. Über `before` einzufügen ging schief: Die Knöpfe sind
+    # Leinwände, die ihre Höhe erst über ein Ereignis nachziehen, und der Knopf
+    # blieb als leerer grüner Streifen stehen. Die Packreihenfolge einzuhalten
+    # ist der ruhigere Weg als sie nachträglich zu drehen.
+    behaelter = tk.Frame(innen, bg=BG)
+
+    def zeichnen(lage):
+        for kind in behaelter.winfo_children():
+            kind.destroy()
+        if not lage:
+            _fliesstext(behaelter, t('s_st_leer'), fenster.f_klein, pady=(4, 8))
+            return
+
+        # --- Kopfzeile, wie oben auf der Statusseite ---
+        # Links „Zuletzt aktualisiert vor …", rechts die Zusammenfassung. Die
+        # Seite hinterlegt diesen Streifen in der Ampelfarbe; das ist ihr
+        # auffälligstes Element und die Antwort auf die eigentliche Frage.
+        _kopfstreifen(fenster, behaelter, lage)
+
+        karte = _karte(behaelter, pady=(0, 6))
+        tk.Frame(karte, bg=FLAECHE, height=8).pack()
+        for sys_ in lage.get('systeme') or []:
+            _systemzeile(fenster, karte, sys_)
+        tk.Frame(karte, bg=FLAECHE, height=10).pack()
+
+        fuss = _karte(behaelter, pady=(8, 6))
+        tk.Frame(fuss, bg=FLAECHE, height=8).pack()
+        if lage.get('stand'):
+            _wertzeile(fenster, fuss, t('s_st_stand'), _uhrzeit(lage['stand']))
+        _wertzeile(fenster, fuss, t('s_st_geholt'), _uhrzeit(lage.get('geholt')))
+        _quellzeile(fenster, fuss, t('s_st_quelle'), lage.get('quelle') or '')
+        tk.Frame(fuss, bg=FLAECHE, height=10).pack()
+
+        _fliesstext(behaelter, t('s_st_hinweis'), fenster.f_klein, pady=(10, 4))
+
+        # --- „Letzte Meldungen", wie unten auf der Statusseite ---
+        # Auch **erledigte**: Wer abends nicht ins Spiel kommt, will sehen, ob
+        # es nachmittags eine Wartung gab — nicht nur, ob gerade eine läuft.
+        tk.Label(behaelter, text=t('s_st_letzte'), bg=BG, fg=FG,
+                 font=fenster.f_titel, anchor='w').pack(fill='x', pady=(22, 6))
+        meldungsraum = tk.Frame(behaelter, bg=BG)
+        meldungsraum.pack(fill='x')
+        _fliesstext(meldungsraum, t('s_st_laedt'), fenster.f_klein, pady=(2, 4))
+        _meldungen_laden(fenster, meldungsraum, lage.get('quelle') or '')
+
+    def auffrischen(erzwingen=False):
+        if erzwingen:
+            fenster.sagen(t('s_st_laedt'))
+
+        def arbeit():
+            try:
+                lage = serverstatus.lage(erzwingen=erzwingen)
+            except Exception as ausnahme:
+                fehler.merken('seiten.serverstatus', ausnahme)
+                fenster.root.after(0, lambda: fenster.sagen(t('s_st_fehler')))
+                return
+            fenster.root.after(0, lambda: zeichnen(lage))
+
+        threading.Thread(target=arbeit, daemon=True).start()
+
+    # ⚠ Der Knopf gehört **über** den Inhalt, nicht darunter. Unter der
+    # Meldungsliste läge er nach mehreren Bildschirmhöhen Text — niemand rollt
+    # nach unten, um eine Schaltfläche zu suchen, die er sofort erwartet.
+    # `before` setzt ihn vor den Behälter, obwohl er später erzeugt wird.
+    # Der Knopf gehört über den Inhalt: Unter der Meldungsliste läge er nach
+    # mehreren Bildschirmhöhen Text, und niemand rollt nach unten, um eine
+    # Schaltfläche zu suchen, die er sofort erwartet.
+    _knopf(fenster, innen, t('s_st_nachsehen'),
+           lambda: auffrischen(True), stark=True).pack(fill='x', pady=(0, 12))
+    behaelter.pack(fill='x')
+
+    # --- Der laufende Takt ---
+    #
+    # Jede Minute ein Blick, ob sich etwas geändert hat. Das ist billig, weil
+    # mit ETag gefragt wird: Hat CIG nichts angefasst, kommt ein 304 ohne
+    # Inhalt zurück.
+    #
+    # ⚠ **Neu gezeichnet wird nur, wenn sich wirklich etwas geändert hat.**
+    # Sonst würde die Anzeige jede Minute zerlegt und neu aufgebaut — wer
+    # gerade eine Meldung liest, verlöre dabei seine Rollposition.
+    #
+    # ⚠ Der Takt hört auf, sobald die Seite weg ist. Ohne die Prüfung auf
+    # `winfo_exists` liefe er weiter, wenn der Nutzer längst woanders ist, und
+    # jeder Seitenwechsel legte einen weiteren Takt obendrauf.
+    def takt():
+        if not behaelter.winfo_exists():
+            return
+
+        def arbeit():
+            try:
+                lage, veraendert = serverstatus.nachfragen()
+            except Exception:
+                lage, veraendert = None, False
+            if veraendert and lage:
+                fenster.root.after(0, lambda: behaelter.winfo_exists()
+                                   and zeichnen(lage))
+            fenster.root.after(TAKT_MS, takt)
+
+        threading.Thread(target=arbeit, daemon=True).start()
+
+    zeichnen(serverstatus.gespeicherte_lage())   # sofort, ohne Netz
+    auffrischen()                                # und im Hintergrund nachziehen
+    fenster.root.after(TAKT_MS, takt)            # danach im Takt weiter
+
+
+# Wie oft nachgefragt wird, solange die Seite offen ist. Eine Minute ist
+# vertretbar, weil mit ETag gefragt wird und der unveränderte Fall den Server
+# fast nichts kostet.
+TAKT_MS = 60_000
+
+
+def _relative_zeit(stempel):
+    """„gerade eben", „vor 7 Std.", „vor 2 Monaten" — wie auf der Statusseite.
+
+    Die Seite schreibt das Alter, nicht das Datum („Last updated just now",
+    „7h ago"). Das ist die Angabe, die man beim Überfliegen wirklich braucht:
+    Ob eine Wartung heute Nachmittag war oder im Juli, sieht man so sofort.
+    Das genaue Datum steht daneben in der Fußzeile."""
+    import time as _t
+    if not stempel:
+        return '—'
+    alter = max(0, _t.time() - stempel)
+    if alter < 90:
+        return t('s_st_gerade')
+    def form(anzahl, schluessel):
+        """Einzahl und Mehrzahl auseinanderhalten — „vor 1 Tagen" ist falsch."""
+        if anzahl == 1:
+            return t(schluessel + '_1')
+        return t(schluessel) % anzahl
+
+    if alter < 3600:
+        return form(int(alter // 60), 's_st_vor_min')
+    if alter < 86400:
+        return form(int(alter // 3600), 's_st_vor_std')
+    if alter < 60 * 86400:
+        return form(int(alter // 86400), 's_st_vor_tag')
+    return form(max(1, int(alter // (30 * 86400))), 's_st_vor_monat')
+
+
+def _kopfstreifen(fenster, eltern, lage):
+    """Der Streifen ganz oben: links das Alter, rechts die Zusammenfassung.
+
+    Bildet nach, was die Statusseite dort zeigt („Last updated just now" /
+    „No issues detected"). Es ist die Antwort auf die Frage, wegen der jemand
+    die Seite überhaupt öffnet — deshalb steht sie oben und nicht in einer
+    Werteliste.
+
+    ⚠ **Kein `rundrahmen`.** Dessen Leinwand bleibt auf ihrer Anfangshöhe,
+    wenn der Inhalt nicht mitgemessen wird — der Streifen erschien als leerer
+    grüner Rahmen. Ein schlichter Frame mit farbigem Balken am linken Rand
+    trägt dieselbe Aussage und kann nicht einklappen.
+    """
+    farbe = _ampelfarbe(lage)
+    streifen = tk.Frame(eltern, bg=FLAECHE)
+    streifen.pack(fill='x', pady=(0, 10))
+    tk.Frame(streifen, bg=farbe, width=4).pack(side='left', fill='y')
+
+    inhalt = tk.Frame(streifen, bg=FLAECHE)
+    inhalt.pack(side='left', fill='x', expand=True, padx=12, pady=10)
+    tk.Label(inhalt, text=t('s_st_zuletzt') % _relative_zeit(lage.get('geholt')),
+             bg=FLAECHE, fg=SUB, font=fenster.f_klein,
+             anchor='w').pack(side='left')
+    alles_gut = (lage.get('gesamt') or '').lower() == 'operational'
+    tk.Label(inhalt, text=t('s_st_ok') if alles_gut else t('s_st_stoerung'),
+             bg=FLAECHE, fg=farbe, font=fenster.f_fett,
+             anchor='e').pack(side='right')
+
+
+def _meldungen_laden(fenster, raum, quelle):
+    """Die letzten Meldungen holen und einsetzen — im eigenen Faden.
+
+    ⚠ Jeder Volltext ist ein eigener Abruf; beim ersten Mal dauert das ein paar
+    Sekunden. Deshalb steht solange „wird geholt" da, statt das Fenster
+    festzuhalten."""
+    import threading
+    from . import serverstatus
+
+    def einsetzen(liste):
+        if not raum.winfo_exists():
+            return
+        for kind in raum.winfo_children():
+            kind.destroy()
+        if not liste:
+            _fliesstext(raum, t('s_st_keine'), fenster.f_klein, pady=(2, 4))
+        else:
+            for meldung in liste:
+                _meldungskarte(fenster, raum, meldung)
+        if quelle:
+            _quellink(fenster, raum, t('s_st_alle_zeigen'), quelle)
+
+    def arbeit():
+        try:
+            liste = serverstatus.meldungen(2)
+        except Exception as ausnahme:
+            fehler.merken('seiten.serverstatus_meldungen', ausnahme)
+            liste = []
+        fenster.root.after(0, lambda: einsetzen(liste))
+
+    threading.Thread(target=arbeit, daemon=True).start()
+
+
+def _quellink(fenster, eltern, text, adresse):
+    """Ein anklickbarer Verweis als eigene Zeile."""
+    link = tk.Label(eltern, text=text, bg=BG, fg=ACCENT, font=fenster.f_klein,
+                    anchor='w', cursor='hand2')
+    link.pack(fill='x', pady=(10, 4))
+
+    def oeffnen(_=None):
+        import webbrowser
+        try:
+            webbrowser.open(adresse)
+        except Exception as ausnahme:
+            fehler.merken('seiten.quelle_oeffnen', ausnahme)
+
+    link.bind('<Button-1>', oeffnen)
+    link.bind('<Enter>', lambda e: link.configure(fg=FG))
+    link.bind('<Leave>', lambda e: link.configure(fg=ACCENT))
+
+
+def _quellzeile(fenster, eltern, bez, adresse):
+    """Wie `_wertzeile`, aber die Adresse lässt sich anklicken.
+
+    Eine Quelle, die man nur ablesen und abtippen kann, ist keine Quelle —
+    besonders bei einer Angabe, die man im Zweifel selbst nachprüfen soll."""
+    z = tk.Frame(eltern, bg=FLAECHE)
+    z.pack(fill='x', padx=16, pady=3)
+    tk.Label(z, text=bez, bg=FLAECHE, fg=SUB, font=fenster.f_klein,
+             width=24, anchor='w').pack(side='left')
+    if not adresse:
+        tk.Label(z, text='—', bg=FLAECHE, fg=FG, font=fenster.f_klein,
+                 anchor='w').pack(side='left')
+        return
+    link = tk.Label(z, text=adresse, bg=FLAECHE, fg=ACCENT,
+                    font=fenster.f_klein, anchor='w', cursor='hand2')
+    link.pack(side='left')
+
+    def oeffnen(_=None):
+        import webbrowser
+        try:
+            webbrowser.open(adresse)
+        except Exception as ausnahme:
+            fehler.merken('seiten.quelle_oeffnen', ausnahme)
+
+    link.bind('<Button-1>', oeffnen)
+
+    # Rückmeldung beim Darüberfahren über die **Farbe**, nicht über die Schrift.
+    #
+    # ⚠ `fenster.f_klein` ist ein `tkfont.Font`-Objekt, kein Tupel — `font[0]`
+    # wirft. Und ein eigenes, unterstrichenes Font-Objekt anzulegen wäre die
+    # zweite Falle: „Schrift größer" stellt zentral genau diese gemeinsamen
+    # Objekte um, ein eigenes bliebe stehen und der Link wäre der einzige
+    # Text, der nicht mitwächst.
+    link.bind('<Enter>', lambda e: link.configure(fg=FG))
+    link.bind('<Leave>', lambda e: link.configure(fg=ACCENT))
+
+
+def _ampelfarbe(lage):
+    """Die Farbe der Gesamtlage — die schlechteste, die vorkommt.
+
+    „Alles grün außer einem" ist nicht grün. Wer nur die Zusammenfassung liest,
+    soll denselben Eindruck bekommen wie jemand, der die Liste durchgeht."""
+    rang = {'ok': 0, 'hinweis': 1, 'gestoert': 2, 'aus': 3}
+    schlimmste = None
+    for s_ in lage.get('systeme') or []:
+        if schlimmste is None or rang.get(s_.get('ampel'), 2) > rang.get(schlimmste.get('ampel'), 2):
+            schlimmste = s_
+    return (schlimmste or {}).get('farbe') or FG
+
+
+def _systemzeile(fenster, eltern, sys_):
+    """Ein System: Farbbalken, Name, Zustand im Wortlaut von CIG."""
+    z = tk.Frame(eltern, bg=FLAECHE)
+    z.pack(fill='x', padx=16, pady=3)
+    # Der Balken trägt die Aussage für alle, die Farben schlecht unterscheiden,
+    # zusammen mit dem ausgeschriebenen Zustand daneben — nie die Farbe allein.
+    tk.Frame(z, bg=sys_.get('farbe') or FG, width=4, height=18).pack(
+        side='left', padx=(0, 10))
+    tk.Label(z, text=sys_.get('name') or '?', bg=FLAECHE, fg=FG,
+             font=fenster.f_klein, width=22, anchor='w').pack(side='left')
+    tk.Label(z, text=sys_.get('status') or '—', bg=FLAECHE,
+             fg=sys_.get('farbe') or FG, font=fenster.f_klein,
+             anchor='w').pack(side='left')
+
+
+def _meldungskarte(fenster, eltern, meldung):
+    """Eine Meldung im Aufbau der Statusseite.
+
+        Live Deployment                              ✔ Erledigt
+        vor 7 Std.
+        maintenance          Persistent Universe · Arena Commander
+        <Meldungstext, Update-Zeilen im Original>
+
+    ⚠ Der Text bleibt im **Wortlaut von CIG**, auch die Update-Zeilen
+    (`1415 UTC - Initial Notice, Matchmaking disabled.`). Übersetzt wäre es eine
+    Aussage, die RSI nie gemacht hat — und bei einer Störungsmeldung ist genau
+    das gefährlich."""
+    karte = _karte(eltern, pady=(6, 2))
+    tk.Frame(karte, bg=FLAECHE, height=10).pack()
+
+    # Kopf: Titel links, Zustand rechts
+    kopf = tk.Frame(karte, bg=FLAECHE)
+    kopf.pack(fill='x', padx=16)
+    tk.Label(kopf, text=meldung.get('titel') or '—', bg=FLAECHE, fg=FG,
+             font=fenster.f_fett, anchor='w').pack(side='left')
+    erledigt = bool(meldung.get('erledigt'))
+    tk.Label(kopf, text=('✔ ' + t('s_st_erledigt_kurz')) if erledigt
+             else t('s_st_offen'),
+             bg=FLAECHE,
+             # Erledigt grün wie auf der Statusseite; offen in Gold, damit es
+             # auffällt — eine laufende Störung ist der Grund, warum jemand
+             # überhaupt hier nachsieht.
+             fg=(ACCENT if erledigt else GOLD),
+             font=fenster.f_klein, anchor='e').pack(side='right')
+
+    # Alter — wie auf der Seite („7h ago"), nicht das Datum
+    tk.Label(karte, text=_relative_zeit(meldung.get('begonnen')), bg=FLAECHE,
+             fg=SUB, font=fenster.f_klein, anchor='w').pack(
+                 fill='x', padx=16, pady=(2, 6))
+
+    # Etiketten: Schweregrad links, betroffene Systeme rechts — wie auf der Seite
+    _etikettenreihe(fenster, karte, meldung.get('schwere'),
+                    meldung.get('betroffen') or [])
+
+    # ⚠ `fill='x'` ist Pflicht. Das Label ist zwar linksbündig gesetzt, aber
+    # ohne Füllung zentriert Tk es als Ganzes im Kasten — der Meldungstext
+    # stand mittig statt links und sah dadurch nicht aus wie auf der Seite.
+    # ⚠ `fill='x'` ist Pflicht. Das Label ist zwar linksbündig gesetzt, aber
+    # ohne Füllung zentriert Tk es als Ganzes im Kasten — der Meldungstext
+    # stand mittig statt links.
+    #
+    # Die Hervorhebung kommt aus dem Quelltext von CIG mit: Dort steht fett,
+    # was man tun soll („Fahrzeuge sichern"). Ältere Zwischenspeicher führen
+    # noch reine Zeichenketten — die werden weiter vertragen, statt beim ersten
+    # Start nach dem Update eine Ausnahme zu werfen.
+    for eintrag in (meldung.get('zeilen') or []):
+        if isinstance(eintrag, (list, tuple)):
+            zeile, fett = eintrag[0], bool(eintrag[1])
+        else:
+            zeile, fett = eintrag, False
+        _fliesstext(karte, zeile,
+                    fenster.f_fett if fett else fenster.f_klein,
+                    farbe=FG if fett else SUB, grund=FLAECHE,
+                    fill='x', padx=16, pady=(0, 3), abzug=48)
+    tk.Frame(karte, bg=FLAECHE, height=10).pack()
+
+
+def _etikett(fenster, eltern, text):
+    """Ein kleines graues Schild, wie die Marken auf der Statusseite.
+
+    ⚠ **Bewusst kein `rundrahmen`.** Der setzt seinen Inhalt per
+    `create_window` auf eine Leinwand — dadurch trägt der Inhalt nicht zur
+    Wunschgröße bei, das Schild hat keine eigene Breite und dehnt sich über
+    die halbe Karte. Bei großen Kästen fällt das nicht auf, hier schon: Aus
+    kompakten Marken wurden Balken. Ein schlichtes Label kennt seine Größe.
+    """
+    return tk.Label(eltern, text=text, bg=LINIE, fg=FG, font=fenster.f_klein,
+                    padx=8, pady=3)
+
+
+def _etikettenreihe(fenster, eltern, schwere, betroffen):
+    """Die Etiketten einer Meldung — **warum** links, **was betroffen ist** rechts.
+
+    Die Trennung ist keine Kosmetik, sie trägt die Aussage: Links steht der
+    Grund (`Maintenance`, `Degraded Performance`), rechts stehen die Systeme,
+    die es trifft. Stehen alle drei gleichrangig nebeneinander, ist es
+    Einheitsbrei und man muss raten, was wovon abhängt.
+
+    ⚠ **Zwei Fallen, beide schon zugeschnappt:**
+
+      Nebeneinander gepackt fällt heraus, wofür der Platz nicht reicht — auf
+      der Seite standen drei Marken, im Werkzeug nur zwei. Tk warnt dabei nicht.
+
+      Und ein reiner Fließumbruch behebt zwar das, ebnet aber die Trennung ein.
+
+    Deshalb zwei Ebenen: Grund und Systemblock rücken untereinander, sobald sie
+    nicht mehr nebeneinander passen — die Trennung bleibt dann als *oben und
+    unten* erhalten. Innerhalb des Systemblocks bricht `grid` die Systeme
+    weiter um, sodass auch bei sehr schmalem Fenster keines verschwindet.
+    """
+    reihe = tk.Frame(eltern, bg=FLAECHE)
+    reihe.pack(fill='x', padx=16, pady=(0, 6))
+
+    ABSTAND = 6
+
+    grund = _etikett(fenster, reihe, schwere) if schwere else None
+
+    systeme = tk.Frame(reihe, bg=FLAECHE)
+    schilder = [_etikett(fenster, systeme, name) for name in (betroffen or [])]
+    if not grund and not schilder:
+        return
+
+    def systeme_ordnen(platz):
+        """Die Systeme fließend umbrechen — keines darf herausfallen."""
+        zeile, spalte, belegt = 0, 0, 0
+        for schild in schilder:
+            breite = schild.winfo_reqwidth() + ABSTAND
+            # Das erste Schild einer Zeile bleibt immer stehen, auch wenn es
+            # allein schon zu breit ist. Abschneiden wäre genau der Fehler,
+            # den diese Funktion behebt.
+            if spalte and belegt + breite > max(platz, 1):
+                zeile, spalte, belegt = zeile + 1, 0, 0
+            schild.grid(row=zeile, column=spalte, sticky='w',
+                        padx=(0, ABSTAND), pady=2)
+            spalte += 1
+            belegt += breite
+
+    def ordnen(_=None):
+        platz = reihe.winfo_width()
+        if platz <= 1:
+            platz = reihe.winfo_toplevel().winfo_width()
+        breite_grund = (grund.winfo_reqwidth() + ABSTAND * 2) if grund else 0
+        breite_systeme = sum(s.winfo_reqwidth() + ABSTAND for s in schilder)
+        nebeneinander = breite_grund + breite_systeme <= platz
+
+        if nebeneinander == getattr(reihe, 'zuletzt_nebeneinander', None):
+            return
+        reihe.zuletzt_nebeneinander = nebeneinander
+
+        if grund:
+            grund.pack_forget()
+        systeme.pack_forget()
+
+        if nebeneinander:
+            if grund:
+                grund.pack(side='left', padx=(0, ABSTAND))
+            systeme.pack(side='right')
+            systeme_ordnen(breite_systeme)          # alles in eine Zeile
+        else:
+            if grund:
+                grund.pack(side='top', anchor='w', pady=(0, 4))
+            systeme.pack(side='top', anchor='w', fill='x')
+            systeme_ordnen(platz)
+
+    reihe.bind('<Configure>', ordnen, add='+')
+    reihe.after(0, ordnen)
+
+
+def _uhrzeit(stempel):
+    """Ein Zeitpunkt als Ortszeit. Die Quelle rechnet in UTC — hier steht,
+    was die Uhr des Nutzers zeigt, sonst rechnet jeder selbst um."""
+    import time as _t
+    if not stempel:
+        return '—'
+    return _t.strftime('%d.%m.%Y %H:%M', _t.localtime(stempel))
 
 
 def _ueber(fenster, rahmen):

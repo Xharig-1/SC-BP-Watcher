@@ -69,6 +69,18 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Ein eigener Reiter „Serverstatus".** Läuft Star Citizen gerade? Wer nicht
+  ins Spiel kommt, sucht den Fehler zuerst bei sich — ein Blick ins Werkzeug
+  beantwortet das vorher. Gezeigt wird, was CIG auf seiner Statusseite meldet:
+  die Lage der drei Systeme, dazu die Meldungen der letzten zwei Monate im
+  Volltext samt Update-Zeilen. Der Aufbau folgt der Statusseite, die Zustände
+  bleiben im **Wortlaut von CIG** (`operational`, `maintenance`) — eine
+  Übersetzung wäre eine Aussage, die RSI nie gemacht hat. Die Seite fragt
+  jede Minute nach, solange der Reiter offen ist; das kostet fast nichts, weil
+  mit `ETag` gefragt wird und der unveränderte Fall ohne Inhalt beantwortet
+  wird. Die Quelle steht als anklickbarer Verweis darunter.
+  ⚠️ Die Angaben sind **von Hand gepflegt, keine Messung** — das steht auch in
+  der Anzeige, damit niemand sie für eine Messung hält.
 - **Ein Knopf für „gib mir einfach die neueste".** Bisher musste man erst
   verstehen, was ein Kanal ist, und den richtigen der beiden Kästen anklicken —
   wer den falschen wählte, bekam gar nichts angeboten. Jetzt steht darüber ein
@@ -213,6 +225,25 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Das eingeklappte Overlay ließ sich nicht wieder aufklappen.** Der Knopf
+  schaltete um, sichtbar passierte nichts — das Werkzeug war zu und blieb es.
+  Ursache: Beim Einklappen wurde die aktuelle Fensterhöhe als „offene" Höhe
+  gemerkt. Liefen der gemerkte Zustand und die tatsächliche Geometrie einmal
+  auseinander, schrieb der nächste Einklapp-Vorgang die **Leistenhöhe** als
+  offene Höhe fest; ab da klappte das Fenster auf seine eigene Größe „auf".
+  Jetzt wird die Höhe nur gemerkt, wenn das Fenster wirklich offen ist, und
+  beim Aufklappen gilt eine Mindesthöhe.
+- **Der Ziehgriff für die Fenstergröße deckte im eingeklappten Zustand das ✕
+  zu.** Er sitzt unten rechts — bei einem auf Leistenhöhe geschrumpften Fenster
+  ist das dieselbe Stelle wie oben rechts, und man musste zielen, um das
+  Werkzeug überhaupt schließen zu können. Er wird jetzt beim Einklappen
+  ausgeblendet; ein 26 Pixel hohes Fenster in der Höhe zu ziehen ergibt ohnehin
+  keinen Sinn.
+- **Bauplan-Namen waren ohne Launcher unlesbar** — „Golemmc4Orepod" statt
+  „GOLEM MC-4 Ore Pod". Der Rückfall war `.title()` auf den Vergleichsschlüssel,
+  in dem es keine Wortgrenzen mehr gibt; der lesbare Name lag die ganze Zeit
+  daneben im Zwischenspeicher. Betraf **jeden Linux-Nutzer**, weil es dort nie
+  einen Launcher gibt.
 - **Das Selbst-Update unter Windows kam nie an.** Wer auf „holen" klickte, bekam
   eine Warnung und danach passierte nichts — außer 14 MB verwaister Datei im
   Programmordner, bei jedem Versuch aufs Neue. Dahinter steckten **zwei**
