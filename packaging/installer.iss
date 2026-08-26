@@ -47,7 +47,7 @@ AppUpdatesURL={#AppURL}/releases
 VersionInfoVersion={#ZahlVersion}
 
 ; ⚠ Das laufende Programm muss beendet werden, bevor die .exe ersetzt wird.
-; Ohne diese drei Zeilen bricht das Setup mitten im Kopieren ab:
+; Ohne Vorkehrung bricht das Setup mitten im Kopieren ab:
 ;
 ;     An error occurred while trying to replace the existing file:
 ;     DeleteFile failed; code 32.
@@ -56,23 +56,39 @@ VersionInfoVersion={#ZahlVersion}
 ;
 ; Genau so beim Testen gemeldet (Haldjas, 25.08.2026) — mit der Folge, dass die
 ; Installation halb fertig liegen blieb und der Watcher danach nur noch das
-; Setup startete. `CloseApplications` fragt den Nutzer und schließt das
-; Programm, `RestartApplications` startet es danach wieder.
+; Setup startete.
 ;
-; `AppMutex` ist die Voraussetzung dafür, dass Inno das laufende Programm
-; überhaupt erkennt — der Name muss mit dem übereinstimmen, den das Programm
-; beim Start setzt (siehe `sc_bp_watcher.py`).
-; `force` statt `yes`: `yes` **bittet** das Programm zu schließen (der Restart
-; Manager schickt ein WM_CLOSE). Ein Programm, das nicht mehr reagiert, hört das
-; nicht — und danach scheitert das Kopieren wieder an „code 32". Genau so beim
-; Testen gemeldet (Haldjas, 25.08.2026): „der installer schafft es dann aber
-; immer noch nicht zu installieren, selber code 32 fehler wie am anfang".
-; `force` beendet die Anwendung notfalls hart. Das ist hier vertretbar: Der
-; Bauplan-Bestand liegt in `Dokumente\SC BP Watcher` und wird bei jeder Änderung
-; geschrieben, nicht erst beim Beenden.
+; `CloseApplications=force` lässt den Windows-Restart-Manager das Programm
+; schließen, `RestartApplications=yes` fährt es danach wieder hoch. `force`
+; statt `yes`, weil `yes` nur **bittet** (ein WM_CLOSE über den Restart
+; Manager) — ein Programm, das nicht mehr reagiert, hört das nicht, und danach
+; scheitert das Kopieren wieder an „code 32". Auch das kam von Haldjas
+; (25.08.2026): „der installer schafft es dann aber immer noch nicht zu
+; installieren, selber code 32 fehler wie am anfang". Dass `force` notfalls hart
+; beendet, ist hier vertretbar: Der Bauplan-Bestand liegt in
+; `Dokumente\SC BP Watcher` und wird bei jeder Änderung geschrieben, nicht erst
+; beim Beenden.
+;
+; ⚠ Hier stand einmal zusätzlich `AppMutex=SC-BP-Watcher-Einzelstart`, mit der
+; Begründung, Inno erkenne das laufende Programm nur darüber. **Das stimmt
+; nicht** — und die Zeile hat den Update-Weg am 26.08.2026 im Test vollständig
+; blockiert:
+;
+;   * Die beiden sind verschiedene Mechanismen. Der Restart Manager erkennt ein
+;     laufendes Programm daran, welche Dateien es offen hält; einen Mutex
+;     braucht er dafür nicht.
+;   * `AppMutex` prüft nur, ob der Mutex existiert, und zeigt dann „Bitte
+;     schließen Sie jetzt alle laufenden Instanzen". **Beenden tut es nichts.**
+;   * Dieser Test läuft **vor** `CloseApplications` — er blockiert also genau
+;     den Automatismus, der die Arbeit machen soll, und zwar auch bei `/SILENT`.
+;   * Da der Watcher weiterlief, hielt er den Mutex. Jedes „OK" führte zurück
+;     zur selben Meldung. Verloren ist damit niemand — der Text sagt klar, dass
+;     man das Programm schließen soll —, aber es ist genau die Handarbeit, die
+;     `CloseApplications` abnehmen soll. Wer im Watcher auf „Fassung holen"
+;     drückt, soll nicht anschließend das Fenster zumachen müssen, aus dem er
+;     gerade geklickt hat.
 CloseApplications=force
 RestartApplications=yes
-AppMutex=SC-BP-Watcher-Einzelstart
 
 ; Kein Administrator — siehe Kopf.
 ;
