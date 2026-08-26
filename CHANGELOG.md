@@ -172,6 +172,20 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The overlay stayed German when you switched to English.** Changing the
+  language gave you an English window and a German status bar:
+  „8 Baupläne · Log ✓ · ohne Launcher · geprüft", plus the waiting message and
+  the autostart text. English versions of those strings had existed all along —
+  nobody used them, the code kept assembling the German ones. On top of that
+  the overlay never heard about a language change at all; only the settings
+  window relabelled itself. Reported by der Autor.
+
+- **The hint on the ▶ launch button overwrote the status bar.** It was the only
+  one of the ten icons without a tooltip; instead it wrote into the status bar
+  and afterwards restored a value that was never kept up to date — so a
+  blueprint message was gone after the mouse passed over the icon.
+  Reported by der Autor.
+
 - **The logo was missing from the finished build.** On „Update & About" the
   program loaded `assets/xharig.png`, but the build never packed that file — it
   never showed when starting from source, where the file is present. Reported by

@@ -181,6 +181,21 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Das Overlay blieb beim Umschalten auf Englisch deutsch.** Wer die Sprache
+  wechselte, bekam ein englisches Fenster und eine deutsche Melde-Leiste:
+  „8 Baupläne · Log ✓ · ohne Launcher · geprüft", dazu „Warte auf neue
+  Baupläne …" und der Autostart-Text. Die englischen Fassungen dieser Sätze
+  gab es längst — benutzt hat sie niemand, der Code setzte die deutschen
+  weiter fest zusammen. Zusätzlich erfuhr das Overlay vom Sprachwechsel
+  überhaupt nichts; nur das Einstellungsfenster beschriftete sich neu.
+  Gemeldet von der Autor.
+
+- **Der Hinweis am Startknopf ▶ überschrieb die Statuszeile.** Als einziges der
+  zehn Zeichen hatte er keine Erklärblase, sondern schrieb in die Statuszeile
+  und stellte danach einen Merker wieder her, der nie fortgeschrieben wurde —
+  eine Fundmeldung war nach einem Mausschlenker über das Zeichen weg.
+  Gemeldet von der Autor.
+
 - **Das Logo fehlte in der fertigen Fassung.** Auf „Update & Über" lud das
   Programm `assets/xharig.png`, der Bau packte diese Datei aber nie ein — beim
   Start aus dem Quellcode fiel das nie auf, weil sie dort liegt. Gemeldet von

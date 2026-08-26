@@ -260,6 +260,8 @@ TEXTE = {
     'ueberwache':        ('%d Baupläne · Log %s · %s · geprüft %s',
                           '%d blueprints · log %s · %s · checked %s'),
     'mit_launcher':      ('Launcher ✓', 'launcher ✓'),
+    'craftdaten_neu':    ('scmdb-Craftdaten aktualisiert (%s, %d Gegenst\u00e4nde)',
+                          'scmdb crafting data updated (%s, %d items)'),
     'ohne_launcher':     ('ohne Launcher', 'no launcher'),
     'nachgelesen':       ('Nachgelesen: %d Baupläne aus %d früheren Sitzungen '
                           'übernommen.',

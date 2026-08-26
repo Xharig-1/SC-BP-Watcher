@@ -666,8 +666,8 @@ class Watcher(threading.Thread):
         self.scmdb_next = time.time() + SCMDB_POLL_SEC
         if scmdb_aktualisieren():
             SCMDB, SCMDB_VERSION = load_scmdb()
-            self.q.put(('status', 'scmdb-Craftdaten aktualisiert (%s, %d Gegenstände)'
-                        % (SCMDB_VERSION, len(SCMDB))))
+            self.q.put(('status', sprache.t('craftdaten_neu', SCMDB_VERSION,
+                                            len(SCMDB))))
 
     # ---- Bauplan-Katalog holen und frisch halten ----
     def _katalog_tick(self):
@@ -897,8 +897,8 @@ class Watcher(threading.Thread):
                 neu += 1
         if neu:
             bestand_datei.speichern(self.bestand)
-            self.q.put(('status', 'Nachgelesen: %d Baupläne aus %d früheren '
-                                  'Sitzungen übernommen.' % (neu, bericht['dateien'])))
+            self.q.put(('status', sprache.t('nachgelesen', neu,
+                                            bericht['dateien'])))
         if bericht.get('luecke') and bericht.get('grund'):
             self.q.put(('hinweis', bericht['grund']))
 
@@ -1071,10 +1071,13 @@ class Watcher(threading.Thread):
         die Launcher-Zahl, denn der Launcher ist ab jetzt nur noch eine von
         mehreren Quellen (und zählt nachweislich zu niedrig)."""
         log_state = '✓' if self.tail.path else '–'
-        quelle = 'Launcher ✓' if (HAT_LAUNCHER and self.known) else 'ohne Launcher'
-        return ('%d Baupläne · Log %s · %s · geprüft %s'
-                % (bestand_datei.anzahl(self.bestand), log_state, quelle,
-                   time.strftime('%H:%M:%S')))
+        # ⚠ Vorlage **und** Bausteine über `sprache.t` — beide Schlüssel gab es
+        # längst, benutzt wurde keiner. Ergebnis: Wer auf Englisch stellte,
+        # bekam eine englische Oberfläche und eine deutsche Statuszeile.
+        quelle = sprache.t('mit_launcher' if (HAT_LAUNCHER and self.known)
+                           else 'ohne_launcher')
+        return sprache.t('ueberwache', bestand_datei.anzahl(self.bestand),
+                         log_state, quelle, time.strftime('%H:%M:%S'))
 
     def stop(self):
         self.running = False
@@ -1542,7 +1545,7 @@ class Overlay:
         parts = [p for p in (art, meta) if p]
         parts.append(ts)
         if provisional:
-            parts.append('vorläufig')
+            parts.append(sprache.t('vorlaeufig'))
         return ' · '.join(parts)
 
     def add_new(self, key, art, meta, ts, provisional):

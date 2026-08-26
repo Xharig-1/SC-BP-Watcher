@@ -880,6 +880,93 @@ def main():
         pruefe('threading.Timer(2.0, lambda: os._exit(0)).start()' in vor_abtreten,
                'der Notausgang steht vor dem Tk-Rückruf, nicht darin')
 
+
+        # ---------------------------------------------------------------- 17
+        print()
+        print('17. Zweisprachigkeit: kein fester Text in der Oberfläche')
+        # ⚠ Warum das geprüft wird: Am 26.08.2026 stellte der Autor auf Englisch um
+        # und bekam ein englisches Hauptfenster mit einer **deutschen** Melde-
+        # Leiste. Die Übersetzungen dafür gab es längst — `ueberwache`,
+        # `mit_launcher`, `ohne_launcher`, `nachgelesen`, `vorlaeufig` —, nur
+        # benutzt hat sie niemand. Der Code setzte die deutschen Sätze weiter fest
+        # zusammen.
+        #
+        # Deshalb prüft das hier nicht „gibt es unbenutzte Schlüssel", sondern die
+        # eigentliche Ursache: **Steht sichtbarer Text fest im Code?**
+        import ast as _ast
+        import re as _re
+
+        _zeichen = _re.compile(r'^[\W\d_]+$', _re.UNICODE)   # ✕ ▾ ⏻ · ✓ – …
+
+        # Eigennamen bleiben in jeder Sprache gleich — die gehören nicht
+        # übersetzt, sondern stehen genau so da.
+        _namen = ('Xharig', 'Star Citizen', 'SC BP Watcher', 'GitHub',
+                  'Windows', 'Linux', 'Discord')
+
+        def _verdaechtig(wert):
+            """Ist das ein sichtbarer Satz statt eines Symbols?"""
+            if not isinstance(wert, str) or len(wert) < 4:
+                return False
+            if wert.strip() in _namen:
+                return False
+            if _zeichen.match(wert):        # reine Symbole sind keine Sprache
+                return False
+            return bool(_re.search(r'[A-Za-zÄÖÜäöüß]{3}', wert))
+
+        def _feste_texte(datei):
+            """Alle Stellen, die einem Element **wörtlich** Text mitgeben."""
+            quelle = open(datei, encoding="utf-8").read()
+            gefunden = []
+            for knoten in _ast.walk(_ast.parse(quelle)):
+                if not isinstance(knoten, _ast.Call):
+                    continue
+                # a) text='…' an einem Widget oder in .config()
+                for wort in knoten.keywords:
+                    if wort.arg != 'text':
+                        continue
+                    if (isinstance(wort.value, _ast.Constant)
+                            and _verdaechtig(wort.value.value)):
+                        gefunden.append((wort.value.lineno, wort.value.value))
+                # b) q.put(('status', '…')) und ('hinweis', '…')
+                for arg in knoten.args:
+                    if not isinstance(arg, _ast.Tuple) or len(arg.elts) != 2:
+                        continue
+                    erst, zweit = arg.elts
+                    if (isinstance(erst, _ast.Constant)
+                            and erst.value in ('status', 'hinweis')
+                            and isinstance(zweit, _ast.Constant)
+                            and _verdaechtig(zweit.value)):
+                        gefunden.append((zweit.lineno, zweit.value))
+            return gefunden
+
+        _wurzelpfad = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        _zu_pruefen = [os.path.join(_wurzelpfad, 'sc_bp_watcher.py')]
+        for _name in sorted(os.listdir(os.path.join(_wurzelpfad, 'scbp'))):
+            if _name.endswith('.py') and _name not in ('sprache.py', 'fehler.py'):
+                _zu_pruefen.append(os.path.join(_wurzelpfad, 'scbp', _name))
+
+        _treffer = []
+        for _datei in _zu_pruefen:
+            for _zeilennr, _text in _feste_texte(_datei):
+                _treffer.append('%s:%d  %r' % (os.path.basename(_datei), _zeilennr,
+                                               _text[:45]))
+        if _treffer:
+            for _t in _treffer[:8]:
+                print('       ' + _t)
+        pruefe(not _treffer,
+               'kein fest eingebauter Anzeigetext (%d gefunden)' % len(_treffer))
+
+        # Und die Gegenrichtung: Ein Schlüssel, den es nur auf Deutsch gibt, ist
+        # eine halbe Übersetzung — die wirkt schlechter als gar keine.
+        sys.path.insert(0, _wurzelpfad)
+        from scbp import sprache as _spr
+        _halbe = [k for k, v in _spr.TEXTE.items()
+                  if not isinstance(v, tuple) or len(v) < 2 or not v[1]]
+        if _halbe:
+            print('       ohne englische Fassung: %s' % ', '.join(sorted(_halbe)[:6]))
+        pruefe(not _halbe,
+               'jeder Text hat eine englische Fassung (%d ohne)' % len(_halbe))
+
     finally:
         shutil.rmtree(basis, ignore_errors=True)
 
