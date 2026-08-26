@@ -133,6 +133,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Geändert
 
+- **„Noch keine Fassung bekannt" klang nach einem Fehler.** Der Knopf sagte
+  nicht, was zu tun ist — jetzt steht dort „Erst oben auf ‚Jetzt nachsehen'
+  drücken". Und der Kasten „Nur fertige Fassungen" trägt den Zusatz
+  „empfohlen", damit niemand raten muss, was er wählen soll. Beides fiel bei
+  Morkhans Test auf.
+
 - **Der Reiter heißt „Update & Über".** „Über" allein findet niemand, der ein
   Update sucht — der Autor selbst hat dort nicht danach gesucht.
 

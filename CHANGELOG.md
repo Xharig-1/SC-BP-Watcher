@@ -128,6 +128,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
+- **„No release known yet" sounded like an error.** The button did not say what
+  to do — it now reads „Press ‚Check now' above first". And the „Finished
+  versions only" box is marked „recommended", so nobody has to guess what to
+  pick. Both came up during Morkhan's test.
+
 - **The tab is now called „Update & About".** Nobody looking for an update finds
   it under „About" — not even the author looked there.
 
