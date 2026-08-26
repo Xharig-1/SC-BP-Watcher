@@ -581,9 +581,17 @@ def einspielen(neue_datei):
         # Ein schon laufendes Update-Skript aus dem Weg räumen, bevor ein
         # neues startet — sonst tauschen zwei gleichzeitig dieselbe Datei.
         try:
+            # ⚠ Auch DIESER Aufruf braucht `CREATE_NO_WINDOW`. In rc22 wurde
+            # das Hilfsskript unsichtbar gemacht, der `taskkill` davor aber
+            # übersehen — er ist ein Konsolenprogramm und reißt aus einer
+            # Fensteranwendung heraus eine eigene Konsole auf. Morkhan hat es
+            # am 26.08.2026 gesehen: „öffnet sich ein fenster für ne
+            # milisekunde und nachdem es zugeht passiert nix".
             subprocess.run(['taskkill', '/f', '/im', 'cmd.exe', '/fi',
                             'WINDOWTITLE eq sc-bp-watcher-update*'],
-                           capture_output=True, timeout=5)
+                           capture_output=True, timeout=5,
+                           creationflags=getattr(subprocess,
+                                                 'CREATE_NO_WINDOW', 0))
         except Exception:
             pass                      # kein laufendes da, oder taskkill fehlt
 
