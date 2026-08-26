@@ -546,6 +546,85 @@ def spielordner_deuten(gewaehlt):
 
 
 
+def _launcher_aus_registry():
+    r"""Wo der RSI Launcher laut Windows installiert ist — oder None.
+
+    ⚠ Feste Pfadlisten gehen genau dann schief, wenn jemand woanders
+    installiert hat. Genau das ist am 26.08.2026 passiert: Bei der Autors Bruder
+    fehlte der Startknopf im Overlay, weil keiner der abgesuchten Orte passte.
+
+    Der Eintrag in der Deinstallations-Liste ist verlässlicher, hat aber zwei
+    Tücken, die beide geprüft sind:
+
+    * **Der Schlüsselname ist eine GUID** und bei jeder Installation anders —
+      es hilft nur, alle Einträge durchzugehen und den `DisplayName` zu prüfen.
+    * **`InstallLocation` ist leer.** Der Pfad steckt statt dessen in
+      `DisplayIcon`, das auf `…\RSI Launcher\uninstallerIcon.ico` zeigt. Aus
+      dessen Ordner ergibt sich der Launcher.
+
+    Gesucht wird in allen drei Zweigen — der Launcher trägt sich unter HKLM ein,
+    aber eine Installation nur für den angemeldeten Nutzer landet unter HKCU.
+    """
+    if not WINDOWS:
+        return None
+    try:
+        import winreg
+    except ImportError:
+        return None
+
+    zweige = (
+        (winreg.HKEY_LOCAL_MACHINE,
+         r'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'),
+        (winreg.HKEY_LOCAL_MACHINE,
+         r'SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall'),
+        (winreg.HKEY_CURRENT_USER,
+         r'Software\Microsoft\Windows\CurrentVersion\Uninstall'),
+    )
+    for wurzel, pfad in zweige:
+        try:
+            with winreg.OpenKey(wurzel, pfad) as liste:
+                anzahl = winreg.QueryInfoKey(liste)[0]
+                for i in range(anzahl):
+                    try:
+                        name = winreg.EnumKey(liste, i)
+                        with winreg.OpenKey(liste, name) as eintrag:
+                            gefunden = _launcher_aus_eintrag(winreg, eintrag)
+                            if gefunden:
+                                return gefunden
+                    except OSError:
+                        continue      # einzelner Eintrag unlesbar — weiter
+        except OSError:
+            continue                  # Zweig gibt es nicht
+    return None
+
+
+def _launcher_aus_eintrag(winreg, eintrag):
+    """Aus einem Deinstallations-Eintrag den Launcher-Pfad ziehen — oder None."""
+    def wert(feld):
+        try:
+            return str(winreg.QueryValueEx(eintrag, feld)[0] or '')
+        except OSError:
+            return ''
+
+    if 'rsi launcher' not in wert('DisplayName').lower():
+        return None
+
+    kandidaten = []
+    ort = wert('InstallLocation').strip('" ')
+    if ort:
+        kandidaten.append(os.path.join(ort, 'RSI Launcher.exe'))
+    # `DisplayIcon` zeigt auf eine Datei **im** Launcher-Ordner.
+    symbol = wert('DisplayIcon').split(',')[0].strip('" ')
+    if symbol:
+        kandidaten.append(os.path.join(os.path.dirname(symbol),
+                                       'RSI Launcher.exe'))
+    for pfad in kandidaten:
+        if pfad and os.path.isfile(pfad):
+            return pfad
+    return None
+
+
+
 def spielstarter():
     """Womit sich Star Citizen starten lässt — oder `None`.
 
@@ -595,6 +674,14 @@ def spielstarter():
             # Eine Ebene weiter hoch, falls jemand ohne Zweig-Ordner installiert
             orte.append(os.path.join(os.path.dirname(rsi), 'RSI Launcher',
                                      'RSI Launcher.exe'))
+
+        # ⚠ **Vor** den festen Orten: Was Windows selbst weiss, schlaegt jede
+        # Liste. Wer den Launcher auf ein anderes Laufwerk gelegt hat, faellt
+        # sonst durch — genau so fehlte bei der Autors Bruder der Startknopf.
+        aus_registry = _launcher_aus_registry()
+        if aus_registry:
+            orte.append(aus_registry)
+
 
         for umgebung in ('LOCALAPPDATA', 'PROGRAMFILES', 'PROGRAMW6432'):
             wurzel = os.environ.get(umgebung)

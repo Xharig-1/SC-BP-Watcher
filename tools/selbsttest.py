@@ -833,6 +833,12 @@ def main():
         alt_windows = pf_start.WINDOWS
         alt_ordner = pf_start.spiel_ordner
         alt_einst = pf_start.einstellung
+        # ⚠ Die Registry-Suche muss ebenfalls stillgelegt werden. Sie geht an
+        # den umgebogenen Umgebungsvariablen vorbei und findet auf einem Rechner
+        # mit echtem Spiel den richtigen Launcher — der Test praeft sonst wieder
+        # den Rechner statt den Code.
+        alt_registry = pf_start._launcher_aus_registry
+        pf_start._launcher_aus_registry = lambda: None
 
         # ⚠ Die Umgebungsvariablen MÜSSEN mit umgebogen werden. `spielstarter()`
         # sucht nach dem Spielordner noch feste Orte unter `LOCALAPPDATA`,
@@ -864,6 +870,7 @@ def main():
             pf_start.WINDOWS = alt_windows
             pf_start.spiel_ordner = alt_ordner
             pf_start.einstellung = alt_einst
+            pf_start._launcher_aus_registry = alt_registry
             for schluessel, wert in alt_umgebung.items():
                 if wert is None:
                     os.environ.pop(schluessel, None)
