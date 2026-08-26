@@ -608,8 +608,109 @@ def rundleiste(eltern, leinwand, grund=None, breite=10):
     return c
 
 
+# --- Discord-Zeichen ------------------------------------------------------
+# Die Umrisse stammen aus dem offiziellen SVG (svgrepo, viewBox 0 -28.5 256 256)
+# und sind auf 0..1 normiert. Die Bezier-Kurven des Pfades wurden dabei in
+# Strecken aufgelöst — Tk kennt keine Kurven, zeichnet aber Streckenzüge in
+# jeder Größe sauber.
+#
+# ⚠ **Warum kein Bild und kein Schriftzeichen:**
+#
+#   * Als Zeichen geht es nicht. Ein Discord-Logo gibt es in Unicode nicht, und
+#     die naheliegenden Sprechblasen (`U+1F4AC`, `U+1F5E8`) liegen außerhalb der
+#     Grundebene — genau die Falle, vor der weiter oben gewarnt wird: Im Fenster
+#     stünde ein Fragezeichen, und auffallen würde es erst im laufenden
+#     Programm.
+#   * Als PNG geht es schlecht. Tk lädt PNG zwar mit Bordmitteln, kann sie ohne
+#     Fremdpakete aber nur **ganzzahlig** skalieren (`subsample`, `zoom`). Bei
+#     vier Schriftstufen käme genau eine Größe sauber heraus und der Rest
+#     ausgefranst. Dazu käme eine Datei, die ins Paket muss.
+#
+# Als Vektor ist es in jeder Größe scharf, braucht keine Datei und hängt an
+# keiner Schriftart. Ein erster Versuch hatte die Form nur **angedeutet**;
+# der Autor am 26.08.2026 dazu: „und wieso nimmst du nicht das original logo, was
+# schärfer wäre und nicht so pixelig?" — zu Recht.
+_DC_UMRISS = (
+
+    (0.8471, 0.1762), (0.8144, 0.1617), (0.7809, 0.1487), (0.7468, 0.1371),
+    (0.7121, 0.1270), (0.6767, 0.1184), (0.6408, 0.1113), (0.6362, 0.1198),
+    (0.6316, 0.1289), (0.6269, 0.1383), (0.6224, 0.1479), (0.6182, 0.1573),
+    (0.6144, 0.1662), (0.5760, 0.1614), (0.5377, 0.1585), (0.4995, 0.1575),
+    (0.4615, 0.1585), (0.4235, 0.1614), (0.3857, 0.1662), (0.3819, 0.1573),
+    (0.3776, 0.1479), (0.3730, 0.1383), (0.3683, 0.1289), (0.3636, 0.1198),
+    (0.3590, 0.1113), (0.3230, 0.1184), (0.2876, 0.1270), (0.2529, 0.1371),
+    (0.2187, 0.1488), (0.1852, 0.1618), (0.1525, 0.1763), (0.0950, 0.2746),
+    (0.0521, 0.3721), (0.0228, 0.4689), (0.0058, 0.5650), (0.0000, 0.6606),
+    (0.0042, 0.7557), (0.0473, 0.7860), (0.0900, 0.8123), (0.1323, 0.8351),
+    (0.1742, 0.8547), (0.2159, 0.8713), (0.2573, 0.8853), (0.2673, 0.8712),
+    (0.2769, 0.8567), (0.2861, 0.8420), (0.2950, 0.8270), (0.3034, 0.8117),
+    (0.3115, 0.7961), (0.2967, 0.7902), (0.2821, 0.7839), (0.2677, 0.7772),
+    (0.2536, 0.7700), (0.2397, 0.7625), (0.2261, 0.7546), (0.2297, 0.7519),
+    (0.2332, 0.7492), (0.2367, 0.7464), (0.2402, 0.7437), (0.2436, 0.7409),
+    (0.2470, 0.7380), (0.3304, 0.7701), (0.4152, 0.7893), (0.5007, 0.7957),
+    (0.5861, 0.7893), (0.6704, 0.7701), (0.7529, 0.7380), (0.7564, 0.7409),
+    (0.7598, 0.7437), (0.7633, 0.7464), (0.7668, 0.7492), (0.7703, 0.7519),
+    (0.7739, 0.7546), (0.7602, 0.7625), (0.7463, 0.7701), (0.7322, 0.7772),
+    (0.7178, 0.7840), (0.7032, 0.7903), (0.6884, 0.7962), (0.6964, 0.8117),
+    (0.7048, 0.8270), (0.7137, 0.8420), (0.7229, 0.8568), (0.7325, 0.8713),
+    (0.7426, 0.8854), (0.7840, 0.8714), (0.8257, 0.8548), (0.8677, 0.8352),
+    (0.9100, 0.8124), (0.9527, 0.7860), (0.9957, 0.7557), (0.9998, 0.6482),
+    (0.9916, 0.5453), (0.9717, 0.4469), (0.9406, 0.3527), (0.8988, 0.2625),
+    (0.8471, 0.1762),
+)
+
+_DC_AUGE_LINKS = (
+
+    (0.3339, 0.6390), (0.3101, 0.6354), (0.2886, 0.6250), (0.2704, 0.6090),
+    (0.2563, 0.5882), (0.2472, 0.5638), (0.2440, 0.5368), (0.2472, 0.5097),
+    (0.2561, 0.4853), (0.2701, 0.4645), (0.2882, 0.4485), (0.3098, 0.4381),
+    (0.3339, 0.4344), (0.3581, 0.4381), (0.3797, 0.4485), (0.3980, 0.4645),
+    (0.4120, 0.4853), (0.4209, 0.5097), (0.4238, 0.5368), (0.4206, 0.5638),
+    (0.4117, 0.5882), (0.3977, 0.6090), (0.3795, 0.6250), (0.3580, 0.6354),
+    (0.3339, 0.6390),
+)
+
+_DC_AUGE_RECHTS = (
+
+    (0.6661, 0.6390), (0.6423, 0.6354), (0.6209, 0.6250), (0.6026, 0.6090),
+    (0.5885, 0.5882), (0.5794, 0.5638), (0.5762, 0.5368), (0.5794, 0.5097),
+    (0.5884, 0.4853), (0.6023, 0.4645), (0.6205, 0.4485), (0.6420, 0.4381),
+    (0.6661, 0.4344), (0.6903, 0.4381), (0.7120, 0.4485), (0.7302, 0.4645),
+    (0.7443, 0.4853), (0.7531, 0.5097), (0.7560, 0.5368), (0.7528, 0.5638),
+    (0.7439, 0.5882), (0.7299, 0.6090), (0.7118, 0.6250), (0.6902, 0.6354),
+    (0.6661, 0.6390),
+)
+
+
+def discord_zeichen(leinwand, x, mitte, hoehe, farbe):
+    """Das Discord-Zeichen, gezeichnet aus den Originalumrissen.
+
+    `x` ist die linke Kante, `mitte` die senkrechte Mitte, `hoehe` der
+    verfügbare Platz. Alle Punkte sind Anteile davon, das Zeichen wächst also
+    mit der Schriftgröße mit.
+    """
+    h = max(9.0, hoehe * 0.82)
+    b = h                      # der viewBox ist quadratisch
+    lx = x
+    oy = mitte - h / 2.0
+
+    def strecke(punkte):
+        flach = []
+        for ax, ay in punkte:
+            flach.append(lx + ax * b)
+            flach.append(oy + ay * h)
+        return flach
+
+    leinwand.create_polygon(strecke(_DC_UMRISS), fill=farbe, outline=farbe)
+    # Die Augen sind im SVG Aussparungen derselben Fläche. Tk kennt keine
+    # Löcher, deshalb werden sie in der Farbe des Untergrunds darübergelegt.
+    grund = leinwand['bg']
+    for auge in (_DC_AUGE_LINKS, _DC_AUGE_RECHTS):
+        leinwand.create_polygon(strecke(auge), fill=grund, outline=grund)
+
+
 def rundknopf(eltern, text, tat, schrift, grund, fuellung, rand, fg,
-              radius=6, polster=(10, 5), cursor='hand2'):
+              radius=6, polster=(10, 5), cursor='hand2', malen=None):
     """Ein klickbarer Knopf mit runden Ecken — der Standard im ganzen Programm.
 
     Ein `Label` mit Hintergrundfarbe wäre einfacher, sähe aber überall eckig
@@ -618,29 +719,81 @@ def rundknopf(eltern, text, tat, schrift, grund, fuellung, rand, fg,
 
     Am Rückgabewert hängt `.setzen(fuellung, rand, fg)` — damit lässt sich der
     Knopf später umfärben (an/aus, ausgewählt/nicht), ohne ihn neu zu bauen.
+
+    ⚠ **Das Rechteck wird bei jeder Größenänderung neu gemalt.** Vorher entstand
+    es genau einmal in Textbreite und blieb so. Wer den Knopf mit `fill='x'`
+    streckte, bekam ein breiteres Canvas mit einem schmalen Rechteck darin — der
+    Knopf sah je nach Textlänge unterschiedlich breit aus, obwohl beide dieselbe
+    Anweisung hatten. Aufgefallen an zwei Knöpfen untereinander (der Autor,
+    26.08.2026): „Discord Button sollte die Gleiche Breite haben wie SC Starten".
+
+    `malen` ist eine Funktion `(leinwand, x, mitte, hoehe, farbe)`, die links im
+    Knopf ein Symbol zeichnet — für alles, wofür es kein brauchbares Zeichen in
+    der Grundebene gibt (siehe die Warnung weiter oben zu `🗀` und `⇅`). Sie wird
+    bei jedem Neuzeichnen erneut gerufen und muss ihre eigenen Formen anlegen;
+    aufgeräumt wird vorher.
     """
     schrift = _als_schrift(schrift)
-    breite = schrift.measure(text) + polster[0] * 2
+    symbolbreite = 0
+    if malen:
+        # Platz für das Symbol plus Abstand — an der Schrifthöhe bemessen,
+        # damit es mit der Schriftgröße mitwächst.
+        symbolbreite = schrift.metrics('linespace') + 8
+    breite = schrift.measure(text) + polster[0] * 2 + symbolbreite
     hoehe = schrift.metrics('linespace') + polster[1] * 2
     c = tk.Canvas(eltern, width=breite, height=hoehe, bg=grund,
                   highlightthickness=0, bd=0, cursor=cursor)
-    form = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1, radius=radius,
-                            fill=fuellung, outline=rand, width=1)
-    beschriftung = c.create_text(breite / 2.0, hoehe / 2.0, text=text,
-                                 fill=fg, font=schrift, anchor='center')
+
+    zustand = {'fuellung': fuellung, 'rand': rand, 'fg': fg}
+
+    def zeichnen(b=None, h=None):
+        b = b or int(c['width'])
+        h = h or int(c['height'])
+        c.delete('all')
+        c.form = _rundes_rechteck(c, 1, 1, b - 1, h - 1, radius=radius,
+                                  fill=zustand['fuellung'],
+                                  outline=zustand['rand'], width=1)
+        if malen:
+            malen(c, polster[0], h / 2.0, h - polster[1] * 2, zustand['fg'])
+        # ⚠ Der Text sitzt in der Mitte des **Restes**, nicht der ganzen
+        # Fläche. Sonst rückt ein Symbol links die Beschriftung nach rechts aus
+        # der Mitte, und zwei Knöpfe untereinander stehen krumm.
+        mitte_x = (b + symbolbreite) / 2.0 if malen else b / 2.0
+        c.beschriftung = c.create_text(mitte_x, h / 2.0, text=text,
+                                       fill=zustand['fg'], font=schrift,
+                                       anchor='center')
+
+    zeichnen(breite, hoehe)
+
+    # ⚠ Nur bei echter Änderung neu malen. Tk schickt `<Configure>` auch dann,
+    # wenn sich nichts an der Größe geändert hat — ein bedingungsloses
+    # Neuzeichnen darin läuft im Kreis.
+    letzte = {'b': breite, 'h': hoehe}
+
+    def _gewachsen(e):
+        if e.width == letzte['b'] and e.height == letzte['h']:
+            return
+        letzte['b'], letzte['h'] = e.width, e.height
+        zeichnen(e.width, e.height)
+
+    c.bind('<Configure>', _gewachsen)
 
     def setzen(fuellung=None, neuer_rand=None, neues_fg=None):
-        neue_fuellung = fuellung
-        if neue_fuellung:
-            c.itemconfigure(form, fill=neue_fuellung)
+        if fuellung:
+            zustand['fuellung'] = fuellung
+            c.itemconfigure(c.form, fill=fuellung)
         if neuer_rand:
-            c.itemconfigure(form, outline=neuer_rand)
+            zustand['rand'] = neuer_rand
+            c.itemconfigure(c.form, outline=neuer_rand)
         if neues_fg:
-            c.itemconfigure(beschriftung, fill=neues_fg)
+            zustand['fg'] = neues_fg
+            c.itemconfigure(c.beschriftung, fill=neues_fg)
+            if malen:
+                # Das Symbol traegt dieselbe Farbe wie die Schrift — neu malen
+                # ist einfacher, als sich jede Einzelform zu merken.
+                zeichnen()
 
     c.setzen = setzen
-    c.form = form
-    c.beschriftung = beschriftung
     c.ist_knopf = True          # damit tools/randpruefung.py ihn prüft
     if tat:
         c.bind('<Button-1>', lambda e: tat())
@@ -1033,7 +1186,8 @@ class Hauptfenster:
         rahmen_dc.pack(side='bottom', fill='x', padx=12, pady=(0, 2))
         self.discordknopf = rundknopf(
             rahmen_dc, t('hf_discord'), self._discord_oeffnen, self.f_klein,
-            FLAECHE, FLAECHE, LINIE, SUB, radius=8, polster=(12, 6))
+            FLAECHE, FLAECHE, LINIE, SUB, radius=8, polster=(12, 6),
+            malen=discord_zeichen)
         self.discordknopf.pack(fill='x')
 
         # --- Star Citizen starten ---------------------------------------
