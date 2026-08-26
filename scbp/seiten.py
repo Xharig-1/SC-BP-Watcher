@@ -1603,6 +1603,38 @@ def _kanaele_auffrischen(fenster, kaesten, neu_zeichnen):
     threading.Thread(target=arbeit, daemon=True).start()
 
 
+def _holen_moeglich(mit_vorab, eigene=''):
+    """Steckt hinter dem Knopf ueberhaupt eine Tat? Sonst ist er keiner.
+
+    ⚠ `_holen_text` liefert **nur** die Beschriftung, und zwei ihrer Ergebnisse
+    sind gar keine Aufforderung, sondern eine Zustandsmeldung: „v3.0.0-rc41 ist
+    schon da" und „Erst oben auf ‚Jetzt nachsehen' druecken". Der Knopf blieb
+    trotzdem ein Knopf — wer auf „ist schon da" drueckte, bekam die laufende
+    Fassung noch einmal installiert. der Autor am 26.08.2026: „in dem gruenen
+    kasten steht aber rc41 ist schon da, wenn man klickt will er auch direkt
+    installieren."
+
+    Was aussieht wie ein Knopf, muss etwas tun. Sonst wird daraus ein ruhiger
+    Hinweis (siehe `_kanalkasten`).
+    """
+    from . import aktualisierung
+    try:
+        freigabe = aktualisierung.neueste(mit_vorab)
+    except Exception:
+        return False
+    if not freigabe:
+        return False                     # „Erst oben auf ... druecken"
+    fassung = freigabe.get('version') or ''
+    # Nach einem geglueckten Update steht dort „Jetzt neu starten" — das ist
+    # sehr wohl eine Tat.
+    if _BEREIT[0] and _BEREIT[0] == fassung:
+        return True
+    if eigene and fassung.lstrip('v') == eigene.lstrip('v'):
+        return False                     # laeuft schon, nichts zu holen
+    return True
+
+
+
 def _holen_text(mit_vorab, eigene=''):
     """Die Beschriftung des Knopfes — mit der Fassung, die dahinter steckt.
 
@@ -1739,7 +1771,8 @@ def _fassung_holen(fenster, mit_vorab):
 
 
 def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text='',
-                 untereinander=False, holen=None, holen_text=''):
+                 untereinander=False, holen=None, holen_text='',
+                 holen_aktiv=True):
     """Eine Wahlmöglichkeit als Kasten — wie in der Vorschau.
 
     Ein Schalter mit „an/aus" beantwortet die Frage nicht, die der Spieler hat:
@@ -1795,9 +1828,20 @@ def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text='',
     # Der Holen-Knopf ganz unten im Kasten, über die volle Breite. ⚠ **Nach** den
     # Bindungen oben angelegt: Sonst würde ihn die Schleife mit „Kanal wählen"
     # belegen, und ein Klick darauf täte etwas anderes als draufsteht.
-    if holen is not None:
+    if holen is not None and holen_aktiv:
         knopf = _knopf(fenster, innen, holen_text, holen, stark=gewaehlt)
         knopf.pack(fill='x', padx=14, pady=(0, 12))
+    elif holen is not None:
+        # Kein Knopf, sondern eine Auskunft: Es gibt gerade nichts zu holen.
+        # Gleiche Stelle, gleiche Breite, nur ohne Rahmen und ohne Handzeiger —
+        # damit niemand darauf drueckt und sich fragt, warum nichts passiert.
+        auskunft = tk.Label(innen, text=holen_text, bg=FLAECHE, fg=SUB,
+                            font=fenster.f_klein, anchor='center')
+        auskunft.pack(fill='x', padx=14, pady=(4, 16))
+        # Ein Klick darauf soll dasselbe tun wie ein Klick auf den Kasten:
+        # den Kanal waehlen. Sonst waere hier ein totes Loch im Kasten.
+        auskunft.bind('<Button-1>', lambda e: tat())
+        auskunft.configure(cursor='hand2')
     return rand
 
 
@@ -1883,12 +1927,14 @@ def _ueber(fenster, rahmen):
         _kanalkasten(fenster, kaesten, t('s_ub_fertig'), t('s_ub_fertig_h'),
                      not an, lambda: kanal_setzen(False), untereinander=eng,
                      holen=lambda: _fassung_holen(fenster, False),
-                     holen_text=_holen_text(False, fenster.version))
+                     holen_text=_holen_text(False, fenster.version),
+                     holen_aktiv=_holen_moeglich(False, fenster.version))
         _kanalkasten(fenster, kaesten, t('s_ub_test'), t('s_ub_test_h'),
                      an, lambda: kanal_setzen(True), marke_text='rc',
                      untereinander=eng,
                      holen=lambda: _fassung_holen(fenster, True),
-                     holen_text=_holen_text(True, fenster.version))
+                     holen_text=_holen_text(True, fenster.version),
+                     holen_aktiv=_holen_moeglich(True, fenster.version))
         # ⚠ Die Beschriftungen kommen aus dem Zwischenspeicher, damit die Seite
         # sofort steht. Der frischt sich aber nur einmal am Tag auf — auf einem
         # Bildschirmfoto vom 25.08.2026 bot der Knopf „v3.0.0-rc9 holen" an,

@@ -88,7 +88,18 @@ VersionInfoVersion={#ZahlVersion}
 ;     drückt, soll nicht anschließend das Fenster zumachen müssen, aus dem er
 ;     gerade geklickt hat.
 CloseApplications=force
-RestartApplications=yes
+; ⚠ `no`, und das ist Absicht. Der Restart Manager faehrt nur wieder hoch, was er
+; selbst **sanft** geschlossen hat — ein mit `force` hart beendeter Prozess zaehlt
+; nicht dazu. Die beiden Zeilen arbeiten also gegeneinander: `force` ist noetig,
+; damit das Ersetzen nicht an „code 32" scheitert, und genau deshalb kann der
+; Neustart hier nicht klappen. Am 26.08.2026 im Test gesehen — das Update lief
+; sauber durch, aber der Watcher blieb unten, und der Autor musste ihn von Hand
+; starten.
+;
+; Den Neustart uebernimmt deshalb der [Run]-Abschnitt. Auf `yes` stehen zu
+; lassen waere nicht nur wirkungslos, sondern gefaehrlich: Griffe beides, kaeme
+; der Watcher doppelt hoch.
+RestartApplications=no
 
 ; Kein Administrator — siehe Kopf.
 ;
@@ -149,9 +160,20 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; \
   Tasks: autostart
 
 [Run]
+; ⚠ **Ohne `skipifsilent`**, und daran haengt der ganze Update-Weg. Der Watcher
+; ruft den Installer mit `/SILENT` auf; mit `skipifsilent` waere dieser Eintrag
+; dabei uebersprungen worden — genau so am 26.08.2026 im Test: Das Update lief
+; durch, aber danach war kein Watcher mehr da. der Autor: „man muss aber den
+; watcher selber neu starten".
+;
+; Bei einer Installation von Hand aendert sich nichts: `postinstall` zeigt dort
+; weiterhin das Haekchen „SC BP Watcher starten" auf der letzten Seite. Nur beim
+; stillen Lauf wird daraus ein automatischer Start — und genau der wird gebraucht,
+; weil der Restart Manager nach `CloseApplications=force` nichts mehr hochfaehrt
+; (siehe oben).
 Filename: "{app}\SC-BP-Watcher.exe"; \
   Description: "{cm:LaunchProgram,{#AppName}}"; \
-  Flags: nowait postinstall skipifsilent
+  Flags: nowait postinstall
 
 ; Kein [UninstallDelete] für die Nutzerdaten: Wer deinstalliert, will das
 ; Programm loswerden — nicht seinen über Monate gesammelten Bauplan-Bestand.
