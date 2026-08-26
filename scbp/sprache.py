@@ -669,6 +669,19 @@ TEXTE = {
     'hf_discord':      ('Discord', 'Discord'),
     'hf_discord_auf':  ('Discord wird im Browser geöffnet …',
                         'Opening Discord in your browser …'),
+    's_ub_hinweis_titel': ('Neue Fassung einspielen',
+                          'Install the new version'),
+    's_ub_hinweis_neustart': (
+        'Die neue Fassung wird jetzt eingespielt.\n\n'
+        'Der Watcher schließt sich dabei und startet nicht von '
+        'selbst wieder — bitte starte ihn danach über das Startmenü '
+        'oder die Verknüpfung neu.\n\n'
+        'Dein Bauplan-Bestand bleibt unangetastet.',
+        'The new version is being installed now.\n\n'
+        'The watcher will close and will not start again by '
+        'itself — please launch it afterwards from the start menu or '
+        'your shortcut.\n\n'
+        'Your blueprint collection stays untouched.'),
     's_ub_nachsehen':  ('Auf Aktualität prüfen', 'Check for updates'),
     's_ub_aktuell':    ('Du hast die neueste Fassung.', 'You have the latest version.'),
     's_ub_gefunden':   ('Neue Fassung gefunden: %s', 'New version found: %s'),

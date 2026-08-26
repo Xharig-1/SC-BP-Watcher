@@ -160,20 +160,30 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; \
   Tasks: autostart
 
 [Run]
-; ⚠ **Ohne `skipifsilent`**, und daran haengt der ganze Update-Weg. Der Watcher
-; ruft den Installer mit `/SILENT` auf; mit `skipifsilent` waere dieser Eintrag
-; dabei uebersprungen worden — genau so am 26.08.2026 im Test: Das Update lief
-; durch, aber danach war kein Watcher mehr da. der Autor: „man muss aber den
-; watcher selber neu starten".
+; ⚠ **`skipifsilent` gehört hierher**, auch wenn es zwischenzeitlich draußen war.
 ;
-; Bei einer Installation von Hand aendert sich nichts: `postinstall` zeigt dort
-; weiterhin das Haekchen „SC BP Watcher starten" auf der letzten Seite. Nur beim
-; stillen Lauf wird daraus ein automatischer Start — und genau der wird gebraucht,
-; weil der Restart Manager nach `CloseApplications=force` nichts mehr hochfaehrt
-; (siehe oben).
+; Der Watcher ruft das Setup mit `/SILENT` auf. Ohne `skipifsilent` führt Inno
+; diesen Eintrag dabei aus — und genau seitdem meldete es beim Update
+;
+;     Security validation failure: parent process has different executable!
+;
+; Fünf Anläufe haben die Ursache nicht beseitigt (Umgebung säubern,
+; Zwischenprozess, Ablösen, Kompatibilitäts-Shim entfernen); jeder tauschte
+; höchstens den Meldungstext. Inno 6.7 prüft, wie sein Setup gestartet wurde,
+; und mag es nicht, wenn ein Programm im Hintergrund ein anderes startet.
+;
+; Also wird nach dem Update **nichts mehr automatisch gestartet**. der Autor am
+; 26.08.2026: „wir lassen den neu start einfach weg, der user soll es starten."
+; Das kostet einen Doppelklick und spart einen Fehler, dessen Ursache in der
+; Werkzeugkette liegt und die wir nicht in der Hand haben.
+;
+; Bei einer Installation **von Hand** ändert sich nichts: Dort zeigt
+; `postinstall` weiterhin das Häkchen „SC BP Watcher starten" auf der letzten
+; Seite. Nur der stille Lauf startet nicht mehr von selbst — und dort sagt es
+; der Watcher vorher an (siehe `s_ub_hinweis_neustart` in `sprache.py`).
 Filename: "{app}\SC-BP-Watcher.exe"; \
   Description: "{cm:LaunchProgram,{#AppName}}"; \
-  Flags: nowait postinstall
+  Flags: nowait postinstall skipifsilent
 
 ; Kein [UninstallDelete] für die Nutzerdaten: Wer deinstalliert, will das
 ; Programm loswerden — nicht seinen über Monate gesammelten Bauplan-Bestand.

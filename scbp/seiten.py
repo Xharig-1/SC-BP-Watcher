@@ -1526,30 +1526,65 @@ def _jetzt_nachsehen(fenster):
     from . import aktualisierung
     fenster.sagen(t('s_ub_sucht'))
 
-    def arbeit():
-        try:
-            neuere = aktualisierung.nachsehen(fenster.version or '0.0.0',
-                                              erzwingen=True)
-        except Exception as ausnahme:
-            fehler.merken('seiten.jetzt_nachsehen', ausnahme)
-            fenster.root.after(0, lambda: fenster.sagen(t('s_ub_sucht_fehler')))
+    def einspielen_und_gehen(ziel):
+        """Einspielen — und vorher sagen, was gleich passiert.
+
+        ⚠ Der Hinweis kommt **vor** dem Start des Setups, nicht danach. Sonst
+        liefe im Hintergrund schon der Restart Manager und zählte seine dreißig
+        Sekunden herunter, während der Nutzer noch liest — und beendete den
+        Watcher mitten im Dialog.
+
+        ⚠ Läuft im Tk-Faden, nicht im Ladefaden: `messagebox` gehört dorthin,
+        wo die Oberfläche lebt.
+        """
+        if aktualisierung.verpackung() == 'exe':
+            from tkinter import messagebox
+            messagebox.showinfo(t('s_ub_hinweis_titel'),
+                                t('s_ub_hinweis_neustart'))
+        geklappt, grund = aktualisierung.einspielen(ziel)
+        if not geklappt:
+            fenster.sagen(t('update_fehler', grund))
+            return
+        _BEREIT[0] = freigabe.get('version') or ''
+
+        # ⚠ Unter Windows ist hier **Schluss** — kein zweiter Klick mehr.
+        #
+        # Der Ablauf mit „erst holen, dann auf ‚Jetzt neu starten' drücken"
+        # stammt aus der Zeit des Dateitauschs: Damals lag die neue Datei nur
+        # bereit, getauscht wurde beim Beenden. Der Installer dagegen **läuft
+        # schon** — und wartet darauf, dass wir endlich gehen. Genau das hat am
+        # 26.08.2026 die lange Pause verursacht, die der Autor gemeldet hat
+        # („wieso es solange dauert bis er alles geschlossen hat, das wirkt
+        # komisch auf user"). Im Inno-Protokoll stand sie auf die Millisekunde:
+        # 31,4 Sekunden, der Standard-Timeout des Restart Managers.
+        #
+        # Gestartet wird danach **nichts** mehr von allein — deshalb der Hinweis
+        # oben. Fünf Versuche, den Selbststart zum Laufen zu bringen, sind an
+        # einer Sicherheitsprüfung von Inno 6.7 gescheitert; ein Doppelklick des
+        # Nutzers ist der ehrlichere Weg als ein Fehler, dessen Ursache in der
+        # Werkzeugkette liegt.
+        if aktualisierung.verpackung() == 'exe':
+            _abtreten(fenster)
             return
 
-        def melden():
-            if neuere:
-                fenster.sagen(t('s_ub_gefunden') % neuere.get('version'))
-            else:
-                fenster.sagen(t('s_ub_aktuell'))
-            # Die Kanal-Kästen tragen die Fassungsnummern — sie müssen mitziehen.
-            try:
-                fenster.neu_aufbauen()
-            except Exception:
-                pass
+        # Linux: Das AppImage ist getauscht, laufen tut aber noch die alte
+        # Fassung. Hier bleibt der zweite Klick sinnvoll — er beendet und
+        # startet neu.
+        fenster.sagen(t('s_ub_bereit'))
+        fenster.root.after(50, fenster.neu_aufbauen)
 
+    def arbeit():
         try:
-            fenster.root.after(0, melden)
-        except Exception:
-            pass
+            ziel = aktualisierung.herunterladen(
+                datei, fortschritt=lambda p: fenster.root.after(
+                    0, lambda: fenster.sagen(t('wird_geladen', p))))
+            # Weiter im Tk-Faden — dort darf ein Dialog stehen.
+            fenster.root.after(0, lambda: einspielen_und_gehen(ziel))
+        except Exception as ausnahme:
+            grund = str(ausnahme)
+            fehler.merken('seiten.fassung_holen', ausnahme)
+            fenster.root.after(0, lambda: fenster.sagen(
+                t('update_fehler', grund)))
 
     threading.Thread(target=arbeit, daemon=True).start()
 
