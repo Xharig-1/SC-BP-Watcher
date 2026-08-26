@@ -43,6 +43,7 @@ from . import export as export_modul
 from . import hinweis
 from . import katalog as katalog_modul
 from . import merkliste as merk
+from . import zeichen
 from . import pfade
 from .sprache import t
 
@@ -345,8 +346,9 @@ class Bestandsfenster:
                         highlightthickness=0, font=schrift(11))
         feld.pack(side='left', fill='x', expand=True, ipady=6, padx=(8, 0))
         feld.focus_set()
-        self.loeschen_lbl = tk.Label(kasten, text='✕', bg=FLAECHE, fg=SUB,
-                                     font=schrift(10), cursor='hand2', padx=8)
+        self.loeschen_lbl = zeichen.zeile(kasten, 'schliessen', grund=FLAECHE,
+                                          schrift=schrift(10))
+        self.loeschen_lbl.configure(padx=8, cursor='hand2')
         self.loeschen_lbl.bind('<Button-1>', lambda e: self._suche_leeren())
         hinweis.anhaengen(self.loeschen_lbl, lambda: t('hinweis_suche_leeren'))
         # Erscheint erst, wenn etwas drinsteht — ein ✕ an einem leeren Feld ist
@@ -364,8 +366,8 @@ class Bestandsfenster:
         for schluessel, text in (('alle', t('filter_alle')),
                                  ('habe', t('filter_habe')),
                                  ('fehlt', t('filter_fehlt')),
-                                 ('merk', '⭐ ' + t('filter_merk')),
-                                 ('neu', '🔵 ' + t('filter_neu'))):
+                                 ('merk', t('filter_merk')),
+                                 ('neu', t('filter_neu'))):
             from .hauptfenster import rundknopf
             k = rundknopf(knopfzeile, text, None, schrift(10), BG, FLAECHE,
                           LINIE, SUB)
@@ -1212,9 +1214,10 @@ class Bestandsfenster:
                          bg=FLAECHE)
         zeile.pack(fill='x', pady=1)
 
-        haken = tk.Label(zeile, text='✔' if drin else '○', bg=FLAECHE,
-                         fg=ACCENT if drin else SUB, font=schrift(12),
-                         cursor='hand2', padx=10, pady=6)
+        haken = zeichen.zeile(zeile, 'haken' if drin else 'offen',
+                              farbe=zeichen.GRUEN if drin else zeichen.GRAU,
+                              grund=FLAECHE, schrift=schrift(12))
+        haken.configure(cursor='hand2', padx=10, pady=6)
         haken.pack(side='left')
         haken.bind('<Button-1>', lambda e, n=name: self._umschalten(n))
 
@@ -1229,9 +1232,10 @@ class Bestandsfenster:
                      font=schrift(9), anchor='w').pack(fill='x')
 
         if eintrag.get('q'):
-            zeichen = '▾' if name in self.offen else 'ⓘ'
-            info = tk.Label(zeile, text=zeichen, bg=FLAECHE, fg=SUB,
-                            font=schrift(11), cursor='hand2', padx=12)
+            symbol = 'zuklappen' if name in self.offen else 'hinweiszeile'
+            info = zeichen.zeile(zeile, symbol, grund=FLAECHE,
+                                 schrift=schrift(11))
+            info.configure(cursor='hand2', padx=12)
             info.pack(side='right')
             info.bind('<Button-1>', lambda e, n=name: self._herkunft_umschalten(n))
             hinweis.anhaengen(info, lambda: t('hinweis_quellen'))
@@ -1239,8 +1243,9 @@ class Bestandsfenster:
             # Startbaupläne: hat jeder von Anfang an, stehen in keinem Pool und
             # in keinem Log. Eigenes Zeichen, damit niemand nach einem Auftrag
             # sucht, den es nicht gibt.
-            std = tk.Label(zeile, text='◆', bg=FLAECHE, fg=ACCENT,
-                           font=schrift(10), padx=12)
+            std = zeichen.zeile(zeile, 'standard', farbe=zeichen.GRUEN,
+                                grund=FLAECHE, schrift=schrift(10))
+            std.configure(padx=12)
             std.pack(side='right')
             hinweis.anhaengen(std, lambda: t('hinweis_startbauplan'))
         else:
@@ -1261,9 +1266,10 @@ class Bestandsfenster:
             # Größer als der Rest: Der Stern ist das einzige Zeichen in der
             # Zeile, das man *trifft* statt liest — in Zeilenschrift war er zu
             # klein zum Klicken und ging neben dem Namen unter.
-            stern = tk.Label(zeile, text='⭐' if gemerkt else '☆', bg=FLAECHE,
-                             fg=GELB if gemerkt else SUB, font=schrift(16),
-                             cursor='hand2', padx=10)
+            stern = zeichen.zeile(zeile, 'gemerkt',
+                                  farbe=zeichen.GELB if gemerkt else zeichen.GRAU,
+                                  grund=FLAECHE, schrift=schrift(16))
+            stern.configure(cursor='hand2', padx=10)
             stern.pack(side='right')
             stern.bind('<Button-1>', lambda e, n=name: self._merken(n))
             hinweis.anhaengen(stern, lambda n=name: t('nicht_mehr_merken')
@@ -1296,8 +1302,9 @@ class Bestandsfenster:
         kopf.pack(fill='x', padx=14, pady=(10, 2))
         tk.Label(kopf, text=eintrag['n'], bg=FLAECHE, fg=FG, font=schrift(12, True),
                  anchor='w').pack(side='left')
-        zu = tk.Label(kopf, text='✕', bg=FLAECHE, fg=SUB, font=schrift(11),
-                      cursor='hand2', padx=6)
+        zu = zeichen.zeile(kopf, 'schliessen', grund=FLAECHE,
+                           schrift=schrift(11))
+        zu.configure(cursor='hand2', padx=6)
         zu.pack(side='right')
         zu.bind('<Button-1>', lambda e: self._auswaehlen(None))
         hinweis.anhaengen(zu, lambda: t('hk_zu'))
@@ -1377,19 +1384,20 @@ class Bestandsfenster:
         rahmen.pack(fill='x', padx=14, pady=(0, 10))
         tk.Frame(rahmen, bg=LINIE, height=1).pack(fill='x', pady=(0, 8))
 
-        kopf = tk.Label(rahmen, text='▶  ' + t('hk_weitere') % len(weitere),
-                        bg=FLAECHE, fg=SUB, font=schrift(10), cursor='hand2',
-                        anchor='w')
+        kopf = zeichen.zeile(rahmen, 'aufklappen', grund=FLAECHE,
+                             schrift=schrift(10),
+                             text='  ' + t('hk_weitere') % len(weitere))
+        kopf.configure(cursor='hand2', anchor='w')
         kopf.pack(fill='x')
         inhalt = tk.Frame(rahmen, bg=FLAECHE)
 
         def umschalten(_=None):
             if inhalt.winfo_ismapped():
                 inhalt.pack_forget()
-                kopf.configure(text='▶  ' + t('hk_weitere') % len(weitere))
+                kopf.symbol_tauschen('aufklappen')
             else:
                 inhalt.pack(fill='x', pady=(8, 0))
-                kopf.configure(text='▼  ' + t('hk_weitere') % len(weitere))
+                kopf.symbol_tauschen('zuklappen')
 
         kopf.bind('<Button-1>', umschalten)
         for q in weitere:

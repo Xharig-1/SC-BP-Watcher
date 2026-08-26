@@ -121,8 +121,8 @@ TEXTE = {
     'durchsuchen':       ('Durchsuchen …', 'Browse …'),
     'leer_automatisch':  ('leer lassen = automatisch suchen. Gesucht wird hier:',
                           'leave empty = search automatically. Searched here:'),
-    'gefunden':          ('● gefunden', '● found'),
-    'nicht_gefunden':    ('● nicht gefunden', '● not found'),
+    'gefunden':          ('gefunden', 'found'),
+    'nicht_gefunden':    ('nicht gefunden', 'not found'),
     'pruefintervall':    ('Prüfintervall', 'Check interval'),
     'pruefintervall_hilfe': ('Wie oft die Game.log angesehen wird',
                              'How often Game.log is checked'),
@@ -153,7 +153,7 @@ TEXTE = {
         'is written there. Without that file it cannot show anything. Please '
         'pick the folder it lives in (usually "LIVE"). The folder above works '
         'too, the rest is found automatically.'),
-    'log_gefunden':      ('✔ Game.log gefunden', '✔ Game.log found'),
+    'log_gefunden':      ('Game.log gefunden', 'Game.log found'),
     'keine_log_darin':   ('Dort liegt keine Game.log — auch nicht in den '
                           'Unterordnern.',
                           'No Game.log there — not in the subfolders either.'),
@@ -214,8 +214,10 @@ TEXTE = {
         'Leiste, sobald du sie im Spiel freischaltest.',
         'The watcher is running. New blueprints appear in the narrow bar as soon '
         'as you unlock them in the game.'),
-    'tipp_liste':        ('Mit ☰ öffnest du jederzeit die Bauplan-Liste.',
-                          'Use ☰ to open the blueprint list at any time.'),
+    'tipp_liste':        ('Über das Klemmbrett in der Titelleiste öffnest du '
+                          'jederzeit die Bauplan-Liste.',
+                          'The clipboard in the title bar opens the blueprint '
+                          'list at any time.'),
     'tipp_erneut':       ('Diese Einrichtung kannst du jederzeit wiederholen — '
                           'du musst dich durch keine Menüs klicken.',
                           'You can run this setup again at any time — no need to '
@@ -252,7 +254,7 @@ TEXTE = {
     # -- Statuszeilen und Meldungen --
     'ueberwache':        ('%d Baupläne · Log %s · %s · geprüft %s',
                           '%d blueprints · log %s · %s · checked %s'),
-    'mit_launcher':      ('Launcher ✓', 'launcher ✓'),
+    'mit_launcher':      ('mit Launcher', 'with launcher'),
     'craftdaten_neu':    ('scmdb-Craftdaten aktualisiert (%s, %d Gegenst\u00e4nde)',
                           'scmdb crafting data updated (%s, %d items)'),
     'ohne_launcher':     ('ohne Launcher', 'no launcher'),
@@ -355,8 +357,8 @@ TEXTE = {
                           'Less means more see-through. Shown live while you drag.'),
     's_klapp':         ('Eingeklappt starten',
                           'Start collapsed'),
-    's_klapp_h':       ('Das Overlay schiebt sich beim Start auf die Titelleiste zusammen und gibt die Sicht frei. Der Pfeil ▾ klappt es jederzeit wieder auf.',
-                          'The overlay folds into its title bar on start and frees the view. The ▾ arrow unfolds it any time.'),
+    's_klapp_h':       ('Das Overlay schiebt sich beim Start auf die Titelleiste zusammen und gibt die Sicht frei. Der Pfeil in der Titelleiste klappt es jederzeit wieder auf.',
+                          'The overlay folds into its title bar on start and frees the view. The arrow in the title bar unfolds it any time.'),
     's_vorne':         ('Immer im Vordergrund',
                           'Always on top'),
     's_vorne_h':       ('Bleibt über dem Spiel sichtbar. Ausschalten, wenn das Overlay im Weg ist.',
@@ -405,13 +407,13 @@ TEXTE = {
     'as_menue_da':     ('Eingetragen: %s', 'Added: %s'),
     'as_menue_nein':   ('Hat nicht geklappt: %s', 'Did not work: %s'),
     's_ub_holen':      ('%s holen', 'Get %s'),
-    's_ub_neustart':   ('⟳ Jetzt neu starten', '⟳ Restart now'),
+    's_ub_neustart':   ('Jetzt neu starten', 'Restart now'),
     's_ub_bereit':     ('Fertig geladen — ein Neustart, dann läuft die neue Fassung.',
                           'Downloaded — one restart and the new version runs.'),
     's_ub_startet_neu': ('Startet neu …', 'Restarting …'),
     's_ub_neustart_nein': ('Neustart ging nicht — bitte von Hand beenden und starten.',
                           'Restart failed — please close and start it yourself.'),
-    's_ub_holen_zurueck': ('⤺ zurück auf %s', '⤺ back to %s'),
+    's_ub_holen_zurueck': ('zurück auf %s', 'back to %s'),
     's_ub_holen_gleich': ('%s ist schon da', '%s is already installed'),
     # ⚠ „Noch keine Fassung bekannt“ klingt nach einem Fehler und sagt nicht,
     # was zu tun ist. Genau dieser Knopf stand bei Morkhan da (26.08.2026).
@@ -432,7 +434,7 @@ TEXTE = {
                         'Starts the game the way you already do — the RSI '
                         'Launcher on Windows, lug-helper on Linux. If neither '
                         'is found, nothing appears here.'),
-    's_sp_start_knopf': ('▶  Star Citizen starten', '▶  Launch Star Citizen'),
+    's_sp_start_knopf': ('Star Citizen starten', 'Launch Star Citizen'),
     's_sp_start_lauft': ('Star Citizen wird gestartet …', 'Starting Star Citizen …'),
     's_sp_kein_starter': ('kein Starter gefunden', 'no launcher found'),
     'up_fremde_quelle': ('Datei kommt nicht von GitHub',
@@ -701,10 +703,10 @@ TEXTE = {
     's_ub_einrichtung': ('Einrichtung wiederholen', 'Run setup again'),
     's_ub_taeglich':   ('Täglich nach neuen Fassungen sehen',
                           'Check daily for new versions'),
-    's_ub_taeglich_h': ('Höchstens einmal am Tag, ausschließlich bei GitHub. Ist etwas da, färbt sich ⓘ in der Titelleiste.',
-                          'At most once a day, only at GitHub. If there is something, the ⓘ in the title bar changes colour.'),
-    's_up_sofort':     ('⭳  Jetzt die neueste Fassung holen',
-                        '⭳  Get the latest version now'),
+    's_ub_taeglich_h': ('Höchstens einmal am Tag, ausschließlich bei GitHub. Ist etwas da, färbt sich die Glocke in der Titelleiste grün.',
+                          'At most once a day, only at GitHub. If there is something, the bell in the title bar turns green.'),
+    's_up_sofort':     ('Jetzt die neueste Fassung holen',
+                        'Get the latest version now'),
     's_up_sofort_h':   ('Holt sofort, was es gerade gibt — auch eine Testfassung. '
                         'An deiner Einstellung darunter ändert das nichts.',
                         'Fetches whatever is available right now — including a test '
@@ -855,8 +857,8 @@ TEXTE = {
     'hk_weitere':      ('%d weitere Wege zu diesem Bauplan',
                           '%d more ways to this blueprint'),
     'hk_zu':           ('Schließen', 'Close'),
-    'hk_nichts':       ('Klick auf das ⓘ einer Zeile — hier steht dann, woher der Bauplan kommt.',
-                          'Click the ⓘ on a row — this shows where the blueprint comes from.'),
+    'hk_nichts':       ('Klick auf das Info-Zeichen einer Zeile — hier steht dann, woher der Bauplan kommt.',
+                          'Click the info sign on a row — this shows where the blueprint comes from.'),
     'hk_start':        ('Den hat jeder von Anfang an — es gibt keinen Auftrag, der ihn ausschüttet.',
                           'Everyone has this from the start — no mission hands it out.'),
     'hk_topf':         ('Sonderquelle', 'Special source'),
@@ -957,7 +959,7 @@ TEXTE = {
     'hf_sofort':         ('Änderungen werden sofort gespeichert',
                           'Changes are saved right away'),
     'hf_schliessen':     ('Schließen', 'Close'),
-    'hf_einrichtung':    ('Einrichtung', 'Setup'),
+    'hf_einrichtung':    ('Einrichtung starten', 'Run setup'),
     'hf_wasistneu':      ('Was ist neu', "What's new"),
     'hf_hinweis_einr':   ('Einrichtung wiederholen — führt dich noch einmal durch '
                           'Sprache, Spielordner und Bestand',

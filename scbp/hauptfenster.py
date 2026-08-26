@@ -49,7 +49,7 @@ import time
 import tkinter as tk
 import tkinter.font as tkfont
 
-from . import bildschirm, fehler, hinweis, neuheiten, pfade
+from . import bildschirm, fehler, hinweis, neuheiten, pfade, zeichen
 from .sprache import t
 
 BG      = '#10141c'
@@ -1169,16 +1169,19 @@ class Hauptfenster:
                  font=self.f_klein).pack(side='left', padx=(6, 0))
 
         # Symbol UND Wort: Ein Symbol allein erklärt sich nur dem, der es gebaut
-        # hat — hier war selbst der Autor unsicher, was ⟳ bedeutet.
-        self.knopf_neu = self._titelknopf(bar, 'ⓘ', t('hf_wasistneu'),
+        # hat — hier war selbst der Autor unsicher, was `⟳` bedeutet. Genau
+        # deshalb steht der Zauberstab jetzt neben dem Wort „Einrichtung
+        # starten": ein Verb sagt, dass etwas losgeht; „Einrichtung" allein
+        # klang nach einem Ort, an dem man etwas nachschlägt.
+        self.knopf_neu = self._titelknopf(bar, 'wasistneu', t('hf_wasistneu'),
                                           t('hf_hinweis_neu'), self._was_ist_neu)
-        self._titelknopf(bar, '⟳', t('hf_einrichtung'),
+        self._titelknopf(bar, 'einrichtung', t('hf_einrichtung'),
                          t('hf_hinweis_einr'), self._einrichtung)
 
-    def _titelknopf(self, eltern, zeichen, wort, erklaerung, tat):
+    def _titelknopf(self, eltern, symbol, wort, erklaerung, tat):
         rahmen = tk.Frame(eltern, bg=BAR, cursor='hand2')
         rahmen.pack(side='right', padx=(0, 10), pady=6)
-        z = tk.Label(rahmen, text=zeichen, bg=BAR, fg=SUB, font=self.f_zeichen)
+        z = zeichen.knopf(rahmen, symbol, grund=BAR, schrift=self.f_zeichen)
         z.pack(side='left')
         w = tk.Label(rahmen, text=' ' + wort, bg=BAR, fg=SUB, font=self.f_klein)
         w.pack(side='left')
@@ -1221,31 +1224,31 @@ class Hauptfenster:
         self.inhalt.pack(side='right', fill='both', expand=True)
 
         self._gruppe(t('hf_gruppe_bp'))
-        self._reiter('liste', '▤', t('hf_liste'))
-        self._reiter('fortschritt', '◧', t('hf_fortschritt'))
+        self._reiter('liste', 'liste', t('hf_liste'))
+        self._reiter('fortschritt', 'fortschritt', t('hf_fortschritt'))
 
         self._gruppe(t('hf_gruppe_einst'))
-        self._reiter('allgemein', '⚙', t('hf_allgemein'))
-        self._reiter('anzeige', '▭', t('hf_anzeige'))
-        self._reiter('spiel', '✎', t('hf_spiel'))
-        self._reiter('bestand', '↕', t('hf_bestand'))
+        self._reiter('allgemein', 'einstellungen', t('hf_allgemein'))
+        self._reiter('anzeige', 'anzeige', t('hf_anzeige'))
+        self._reiter('spiel', 'auftragstexte', t('hf_spiel'))
+        self._reiter('bestand', 'bestand', t('hf_bestand'))
 
         # „Was ist neu" und „Über" stellen nichts ein — sie erzählen etwas.
         # Unter der Überschrift „Einstellungen" waren sie falsch einsortiert.
         self._gruppe(t('hf_gruppe_info'))
-        self._reiter('wasistneu', '✦', t('hf_wasistneu'))
-        self._reiter('ueber', 'ⓘ', t('hf_ueber'))
+        self._reiter('wasistneu', 'wasistneu', t('hf_wasistneu'))
+        self._reiter('ueber', 'ueber', t('hf_ueber'))
         # Direkt unter „Update & Über": Wer nicht ins Spiel kommt, sucht den
         # Fehler zuerst bei sich. Ein eigener Reiter beantwortet das, statt die
         # Auskunft unten an eine andere Seite zu hängen, wo niemand sie sucht.
-        self._reiter('serverstatus', '◉', t('hf_serverstatus'))
+        self._reiter('serverstatus', 'serverstatus', t('hf_serverstatus'))
 
         # Fortgeschrittenes sitzt unten und ist zugeklappt — sichtbar, aber
         # nicht im Weg. Wer es sucht, findet es; wer es nicht kennt, wird nicht
         # erschlagen.
         self.klapp = tk.Frame(self.leiste, bg=FLAECHE)
         self.klapp.pack(side='bottom', fill='x', pady=(8, 6))
-        self.klappknopf = tk.Label(self.klapp, text='▶ ' + t('hf_fortgeschritten'),
+        self.klappknopf = tk.Label(self.klapp, text=t('hf_fortgeschritten'),
                                    bg=FLAECHE, fg=SUB, font=self.f_klein,
                                    cursor='hand2', anchor='w', padx=16, pady=8)
         self.klappknopf.pack(fill='x')
@@ -1318,7 +1321,7 @@ class Hauptfenster:
             rahmen_start = tk.Frame(self.leiste, bg=FLAECHE)
             rahmen_start.pack(side='bottom', fill='x', padx=12, pady=(8, 2))
             self.spielknopf = rundknopf(
-                rahmen_start, '▶  ' + t('s_sp_start_knopf'),
+                rahmen_start, t('s_sp_start_knopf'),
                 self._spiel_starten, self.f_klein,
                 FLAECHE, ACCENT, ACCENT, BG, radius=8, polster=(12, 7))
             self.spielknopf.pack(fill='x')
@@ -1385,7 +1388,7 @@ class Hauptfenster:
             rahmen_start = tk.Frame(self.leiste, bg=FLAECHE)
             rahmen_start.pack(side='bottom', fill='x', padx=12, pady=(8, 2))
             self.spielknopf = rundknopf(
-                rahmen_start, '▶  ' + t('s_sp_start_knopf'),
+                rahmen_start, t('s_sp_start_knopf'),
                 self._spiel_starten, self.f_klein,
                 FLAECHE, ACCENT, ACCENT, BG, radius=8, polster=(12, 7))
             self.spielknopf.pack(fill='x')
@@ -1411,14 +1414,15 @@ class Hauptfenster:
     # Fragezeichen. Auffallen tut das erst im laufenden Fenster, nicht im Code.
     # Prüfen lässt es sich mit `tkfont.Font.measure`: Ein fehlendes Zeichen ist
     # genauso breit wie das amtliche Ersatzzeichen `￿`.
-    def _reiter(self, kennung, zeichen, text, wohin=None):
+    def _reiter(self, kennung, symbol, text, wohin=None):
         ziel = wohin if wohin is not None else self.leiste
         zeile = tk.Frame(ziel, bg=FLAECHE, cursor='hand2')
         zeile.pack(fill='x')
         strich = tk.Frame(zeile, bg=FLAECHE, width=3)
         strich.pack(side='left', fill='y')
-        z = tk.Label(zeile, text=zeichen, bg=FLAECHE, fg=SUB, font=self.f_zeichen,
-                     width=2)
+        # ⚠ `symbol` heißt der Parameter, nicht `zeichen` — sonst verdeckt er
+        # das gleichnamige Modul, aus dem das Bild kommt.
+        z = zeichen.knopf(zeile, symbol, grund=FLAECHE, schrift=self.f_zeichen)
         z.pack(side='left', padx=(10, 4), pady=7)
         b = tk.Label(zeile, text=text, bg=FLAECHE, fg=SUB, font=self.f_grund,
                      anchor='w')
@@ -1541,13 +1545,13 @@ class Hauptfenster:
                 # nachhelfen muss, wird vom Einrichtungsassistenten geführt —
                 # der erklärt, was die Seite nur als Felder zeigt. Ein Reiter,
                 # den fast niemand braucht, steht oben nur im Weg.
-                self._reiter('ordner', '❒', t('hf_ordner'), self.klappinhalt)
-                self._reiter('erkennung', '◎', t('hf_erkennung'), self.klappinhalt)
-                self._reiter('diagnose', '⚕', t('hf_diagnose'), self.klappinhalt)
-            self.klappknopf.configure(text='▼ ' + t('hf_fortgeschritten'))
+                self._reiter('ordner', 'ordner', t('hf_ordner'), self.klappinhalt)
+                self._reiter('erkennung', 'erkennung', t('hf_erkennung'), self.klappinhalt)
+                self._reiter('diagnose', 'diagnose', t('hf_diagnose'), self.klappinhalt)
+            self.klappknopf.configure(text=t('hf_fortgeschritten'))
         else:
             self.klappinhalt.pack_forget()
-            self.klappknopf.configure(text='▶ ' + t('hf_fortgeschritten'))
+            self.klappknopf.configure(text=t('hf_fortgeschritten'))
         # Kurz warten, statt `after_idle`: Vorher hat Tk die neuen Einträge noch
         # nicht vermessen — und `after_idle` kommt hier nicht zuverlässig dran,
         # weil die Bauplan-Liste selbst Leerlauf-Aufgaben nachlegt.
@@ -1598,7 +1602,9 @@ class Hauptfenster:
                 teil.configure(bg=grund)
             if marke is not None:
                 marke.hintergrund(grund)
-            z.configure(fg=FG if an else SUB)
+            # ⚠ Ein Bild nimmt kein `fg` an — die passend eingefärbte Fassung
+            # muss eingehängt werden.
+            z.faerben(zeichen.HELL if an else zeichen.GRAU)
             b.configure(fg=FG if an else SUB, font=self.f_fett if an else self.f_grund)
             strich.configure(bg=ACCENT if an else FLAECHE)
 

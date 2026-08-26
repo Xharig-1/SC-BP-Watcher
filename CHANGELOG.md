@@ -10,6 +10,58 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Changed
+
+- **All symbols are the same size now — and come from one set.** The glyphs in
+  the notification bar had different sizes, the bell being the largest. Three
+  causes with the same root: *the font decided, not the program.* A glyph fills
+  only 50–70 % of its box, each one differently; `🗑` and `▶` are solid shapes
+  while `⚙ ⟳ ✕` are thin strokes; and every operating system picks a different
+  fallback font. Replaced with rendered images from the **Lucide** set — all
+  drawn on a 24×24 grid with the same stroke width. Suggested by der Autor.
+- **The interface now looks identical on Windows, Linux and macOS.** It did not
+  before: Windows used `Segoe UI Symbol`, other systems something else. Anyone
+  developing on a Mac saw different glyphs than their users on Windows.
+- **The coloured dots in front of blueprints are no longer emoji.** `🟢 🟡 🔵 ⭐`
+  live outside the basic plane; Windows rendered them through the colour emoji
+  font as coloured blocks that **ignored** the configured colour — in the very
+  place you look at most often.
+- **Symbols at double resolution.** On high-density displays (Retina, or Windows
+  at 125 %/150 % scaling) a small image stayed soft. The sharp version now sits
+  alongside it.
+- **Launching Star Citizen now shows a rocket instead of a play arrow.** A `▶`
+  means "play video" everywhere, not "start a program". Reported by der Autor.
+- **Clearing messages now shows an eraser instead of a bin.** The button deletes
+  nothing — it only tidies the display, the blueprints stay. A bin promises
+  destruction and puts people off clicking it. Prompted by der Autor.
+- **"Setup" is now "Run setup".** A verb says something is about to happen; the
+  noun alone sounded like a place to look things up. Suggested by der Autor.
+- The height of the notification bar now grows with the configured font size. It
+  was fixed at 26 pixels, which made symbols stick out at "large".
+
+### Removed
+
+- **The autostart switch is gone from the notification bar.** A power symbol
+  means "turn the device off" everywhere, and it sat right next to the cross
+  that really does close the program — two buttons that both looked like "off".
+  The setting is unchanged under "General".
+- **The setup assistant button is gone from the notification bar.** It remains
+  available in the main window, top right. der Autor: "the settings are enough,
+  that is where people go anyway when they notice something is stuck."
+
+### Fixed
+
+- **A help text pointed at a glyph that no longer existed.** "Use ☰ to open the
+  blueprint list at any time" was still in the setup assistant, even though `☰`
+  had been replaced by the clipboard back in v3.0.0-rc55. All texts now name the
+  symbols in words instead of depicting them.
+
+### Thanks
+
+- **der Autor** — for prompting the whole change ("they should all be the same
+  size, but they are not, and the bell is even the largest") and for the notes
+  on the rocket, the eraser and "Run setup".
+
 ## v3.0.0 - 2026-08-29
 
 > **One window for everything.** The blueprint list and the settings used to live in

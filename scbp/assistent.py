@@ -372,8 +372,12 @@ class Assistent:
         self._absatz(f, t('bauplaene') + ': %d' % bestand_datei.anzahl(b),
                      ACCENT, 15, fett=True)
         self._absatz(f, t('schritt_fertig_text'), FG, 11, oben=14)
-        self._absatz(f, '☰  ' + t('tipp_liste'), SUB, 10, oben=18)
-        self._absatz(f, '⟳  ' + t('tipp_erneut'), SUB, 10, oben=8)
+        # ⚠ Ohne führendes Zeichen. Hier stand `☰`, das es seit rc55 gar nicht
+        # mehr gibt (durch das Klemmbrett ersetzt) — der Tipp zeigte also auf
+        # ein Zeichen, das im Programm nicht vorkam. Die Texte benennen die
+        # Symbole jetzt in Worten.
+        self._absatz(f, t('tipp_liste'), SUB, 10, oben=18)
+        self._absatz(f, t('tipp_erneut'), SUB, 10, oben=8)
 
         self._menueeintrag_anbieten(f)
 

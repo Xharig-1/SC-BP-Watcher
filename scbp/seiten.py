@@ -33,6 +33,7 @@ import sys
 import tkinter as tk
 
 from . import bericht, bestand as bestand_datei, fehler, katalog as katalog_modul
+from . import zeichen
 from .sprache import t
 
 BG      = '#10141c'
@@ -204,14 +205,20 @@ def _wahl(fenster, eltern, eintraege, aktiv, tat):
     return reihe
 
 
-def _status(fenster, eltern, zeichen, fett, rest, farbe=None):
-    """Ein Statuskasten mit farbigem Balken links — wie in der Vorschau."""
+def _status(fenster, eltern, symbol, fett, rest, farbe=None):
+    """Ein Statuskasten mit farbigem Balken links — wie in der Vorschau.
+
+    ⚠ `symbol` ist ein Name aus `scbp/zeichen.py` („haken", „offen"), kein
+    Schriftzeichen mehr. Der Parameter hieß bis v3.0.0-rc55 `zeichen` und hätte
+    das gleichnamige Modul verdeckt.
+    """
     farbe = farbe or ACCENT
     innen = _karte(eltern, rand=farbe, pady=(0, 14))
     zeile = tk.Frame(innen, bg=FLAECHE)
     zeile.pack(fill='x', padx=14, pady=12)
-    tk.Label(zeile, text=zeichen, bg=FLAECHE, fg=farbe,
-             font=fenster.f_grund).pack(side='left', padx=(0, 10), anchor='n')
+    zeichen.zeile(zeile, symbol, grund=FLAECHE, schrift=fenster.f_grund,
+                  farbe=zeichen.GRAU if farbe == SUB else zeichen.GRUEN
+                  ).pack(side='left', padx=(0, 10), anchor='n')
     text = tk.Frame(zeile, bg=FLAECHE)
     text.pack(side='left', fill='x', expand=True)
     oben = tk.Label(text, text=fett, bg=FLAECHE, fg=FG, font=fenster.f_fett,
@@ -448,8 +455,8 @@ def _fortschritt_bereich(fenster, eltern, titel, gesamt, meine, kategorien):
 
     kopf = tk.Frame(eltern, bg=BG, cursor='hand2')
     kopf.pack(fill='x', pady=(10, 2))
-    pfeil = tk.Label(kopf, text='▶', bg=BG, fg=SUB, font=fenster.f_klein,
-                     width=2)
+    pfeil = zeichen.zeile(kopf, 'aufklappen', grund=BG,
+                          schrift=fenster.f_klein)
     pfeil.pack(side='left')
     tk.Label(kopf, text=titel, bg=BG, fg=FG, font=fenster.f_fett,
              anchor='w').pack(side='left')
@@ -480,7 +487,8 @@ def _fortschritt_bereich(fenster, eltern, titel, gesamt, meine, kategorien):
 
     def umschalten(*_):
         zustand['offen'] = not zustand['offen']
-        pfeil.configure(text='▼' if zustand['offen'] else '▶')
+        pfeil.symbol_tauschen('zuklappen' if zustand['offen']
+                             else 'aufklappen')
         if zustand['offen']:
             zeichnen()
             koerper.pack(fill='x', padx=(18, 0), pady=(6, 0))
@@ -743,7 +751,7 @@ def _ordner(fenster, rahmen):
     except Exception:
         pass
     if gefunden:
-        _status(fenster, innen, '✓', t('s_sc_da'),
+        _status(fenster, innen, 'haken', t('s_sc_da'),
                 t('s_or_mitlesen') % gefunden)
     else:
         _status(fenster, innen, '!', t('s_sc_weg'),
@@ -1035,7 +1043,7 @@ def _spiel(fenster, rahmen):
             fehler.merken('seiten.spiel.lage', ausnahme)
             return
         if not pfade.einstellung_wahrheit('inj_an', True):
-            _status(fenster, kasten, '○', t('s_sp_aus_hinweis'), '', farbe=SUB)
+            _status(fenster, kasten, 'offen', t('s_sp_aus_hinweis'), '', farbe=SUB)
             return
         if lage['drin']:
             zusatz = []
@@ -1044,9 +1052,9 @@ def _spiel(fenster, rahmen):
                               % t(_QUELLTEXT.get(lage['quelle'], 's_sp_q_or')))
             if lage['stand']:
                 zusatz.append(str(lage['stand']))
-            _status(fenster, kasten, '✓', t('s_sp_steht'), ' · '.join(zusatz))
+            _status(fenster, kasten, 'haken', t('s_sp_steht'), ' · '.join(zusatz))
         else:
-            _status(fenster, kasten, '○', t('s_sp_nichts'), t('s_sp_nichts_h'),
+            _status(fenster, kasten, 'offen', t('s_sp_nichts'), t('s_sp_nichts_h'),
                     farbe=SUB)
 
     # Damit auch Aktionen im Einstellungsobjekt den Kasten auffrischen.
@@ -1381,8 +1389,8 @@ def _fassung(fenster, eltern, eintrag, punkte, offen):
     zustand = {'offen': offen}
     kopf = tk.Frame(eltern, bg=BG, cursor='hand2')
     kopf.pack(fill='x', padx=24, pady=(12, 2))
-    pfeil = tk.Label(kopf, text='▼' if offen else '▶', bg=BG, fg=SUB,
-                     font=fenster.f_klein)
+    pfeil = zeichen.zeile(kopf, 'zuklappen' if offen else 'aufklappen',
+                          grund=BG, schrift=fenster.f_klein)
     pfeil.pack(side='left', padx=(0, 8))
     tk.Label(kopf, text=eintrag.get('version') or '—', bg=BG, fg=ACCENT,
              font=fenster.f_fett).pack(side='left')
@@ -1461,7 +1469,8 @@ def _fassung(fenster, eltern, eintrag, punkte, offen):
 
     def umschalten(*_):
         zustand['offen'] = not zustand['offen']
-        pfeil.configure(text='▼' if zustand['offen'] else '▶')
+        pfeil.symbol_tauschen('zuklappen' if zustand['offen']
+                             else 'aufklappen')
         if zustand['offen']:
             # ⚠ `after=kopf` ist der ganze Witz. Ohne das packt Tk den Inhalt ans
             # **Ende** der Fläche — also unter alle anderen Versionen. Bei elf
@@ -1876,8 +1885,10 @@ def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text='',
 
     kopf = tk.Frame(innen, bg=FLAECHE)
     kopf.pack(fill='x', padx=14, pady=(12, 2))
-    tk.Label(kopf, text='●', bg=FLAECHE, fg=ACCENT if gewaehlt else '#3a4658',
-             font=fenster.f_klein).pack(side='left', padx=(0, 7))
+    zeichen.zeile(kopf, 'punkt',
+                  farbe=zeichen.GRUEN if gewaehlt else zeichen.GRAU,
+                  grund=FLAECHE, schrift=fenster.f_klein
+                  ).pack(side='left', padx=(0, 7))
     tk.Label(kopf, text=titel, bg=FLAECHE, fg=FG,
              font=fenster.f_fett).pack(side='left')
     if marke_text:
@@ -2252,7 +2263,7 @@ def _meldungskarte(fenster, eltern, meldung):
     tk.Label(kopf, text=titel, bg=FLAECHE, fg=FG,
              font=fenster.f_fett, anchor='w').pack(side='left')
     erledigt = bool(meldung.get('erledigt'))
-    tk.Label(kopf, text=('✔ ' + t('s_st_erledigt_kurz')) if erledigt
+    tk.Label(kopf, text=(t('s_st_erledigt_kurz')) if erledigt
              else t('s_st_offen'),
              bg=FLAECHE,
              # Erledigt grün wie auf der Statusseite; offen in Gold, damit es
@@ -2757,7 +2768,7 @@ def _diagnose(fenster, rahmen):
                lambda: _ordner_zeigen(pfade.app_ordner())),
     ])
 
-    _status(fenster, innen, '✓', t('s_di_sicher'), t('s_di_sicher_h'))
+    _status(fenster, innen, 'haken', t('s_di_sicher'), t('s_di_sicher_h'))
 
     ziel = _feld(fenster, innen, t('s_di_mit'), t('s_di_mit_h'))
 

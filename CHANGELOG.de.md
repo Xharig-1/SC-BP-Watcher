@@ -10,6 +10,64 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Geändert
+
+- **Alle Symbole sind jetzt gleich groß — und stammen aus einem Satz.** Die
+  Zeichen in der Melde-Leiste waren unterschiedlich groß, die Glocke war die
+  größte. Dahinter steckten drei Ursachen mit demselben Kern: *Die Schrift
+  entschied, nicht das Programm.* Ein Schriftzeichen füllt seine Box nur zu
+  50–70 % aus, und jedes anders; `🗑` und `▶` sind gefüllte Flächen, `⚙ ⟳ ✕`
+  dünne Striche; und jedes Betriebssystem greift zu einer anderen Ersatzschrift.
+  Ersetzt durch fertige Bilder aus dem **Lucide**-Satz — alle auf einem
+  24×24-Raster mit gleicher Strichstärke gezeichnet. Vorgeschlagen von der Autor.
+- **Auf Windows, Linux und Mac sieht die Oberfläche jetzt gleich aus.** Das war
+  vorher nicht so: Windows nahm `Segoe UI Symbol`, die anderen Systeme etwas
+  anderes. Wer auf einem Mac entwickelt, sah damit andere Zeichen als die
+  Nutzer unter Windows.
+- **Die farbigen Punkte vor den Bauplänen sind keine Emoji mehr.** `🟢 🟡 🔵 ⭐`
+  liegen außerhalb der Grundebene; Windows malte sie über die Farb-Emoji-Schrift
+  als bunte Klötzchen, die die eingestellte Farbe **ignorierten** — ausgerechnet
+  an der Stelle, die man am häufigsten sieht.
+- **Symbole in doppelter Auflösung.** Auf Bildschirmen mit hoher Punktdichte
+  (Retina, oder Windows mit 125 %/150 % Skalierung) blieb ein kleines Bild
+  vorher weich. Die scharfe Fassung liegt jetzt daneben.
+- **Star Citizen starten heißt jetzt Rakete statt Abspielpfeil.** Ein `▶` heißt
+  überall „Video ab", nicht „Programm starten". Gemeldet von der Autor.
+- **Meldungen wegräumen heißt jetzt Radiergummi statt Mülleimer.** Der Knopf
+  löscht nichts — er räumt nur die Anzeige auf, die Baupläne bleiben. Ein
+  Mülleimer verspricht Vernichtung und schreckt vom Klicken ab. Angeregt von
+  der Autor.
+- **„Einrichtung" heißt jetzt „Einrichtung starten".** Ein Verb sagt, dass etwas
+  losgeht; das Wort allein klang nach einem Ort zum Nachschlagen. Vorgeschlagen
+  von der Autor.
+- Die Höhe der Melde-Leiste wächst jetzt mit der eingestellten Schriftgröße mit.
+  Sie stand fest auf 26 Pixel, wodurch die Symbole bei „groß" oben und unten
+  herausragten.
+
+### Entfernt
+
+- **Der Autostart-Schalter ist aus der Melde-Leiste verschwunden.** Ein
+  Ein/Aus-Zeichen heißt überall „Gerät ausschalten", und es saß direkt neben dem
+  Kreuz, das das Programm wirklich schließt — zwei Knöpfe, die beide nach „aus"
+  aussahen. Die Einstellung steht unverändert unter „Allgemein".
+- **Der Knopf für den Einrichtungs-Assistenten ist aus der Melde-Leiste
+  verschwunden.** Er bleibt im großen Fenster oben rechts erreichbar. der Autor:
+  „reicht glaube ich in den einstellungen, da gehen die leute eh hin wenn die
+  merken es klemmt etwas."
+
+### Behoben
+
+- **Ein Hilfetext zeigte auf ein Zeichen, das es nicht mehr gab.** „Mit ☰
+  öffnest du jederzeit die Bauplan-Liste" stand noch im Einrichtungs-Assistenten,
+  obwohl das `☰` seit v3.0.0-rc55 durch das Klemmbrett ersetzt war. Alle
+  Texte benennen die Symbole jetzt in Worten statt sie abzubilden.
+
+### Dank
+
+- **der Autor** — für den Anstoß zur ganzen Umstellung („die sollen alle gleich
+  groß sein, sind aber unterschiedlich groß") und für die Hinweise zu Rakete,
+  Radiergummi und „Einrichtung starten".
+
 ## v3.0.0 - 2026-08-29
 
 > **Ein Fenster für alles.** Bauplan-Liste und Einstellungen lagen bisher in zwei
