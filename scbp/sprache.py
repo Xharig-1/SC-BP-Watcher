@@ -677,6 +677,14 @@ TEXTE = {
                           'Check daily for new versions'),
     's_ub_taeglich_h': ('Höchstens einmal am Tag, ausschließlich bei GitHub. Ist etwas da, färbt sich ⓘ in der Titelleiste.',
                           'At most once a day, only at GitHub. If there is something, the ⓘ in the title bar changes colour.'),
+    's_up_sofort':     ('⭳  Jetzt die neueste Fassung holen',
+                        '⭳  Get the latest version now'),
+    's_up_sofort_h':   ('Holt sofort, was es gerade gibt — auch eine Testfassung. '
+                        'An deiner Einstellung darunter ändert das nichts.',
+                        'Fetches whatever is available right now — including a test '
+                        'build. This does not change your setting below.'),
+    's_up_sofort_frage': ('Neueste Fassung holen?',
+                          'Get the latest version?'),
     's_ub_kanal':      ('Welche Fassungen willst du bekommen?',
                           'Which versions do you want to get?'),
     's_ub_kanal_h':    ('Beim Testen mithelfen oder lieber Ruhe haben — beides ist in Ordnung, und du kannst jederzeit wechseln.',

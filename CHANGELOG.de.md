@@ -50,6 +50,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Ein Knopf für „gib mir einfach die neueste".** Bisher musste man erst
+  verstehen, was ein Kanal ist, und den richtigen der beiden Kästen anklicken —
+  wer den falschen wählte, bekam gar nichts angeboten. Jetzt steht darüber ein
+  Knopf über die volle Breite, der sofort holt, was es gerade gibt, auch eine
+  Testfassung. An der Einstellung darunter ändert er nichts. Vorgeschlagen von
+  der Autor, nachdem Morkhan an genau dieser Stelle hängenblieb.
+
 - **Star Citizen lässt sich aus dem Werkzeug heraus starten.** Auf der Seite
   „Angaben im Spiel" steht ein Knopf, der das Spiel über den Weg startet, den
   man ohnehin benutzt: den RSI Launcher unter Windows, den `lug-helper` unter

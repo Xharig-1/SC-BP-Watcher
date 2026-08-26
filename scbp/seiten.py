@@ -1834,6 +1834,22 @@ def _ueber(fenster, rahmen):
     ziel = _feld(fenster, innen, t('s_ub_taeglich'), t('s_ub_taeglich_h'))
     _schalter(fenster, ziel, 'update_pruefen', True)
 
+    # --- Einmal holen, ohne etwas umzustellen ---
+    #
+    # ⚠ Der häufigste Wunsch ist der einfachste: „gib mir die neueste, egal
+    # welche". Bisher musste man dafür erst verstehen, was ein Kanal ist, und
+    # den richtigen Kasten anklicken. Morkhan am 26.08.2026 dazu: „das ist
+    # verwirrend" — er hatte den falschen gewählt und bekam gar nichts.
+    #
+    # Dieser Knopf beantwortet den Wunsch direkt, ohne dass jemand eine
+    # Entscheidung treffen muss, die er nicht treffen will. Die Kästen darunter
+    # bleiben für alle, die es genauer steuern wollen.
+    _fliesstext(innen, t('s_up_sofort_h'), fenster.f_klein,
+                pady=(14, 6))
+    _knopf(fenster, innen, t('s_up_sofort'),
+           lambda: _fassung_holen(fenster, True),
+           stark=True).pack(fill='x', pady=(0, 6))
+
     # --- Testkanal: zwei Kästen statt eines Schalters ---
     tk.Label(innen, text=t('s_ub_kanal'), bg=BG, fg=FG,
              font=fenster.f_titel, anchor='w').pack(fill='x', pady=(24, 2))

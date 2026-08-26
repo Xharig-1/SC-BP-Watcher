@@ -48,6 +48,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **A button for „just give me the latest".** Until now you first had to
+  understand what a channel is and pick the right one of the two boxes — anyone
+  choosing the wrong one was offered nothing at all. There is now a full-width
+  button above them that immediately fetches whatever is available, including a
+  test build. It changes nothing about the setting below. Suggested by der Autor
+  after Morkhan got stuck at exactly this point.
+
 - **Star Citizen can be launched from the tool.** The „In-game details" page
   has a button that starts the game the way you already do: the RSI Launcher on
   Windows, `lug-helper` on Linux. If neither is found the button does not appear

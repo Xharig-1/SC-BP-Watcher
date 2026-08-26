@@ -55,7 +55,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc37'
+__version__ = '3.0.0-rc38'
 
 
 def _mitgeliefert(name):
@@ -1278,10 +1278,11 @@ class Overlay:
         # gebaut: Im Infofenster fehlte der Neustart-Knopf, deshalb lud Morkhan
         # am 26.08.2026 dreimal vergeblich. Ein Weg statt zwei.
         #
-        # Und zwar auf **„Was ist neu"** — das bedeutet dieses Zeichen, seit es
-        # das Zeichen gibt. Wer von hier aus ein Update sucht, sieht links den
-        # Reiter „Update & Über" und findet es in einem Klick.
-        self.info_lbl.bind('<Button-1>', lambda e: self.fenster_oeffnen('wasistneu'))
+        # Und zwar auf **„Update & Über"**: Wer auf das Zeichen klickt, will
+        # meistens wissen, ob es etwas Neues gibt — und landet so direkt beim
+        # Knopf. „Was ist neu" liegt einen Reiter daneben und ist einen Klick
+        # entfernt.
+        self.info_lbl.bind('<Button-1>', lambda e: self.fenster_oeffnen('ueber'))
         hinweis.anhaengen(self.info_lbl, self._hinweis_info)
         self.as_lbl.bind('<Button-1>', lambda e: self._toggle_autostart())
         hinweis.anhaengen(self.as_lbl, self._hinweis_autostart)
