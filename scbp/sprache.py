@@ -863,7 +863,9 @@ TEXTE = {
     # Aufträge, also heißt der Punkt jetzt danach.
     'hf_spiel':          ('Auftragstexte', 'Mission text'),
     'hf_bestand':        ('Bestand', 'Inventory'),
-    'hf_ueber':          ('Über', 'About'),
+    # ⚠ „Über“ allein findet niemand, der ein Update sucht.
+    # Gemeldet am 26.08.2026: „ich suche updates auch nicht bei Über“.
+    'hf_ueber':          ('Update & Über', 'Update & About'),
     'hf_erkennung':      ('Erkennung', 'Detection'),
     'hf_diagnose':       ('Diagnose', 'Diagnostics'),
     'hf_neu':            ('neu', 'new'),

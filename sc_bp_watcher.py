@@ -1273,7 +1273,12 @@ class Overlay:
         self.info_lbl = tk.Label(bar, text='ⓘ', bg=BAR, fg=SUB,
                                  font=self.f_title, cursor='hand2')
         self.info_lbl.pack(side='right', padx=(0, 6))
-        self.info_lbl.bind('<Button-1>', lambda e: self.versionen_zeigen())
+        # ⚠ Führt ins **Hauptfenster**, nicht mehr in ein eigenes
+        # Infofenster. Es gab zwei Wege zum Update, und nur einer war zu Ende
+        # gebaut: Im Infofenster fehlte der Neustart-Knopf, deshalb lud Morkhan
+        # am 26.08.2026 dreimal vergeblich. Ein Weg statt zwei — hier liegt
+        # der Knopf, der auch wirklich neu startet.
+        self.info_lbl.bind('<Button-1>', lambda e: self.fenster_oeffnen('ueber'))
         hinweis.anhaengen(self.info_lbl, self._hinweis_info)
         self.as_lbl.bind('<Button-1>', lambda e: self._toggle_autostart())
         hinweis.anhaengen(self.as_lbl, self._hinweis_autostart)

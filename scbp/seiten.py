@@ -140,6 +140,28 @@ def _knopf(fenster, eltern, text, tat, stark=False, gefahr=False):
         c.itemconfigure(flaeche, outline=ACCENT if stark else LINIE)
         c.itemconfigure(beschriftung, fill=farbe)
 
+    def mitwachsen(_=None):
+        """Wird der Knopf gestreckt, muss das gezeichnete Rechteck mit.
+
+        ⚠ Ein Canvas hat eine feste Wunschbreite. `pack(fill='x')` streckt zwar
+        die Leinwand, aber das darauf gezeichnete Rechteck bleibt schmal — der
+        Knopf sah dann aus, als füllte er nur die halbe Kastenbreite. Genau so
+        am 26.08.2026 gemeldet: „der Button füllt nur die hälfte unter den
+        versionen".
+
+        Deshalb bei jeder Größenänderung Rechteck und Text neu setzen. Knöpfe,
+        die nicht gestreckt werden, behalten ihre Breite von selbst.
+        """
+        neue_breite = c.winfo_width()
+        if neue_breite <= 10 or abs(neue_breite - breite) < 2:
+            return
+        punkte = _rundes_rechteck(c, 1, 1, neue_breite - 1, hoehe - 1,
+                                  radius=5, fill='', outline='')
+        c.coords(flaeche, *c.coords(punkte))
+        c.delete(punkte)
+        c.coords(beschriftung, neue_breite / 2.0, hoehe / 2.0)
+
+    c.bind('<Configure>', mitwachsen, add='+')
     c.bind('<Enter>', rein)
     c.bind('<Leave>', raus)
     c.bind('<Button-1>', lambda e: tat())
