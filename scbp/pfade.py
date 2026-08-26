@@ -181,6 +181,22 @@ def app_ordner():
     return p
 
 
+def programm_datei(name):
+    """Voller Pfad zu einer **mitgelieferten** Datei aus dem Ordner `daten/`.
+
+    Das sind Dateien, die zum Programm gehören und nur gelesen werden — im
+    Gegensatz zu `app_datei()`, wo die Daten des Nutzers liegen.
+
+    ⚠ Zwei Fälle: Läuft das Programm aus dem Quellcode, liegt `daten/` neben
+    `scbp/`. Ist es zu einer Datei gepackt (PyInstaller, AppImage), entpackt
+    sich alles in einen Wegwerf-Ordner, dessen Pfad in `sys._MEIPASS` steht.
+    Wer das nicht abfängt, sucht im gepackten Programm an der falschen Stelle
+    und findet nichts."""
+    gepackt = getattr(sys, '_MEIPASS', None)
+    basis = gepackt or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(basis, 'daten', name)
+
+
 def app_datei(name):
     """Voller Pfad zu einer eigenen Datei, z. B. app_datei('bestand.json').
 

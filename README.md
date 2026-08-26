@@ -131,10 +131,11 @@ On top of that: class, size and grade are right there in the line (`M/1/A`), the
 | | |
 |---|---|
 | ⚡ **Instant** | Reads Star Citizen's `Game.log` → the blueprint is in the list **within seconds** |
-| 📋 **Blueprint list** | Search everything, grouped by type, filters *all / owned / missing*, with progress. Tick items with one click |
+| 📋 **Blueprint list** | Search everything, grouped by type, filters *all / owned / missing / watching / new in game*, with progress. Tick items with one click |
 | 🧭 **Where it drops** | One click shows faction, contract, required standing and payout — for **655 of 722** blueprints, sorted by the easiest route |
 | 🧙 **Setup wizard** | Four steps on first start — and **repeatable any time**, no digging through menus |
 | 🔵 **Catalogue watch** | Also reports when something becomes **newly craftable in the game** — a blueprint CIG added that did not exist before |
+| 🔵 **New in game** | Its own filter in the list: **only what the current patch added**. Every blueprint carries the game version it first appeared in; when the next patch lands, the new ones move in and the old ones drop out of the filter — the stamp stays |
 | ⭐ **Watchlist** | Click the star next to anything you are waiting for. When it shows up it is announced in gold — and **removed from the watchlist by itself** |
 | 🏷️ **Class · size · grade** | Compact tag `class/size/grade` per blueprint, e.g. `M/1/A` (Military · Size 1 · Grade A) |
 | 🔔 **Sound** | A short beep on every find — you don't have to watch the window |

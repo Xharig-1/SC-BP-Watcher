@@ -364,7 +364,8 @@ class Bestandsfenster:
         for schluessel, text in (('alle', t('filter_alle')),
                                  ('habe', t('filter_habe')),
                                  ('fehlt', t('filter_fehlt')),
-                                 ('merk', '⭐ ' + t('filter_merk'))):
+                                 ('merk', '⭐ ' + t('filter_merk')),
+                                 ('neu', '🔵 ' + t('filter_neu'))):
             from .hauptfenster import rundknopf
             k = rundknopf(knopfzeile, text, None, schrift(10), BG, FLAECHE,
                           LINIE, SUB)
@@ -392,7 +393,7 @@ class Bestandsfenster:
         reihe = tk.Frame(self.root, bg=BG)
         reihe.pack(fill='x', padx=14, pady=(0, 8))
         self.fein = {'art': '', 'klasse': '', 'groesse': '', 'quelle': '',
-                     'grad': ''}
+                     'grad': '', 'patch': ''}
 
         # ⚠ Eigener Rahmen für die Auswahlfelder. Sie werden per `grid`
         # angeordnet (damit sie umbrechen können), und Tk verträgt `grid` und
@@ -422,6 +423,11 @@ class Bestandsfenster:
         feld('quelle', [('', t('ff_alle_quellen'))] + self._quellen())
         feld('grad', [('', t('ff_alle_grade'))]
              + self._mit_zahl(self._grade(), self._anzahl_je('g')))
+        # Erweitert sich von allein: Jeder Patch, der Baupläne bringt, stempelt
+        # seine Version an die Neuzugänge und steht dadurch beim nächsten
+        # Öffnen im Feld. Vor dem zweiten Katalogbau ist die Liste leer, dann
+        # lässt `feld()` das Auswahlfeld weg.
+        feld('patch', [('', t('ff_alle_patches'))] + self._patches())
 
         self.zuruecksetzen_lbl = tk.Label(
             reihe, text=t('ff_zuruecksetzen'), bg=BG, fg=SUB,
@@ -434,7 +440,7 @@ class Bestandsfenster:
         self._reihe_umbrechen(
             self.fein_rahmen,
             [self.fein_felder[k] for k in
-             ('art', 'klasse', 'groesse', 'quelle', 'grad')
+             ('art', 'klasse', 'groesse', 'quelle', 'grad', 'patch')
              if k in self.fein_felder],
             rechts_frei=self.treffer_lbl)
 
@@ -605,6 +611,16 @@ class Bestandsfenster:
                  if g.isdigit() else g)
                 for g in self._mit_katalog(GRADE_FEST, 'g')]
 
+    def _patches(self):
+        """Die Spielversionen, aus denen Baupläne stammen — neueste zuerst.
+
+        Gewählt wird die volle Kennung (`4.10.0-live.12519617`), angezeigt die
+        kurze mit Anzahl: „4.10.0 (16)". Die Liste pflegt sich selbst: Was ein
+        Patch bringt, trägt seine Version als Stempel und steht damit beim
+        nächsten Öffnen im Feld."""
+        return [(voll, '%s (%d)' % (kurz, anzahl))
+                for voll, kurz, anzahl in katalog_modul.patches(self.katalog)]
+
     def _quellen(self):
         """Fraktionen und Sonderquellen — beides, wonach man wirklich sucht."""
         fraktionen, sonder = set(), set()
@@ -649,6 +665,10 @@ class Bestandsfenster:
         Belohnungstopf (XenoThreat und Verwandte).
         """
         if self.fein['klasse'] and e.get('c') != self.fein['klasse']:
+            return False
+        # Aus welchem Patch stammt der Bauplan? Ohne Stempel ist er älter als
+        # der erste Vergleich — er gehört dann in keinen der Patch-Einträge.
+        if self.fein['patch'] and e.get('seit') != self.fein['patch']:
             return False
         # ⚠ Wer nach „Größe 2" oder „Grad A" sucht, meint Schiffsteile. Arten, bei
         # denen die Zahl nur der Vollständigkeit halber dasteht (Rüstung, FPS-Waffen),
@@ -793,6 +813,9 @@ class Bestandsfenster:
         text = self.suche.get().strip().lower()
         habe = bestand_datei.schluessel(self.bestand)
         beobachtet = merk.namen()
+        # Was mit dem letzten Patch dazukam. Einmal je Durchlauf holen — die
+        # Menge ist für alle Zeilen dieselbe.
+        neu_im_spiel = katalog_modul.neue(self.katalog)
         ergebnis = []
         for og, art, liste in katalog_modul.gruppen_geordnet(self.katalog):
             if og in self.bereiche_aus:
@@ -816,6 +839,8 @@ class Bestandsfenster:
                 if self.filter == 'fehlt' and drin:
                     continue
                 if self.filter == 'merk' and k not in beobachtet:
+                    continue
+                if self.filter == 'neu' and k not in neu_im_spiel:
                     continue
                 if text and not art_passt and not _passt(e, text):
                     continue
@@ -921,6 +946,7 @@ class Bestandsfenster:
         self._treffer_zeigen(gruppen)
         if not gruppen:
             leer = (t('merkliste_leer') if self.filter == 'merk'
+                    else t('neu_leer') if self.filter == 'neu'
                     else t('nichts_gefunden'))
             tk.Label(self.inhalt, text=leer, bg=BG, fg=SUB, font=schrift(11),
                      pady=20, wraplength=520, justify='center').pack()

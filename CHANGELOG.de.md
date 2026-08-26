@@ -19,6 +19,25 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Das Wichtigste in Kürze
 
+- **Die Liste zeigt, was mit dem Patch neu ins Spiel kam.** Neben „beobachtet"
+  steht jetzt **🔵 neu im Spiel**. Der Katalog stempelt jedem Bauplan die
+  Spielversion auf, in der es ihn zum ersten Mal gab; der Filter zeigt die des
+  aktuellen Patches. Kommt der nächste, rücken die neuen nach und die alten
+  fallen heraus — der Stempel bleibt aber stehen, du siehst später noch, mit
+  welchem Patch ein Bauplan kam. Mit 4.10.0 sind es 21.
+- **Eine eigene Patch-Historie**, damit die Angabe auch stimmt. Verglichen wird
+  nicht mehr gegen den Katalog von letzter Woche, sondern gegen **alle je
+  gesehenen** Baupläne. Der erste Versuch meldete 74 Zugänge, von denen 53
+  längst im Spiel waren — die Datenquelle hatte sie zwischendurch schlicht nicht
+  geführt. Nachsehen ließ es sich nicht mehr: scmdb hält nur die aktuelle
+  Spielversion vor, die Daten zu 4.9.0 waren am selben Tag schon gelöscht.
+  Deshalb schreibt das Werkzeug jetzt selbst mit, was ein Patch gebracht hat
+  (`daten/patch-historie.json`, im Repo nachlesbar) — nur die Zugänge, nie der
+  ganze Katalog.
+- **Ein Auswahlfeld „Patch"** neben den übrigen Filtern: dort lässt sich jeder
+  frühere Patch nachschlagen — „was kam mit 4.10.0?". Das Feld **erweitert sich
+  von allein**; jeder Patch, der Baupläne bringt, steht beim nächsten Öffnen
+  darin, mit der Anzahl dahinter.
 - **Ein Installer für Windows** — herunterladen, starten, fertig. Kein Herumschieben
   von Dateien mehr.
 - **Ein Fenster statt zwei**, mit Reitern links. Dazu ein Symbol neben der Uhr,

@@ -92,6 +92,12 @@ TEXTE = {
     'export_fehler':     ('Export fehlgeschlagen: %s', 'Export failed: %s'),
     'alle_dateien':      ('Alle Dateien', 'All files'),
     'filter_merk':       ('beobachtet', 'watching'),
+    'filter_neu':        ('neu im Spiel', 'new in game'),
+    'ff_alle_patches':   ('alle Patches', 'all patches'),
+    'neu_leer':          ('Mit dem letzten Patch kam kein neuer Bauplan dazu. '
+                          'Sobald CIG welche nachreicht, stehen sie hier.',
+                          'The latest patch did not add any blueprints. As soon '
+                          'as CIG adds some, they show up here.'),
     'merken':            ('Auf die Merkliste', 'Add to watchlist'),
     'nicht_mehr_merken': ('Von der Merkliste nehmen', 'Remove from watchlist'),
     'merkliste_leer':    ('Du beobachtest noch nichts. Tippe oben einen Namen '

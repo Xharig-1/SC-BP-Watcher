@@ -55,7 +55,7 @@ import re
 import time
 import urllib.request
 
-from . import pfade, sprache
+from . import patchhistorie, pfade, sprache
 from .sprache import t
 
 BASIS = 'https://scmdb.net/data'
@@ -497,6 +497,32 @@ def erzeugen(version=None, fortschritt=None, aus_datei=None):
                 eintrag['a'] = e['a']
             bauplaene[k] = eintrag
 
+    # ---- Was hat dieser Patch gebracht? ----
+    #
+    # Verglichen wird gegen **alle je gesehenen** Baupläne, nicht gegen den
+    # Katalog von letzter Woche. Der Unterschied ist der ganze Grund für
+    # `patchhistorie`: Am 26.08.2026 meldete der Vergleich gegen den letzten
+    # Katalog 74 Zugänge, von denen 53 längst im Spiel waren — die Quelle hatte
+    # sie zwischendurch schlicht nicht geführt.
+    #
+    # ⚠ Ist noch nichts gesehen worden (erster Katalogbau überhaupt), wird
+    # NICHTS als Zugang gewertet — sonst stünden alle 730 Baupläne als „neu" da.
+    # Nur die Vergleichsgrundlage wird gesetzt.
+    bekannt = patchhistorie.gesehen()
+    if bekannt:
+        zugang = [e['n'] for k, e in bauplaene.items() if k not in bekannt]
+        if zugang:
+            patchhistorie.eintragen(version, zugang)
+    patchhistorie.gesehen_setzen(bekannt | set(bauplaene))
+
+    # Der Stempel kommt aus der Historie, nicht aus diesem Lauf. Dadurch trägt
+    # auch ein frisch gebauter Katalog die Herkunft aller früheren Patches —
+    # die mitgelieferte Historie reicht weiter zurück als das eigene Zusehen.
+    herkunft = patchhistorie.version_je_bauplan()
+    for k, eintrag in bauplaene.items():
+        if k in herkunft:
+            eintrag['seit'] = herkunft[k]
+
     daten = {'version': version, 'geholt': time.strftime('%Y-%m-%d %H:%M'),
              'bauplaene': bauplaene, 'missionen': _missionen(merged)}
     ziel = pfade.app_datei(CACHE)
@@ -537,6 +563,44 @@ def aktualisieren(fortschritt=None):
         return bool(anzahl), anzahl, version
     except Exception:
         return False, 0, ''
+
+
+def version_kurz(version):
+    """Aus '4.10.0-live.12519617' wird '4.10.0'.
+
+    Die volle Kennung ist eindeutig und wird deshalb gespeichert; im Auswahlfeld
+    hat sie nichts verloren — dort will man „4.10.0" lesen, nicht die Buildnummer."""
+    return (version or '').split('-')[0] or (version or '')
+
+
+def patches(daten=None):
+    """[(volle Version, kurze Version, Anzahl), …] — neueste zuerst.
+
+    Alle Spielversionen, aus denen im Katalog Baupläne stammen. Grundlage ist
+    derselbe Stempel `seit`, den auch `neue()` benutzt: Kommt ein Patch dazu,
+    taucht seine Version hier von allein auf — es gibt keine gepflegte Liste,
+    die man vergessen könnte.
+
+    Vor dem zweiten Katalogbau ist die Liste leer: Ohne Vorgänger wird nichts
+    gestempelt, und ein Feld mit einem einzigen Eintrag hilft niemandem."""
+    return patchhistorie.patches()
+
+
+def neue(daten=None):
+    """Die Baupläne, die mit der **zuletzt geholten** Spielversion dazukamen.
+
+    Grundlage ist der Stempel `seit`, den `erzeugen()` setzt. Gezeigt wird nur,
+    was zur aktuellen Katalogversion passt — ältere Stempel bleiben zwar in der
+    Datei stehen (sie sagen, mit welchem Patch es einen Bauplan gibt), gehören
+    aber nicht mehr unter „neu im Spiel".
+
+    Leer ist das Ergebnis, solange der Katalog erst einmal gebaut wurde: Ohne
+    Vorgänger gibt es keine Differenz."""
+    d = daten or laden()
+    version = d.get('version') or ''
+    if not version:
+        return set()
+    return {k for k, e in d['bauplaene'].items() if e.get('seit') == version}
 
 
 def startbauplaene(daten=None):

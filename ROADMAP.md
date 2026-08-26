@@ -23,6 +23,7 @@ Four things are deliberate and will stay that way:
 | ✅ | **Blueprint list** to look up, filter and tick off, with progress |
 | ✅ | **Where each blueprint drops** — faction, contract, required standing, payout |
 | ✅ | Catalogue watch: reports what becomes **newly craftable** in the game, plus a watchlist |
+| ✅ | **New in game** filter plus a patch dropdown: see what each patch added |
 | ✅ | Class, size and grade tag (`M/1/A`) |
 | ✅ | Setup wizard, repeatable at any time |
 | ✅ | German and English, switchable |

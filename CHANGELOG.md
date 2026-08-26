@@ -19,6 +19,21 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### The short version
 
+- **The list shows what the patch brought into the game.** Next to "watching"
+  there is now **🔵 new in game**. The catalogue stamps every blueprint with the
+  game version it first appeared in; the filter shows the current patch. When the
+  next one lands, the new ones move in and the old ones drop out — but the stamp
+  stays, so you can still tell which patch a blueprint came with. A **patch
+  dropdown** next to the other filters lets you look up any earlier patch, and it
+  extends itself as patches arrive. 4.10.0 added 21.
+- **A patch history of its own**, so that number is actually right. Comparison
+  now runs against **every blueprint ever seen**, not against last week's
+  catalogue. The first attempt reported 74 additions, 53 of which had been in
+  the game for ages — the data source simply had not listed them for a while.
+  And it could not be checked afterwards: scmdb only keeps the current game
+  version, and the 4.9.0 data was already gone the same day. So the tool now
+  records what each patch brought (`daten/patch-historie.json`, readable in the
+  repo) — additions only, never the whole catalogue.
 - **An installer for Windows** — download, run, done. No more moving files around.
 - **One window instead of two**, with tabs on the left. Plus a tray icon to bring
   it back whenever you need it.

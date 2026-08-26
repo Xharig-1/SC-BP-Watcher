@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc54'
+__version__ = '3.0.0-rc55'
 
 
 def _mitgeliefert(name):
@@ -306,6 +306,31 @@ def load_display():
     except Exception:
         pass
     return d
+
+
+def _katalogname(schluessel, anzeige):
+    """Der Name, wie ein Mensch ihn lesen soll — für die Meldungen der
+    Katalog-Wache.
+
+    Drei Quellen, in dieser Reihenfolge:
+
+      1. **Launcher-Katalog** (`anzeige`) — deutsche, gepflegte Bezeichnungen.
+         Gibt es nur, wo der SC Deutsch Launcher installiert ist.
+      2. **scmdb-Zwischenspeicher** — dort liegt unter `n` der Name, wie ihn
+         das Spiel schreibt („GOLEM MC-4 Ore Pod"). Der Rückfall für Linux und
+         für jeden ohne Launcher.
+      3. **Der nackte Schlüssel** — nur, wenn beides fehlt.
+
+    ⚠ Hier stand früher `schluessel.title()`. Das war falsch: Der Schlüssel ist
+    auf Kleinbuchstaben und Ziffern eingedampft (`golemmc4orepod`), da gibt es
+    keine Wortgrenzen mehr zurückzuholen — `.title()` machte daraus
+    „Golemmc4Orepod". Der lesbare Name lag die ganze Zeit daneben im Cache.
+    """
+    aus_launcher = anzeige.get(_norm(schluessel))
+    if aus_launcher:
+        return aus_launcher
+    eintrag = SCMDB.get(schluessel) or {}
+    return eintrag.get('n') or schluessel
 
 
 def load_meta():
@@ -823,7 +848,7 @@ class Watcher(threading.Thread):
         anzeige = load_display()
         for name in neu:
             titel = merkliste.treffer(name)
-            self.q.put(('catalog', anzeige.get(_norm(name)) or name.title(),
+            self.q.put(('catalog', _katalogname(name, anzeige),
                         jetzt.get(name) or '—', time.strftime('%H:%M:%S'), titel))
         self._save_catalog(jetzt)
 

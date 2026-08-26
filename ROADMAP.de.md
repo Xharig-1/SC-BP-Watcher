@@ -23,6 +23,7 @@ Vier Dinge sind Absicht und bleiben so:
 | ✅ | **Bauplan-Liste** zum Nachschlagen, Filtern und Abhaken, mit Fortschritt |
 | ✅ | **Herkunft je Bauplan** — Fraktion, Auftrag, nötiger Ruf, Belohnung |
 | ✅ | Katalog-Wache: meldet, was im Spiel **neu craftbar** wird, dazu eine Merkliste |
+| ✅ | Filter **neu im Spiel** und Auswahlfeld **Patch**: nachschlagen, was jeder Patch gebracht hat |
 | ✅ | Kürzel für Klasse, Größe und Gütegrad (`M/1/A`) |
 | ✅ | Einrichtungsassistent, jederzeit wiederholbar |
 | ✅ | Deutsch und Englisch, umschaltbar |
