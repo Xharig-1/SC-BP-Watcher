@@ -667,7 +667,7 @@ class Watcher(threading.Thread):
         self.scmdb_next = time.time() + SCMDB_POLL_SEC
         if scmdb_aktualisieren():
             SCMDB, SCMDB_VERSION = load_scmdb()
-            self.q.put(('status', sprache.t('craftdaten_neu', SCMDB_VERSION,
+            self.q.put(('status', sprache.Satz('craftdaten_neu', SCMDB_VERSION,
                                             len(SCMDB))))
 
     # ---- Bauplan-Katalog holen und frisch halten ----
@@ -691,10 +691,10 @@ class Watcher(threading.Thread):
             try:
                 gab_es_schon = bool(katalog_modul.laden()['bauplaene'])
                 if not gab_es_schon:
-                    self.q.put(('status', sprache.t('katalog_holt')))
+                    self.q.put(('status', sprache.Satz('katalog_holt')))
                 neu, anzahl, version = katalog_modul.aktualisieren()
                 if neu:
-                    self.q.put(('status', sprache.t('katalog_geholt', anzahl, version)))
+                    self.q.put(('status', sprache.Satz('katalog_geholt', anzahl, version)))
                 else:
                     # Nichts zu tun heißt: schon aktuell — oder kein Netz. Im
                     # zweiten Fall bald noch einmal versuchen statt sechs Stunden
@@ -770,13 +770,13 @@ class Watcher(threading.Thread):
             if da:
                 ok, meldung = uebersetzung.holen(quelle)
                 if ok:
-                    self.q.put(('status', sprache.t('texte_erneuert', kennung)))
+                    self.q.put(('status', sprache.Satz('texte_erneuert', kennung)))
                     neu_noetig = True
 
         # 2. Neue Vertragsdaten? Nach einem Patch geben Missionen anderes aus.
         da, kennung = injektion.scdl_update_da(kuerzel)
         if da:
-            self.q.put(('status', sprache.t('bpdaten_erneuert', kennung)))
+            self.q.put(('status', sprache.Satz('bpdaten_erneuert', kennung)))
             neu_noetig = True
 
         # 3. Ist die Auszeichnung überhaupt noch drin? Ein Spiel-Patch ersetzt
@@ -787,7 +787,7 @@ class Watcher(threading.Thread):
         if neu_noetig and os.path.isfile(ziel):
             ok, anzahl, _meldung = injektion.einrichten(ziel, sprache_ordner)
             if ok:
-                self.q.put(('status', sprache.t('inj_aktiv', anzahl)))
+                self.q.put(('status', sprache.Satz('inj_aktiv', anzahl)))
 
     # ---- Katalog-Wache: was ist NEU craftbar im Spiel? ----
     def _catalog_tick(self):
@@ -876,7 +876,7 @@ class Watcher(threading.Thread):
             gefunden = phrasen.selbst_finden(namen, pfade.log_sicherungen())
             if gefunden and phrasen.merken(gefunden):
                 self.tail.muster = phrasen.muster()
-                self.q.put(('hinweis', sprache.t('sprache_erkannt', gefunden)))
+                self.q.put(('hinweis', sprache.Satz('sprache_erkannt', gefunden)))
         except Exception:
             pass            # ohne Erkennung gilt die mitgelieferte Tabelle
 
@@ -898,7 +898,7 @@ class Watcher(threading.Thread):
                 neu += 1
         if neu:
             bestand_datei.speichern(self.bestand)
-            self.q.put(('status', sprache.t('nachgelesen', neu,
+            self.q.put(('status', sprache.Satz('nachgelesen', neu,
                                             bericht['dateien'])))
         if bericht.get('luecke') and bericht.get('grund'):
             self.q.put(('hinweis', bericht['grund']))
@@ -935,7 +935,7 @@ class Watcher(threading.Thread):
                     neu += 1
             if neu:
                 bestand_datei.speichern(self.bestand)
-                self.q.put(('status', sprache.t('start_eingetragen', neu)))
+                self.q.put(('status', sprache.Satz('start_eingetragen', neu)))
         except Exception:
             pass          # ein Fehler hier darf den Start nicht aufhalten
 
@@ -953,11 +953,11 @@ class Watcher(threading.Thread):
         frisch, ohne den Start aufzuhalten."""
         if SCMDB_AUS or katalog_modul.laden()['bauplaene']:
             return
-        self.q.put(('status', sprache.t('katalog_holt')))
+        self.q.put(('status', sprache.Satz('katalog_holt')))
         try:
             neu, anzahl, version = katalog_modul.aktualisieren()
             if neu:
-                self.q.put(('status', sprache.t('katalog_geholt', anzahl, version)))
+                self.q.put(('status', sprache.Satz('katalog_geholt', anzahl, version)))
                 self.kat_next = time.time() + SCMDB_POLL_SEC
             else:
                 # Kein Netz: bald noch einmal versuchen, statt sechs Stunden warten.
@@ -1065,7 +1065,7 @@ class Watcher(threading.Thread):
         except Exception:
             return
         if titel:
-            self.q.put(('hinweis', sprache.t('merk_erledigt', titel)))
+            self.q.put(('hinweis', sprache.Satz('merk_erledigt', titel)))
 
     def _statuszeile(self):
         """Was unten im Fenster steht. Zeigt den **eigenen** Bestand — nicht mehr
@@ -1075,10 +1075,15 @@ class Watcher(threading.Thread):
         # ⚠ Vorlage **und** Bausteine über `sprache.t` — beide Schlüssel gab es
         # längst, benutzt wurde keiner. Ergebnis: Wer auf Englisch stellte,
         # bekam eine englische Oberfläche und eine deutsche Statuszeile.
-        quelle = sprache.t('mit_launcher' if (HAT_LAUNCHER and self.known)
-                           else 'ohne_launcher')
-        return sprache.t('ueberwache', bestand_datei.anzahl(self.bestand),
-                         log_state, quelle, time.strftime('%H:%M:%S'))
+        # ⚠ Ein `Satz`, kein fertiger Text: Auch die Statuszeile bleibt stehen,
+        # bis die nächste Meldung kommt — sie muss sich beim Sprachwechsel neu
+        # zusammensetzen lassen. Der eingesetzte Baustein ist selbst ein `Satz`
+        # und wird dabei mit übersetzt; nur die Uhrzeit bleibt eingefroren, und
+        # das ist richtig — der Zeitpunkt der Meldung ändert sich nicht.
+        quelle = sprache.Satz('mit_launcher' if (HAT_LAUNCHER and self.known)
+                              else 'ohne_launcher')
+        return sprache.Satz('ueberwache', bestand_datei.anzahl(self.bestand),
+                            log_state, quelle, time.strftime('%H:%M:%S'))
 
     def stop(self):
         self.running = False
@@ -1310,6 +1315,9 @@ class Overlay:
 
         # --- Statuszeile ---
         self._status_text = sprache.t('ov_starte')
+        # Woher der Text in der Statuszeile kam — solange dort der
+        # Starttext steht, gibt es nichts aufzufrischen.
+        self._status_quelle = None
         self.status = tk.Label(self.root, text=self._status_text, bg=BG, fg=SUB,
                                font=self.f_sub, anchor='w')
         self.status.pack(fill='x', padx=8, pady=(4, 2))
@@ -1447,9 +1455,9 @@ class Overlay:
         """Star Citizen starten — über den Weg, den der Spieler ohnehin nutzt."""
         ok, grund = pfade.spiel_starten()
         if ok:
-            self.status.config(text=sprache.t('s_sp_start_lauft'))
+            self._status_setzen(sprache.Satz('s_sp_start_lauft'))
         else:
-            self.status.config(text=sprache.t('s_sp_start_nein', grund))
+            self._status_setzen(sprache.Satz('s_sp_start_nein', grund))
             fehler.merken('overlay.spiel_starten', OSError(str(grund)))
 
     def _ganz_beenden(self):
@@ -1519,6 +1527,21 @@ class Overlay:
         grün = str(self.info_lbl.farbe).lower() == ACCENT.lower()
         return sprache.t('hinweis_neue_version' if grün else 'hinweis_versionen')
 
+    def _status_setzen(self, quelle):
+        """Die Statuszeile setzen — und sich merken, **woher** der Text kam.
+
+        ⚠ Warum das eine eigene Methode ist: `_neu_beschriften()` setzt die
+        Zeile beim Sprachwechsel aus `_status_quelle` neu. Schreibt irgendeine
+        Stelle direkt ins Label, ohne die Quelle mitzuziehen, springt beim
+        nächsten Sprachwechsel eine **ältere** Meldung zurück auf den Schirm.
+        Deshalb geht jeder Schreibzugriff durch hier.
+
+        Ein fertiger Text (kein `Satz`) ist erlaubt — dann friert die Zeile in
+        ihrer Sprache ein, statt falsch zu werden. `None` als Quelle sagt genau
+        das: „hier gibt es nichts aufzufrischen"."""
+        self._status_quelle = quelle if sprache.auffrischbar(quelle) else None
+        self.status.config(text=str(quelle))
+
     def _autostart_titel(self):
         """Wie der Schalter heißt — je nach System und **aktueller** Sprache."""
         return sprache.t('autostart_win' if pfade.WINDOWS
@@ -1539,12 +1562,24 @@ class Overlay:
         try:
             if getattr(self, '_ph', None) and self._ph.winfo_exists():
                 self._ph.config(text=sprache.t('ov_warte'))
-            # Die Statuszeile nur dann, wenn dort noch der Starttext steht —
-            # eine echte Meldung („3 Baupläne gefunden") wird nicht
-            # weggewischt, nur weil jemand die Sprache umstellt.
+            # Die Statuszeile: Steht dort noch der Starttext, wird der
+            # erneuert. Steht dort eine echte Meldung, wird sie **nicht**
+            # weggewischt — sondern in der neuen Sprache neu gesetzt, sofern
+            # sie ihren Schlüssel mitgebracht hat.
+            quelle = getattr(self, '_status_quelle', None)
             if self.status.cget('text') == self._status_text:
                 self._status_text = sprache.t('ov_starte')
                 self.status.config(text=self._status_text)
+            elif sprache.auffrischbar(quelle):
+                self.status.config(text=str(quelle))
+            # Und jede Hinweiszeile, die noch in der Liste steht. Gegangen wird
+            # über die Widgets selbst: Was hinausgerollt ist, ist auch weg —
+            # eine mitgeführte Liste müsste man dagegen aufräumen.
+            for zeile in self.list.pack_slaves():
+                for teil in zeile.winfo_children():
+                    quelle = getattr(teil, '_quelle', None)
+                    if sprache.auffrischbar(quelle):
+                        teil.config(text=str(quelle))
         except Exception as ausnahme:
             fehler.merken('overlay._neu_beschriften', ausnahme)
 
@@ -1559,11 +1594,14 @@ class Overlay:
         neu = not autostart.ist_an()
         if autostart.setzen(neu):
             self._show_autostart()
-            self.status.config(text='%s: %s' % (self._autostart_titel(),
-                                                sprache.t('e_an') if neu
-                                                else sprache.t('e_aus')))
+            # Titel und Zustand sind zwei eigene Sätze — als `Kette`, damit
+            # beide beim Sprachwechsel mitziehen.
+            self._status_setzen(sprache.verbinden(
+                ': ', sprache.Satz('autostart_win' if pfade.WINDOWS
+                                   else 'autostart_linux'),
+                sprache.Satz('e_an' if neu else 'e_aus')))
         else:
-            self.status.config(text=sprache.t('ov_as_fehler'))
+            self._status_setzen(sprache.Satz('ov_as_fehler'))
 
     def _drag_start(self, e): self._dx, self._dy = e.x, e.y
     def _drag_move(self, e):
@@ -1646,8 +1684,16 @@ class Overlay:
         row = tk.Frame(self.list, bg=BG)
         row.pack(fill='x', anchor='w', padx=2, pady=1)
         tk.Label(row, text='ℹ', bg=BG, fg=SUB, font=self.f_item).pack(side='left')
-        lbl = tk.Label(row, text=text, bg=BG, fg=SUB, font=self.f_sub,
+        lbl = tk.Label(row, text=str(text), bg=BG, fg=SUB, font=self.f_sub,
                        anchor='w', justify='left')
+        # ⚠ Der Träger bleibt am Label hängen. Hinweise stehen in der Liste,
+        # bis sie hinausrollen — ohne das hier wäre eine Meldung von vorhin für
+        # immer in der Sprache von vorhin. Gefunden am 26.08.2026: englisches
+        # Fenster, deutsche Zeile „Keine Log-Sicherungen gefunden".
+        # Gemerkt wird am Widget selbst, nicht in einer eigenen Liste — sonst
+        # bleiben beim Hinausrollen (`_trim`) Leichen zurück.
+        if sprache.auffrischbar(text):
+            lbl._quelle = text
         lbl.pack(side='left', fill='x', expand=True, anchor='w')
         self._wrap_labels.append(lbl)
         self._fit_width()
@@ -1717,7 +1763,11 @@ class Overlay:
             while True:
                 msg = self.q.get_nowait()
                 if msg[0] == 'status':
-                    self.status.config(text=msg[1])
+                    # ⚠ Die Quelle merken, nicht nur den fertigen Text: Kommt
+                    # der als `sprache.Satz`, lässt sich die Zeile beim
+                    # Sprachwechsel neu auswerten statt in der Sprache von
+                    # damals stehen zu bleiben.
+                    self._status_setzen(msg[1])
                 elif msg[0] == 'hinweis':
                     # Bleibt stehen, bis die nächste Statusmeldung kommt, und
                     # wird farblich abgesetzt — eine Lücke im Bestand soll
@@ -1765,9 +1815,12 @@ class Overlay:
     def _version_melden(self, neu):
         try:
             self.info_lbl.malen(ACCENT)
-            self.q.put(('hinweis', '%s — %s'
-                        % (sprache.t('neue_version_da', neu['version']),
-                           sprache.t('was_ist_neu'))))
+            # ⚠ Zwei eigenständige Sätze in einer Zeile — als `Kette`, damit
+            # auch diese Meldung beim Sprachwechsel mitzieht. Das Trennzeichen
+            # ist Satzzeichen, kein Text, und braucht deshalb keinen Schlüssel.
+            self.q.put(('hinweis', sprache.verbinden(
+                ' — ', sprache.Satz('neue_version_da', neu['version']),
+                sprache.Satz('was_ist_neu'))))
         except Exception:
             pass
 
@@ -1908,7 +1961,7 @@ class Overlay:
             fehler.merken('overlay.durchklick', ausnahme)
             geklappt = False
         if an and not geklappt:
-            self.status.config(text=sprache.t('ov_durchklick_geht_nicht'))
+            self._status_setzen(sprache.Satz('ov_durchklick_geht_nicht'))
 
     # ---------------------------------------------- Der Anfasser holt es zurück
     #

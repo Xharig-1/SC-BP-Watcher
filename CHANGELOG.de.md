@@ -243,7 +243,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   weiter fest zusammen. Zusätzlich erfuhr das Overlay vom Sprachwechsel
   überhaupt nichts; nur das Einstellungsfenster beschriftete sich neu.
   Dasselbe betraf die Meldung „neu im Spiel craftbar" der Katalog-Wache.
-  Gemeldet von der Autor.
+  Und Meldungen, die beim Umschalten **schon in der Leiste standen**, blieben
+  ebenfalls deutsch — etwa „Keine Log-Sicherungen gefunden". Sie wurden fertig
+  zusammengesetzt in die Zeile geschrieben und waren damit in der Sprache von
+  vorhin eingefroren; erst ein Neustart räumte das auf. Meldungen tragen jetzt
+  ihren Textschlüssel mit und werden beim Sprachwechsel neu gesetzt — samt
+  Datum, das im Englischen anders geschrieben wird (2026-08-22 statt
+  22.08.2026). Gemeldet von der Autor.
 
 - **Der Hinweis am Startknopf ▶ überschrieb die Statuszeile.** Als einziges der
   zehn Zeichen hatte er keine Erklärblase, sondern schrieb in die Statuszeile

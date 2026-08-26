@@ -1163,6 +1163,107 @@ def main():
         pruefe(not _halbe,
                'jeder Text hat eine englische Fassung (%d ohne)' % len(_halbe))
 
+        # ------------------------------------------------------------------ 18
+        # Meldungen ziehen beim Sprachwechsel mit.
+        #
+        # ⚠ Abschnitt 17 prüft, dass kein Text **fest** in der Oberfläche
+        # steht. Das reicht nicht: Ein Text kann sauber durch `t()` laufen und
+        # trotzdem falsch stehen bleiben — nämlich dann, wenn er einmal fertig
+        # zusammengesetzt in ein Label geschrieben wurde. Wer danach die
+        # Sprache wechselt, hat ein englisches Fenster mit einer deutschen
+        # Zeile darin. Genau so gefunden am 26.08.2026 bei „Keine
+        # Log-Sicherungen gefunden".
+        #
+        # Der Weg dagegen: `sprache.Satz` trägt Schlüssel und Werte mit, das
+        # Label merkt sich den Träger, `_neu_beschriften()` wertet ihn neu aus.
+        print()
+        print('18. Meldungen ziehen beim Sprachwechsel mit')
+        from scbp import sprache as spr18, logquelle as lq18
+
+        # a) Die Quelle liefert einen Träger, keinen fertigen Satz.
+        grund = lq18._luecke_pruefen(0.0, [__file__])['grund']
+        pruefe(spr18.auffrischbar(grund),
+               'die Lücken-Meldung kommt als Träger, nicht als fertiger Text')
+
+        spr18.setzen('de'); deutsch = str(grund)
+        spr18.setzen('en'); englisch = str(grund)
+        spr18.setzen('de')
+        pruefe(deutsch != englisch and 'First run' in englisch,
+               'derselbe Träger spricht beide Sprachen')
+        # Das Datum steckt mit drin: im Deutschen 22.08.2026, im Englischen
+        # 2026-08-22. Ein fertig formatiertes Datum bliebe deutsch.
+        pruefe(englisch.count('-') >= 2,
+               'auch das Datum wechselt seine Schreibweise')
+
+        # b) Am echten Fenster — nicht nur an der Datenschicht.
+        if ANZEIGE:
+            import tkinter as _tk18
+            spr18.setzen('de')
+            _wz = _tk18.Tk(); _wz.withdraw()
+            ov18 = None
+            try:
+                import sc_bp_watcher as _w18
+                ov18 = _w18.Overlay(wurzel=_wz)
+                ov18.root.withdraw()
+                ov18.add_hinweis(grund)
+                ov18._status_setzen(spr18.Satz('katalog_holt'))
+                ov18.root.update()
+
+                def _zeilen():
+                    raus = []
+                    for zeile in ov18.list.pack_slaves():
+                        for teil in zeile.winfo_children():
+                            if getattr(teil, '_quelle', None) is not None:
+                                raus.append(teil.cget('text'))
+                    return raus
+
+                vorher_h = _zeilen()
+                vorher_s = ov18.status.cget('text')
+                spr18.setzen('en')
+                ov18.root.update()
+                nachher_h = _zeilen()
+                nachher_s = ov18.status.cget('text')
+
+                pruefe(vorher_h and nachher_h and vorher_h != nachher_h
+                       and 'First run' in nachher_h[0],
+                       'eine stehende Hinweiszeile wird mit übersetzt')
+                pruefe(vorher_s != nachher_s and 'Fetching' in nachher_s,
+                       'die Statuszeile wird mit übersetzt')
+            finally:
+                spr18.setzen('de')
+                if ov18 is not None:
+                    try:
+                        ov18.root.destroy()
+                    except Exception:
+                        pass
+                else:
+                    _wz.destroy()
+        else:
+            uebersprungen('Sprachwechsel am Overlay')
+
+        # c) Rückfallschutz. Beides sind Fehler, die sich beim nächsten Umbau
+        #    leicht wieder einschleichen — und die man am laufenden Programm
+        #    erst merkt, wenn jemand die Sprache umstellt.
+        import re as _re18
+        _quelle18 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
+                         encoding='utf-8').read()
+        _alt_puts = _re18.findall(
+            r"q\.put\(\('(?:status|hinweis)', sprache\.t\(", _quelle18)
+        pruefe(not _alt_puts,
+               'keine Meldung geht als fertiger Text in die Warteschlange '
+               '(%d gefunden)' % len(_alt_puts))
+
+        # Jeder Schreibzugriff auf die Statuszeile muss durch `_status_setzen`
+        # gehen, sonst merkt sich niemand die Quelle — und beim nächsten
+        # Sprachwechsel springt eine **ältere** Meldung zurück auf den Schirm.
+        _direkt = [n for n, z in enumerate(_quelle18.splitlines(), 1)
+                   if 'self.status.config(' in z]
+        # Erlaubt: die Zeile in `_status_setzen` selbst und die beiden in
+        # `_neu_beschriften`, die genau dort bewusst neu setzen.
+        pruefe(len(_direkt) <= 3,
+               'die Statuszeile wird nicht an der Merkstelle vorbei gesetzt '
+               '(%d Direktzugriffe)' % len(_direkt))
+
     finally:
         shutil.rmtree(basis, ignore_errors=True)
 

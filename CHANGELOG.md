@@ -233,7 +233,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   the overlay never heard about a language change at all; only the settings
   window relabelled itself.
   The catalogue watch message „newly craftable in game“ had the same
-  problem. Reported by der Autor.
+  problem. Messages **already sitting in the bar** when you switched stayed
+  German too — „Keine Log-Sicherungen gefunden", for one. They had been written
+  into the line as finished sentences, frozen in the language of the moment;
+  only a restart cleared them. Messages now carry their text key along and are
+  rewritten on a language change — including the date, which reads differently
+  in English (2026-08-22 rather than 22.08.2026). Reported by der Autor.
 
 - **The hint on the ▶ launch button overwrote the status bar.** It was the only
   one of the ten icons without a tooltip; instead it wrote into the status bar

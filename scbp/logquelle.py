@@ -43,7 +43,7 @@ import re
 import time
 
 from . import pfade, phrasen
-from .sprache import t
+from .sprache import t, Satz, Zeitpunkt
 
 # Schiffskomponenten stehen im Log MIT Zusatz „(Klasse/Size/Grade)", z. B.
 # „7CA 'Nargun' (Civ/3/A)" — der Launcher-Schlüssel ist aber „7CA 'Nargun'".
@@ -238,24 +238,28 @@ def _luecke_pruefen(vorher, alle):
       * **Zu lange nicht gelaufen** — die älteste vorhandene Sicherung ist neuer
         als die zuletzt gelesene Sitzung. Dazwischen hat Star Citizen Logs
         weggeräumt, die niemand mehr hat."""
+    # ⚠ Zurück kommt ein `Satz`, **kein fertiger Text**: Diese Meldung landet in
+    # der Melde-Leiste und bleibt dort stehen. Ein fertig zusammengesetzter Satz
+    # wäre in der Sprache von damals eingefroren — wer später umstellt, hätte
+    # eine deutsche Zeile in einem englischen Fenster. Genau so gefunden am
+    # 26.08.2026. Der `Satz` merkt sich Schlüssel und Werte und lässt sich beim
+    # Sprachwechsel neu auswerten.
     if not alle:
-        return {'luecke': True, 'grund': t('m_keine_logs')}
+        return {'luecke': True, 'grund': Satz('m_keine_logs')}
     aeltester = min((os.path.getmtime(p) for p in alle
                      if os.path.exists(p)), default=0.0)
     if not vorher:
         return {'luecke': True,
-                'grund': t('m_erster_lauf')
-                % time.strftime(t('m_erster_datum'),
-                                time.localtime(aeltester))}
+                'grund': Satz('m_erster_lauf', Zeitpunkt(aeltester))}
     if aeltester > vorher + 60:
         return {'luecke': True,
-                # ⚠ Auch das Datumsformat übersetzen: Im Englischen steht
-                # das Jahr vorn (`m_erster_datum`), sonst liest sich eine
-                # englische Meldung mit deutschem Datum falsch.
-                'grund': t('m_luecke_logs')
-                % (time.strftime(t('m_erster_datum'), time.localtime(vorher)),
-                   time.strftime(t('m_erster_datum'),
-                                 time.localtime(aeltester)))}
+                # ⚠ Auch das Datumsformat ist sprachabhängig: Im Englischen
+                # steht das Jahr vorn (`m_erster_datum`). Deshalb wandert hier
+                # der rohe Zeitstempel weiter (`Zeitpunkt`) statt eines fertig
+                # formatierten Datums — sonst stünde in der englischen Meldung
+                # ein deutsches Datum.
+                'grund': Satz('m_luecke_logs',
+                              Zeitpunkt(vorher), Zeitpunkt(aeltester))}
     return {'luecke': False, 'grund': ''}
 
 
