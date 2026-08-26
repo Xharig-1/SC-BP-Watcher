@@ -666,6 +666,9 @@ TEXTE = {
     # falsch: Der Knopf **prueft** nur, er holt nichts. Der
     # SC-Deutsch-Launcher loest dasselbe mit „SCDL auf Aktualitaet
     # pruefen" — Vorbild uebernommen (der Autor, 26.08.2026).
+    'hf_kofi':         ('Kaffee spendieren', 'Buy me a coffee'),
+    'hf_kofi_auf':     ('Ko-fi wird im Browser geöffnet …',
+                        'Opening Ko-fi in your browser …'),
     'hf_discord':      ('Discord', 'Discord'),
     'hf_discord_auf':  ('Discord wird im Browser geöffnet …',
                         'Opening Discord in your browser …'),

@@ -709,6 +709,60 @@ def discord_zeichen(leinwand, x, mitte, hoehe, farbe):
         leinwand.create_polygon(strecke(auge), fill=grund, outline=grund)
 
 
+# ⚠ **Platzhalter — vor der Veröffentlichung durch die echte Adresse
+# ersetzen.** Ein Knopf, der auf eine tote Seite führt, ist schlimmer als
+# keiner: Wer ihn drückt, hält das Werkzeug für kaputt.
+KOFI_ADRESSE = 'https://ko-fi.com/xharig'
+
+
+def kaffee_zeichen(leinwand, x, mitte, hoehe, farbe):
+    """Eine Kaffeetasse — für den Ko-fi-Knopf.
+
+    ⚠ Gezeichnet, nicht getippt. Die Tassen-Zeichen in Unicode (`U+2615` ☕,
+    `U+1F375`) liegen entweder außerhalb der Grundebene oder werden von der
+    Oberflächenschrift als **farbiges Emoji** gerendert — beides passt nicht: Das
+    eine erscheint als Fragezeichen, das andere sprengt die einfarbige Leiste.
+    Dieselbe Überlegung wie beim Discord-Zeichen, siehe dort.
+
+    ⚠ **Der erste Entwurf hatte einen Dampffaden**, und der war bei Knopfgröße
+    nicht mehr zu sehen — ein Strich von einem Pixel Breite verschwindet. Für
+    kleine Zeichen gilt: **wenige, kräftige Formen.** Was man wegkürzen kann,
+    ohne dass das Motiv unklar wird, gehört weg. Bei einer Tasse tragen Becher
+    und Henkel, der Dampf ist Zierde.
+    """
+    h = max(9.0, hoehe * 0.72)
+    b = h * 1.05
+    lx = x
+    oy = mitte - h / 2.0
+
+    # Der Henkel — zuerst, damit der Becher ihn sauber überdeckt. Kräftig
+    # genug, dass er auch bei zwölf Pixeln noch trägt.
+    leinwand.create_arc(lx + b * 0.60, oy + h * 0.28,
+                        lx + b * 1.02, oy + h * 0.74,
+                        start=270, extent=180, style='arc',
+                        outline=farbe, width=max(2, int(h * 0.14)))
+
+    # Der Becher: oben breit, nach unten leicht zulaufend.
+    leinwand.create_polygon(
+        lx + b * 0.06, oy + h * 0.24,
+        lx + b * 0.74, oy + h * 0.24,
+        lx + b * 0.64, oy + h * 0.92,
+        lx + b * 0.16, oy + h * 0.92,
+        fill=farbe, outline=farbe)
+
+    # Ein abgesetzter Streifen als Kaffeespiegel — das macht aus dem Umriss
+    # erst eine gefüllte Tasse.
+    grund = leinwand['bg']
+    leinwand.create_rectangle(lx + b * 0.14, oy + h * 0.33,
+                              lx + b * 0.66, oy + h * 0.41,
+                              fill=grund, outline=grund)
+
+    # Die Untertasse — ein flacher Balken, der die Tasse auf den Boden stellt.
+    leinwand.create_rectangle(lx + b * 0.02, oy + h * 0.92,
+                              lx + b * 0.78, oy + h * 1.00,
+                              fill=farbe, outline=farbe)
+
+
 def rundknopf(eltern, text, tat, schrift, grund, fuellung, rand, fg,
               radius=6, polster=(10, 5), cursor='hand2', malen=None):
     """Ein klickbarer Knopf mit runden Ecken — der Standard im ganzen Programm.
@@ -1190,6 +1244,29 @@ class Hauptfenster:
             malen=discord_zeichen)
         self.discordknopf.pack(fill='x')
 
+        # --- Ko-fi -------------------------------------------------------
+        # ⚠ Die Rechtslage dazu ist **zweigeteilt** und am 26.08.2026 geprüft:
+        #
+        #   * Die Fandom-FAQ von RSI führt „donations" wörtlich in der Liste
+        #     verbotener kommerzieller Nutzung.
+        #   * Die **Terms of Service** — das Dokument, das jeder Spieler mit
+        #     seinem Konto annimmt — verbieten für Fan-Seiten nur
+        #     Zugangsgebühren und Werbe- bzw. Sponsoreneinnahmen. Spenden kommen
+        #     dort nicht vor.
+        #
+        # der Autor hat sich nach beiden Fundstellen dafür entschieden, weil das
+        # Projekt echte Kosten verursacht und die ToS es nicht untersagen. Was in
+        # **beiden** Dokumenten verboten bleibt und deshalb hier nie entstehen
+        # darf: eine Bezahlschranke, ein Abo, Werbung. Der Knopf führt zu einer
+        # freiwilligen Seite, das Werkzeug bleibt vollständig und kostenlos.
+        rahmen_kofi = tk.Frame(self.leiste, bg=FLAECHE)
+        rahmen_kofi.pack(side='bottom', fill='x', padx=12, pady=(0, 2))
+        self.kofiknopf = rundknopf(
+            rahmen_kofi, t('hf_kofi'), self._kofi_oeffnen, self.f_klein,
+            FLAECHE, FLAECHE, LINIE, SUB, radius=8, polster=(12, 6),
+            malen=kaffee_zeichen)
+        self.kofiknopf.pack(fill='x')
+
         # --- Star Citizen starten ---------------------------------------
         # ⚠ Der Knopf stand erst auf der Seite „Auftragstexte", also dort, wo es
         # um Bauplan-Angaben im Spiel geht — selbst der Autor fand ihn nicht
@@ -1220,6 +1297,16 @@ class Hauptfenster:
                 self._spiel_starten, self.f_klein,
                 FLAECHE, ACCENT, ACCENT, BG, radius=8, polster=(12, 7))
             self.spielknopf.pack(fill='x')
+
+    def _kofi_oeffnen(self):
+        """Die Ko-fi-Seite im Browser aufmachen."""
+        import webbrowser
+        self.sagen(t('hf_kofi_auf'))
+        try:
+            webbrowser.open(KOFI_ADRESSE)
+        except Exception as ausnahme:
+            from . import fehler
+            fehler.merken('hauptfenster.kofi', ausnahme)
 
     def _discord_oeffnen(self):
         """Die Einladung im Browser aufmachen.
