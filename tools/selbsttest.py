@@ -1077,6 +1077,9 @@ def main():
             # Kommentare in der einstellungen.json und eine Entwickler-Hilfe
             # zum fehlenden Entpacker — beides kein Oberflächentext.
             'scbp/pfade.py', 'scbp/spieltexte.py', 'scbp/phrasen.py',
+            # Erklärender Kopf in der patch-historie.json. Steht in der Datei,
+            # damit man sie im Repo ohne Quelltext versteht — nie im Fenster.
+            'scbp/patchhistorie.py',
         }
         _oberflaeche = ['sc_bp_watcher.py'] + [
             'scbp/' + _n for _n in sorted(os.listdir(os.path.join(_wurzelpfad, 'scbp')))
