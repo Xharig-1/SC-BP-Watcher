@@ -133,6 +133,19 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Geändert
 
+- **Star Citizen starten sitzt jetzt links unten**, im markanten Grün über
+  „Für Fortgeschrittene". Vorher stand der Knopf auf der Seite „Auftragstexte" —
+  dort, wo es um Bauplan-Angaben geht — und war danach nur im Overlay zu sehen,
+  also nur solange das eingeblendet ist. Jetzt ist er auf **jeder** Seite da.
+
+- **Ein Discord-Knopf** darunter, bewusst ruhiger gehalten: Das Spiel zu starten
+  ist die Handlung, für die man das Fenster offen hat, der Weg zum Discord ist
+  ein Angebot. Zwei gleich laute Knöpfe nehmen sich gegenseitig die Wirkung.
+
+- **„Jetzt nachsehen" heißt jetzt „Auf Aktualität prüfen".** Der alte Text sagte
+  nicht, wonach nachgesehen wird. „Aktualisieren" wäre falsch gewesen — der Knopf
+  prüft nur, geholt wird nichts.
+
 - **„Noch keine Fassung bekannt" klang nach einem Fehler.** Der Knopf sagte
   nicht, was zu tun ist — jetzt steht dort „Erst oben auf ‚Jetzt nachsehen'
   drücken". Und der Kasten „Nur fertige Fassungen" trägt den Zusatz

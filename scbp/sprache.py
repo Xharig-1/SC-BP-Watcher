@@ -43,6 +43,7 @@ eine vergessene Übersetzung soll auffallen, aber nichts kaputtmachen.
 """
 import locale
 import os
+import time
 
 from . import pfade
 
@@ -661,7 +662,14 @@ TEXTE = {
     # -- Seite „Über" --
     's_ub_lead':       ('Welche Fassung läuft, wer sie gebaut hat — und ob du Neues vor allen anderen bekommen willst.',
                           'Which version is running, who built it — and whether you want new things before everyone else.'),
-    's_ub_nachsehen':  ('Jetzt nachsehen', 'Check now'),
+    # ⚠ „Jetzt nachsehen" sagte nicht, wonach. Und „Aktualisieren" waere
+    # falsch: Der Knopf **prueft** nur, er holt nichts. Der
+    # SC-Deutsch-Launcher loest dasselbe mit „SCDL auf Aktualitaet
+    # pruefen" — Vorbild uebernommen (der Autor, 26.08.2026).
+    'hf_discord':      ('Discord', 'Discord'),
+    'hf_discord_auf':  ('Discord wird im Browser geöffnet …',
+                        'Opening Discord in your browser …'),
+    's_ub_nachsehen':  ('Auf Aktualität prüfen', 'Check for updates'),
     's_ub_aktuell':    ('Du hast die neueste Fassung.', 'You have the latest version.'),
     's_ub_gefunden':   ('Neue Fassung gefunden: %s', 'New version found: %s'),
     's_ub_sucht_fehler': ('Nachsehen ging nicht — Näheres steht in der Diagnose.',
@@ -1088,6 +1096,103 @@ def t(schluessel, *werte):
         return schluessel                       # fehlt: fällt auf, stürzt nicht ab
     text = eintrag[SPRACHEN.index(aktuelle())] or eintrag[0]
     return (text % werte) if werte else text
+
+
+class Satz:
+    """Ein Text, der erst **beim Anzeigen** in Sprache gegossen wird.
+
+    ⚠ Der Unterschied zu `t()`: `t()` liefert einen fertigen Satz — wer den in
+    ein Label schreibt, hat die Sprache von damals eingefroren. Stellt jemand
+    später um, bleibt die Zeile stehen wie sie war. Genau so hatte am
+    26.08.2026 jemand ein englisches Fenster mit einer deutschen Meldung
+    „Keine Log-Sicherungen gefunden" darin.
+
+    Ein `Satz` merkt sich stattdessen **Schlüssel und Werte** und setzt sich
+    bei jedem `str(...)` neu zusammen. Wer ihn wegschreibt, kann ihn beim
+    Sprachwechsel einfach noch einmal auswerten.
+
+    Für den Empfänger ändert sich nichts: `str(satz)`, `'%s' % satz` und
+    `print(satz)` liefern den Satz wie vorher.
+
+        Satz('m_keine_logs')
+        Satz('m_erster_lauf', Zeitpunkt(aeltester))
+    """
+
+    def __init__(self, schluessel, *werte):
+        self.schluessel = schluessel
+        self.werte = werte
+
+    def __str__(self):
+        # Werte können selbst Träger sein (ein Zeitpunkt, ein zweiter Satz) —
+        # die müssen in derselben Sprache aufgelöst werden, nicht in der von
+        # vorhin.
+        werte = tuple(str(w) if isinstance(w, (Satz, Zeitpunkt, Kette)) else w
+                      for w in self.werte)
+        return t(self.schluessel, *werte)
+
+    def __repr__(self):
+        return 'Satz(%r%s)' % (self.schluessel,
+                               ''.join(', %r' % w for w in self.werte))
+
+    def __eq__(self, andere):
+        # Damit sich ein Träger mit dem vergleichen lässt, was im Label steht.
+        return str(self) == str(andere)
+
+    def __hash__(self):
+        return hash((self.schluessel, self.werte))
+
+
+class Zeitpunkt:
+    """Ein Datum, das seine **Schreibweise** erst beim Anzeigen wählt.
+
+    ⚠ Nicht nur der Satz ist sprachabhängig, das Datum darin auch: Im
+    Englischen steht das Jahr vorn (`m_erster_datum`). Ein fertig formatiertes
+    Datum in einem übersetzten Satz liest sich falsch — deshalb wandert hier
+    der rohe Zeitstempel weiter, nicht die fertige Zeichenkette."""
+
+    def __init__(self, zeitstempel, schluessel='m_erster_datum'):
+        self.zeitstempel = zeitstempel
+        self.schluessel = schluessel
+
+    def __str__(self):
+        return time.strftime(t(self.schluessel),
+                             time.localtime(self.zeitstempel))
+
+    def __repr__(self):
+        return 'Zeitpunkt(%r)' % (self.zeitstempel,)
+
+
+class Kette:
+    """Mehrere Träger hintereinander, mit einem Trennzeichen dazwischen.
+
+    Für die seltenen Fälle, in denen zwei eigenständige Sätze eine Zeile
+    bilden („Fassung 3.0.0 verfügbar — Was ist neu"). Bewusst kein eigener
+    Sprachschlüssel: Das Trennzeichen ist Satzzeichen, kein Text."""
+
+    def __init__(self, trenner, *teile):
+        self.trenner = trenner
+        self.teile = teile
+
+    def __str__(self):
+        return self.trenner.join(str(teil) for teil in self.teile)
+
+    def __repr__(self):
+        return 'Kette(%r, %s)' % (self.trenner,
+                                  ', '.join(repr(x) for x in self.teile))
+
+
+def verbinden(trenner, *teile):
+    """Kurzschreibweise für `Kette`."""
+    return Kette(trenner, *teile)
+
+
+def auffrischbar(wert):
+    """Ist das ein Träger, der sich beim Sprachwechsel neu auswerten lässt?
+
+    Die Oberfläche fragt damit ab, ob eine bereits angezeigte Meldung
+    mitgezogen werden kann — oder ob dort ein fertiger Text steht, den man
+    besser stehen lässt, statt ihn zu erraten."""
+    return isinstance(wert, (Satz, Zeitpunkt, Kette))
 
 
 def art(roh):

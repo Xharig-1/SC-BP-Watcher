@@ -128,6 +128,19 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
+- **Launching Star Citizen now sits at the bottom left**, in the accent green
+  above "Advanced". The button used to live on the "Mission text" page — where
+  blueprint wording is handled — and after that only in the overlay, so only
+  while that was visible. Now it is there on **every** page.
+
+- **A Discord button** below it, deliberately quieter: launching the game is what
+  you keep this window open for, the Discord link is an offer. Two equally loud
+  buttons cancel each other out.
+
+- **"Check now" is now "Check for updates".** The old label never said what it
+  checked for. "Update" would have been wrong — the button only looks, it
+  fetches nothing.
+
 - **„No release known yet" sounded like an error.** The button did not say what
   to do — it now reads „Press ‚Check now' above first". And the „Finished
   versions only" box is marked „recommended", so nobody has to guess what to

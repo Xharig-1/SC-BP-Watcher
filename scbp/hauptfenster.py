@@ -1020,6 +1020,121 @@ class Hauptfenster:
         self.klappknopf.bind('<Button-1>', lambda e: self._klapp_umschalten())
         self.klappinhalt = tk.Frame(self.klapp, bg=FLAECHE)
 
+        # --- Discord -----------------------------------------------------
+        # Wunsch von der Autor am 26.08.2026, nach dem Vorbild des
+        # SC-Deutsch-Launchers: „discord Button wäre tatsächlich auch sinnvoll."
+        #
+        # ⚠ Bewusst **ruhiger** als der Knopf darüber. Star Citizen zu starten
+        # ist die Handlung, für die jemand dieses Fenster offen hat; der Weg zum
+        # Discord ist ein Angebot. Zwei gleich laute Knöpfe nebeneinander nehmen
+        # sich gegenseitig die Wirkung — das markante Grün trägt nur, solange es
+        # an genau einer Stelle steht.
+        rahmen_dc = tk.Frame(self.leiste, bg=FLAECHE)
+        rahmen_dc.pack(side='bottom', fill='x', padx=12, pady=(0, 2))
+        self.discordknopf = rundknopf(
+            rahmen_dc, t('hf_discord'), self._discord_oeffnen, self.f_klein,
+            FLAECHE, FLAECHE, LINIE, SUB, radius=8, polster=(12, 6))
+        self.discordknopf.pack(fill='x')
+
+        # --- Star Citizen starten ---------------------------------------
+        # ⚠ Der Knopf stand erst auf der Seite „Auftragstexte", also dort, wo es
+        # um Bauplan-Angaben im Spiel geht — selbst der Autor fand ihn nicht
+        # wieder. Danach zog er ins Overlay; sichtbar war er dort nur, solange
+        # das Overlay eingeblendet ist.
+        #
+        # der Autor am 26.08.2026: „den SC Starten Button sollten wir über für
+        # Fortgeschrittene packen in dem markanten grün wie jetzt auch, da sieht
+        # man ihn sofort." Hier ist er auf **jeder** Seite zu sehen.
+        #
+        # ⚠ `side='bottom'` staffelt von unten nach oben: Was **später** gepackt
+        # wird, sitzt weiter oben. Dieser Knopf kommt deshalb nach dem
+        # Klappbereich und landet dadurch **über** ihm.
+        #
+        # Nur bauen, wenn wirklich ein Startweg gefunden wurde — unter Windows
+        # der RSI Launcher, unter Linux der lug-helper. Ein Knopf, der nichts
+        # tut, wäre schlimmer als keiner.
+        try:
+            from . import pfade as pfade_start
+            hat_starter = bool(pfade_start.spielstarter())
+        except Exception:
+            hat_starter = False
+        if hat_starter:
+            rahmen_start = tk.Frame(self.leiste, bg=FLAECHE)
+            rahmen_start.pack(side='bottom', fill='x', padx=12, pady=(8, 2))
+            self.spielknopf = rundknopf(
+                rahmen_start, '▶  ' + t('s_sp_start_knopf'),
+                self._spiel_starten, self.f_klein,
+                FLAECHE, ACCENT, ACCENT, BG, radius=8, polster=(12, 7))
+            self.spielknopf.pack(fill='x')
+
+    def _discord_oeffnen(self):
+        """Die Einladung im Browser aufmachen.
+
+        ⚠ Die Adresse steht **fest** im Code und ist die dauerhafte Einladung
+        (`CODE_OF_CONDUCT.md` nennt dieselbe). Ein Link, der irgendwann abläuft,
+        führt Leute auf eine Fehlerseite und niemand merkt es.
+        """
+        import webbrowser
+        self.sagen(t('hf_discord_auf'))
+        try:
+            webbrowser.open('https://discord.gg/g2E7e6XxZC')
+        except Exception as ausnahme:
+            from . import fehler
+            fehler.merken('hauptfenster.discord', ausnahme)
+
+    def _spiel_starten(self):
+        """Star Citizen aus dem Werkzeug heraus hochfahren."""
+        from . import pfade as pfade_start
+        self.sagen(t('s_sp_start_lauft'))
+        try:
+            ok, grund = pfade_start.spiel_starten()
+        except Exception as ausnahme:
+            ok, grund = False, str(ausnahme)
+        if not ok:
+            self.sagen(t('s_sp_start_nein', grund))
+
+        # --- Star Citizen starten ---------------------------------------
+        # ⚠ Der Knopf stand vorher auf der Seite „Auftragstexte", also dort, wo
+        # es um Bauplan-Angaben im Spiel geht. Selbst der Autor fand ihn nicht
+        # wieder. Danach zog er ins Overlay; sichtbar war er dort nur, solange
+        # das Overlay eingeblendet ist.
+        #
+        # der Autor am 26.08.2026: „den SC Starten Button sollten wir über für
+        # Fortgeschrittene packen in dem markanten grün wie jetzt auch, da sieht
+        # man ihn sofort." Genau hier ist er auf **jeder** Seite zu sehen, ohne
+        # dass man ihn suchen muss.
+        #
+        # ⚠ `side='bottom'` staffelt von unten nach oben: Was **spaeter**
+        # gepackt wird, sitzt weiter oben. Dieser Knopf kommt also nach dem
+        # Klappbereich und landet dadurch **ueber** ihm.
+        #
+        # Nur bauen, wenn wirklich ein Startweg gefunden wurde — unter Windows
+        # der RSI Launcher, unter Linux der lug-helper. Ein Knopf, der nichts
+        # tut, waere schlimmer als keiner.
+        try:
+            hat_starter = bool(pfade.spielstarter())
+        except Exception:
+            hat_starter = False
+        if hat_starter:
+            rahmen_start = tk.Frame(self.leiste, bg=FLAECHE)
+            rahmen_start.pack(side='bottom', fill='x', padx=12, pady=(8, 2))
+            self.spielknopf = rundknopf(
+                rahmen_start, '▶  ' + t('s_sp_start_knopf'),
+                self._spiel_starten, self.f_klein,
+                FLAECHE, ACCENT, ACCENT, BG, radius=8, polster=(12, 7))
+            self.spielknopf.pack(fill='x')
+
+    def _spiel_starten(self):
+        """Star Citizen aus dem Werkzeug heraus hochfahren."""
+        from . import pfade as pfade_start
+        self.sagen(t('s_sp_start_lauft'))
+        try:
+            ok, grund = pfade_start.spiel_starten()
+        except Exception as ausnahme:
+            ok, grund = False, str(ausnahme)
+        if not ok:
+            self.sagen(t('s_sp_start_nein', grund))
+
     def _gruppe(self, text):
         tk.Label(self.leiste, text=text.upper(), bg=FLAECHE, fg=SUB,
                  font=self.f_klein, anchor='w', padx=16,
