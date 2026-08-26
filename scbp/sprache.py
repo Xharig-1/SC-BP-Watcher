@@ -55,7 +55,6 @@ TEXTE = {
     # -- Verwaltungsfenster --
     'titel_bauplaene':   ('SC BP Watcher — Baupläne', 'SC BP Watcher — Blueprints'),
     'bauplaene':         ('Baupläne', 'Blueprints'),
-    'suchen':            ('Suchen …', 'Search …'),
     'filter_alle':       ('alle', 'all'),
     'filter_habe':       ('habe ich', 'owned'),
     'filter_fehlt':      ('fehlt mir', 'missing'),
@@ -100,7 +99,6 @@ TEXTE = {
                           'and click the star.'),
     'merk_erledigt':     ('%s ist da — von der Merkliste genommen.',
                           '%s has arrived — removed from your watchlist.'),
-    'merkliste':         ('Merkliste', 'Watchlist'),
 
     # -- Einstellungen --
     'einstellungen':     ('Einstellungen', 'Settings'),
@@ -118,8 +116,6 @@ TEXTE = {
                           'leave empty = search automatically. Searched here:'),
     'gefunden':          ('● gefunden', '● found'),
     'nicht_gefunden':    ('● nicht gefunden', '● not found'),
-    'ohne_ihn_laeuft':   ('ohne ihn läuft der Watcher trotzdem',
-                          'the watcher runs without it'),
     'pruefintervall':    ('Prüfintervall', 'Check interval'),
     'pruefintervall_hilfe': ('Wie oft die Game.log angesehen wird',
                              'How often Game.log is checked'),
@@ -156,7 +152,6 @@ TEXTE = {
                           'No Game.log there — not in the subfolders either.'),
     'ordner_gedeutet':   ('Genommen wird: %s', 'Using: %s'),
     'weiter':            ('Weiter', 'Continue'),
-    'willkommen':        ('Willkommen', 'Welcome'),
     'sprache_erkannt':   ('Spielsprache erkannt — Baupläne werden an „%s" '
                           'erkannt.',
                           'Game language detected — blueprints are recognised '
@@ -173,16 +168,12 @@ TEXTE = {
         'Anything older can be ticked off by hand in the list — '
         'the watcher has already done the rest.'),
     'liste_oeffnen':     ('Liste öffnen', 'Open list'),
-    'loslegen':          ('Los geht\'s', 'Get started'),
 
     # -- Einrichtungsassistent --
     'assistent':         ('Einrichtung', 'Setup'),
     'schritt_von':       ('Schritt %d von %d', 'Step %d of %d'),
     'zurueck':           ('Zurück', 'Back'),
     'fertig':            ('Fertig', 'Done'),
-    'ueberspringen':     ('Überspringen', 'Skip'),
-    'assistent_erneut':  ('Einrichtung erneut durchgehen',
-                          'Run setup again'),
 
     'schritt_sprache':   ('Sprache', 'Language'),
     'schritt_sprache_text': (
@@ -190,8 +181,6 @@ TEXTE = {
         'Which language should this window speak?'),
 
     'schritt_spiel':     ('Star Citizen finden', 'Find Star Citizen'),
-    'schritt_spiel_ok':  ('Star Citizen wurde gefunden. Passt das?',
-                          'Star Citizen was found. Is this right?'),
     'schritt_spiel_text': (
         'Der Watcher liest die Game.log von Star Citizen — dort schreibt das '
         'Spiel jeden freigeschalteten Bauplan hinein. Ohne diese Datei kann er '
@@ -230,7 +219,6 @@ TEXTE = {
     'neue_version_da':   ('Version %s ist da', 'Version %s is available'),
     'du_hast':           ('Du hast %s', 'You have %s'),
     'jetzt_holen':       ('Jetzt holen', 'Get it now'),
-    'spaeter':           ('Später', 'Later'),
     'wird_geladen':      ('Wird geladen … %d %%', 'Downloading … %d %%'),
     # ⚠ „Beim nächsten Start" stimmt unter Windows NICHT: Dort tauscht ein
     # Hilfsskript die Datei erst, wenn das Programm beendet ist — wer
@@ -238,7 +226,6 @@ TEXTE = {
     # Neustart auffordern, nicht vertrösten.
     'neustart_noetig':   ('Fertig geladen. Jetzt neu starten, damit die neue Fassung läuft.',
                           'Downloaded. Restart now so the new version takes over.'),
-    'jetzt_neustarten':  ('Jetzt neu starten', 'Restart now'),
     'update_fehler':     ('Das hat nicht geklappt: %s',
                           'That did not work: %s'),
     'selbst_holen':      ('Bitte hol die neue Fassung selbst von der '
@@ -254,7 +241,6 @@ TEXTE = {
                           'No version information yet.'),
     'aktuelle_fassung':  ('Du hast die neueste Fassung.',
                           'You have the latest version.'),
-    'suche_neue':        ('Nach neuer Fassung sehen', 'Check for updates'),
 
     # -- Statuszeilen und Meldungen --
     'ueberwache':        ('%d Baupläne · Log %s · %s · geprüft %s',
@@ -269,7 +255,6 @@ TEXTE = {
     'vorlaeufig':        ('vorläufig', 'provisional'),
     'neu_craftbar':      ('neu im Spiel craftbar', 'newly craftable in game'),
     'jetzt_craftbar':    ('%s — jetzt craftbar!', '%s — now craftable!'),
-    'liste_leeren':      ('Liste leeren', 'Clear list'),
     # -- Erklärtexte beim Überfahren mit der Maus --
     # Kurz halten: Sie stehen über dem Spiel und werden im Vorbeigehen gelesen.
     'hinweis_ziehen':    ('Ziehen verschiebt das Fenster',
@@ -303,8 +288,6 @@ TEXTE = {
     'hinweis_ohne_quelle': ('Kein Auftrag bekannt, der diesen Bauplan gibt — meist eine Event-Belohnung',
                             'No known contract awards this blueprint — usually an event reward'),
     'hinweis_suche_leeren': ('Sucheingabe löschen', 'Clear the search'),
-    'hinweis_bereich':   ('Diesen Bereich ein- und ausblenden',
-                          'Show or hide this section'),
 
     # -- Einstellungsfenster --
     'titel_einstellungen': ('SC BP Watcher — Einstellungen',
@@ -342,10 +325,6 @@ TEXTE = {
                           'effect immediately.'),
     'umzug_fertig':      ('%s Dateien in den neuen Ordner kopiert: %s',
                           '%s files copied to the new folder: %s'),
-    'umzug_hinweis':     ('Deine Dateien liegen jetzt hier — der alte Ordner bleibt '
-                          'als Sicherheitsnetz liegen.',
-                          'Your files now live here — the old folder stays as a '
-                          'safety net.'),
     # --- Seiten: alle sichtbaren Texte (ab v3.0.0) ---
     's_allg_lead':     ('Was fast jeder einmal einstellt und danach nie wieder anfasst.',
                           'What most people set once and never touch again.'),
@@ -496,8 +475,6 @@ TEXTE = {
     # -- Seite „Angaben im Spiel" --
     's_sp_lead':       ('Der Watcher schreibt in die Auftragstexte des Spiels, welche Baupläne ein Auftrag ausschüttet — mit Haken für das, was du schon hast. Hier wählst du auch, aus welcher Quelle diese Texte kommen.',
                           'The watcher writes into the game\'s mission text which blueprints a mission hands out — with a tick for the ones you already have. This is also where you pick which source those texts come from.'),
-    's_sp_drin':       ('%d Textstellen eingetragen.',
-                          '%d text passages written.'),
     's_sp_quelle_ist': ('Quelle: %s', 'Source: %s'),
     's_sp_steht':      ('Die Bauplan-Angaben stehen in den Auftragstexten.',
                           'The blueprint details are in the mission text.'),
@@ -534,7 +511,6 @@ TEXTE = {
     's_sp_an_sagen':   ('Angaben schreiben: %s', 'Writing details: %s'),
     's_sp_aus_hinweis': ('Ausgeschaltet — es wird nichts geschrieben.',
                           'Switched off — nothing is being written.'),
-    's_sp_datei':      ('Textdatei: %s', 'Text file: %s'),
     's_sp_auto':       ('Selbst aktuell halten', 'Keep up to date'),
     's_sp_auto_h':     ('Prüft beim Start und alle sechs Stunden. Ohne das sind die Angaben nach jedem Spiel-Patch still verschwunden — jedes Update schreibt die Textdatei neu.',
                           'Checks on start and every six hours. Without it the details are silently gone after every game patch — each update rewrites the text file.'),
@@ -543,10 +519,8 @@ TEXTE = {
     's_sp_hand_h':     ('Alles Eingefügte steht zwischen Marken und lässt sich auf den Buchstaben genau wieder entfernen.',
                           'Everything inserted sits between markers and can be removed again to the letter.'),
     's_sp_jetzt':      ('Jetzt auffrischen', 'Refresh now'),
-    's_sp_frisch':     ('Angaben aufgefrischt', 'Details refreshed'),
     's_sp_pruefen':    ('Übersetzung prüfen', 'Check translation'),
     's_sp_weg':        ('Wieder entfernen', 'Remove again'),
-    's_sp_weg_ok':     ('Angaben entfernt', 'Details removed'),
     's_sp_warn':       ('Jedes Übersetzungs-Update und jeder Spiel-Patch löscht die Angaben.',
                           'Every translation update and every game patch wipes the details.'),
     's_sp_warn_h':     ('Beide schreiben die Textdatei neu. Deshalb gibt es „Jetzt auffrischen" und die Prüfung — ohne das denkt man, es funktioniere, und es ist längst weg.',
@@ -665,8 +639,6 @@ TEXTE = {
     's_or_geoeffnet':  ('Ordner geöffnet', 'Folder opened'),
     's_or_nicht_auf':  ('Der Ordner ließ sich nicht öffnen — Näheres steht in der Diagnose.',
                           'The folder could not be opened — see Diagnostics for details.'),
-    's_or_eigener_ort': ('Ein eigener Ort lässt sich in den Einstellungen hinterlegen',
-                          'A location of your own can be set in the settings'),
     's_or_leer':       ('leer — wird selbst gesucht',
                           'empty — found automatically'),
 
@@ -697,8 +669,6 @@ TEXTE = {
                         'An deiner Einstellung darunter ändert das nichts.',
                         'Fetches whatever is available right now — including a test '
                         'build. This does not change your setting below.'),
-    's_up_sofort_frage': ('Neueste Fassung holen?',
-                          'Get the latest version?'),
     's_ub_kanal':         ('Wovon willst du Bescheid bekommen?',
                                    'What should I tell you about?'),
     's_ub_kanal_h':       ('Beim Testen mithelfen oder lieber Ruhe haben — beides ist in Ordnung. Klick auf einen Kasten, um zu wechseln; der Knopf darin holt die Fassung sofort.',
@@ -930,18 +900,6 @@ TEXTE = {
                           'by Xharig belongs to its respective owners.'),
     'e_vorab':           ('Auch Testfassungen anbieten',
                           'Offer test versions too'),
-    'e_vorab_hilfe':     ('Testfassungen (rc) kommen vor den fertigen Fassungen und '
-                          'enthalten Neues, das noch nicht lange erprobt ist. '
-                          'Wer mithelfen will, schaltet das ein und bekommt sie als '
-                          'Erster angeboten; ausgeschaltet siehst du nur fertige '
-                          'Fassungen. Umschalten geht jederzeit — die fertige Fassung '
-                          'gilt immer als neuer als jede Testfassung derselben Nummer.',
-                          'Test versions (rc) arrive before the finished ones and '
-                          'contain changes that have not been proven for long. Turn '
-                          'this on to help out and get them first; left off, you only '
-                          'see finished versions. You can switch back at any time — a '
-                          'finished version always counts as newer than any test '
-                          'version of the same number.'),
     'e_ton':             ('Signalton', 'Sound'),
     'e_ton_hilfe':       ('Kurzer Ton, wenn ein Bauplan erscheint.',
                           'A short sound when a blueprint shows up.'),
@@ -949,7 +907,6 @@ TEXTE = {
     'e_aus':             ('aus', 'off'),
     'e_durchsuchen':     ('Suchen …', 'Browse …'),
     'e_speichern':       ('Speichern', 'Save'),
-    'e_gespeichert':     ('Gespeichert.', 'Saved.'),
     'e_neustart_noetig': ('Gespeichert — für Ordner und Prüfintervall den Watcher '
                           'einmal neu starten.',
                           'Saved — restart the watcher for folder and interval '
@@ -973,13 +930,6 @@ TEXTE = {
                           'This modifies the game\'s text file (`global.ini`). '
                           'Nothing else about the game changes, and it can be '
                           'undone at any time.'),
-    'inj_quelle_de':     ('Deutsch — Übersetzung von rjcncpt laden',
-                          'German — fetch the rjcncpt translation'),
-    'inj_quelle_ss':     ('Englisch — StarStrings von MrKraken laden',
-                          'English — fetch StarStrings by MrKraken'),
-    'inj_quelle_orig':   ('Englisch — Originaltexte aus dem Spiel',
-                          'English — original texts from the game'),
-    'inj_quelle_aus':    ('Jetzt nicht', 'Not now'),
     'inj_fremd':         ('Übersetzung und StarStrings sind fremde Projekte. Sie '
                           'werden beim Klick von deren eigener Adresse geladen, '
                           'nicht mitgeliefert.',
@@ -987,7 +937,6 @@ TEXTE = {
                           'They are fetched from their own pages on click, not '
                           'bundled with this tool.'),
     'inj_laeuft':        ('wird eingerichtet …', 'setting up …'),
-    'inj_fertig':        ('Fertig: %s', 'Done: %s'),
     'inj_fehler':        ('Hat nicht geklappt: %s', 'Did not work: %s'),
     'inj_aktiv':         ('Bauplan-Angaben sind eingetragen (%d Stellen)',
                           'Blueprint notes are in place (%d spots)'),
@@ -1010,10 +959,6 @@ TEXTE = {
     'gruppe_fps':        ('FPS-Waffen', 'FPS weapons'),
     'gruppe_ruestung':   ('Rüstung & Kleidung', 'Armor & clothing'),
     'gruppe_sonstiges':  ('Sonstiges', 'Other'),
-    'hinweis_schliessen_liste': ('Liste schließen — der Watcher läuft weiter',
-                                 'Close the list — the watcher keeps running'),
-    'sc_nicht_gefunden': ('Star Citizen wurde nicht gefunden.',
-                          'Star Citizen was not found.'),
     'gesucht_wurde_hier': ('Gesucht wurde hier:', 'Searched here:'),
 
     # -- Bauplan-Arten (kommen als Rohbegriffe von scmdb) --

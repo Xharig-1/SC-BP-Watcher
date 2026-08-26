@@ -939,6 +939,55 @@ def main():
                         gefunden.append((zweit.lineno, zweit.value))
             return gefunden
 
+        # ⚠ Zweiter Anlauf: Die erste Fassung dieser Prüfung sah nur
+        # `text='…'` direkt am Widget — und übersah dadurch
+        #     unten = f'{titel} — jetzt craftbar!' if titel else 'neu …'
+        # weil der Satz erst in eine Variable geht und später zusammengesetzt
+        # wird. Genau so lag der Fehler im Overlay. Deshalb prüfen die
+        # Oberflächen-Dateien zusätzlich **jedes** String-Literal auf deutsche
+        # Wörter, Docstrings ausgenommen.
+        _deutsch = _re.compile(
+            r'[äöüßÄÖÜ]|\b(?:jetzt|neu|nicht|kein[e]?|wird|wurde|von|aus|mit'
+            r'|noch|schon|hier|dein|alle)\b')
+
+        def _docstrings(baum):
+            raus = set()
+            for k in _ast.walk(baum):
+                if isinstance(k, (_ast.Module, _ast.FunctionDef,
+                                  _ast.AsyncFunctionDef, _ast.ClassDef)):
+                    kopf = k.body[0] if k.body else None
+                    if (isinstance(kopf, _ast.Expr)
+                            and isinstance(kopf.value, _ast.Constant)
+                            and isinstance(kopf.value.value, str)):
+                        raus.add(id(kopf.value))
+            return raus
+
+        def _deutsche_saetze(datei):
+            """Deutscher Satz irgendwo im Code — auch über eine Variable."""
+            quelle = open(datei, encoding='utf-8').read()
+            baum = _ast.parse(quelle)
+            weg = _docstrings(baum)
+            # Interne Protokolle (`fehler.merken`, `fehler.spur`) sind kein
+            # Oberflächentext. Über den Baum ausschließen, nicht über die
+            # Zeile: Ein Aufruf darf sich über mehrere Zeilen ziehen.
+            for _k in _ast.walk(baum):
+                if (isinstance(_k, _ast.Call)
+                        and getattr(_k.func, 'attr', '') in ('merken', 'spur')):
+                    for _teil in _ast.walk(_k):
+                        if isinstance(_teil, _ast.Constant):
+                            weg.add(id(_teil))
+            gefunden = []
+            for k in _ast.walk(baum):
+                if not isinstance(k, _ast.Constant) or not isinstance(k.value, str):
+                    continue
+                if id(k) in weg:
+                    continue
+                wert = k.value.strip()
+                if len(wert) < 8 or not _deutsch.search(wert):
+                    continue
+                gefunden.append((k.lineno, wert))
+            return gefunden
+
         _wurzelpfad = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         _zu_pruefen = [os.path.join(_wurzelpfad, 'sc_bp_watcher.py')]
         for _name in sorted(os.listdir(os.path.join(_wurzelpfad, 'scbp'))):
@@ -956,10 +1005,82 @@ def main():
         pruefe(not _treffer,
                'kein fest eingebauter Anzeigetext (%d gefunden)' % len(_treffer))
 
-        # Und die Gegenrichtung: Ein Schlüssel, den es nur auf Deutsch gibt, ist
-        # eine halbe Übersetzung — die wirkt schlechter als gar keine.
+        _oberflaeche = ['sc_bp_watcher.py', 'scbp/seiten.py',
+                        'scbp/hauptfenster.py', 'scbp/bestandsfenster.py',
+                        'scbp/assistent.py', 'scbp/einstellungsfenster.py',
+                        'scbp/versionsfenster.py']
+        _saetze = []
+        for _rel in _oberflaeche:
+            _voll = os.path.join(_wurzelpfad, _rel)
+            if not os.path.exists(_voll):
+                continue
+            for _nr, _satz in _deutsche_saetze(_voll):
+                _saetze.append('%s:%d  %r' % (_rel, _nr, _satz[:44]))
+        for _s in _saetze[:8]:
+            print('       ' + _s)
+        pruefe(not _saetze,
+               'kein deutscher Satz fest in der Oberfläche (%d gefunden)'
+               % len(_saetze))
+
         sys.path.insert(0, _wurzelpfad)
         from scbp import sprache as _spr
+
+        # Der schärfste Test: jede Seite in **beiden** Sprachen wirklich
+        # bauen. `sprache.t()` gibt bei einem fehlenden Schlüssel dessen
+        # Namen zurück statt abzustürzen — sichtbar wird das erst, wenn die
+        # Seite vor einem steht. Genau so ließe sich ein zu viel gelöschter
+        # Eintrag sofort erkennen: Dann stünde `e_gespeichert` als
+        # Beschriftung da.
+        if not hat_anzeige():
+            uebersprungen('Seiten in beiden Sprachen bauen')
+        else:
+            import tkinter as _tk
+            from scbp import hauptfenster as _hf, seiten as _st
+            _schluesselartig = _re.compile(r'^[a-z][a-z0-9]*(_[a-z0-9]+){1,}$')
+
+            def _durchsuchen(widget, gefunden):
+                try:
+                    _text = widget.cget('text')
+                except Exception:
+                    _text = None
+                if isinstance(_text, str) and _schluesselartig.match(_text.strip()):
+                    gefunden.append(_text.strip())
+                for _kind in widget.winfo_children():
+                    _durchsuchen(_kind, gefunden)
+
+            _SEITEN = ('liste', 'fortschritt', 'allgemein', 'anzeige', 'pfade',
+                       'spieltexte', 'bestand', 'wasistneu', 'ueber')
+            _vorher = _spr.aktuelle()
+            _kaputt, _rohe = [], []
+            for _kuerzel in ('de', 'en'):
+                _spr.setzen(_kuerzel)
+                _f = _hf.Hauptfenster(version='0.0.0-test')
+                _f.root.geometry('900x600+3000+3000')       # aus dem Blick
+                for _seite in _SEITEN:
+                    _rahmen = _tk.Frame(_f.root)
+                    try:
+                        _st.bauen(_f, _seite, _rahmen)
+                        _f.root.update()
+                        _durchsuchen(_rahmen, _rohe)
+                    except Exception as _fehler:
+                        _kaputt.append('%s/%s: %s' % (_kuerzel, _seite,
+                                                      type(_fehler).__name__))
+                    _rahmen.destroy()
+                _f.root.destroy()
+            _spr.setzen(_vorher)
+            if _kaputt:
+                print('       ' + '; '.join(_kaputt[:4]))
+            pruefe(not _kaputt,
+                   'jede Seite baut auf Deutsch und Englisch (%d Fehler)'
+                   % len(_kaputt))
+            if _rohe:
+                print('       roh angezeigt: %s' % ', '.join(sorted(set(_rohe))[:6]))
+            pruefe(not _rohe,
+                   'kein Schlüsselname als Beschriftung (%d gefunden)'
+                   % len(set(_rohe)))
+
+        # Und die Gegenrichtung: Ein Schlüssel, den es nur auf Deutsch gibt, ist
+        # eine halbe Übersetzung — die wirkt schlechter als gar keine.
         _halbe = [k for k, v in _spr.TEXTE.items()
                   if not isinstance(v, tuple) or len(v) < 2 or not v[1]]
         if _halbe:

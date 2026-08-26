@@ -188,6 +188,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   gab es längst — benutzt hat sie niemand, der Code setzte die deutschen
   weiter fest zusammen. Zusätzlich erfuhr das Overlay vom Sprachwechsel
   überhaupt nichts; nur das Einstellungsfenster beschriftete sich neu.
+  Dasselbe betraf die Meldung „neu im Spiel craftbar" der Katalog-Wache.
   Gemeldet von der Autor.
 
 - **Der Hinweis am Startknopf ▶ überschrieb die Statuszeile.** Als einziges der

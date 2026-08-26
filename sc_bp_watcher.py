@@ -1614,7 +1614,11 @@ class Overlay:
         txt = tk.Frame(row, bg=BG); txt.pack(side='left', fill='x', expand=True)
         tk.Label(txt, text=name, bg=BG, fg=PROV if titel else FG, font=self.f_item,
                  anchor='w', justify='left').pack(fill='x', anchor='w')
-        unten = f'{titel} — jetzt craftbar!' if titel else 'neu im Spiel craftbar'
+        # ⚠ Über `sprache.t`, nicht fest: Beide Schlüssel gab es längst
+        # (`jetzt_craftbar`, `neu_craftbar`), benutzt hat sie niemand — die
+        # Zeile blieb dadurch auch auf Englisch deutsch.
+        unten = (sprache.t('jetzt_craftbar', titel) if titel
+                 else sprache.t('neu_craftbar'))
         # Titel aus der Beobachtungsliste können lang sein -> umbrechen statt abschneiden
         sub = tk.Label(txt, text=' · '.join(x for x in (unten, art, ts) if x), bg=BG,
                        fg=PROV if titel else CATA, font=self.f_sub, anchor='w', justify='left')
