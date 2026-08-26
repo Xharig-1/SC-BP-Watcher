@@ -232,8 +232,12 @@ TEXTE = {
     'jetzt_holen':       ('Jetzt holen', 'Get it now'),
     'spaeter':           ('Später', 'Later'),
     'wird_geladen':      ('Wird geladen … %d %%', 'Downloading … %d %%'),
-    'neustart_noetig':   ('Fertig. Beim nächsten Start läuft die neue Fassung.',
-                          'Done. The new version runs on next start.'),
+    # ⚠ „Beim nächsten Start" stimmt unter Windows NICHT: Dort tauscht ein
+    # Hilfsskript die Datei erst, wenn das Programm beendet ist — wer
+    # weiterspielt, bei dem gibt es nach zwei Minuten auf. Der Satz muss zum
+    # Neustart auffordern, nicht vertrösten.
+    'neustart_noetig':   ('Fertig geladen. Jetzt neu starten, damit die neue Fassung läuft.',
+                          'Downloaded. Restart now so the new version takes over.'),
     'jetzt_neustarten':  ('Jetzt neu starten', 'Restart now'),
     'update_fehler':     ('Das hat nicht geklappt: %s',
                           'That did not work: %s'),

@@ -165,6 +165,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Das Update über das Infofenster kam nie an.** Wer über das grüne „ⓘ" am
+  Overlay ging statt über die Einstellungen, bekam nach dem Laden nur den Satz
+  „Beim nächsten Start läuft die neue Fassung" — **und keinen Knopf dafür**.
+  Unter Windows stimmt der Satz zudem nicht: Dort tauscht ein Hilfsskript die
+  Datei erst, wenn das Programm beendet ist, und gibt nach zwei Minuten auf. Wer
+  weiterspielte, hatte am Ende gar kein Update. Jetzt steht dort derselbe
+  „⟳ Jetzt neu starten"-Knopf wie in den Einstellungen. Gemeldet von Morkhan.
+- **Beim Update blitzte kurz ein Konsolenfenster auf.** Das Hilfsskript läuft
+  seit v3.0.0 unsichtbar — der `taskkill` davor, der ein schon laufendes Skript
+  wegräumt, wurde dabei übersehen. Gemeldet von Morkhan.
+
 - **Fünf Fehler scheiterten bisher lautlos.** Ließen sich Einstellungen, die
   Merkliste, der „Neu"-Stand, der Autostart oder ein gespeicherter Bericht nicht
   schreiben, passierte einfach nichts — die Einstellung war nach dem Neustart

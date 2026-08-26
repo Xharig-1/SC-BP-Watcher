@@ -157,6 +157,17 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **Updating through the info window never arrived.** Anyone using the green
+  „ⓘ" on the overlay instead of the settings page only got the line „the new
+  version runs on next start" — **and no button for it**. On Windows that line
+  is not even true: a helper script only swaps the file once the program has
+  quit, and gives up after two minutes. Anyone who kept playing ended up with no
+  update at all. The same „⟳ Restart now" button as in the settings is now
+  there. Reported by Morkhan.
+- **A console window flashed up briefly during updates.** The helper script has
+  run invisibly since v3.0.0 — the `taskkill` before it, which clears away an
+  already running script, was overlooked. Reported by Morkhan.
+
 - **Five failures used to happen silently.** If the settings, the watchlist, the
   „new" markers, the autostart entry or a saved report could not be written,
   nothing happened at all — the setting was simply back to its old value after a

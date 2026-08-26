@@ -172,6 +172,7 @@ class Versionsfenster:
                                   cursor='hand2', padx=10, pady=6)
             self.holen.pack(side='left')
             self.holen.bind('<Button-1>', lambda e, d=datei: self._holen(d))
+            self._knopfleiste = knoepfe
 
     def _holen(self, datei):
         """Herunterladen und einspielen — im Nebenläufer, damit nichts einfriert."""
@@ -193,11 +194,63 @@ class Versionsfenster:
         threading.Thread(target=arbeit, daemon=True).start()
 
     def _ergebnis(self, geklappt, grund):
-        if geklappt:
-            self.meldung.configure(text=t('neustart_noetig'), fg=ACCENT)
-        else:
+        if not geklappt:
             self.meldung.configure(text=t('update_fehler', grund) + '\n'
                                    + t('selbst_holen'), fg=GELB)
+            return
+
+        # ⚠ Hier stand nur „Beim nächsten Start läuft die neue Fassung" — und
+        # genau das stimmt unter Windows **nicht**. Dort tauscht ein Hilfsskript
+        # die Datei erst, wenn das Programm beendet ist; wer einfach weiterspielt,
+        # bei dem gibt es nach zwei Minuten auf, und aktualisiert ist nichts.
+        #
+        # Morkhan am 26.08.2026: „dann klicke ich auf jetzt holen, dann läuft
+        # des durch … und dann passiert nix mehr." Er hatte alles richtig
+        # gemacht — es fehlte schlicht der zweite Schritt, und niemand sagte ihm
+        # das. In den Einstellungen gibt es den Neustart-Knopf längst; hier war
+        # er nie eingebaut.
+        self.meldung.configure(text=t('neustart_noetig'), fg=ACCENT)
+        try:
+            self._neustart_knopf()
+        except Exception as ausnahme:
+            from . import fehler
+            fehler.merken('versionsfenster.neustart_knopf', ausnahme)
+
+    def _neustart_knopf(self):
+        """Aus „geladen" wird ein Knopf, der den Neustart auch ausführt."""
+        leiste = getattr(self, '_knopfleiste', None)
+        if leiste is None:
+            return
+        knopf = tk.Label(leiste, text='  %s  ' % t('s_ub_neustart'),
+                         bg=ACCENT, fg=BG, font=schrift(10, True),
+                         cursor='hand2', padx=10, pady=6)
+        knopf.pack(side='left', padx=(8, 0))
+        knopf.bind('<Button-1>', lambda e: self._neu_starten())
+
+    def _neu_starten(self):
+        """Die frisch geladene Fassung übernehmen.
+
+        ⚠ Derselbe Ablauf wie auf der Einstellungsseite: Der Notausgang wird
+        **sofort** scharf gestellt, nicht erst in einem Tk-Rückruf — feuert der
+        nicht, liefe der Prozess weiter, während sein Arbeitsordner schon
+        abgeräumt wird.
+        """
+        import os
+        if not aktualisierung.neu_starten():
+            self.meldung.configure(text=t('s_ub_neustart_nein'), fg=GELB)
+            return
+        threading.Timer(2.0, lambda: os._exit(0)).start()
+
+        def abtreten():
+            try:
+                self.root.quit()
+                self.root.destroy()
+            except Exception:
+                pass
+        try:
+            self.root.after(400, abtreten)
+        except Exception:
+            pass
 
     # ------------------------------------------------------------- Geschichte
     def _geschichte(self):
