@@ -644,9 +644,32 @@ def einspielen(neue_datei):
         for name in ('_MEIPASS', '_MEIPASS2', 'TCL_LIBRARY', 'TK_LIBRARY',
                      'TIX_LIBRARY', 'MATPLOTLIBDATA'):
             umgebung.pop(name, None)
-        subprocess.Popen([neue_datei, '/SILENT', '/NORESTART',
-                          '/CLOSEAPPLICATIONS'],
-                         env=umgebung, cwd=tempfile.gettempdir(),
+        # ⚠ **Nicht direkt starten.** Der Installer braucht einen Elternprozess,
+        # der ihn ueberlebt — und wir sind es nicht: Gleich nach diesem Aufruf
+        # tritt der Watcher ab, damit der Restart Manager nicht 30 Sekunden auf
+        # ihn wartet.
+        #
+        # Inno startet sich intern zweistufig (im Protokoll als `/SL5=...`
+        # sichtbar) und prueft dabei seinen Elternprozess. Ist der inzwischen
+        # weg und seine Prozessnummer neu vergeben, bricht es ab mit
+        #
+        #     Security validation failure: parent process has different
+        #     executable!
+        #
+        # Genau das ist am 26.08.2026 zweimal passiert. Nicht nachstellbar war
+        # es aus einer PowerShell heraus — dort ist der Elternprozess zwar
+        # ebenfalls ein fremdes Programm, bleibt aber **am Leben**. Nicht die
+        # Fremdheit stoert, sondern der Tod.
+        #
+        # `cmd /c setup.exe` wartet auf das Setup und lebt damit genau so lange
+        # wie es. Dass der Watcher darunter wegstirbt, macht nichts: Windows
+        # nimmt einem verwaisten Prozess nichts weg.
+        #
+        # Die doppelten Anfuehrungszeichen sind cmd-Eigenart: `cmd /c "..."`
+        # streicht das aeussere Paar, deshalb braucht ein Pfad mit Leerzeichen
+        # ein eigenes. Ohne das scheitert jeder Benutzername mit Leerzeichen.
+        befehl = 'cmd /c ""%s" /SILENT /NORESTART /CLOSEAPPLICATIONS"' % neue_datei
+        subprocess.Popen(befehl, env=umgebung, cwd=tempfile.gettempdir(),
                          creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
         return True, ''
     except Exception as fehler:
