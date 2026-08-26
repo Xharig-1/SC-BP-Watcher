@@ -715,8 +715,24 @@ def einspielen(neue_datei):
         if protokoll_datei:
             schalter += ' /LOG="%s"' % protokoll_datei
         befehl = 'cmd /c ""%s" %s"' % (neue_datei, schalter)
+        # ⚠ `DETACHED_PROCESS` **und** eine eigene Prozessgruppe. Ohne das bleibt
+        # das Setup an uns gebunden — und wir treten gleich ab, damit der Restart
+        # Manager nicht 30 Sekunden auf uns wartet. Inno prueft aber seinen
+        # Elternprozess und meldet dann
+        #
+        #     Security validation failure: failed to obtain executable path for
+        #     parent process!
+        #
+        # Das ist die Schwester der Meldung ueber `__COMPAT_LAYER` weiter oben:
+        # einmal traegt der Elternprozess einen Shim, einmal ist er zum
+        # Pruefzeitpunkt gar nicht mehr da. Beide Male geht es um denselben
+        # Zusammenhang — wer ein Setup startet und sich sofort verabschiedet,
+        # muss es vorher **loesen**.
+        flags = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+        flags |= getattr(subprocess, 'DETACHED_PROCESS', 0)
+        flags |= getattr(subprocess, 'CREATE_NEW_PROCESS_GROUP', 0)
         subprocess.Popen(befehl, env=umgebung, cwd=tempfile.gettempdir(),
-                         creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+                         creationflags=flags)
         return True, ''
     except Exception as fehler:
         return False, str(fehler)
