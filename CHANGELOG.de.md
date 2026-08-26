@@ -10,6 +10,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc57 - 2026-08-27
+
+> **Ein Symbolsatz statt vierzehn Schriftzeichen.** Die Zeichen der Melde-Leiste
+> waren unterschiedlich groß, im Stil gemischt und sahen auf jedem Betriebssystem
+> anders aus. Ersetzt durch fertige Bilder aus einem einzigen, einheitlich
+> gezeichneten Satz.
+
 ### Geändert
 
 - **Alle Symbole sind jetzt gleich groß — und stammen aus einem Satz.** Die

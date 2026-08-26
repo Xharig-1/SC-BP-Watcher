@@ -10,6 +10,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc57 - 2026-08-27
+
+> **One icon set instead of fourteen glyphs.** The symbols in the notification
+> bar had different sizes, mixed styles, and looked different on every operating
+> system. Replaced with rendered images from a single, consistently drawn set.
+
 ### Changed
 
 - **All symbols are the same size now — and come from one set.** The glyphs in
