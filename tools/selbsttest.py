@@ -833,6 +833,21 @@ def main():
         alt_windows = pf_start.WINDOWS
         alt_ordner = pf_start.spiel_ordner
         alt_einst = pf_start.einstellung
+
+        # ⚠ Die Umgebungsvariablen MÜSSEN mit umgebogen werden. `spielstarter()`
+        # sucht nach dem Spielordner noch feste Orte unter `LOCALAPPDATA`,
+        # `PROGRAMFILES` und `PROGRAMW6432` ab — und auf einem Rechner, auf dem
+        # Star Citizen wirklich installiert ist, findet es dort den **echten**
+        # RSI Launcher. Die zweite Prüfung unten schlug deshalb bei der Autor
+        # unter Windows immer fehl, während sie auf Linux und Mac grün war: Der
+        # Test löschte seinen Schein-Launcher, und `spielstarter()` lieferte
+        # trotzdem einen Pfad — nur eben den vom richtigen Spiel.
+        #
+        # Ein Test, der vom Rechner abhängt, auf dem er läuft, prüft nichts.
+        alt_umgebung = {}
+        for schluessel in ('LOCALAPPDATA', 'PROGRAMFILES', 'PROGRAMW6432'):
+            alt_umgebung[schluessel] = os.environ.get(schluessel)
+            os.environ[schluessel] = starter_basis
         try:
             pf_start.WINDOWS = True
             pf_start.spiel_ordner = lambda: spiel_pfad
@@ -849,6 +864,11 @@ def main():
             pf_start.WINDOWS = alt_windows
             pf_start.spiel_ordner = alt_ordner
             pf_start.einstellung = alt_einst
+            for schluessel, wert in alt_umgebung.items():
+                if wert is None:
+                    os.environ.pop(schluessel, None)
+                else:
+                    os.environ[schluessel] = wert
 
         # Jeder Ausgang beim Ablagesymbol muss im Startverlauf landen. Der
         # Fehler war zweimal nicht zu finden, weil weder ein Fehler noch eine
