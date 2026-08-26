@@ -10,6 +10,7 @@
 
 [![Version](https://img.shields.io/github/v/release/Xharig-1/SC-BP-Watcher?label=Version&color=5fa522)](../../releases)
 [![License](https://img.shields.io/badge/License-GPL--3.0-5fa522)](LICENSE)
+[![Discord](https://img.shields.io/badge/Discord-join-5fa522?logo=discord&logoColor=white)](https://discord.gg/g2E7e6XxZC)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-0a4a7a?logo=python&logoColor=white)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%C2%B7%20Linux-0a4a7a)](#requirements)
 [![Star Citizen](https://img.shields.io/badge/Star%20Citizen-compatible-0a4a7a)](https://robertsspaceindustries.com/)
@@ -21,6 +22,8 @@
 ---
 
 A small, borderless overlay that tells you **in real time** when a new blueprint drops — name, type and time. No account, no cloud, no installation. Runs on **Windows and Linux**.
+
+> 💬 **There is a Discord.** Questions, help with problems, new releases and a forum for bugs and wishes: **[discord.gg/g2E7e6XxZC](https://discord.gg/g2E7e6XxZC)**. If you would rather stay here, open an [issue](../../issues) — both are read.
 
 > ℹ️ **The SC Deutsch Launcher is no longer required.** The actual source is Star Citizen's own `Game.log` — every unlocked blueprint is written there in plain text. If the launcher is installed it is still used: it confirms finds and supplies German names. If it isn't (always the case on Linux), the watcher works anyway.
 
@@ -283,7 +286,7 @@ If you fork this project, please keep the credit in the footer or mention the or
 
 Work continues — what exactly is not on a list. What a build brought you can read in [`CHANGELOG.md`](CHANGELOG.md) or right in the tool under **ⓘ „What's new"**.
 
-Wishes and bug reports are welcome as an [issue](../../issues) — suggestions make it into the next build more reliably than mind reading.
+Wishes and bug reports are welcome as an [issue](../../issues) or on [Discord](https://discord.gg/g2E7e6XxZC) — suggestions make it into the next build more reliably than mind reading.
 
 ## Star Citizen Fan Content
 
