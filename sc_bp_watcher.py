@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc73'
+__version__ = '3.0.0-rc74'
 
 
 def _mitgeliefert(name):
@@ -2323,6 +2323,12 @@ if __name__ == '__main__':
     #
     # Sie bleibt versteckt, bis das Overlay sie übernimmt: Ein leeres graues
     # Fenster hinter dem Assistenten hätte niemand erklären können.
+    # ⚠ Erst hier, nicht weiter oben: Eine zweite Instanz beendet sich in
+    # `zeigen_bitte()` wieder, und die legt sonst die Absturzspur der laufenden
+    # beiseite. Ab dieser Zeile ist ein harter Abbruch nachlesbar — ein SIGSEGV
+    # aus Tk hinterlässt sonst nichts, was man melden könnte.
+    fehler.absturzfaenger()
+    fehler.VERSION[0] = __version__
     fehler.spur('Start, Version %s, %s' % (__version__, sys.platform))
     wurzel = tk.Tk()
     wurzel.withdraw()

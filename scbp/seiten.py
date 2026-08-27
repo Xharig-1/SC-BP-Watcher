@@ -843,6 +843,46 @@ def _ordner(fenster, rahmen):
     _pfadfeld(fenster, innen, e.launcher, launcher_waehlen,
               platzhalter=t('s_or_leer'))
 
+    _startbefehl_feld(fenster, innen)
+
+
+def _startbefehl_feld(fenster, innen):
+    """Ein eigener Startbefehl für Star Citizen — für alle ohne LUG Helper.
+
+    ⚠ Diese Einstellung gab es schon lange (`spielstarter`), nur **nirgends in
+    der Oberfläche**: Sie stand allein in der `einstellungen.json`. Wer über
+    Lutris oder Heroic spielt, sah deshalb gar keinen Startknopf und hatte keine
+    Möglichkeit, das zu ändern — der Ausweg war vorhanden und unerreichbar.
+
+    Ein Weg, den man nur kennt, wenn man den Quelltext gelesen hat, ist kein Weg.
+    """
+    from . import pfade
+
+    tk.Label(innen, text=t('s_or_start'), bg=BG, fg=FG, font=fenster.f_fett,
+             anchor='w').pack(fill='x', pady=(20, 0))
+    _fliesstext(innen, t('s_or_start_h'), fenster.f_klein, fill='x')
+    _fliesstext(innen, t('s_or_start_bsp'), fenster.f_klein, farbe=SUB,
+                fill='x', pady=(2, 0))
+
+    wert = tk.StringVar(value=pfade.einstellung('spielstarter') or '')
+
+    def uebernehmen():
+        text = (wert.get() or '').strip()
+        pfade.einstellung_setzen('spielstarter', text)
+        fenster.sagen(t('s_or_start_ok') if text else t('s_or_start_weg'))
+        # Der Startknopf hängt daran — die Leiste muss ihn neu bewerten.
+        try:
+            fenster.neu_aufbauen()
+        except Exception as ausnahme:
+            fehler.merken('seiten.startbefehl.aufbauen', ausnahme)
+
+    reihe = tk.Frame(innen, bg=BG)
+    reihe.pack(fill='x', pady=(8, 0))
+    from .hauptfenster import rundes_feld
+    feld = rundes_feld(reihe, wert, fenster.f_klein, '#0c1017', LINIE, ACCENT, FG)
+    feld.halter.pack(side='left', fill='x', expand=True, padx=(0, 8))
+    _knopf(fenster, reihe, t('s_or_uebernehmen'), uebernehmen).pack(side='left')
+
 
 def _menueeintrag_feld(fenster, innen):
     """Startmenü-Eintrag anlegen oder entfernen — nur unter Linux sinnvoll.
@@ -2708,7 +2748,8 @@ def _danke(fenster, rahmen):
             # `_person` nimmt einen Text — also hier zusammensetzen, statt die
             # Funktion für einen Sonderfall umzubauen.
             ('Bomb20', 'pr0', t('s_dk_bomb_idee'),
-             t('s_dk_bomb_bugs') + '\n\n' + t('s_dk_bomb_dazu')),
+             t('s_dk_bomb_blind') + '\n\n' + t('s_dk_bomb_bugs')
+             + '\n\n' + t('s_dk_bomb_dazu')),
             ('Morkhan', 'KRT', t('s_dk_morkhan_idee'),
              t('s_dk_morkhan_bugs'))):
         _person(fenster, innen, name, gruppe, idee, funde)

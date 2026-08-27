@@ -156,6 +156,25 @@ def _bildschirme(wurzel):
     return t('b_skalierung') % (breite, hoehe, skalierung)
 
 
+def _spielstarter():
+    """Der Weg, auf dem Star Citizen gestartet würde — gekürzt und eingeordnet.
+
+    Drei Auskünfte in einer Zeile: **ob** etwas gefunden wurde, **was**, und ob
+    es der selbst eingetragene Startbefehl ist. Genau diese drei Fragen standen
+    am 27.08.2026 zwei Stunden lang im Raum.
+    """
+    from . import pfade as pfade_modul
+    from . import sprache as sprache_modul
+    starter = pfade_modul.spielstarter()
+    if not starter:
+        return sprache_modul.t('b_starter_kein')
+    kurz = pfade_modul.kuerzen(str(starter))
+    eigen = (pfade_modul.einstellung('spielstarter') or '').strip()
+    if eigen:
+        return sprache_modul.t('b_starter_eigen', kurz)
+    return kurz
+
+
 def bauen(version='', wurzel=None, fehleranzahl=8):
     """Den Bericht als Text zusammensetzen."""
     zeilen = []
@@ -186,6 +205,12 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
         lambda: t('b_protokolle') % uebersicht.get('sicherungen')))
     zeile(t('b_launcher'), _sicher(lambda: uebersicht.get('launcher')
                                     or t('b_nicht_da')))
+    # ⚠ **Womit sich das Spiel starten ließe — und ob das jemand von Hand
+    # eingetragen hat.** Ohne diese Zeile ist „der Startknopf tut nichts" nicht
+    # zu beantworten, ohne den Nutzer auszufragen. Siehe die Regel: Was einen
+    # Fehler erklären würde, gehört in den Bericht, bevor er das nächste Mal
+    # gemeldet wird.
+    zeile(t('b_starter'), _sicher(_spielstarter))
     # ⚠ `sammeln()` gibt ein **Tupel** zurück — (phrasen, herkunft). Hier stand
     # `', '.join(sammeln())`, was eine Liste mit einem String zusammenfügen
     # wollte und mit einem TypeError abbrach. `_sicher()` verschluckte den, und
@@ -222,6 +247,20 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
         zeilen.append(t('b_spur'))
         for eintrag in spur[-12:]:
             zeilen.append('  ' + eintrag)
+
+    # ⚠ Und danach der harte Abbruch, falls es einen gab. Er steht **vor** den
+    # Fehlern, weil er der schwerere Befund ist: Ein Eintrag in der Fehlerliste
+    # heißt, das Programm hat weitergelebt; hier war es mitten im Befehl weg.
+    # Nur die erste Handvoll Zeilen — der volle Aufrufweg aller Fäden füllt
+    # Seiten, und der Melder soll den Bericht noch verschicken können.
+    absturz = _sicher(fehler.letzter_absturz, [])
+    if absturz:
+        zeilen.append('')
+        zeilen.append(t('b_absturz'))
+        for eintrag in absturz[:14]:
+            zeilen.append('  ' + eintrag)
+        if len(absturz) > 14:
+            zeilen.append('  … (%d)' % (len(absturz) - 14))
 
     letzte = _sicher(lambda: fehler.letzte(fehleranzahl), [])
     gesamt = _sicher(fehler.anzahl, 0)

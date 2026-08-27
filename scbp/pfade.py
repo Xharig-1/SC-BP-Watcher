@@ -789,6 +789,32 @@ def spielstarter():
     return None
 
 
+def _startbefehl(starter):
+    """Aus dem eingetragenen Text die Liste machen, die `Popen` braucht.
+
+    ⚠ **Ein Startbefehl ist nicht immer ein Dateiname.** Hier stand
+    `Popen([starter])` — damit gilt der ganze Text als **eine** Datei. Wer
+    `flatpak run org.starcitizen-lug.Helper` oder `lutris rungame/star-citizen`
+    einträgt, bekommt „Datei nicht gefunden", weil nach einer Datei mit
+    Leerzeichen im Namen gesucht wird.
+
+    `shlex.split` zerlegt so, wie eine Shell es täte — samt
+    Anführungszeichen für Pfade mit Leerzeichen.
+
+    ⚠ **Eine vorhandene Datei wird NICHT zerlegt.** Sonst zerfiele
+    `/home/ich/Meine Spiele/sc-launch.sh` in drei Teile. Erst wenn es die Datei
+    so nicht gibt, ist es ein Befehl mit Argumenten.
+    """
+    if os.path.exists(starter):
+        return [starter]
+    try:
+        import shlex
+        teile = shlex.split(starter, posix=not WINDOWS)
+    except ValueError:
+        return [starter]              # unpaariges Anführungszeichen o. ä.
+    return teile or [starter]
+
+
 def spiel_starten():
     """Star Citizen starten. Gibt (True, '') oder (False, Grund) zurück."""
     starter = spielstarter()
@@ -807,7 +833,7 @@ def spiel_starten():
             zusatz['creationflags'] = getattr(subprocess, 'DETACHED_PROCESS', 0)
         else:
             zusatz['start_new_session'] = True
-        subprocess.Popen([starter], stdout=subprocess.DEVNULL,
+        subprocess.Popen(_startbefehl(starter), stdout=subprocess.DEVNULL,
                          stderr=subprocess.DEVNULL, **zusatz)
         return True, ''
     except Exception as ausnahme:

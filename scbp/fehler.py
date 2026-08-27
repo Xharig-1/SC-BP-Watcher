@@ -47,6 +47,7 @@ schlimmer als gar keines.
 Geschrieben wird **nur lokal**. Verschickt wird nichts — was in einen
 Fehlerbericht wandert, entscheidet der Spieler in `scbp/bericht.py`.
 """
+import faulthandler
 import json
 import os
 import sys
@@ -116,8 +117,35 @@ def spur(schritt):
             f.write('%s  %s\n' % (datetime.now().strftime('%H:%M:%S'), schritt))
             f.flush()
             os.fsync(f.fileno())
+        # ⚠ Seit die Spur auch die Bedienung mitschreibt, wächst sie mit jedem
+        # Klick. Nach oben deckeln, sonst steht am Ende ein Tagebuch aus
+        # hunderten Reiterwechseln da. Gekürzt wird selten und nur um Zeilen,
+        # die der Bericht ohnehin nicht mehr zeigt — er nimmt die letzten zwölf.
+        spur._zahl = getattr(spur, '_zahl', 0) + 1
+        if spur._zahl >= SPUR_DECKEL:
+            spur._zahl = 0
+            _spur_kuerzen(pfad)
     except Exception:
         pass
+
+
+# Ab so vielen neuen Zeilen wird nachgesehen und auf `SPUR_REST` gekürzt.
+SPUR_DECKEL = 200
+SPUR_REST = 60
+
+
+def _spur_kuerzen(pfad):
+    """Die Spur auf die jüngsten Zeilen eindampfen."""
+    try:
+        with open(pfad, encoding='utf-8') as f:
+            alle = f.readlines()
+        if len(alle) <= SPUR_REST:
+            return
+        with open(pfad, 'w', encoding='utf-8') as f:
+            f.writelines(alle[-SPUR_REST:])
+    except OSError:
+        pass
+
 
 
 def letzte_spur():
@@ -127,6 +155,74 @@ def letzte_spur():
             return [z.rstrip() for z in f if z.strip()]
     except Exception:
         return []
+
+
+ABSTURZ_DATEI = 'absturz.txt'
+ABSTURZ_VORIG = 'absturz-letzter.txt'
+
+# Der offene Schreibkanal, in den `faulthandler` schreibt. Er muss den ganzen
+# Lauf offen bleiben — deshalb steht er hier und nicht in einer Funktion.
+_ABSTURZ_KANAL = [None]
+
+
+def absturzfaenger():
+    """Einen harten Abbruch festhalten — dort, wo kein `except` mehr greift.
+
+    ⚠ Wozu, obwohl es `haken_setzen` schon gibt: Die drei Haken dort fangen
+    **Python**-Ausnahmen. Ein `SIGSEGV` aus der Tk-Bibliothek ist keine —
+    der Prozess ist weg, mitten im Befehl. Es gibt dann keinen Fehlereintrag,
+    keine Meldung, nichts; der Nutzer kann nur sagen „es stürzt ab".
+
+    Genau dieser Fall ist zweimal aufgetreten: am 25.08.2026 beim ersten Start
+    (zwei Tk-Instanzen) und am 27.08.2026 beim Öffnen von „Was ist neu" —
+    beide Male reproduzierbar beim Melder, beide Male auf dem
+    Entwicklungsrechner nicht nachstellbar, und beide Male stand im
+    Diagnose-Bericht **kein Wort** davon.
+
+    `faulthandler` schreibt beim Signal den C-nahen Aufrufweg aller Fäden in
+    eine Datei — die einzige Spur, die ein solcher Abbruch hinterlässt. Beim
+    nächsten Start wird sie zur Seite gelegt und landet im Bericht.
+    """
+    try:
+        jetzt = pfade.app_datei(ABSTURZ_DATEI)
+        vorig = pfade.app_datei(ABSTURZ_VORIG)
+        # Was vom letzten Lauf noch drinsteht, ist ein Absturz — beiseitelegen,
+        # damit der Bericht ihn zeigen kann, auch wenn dieser Lauf sauber ist.
+        try:
+            if os.path.isfile(jetzt) and os.path.getsize(jetzt) > 0:
+                if os.path.isfile(vorig):
+                    os.remove(vorig)
+                os.replace(jetzt, vorig)
+            elif os.path.isfile(jetzt):
+                os.remove(jetzt)
+        except OSError:
+            pass
+        kanal = open(jetzt, 'w', encoding='utf-8')
+        _ABSTURZ_KANAL[0] = kanal
+        faulthandler.enable(file=kanal, all_threads=True)
+        return True
+    except Exception:
+        # Ohne Fänger läuft das Programm normal weiter — er ist Diagnose,
+        # keine Voraussetzung.
+        return False
+
+
+def letzter_absturz():
+    """Der Aufrufweg des letzten harten Abbruchs — leer, wenn es keinen gab."""
+    try:
+        with open(pfade.app_datei(ABSTURZ_VORIG), encoding='utf-8') as f:
+            return [z.rstrip() for z in f if z.strip()]
+    except Exception:
+        return []
+
+
+def absturz_abhaken():
+    """Den festgehaltenen Abbruch wegräumen — er ist gemeldet und erledigt."""
+    try:
+        os.remove(pfade.app_datei(ABSTURZ_VORIG))
+        return True
+    except Exception:
+        return False
 
 
 def merken(stelle, ausnahme=None, hinweis=''):

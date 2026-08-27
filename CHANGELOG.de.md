@@ -10,6 +10,40 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc74 - 2026-08-27
+
+> **Ein Absturz hinterlässt jetzt eine Spur.**
+
+### Hinzugefügt
+
+- **Harte Abbrüche werden festgehalten.** Bisher fing das Programm nur
+  Python-Fehler ab. Ein Absturz, der den Prozess mitten im Befehl beendet
+  (etwa aus der Tk-Bibliothek heraus), hinterließ **nichts**: keinen Eintrag,
+  keine Meldung, nichts zum Mitschicken. Ab jetzt schreibt ein Fänger den
+  Aufrufweg aller Fäden in eine Datei, und der nächste Diagnose-Bericht zeigt
+  ihn unter „Harter Abbruch beim vorigen Lauf".
+- **Die Spur führt jetzt auch über die Bedienung.** Sie hörte nach dem letzten
+  Startschritt auf — welche Seite jemand geöffnet hat, stand nirgends. Jetzt
+  schreibt jeder Seitenwechsel zwei Zeilen mit. Fehlt die zweite, hat es beim
+  Bauen genau dieser Seite geknallt. Damit die Datei nicht wächst, wird sie
+  gedeckelt.
+
+### Hinweise
+
+- **Der von Bomb20 gemeldete Absturz beim Öffnen von „Was ist neu" ist damit
+  nicht behoben, sondern messbar.** Er ließ sich hier nicht nachstellen, und
+  sein Bericht konnte ihn gar nicht zeigen — genau diese Lücke schließt rc74.
+  Tritt er erneut auf, steht er im nächsten Bericht.
+
+### Dank
+
+- **Bomb20** (pr0citizen) — für die Meldung, die sich am Ende als etwas
+  Größeres entpuppte als ein einzelner Absturz: Das Werkzeug war an dieser
+  Stelle blind. Und dafür, dass er sie geschickt hat, obwohl sie nach einem
+  Fehlalarm aussah.
+- **Haldjas** (SC4M) und **Xharig** — für den Gegentest unter Windows: Update
+  von rc71 auf rc73 und die Oberfläche seit rc61, beides ohne Befund.
+
 ## v3.0.0-rc73 - 2026-08-27
 
 > **Die Danke-Seite sagt jetzt, was heute wirklich passiert ist.**
