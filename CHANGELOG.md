@@ -108,6 +108,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The filter buttons on "What's new" stayed German in English.** "Alles / Neu /
+  Verbessert / Behoben" were hard-coded instead of living in `sprache.py` — right
+  next to a properly translated changelog. Spotted on a screenshot of the English
+  interface. Found by der Autor.
+
 - **A help text pointed at a glyph that no longer existed.** "Use ☰ to open the
   blueprint list at any time" was still in the setup assistant, even though `☰`
   had been replaced by the clipboard back in v3.0.0-rc55. All texts now name the

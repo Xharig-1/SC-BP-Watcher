@@ -1348,8 +1348,8 @@ def _wasistneu(fenster, rahmen):
             k.setzen(kennung == art)
         zeichnen()
 
-    for kennung, text in (('alle', 'Alles'), ('neu', 'Neu'),
-                          ('bess', 'Verbessert'), ('fix', 'Behoben')):
+    for kennung, text in (('alle', t('s_wn_f_alle')), ('neu', t('s_wn_f_neu')),
+                          ('bess', t('s_wn_f_bess')), ('fix', t('s_wn_f_fix'))):
         an = (kennung == 'alle')
         k = _chip(fenster, leiste, text, an)
         k.pack(side='left', padx=(0, 6))
@@ -1382,7 +1382,12 @@ def _chip(fenster, eltern, text, an):
 
 
 _ART_FARBE = {'neu': ACCENT, 'bess': '#7db8e8', 'fix': GOLD}
-_ART_WORT = {'neu': 'Neu', 'bess': 'Verbessert', 'fix': 'Behoben'}
+# ⚠ Eine Funktion, keine Konstante: Ein Wörterbuch auf Modulebene wird **einmal**
+# beim Import gefüllt — und behielte damit die Sprache, die beim Start galt. Wer
+# danach umschaltet, sähe die Marken weiter in der alten Sprache.
+def _art_wort(art):
+    return {'neu': t('s_wn_f_neu'), 'bess': t('s_wn_f_bess'),
+            'fix': t('s_wn_f_fix')}.get(art, '')
 
 
 def _fassung(fenster, eltern, eintrag, punkte, offen):
@@ -1431,11 +1436,12 @@ def _fassung(fenster, eltern, eintrag, punkte, offen):
 
     # Alle Blasen so breit wie die längste Beschriftung — sonst flattern sie
     # und die Texte daneben fangen an unterschiedlichen Stellen an.
-    breiteste = max(fenster.f_klein.measure(w) for w in _ART_WORT.values()) + 20
+    breiteste = max(fenster.f_klein.measure(_art_wort(a))
+                    for a in ('neu', 'bess', 'fix')) + 20
     for art, zeile in punkte:
         z = tk.Frame(koerper, bg=BG)
         z.pack(fill='x', pady=3)
-        marke(z, _ART_WORT.get(art, ''), _ART_FARBE.get(art, SUB),
+        marke(z, _art_wort(art), _ART_FARBE.get(art, SUB),
               fenster.f_klein, grund=BG,
               mindestbreite=breiteste).pack(side='left', anchor='n', padx=(0, 14))
         # ⚠ `wraplength` muss zur wirklichen Breite passen. Steht er zu hoch, bricht

@@ -662,6 +662,13 @@ TEXTE = {
                           'empty — found automatically'),
 
     # -- Seite „Was ist neu" --
+    # ⚠ Diese vier standen bis v3.0.0-rc58 **fest im Code** (`seiten.py`) und
+    # blieben deshalb auch auf Englisch deutsch — sichtbar auf dem Reiter
+    # „Was ist neu", direkt neben einem sauber übersetzten Changelog.
+    's_wn_f_alle':     ('Alles', 'All'),
+    's_wn_f_neu':      ('Neu', 'New'),
+    's_wn_f_bess':     ('Verbessert', 'Improved'),
+    's_wn_f_fix':      ('Behoben', 'Fixed'),
     's_wn_lead':       ('Neu ist dazugekommen · Verbessert kann jetzt mehr · Behoben hat vorher geklemmt.',
                           'New was added · Improved can do more now · Fixed used to be broken.'),
     's_wn_nichts':     ('Nichts in dieser Auswahl.', 'Nothing in this selection.'),

@@ -123,6 +123,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Die Filterknöpfe auf „Was ist neu" blieben auf Englisch deutsch.** „Alles /
+  Neu / Verbessert / Behoben" standen fest im Code statt in `sprache.py` — direkt
+  neben einem sauber übersetzten Änderungstext. Aufgefallen auf einem
+  Bildschirmfoto der englischen Oberfläche. Gefunden von der Autor.
+
 - **Ein Hilfetext zeigte auf ein Zeichen, das es nicht mehr gab.** „Mit ☰
   öffnest du jederzeit die Bauplan-Liste" stand noch im Einrichtungs-Assistenten,
   obwohl das `☰` seit v3.0.0-rc55 durch das Klemmbrett ersetzt war. Alle

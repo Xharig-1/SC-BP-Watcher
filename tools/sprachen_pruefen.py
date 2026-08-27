@@ -113,8 +113,14 @@ def pruefe(melden=print):
     bilder_en = set(re.findall(r'assets/(screenshot-[a-z0-9-]+\.png)', t_en))
     bilder_de = set(re.findall(r'assets/(screenshot-[a-z0-9-]+\.png)', t_de))
 
+    # Bewusst in beiden Fassungen dasselbe Bild: Beim Overlay geht es um die
+    # **Funktion** (farbige Zeilen laufen ein), nicht um den Wortlaut — ein
+    # zweiter Satz brächte dort nichts. der Autor am 27.08.2026: „das ingame
+    # overlay nimm ruhig das deutsche, es reicht wenn man die funktion sieht."
+    GETEILT_OK = {'screenshot-overlay.png'}
+
     geteilt = sorted(b for b in bilder_en & bilder_de
-                     if not b.endswith('-en.png'))
+                     if not b.endswith('-en.png') and b not in GETEILT_OK)
     if geteilt:
         # ⚠ Bewusst **keine** Beanstandung, sondern ein Hinweis: Fehlende
         # englische Bilder sind ein Schönheitsfehler, kein Grund, den Bau

@@ -193,6 +193,24 @@ def pruefe(pfad):
                             if _ist_satz(text):
                                 funde.add((zeile, WAHL, text))
 
+    # ⚠ **Bekannte Lücke: Text in Datenstrukturen sieht dieser Prüfer nicht.**
+    # Gesucht wird in Aufrufen (`ast.Call`) — an Schlüsselwörtern, Bausteinen,
+    # Meldern. Steht eine Beschriftung dagegen als Tupelpaar in einer Schleife
+    # oder in einem Wörterbuch auf Modulebene, ist sie unsichtbar.
+    #
+    # Genau so sind am 27.08.2026 vier Wörter durchgerutscht — „Alles / Neu /
+    # Verbessert / Behoben" auf dem Reiter „Was ist neu", monatelang auch in der
+    # englischen Oberfläche deutsch. Aufgefallen ist es erst auf einem
+    # Bildschirmfoto.
+    #
+    # Ein Versuch, das Muster „Kennung + Beschriftung" mitzuprüfen, wurde am
+    # selben Tag wieder verworfen: Er meldete 55 Stellen, fast alle falsch —
+    # überwiegend die zweisprachigen Spieltext-Tabellen, die längst richtig
+    # gebaut sind. Eine Prüfung, die so oft danebenliegt, wird übergangen, und
+    # dann fällt auch das Echte nicht mehr auf.
+    #
+    # Bis jemand eine bessere Heuristik hat, hilft nur der Blick auf die
+    # **englische** Oberfläche: Was dort deutsch steht, steht fest im Code.
     return sorted(funde)
 
 

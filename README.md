@@ -37,7 +37,7 @@ A small, borderless overlay that tells you **in real time** when a new blueprint
 <sub>The overlay — narrow, always on top, opacity adjustable</sub>
 </td>
 <td width="68%" valign="top" align="center">
-<img src="assets/screenshot-liste.png" alt="The window with the blueprint list" width="100%"><br>
+<img src="assets/screenshot-liste-en.png" alt="The window with the blueprint list" width="100%"><br>
 <sub>The blueprint list — search, five filters, and where each blueprint comes from</sub>
 </td>
 </tr>
@@ -68,27 +68,27 @@ The watcher writes into the game's mission text **which** blueprints a contract 
 <table>
 <tr>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-fortschritt.png" alt="Progress by area" width="100%"><br>
+<img src="assets/screenshot-fortschritt-en.png" alt="Progress by area" width="100%"><br>
 <sub><b>Progress</b> — per area, details on click</sub>
 </td>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-auftragstexte.png" alt="Mission text settings" width="100%"><br>
+<img src="assets/screenshot-auftragstexte-en.png" alt="Mission text settings" width="100%"><br>
 <sub><b>In-game text</b> — pick a text source, switch it on and off</sub>
 </td>
 </tr>
 <tr>
 <td valign="top" align="center">
-<img src="assets/screenshot-bestand.png" alt="Export and import your inventory" width="100%"><br>
+<img src="assets/screenshot-bestand-en.png" alt="Export and import your inventory" width="100%"><br>
 <sub><b>Inventory</b> — export for the basetool, or import an existing one</sub>
 </td>
 <td valign="top" align="center">
-<img src="assets/screenshot-anzeige.png" alt="Display settings" width="100%"><br>
+<img src="assets/screenshot-anzeige-en.png" alt="Display settings" width="100%"><br>
 <sub><b>Display</b> — pop-up mode, click-through, font size</sub>
 </td>
 </tr>
 <tr>
 <td valign="top" align="center">
-<img src="assets/screenshot-ueber.png" alt="About and update channel" width="100%"><br>
+<img src="assets/screenshot-ueber-en.png" alt="About and update channel" width="100%"><br>
 <sub><b>About</b> — stable releases or test builds, with a button to fetch one</sub>
 </td>
 <td valign="top" align="center">
@@ -99,11 +99,11 @@ The watcher writes into the game's mission text **which** blueprints a contract 
 </tr>
 <tr>
 <td valign="top" align="center">
-<img src="assets/screenshot-danke.png" alt="Thanks and licenses" width="100%"><br>
+<img src="assets/screenshot-danke-en.png" alt="Thanks and licenses" width="100%"><br>
 <sub><b>Thanks &amp; Licenses</b> — what belongs to whom, and who helped</sub>
 </td>
 <td valign="top" align="center">
-<img src="assets/screenshot-serverstatus.png" alt="Server status" width="100%"><br>
+<img src="assets/screenshot-serverstatus-en.png" alt="Server status" width="100%"><br>
 <sub><b>Server status</b> — is Star Citizen up?</sub>
 </td>
 </table>
@@ -114,7 +114,7 @@ The watcher writes into the game's mission text **which** blueprints a contract 
 <table>
 <tr>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-allgemein.png" alt="General settings" width="100%"><br>
+<img src="assets/screenshot-allgemein-en.png" alt="General settings" width="100%"><br>
 <sub><b>General</b> — language, sound, autostart, menu entry</sub>
 </td>
 <td width="50%" valign="top" align="center">
