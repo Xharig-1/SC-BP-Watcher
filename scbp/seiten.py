@@ -126,12 +126,18 @@ def _knopf(fenster, eltern, text, tat, stark=False, gefahr=False):
     schrift = fenster.f_klein
     hoehe = schrift.metrics('linespace') + 16
     breite = schrift.measure(text) + 30
-    farbe = ACCENT if stark else FG
+    # ⚠ `gefahr` faerbt **dauerhaft**, nicht erst beim Überfahren. Ein Knopf,
+    # der erst rot wird, wenn die Maus schon darauf steht, warnt niemanden —
+    # gesehen hat man ihn dann längst. der Autor am 28.08.2026 zum
+    # Absende-Knopf: „der Button wird erst beim Überfahren rot."
+    farbe = ROT if gefahr else (ACCENT if stark else FG)
+    rand = ROT if gefahr else (ACCENT if stark else LINIE)
     c = tk.Canvas(eltern, width=breite, height=hoehe, bg=BG,
                   highlightthickness=0, bd=0, cursor='hand2')
     flaeche = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1, radius=5,
-                               fill='#1d2a14' if stark else FLAECHE,
-                               outline=ACCENT if stark else LINIE, width=1)
+                               fill='#2a1414' if gefahr
+                               else ('#1d2a14' if stark else FLAECHE),
+                               outline=rand, width=1)
     beschriftung = c.create_text(breite / 2.0, hoehe / 2.0, text=text,
                                  fill=farbe, font=schrift, anchor='center')
 
@@ -140,7 +146,7 @@ def _knopf(fenster, eltern, text, tat, stark=False, gefahr=False):
         c.itemconfigure(beschriftung, fill=ROT if gefahr else ACCENT)
 
     def raus(_=None):
-        c.itemconfigure(flaeche, outline=ACCENT if stark else LINIE)
+        c.itemconfigure(flaeche, outline=rand)
         c.itemconfigure(beschriftung, fill=farbe)
 
     def mitwachsen(_=None):
