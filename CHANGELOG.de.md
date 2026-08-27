@@ -10,6 +10,39 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc72 - 2026-08-27
+
+> **Die Update-Seite sagt jetzt die Wahrheit** — sie sieht von allein nach, und
+> der Weg zur stabilen Version ist keine Sackgasse mehr.
+
+### Behoben
+
+- **Die Seite zeigte eine veraltete Versionsnummer, solange sie offen blieb.**
+  Nachgefragt wurde **einmal je Seitenaufbau**. Wer die Seite offen hatte,
+  während draußen eine neue Version erschien, sah weiter die alte Nummer auf dem
+  Knopf — und hielt sich für aktuell. Gemeldet von **Bomb20** (pr0citizen): „ich
+  krieg noch 67 angezeigt", während rc68 seit Minuten veröffentlicht war.
+  Nachgesehen wird jetzt alle fünf Minuten, solange die Seite offen ist.
+  - Fünf Minuten sind der Kompromiss: oft genug, dass niemand eine Version
+    verpasst, und selten genug für GitHubs Grenze von 60 Abfragen pro Stunde.
+- **Der Kasten „Stabile Version" war eine Sackgasse.** Statt eines Knopfes stand
+  dort „Erst oben auf ‚Jetzt nachsehen' drücken" — wer die stabile Version
+  wollte, sah keinen Weg, sondern eine Hausaufgabe.
+  - **Der Grund war eine zu kleine Abfrage:** Geholt wurden die letzten **20**
+    Freigaben, und darunter war bei inzwischen 83 Veröffentlichungen **keine
+    einzige stabile** mehr — nur Testversionen. Jetzt werden 100 geholt (das
+    Höchste, was GitHub in einer Abfrage hergibt), und es bleibt bei **einer**
+    Anfrage: Die Stundengrenze zählt Anfragen, nicht Einträge.
+  - Gemessen: 20 Freigaben → 0 stabile, 100 Freigaben → 3.
+
+### Dank
+
+- **Bomb20** (pr0citizen) — für „ich krieg noch 67 angezeigt". Das klang nach
+  einer Kleinigkeit und war der Hinweis auf zwei Fehler auf einmal.
+- **der Autor** — für den Blick auf den Kasten, in dem eine Hausaufgabe statt
+  eines Knopfes stand.
+
+
 ## v3.0.0-rc71 - 2026-08-27
 
 > **Der Neustart nach dem Update funktioniert** — die Ursache war eine ganz

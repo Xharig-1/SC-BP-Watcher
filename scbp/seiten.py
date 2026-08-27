@@ -1594,6 +1594,11 @@ def _jetzt_nachsehen(fenster):
     threading.Thread(target=arbeit, daemon=True).start()
 
 
+# Wie oft die Update-Seite von allein bei GitHub nachsieht, solange sie offen
+# ist. Fünf Minuten — siehe die Begründung in `_kanaele_auffrischen`.
+AUFFRISCH_MS = 5 * 60 * 1000
+
+
 def _kanaele_auffrischen(fenster, kaesten, neu_zeichnen):
     """Im Hintergrund nachsehen und die Knöpfe nachziehen — höchstens einmal.
 
@@ -1626,6 +1631,23 @@ def _kanaele_auffrischen(fenster, kaesten, neu_zeichnen):
             try:
                 if not kaesten.winfo_exists():
                     return
+                # ⚠ **Und dann in Ruhe wieder nachsehen.** Bis rc71 wurde
+                # **einmal je Seitenaufbau** gefragt. Wer die Seite offen hatte,
+                # während draußen eine neue Version erschien, sah weiter die alte
+                # Nummer auf dem Knopf und hielt sich für aktuell. Bomb20 am
+                # 27.08.2026: „ich krieg noch 67 angezeigt" — rc68 war seit
+                # Minuten da.
+                #
+                # Fünf Minuten sind der Kompromiss: oft genug, dass niemand eine
+                # Version verpasst, und selten genug für GitHubs Grenze von 60
+                # Abfragen pro Stunde (macht zwölf, wenn jemand die Seite den
+                # ganzen Tag offen lässt).
+                try:
+                    kaesten.schon_gefragt = False
+                    kaesten.after(AUFFRISCH_MS, lambda: _kanaele_auffrischen(
+                        fenster, kaesten, neu_zeichnen))
+                except tk.TclError:
+                    pass
                 if (_holen_text(False, fenster.version),
                         _holen_text(True, fenster.version)) == vorher:
                     return              # nichts Neues, kein Flackern

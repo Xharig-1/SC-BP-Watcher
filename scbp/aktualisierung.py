@@ -175,7 +175,18 @@ def nachsehen(eigene_version, erzwingen=False):
     alt_genug = time.time() - zwischen.get('geprueft', 0) > ABSTAND
     if not AUS and (erzwingen or alt_genug):
         try:
-            freigaben = _hole(API + '?per_page=20')
+            # ⚠ **20 reicht längst nicht.** Bei 83 Freigaben und einer
+            # Testversion nach der anderen war unter den letzten 20 **keine
+            # einzige stabile** — `neueste(False)` fand nichts, und im Kasten
+            # „Stabile Version" stand statt eines Knopfes „Erst oben auf ‚Jetzt
+            # nachsehen' drücken". Eine Sackgasse: Wer die stabile Version wollte,
+            # sah keinen Weg, sondern eine Hausaufgabe. Gemessen am 27.08.2026:
+            # 20 Freigaben → 0 stabile, 100 Freigaben → 3.
+            #
+            # 100 ist das Höchste, was GitHub in einer Abfrage hergibt, und es
+            # bleibt **eine** Abfrage — die Stundengrenze zählt Anfragen, nicht
+            # Einträge.
+            freigaben = _hole(API + '?per_page=100')
             zwischen = {
                 'geprueft': time.time(),
                 'freigaben': [{
