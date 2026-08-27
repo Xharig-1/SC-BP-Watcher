@@ -10,6 +10,26 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc77 - 2026-08-27
+
+> **„Originaltexte aus dem Spiel" funktioniert jetzt ohne Zusatzprogramm.**
+
+### Behoben
+
+- **Wer die Textquelle „Original" wählte, lief oft gegen eine Wand.** Diese
+  Quelle holt die englische `global.ini` aus deiner eigenen `Data.p4k` — ohne
+  Download, ohne fremde Übersetzung. CIG komprimiert diese Datei allerdings mit
+  **zstd**, und das gebündelte Python konnte das nicht. Übrig blieb die
+  Meldung, man möge sich 7-Zip installieren — für ein Werkzeug, das man
+  herunterlädt und startet, eine Zumutung.
+
+  Das Programm bringt den Entpacker jetzt selbst mit. Betroffen war vor allem,
+  wer **englisch spielt und nur die Angaben am Gegenstand** möchte, ohne
+  Übersetzung: Für den war dieser Weg der einzige.
+
+  Falls du bisher 7-Zip nur deswegen installiert hast — du brauchst es nicht
+  mehr.
+
 ## v3.0.0-rc76 - 2026-08-27
 
 > **Am Traktorstrahl steht jetzt, womit man es zu tun hat — und unter Windows

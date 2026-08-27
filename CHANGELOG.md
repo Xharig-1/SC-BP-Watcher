@@ -10,6 +10,25 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc77 - 2026-08-27
+
+> **„Original texts from the game" now works without a helper program.**
+
+### Fixed
+
+- **Choosing the „Original" text source often ran into a wall.** That source
+  takes the English `global.ini` straight from your own `Data.p4k` — no
+  download, no third-party translation. CIG compresses that file with **zstd**,
+  though, and the bundled Python could not handle it. What was left was a
+  message asking you to install 7-Zip — quite something for a tool you just
+  download and run.
+
+  The program now brings the decompressor along itself. This mainly affected
+  anyone **playing in English who only wants the item details**, without a
+  translation: for them this route was the only one.
+
+  If you installed 7-Zip solely for this — you no longer need it.
+
 ## v3.0.0-rc76 - 2026-08-27
 
 > **The tractor beam now tells you what you are looking at — and on Windows
