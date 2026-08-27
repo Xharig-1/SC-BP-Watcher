@@ -192,3 +192,18 @@ jobs:
             dateien/windows/SC-BP-Watcher-Setup.exe
             dateien/windows/SC-BP-Watcher.exe
             dateien/linux/SC-BP-Watcher-x86_64.AppImage
+
+      # Meldung im eigenen Discord — als lesbare Karte statt als nackter Link.
+      #
+      # Laeuft **nach** dem Release, damit der Link im Beitrag schon zieht. Ohne
+      # hinterlegten Schluessel passiert nichts und der Bau bleibt gruen: Eine
+      # Chat-Meldung darf eine fertige Veroeffentlichung nicht rot faerben.
+      #
+      # ⚠ Der Beitrag landet nur im EIGENEN Discord. Ob ihn das Kartell sieht,
+      # entscheidet weiterhin ein Klick auf „Veroeffentlichen" — genau diese
+      # Bremse ist gewollt (siehe Vault: „SC BP Watcher — Discord").
+      - name: Im Discord melden
+        if: always()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: python3 .github/scripts/discord_release.py "${GITHUB_REF_NAME}"
