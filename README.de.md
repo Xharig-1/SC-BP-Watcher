@@ -73,7 +73,7 @@ Der Watcher schreibt in die Auftragstexte des Spiels, **welche** Baupläne ein A
 </td>
 <td width="50%" valign="top" align="center">
 <img src="assets/screenshot-auftragstexte.png" alt="Einstellungen für die Auftragstexte" width="100%"><br>
-<sub><b>Auftragstexte</b> — Textquelle wählen, ein- und ausschalten</sub>
+<sub><b>Texte im Spiel</b> — Textquelle wählen, ein- und ausschalten</sub>
 </td>
 </tr>
 <tr>

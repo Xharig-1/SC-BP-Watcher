@@ -12,6 +12,15 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Der Reiter „Auftragstexte" heißt jetzt „Texte im Spiel".** Der alte Name
+  sagte nicht, **wo** diese Texte auftauchen. „Ingame-Texte" stand kurz zur Wahl
+  und ist unter Spielern gängig — dagegen sprach, dass jeder andere Reiter der
+  Leiste deutsch ist und ein einzelner Anglizismus dazwischen auffällt.
+  Angestoßen von der Autor.
+- **Auf „Update & Über" steht das Programmsymbol neben der Fassung.** Die Seite
+  hatte gar kein Bild mehr, seit der Autor-Block auf „Danke & Lizenzen" gewandert
+  ist. Gemeldet von der Autor.
+
 - **Die Anleitung zeigte Zeichen, die es im Werkzeug nicht mehr gibt.** Die
   Knopf-Legende in beiden READMEs führte `☰`, `ⓘ`, `⟳`, `⏻` und `🗑` auf — zwei
   davon sind längst entfernt, die anderen sehen anders aus. Sie zeigt jetzt die

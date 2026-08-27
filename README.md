@@ -73,7 +73,7 @@ The watcher writes into the game's mission text **which** blueprints a contract 
 </td>
 <td width="50%" valign="top" align="center">
 <img src="assets/screenshot-auftragstexte.png" alt="Mission text settings" width="100%"><br>
-<sub><b>Mission text</b> — pick a text source, switch it on and off</sub>
+<sub><b>In-game text</b> — pick a text source, switch it on and off</sub>
 </td>
 </tr>
 <tr>

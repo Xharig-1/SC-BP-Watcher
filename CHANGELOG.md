@@ -12,6 +12,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **The "Mission text" tab is now "In-game text".** The old name did not say
+  **where** those texts appear. Prompted by der Autor.
+- **The program icon now sits next to the version on "Update & About".** The page
+  had no image at all after the author block moved to "Thanks & Licenses".
+  Reported by der Autor.
+
 - **The readme showed symbols the tool no longer has.** The button legend in
   both readmes listed `☰`, `ⓘ`, `⟳`, `⏻` and `🗑` — two of them are long gone,
   the others look different now. It now shows the **actual image files** from

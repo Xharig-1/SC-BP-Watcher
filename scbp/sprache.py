@@ -1019,7 +1019,15 @@ TEXTE = {
     # Textquelle (Übersetzung, StarStrings oder Original) und das Eintragen der
     # Bauplan-Angaben in die Auftragstexte. Beides betrifft die Texte der
     # Aufträge, also heißt der Punkt jetzt danach.
-    'hf_spiel':          ('Auftragstexte', 'Mission text'),
+    # ⚠ „Texte im Spiel", nicht mehr „Auftragstexte": Der alte Name sagte nicht,
+    # **wo** diese Texte auftauchen. der Autor am 27.08.2026: „das bescheibt es
+    # nicht gut genug".
+    #
+    # „Ingame-Texte" stand kurz zur Wahl und ist unter Spielern gängig — aber
+    # jeder andere Reiter der Leiste ist deutsch (Bauplan-Liste, Fortschritt,
+    # Anzeige, Bestand, Serverstatus …). Ein einzelner Anglizismus dazwischen
+    # fällt auf, und Einheitlichkeit war der Grund für die ganze Überarbeitung.
+    'hf_spiel':          ('Texte im Spiel', 'In-game text'),
     'hf_bestand':        ('Bestand', 'Inventory'),
     # ⚠ „Über“ allein findet niemand, der ein Update sucht.
     # Gemeldet am 26.08.2026: „ich suche updates auch nicht bei Über“.

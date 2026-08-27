@@ -2605,9 +2605,34 @@ def _ueber(fenster, rahmen):
     innen = _rollflaeche(rahmen)
 
     # --- Zustand ---
+    # ⚠ Mit dem Programmsymbol daneben. Es stand hier nie — und seit der
+    # Autor-Block mit dem Avatar auf „Danke & Lizenzen" gewandert ist, hatte die
+    # Seite gar kein Bild mehr und wirkte nackt. der Autor am 27.08.2026: „bei
+    # über muss oben zur Version noch das Watcher Logo (icon)".
     karte = _karte(innen, pady=(0, 6))
+    kopf = tk.Frame(karte, bg=FLAECHE)
+    kopf.pack(fill='x', padx=16, pady=(14, 6))
+    from .hauptfenster import _mitgeliefert
+    symbol = _mitgeliefert(os.path.join('assets', 'icon.png'))
+    if symbol and os.path.exists(symbol):
+        try:
+            voll = tk.PhotoImage(file=symbol)
+            # `subsample` verkleinert nur ganzzahlig — 48 px ist die Größe, die
+            # neben zwei Textzeilen sitzt, ohne die Karte auseinanderzuziehen.
+            teiler = max(1, voll.width() // 48)
+            fenster._ueberlogo = voll.subsample(teiler, teiler)
+            tk.Label(kopf, image=fenster._ueberlogo, bg=FLAECHE).pack(
+                side='left', padx=(0, 14))
+        except Exception as ausnahme:
+            fehler.merken('seiten.ueber.symbol', ausnahme)
+    titel = tk.Frame(kopf, bg=FLAECHE)
+    titel.pack(side='left', fill='x', expand=True)
+    tk.Label(titel, text='SC BP Watcher', bg=FLAECHE, fg=FG,
+             font=fenster.f_titel, anchor='w').pack(fill='x')
+    tk.Label(titel, text=fenster.version or '—', bg=FLAECHE, fg=ACCENT,
+             font=fenster.f_fett, anchor='w').pack(fill='x')
+
     tk.Frame(karte, bg=FLAECHE, height=8).pack()
-    _wertzeile(fenster, karte, t('s_ub_fassung'), fenster.version or '—', ACCENT)
     _wertzeile(fenster, karte, t('s_ub_bekannt'), _zahl_katalog())
     _wertzeile(fenster, karte, t('s_ub_davon'), _zahl_bestand())
     uebersicht = {}
