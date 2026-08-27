@@ -10,6 +10,25 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Added
+
+- **Details on the item — class, size and grade now sit next to the name.**
+  Aiming at something with the tractor beam used to show just „Glacier". It now
+  reads **„Glacier (Mil/1/A)"** — military, size 1, grade A. Missiles are judged
+  by something else, so they carry their seeker instead: **„'Arrow' I Missile
+  (IR1)"** for infrared, `EM` for electromagnetic, `CS` for cross-section.
+  Nobody expands a description mid-fight.
+
+  **856 items** get such a note: 450 with class, size and grade, 344 weapons
+  with their class (ballistic, laser, plasma …) and 62 missiles.
+
+  The details come from the game's **own** text file — they have always been
+  there, just inside the description you have to open first. The tool merely
+  moves them to where you can actually see them.
+
+  Can be switched off under *In-game text → Details on the item*. To undo it,
+  use „Remove again" — the original names come back to the character.
+
 ## v3.0.0-rc75 - 2026-08-27
 
 > **The startup trace is back in the report.**

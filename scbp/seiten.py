@@ -1117,6 +1117,27 @@ def _spiel(fenster, rahmen):
     schiebeschalter(ziel, pfade.einstellung_wahrheit('inj_auto', True),
                     inj_auto_um).pack()
 
+    # --- Angaben am Gegenstand ----------------------------------------------
+    # Klasse, Größe und Gütegrad direkt am Namen — bei Raketen der Suchkopf.
+    # Abschaltbar, weil es die Gegenstandsnamen im Spiel verändert: Wer das
+    # nicht will, soll die Bauplan-Angaben trotzdem behalten können.
+    ziel = _feld(fenster, innen, t('s_sp_angaben'), t('s_sp_angaben_h'),
+                 breit=True)
+
+    def angaben_um():
+        from . import injektion as inj_modul
+        neu_wert = not pfade.einstellung_wahrheit(inj_modul.EINSTELLUNG_ANGABEN,
+                                                  True)
+        pfade.einstellung_setzen(inj_modul.EINSTELLUNG_ANGABEN, neu_wert)
+        fenster.sagen(t('s_sp_angaben_sagen')
+                      % (t('e_an') if neu_wert else t('e_aus')))
+        return neu_wert
+
+    from . import injektion as _inj
+    schiebeschalter(ziel,
+                    pfade.einstellung_wahrheit(_inj.EINSTELLUNG_ANGABEN, True),
+                    angaben_um).pack()
+
     ziel = _feld(fenster, innen, t('s_sp_hand'), t('s_sp_hand_h'), breit=True)
     reihe = tk.Frame(ziel, bg=BG)
     reihe.pack()

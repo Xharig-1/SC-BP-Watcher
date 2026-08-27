@@ -10,6 +10,26 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Hinzugefügt
+
+- **Angaben am Gegenstand — Klasse, Größe und Gütegrad stehen jetzt am Namen.**
+  Wer im Spiel etwas mit dem Traktorstrahl anvisiert, sah bisher nur
+  „Glacier". Jetzt steht dort **„Glacier (Mil/1/A)"** — militärisch, Größe 1,
+  Gütegrad A. Bei Raketen zählt etwas anderes, deshalb steht dort der Suchkopf:
+  **„'Arrow' I Missile (IR1)"** für Infrarot, `EM` für elektromagnetisch, `CS`
+  für Querschnitt. Im Gefecht klappt niemand eine Beschreibung auf.
+
+  **856 Gegenstände** bekommen so eine Angabe: 450 mit Klasse, Größe und Güte,
+  344 Waffen mit ihrer Klasse (ballistisch, Laser, Plasma …) und 62 Raketen.
+
+  Die Angaben stammen aus der Textdatei des Spiels **selbst** — sie stehen dort
+  längst, nur in der Beschreibung, die man erst aufklappen muss. Das Werkzeug
+  schreibt sie dorthin um, wo man sie im Gefecht auch sieht.
+
+  Abschaltbar unter *Texte im Spiel → Angaben am Gegenstand*. Wer sie wieder
+  loswerden will, nimmt „Wieder entfernen" — die ursprünglichen Namen kommen
+  auf das Zeichen genau zurück.
+
 ## v3.0.0-rc75 - 2026-08-27
 
 > **Der Startverlauf steht wieder im Bericht.**

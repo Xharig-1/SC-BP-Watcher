@@ -1159,6 +1159,10 @@ def main():
             # Kommentare in der einstellungen.json und eine Entwickler-Hilfe
             # zum fehlenden Entpacker — beides kein Oberflächentext.
             'scbp/pfade.py', 'scbp/spieltexte.py', 'scbp/phrasen.py',
+            # Feldnamen der `global.ini` („Gütegrad:", „Verfolgungssignal:") —
+            # damit wird in der Spieldatei GESUCHT, angezeigt wird nichts
+            # davon. Gleiche Lage wie bei `phrasen.py` eine Zeile höher.
+            'scbp/angaben.py',
             # Erklärender Kopf in der patch-historie.json. Steht in der Datei,
             # damit man sie im Repo ohne Quelltext versteht — nie im Fenster.
             'scbp/patchhistorie.py',
@@ -1647,6 +1651,71 @@ def main():
                          encoding='utf-8').read()
         pruefe('fehler.absturzfaenger()' in quelle26c,
                'der Faenger wird beim Start gesetzt')
+
+        print()
+        print('27. Angaben am Gegenstand: Kuerzel aus der Beschreibung')
+        # ⚠ Die Fallen hier sind Datenfallen, keine Programmierfehler — sie
+        # fallen nur auf, wenn man die echte `global.ini` daneben legt. Beim Bau
+        # (27.08.2026) stand sechsmal `Individuell angefertigt` und dreimal
+        # `N/A` im Feld Guetegrad; wer den ersten Buchstaben nimmt, schreibt
+        # `(Ind/4/I)` in einen Spielnamen. So etwas sieht man erst im Spiel.
+        from scbp import angaben as an27
+
+        def besch27(**felder):
+            """Eine Beschreibungszeile bauen — `\\n` ist die ZEICHENFOLGE."""
+            return '\\n'.join('%s: %s' % (k, v) for k, v in felder.items())
+
+        pruefe(an27.aus_beschreibung(
+                   besch27(**{'Größe': 'S1', 'Gütegrad': 'A',
+                              'Klasse': 'Military (Militär)'})) == '(Mil/1/A)',
+               'Komponente wird zu Klasse/Groesse/Guete')
+        pruefe(an27.aus_beschreibung(
+                   besch27(**{'Größe': 'S2', 'Verfolgungssignal': 'Infrarot'}))
+               == '(IR2)',
+               'Rakete bekommt den Suchkopf, keine Fraktion')
+        pruefe(an27.aus_beschreibung(
+                   besch27(**{'Klasse': 'Ballistisch'})) == '(Bal)',
+               'Waffe: die Klasse allein genuegt (FPS-Waffen haben keine Groesse)')
+        pruefe(an27.aus_beschreibung(besch27(**{'Größe': 'S3'})) is None,
+               'Groesse allein gibt KEINEN Zusatz (waere Laerm im Namen)')
+        pruefe(an27.aus_beschreibung(
+                   besch27(**{'Größe': 'S4', 'Gütegrad': 'Individuell angefertigt',
+                              'Klasse': 'Industrial (Industrie)'})) == '(Ind/4/–)',
+               'ein Guetegrad, den es nicht gibt, wird zum Strich')
+        pruefe(an27.aus_beschreibung(
+                   besch27(**{'Größe': 'S1', 'Gütegrad': 'N/A',
+                              'Klasse': 'Zivil'})) == '(Civ/1/–)',
+               '`N/A` ebenso — und die Kurzform `Zivil` wird erkannt')
+        pruefe(an27.aus_beschreibung(
+                   besch27(**{'Größe': 'S2 (Nur Fahrzeuge)',
+                              'Klasse': 'Military', 'Gütegrad': 'B'}))
+               == '(Mil/–/B)',
+               'eine Groesse mit Zusatztext gehoert nicht ins Kuerzel')
+        # Die Uebersetzung ist uneinheitlich: dieselbe Klasse in drei Formen.
+        pruefe(len({an27.aus_beschreibung(
+                        besch27(**{'Größe': 'S1', 'Gütegrad': 'C', 'Klasse': k}))
+                    for k in ('Civilian (Zivil)', 'Zivil', 'Civilian')}) == 1,
+               'alle drei Schreibweisen derselben Klasse ergeben dasselbe')
+        pruefe(an27.zusatz_entfernen('Spark I-G Missile (CS1)')
+               == 'Spark I-G Missile',
+               'ein Zusatz des SC Deutsch Launchers wird abgeschnitten')
+        pruefe(an27.zusatz_entfernen('Inspire Advanced (Ind/2/C)')
+               == 'Inspire Advanced',
+               'und der eigene ebenso — sonst stapeln sie sich')
+        pruefe(an27.zusatz_entfernen('Omnisky III Cannon')
+               == 'Omnisky III Cannon',
+               'ein Name ohne Zusatz bleibt unangetastet')
+        # Der ganze Weg: Tabelle aus Rohzeilen, ueber den gemeinsamen Stamm.
+        zeilen27 = ['item_DescXY_Test=' + besch27(**{'Größe': 'S3',
+                                                     'Gütegrad': 'B',
+                                                     'Klasse': 'Stealth (Tarnung)'}),
+                    'item_NameXY_Test=Testkuehler',
+                    'item_NameOhne_Beschreibung=Einsam']
+        tab27 = an27.tabelle_bauen(zeilen27)
+        pruefe(tab27.get('item_NameXY_Test') == '(Sth/3/B)',
+               'Beschreibung und Name finden ueber den Schluesselstamm zusammen')
+        pruefe('item_NameOhne_Beschreibung' not in tab27,
+               'ein Name ohne Beschreibung kommt nicht in die Tabelle')
 
         print()
         print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')

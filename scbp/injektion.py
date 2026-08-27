@@ -62,6 +62,7 @@ import re
 import time
 import urllib.request
 
+from . import angaben as angaben_modul
 from . import fehler, bestand as bestand_datei
 from . import katalog as katalog_modul
 from . import pfade
@@ -357,6 +358,34 @@ def scdl_laden(sprachkuerzel):
         return None
 
 
+# Name der Einstellung, mit der sich die Angaben am Gegenstand abschalten
+# lassen. Standard ist **an**: Wer die Injektion einschaltet, will Angaben im
+# Spiel sehen — und genau dafür ist dieses Werkzeug da.
+EINSTELLUNG_ANGABEN = 'angaben_am_gegenstand'
+
+
+def _namens_tabelle(zeilen, nur_entfernen=False):
+    """Tabelle *Namensschlüssel → Kürzel* — oder leer, wenn abgeschaltet.
+
+    Beim reinen Entfernen bleibt sie leer: Dann stellt der Urtext-Weg die
+    ursprünglichen Namen wieder her, und es soll nichts Neues dazukommen."""
+    if nur_entfernen or not pfade.einstellung_wahrheit(EINSTELLUNG_ANGABEN, True):
+        return {}
+    try:
+        return angaben_modul.tabelle_bauen(zeilen)
+    except Exception as ausnahme:
+        fehler.merken('injektion._namens_tabelle', ausnahme)
+        return {}
+
+
+def _name_mit_angabe(text, kuerzel):
+    """Den Zusatz an einen Namen hängen — vorhandene Klammer vorher abschneiden.
+
+    Der SC Deutsch Launcher hängt seinerseits `(CS1)` an. Ohne das Abschneiden
+    stünde danach `Spark I-G Missile (CS1) (IR1)` im Spiel."""
+    return '%s %s' % (angaben_modul.zusatz_entfernen(text).rstrip(), kuerzel)
+
+
 def _kaestchen_setzen(text, habe):
     """In einem fertigen SCDL-Block die Bauplan-Zeilen ankreuzen.
 
@@ -458,6 +487,7 @@ def einspielen_scdl(ini_pfad, sprachkuerzel, bestand=None):
     # Merkdatei. Siehe `URTEXT_DATEI` — die Marken waren im Spiel sichtbar.
     urtext_alt = urtext_laden()
     urtext_neu = {}
+    namens_zusatz = _namens_tabelle(zeilen)
 
     neu = []
     for zeile in zeilen:
@@ -468,7 +498,10 @@ def einspielen_scdl(ini_pfad, sprachkuerzel, bestand=None):
         schluessel, zusatz, text = teile
         sauber = _saeubern(text, schluessel, urtext_alt)
         angefasst = False
-        if schluessel in titel_an:
+        if schluessel in namens_zusatz:
+            sauber = _name_mit_angabe(sauber, namens_zusatz[schluessel])
+            angefasst = True
+        elif schluessel in titel_an:
             sauber, angefasst = sauber + titel_an[schluessel], True
         elif schluessel in text_an:
             sauber, angefasst = sauber + text_an[schluessel], True
@@ -532,6 +565,7 @@ def einspielen(ini_pfad, sprache, katalog=None, bestand=None, nur_entfernen=Fals
 
     urtext_alt = urtext_laden()
     urtext_neu = {}
+    namens_zusatz = _namens_tabelle(zeilen, nur_entfernen)
 
     neu = []
     for zeile in zeilen:
@@ -546,7 +580,10 @@ def einspielen(ini_pfad, sprache, katalog=None, bestand=None, nur_entfernen=Fals
         if not nur_entfernen:
             vorher = sauber
             angefasst = False
-            if schluessel in titel_keys:
+            if schluessel in namens_zusatz:
+                sauber = _name_mit_angabe(vorher, namens_zusatz[schluessel])
+                angefasst = True
+            elif schluessel in titel_keys:
                 sauber = vorher + _titel_zusatz(titel_keys[schluessel], habe, worte)
                 angefasst = True
             elif schluessel in text_keys:
