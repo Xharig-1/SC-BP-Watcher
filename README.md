@@ -33,7 +33,7 @@ A small, borderless overlay that tells you **in real time** when a new blueprint
 <table>
 <tr>
 <td width="32%" valign="top" align="center">
-<img src="assets/screenshot-overlay.png" alt="The overlay while playing" width="100%"><br>
+<img src="assets/screenshot-overlay-en.png" alt="The overlay while playing" width="100%"><br>
 <sub>The overlay — narrow, always on top, opacity adjustable</sub>
 </td>
 <td width="68%" valign="top" align="center">
@@ -92,7 +92,7 @@ The watcher writes into the game's mission text **which** blueprints a contract 
 <sub><b>About</b> — stable releases or test builds, with a button to fetch one</sub>
 </td>
 <td valign="top" align="center">
-<img src="assets/screenshot-wasistneu.png" alt="What's new" width="100%"><br>
+<img src="assets/screenshot-wasistneu-en.png" alt="What's new" width="100%"><br>
 <sub><b>What's new</b> — every release expandable, filtered by kind</sub>
 </td>
 </tr>

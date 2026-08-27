@@ -18,6 +18,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **The English readme now shows the English interface.** Until now it presented
+  German screenshots — with eleven images, and a tool whose Linux users mostly
+  run the English client, that is not a detail. `tools/sprachen_pruefen.py` now
+  checks for it: it only counted sections and never looked at images. Reported by
+  der Autor.
+
 - **Every screenshot in the readme is new.** The old ones were from v3.0.0-rc11
   and showed not just the replaced symbols but a build without the server status
   tab and without the patch filter. Two pages got their first screenshot at all:

@@ -18,6 +18,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Auch die englische Anleitung zeigt jetzt die englische Oberfläche.** Sie
+  führte bis hierher deutsche Bildschirmfotos vor — bei elf Bildern und einem
+  Werkzeug, dessen Nutzer unter Linux überwiegend den englischen Client fahren,
+  keine Kleinigkeit. `tools/sprachen_pruefen.py` achtet ab sofort darauf: Er
+  zählte nur Abschnitte und hat Bilder nie angesehen. Gemeldet von der Autor.
+
 - **Alle Bilder in der Anleitung sind neu.** Die alten stammten aus
   v3.0.0-rc11 und zeigten nicht nur die abgelösten Symbole, sondern auch einen
   Stand ohne Serverstatus und ohne Patch-Filter. Dazu zwei Seiten, die noch nie

@@ -113,11 +113,11 @@ def pruefe(melden=print):
     bilder_en = set(re.findall(r'assets/(screenshot-[a-z0-9-]+\.png)', t_en))
     bilder_de = set(re.findall(r'assets/(screenshot-[a-z0-9-]+\.png)', t_de))
 
-    # Bewusst in beiden Fassungen dasselbe Bild: Beim Overlay geht es um die
-    # **Funktion** (farbige Zeilen laufen ein), nicht um den Wortlaut — ein
-    # zweiter Satz brächte dort nichts. der Autor am 27.08.2026: „das ingame
-    # overlay nimm ruhig das deutsche, es reicht wenn man die funktion sieht."
-    GETEILT_OK = {'screenshot-overlay.png'}
+    # Bewusst geteilte Bilder kämen hier hinein. Zurzeit gibt es keine: Auch das
+    # Overlay liegt in beiden Sprachen vor — die Funde mussten dafür simuliert
+    # werden (`tools/drops_vorfuehren.py`), sonst bliebe die Leiste leer und das
+    # Bild zeigte nichts von dem, worum es geht.
+    GETEILT_OK = set()
 
     geteilt = sorted(b for b in bilder_en & bilder_de
                      if not b.endswith('-en.png') and b not in GETEILT_OK)
