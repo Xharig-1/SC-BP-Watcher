@@ -10,6 +10,20 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Behoben
+
+- **Der Startverlauf wurde von der Bedienung aus dem Bericht gedrängt.** rc74
+  schrieb Startschritte und Seitenwechsel in einen Topf, und der Bericht zeigt
+  nur die letzten zwölf Zeilen — fünf Klicks genügten, und der komplette Start
+  war nicht mehr zu sehen. Ausgerechnet der Teil, für den die Spur gebaut wurde.
+  Beides steht jetzt in **zwei getrennten Abschnitten**, jeder für sich
+  gedeckelt; auch beim Kürzen der Datei bleibt der Startverlauf stehen.
+  Gefunden im ersten rc74-Bericht, eine Viertelstunde nach der Veröffentlichung.
+- **Die Diagnose-Seite stand als letzte Zeile in ihrem eigenen Bericht.** Der
+  Bericht entsteht, während die Seite gebaut wird — dadurch endete jede Spur mit
+  „Seite diagnose: bauen beginnt" und sah aus, als wäre genau dort Schluss
+  gewesen. Diese Zeilen bleiben jetzt draußen.
+
 ## v3.0.0-rc74 - 2026-08-27
 
 > **Ein Absturz hinterlässt jetzt eine Spur.**

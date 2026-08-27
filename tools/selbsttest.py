@@ -1574,6 +1574,81 @@ def main():
         wurzel.destroy()
 
         print()
+        print('26. Ein Absturz und die Bedienung hinterlassen eine Spur')
+        # ⚠ Bomb20 meldete am 27.08.2026 einen reproduzierbaren Absturz beim
+        # Oeffnen von "Was ist neu" — und sein Bericht wusste NICHTS davon. Die
+        # Fehlerhaken fangen Python-Ausnahmen; ein harter Abbruch ist keine, und
+        # die Spur endete beim letzten Startschritt.
+        #
+        # ⚠ Der erste Anlauf (rc74) hat den Fehler halb wiederholt: Start und
+        # Bedienung landeten in EINEM Topf, der Bericht nahm die letzten zwoelf
+        # Zeilen — fuenf Klicks genuegten, und der Startverlauf war weg.
+        # der Autors eigener rc74-Bericht zeigte keinen einzigen Startschritt mehr.
+        import os as os26
+        from scbp import fehler as fe26
+        from scbp import pfade as pf26
+
+        ordner26 = os.path.join(basis, 'spur26')
+        os26.makedirs(ordner26, exist_ok=True)
+        alt_datei26 = pf26.app_datei
+        try:
+            pf26.app_datei = lambda name: os26.path.join(ordner26, name)
+            if hasattr(fe26.spur, '_offen'):
+                del fe26.spur._offen
+
+            fe26.spur('Start, Version 3.0.0-test, testos')
+            fe26.spur('Tk-Wurzel steht')
+            fe26.spur('Hauptschleife laeuft')
+            for _ in range(40):
+                fe26.spur('Seite liste: bauen beginnt')
+                fe26.spur('Seite liste: steht')
+
+            start26, seiten26 = fe26.spur_geteilt()
+            pruefe(len(start26) == 3,
+                   'Start und Bedienung werden getrennt (%d Startzeilen)' % len(start26))
+            pruefe(len(seiten26) == 80,
+                   'die Seitenwechsel stehen vollstaendig da (%d)' % len(seiten26))
+
+            # Und jetzt der Punkt, der in rc74 fehlte.
+            fe26._spur_kuerzen(pf26.app_datei(fe26.SPUR_DATEI))
+            start27, seiten27 = fe26.spur_geteilt()
+            pruefe(len(start27) == 3,
+                   'der Startverlauf ueberlebt das Kuerzen')
+            pruefe(len(seiten27) == fe26.SPUR_REST,
+                   'gekuerzt wird nur der Bedienteil (%d Zeilen)' % len(seiten27))
+
+            # Der Absturzfaenger legt einen vorigen Lauf beiseite.
+            with open(pf26.app_datei(fe26.ABSTURZ_DATEI), 'w', encoding='utf-8') as f26:
+                f26.write('Current thread 0x0000 (most recent call first):\n')
+            pruefe(fe26.absturzfaenger(), 'der Absturzfaenger laesst sich setzen')
+            pruefe(len(fe26.letzter_absturz()) == 1,
+                   'der Abbruch des vorigen Laufs ist lesbar')
+            pruefe(fe26.absturz_abhaken() and not fe26.letzter_absturz(),
+                   'und laesst sich abhaken')
+        finally:
+            pf26.app_datei = alt_datei26
+            if hasattr(fe26.spur, '_offen'):
+                del fe26.spur._offen
+
+        # Beides muss auch wirklich im Bericht landen, sonst nuetzt es nichts.
+        quelle26 = open(os.path.join(WURZEL, 'scbp', 'bericht.py'),
+                        encoding='utf-8').read()
+        pruefe("t('b_spur_seiten')" in quelle26,
+               'der Bericht hat einen eigenen Abschnitt fuer die Seiten')
+        pruefe("fehler.letzter_absturz" in quelle26,
+               'und einen fuer den harten Abbruch')
+        pruefe("'Seite diagnose' in seiten[-1]" in quelle26,
+               'die Diagnose-Seite selbst steht nicht als letzte Zeile drin')
+        quelle26b = open(os.path.join(WURZEL, 'scbp', 'hauptfenster.py'),
+                         encoding='utf-8').read()
+        pruefe(quelle26b.count("fehler.spur('Seite ") == 2,
+               'jeder Seitenwechsel schreibt zwei Zeilen (bauen/steht)')
+        quelle26c = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
+                         encoding='utf-8').read()
+        pruefe('fehler.absturzfaenger()' in quelle26c,
+               'der Faenger wird beim Start gesetzt')
+
+        print()
         print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')
         # ⚠ Wer ueber Lutris, Heroic oder Flatpak spielt, bekam GAR KEINEN
         # Startknopf. Der Ausweg (Einstellung `spielstarter`) existierte, stand

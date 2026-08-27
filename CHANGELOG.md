@@ -10,6 +10,19 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Fixed
+
+- **Usage pushed the startup trace out of the report.** rc74 wrote startup steps
+  and page switches into one list, and the report only shows the last twelve
+  lines — five clicks were enough to hide the entire startup. Precisely the part
+  the trace was built for. Both now appear as **two separate sections**, each
+  capped on its own; trimming the file keeps the startup part as well. Found in
+  the first rc74 report, fifteen minutes after release.
+- **The diagnostics page was the last line of its own report.** The report is
+  built while that page is being drawn, so every trace ended with "Page
+  diagnostics: building" and looked as if that was where it stopped. Those lines
+  are now left out.
+
 ## v3.0.0-rc74 - 2026-08-27
 
 > **A crash now leaves a trace.**

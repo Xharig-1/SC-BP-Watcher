@@ -241,11 +241,25 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
     # ⚠ Die Startspur zuerst — bei einem Absturz ist sie das Einzige, was bleibt.
     # Ein `SIGSEGV` beendet den Prozess sofort: kein `except`, kein Fehlerbericht,
     # nur „es stürzt ab". Die letzte Zeile hier sagt, wie weit der Start kam.
-    spur = _sicher(fehler.letzte_spur, [])
-    if spur:
+    # ⚠ Start und Bedienung **getrennt** deckeln. Beides in einen Topf zu werfen
+    # und die letzten zwölf Zeilen zu nehmen, war der Fehler in rc74: Fünf Klicks
+    # genügten, und der komplette Startverlauf war aus dem Bericht verdrängt —
+    # ausgerechnet der Teil, für den die Spur gebaut wurde.
+    start, seiten = _sicher(fehler.spur_geteilt, ([], []))
+    if start:
         zeilen.append('')
         zeilen.append(t('b_spur'))
-        for eintrag in spur[-12:]:
+        for eintrag in start[-12:]:
+            zeilen.append('  ' + eintrag)
+    # Die Diagnose-Seite selbst gehört nicht in die Liste: Der Bericht entsteht,
+    # **während** sie gebaut wird, und stünde sonst in jedem Bericht als letzte,
+    # unfertige Zeile — es sähe jedes Mal so aus, als wäre genau dort Schluss.
+    while seiten and 'Seite diagnose' in seiten[-1]:
+        seiten.pop()
+    if seiten:
+        zeilen.append('')
+        zeilen.append(t('b_spur_seiten'))
+        for eintrag in seiten[-12:]:
             zeilen.append('  ' + eintrag)
 
     # ⚠ Und danach der harte Abbruch, falls es einen gab. Er steht **vor** den
