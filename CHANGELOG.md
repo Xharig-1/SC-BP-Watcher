@@ -18,6 +18,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **The coloured dots were still emoji in the running text.** The symbol key
+  already showed the real images while the description below it kept using
+  `🟢 🟡 🔵 ⭐` — two different renderings of the same symbol on one page.
+  Reported by der Autor.
+
 - **The English readme now shows the English interface.** Until now it presented
   German screenshots — with eleven images, and a tool whose Linux users mostly
   run the English client, that is not a detail. `tools/sprachen_pruefen.py` now

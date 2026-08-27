@@ -18,6 +18,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Die farbigen Punkte standen im Fließtext noch als Emoji.** Die
+  Zeichen-Erklärung zeigte längst die echten Bilder, die Beschreibung darunter
+  aber weiter `🟢 🟡 🔵 ⭐` — zwei verschiedene Darstellungen desselben Zeichens
+  auf einer Seite. Gemeldet von der Autor.
+
 - **Auch die englische Anleitung zeigt jetzt die englische Oberfläche.** Sie
   führte bis hierher deutsche Bildschirmfotos vor — bei elf Bildern und einem
   Werkzeug, dessen Nutzer unter Linux überwiegend den englischen Client fahren,
