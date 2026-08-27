@@ -506,8 +506,8 @@ TEXTE = {
     's_sp_lead':       ('Der Watcher schreibt in die Auftragstexte des Spiels, welche Baupläne ein Auftrag ausschüttet — mit Haken für das, was du schon hast. Hier wählst du auch, aus welcher Quelle diese Texte kommen.',
                           'The watcher writes into the game\'s mission text which blueprints a mission hands out — with a tick for the ones you already have. This is also where you pick which source those texts come from.'),
     's_sp_quelle_ist': ('Quelle: %s', 'Source: %s'),
-    's_sp_steht':      ('Die Bauplan-Angaben stehen in den Auftragstexten.',
-                          'The blueprint details are in the mission text.'),
+    's_sp_steht':      ('Die Bauplan-Angaben stehen in den Auftragstexten. Änderungen wirken beim nächsten Spielstart — Star Citizen liest die Textdatei nur beim Hochfahren.',
+                          'The blueprint details are in the mission text. Changes take effect the next time the game starts — Star Citizen reads the text file only while launching.'),
     's_sp_hole':       ('Hole und setze ein: %s — das dauert einen Moment …',
                           'Fetching and installing: %s — this takes a moment …'),
     's_sp_nichts':     ('Noch keine Bauplan-Angaben in den Auftragstexten.',
@@ -1307,8 +1307,13 @@ TEXTE = {
                           'bundled with this tool.'),
     'inj_laeuft':        ('wird eingerichtet …', 'setting up …'),
     'inj_fehler':        ('Hat nicht geklappt: %s', 'Did not work: %s'),
-    'inj_aktiv':         ('Bauplan-Angaben sind eingetragen (%d Stellen)',
-                          'Blueprint notes are in place (%d spots)'),
+    # ⚠ „Wirkt beim nächsten Spielstart" gehört an diese Stelle. Star Citizen
+    # liest die Textdatei **einmal beim Hochfahren** — wer das Spiel offen hat,
+    # sieht nach dem Einspielen nichts und hält es für kaputt. Morkhan am
+    # 28.08.2026 genau so: „das is immer noch [da]" — er hatte das Spiel nie
+    # neu gestartet.
+    'inj_aktiv':         ('Bauplan-Angaben sind eingetragen (%d Stellen) — wirkt beim nächsten Spielstart',
+                          'Blueprint notes are in place (%d spots) — takes effect the next time the game starts'),
     'inj_steht':         ('Bauplan-Angaben sind eingetragen',
                           'Blueprint notes are in place'),
     'inj_steht_nicht':   ('Bauplan-Angaben sind nicht eingetragen',

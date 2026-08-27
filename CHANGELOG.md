@@ -10,6 +10,15 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Fixed
+
+- **The tool did not say that changes only take effect the next time the game
+  starts.** Star Citizen reads the text file **once, while launching**. Anyone
+  with the game running would install the details, read „in place (1608
+  spots)" — and see nothing in game. The obvious conclusion: broken. The note
+  now sits in the success message itself and in the status box under *In-game
+  text*.
+
 ## v3.0.0-rc79 - 2026-08-28
 
 > **Three finds from Morkhan's questions — one would have silently swallowed blueprints.**

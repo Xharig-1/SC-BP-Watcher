@@ -10,6 +10,15 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Behoben
+
+- **Das Werkzeug sagte nicht, dass die Änderungen erst beim nächsten
+  Spielstart wirken.** Star Citizen liest die Textdatei **einmal beim
+  Hochfahren**. Wer das Spiel offen hatte, spielte die Angaben ein, las
+  „eingetragen (1608 Stellen)" — und sah im Spiel nichts. Naheliegender
+  Schluss: kaputt. Der Hinweis steht jetzt direkt in der Erfolgsmeldung und im
+  Zustandskasten unter *Texte im Spiel*.
+
 ## v3.0.0-rc79 - 2026-08-28
 
 > **Drei Funde aus Morkhans Fragen — einer davon hätte still Baupläne verschluckt.**
