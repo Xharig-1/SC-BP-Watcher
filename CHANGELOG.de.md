@@ -604,7 +604,7 @@ beschreiben, dass sie zu finden waren:
   das verschwundene Symbol neben der Uhr, der Absturz nach dem Neustart, die
   Schriftgröße, die das Overlay nicht erreichte, die vergessene Textquelle im
   Assistenten — und der Fund, der alles erklärte: „da bleibt er bei rc25".
-- **Bomb20** (SC4M) — der Absturz beim allerersten Start (der Fehler, den nur
+- **Bomb20** (pr0citizen) — der Absturz beim allerersten Start (der Fehler, den nur
   neue Nutzer je gesehen hätten), der wirkungslose Knopf „Jetzt nachsehen" und
   der Hinweis, dass die Textquelle „Deutsch" das ganze Spiel übersetzt.
 - **Morkhan** (KRT) — der Vorschlag, Star Citizen gleich aus dem Werkzeug

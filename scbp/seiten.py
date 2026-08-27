@@ -2595,7 +2595,7 @@ def _danke(fenster, rahmen):
     for name, gruppe, idee, funde in (
             ('Haldjas', 'pr0citizen', t('s_dk_haldjas_idee'),
              t('s_dk_haldjas_bugs')),
-            ('Bomb20', 'SC4M', t('s_dk_bomb_idee'), t('s_dk_bomb_bugs')),
+            ('Bomb20', 'pr0citizen', t('s_dk_bomb_idee'), t('s_dk_bomb_bugs')),
             ('Morkhan', 'KRT', t('s_dk_morkhan_idee'),
              t('s_dk_morkhan_bugs'))):
         _person(fenster, innen, name, gruppe, idee, funde)

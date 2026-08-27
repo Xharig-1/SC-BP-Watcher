@@ -563,7 +563,7 @@ notice problems, but to describe them precisely enough to be found:
   tray icon, the crash after restarting, the font size that never reached the
   overlay, the text source the wizard forgot — and the observation that
   explained everything: „it stays on rc25".
-- **Bomb20** (SC4M) — the crash on the very first start (a bug only new users
+- **Bomb20** (pr0citizen) — the crash on the very first start (a bug only new users
   would ever have hit), the „check now" button that did nothing, and the note
   that the „German" text source translates the entire game.
 - **Morkhan** (KRT) — the suggestion to launch Star Citizen straight from
