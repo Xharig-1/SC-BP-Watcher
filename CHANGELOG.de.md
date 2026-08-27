@@ -41,7 +41,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Größeres entpuppte als ein einzelner Absturz: Das Werkzeug war an dieser
   Stelle blind. Und dafür, dass er sie geschickt hat, obwohl sie nach einem
   Fehlalarm aussah.
-- **Haldjas** (SC4M) und **Xharig** — für den Gegentest unter Windows: Update
+- **Haldjas** (pr0citizen) und **Xharig** — für den Gegentest unter Windows: Update
   von rc71 auf rc73 und die Oberfläche seit rc61, beides ohne Befund.
 
 ## v3.0.0-rc73 - 2026-08-27
