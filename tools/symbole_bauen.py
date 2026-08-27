@@ -192,14 +192,25 @@ ZEILEN_SYMBOLE = {
     'zuklappen':    'chevron-down',      # war ▼ (Liste offen)
     'hinweiszeile': 'info',              # war ⓘ / ℹ in einer Zeile
     'kaffee':       'coffee',            # die Tasse im großen Fenster
+    # ⚠ Steht **auch** unter KNOPF_SYMBOLE. Das Kreuz schließt nicht nur
+    # Fenster (groß, in der Leiste), sondern auch Kästen mitten auf einer
+    # Seite (klein, in der Zeile) — etwa den Herkunftskasten der Bauplan-
+    # Liste. Fehlte die kleine Fassung, blieb dort eine leere Lücke statt
+    # eines Kreuzes; gemeldet von der Autor am 27.08.2026.
+    'schliessen':   'x',
 }
 
 # Alles zusammen, mit dem passenden Größensatz.
+# ⚠ Der Wert ist die Menge der **Pixelgrößen**, nicht der Größensatz selbst.
+# Ein Name darf in beiden Tabellen stehen (`schliessen` tut es) und braucht dann
+# beide Reihen. Vorher überschrieb die zweite Schleife die erste — der Name
+# verlor stillschweigend seine Knopfgrößen, und in der Melde-Leiste wäre statt
+# des Kreuzes eine Lücke geblieben.
 SYMBOLE = {}
-for _n, _v in KNOPF_SYMBOLE.items():
-    SYMBOLE[_n] = (_v, KNOPF)
-for _n, _v in ZEILEN_SYMBOLE.items():
-    SYMBOLE[_n] = (_v, ZEILE)
+for _tabelle, _satz in ((KNOPF_SYMBOLE, KNOPF), (ZEILEN_SYMBOLE, ZEILE)):
+    for _n, _v in _tabelle.items():
+        _vorlage, _groessen = SYMBOLE.get(_n, (_v, set()))
+        SYMBOLE[_n] = (_vorlage, _groessen | set(_satz.values()))
 
 
 # ------------------------------------------------------------------ SVG lesen
@@ -484,7 +495,7 @@ def main():
 
     gebaut = 0
     fehlend = []
-    for name, (vorlage, satz) in sorted(SYMBOLE.items()):
+    for name, (vorlage, groessen) in sorted(SYMBOLE.items()):
         quelle = os.path.join(VORLAGEN, vorlage + '.svg')
         if not os.path.exists(quelle):
             fehlend.append(vorlage)
@@ -493,7 +504,7 @@ def main():
         # Jede Pixelgröße nur **einmal** malen, auch wenn zwei Stufen dieselbe
         # Zahl haben — und die Farben aus derselben Maske schöpfen. Das spart
         # den teuersten Teil (das Malen in achtfacher Größe).
-        noetig = set(satz.values())
+        noetig = set(groessen)
         for px in sorted(noetig):
             maske = maske_malen(striche, px)
             ordner = os.path.join(ZIEL, str(px))

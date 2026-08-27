@@ -109,18 +109,91 @@ def pruefe():
 
 
 def main():
+    fehlend = symbole_pruefen()
+    if fehlend:
+        print('Symbolbilder fehlen:')
+        for symbol, art, px in fehlend:
+            print('  · %s als %s — %s/%d/%s-*.png fehlt'
+                  % (symbol, art, 'assets/symbole', px, symbol))
+        print('  → in tools/symbole_bauen.py eintragen und neu bauen.\n')
+    else:
+        print('Symbolbilder: alle da.\n')
+
     print('Oberfläche auf Englisch:')
     tabelle, treffer = pruefe()
     print('  %d Textpaare, die sich unterscheiden' % len(tabelle))
     if not treffer:
         print('\nKein deutscher Text in der englischen Oberfläche.')
-        return 0
+        return 1 if fehlend else 0
     print('\n%d deutsche Stelle(n) — sie stehen fest im Code statt in '
           'sprache.py:' % len(treffer))
     for deutsch, (schluessel, englisch) in sorted(treffer.items()):
         print('  · "%s"  →  %s sagt "%s"' % (deutsch, schluessel, englisch))
     print('\nDie Stelle im Code suchen und durch t(\'schluessel\') ersetzen.')
     return 1
+
+
+
+
+# ---------------------------------------------------------------------------
+# Zweite Prüfung: fehlen Symbolbilder?
+#
+# ⚠ `zeichen.bild()` gibt bei einer fehlenden Datei still `None` zurück — mit
+# Absicht: Ein fehlendes Symbol ist ein Schönheitsfehler, kein Grund, das
+# Programm anzuhalten. Genau diese Nachsicht macht den Fehler aber unsichtbar.
+#
+# Am 27.08.2026 aufgeschlagen: `schliessen` stand nur unter KNOPF_SYMBOLE, wurde
+# aber mit `zeichen.zeile()` benutzt. In Zeilengröße gab es die Datei nicht, und
+# im Herkunftskasten der Bauplan-Liste blieb statt des Kreuzes eine leere Lücke.
+# Aufgefallen ist es einem Nutzer, nicht dem Selbsttest.
+
+import re                                                    # noqa: E402
+
+
+def symbole_pruefen():
+    """Jedes im Code angeforderte Symbol muss es in seiner Größe auch geben."""
+    from scbp import zeichen
+
+    wurzel = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    verlangt = set()
+    for ordner, _, dateien in os.walk(os.path.join(wurzel, 'scbp')):
+        for name in dateien:
+            if not name.endswith('.py'):
+                continue
+            text = io_lesen(os.path.join(ordner, name))
+            for art, symbol in re.findall(
+                    r"zeichen\.(knopf|zeile)\(\s*[^,]+,\s*'([a-z_]+)'", text):
+                verlangt.add((symbol, art))
+            # ⚠ `symbol_tauschen('name')` wird **schwächer** geprüft: nur, ob es
+            # das Symbol überhaupt gibt. Ob an der Stelle ein Knopf oder eine
+            # Zeile steht, verrät der Text allein nicht — beide Größen zu
+            # verlangen brächte Fehlalarme (`zuklappen` hängt nur an Zeilen und
+            # braucht keine Knopfgrößen). Das fängt Tippfehler, keine
+            # Größenfehler.
+            for symbol in re.findall(r"symbol_tauschen\('([a-z_]+)'\)", text):
+                verlangt.add((symbol, 'irgendeine'))
+
+    fehlt = []
+    for symbol, art in sorted(verlangt):
+        if art == 'irgendeine':
+            alle = set(zeichen.KNOPF.values()) | set(zeichen.ZEILE.values())
+            if not any(os.path.exists(os.path.join(
+                    wurzel, 'assets', 'symbole', str(px), '%s-grau.png' % symbol))
+                    for px in alle):
+                fehlt.append((symbol, art, 0))
+            continue
+        satz = zeichen.KNOPF if art == 'knopf' else zeichen.ZEILE
+        for stufe, px in sorted(satz.items()):
+            pfad = os.path.join(wurzel, 'assets', 'symbole', str(px),
+                                '%s-grau.png' % symbol)
+            if not os.path.exists(pfad):
+                fehlt.append((symbol, art, px))
+    return sorted(set(fehlt))
+
+
+def io_lesen(pfad):
+    with open(pfad, encoding='utf-8') as f:
+        return f.read()
 
 
 if __name__ == '__main__':

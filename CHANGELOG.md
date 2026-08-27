@@ -10,6 +10,15 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Fixed
+
+- **The cross that closes the source box was invisible.** In the blueprint list
+  it left an empty gap: the `schliessen` symbol only existed at button size while
+  it was used at row size. `zeichen.bild()` silently returns `None` for a missing
+  file — deliberately, so a missing symbol never halts the program, which is
+  exactly what hid the bug. `tools/oberflaeche_pruefen.py` now checks for it.
+  Reported by der Autor.
+
 ## v3.0.0-rc59 - 2026-08-27
 
 > **The readme is accurate again.** All screenshots redone, a separate set

@@ -41,7 +41,12 @@ DESKTOP = os.path.expanduser('~/Desktop')
 SYMBOL = os.path.join(PROJEKT, 'assets', 'icon.png')
 
 # Was auf dem Desktop gesucht wird — mit oder ohne Fassungsnummer im Namen.
-MUSTER = re.compile(r'^SC BP Watcher \(Test\)( v[0-9][^.]*)?\.command$')
+#
+# ⚠ `.+` und nicht `[^.]*`: Eine Fassungsnummer enthält **Punkte** („3.0.0-rc58").
+# Das erste Muster verbot sie und fand deshalb ausgerechnet die Datei nicht mehr,
+# die das Skript selbst benannt hatte — beim ersten Lauf fiel das nicht auf, weil
+# im Namen damals noch gar keine Nummer stand.
+MUSTER = re.compile(r'^SC BP Watcher \(Test\)( v.+)?\.command$')
 
 
 def fassung():

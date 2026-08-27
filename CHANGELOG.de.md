@@ -10,6 +10,15 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Behoben
+
+- **Das Kreuz zum Schließen des Herkunftskastens war unsichtbar.** In der
+  Bauplan-Liste blieb dort eine leere Lücke: Das Symbol `schliessen` gab es nur
+  in Knopfgröße, gebraucht wurde es in Zeilengröße. `zeichen.bild()` gibt bei
+  einer fehlenden Datei still `None` zurück — mit Absicht, damit ein fehlendes
+  Symbol das Programm nicht anhält, wodurch der Fehler aber unsichtbar blieb.
+  `tools/oberflaeche_pruefen.py` prüft das ab sofort mit. Gemeldet von der Autor.
+
 ## v3.0.0-rc59 - 2026-08-27
 
 > **Die Anleitung stimmt wieder.** Alle Bildschirmfotos neu, je Sprache ein
