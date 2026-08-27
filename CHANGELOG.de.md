@@ -10,6 +10,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc58 - 2026-08-27
+
+> **Wem was gehört — an einer Stelle.** Neuer Reiter „Danke & Lizenzen", der
+> die Lizenzen und die Beteiligten zusammenführt. Dazu Namen und Symbole, die
+> endlich zu dem passen, was sie tun.
+
 ### Hinzugefügt
 
 - **Der Reiter „Auftragstexte" heißt jetzt „Texte im Spiel".** Der alte Name

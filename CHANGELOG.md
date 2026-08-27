@@ -10,6 +10,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc58 - 2026-08-27
+
+> **What belongs to whom — in one place.** A new "Thanks & Licenses" tab that
+> brings the licences and the people together. Plus names and symbols that
+> finally match what they do.
+
 ### Added
 
 - **The "Mission text" tab is now "In-game text".** The old name did not say
