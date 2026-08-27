@@ -431,6 +431,8 @@ TEXTE = {
     's_ub_auf_nein':   ('Ließ sich nicht öffnen: %s', 'Could not be opened: %s'),
     'b_spur':          ('Startverlauf des letzten Laufs (die letzte Zeile sagt, wie weit es kam)',
                           'Start trace of the last run (the last line shows how far it got)'),
+    'b_spur_seiten':   ('Zuletzt geöffnete Seiten (die letzte Zeile ohne „steht“ ist die, an der es hing)',
+                          'Pages opened last (the last line without "ready" is where it hung)'),
     'b_absturz':       ('Harter Abbruch beim vorigen Lauf — das Programm wurde mitten im Befehl beendet',
                           'Hard crash during the previous run — the program was killed mid-instruction'),
     'b_fehler_alt':    ('(aus einer älteren Version — vermutlich längst behoben)',

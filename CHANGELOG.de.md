@@ -10,6 +10,24 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc75 - 2026-08-27
+
+> **Der Startverlauf steht wieder im Bericht.**
+
+### Behoben
+
+- **Der Startverlauf wurde von der Bedienung aus dem Bericht gedrängt.** rc74
+  schrieb Startschritte und Seitenwechsel in einen Topf, und der Bericht zeigt
+  nur die letzten zwölf Zeilen — fünf Klicks genügten, und der komplette Start
+  war nicht mehr zu sehen. Ausgerechnet der Teil, für den die Spur gebaut wurde.
+  Beides steht jetzt in **zwei getrennten Abschnitten**, jeder für sich
+  gedeckelt; auch beim Kürzen der Datei bleibt der Startverlauf stehen.
+  Gefunden im ersten rc74-Bericht, eine Viertelstunde nach der Veröffentlichung.
+- **Die Diagnose-Seite stand als letzte Zeile in ihrem eigenen Bericht.** Der
+  Bericht entsteht, während die Seite gebaut wird — dadurch endete jede Spur mit
+  „Seite diagnose: bauen beginnt" und sah aus, als wäre genau dort Schluss
+  gewesen. Diese Zeilen bleiben jetzt draußen.
+
 ## v3.0.0-rc74 - 2026-08-27
 
 > **Ein Absturz hinterlässt jetzt eine Spur.**
@@ -37,11 +55,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Dank
 
-- **Bomb20** (pr0citizen) — für die Meldung, die sich am Ende als etwas
+- **Bomb20** (pr0) — für die Meldung, die sich am Ende als etwas
   Größeres entpuppte als ein einzelner Absturz: Das Werkzeug war an dieser
   Stelle blind. Und dafür, dass er sie geschickt hat, obwohl sie nach einem
   Fehlalarm aussah.
-- **Haldjas** (pr0citizen) und **Xharig** — für den Gegentest unter Windows: Update
+- **Haldjas** (pr0) und **Xharig** — für den Gegentest unter Windows: Update
   von rc71 auf rc73 und die Oberfläche seit rc61, beides ohne Befund.
 
 ## v3.0.0-rc73 - 2026-08-27
@@ -68,7 +86,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Dank
 
-- **Bomb20** (pr0citizen) — für einen Vormittag, an dem er dreimal einen Bericht
+- **Bomb20** (pr0) — für einen Vormittag, an dem er dreimal einen Bericht
   geschickt hat, obwohl er eigentlich arbeiten musste, und für die Geduld, als
   seine Meldungen zunächst nach Bedienfehler aussahen. Sie waren es nie.
 
@@ -83,7 +101,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Die Seite zeigte eine veraltete Versionsnummer, solange sie offen blieb.**
   Nachgefragt wurde **einmal je Seitenaufbau**. Wer die Seite offen hatte,
   während draußen eine neue Version erschien, sah weiter die alte Nummer auf dem
-  Knopf — und hielt sich für aktuell. Gemeldet von **Bomb20** (pr0citizen): „ich
+  Knopf — und hielt sich für aktuell. Gemeldet von **Bomb20** (pr0): „ich
   krieg noch 67 angezeigt", während rc68 seit Minuten veröffentlicht war.
   Nachgesehen wird jetzt alle fünf Minuten, solange die Seite offen ist.
   - Fünf Minuten sind der Kompromiss: oft genug, dass niemand eine Version
@@ -100,7 +118,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Dank
 
-- **Bomb20** (pr0citizen) — für „ich krieg noch 67 angezeigt". Das klang nach
+- **Bomb20** (pr0) — für „ich krieg noch 67 angezeigt". Das klang nach
   einer Kleinigkeit und war der Hinweis auf zwei Fehler auf einmal.
 - **der Autor** — für den Blick auf den Kasten, in dem eine Hausaufgabe statt
   eines Knopfes stand.
@@ -114,7 +132,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 ### Behoben
 
 - **Nach dem Update ging der Watcher aus und kam nicht wieder.** Gemeldet von
-  **Bomb20** (pr0citizen) am Morgen, von **der Autor** den ganzen Vormittag über
+  **Bomb20** (pr0) am Morgen, von **der Autor** den ganzen Vormittag über
   reproduziert. Drei Anläufe (rc67, rc68, rc70) haben es nicht gelöst, weil sie
   von einem Absturz der neuen Version ausgingen.
   - **Es war kein Absturz.** Die neue Version startet, sieht den
@@ -136,7 +154,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   für den Satz, der die Suche gedreht hat: „ich habe selber aus gemacht und
   gestartet." Und für den Bericht mit der einen Zeile, die alles erklärte:
   *Rückgabewert 0 — keine Ausgabe.*
-- **Bomb20** (pr0citizen) — für die erste Meldung und dafür, nicht lockergelassen
+- **Bomb20** (pr0) — für die erste Meldung und dafür, nicht lockergelassen
   zu haben, als es nach einem Bedienfehler aussah. Er lag richtig, wir nicht.
 
 
@@ -150,7 +168,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   liefert eine Mausbewegung nicht immer nach einem Klick auf dasselbe Fenster:
   Wer den Knopf außerhalb drückt und ins Overlay zieht, löst nur die Bewegung
   aus — und den Startpunkt gab es dann nicht. Das Ziehen tat einmal nichts, der
-  Fehler landete lautlos im Protokoll. Gemeldet von **Bomb20** (pr0citizen, am
+  Fehler landete lautlos im Protokoll. Gemeldet von **Bomb20** (pr0, am
   25.08.2026 auf rc18) und **der Autor** (27.08.2026 auf rc69) — dazwischen nie
   behoben, weil er nichts kaputt macht, was man sieht.
 
@@ -172,7 +190,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Unterschied klarzumachen: „ich habe selber aus gemacht und gestartet." Ohne
   diesen Satz hätte ein geglückter Handstart wie ein geglückter Neustart
   ausgesehen.
-- **Bomb20** (pr0citizen) — für den Ziehen-Fehler, der zwei Tage lang in
+- **Bomb20** (pr0) — für den Ziehen-Fehler, der zwei Tage lang in
   Berichten stand, ohne dass ihn jemand ernst genommen hat.
 
 
@@ -185,7 +203,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 - **Klick auf „Version holen", und es passierte nichts.** Kein Fortschritt, kein
   Neustart, keine Meldung — nach einem Neustart lief weiter die alte Version.
-  Gemeldet von **Bomb20** (pr0citizen): „ich habe auf get 68 geklickt, aber da
+  Gemeldet von **Bomb20** (pr0): „ich habe auf get 68 geklickt, aber da
   kam nix mit restart oder install."
   - **Die Ursache war die Anzeige, nicht der Download.** Heruntergeladen wird in
     einem eigenen Faden, der den Fortschritt ans Fenster meldet. Dieser Aufruf
@@ -207,7 +225,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Dank
 
-- **Bomb20** (pr0citizen) — für den dritten Diagnosebericht an einem Vormittag,
+- **Bomb20** (pr0) — für den dritten Diagnosebericht an einem Vormittag,
   genau im richtigen Moment abgeschickt. Ohne ihn wäre „da kam nix" nicht von
   „Download klemmt" zu unterscheiden gewesen; mit ihm stand die Ursache in einer
   Zeile da.
@@ -258,7 +276,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 - **Nach dem Update ging der Watcher aus und kam nicht wieder.** Er lud die neue
   Version, spielte sie ein, schloss sich — und blieb zu. Gemeldet von **Bomb20**
-  (pr0citizen) mit dem entscheidenden Satz „es geht dann aus aber startet nicht",
+  (pr0) mit dem entscheidenden Satz „es geht dann aus aber startet nicht",
   am selben Tag von **der Autor** auf seinem Rechner reproduziert.
   - **Die Ursache:** Beim Start der neuen Version wurden nur `APPIMAGE`, `APPDIR`,
     `OWD` und `ARGV0` aus der Umgebung entfernt — `LD_LIBRARY_PATH`, `PYTHONHOME`
@@ -280,7 +298,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Dank
 
-- **Bomb20** (pr0citizen) — fürs Dranbleiben. Seine nüchterne Beschreibung „es
+- **Bomb20** (pr0) — fürs Dranbleiben. Seine nüchterne Beschreibung „es
   geht dann aus aber startet nicht" hat den Fehler festgenagelt, nachdem er
   zunächst für einen Bedienfehler gehalten wurde. Er lag richtig, wir nicht.
 - **der Autor** — für das Nachstellen auf dem eigenen Rechner, das den Verdacht
@@ -346,7 +364,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   hat er nicht. Der Watcher nimmt jetzt das Startskript `sc-launch.sh`, das der
   Helper beim Einrichten im Präfix anlegt, und findet es über den Spielordner
   (eine Ebene über `drive_c`) — unabhängig davon, wohin jemand installiert hat.
-  Gemeldet von **Bomb20** (pr0citizen) und **der Autor**.
+  Gemeldet von **Bomb20** (pr0) und **der Autor**.
   - Kein Rückfall mehr auf den `lug-helper`: Er würde gefunden, der Knopf
     erschiene, und er täte wieder nichts. Wer über Lutris oder Heroic spielt,
     trägt seinen Startbefehl weiterhin in der Einstellung `spielstarter` ein.
@@ -354,7 +372,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Dank
 
-- **Bomb20** (pr0citizen) — für die Meldung, dass Star Citizen sich nicht aus dem
+- **Bomb20** (pr0) — für die Meldung, dass Star Citizen sich nicht aus dem
   Werkzeug starten lässt, und für die Geduld mit zwei Diagnoseberichten an einem
   Vormittag. Ohne den zweiten wäre nicht herausgekommen, dass der `lug-helper`
   das Spiel überhaupt nicht starten kann.

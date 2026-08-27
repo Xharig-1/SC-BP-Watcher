@@ -135,26 +135,62 @@ SPUR_REST = 60
 
 
 def _spur_kuerzen(pfad):
-    """Die Spur auf die jüngsten Zeilen eindampfen."""
+    """Die Spur eindampfen — **ohne** den Startverlauf zu opfern.
+
+    ⚠ Vorne abzuschneiden wäre das Naheliegende und wäre falsch: Vorne steht
+    der Start, und der ist bei einem Absturz das Wertvollste. Gekürzt wird
+    deshalb nur der Bedienteil.
+    """
     try:
         with open(pfad, encoding='utf-8') as f:
             alle = f.readlines()
         if len(alle) <= SPUR_REST:
             return
+        kopf = []
+        for zeile in alle:
+            if _ist_bedienung(zeile.rstrip()):
+                break
+            kopf.append(zeile)
+        rest = alle[len(kopf):]
         with open(pfad, 'w', encoding='utf-8') as f:
-            f.writelines(alle[-SPUR_REST:])
+            f.writelines(kopf + rest[-SPUR_REST:])
     except OSError:
         pass
 
 
 
+# Womit eine Bedien-Zeile anfängt. Alles andere gilt als Startschritt.
+SPUR_BEDIENUNG = 'Seite '
+
+
+def _ist_bedienung(zeile):
+    """Gehört die Zeile zur Bedienung (Seitenwechsel) statt zum Start?"""
+    teile = zeile.split('  ', 1)
+    return len(teile) == 2 and teile[1].lstrip().startswith(SPUR_BEDIENUNG)
+
+
 def letzte_spur():
-    """Die Startschritte des letzten Laufs — für den Diagnose-Bericht."""
+    """Die Spur des letzten Laufs — Startschritte und Bedienung, wie sie kam."""
     try:
         with open(pfade.app_datei(SPUR_DATEI), encoding='utf-8') as f:
             return [z.rstrip() for z in f if z.strip()]
     except Exception:
         return []
+
+
+def spur_geteilt():
+    """Die Spur in zwei Teile: (Startschritte, Seitenwechsel).
+
+    ⚠ Wozu die Trennung: Der Bericht zeigt nur die letzten Zeilen, sonst wird
+    er unlesbar. Seit die Bedienung mitschreibt, drängten schon **fünf Klicks**
+    den kompletten Startverlauf hinaus — und genau der ist der Grund, warum es
+    die Spur überhaupt gibt. Im ersten rc74-Bericht (27.08.2026) stand kein
+    einziger Startschritt mehr. Beide Teile werden deshalb getrennt gedeckelt.
+    """
+    start, seiten = [], []
+    for zeile in letzte_spur():
+        (seiten if _ist_bedienung(zeile) else start).append(zeile)
+    return start, seiten
 
 
 ABSTURZ_DATEI = 'absturz.txt'

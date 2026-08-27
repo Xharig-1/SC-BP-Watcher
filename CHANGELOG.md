@@ -10,6 +10,23 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc75 - 2026-08-27
+
+> **The startup trace is back in the report.**
+
+### Fixed
+
+- **Usage pushed the startup trace out of the report.** rc74 wrote startup steps
+  and page switches into one list, and the report only shows the last twelve
+  lines — five clicks were enough to hide the entire startup. Precisely the part
+  the trace was built for. Both now appear as **two separate sections**, each
+  capped on its own; trimming the file keeps the startup part as well. Found in
+  the first rc74 report, fifteen minutes after release.
+- **The diagnostics page was the last line of its own report.** The report is
+  built while that page is being drawn, so every trace ended with "Page
+  diagnostics: building" and looked as if that was where it stopped. Those lines
+  are now left out.
+
 ## v3.0.0-rc74 - 2026-08-27
 
 > **A crash now leaves a trace.**
@@ -35,10 +52,10 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Thanks
 
-- **Bomb20** (pr0citizen) — for a report that turned out to be about something
+- **Bomb20** (pr0) — for a report that turned out to be about something
   bigger than a single crash: the tool was blind at that spot. And for sending
   it even though it looked like a false alarm.
-- **Haldjas** (pr0citizen) and **Xharig** — for the counter-test on Windows: the
+- **Haldjas** (pr0) and **Xharig** — for the counter-test on Windows: the
   update from rc71 to rc73 and the interface since rc61, both without findings.
 
 ## v3.0.0-rc73 - 2026-08-27
@@ -64,7 +81,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Thanks
 
-- **Bomb20** (pr0citizen) — for a morning in which he sent three reports even
+- **Bomb20** (pr0) — for a morning in which he sent three reports even
   though he actually had to work, and for his patience while his reports were
   first taken for user error. They never were.
 
@@ -79,7 +96,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **The page showed an outdated version number as long as it stayed open.** It
   asked **once per page build**. Anyone with the page open while a new version
   appeared kept seeing the old number on the button — and assumed they were up to
-  date. Reported by **Bomb20** (pr0citizen): "I still get 67 shown", while rc68
+  date. Reported by **Bomb20** (pr0): "I still get 67 shown", while rc68
   had been published minutes earlier. It now checks every five minutes while the
   page is open.
   - Five minutes is the compromise: often enough that nobody misses a version,
@@ -95,7 +112,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Thanks
 
-- **Bomb20** (pr0citizen) — for "I still get 67 shown". It sounded like a
+- **Bomb20** (pr0) — for "I still get 67 shown". It sounded like a
   triviality and pointed at two bugs at once.
 - **der Autor** — for looking at the box that offered homework instead of a
   button.
@@ -109,7 +126,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 ### Fixed
 
 - **After an update the watcher shut down and never came back.** Reported by
-  **Bomb20** (pr0citizen) in the morning, reproduced by **der Autor** all through
+  **Bomb20** (pr0) in the morning, reproduced by **der Autor** all through
   the day. Three attempts (rc67, rc68, rc70) failed to solve it, because they
   assumed the new version was crashing.
   - **It was not a crash.** The new version starts, finds the single-instance
@@ -130,7 +147,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   for the sentence that turned the search around: "I shut it down and started it
   myself." And for the report with the one line that explained everything:
   *return code 0 — no output.*
-- **Bomb20** (pr0citizen) — for the first report and for not letting go when it
+- **Bomb20** (pr0) — for the first report and for not letting go when it
   looked like a user error. He was right, we were not.
 
 
@@ -144,7 +161,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   does not always deliver a mouse motion after a click on the same window:
   press the button outside and drag into the overlay, and only the motion
   fires — leaving no starting point. Dragging did nothing once, and the error
-  landed silently in the log. Reported by **Bomb20** (pr0citizen, 25 Aug 2026 on
+  landed silently in the log. Reported by **Bomb20** (pr0, 25 Aug 2026 on
   rc18) and **der Autor** (27 Aug 2026 on rc69) — never fixed in between, because
   it breaks nothing you can see.
 
@@ -164,7 +181,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   distinction clear: "I shut it down and started it myself." Without that
   sentence, a successful manual start would have looked like a successful
   restart.
-- **Bomb20** (pr0citizen) — for the drag error that sat in reports for two days
+- **Bomb20** (pr0) — for the drag error that sat in reports for two days
   without anyone taking it seriously.
 
 
@@ -177,7 +194,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 - **Click "get version", and nothing happened.** No progress, no restart, no
   message — after a restart the old version was still running. Reported by
-  **Bomb20** (pr0citizen): "I clicked get 68, but nothing came up about restart
+  **Bomb20** (pr0): "I clicked get 68, but nothing came up about restart
   or install."
   - **The cause was the display, not the download.** Downloading runs in its own
     thread that reports progress to the window. That call can throw
@@ -199,7 +216,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Thanks
 
-- **Bomb20** (pr0citizen) — for the third diagnostic report of the morning, sent
+- **Bomb20** (pr0) — for the third diagnostic report of the morning, sent
   at exactly the right moment. Without it, "nothing came up" could not have been
   told apart from "the download is stuck"; with it, the cause was there in one
   line.
@@ -244,7 +261,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 - **After an update the watcher shut down and never came back.** It downloaded
   the new version, installed it, closed itself — and stayed closed. Reported by
-  **Bomb20** (pr0citizen) with the decisive sentence "it does shut down but
+  **Bomb20** (pr0) with the decisive sentence "it does shut down but
   doesn't start", reproduced the same day by **der Autor** on his own machine.
   - **The cause:** when starting the new version, only `APPIMAGE`, `APPDIR`,
     `OWD` and `ARGV0` were removed from the environment — `LD_LIBRARY_PATH`,
@@ -265,7 +282,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Thanks
 
-- **Bomb20** (pr0citizen) — for sticking with it. His matter-of-fact "it does
+- **Bomb20** (pr0) — for sticking with it. His matter-of-fact "it does
   shut down but doesn't start" pinned down the bug after it had first been
   dismissed as a user error. He was right, we were not.
 - **der Autor** — for reproducing it on his own machine, which finally ruled out
@@ -329,7 +346,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   Wine prefix, runners and DXVK, and has no launch option. The watcher now uses
   the `sc-launch.sh` launch script the helper creates inside the prefix, and
   finds it via the game folder (one level above `drive_c`) — no matter where
-  someone installed it. Reported by **Bomb20** (pr0citizen) and **der Autor**.
+  someone installed it. Reported by **Bomb20** (pr0) and **der Autor**.
   - No more fallback to `lug-helper`: it would be found, the button would
     appear, and it would do nothing again. Anyone playing through Lutris or
     Heroic still enters their launch command in the `spielstarter` setting.
@@ -337,7 +354,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Thanks
 
-- **Bomb20** (pr0citizen) — for reporting that Star Citizen could not be launched
+- **Bomb20** (pr0) — for reporting that Star Citizen could not be launched
   from the tool, and for the patience of sending two diagnostic reports in one
   morning. Without the second one it would not have come out that `lug-helper`
   cannot launch the game at all.
