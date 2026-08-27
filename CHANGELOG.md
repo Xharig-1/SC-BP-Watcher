@@ -10,6 +10,40 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc70 - 2026-08-27
+
+> **If the restart fails, the report will now say why.**
+
+### Fixed
+
+- **`'Overlay' object has no attribute '_dx'` when dragging the overlay.** Tk
+  does not always deliver a mouse motion after a click on the same window:
+  press the button outside and drag into the overlay, and only the motion
+  fires — leaving no starting point. Dragging did nothing once, and the error
+  landed silently in the log. Reported by **Bomb20** (pr0citizen, 25 Aug 2026 on
+  rc18) and **der Autor** (27 Aug 2026 on rc69) — never fixed in between, because
+  it breaks nothing you can see.
+
+### Changed
+
+- **A failed restart now leaves a trace.** The error output of the freshly
+  started version used to go to `/dev/null` — which is why "it shuts down and
+  never comes back" could not be diagnosed: the report contained **nothing** about
+  it. It is now captured, and if the new version does not come up, its last words
+  are attached to the error log and thus to the report.
+  - This is not a fix but a measurement. After two attempts that did not solve
+    the restart for **der Autor**, there will be no third guess.
+
+### Thanks
+
+- **der Autor** — for reproducing it on his own machine and for making the
+  distinction clear: "I shut it down and started it myself." Without that
+  sentence, a successful manual start would have looked like a successful
+  restart.
+- **Bomb20** (pr0citizen) — for the drag error that sat in reports for two days
+  without anyone taking it seriously.
+
+
 ## v3.0.0-rc69 - 2026-08-27
 
 > **For some, the update was never downloaded at all** — the progress display
