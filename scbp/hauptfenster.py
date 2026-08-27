@@ -311,13 +311,23 @@ def rundes_feld(eltern, textvariable, schrift, grund, rand, akzent, fg,
                                         anchor='w')
 
     def nachziehen(_=None):
+        # ⚠ Der Rückruf aus `after(0, …)` kann drankommen, wenn die Leinwand
+        # längst zerstört ist — beim Seitenwechsel passiert genau das.
+        try:
+            if not leinwand.winfo_exists():
+                return
+        except tk.TclError:
+            return
         b = leinwand.winfo_width()
         if b < 10:
             b = leinwand.winfo_reqwidth()
         if b < 10:
             return
-        leinwand.coords(form, *ecken(1, 1, b - 1, hoehe - 1, radius))
-        leinwand.itemconfigure(fenster_id, width=b - (polster + 2) * 2)
+        try:
+            leinwand.coords(form, *ecken(1, 1, b - 1, hoehe - 1, radius))
+            leinwand.itemconfigure(fenster_id, width=b - (polster + 2) * 2)
+        except tk.TclError:
+            pass
 
     leinwand.bind('<Configure>', nachziehen)
     leinwand.bind('<Map>', nachziehen)

@@ -271,6 +271,20 @@ def _umbruch(label, anteil=1.0, abzug=0, bezug=None, neben=None):
     ziel = bezug if bezug is not None else label.master
 
     def nachziehen(_=None):
+        # ⚠ Erst nachsehen, ob es die Widgets noch gibt. `label.after(0, …)`
+        # unten plant einen Rückruf ein, und beim Seitenwechsel wird das Label
+        # zerstört, bevor er drankommt — dann meldet Tk `invalid command name
+        # .!...!label`. Dasselbe beim `<Configure>` des Elternrahmens: Der lebt
+        # noch, das Label darin nicht mehr.
+        #
+        # Der Fehler stürzte nichts ab (der Haken in `fehler.py` fängt ihn), er
+        # füllte nur das Protokoll: acht Einträge in einem Bericht vom
+        # 27.08.2026, alle aus demselben Augenblick.
+        try:
+            if not (label.winfo_exists() and ziel.winfo_exists()):
+                return
+        except tk.TclError:
+            return
         breite = ziel.winfo_width()
         if neben is not None:
             try:
@@ -278,7 +292,11 @@ def _umbruch(label, anteil=1.0, abzug=0, bezug=None, neben=None):
             except tk.TclError:
                 pass
         if breite > 40:
-            label.configure(wraplength=max(160, int(breite * anteil) - abzug))
+            try:
+                label.configure(wraplength=max(160,
+                                              int(breite * anteil) - abzug))
+            except tk.TclError:
+                pass          # zwischen Prüfung und Zugriff zerstört
 
     ziel.bind('<Configure>', nachziehen, add='+')
     # ⚠ `<Configure>` allein reicht nicht. Seiten werden gebaut, während sie
@@ -301,6 +319,15 @@ def _knopfreihe(eltern, knoepfe, abstand=8):
     weil jeder Knopf hier ein `Canvas` ist.
     """
     def ordnen(_=None):
+        # Wie bei `_umbruch`: Der Rückruf kann nach dem Seitenwechsel drankommen,
+        # wenn die Knöpfe längst zerstört sind.
+        try:
+            if not eltern.winfo_exists():
+                return
+            if not all(k.winfo_exists() for k in knoepfe):
+                return
+        except tk.TclError:
+            return
         platz = eltern.winfo_width()
         gebraucht = sum(k.winfo_reqwidth() for k in knoepfe) \
             + abstand * (len(knoepfe) - 1)

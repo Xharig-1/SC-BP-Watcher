@@ -10,7 +10,21 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc60 - 2026-08-27
+
+> **Was der Diagnosebericht verriet.** Ein unsichtbares Kreuz, acht Fehler je
+> Seitenwechsel — und eine neue Prüfung, die beides künftig vorher findet.
+
 ### Behoben
+
+- **Acht Fehler im Protokoll bei jedem Seitenwechsel.** `invalid command name
+  …!label` — Rückrufe, die den Zeilenumbruch nachziehen, kamen dran, wenn ihr
+  Label längst zerstört war. Sichtbar war davon nichts: Der Haken in `fehler.py`
+  fing sie ab, sie füllten nur den Bericht und verdeckten damit, was wirklich
+  wichtig gewesen wäre. Dieselbe Falle steckte in der Knopfreihe und im
+  Eingabefeld mit gezeichnetem Rahmen; alle drei prüfen jetzt vorher, ob es ihr
+  Widget noch gibt. Nachgemessen: 39 Seitenwechsel, **0** Fehler.
+  Gefunden von der Autor im Diagnosebericht.
 
 - **Das Kreuz zum Schließen des Herkunftskastens war unsichtbar.** In der
   Bauplan-Liste blieb dort eine leere Lücke: Das Symbol `schliessen` gab es nur

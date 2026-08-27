@@ -10,7 +10,20 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc60 - 2026-08-27
+
+> **What the diagnostics report revealed.** An invisible cross, eight errors per
+> page switch — and a new check that finds both in advance from now on.
+
 ### Fixed
+
+- **Eight log entries on every page switch.** `invalid command name …!label` —
+  callbacks that adjust the line wrapping ran after their label had been
+  destroyed. Nothing was visible: the hook in `fehler.py` caught them, they only
+  filled up the report and buried what actually mattered. The same trap sat in
+  the button row and in the drawn-border entry field; all three now check whether
+  their widget still exists. Measured: 39 page switches, **0** errors. Found by
+  der Autor in the diagnostics report.
 
 - **The cross that closes the source box was invisible.** In the blueprint list
   it left an empty gap: the `schliessen` symbol only existed at button size while
