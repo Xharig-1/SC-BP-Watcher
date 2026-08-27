@@ -777,16 +777,49 @@ TEXTE = {
                           'never reached the overlay · the forgotten text source in '
                           'the assistant · and the find that explained everything: '
                           '"it stays on rc25".'),
-    's_dk_bomb_idee':   ('**Der Absturz beim allerersten Start** — der Fehler, den '
-                         'sonst nur neue Nutzer je gesehen hätten und der Autor nie.',
-                         '**The crash on the very first start** — the bug only new '
-                         'users would ever have seen, and the author never.'),
-    's_dk_bomb_bugs':   ('Dazu: der wirkungslose Knopf „Jetzt nachsehen" · und der '
+    # ⚠ **Diese Seite mitziehen, nicht nur den CHANGELOG.** Am 27.08.2026 hat
+    # Bomb20 an einem Vormittag vier Fehler gefunden, die alle am Samstag jeden
+    # Nutzer getroffen hätten — und hier stand weiter nur sein Fund vom 25.08.
+    # Der Dank im CHANGELOG ist das eine; diese Seite ist das, was die Leute im
+    # Programm sehen. Wer einen Melder hier vergisst, hat ihm nicht gedankt.
+    's_dk_bomb_idee':   ('**Das Werkzeug war unter Linux nicht auf dem Laufenden zu '
+                         'halten** — und niemand wusste, warum. Er ist drangeblieben, '
+                         'als es längst nach Bedienfehler aussah, und hat mit drei '
+                         'Diagnoseberichten an einem Vormittag drei Fehler '
+                         'freigelegt: dass Star Citizen sich nicht aus dem Werkzeug '
+                         'starten ließ, dass der Neustart nach dem Update nie kam, '
+                         'und dass beim Holen einer neuen Version gar nichts '
+                         'geschah. Alle drei hätten am Ausliefertag jeden getroffen.',
+                         '**The tool could not be kept up to date on Linux** — and '
+                         'nobody knew why. He stuck with it long after it looked like '
+                         'user error, and with three diagnostic reports in one '
+                         'morning uncovered three bugs: that Star Citizen could not '
+                         'be launched from the tool, that the restart after an update '
+                         'never came, and that fetching a new version did nothing at '
+                         'all. All three would have hit everyone on release day.'),
+    's_dk_bomb_bugs':   ('Davor: **der Absturz beim allerersten Start** — der Fehler, '
+                         'den sonst nur neue Nutzer je gesehen hätten und der Autor '
+                         'nie · der wirkungslose Knopf „Jetzt nachsehen" · der '
                          'Hinweis, dass die Textquelle „Deutsch" das **ganze** Spiel '
-                         'übersetzt, nicht nur die Bauplan-Angaben.',
-                         'Also: the "Check now" button that did nothing · and the '
-                         'note that the text source "German" translates the **whole** '
-                         'game, not just the blueprint details.'),
+                         'übersetzt, nicht nur die Bauplan-Angaben · die veraltete '
+                         'Versionsnummer auf dem Knopf („ich krieg noch 67 '
+                         'angezeigt") · und der Fehler beim Verschieben des '
+                         'Overlays, der zwei Tage lang in Berichten stand, ohne dass '
+                         'ihn jemand ernst nahm.',
+                         'Before that: **the crash on the very first start** — the bug '
+                         'only new users would ever have seen, and the author never · '
+                         'the "Check now" button that did nothing · the note that the '
+                         'text source "German" translates the **whole** game, not just '
+                         'the blueprint details · the stale version number on the '
+                         'button ("I still get 67 shown") · and the overlay drag error '
+                         'that sat in reports for two days without anyone taking it '
+                         'seriously.'),
+    # ⚠ Ein Geschenk, kein Fund — und trotzdem hierhin. Wer ein kostenloses
+    # Werkzeug testet UND dem Autor etwas schenkt, gehört genannt.
+    's_dk_bomb_dazu':   ('Und obendrein einen Monat Discord Nitro für den Server '
+                         'des Werkzeugs — einfach so.',
+                         'And on top of that a month of Discord Nitro for the '
+                         "tool's server — just like that."),
     's_dk_morkhan_idee': ('**Star Citizen lässt sich aus dem Werkzeug heraus '
                           'starten.** Sein Vorschlag — über den Weg, den man ohnehin '
                           'benutzt.',

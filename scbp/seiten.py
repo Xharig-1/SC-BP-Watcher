@@ -2704,7 +2704,11 @@ def _danke(fenster, rahmen):
     for name, gruppe, idee, funde in (
             ('Haldjas', 'pr0', t('s_dk_haldjas_idee'),
              t('s_dk_haldjas_bugs')),
-            ('Bomb20', 'pr0', t('s_dk_bomb_idee'), t('s_dk_bomb_bugs')),
+            # ⚠ Zwei Bausteine hintereinander: die Funde und der Nitro-Dank.
+            # `_person` nimmt einen Text — also hier zusammensetzen, statt die
+            # Funktion für einen Sonderfall umzubauen.
+            ('Bomb20', 'pr0', t('s_dk_bomb_idee'),
+             t('s_dk_bomb_bugs') + '\n\n' + t('s_dk_bomb_dazu')),
             ('Morkhan', 'KRT', t('s_dk_morkhan_idee'),
              t('s_dk_morkhan_bugs'))):
         _person(fenster, innen, name, gruppe, idee, funde)

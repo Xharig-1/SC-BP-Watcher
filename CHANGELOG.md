@@ -10,6 +10,34 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc73 - 2026-08-27
+
+> **The thanks page now says what actually happened today.**
+
+### Changed
+
+- **The "Thanks & licences" page in the tool lists Bomb20's findings from
+  today.** It still showed only his contribution from 25 Aug, while over this one
+  morning he uncovered three bugs that would have hit **every** user on release
+  day: the launch button for Star Citizen, the aborted download, and the restart
+  that never came.
+  - The thanks were properly recorded in both changelogs — but nobody sees those
+    inside the tool. **Anyone missing from the tool has not been thanked.** The
+    release checklist now names this third place explicitly.
+
+### Confirmed
+
+- **The restart after an update works** — verified on a second machine (CachyOS),
+  from rc71 to rc72, without a single entry in the error log. So it does not
+  depend on any quirk of one installation.
+
+### Thanks
+
+- **Bomb20** (pr0citizen) — for a morning in which he sent three reports even
+  though he actually had to work, and for his patience while his reports were
+  first taken for user error. They never were.
+
+
 ## v3.0.0-rc72 - 2026-08-27
 
 > **The update page now tells the truth** — it checks by itself, and the route to
