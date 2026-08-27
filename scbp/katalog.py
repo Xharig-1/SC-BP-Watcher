@@ -51,10 +51,12 @@ ein Zwanzigstel davon).
 """
 import json
 import os
+import re
 import time
 import urllib.request
 
-from . import pfade, sprache
+from . import patchhistorie, pfade, sprache
+from .sprache import t
 
 BASIS = 'https://scmdb.net/data'
 CACHE = 'katalog-cache.json'
@@ -67,12 +69,48 @@ AUS = os.environ.get('SC_BP_NO_NET', '') not in ('', '0')
 # lesen sollte, und „Helm" nichts, was in einer englischen Liste stehen darf.
 def art_lesbar(roh):
     """Aus 'Char_Armor_Helmet' wird 'Helm' bzw. 'Helmet'."""
-    return sprache.art(roh)
+    return sprache.art(ART_ZUSAMMEN.get(roh, roh))
 
 
-# So viele Bezugsquellen je Bauplan werden behalten. Mehr blähen die Datei auf,
-# ohne zu helfen: Wer einen Bauplan sucht, nimmt ohnehin den leichtesten Weg.
-QUELLEN_JE_BP = 3
+# Arten, die dasselbe meinen und deshalb eine Gruppe bilden.
+#
+# ⚠ scmdb führt Magazine unter zwei Kennungen: 32 als `WeaponAttachment`
+# (alle mit Subtyp „Magazine", nichts anderes steckt darin) und die beiden
+# Start-Magazine als `ammo`. Für den Spieler ist das ein und dieselbe Sache —
+# gemeldet als „Magazin für Waffen fehlen quasi alle Waffen bis auf 2": Der
+# Filter „Magazin" zeigte die zwei, die 32 anderen standen unter
+# „Waffenaufsatz".
+#
+# ⚠ Derselbe Fall bei den Handfeuerwaffen: 87 stehen als `WeaponPersonal` da, die
+# S-38 Pistol und das P4-AR Rifle als `weapons`. Im Fenster ergab das zwei
+# Gruppen — „FPS-Waffe (87)" und „Handfeuerwaffe (2)" — für ein und dieselbe
+# Sache. Wer nach FPS-Waffen filtert, sucht auch die beiden.
+ART_ZUSAMMEN = {'ammo': 'WeaponAttachment', 'weapons': 'WeaponPersonal'}
+
+
+def art_kennung(eintrag_oder_roh):
+    """Die Art, unter der ein Bauplan einsortiert und gefiltert wird.
+
+    Nimmt einen Katalogeintrag oder die rohe Kennung. Zusammengehörende Arten
+    (siehe `ART_ZUSAMMEN`) werden auf eine gezogen.
+    """
+    roh = (eintrag_oder_roh.get('a')
+           if isinstance(eintrag_oder_roh, dict) else eintrag_oder_roh)
+    return ART_ZUSAMMEN.get(roh, roh)
+
+
+# So viele Bezugsquellen je Bauplan werden behalten.
+#
+# Stand 24.08.2026 **gemessen** am Dump 4.9.0-live.12344265 (655 Baupläne mit
+# Quelle): Median 4 Wege, Mittelwert 5,8, Höchstwert 73. Die frühere Grenze von
+# 3 hat damit **54 %** aller Baupläne Wege abgeschnitten — die Annahme „einer
+# reicht, man nimmt ohnehin den leichtesten" war falsch. Sie stimmt nur, solange
+# man den leichtesten auch fliegen *will*: Wer gerade bei einer anderen Fraktion
+# Ruf sammelt, braucht den zweiten oder dritten Weg.
+#
+# Bei 12 verliert genau **ein** Bauplan etwas (der mit 73 Vorkommen). Angezeigt
+# wird trotzdem nur der leichteste; der Rest steht hinter „weitere Wege".
+QUELLEN_JE_BP = 12
 
 
 # ------------------------------------------------------------------ Netz
@@ -108,8 +146,25 @@ def aktuelle_version():
 
 
 # ------------------------------------------------------------ Aufbereitung
+# Alle Anführungszeichen, die in Bauplan-Namen vorkommen — gerade, typografische
+# und die französischen. Sie werden beim Vergleichen auf ein einfaches `'`
+# gezogen.
+#
+# ⚠ Warum das nötig ist: Der SC Deutsch Launcher exportiert `7MA "Lorica"` mit
+# geraden doppelten Anführungszeichen, scmdb führt denselben Bauplan als
+# `7MA 'Lorica'` mit einfachen. Ohne Angleichung sind das zwei verschiedene
+# Schlüssel — der Bauplan galt als „fehlt", obwohl er im eigenen Bestand stand.
+# Gefunden an einem echten Bestand mit 392 Bauplänen: 391 wurden zugeordnet,
+# genau dieser eine nicht. An erfundenen Testdaten wäre das nie aufgefallen.
+ANFUEHRUNG = str.maketrans({
+    '"': "'", '„': "'", '“': "'", '”': "'",   # " „ " "
+    '‘': "'", '’': "'", '«': "'", '»': "'",  # ' ' « »
+})
+
+
 def _norm(s):
-    return str(s).lower().replace('\xa0', ' ').strip()
+    """Vergleichsform eines Namens — siehe `pfade.namensform`."""
+    return pfade.namensform(s)
 
 
 def _werte(rohe_items):
@@ -174,6 +229,56 @@ def _annahmeorte(vertrag, orte_pool):
     return {'system': ', '.join(systeme) or None,
             'orte': namen[:ORTE_JE_AUFTRAG],
             'mehr': max(0, len(namen) - ORTE_JE_AUFTRAG)}
+
+
+# Vorsätze, die jeder Belohnungstopf trägt — sie sagen nichts aus.
+_TOPF_VORSATZ = re.compile(r'^BP_(?:MISSION)?REWARDS?_', re.I)
+
+# Töpfe, deren Namen ein Mensch nicht deuten muss. Alles andere wird nur
+# aufgeräumt, nicht gedeutet — lieber „aus: RedWind" als eine erfundene Erklärung.
+_TOPF_KLARTEXT = (
+    (re.compile(r'^xenothreat', re.I), 'XenoThreat'),
+    (re.compile(r'^rdc[_ ]?boss', re.I), 'RDC-Boss'),
+    (re.compile(r'^superheavy', re.I), 'Super-Heavy-Mission'),
+    (re.compile(r'^cds[_ ]', re.I), 'CDS-Rüstung'),
+)
+
+
+def topf_lesbar(roh):
+    """Aus `BP_REWARDS_Xenothreat2_15_06` wird `XenoThreat`.
+
+    Die 59 Baupläne ohne Auftrag liegen **nicht im Nichts** — sie stehen in
+    benannten Belohnungstöpfen. Vorher stand bei ihnen nur ein `?`, und der
+    Spieler wusste nicht, ob es ihn nie gibt oder ob nur die Daten fehlen. Der
+    Topf-Name sagt ihm wenigstens, wonach er suchen muss.
+
+    Gedeutet wird nur, was eindeutig ist. Der Rest wird lediglich lesbar
+    gemacht: Vorsatz weg, Unterstriche zu Leerzeichen, die durchnummerierten
+    Endungen (`_15_06`) abgeschnitten — sie sind Stufen desselben Topfes.
+    """
+    roh = (roh or '').strip()
+    if not roh:
+        return ''
+    kern = _TOPF_VORSATZ.sub('', roh)
+    for muster, klar in _TOPF_KLARTEXT:
+        if muster.search(kern):
+            return klar
+    # Manche Töpfe heißen nach dem **Gegenstand**, nicht nach der Quelle:
+    # `behr_rifle_ballistic_01_mr01` ist ein Behring-Gewehr, kein Ort und kein
+    # Ereignis. Solche Namen zu zeigen wäre schlechter als nichts — der Spieler
+    # läse eine Herkunft, die keine ist. Erkennbar sind sie daran, dass sie
+    # durchgehend klein geschrieben sind; die echten Quellen (`RedWind`,
+    # `Xenothreat2`) tragen Großbuchstaben.
+    if kern and kern == kern.lower():
+        return ''
+    kern = re.sub(r'(_\d+)+$', '', kern)          # `_15_06` und Verwandte weg
+    kern = re.sub(r'[_\-]+', ' ', kern).strip()
+    # Zweite Schranke: Eine Quelle heißt kurz („RedWind", „RDC Boss"). Wo eine
+    # ganze Gegenstandsbeschreibung steht („Carryable 2H FL MissionItem
+    # Microsatellite a"), ist es wieder keine Herkunft, sondern das Ding selbst.
+    if len(kern.split()) > 2:
+        return ''
+    return kern or ''
 
 
 def _herkunft(merged):
@@ -343,19 +448,25 @@ def erzeugen(version=None, fortschritt=None, aus_datei=None):
     if not version:
         return 0, ''
 
-    melde('Werte werden geholt …')
+    melde(t('z_werte'))
     werte = _werte(_hole('%s/crafting_items-%s.json' % (BASIS, version)))
 
     if aus_datei:                       # nur für Entwicklung und Selbsttest
-        melde('Bauplan-Herkunft wird aus %s gelesen …' % os.path.basename(aus_datei))
+        melde(t('z_herkunft_datei') % os.path.basename(aus_datei))
         with open(aus_datei, encoding='utf-8') as f:
             merged = json.load(f)
     else:
-        melde('Bauplan-Herkunft wird geholt (etwa 12 MB) …')
+        melde(t('z_herkunft_netz'))
         merged = _hole('%s/merged-%s.json' % (BASIS, version))
 
-    melde('Wird ausgewertet …')
+    melde(t('z_auswerten'))
     pools, quellen = _herkunft(merged)
+    topf_namen = {}
+    for topf in (merged.get('blueprintPools') or {}).values():
+        wie = topf.get('name') or ''
+        for b in (topf.get('blueprints') or []):
+            if b.get('name'):
+                topf_namen.setdefault(_norm(b['name']), []).append(wie)
     namen = {n for liste in pools.values() for n in liste}
 
     bauplaene = {}
@@ -366,11 +477,16 @@ def erzeugen(version=None, fortschritt=None, aus_datei=None):
         q = quellen.get(k)
         if q:
             eintrag['q'] = q
+        else:
+            # Kein Auftrag schüttet ihn aus — aber der Topf hat einen Namen.
+            toepfe = sorted({topf_lesbar(t) for t in (topf_namen.get(k) or []) if t})
+            if toepfe:
+                eintrag['topf'] = ' · '.join(toepfe[:2])
         bauplaene[k] = eintrag
 
     # Startbaupläne dazu — sie stehen in keinem Belohnungs-Pool und würden
     # sonst fehlen. Vorhandene Einträge werden nicht überschrieben.
-    melde('Startbaupläne werden geholt …')
+    melde(t('z_startbp'))
     for e in _startbauplaene(version):
         k = _norm(e['n'])
         if k in bauplaene:
@@ -380,6 +496,39 @@ def erzeugen(version=None, fortschritt=None, aus_datei=None):
             if e.get('a'):
                 eintrag['a'] = e['a']
             bauplaene[k] = eintrag
+
+    # ---- Was hat dieser Patch gebracht? ----
+    #
+    # Verglichen wird gegen **alle je gesehenen** Baupläne, nicht gegen den
+    # Katalog von letzter Woche. Der Unterschied ist der ganze Grund für
+    # `patchhistorie`: Am 26.08.2026 meldete der Vergleich gegen den letzten
+    # Katalog 74 Zugänge, von denen 53 längst im Spiel waren — die Quelle hatte
+    # sie zwischendurch schlicht nicht geführt.
+    #
+    # ⚠ Ist noch nichts gesehen worden (erster Katalogbau überhaupt), wird
+    # NICHTS als Zugang gewertet — sonst stünden alle 730 Baupläne als „neu" da.
+    # Nur die Vergleichsgrundlage wird gesetzt.
+    #
+    # ⚠ Wer den Watcher schon vor v3.0.0-rc55 benutzt hat, hat einen Katalog,
+    # aber noch keine Vergleichsgrundlage — die Datei kam erst mit der
+    # Patch-Historie dazu. Ohne diesen Nachzug griffe bei ihm die Regel oben
+    # fälschlich, und der **nächste** Patch bliebe stumm: alles gälte als
+    # „schon immer da". Der alte Katalog ist die richtige Grundlage — was darin
+    # steht, war vor diesem Lauf im Spiel.
+    bekannt = _vergleichsgrundlage()
+    if bekannt:
+        zugang = [e['n'] for k, e in bauplaene.items() if k not in bekannt]
+        if zugang:
+            patchhistorie.eintragen(version, zugang)
+    patchhistorie.gesehen_setzen(bekannt | set(bauplaene))
+
+    # Der Stempel kommt aus der Historie, nicht aus diesem Lauf. Dadurch trägt
+    # auch ein frisch gebauter Katalog die Herkunft aller früheren Patches —
+    # die mitgelieferte Historie reicht weiter zurück als das eigene Zusehen.
+    herkunft = patchhistorie.version_je_bauplan()
+    for k, eintrag in bauplaene.items():
+        if k in herkunft:
+            eintrag['seit'] = herkunft[k]
 
     daten = {'version': version, 'geholt': time.strftime('%Y-%m-%d %H:%M'),
              'bauplaene': bauplaene, 'missionen': _missionen(merged)}
@@ -405,12 +554,73 @@ def laden():
     return {'version': '', 'geholt': '', 'bauplaene': {}, 'missionen': {}}
 
 
+def _vergleichsgrundlage():
+    """Wogegen dieser Lauf vergleicht, um Zugänge zu erkennen.
+
+    Normalerweise die Liste aller je gesehenen Baupläne. Fehlt sie — jeder, der
+    den Watcher vor v3.0.0-rc55 benutzt hat, hat sie nicht —, gilt ersatzweise
+    der Katalog, der schon auf der Platte liegt: Was darin steht, war vor diesem
+    Lauf im Spiel. Ohne diesen Ersatz griffe beim nächsten Patch die Regel
+    „erster Katalogbau überhaupt", und er meldete **keinen einzigen** Zugang.
+
+    Leer ist das Ergebnis nur beim allerersten Katalogbau — dann ist es richtig
+    so, sonst stünden alle 738 Baupläne als „neu" da."""
+    return patchhistorie.gesehen() or set(laden().get('bauplaene') or {})
+
+
+def stempel_nachziehen():
+    """Fehlende `seit`-Stempel im vorhandenen Katalog nachtragen.
+
+    ⚠ **Warum das nötig ist.** Gestempelt wurde bisher nur beim Neubau des
+    Katalogs — und neu gebaut wird nur, wenn eine neue Spielversion kommt. Wer
+    seinen Katalog vor v3.0.0-rc55 geholt hat, sitzt deshalb auf 738 Einträgen
+    ohne Herkunft, und daran ändert sich bis zum nächsten Patch nichts: Das
+    Auswahlfeld zeigte „4.10.0 (21)" — es liest die Historie direkt —, die
+    Liste blieb aber leer, weil der Filter gegen den Stempel im Katalog prüft.
+    Dasselbe traf „neu im Spiel".
+
+    Der Abgleich kostet nichts und braucht kein Netz: Die Historie liegt beim
+    Programm, der Katalog auf der Platte. Geschrieben wird nur, wenn sich
+    wirklich etwas ändert.
+
+    Gibt die Zahl der nachgetragenen Stempel zurück."""
+    try:
+        d = laden()
+        bauplaene = d.get('bauplaene') or {}
+        if not bauplaene:
+            return 0
+        herkunft = patchhistorie.version_je_bauplan()
+        geaendert = 0
+        for k, eintrag in bauplaene.items():
+            seit = herkunft.get(k)
+            if seit and eintrag.get('seit') != seit:
+                eintrag['seit'] = seit
+                geaendert += 1
+        if not geaendert:
+            return 0
+        ziel = pfade.app_datei(CACHE)
+        temp = ziel + '.tmp'
+        with open(temp, 'w', encoding='utf-8') as f:
+            json.dump(d, f, ensure_ascii=False)
+        os.replace(temp, ziel)
+        return geaendert
+    except Exception:
+        return 0
+
+
 def aktualisieren(fortschritt=None):
     """Erneuert den Katalog, falls eine neue Spielversion vorliegt.
 
     Gibt (True, Anzahl, Version) zurück, wenn etwas passiert ist. Wirft nie —
     ohne Netz gilt der letzte Stand, und der Watcher läuft ohne Katalog weiter
     (dann fehlt nur die Liste, nicht die Erkennung)."""
+    # ⚠ Ganz am Anfang — vor der Netzsperre und vor dem Netz-Zugriff. Bringt
+    # eine neue Programmfassung Historie mit, die der Katalog auf der Platte
+    # noch nicht kennt, muss der Stempel auch dann nachkommen, wenn gar keine
+    # neue Spielversion ansteht. `AUS` verbietet das **Netz**, nicht die Arbeit:
+    # Historie und Katalog liegen beide auf der Platte. Stand die Zeile hinter
+    # dem Riegel, blieb die Liste bei abgeschaltetem Netz für immer leer.
+    stempel_nachziehen()
     if AUS:
         return False, 0, ''
     try:
@@ -421,6 +631,44 @@ def aktualisieren(fortschritt=None):
         return bool(anzahl), anzahl, version
     except Exception:
         return False, 0, ''
+
+
+def version_kurz(version):
+    """Aus '4.10.0-live.12519617' wird '4.10.0'.
+
+    Die volle Kennung ist eindeutig und wird deshalb gespeichert; im Auswahlfeld
+    hat sie nichts verloren — dort will man „4.10.0" lesen, nicht die Buildnummer."""
+    return (version or '').split('-')[0] or (version or '')
+
+
+def patches(daten=None):
+    """[(volle Version, kurze Version, Anzahl), …] — neueste zuerst.
+
+    Alle Spielversionen, aus denen im Katalog Baupläne stammen. Grundlage ist
+    derselbe Stempel `seit`, den auch `neue()` benutzt: Kommt ein Patch dazu,
+    taucht seine Version hier von allein auf — es gibt keine gepflegte Liste,
+    die man vergessen könnte.
+
+    Vor dem zweiten Katalogbau ist die Liste leer: Ohne Vorgänger wird nichts
+    gestempelt, und ein Feld mit einem einzigen Eintrag hilft niemandem."""
+    return patchhistorie.patches()
+
+
+def neue(daten=None):
+    """Die Baupläne, die mit der **zuletzt geholten** Spielversion dazukamen.
+
+    Grundlage ist der Stempel `seit`, den `erzeugen()` setzt. Gezeigt wird nur,
+    was zur aktuellen Katalogversion passt — ältere Stempel bleiben zwar in der
+    Datei stehen (sie sagen, mit welchem Patch es einen Bauplan gibt), gehören
+    aber nicht mehr unter „neu im Spiel".
+
+    Leer ist das Ergebnis, solange der Katalog erst einmal gebaut wurde: Ohne
+    Vorgänger gibt es keine Differenz."""
+    d = daten or laden()
+    version = d.get('version') or ''
+    if not version:
+        return set()
+    return {k for k, e in d['bauplaene'].items() if e.get('seit') == version}
 
 
 def startbauplaene(daten=None):
@@ -458,12 +706,23 @@ ART_GRUPPE = {
     'DockingCollar': 'schiff', 'Cargo': 'schiff',
     # Was man in die Hand nimmt
     'WeaponPersonal': 'fps', 'WeaponAttachment': 'fps',
+    # ⚠ scmdb führt einige Einträge unter kleingeschriebenen Sammelbegriffen
+    # statt unter der sonst üblichen Kennung. Ohne diese vier Zeilen landeten
+    # die S-38 Pistol und das P4-AR Rifle unter „Sonstiges", während der
+    # Filter „nur FPS-Waffen" nichts anzeigte — dasselbe für den Field Recon
+    # Suit unter „Rüstung". Betroffen sind 10 der 722 Baupläne; wer nur auf
+    # die Gesamtzahl sieht, merkt davon nichts.
+    # Beide fallen inzwischen über `ART_ZUSAMMEN` mit ihrer richtigen Kennung
+    # zusammen; die Zeile bleibt für den Fall, dass `obergruppe()` einmal eine
+    # rohe Kennung bekommt, die nicht durch `art_kennung()` gelaufen ist.
+    'weapons': 'fps', 'ammo': 'fps',
     # Was man am Körper trägt
     'Char_Armor_Helmet': 'ruestung', 'Char_Armor_Torso': 'ruestung',
     'Char_Armor_Legs': 'ruestung', 'Char_Armor_Arms': 'ruestung',
     'Char_Armor_Backpack': 'ruestung', 'Char_Armor_Undersuit': 'ruestung',
     'Char_Clothing_Torso_0': 'ruestung', 'Char_Clothing_Torso_1': 'ruestung',
     'Char_Clothing_Legs': 'ruestung', 'Char_Clothing_Feet': 'ruestung',
+    'armour': 'ruestung',
 }
 
 
@@ -503,7 +762,7 @@ def gruppen_geordnet(daten=None):
     im Kopf."""
     gruppen = {}
     for e in (daten or laden())['bauplaene'].values():
-        roh = e.get('a')
+        roh = art_kennung(e)
         gruppen.setdefault((obergruppe(roh), art_lesbar(roh)), []).append(e)
     for liste in gruppen.values():
         liste.sort(key=lambda e: e['n'].lower())

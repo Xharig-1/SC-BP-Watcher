@@ -45,6 +45,7 @@ Geladen wird ausschließlich von `github.com`; eine Datei von woanders wird
 abgelehnt, selbst wenn die API sie nennen würde.
 """
 import json
+import errno
 import os
 import re
 import sys
@@ -52,6 +53,7 @@ import tempfile
 import time
 import urllib.request
 
+from . import fehler
 from . import pfade
 
 REPO = 'Xharig-1/SC-BP-Watcher'
@@ -164,11 +166,20 @@ def nachsehen(eigene_version, erzwingen=False):
         except Exception:
             pass                      # ohne Netz bleibt der letzte Stand
 
-    # Vorabversionen werden **nicht** angeboten. Wer sie ausprobieren will, holt
-    # sie bewusst von der Releases-Seite; ungefragt vorgeschlagen bekommt sie
-    # niemand — eine Vorabfassung ist zum Prüfen da, nicht zum Verteilen.
-    # Ausnahme: Wer selbst schon eine fährt, darf auch die nächste sehen.
-    eigene_ist_vorab = bool(re.search(r'-(rc|beta|alpha|dev)', str(eigene_version)))
+    # Vorabversionen bekommt **niemand ungefragt** angeboten — eine Vorabfassung
+    # ist zum Prüfen da, nicht zum Verteilen. Angeboten werden sie in drei Fällen:
+    #
+    #   1. Der Spieler hat es in den Einstellungen ausdrücklich verlangt
+    #      (`vorabversionen`, Standard aus). Das ist der Testkanal: Wer mithelfen
+    #      will, bekommt die Fassungen vor allen anderen — wer Ruhe will, merkt
+    #      von ihnen nichts und bleibt auf den fertigen Fassungen.
+    #   2. Er fährt selbst schon eine Vorabfassung; dann wäre es unsinnig, ihm
+    #      die nächste zu verschweigen.
+    #   3. Die fertige Fassung zur selben Nummer erscheint — die ist ohnehin
+    #      "neuer" als jede Vorabfassung (siehe `ist_neuer`), also endet der
+    #      Testkanal nie in einer Sackgasse.
+    eigene_ist_vorab = (_vorab(eigene_version)
+                        or pfade.einstellung_wahrheit('vorabversionen', False))
     # ⚠ **Nicht** den ersten Treffer nehmen, sondern den höchsten.
     # GitHub gibt die Freigaben nach Erstellungszeit des Tags zurück, nicht nach
     # Versionsnummer — und das ist nicht dasselbe: In der Liste stand `rc10`
@@ -181,6 +192,25 @@ def nachsehen(eigene_version, erzwingen=False):
         if f.get('vorab') and not eigene_ist_vorab:
             continue
         if not ist_neuer(f['version'], eigene_version):
+            continue
+        if bester is None or ist_neuer(f['version'], bester['version']):
+            bester = f
+    return bester
+
+
+def neueste(mit_vorab):
+    """Die neueste bekannte Freigabe eines Kanals — unabhängig von der eigenen Fassung.
+
+    ⚠ Nicht dasselbe wie `nachsehen()`. Das meldet nur, was **neuer** ist als die
+    laufende Fassung — richtig für eine Update-Meldung, unbrauchbar für einen
+    Knopf „hol mir die letzte fertige Fassung". Wer eine Testfassung fährt, will
+    ja gerade zurück auf die fertige können.
+    """
+    bester = None
+    for f in freigaben():
+        if not f.get('version'):
+            continue
+        if f.get('vorab') and not mit_vorab:
             continue
         if bester is None or ist_neuer(f['version'], bester['version']):
             bester = f
@@ -219,24 +249,90 @@ def _changelog_datei():
     return None
 
 
+# Welche Überschrift im CHANGELOG bedeutet was. Die Zuordnung ist bewusst
+# großzügig — englische wie deutsche Fassung, und wer eine neue Überschrift
+# erfindet, landet unter „neu" statt im Nichts.
+_ARTEN = (
+    ('fix',  ('behoben', 'fixed', 'korrigiert', 'bugfix')),
+    ('bess', ('geändert', 'changed', 'verbessert', 'improved', 'entfernt',
+              'removed', 'bedienung')),
+    ('neu',  ('hinzugefügt', 'added', 'neu', 'new')),
+)
+
+
+def einleitung(text):
+    """Der Satz, mit dem eine Fassung vorgestellt wird — das Zitat im Changelog.
+
+    Im Markdown steht er als `> …`-Block über den Aufzählungen: „Ein Fenster für
+    alles." Er sagt in einem Satz, worum es in der Fassung ging, und war bisher
+    nirgends zu sehen — `punkte_nach_art` wirft alles weg, was keine Aufzählung
+    ist. Genau dieser Satz gehört aber unter die Version, wenn man sie aufklappt.
+    """
+    zeilen = []
+    for zeile in (text or '').split('\n'):
+        blank = zeile.strip()
+        if blank.startswith('>'):
+            zeilen.append(blank.lstrip('>').strip())
+        elif zeilen and not blank:
+            break                      # der Block ist zu Ende
+        elif zeilen:
+            break
+    satz = ' '.join(z for z in zeilen if z)
+    # Die Auszeichnungen sind im Fenster nur Zeichen — sie stören mehr, als sie
+    # helfen.
+    return satz.replace('**', '').replace('`', '').strip()
+
+
+def punkte_nach_art(text):
+    """Zerlegt einen Änderungstext in (art, zeile) — für Filter und Marken.
+
+    Der Text ist Markdown mit Zwischenüberschriften (`### Behoben`). Alles
+    darunter gilt als diese Art, bis die nächste Überschrift kommt. Ohne
+    Überschrift gilt „neu": Lieber falsch einsortiert als unsichtbar.
+    """
+    art = 'neu'
+    heraus = []
+    for zeile in (text or '').split('\n'):
+        # ⚠ Die Einrückung muss VOR dem Abschneiden geprüft werden — sonst sind
+        # Unterpunkte nicht mehr von Hauptpunkten zu unterscheiden.
+        eingerueckt = zeile[:1].isspace()
+        blank = zeile.strip()
+        if blank.startswith('#'):
+            klein = blank.lstrip('#').strip().lower()
+            for kennung, woerter in _ARTEN:
+                if any(w in klein for w in woerter):
+                    art = kennung
+                    break
+            continue
+        if not eingerueckt and blank.startswith(('- ', '* ')):
+            heraus.append([art, blank[2:].strip()])
+        elif eingerueckt and blank and not blank.startswith(('- ', '* ')) and heraus:
+            # Eine eingerückte Zeile **ohne** Aufzählungszeichen ist die
+            # Fortsetzung des Punktes darüber — im Markdown umgebrochen, im
+            # Fenster gehört sie an denselben Satz. Wer sie verwirft, zeigt
+            # abgeschnittene Sätze („… ganz unten") und merkt es nicht, weil
+            # es wie ein Zeilenumbruch aussieht.
+            heraus[-1][1] = (heraus[-1][1] + ' ' + blank).strip()
+    return [(a, z) for a, z in heraus]
+
+
 def protokoll():
     """Die Versionsgeschichte als Liste, neueste zuerst.
 
-    Zusammengesetzt aus zwei Quellen: den Release-Texten von GitHub (die auch
-    Fassungen kennen, die neuer sind als die eigene) und der mitgelieferten
-    `CHANGELOG.md` (die auch ohne Netz da ist). Doppeltes wird zusammengeführt,
-    die GitHub-Fassung hat Vorrang — sie ist die veröffentlichte Wahrheit."""
-    eintraege, gesehen = [], set()
-    for f in freigaben():
-        schluessel = _teile(f.get('version'))
-        if schluessel in gesehen:
-            continue
-        gesehen.add(schluessel)
-        eintraege.append({'version': f.get('version') or '',
-                          'datum': f.get('datum') or '',
-                          'text': (f.get('text') or '').strip(),
-                          'quelle': 'github'})
+    Zusammengesetzt aus zwei Quellen: der **mitgelieferten** `CHANGELOG.de.md`
+    bzw. `CHANGELOG.md` — je nach eingestellter Sprache — und den Release-Texten
+    von GitHub, die auch Fassungen kennen, die neuer sind als die eigene.
 
+    ⚠ Der mitgelieferte Changelog hat Vorrang, **weil nur er die Sprache kennt**.
+    Der Release-Text auf GitHub ist bewusst zweisprachig aufgebaut: Englisch oben,
+    Deutsch in einem aufklappbaren Block darunter. Auf der Release-Seite ist das
+    richtig — im Fenster wurde daraus eine englische Liste für jemanden, der die
+    Oberfläche auf Deutsch stehen hat. Genau so gemeldet.
+
+    GitHub springt nur dort ein, wo der Changelog nichts hat: bei Fassungen, die
+    neuer sind als die eigene.
+    """
+    eintraege, gesehen = [], {}
     datei = _changelog_datei()
     if datei:
         try:
@@ -250,28 +346,103 @@ def protokoll():
             schluessel = _teile(version)
             if schluessel == (0, 0, 0):
                 continue        # „Unveröffentlicht" ist nichts für Nutzer
-            if schluessel in gesehen:
-                continue
-            gesehen.add(schluessel)
             datum = ''
             m = re.search(r'(\d{4}-\d{2}-\d{2})', kopf)
             if m:
                 datum = m.group(1)
-            eintraege.append({'version': version, 'datum': datum,
-                              'text': rest.strip(), 'quelle': 'changelog'})
+            if schluessel in gesehen:
+                continue
+            eintrag = {'version': version, 'datum': datum,
+                       'text': rest.strip(), 'quelle': 'changelog'}
+            gesehen[schluessel] = eintrag
+            eintraege.append(eintrag)
+
+    # Und nun alles, was der mitgelieferte Changelog noch nicht kennt — das sind
+    # die Fassungen, die nach dieser hier erschienen sind.
+    for f in freigaben():
+        schluessel = _teile(f.get('version'))
+        if schluessel in gesehen or not f.get('version'):
+            continue
+        eintrag = {'version': f.get('version'),
+                   'datum': f.get('datum') or '',
+                   'text': (f.get('text') or '').strip(),
+                   'quelle': 'github'}
+        gesehen[schluessel] = eintrag
+        eintraege.append(eintrag)
 
     eintraege.sort(key=lambda e: (_teile(e['version']), e['datum']), reverse=True)
     return eintraege
 
 
 # ------------------------------------------------------------------- Holen
+def eigenes_appimage():
+    """Der Pfad **unseres** AppImage — oder None.
+
+    ⚠ `APPIMAGE` allein genügt nicht. Die Variable steht in der Umgebung
+    **jedes** Programms, das aus einem AppImage heraus gestartet wurde — auch in
+    einem Terminal, das man daraus öffnet, und in allem, was von dort aus läuft.
+    Wer nur auf sie schaut, hält jedes beliebige Programm für sich selbst.
+
+    Das ist am 25.08.2026 teuer geworden: Ein Testlauf des Selbst-Updates lief in
+    einer Umgebung, in der `APPIMAGE` auf eine **fremde** Anwendung zeigte — und
+    das Update hat prompt diese fremde Datei überschrieben (234 MB durch 12 MB
+    ersetzt). Zurückzuholen war sie nur, weil das fremde Programm noch lief und
+    die alte Inode über `/proc/<pid>/exe` offen hielt.
+
+    Verlässlich ist erst der zweite Teil: Zu einem AppImage gehört `APPDIR`, der
+    Ort, an dem es entpackt eingehängt ist. Nur wenn **unser eigener Code** von
+    dort kommt, laufen wir wirklich in diesem AppImage.
+    """
+    pfad = os.environ.get('APPIMAGE')
+    if not pfad or not os.path.isfile(pfad):
+        return None
+    # ⚠ Der erste Anlauf verglich den eigenen Code mit `APPDIR`. Das ging schief:
+    # PyInstaller entpackt sich in ein **eigenes** Verzeichnis (`sys._MEIPASS`,
+    # etwa `/tmp/_MEIabc123`), nicht in den AppImage-Einhängepunkt. Der Vergleich
+    # schlug also **immer** fehl — das Programm hielt sich für eine `.exe`, ging in
+    # den Windows-Zweig und meldete „[Errno 2] No such file or directory: 'cmd'".
+    #
+    # Maßgeblich ist stattdessen der Dateiname: Zeigt `APPIMAGE` auf eine Datei,
+    # die nach diesem Programm heißt, ist es unsere. Ein fremdes AppImage — der
+    # Unfall, um den es hier geht — heißt anders und fällt durch.
+    if 'sc-bp-watcher' not in os.path.basename(pfad).lower():
+        return None
+    return pfad
+
+
 def verpackung():
     """Wie läuft dieses Programm gerade? 'exe', 'appimage' oder 'quellcode'."""
-    if os.environ.get('APPIMAGE'):
+    if eigenes_appimage():
         return 'appimage'
     if getattr(sys, 'frozen', False):
         return 'exe'
     return 'quellcode'
+
+
+# Welcher Anhang unter Windows geholt wird — und warum es der Installer ist.
+#
+# An jeder Freigabe hängen drei Dateien:
+#
+#     SC-BP-Watcher-Setup.exe          der Installer
+#     SC-BP-Watcher-x86_64.AppImage    Linux
+#     SC-BP-Watcher.exe                das nackte Programm
+#
+# ⚠ Bis rc39 wurde hier nach der **ersten** Datei auf `.exe` gesucht. GitHub
+# liefert sie alphabetisch, ein `-` (0x2D) steht vor einem `.` (0x2E), also kam
+# `-Setup.exe` zuerst — und die alte `einspielen()` schob diesen Fund roh über
+# die laufende `SC-BP-Watcher.exe`, ohne ihn je auszuführen. Nach dem Update lag
+# der Installer unter dem Namen des Programms. Am 26.08.2026 im Test bestätigt:
+# geladen wurden 14.812.324 Bytes statt 13.015.189.
+#
+# Seitdem ist es **Absicht**, den Installer zu holen — er wird jetzt gestartet
+# statt kopiert. Das erspart den ganzen Eigenbau ringsherum: Inno beendet das
+# laufende Programm selbst (`CloseApplications=force`), ersetzt die Datei,
+# pflegt den Eintrag in „Apps & Features" und startet den Watcher danach wieder.
+# Denselben Weg geht der SC-Deutsch-Launcher.
+#
+# Unter Linux bleibt es beim Tausch des AppImage — dort gibt es keinen
+# Installer, und ein laufendes AppImage darf ersetzt werden.
+WINDOWS_INSTALLER = ('-setup.exe', '-installer.exe')
 
 
 def passende_datei(freigabe, art=None):
@@ -279,11 +450,18 @@ def passende_datei(freigabe, art=None):
     art = art or verpackung()
     if art == 'quellcode':
         return None                      # dort ist `git pull` der richtige Weg
-    endung = '.appimage' if art == 'appimage' else '.exe'
+    if art == 'appimage':
+        for datei in freigabe.get('dateien') or []:
+            name = (datei.get('name') or '').lower()
+            if name.endswith('.appimage') and _url_ok(datei.get('url') or ''):
+                return datei
+        return None
+    # Windows: **nur** der Installer. Findet sich keiner, gibt es lieber gar
+    # kein Update als das falsche — die nackte .exe wäre hier wertlos, weil
+    # niemand mehr da ist, der sie an ihren Platz legt.
     for datei in freigabe.get('dateien') or []:
         name = (datei.get('name') or '').lower()
-        url = datei.get('url') or ''
-        if name.endswith(endung) and _url_ok(url):
+        if name.endswith(WINDOWS_INSTALLER) and _url_ok(datei.get('url') or ''):
             return datei
     return None
 
@@ -300,6 +478,38 @@ def _url_ok(url):
         return False
 
 
+def _ablageort_fuer_update(name):
+    """Wohin die neue Fassung geladen wird.
+
+    **Windows** — in den Temp-Ordner. Geholt wird dort ein Installer, der nur
+    einmal gestartet und danach nie wieder gebraucht wird; Windows räumt den
+    Ordner von selbst auf. Früher lag er neben dem Programm, und wenn das Update
+    scheiterte, blieben dort 14 MB liegen, die niemand zuordnen konnte.
+
+    **Linux** — **neben** das laufende AppImage.
+
+    ⚠ Hier lag ein Fehler, der jedes Selbst-Update unter Linux scheitern ließ:
+    Geladen wurde nach `/tmp`, eingespielt mit `os.replace()`. Auf so gut wie
+    jedem Linux ist `/tmp` ein eigenes Dateisystem (tmpfs), und `os.replace` kann
+    nicht über Dateisystemgrenzen verschieben — es endet mit
+    „[Errno 18] Invalid cross-device link". Gemeldet am 25.08.2026 direkt aus dem
+    Fenster.
+
+    Nebenbei ist das Einspielen dadurch **atomar**: Innerhalb eines Dateisystems
+    ist `os.replace` unteilbar, es gibt keinen Moment, in dem die Datei halb da
+    ist. Ist der Zielordner nicht beschreibbar, bleibt `/tmp` als Rückfall — dann
+    greift beim Einspielen der Umweg über `shutil.move`.
+    """
+    if sys.platform.startswith('win'):
+        return os.path.join(tempfile.gettempdir(), name or 'update.bin')
+    laufende = eigenes_appimage() or sys.executable
+    ordner = os.path.dirname(os.path.abspath(laufende))
+    if os.access(ordner, os.W_OK):
+        return os.path.join(ordner, '.' + (name or 'update.bin') + '.neu')
+    return os.path.join(tempfile.gettempdir(), name or 'update.bin')
+    return os.path.join(tempfile.gettempdir(), name or 'update.bin')
+
+
 def herunterladen(datei, fortschritt=None):
     """Lädt die neue Fassung in eine Nebendatei. Gibt deren Pfad zurück.
 
@@ -307,8 +517,11 @@ def herunterladen(datei, fortschritt=None):
     Leitung ab, ist die alte Fassung noch vollständig da."""
     url = datei.get('url')
     if not _url_ok(url):
-        raise ValueError('Datei kommt nicht von GitHub')
-    ziel = os.path.join(tempfile.gettempdir(), datei.get('name') or 'update.bin')
+        # ⚠ Der Text dieser Ausnahme landet über `str(fehler)` sichtbar
+        # beim Nutzer (siehe `return False, str(fehler)` weiter unten).
+        from . import sprache
+        raise ValueError(sprache.t('up_fremde_quelle'))
+    ziel = _ablageort_fuer_update(datei.get('name'))
     req = urllib.request.Request(url, headers={'User-Agent': KENNUNG})
     with urllib.request.urlopen(req, timeout=120) as r, open(ziel, 'wb') as f:
         gesamt = int(r.headers.get('Content-Length') or 0)
@@ -324,37 +537,202 @@ def herunterladen(datei, fortschritt=None):
     return ziel
 
 
+# ⚠ Hier stand einmal ein Hilfsskript, das die laufende `.exe` selbst tauschte —
+# und das ist am 26.08.2026 im Test auf eine Verklemmung gelaufen, die niemand
+# vorhergesehen hatte:
+#
+#   * Die App beendet sich, aber der PyInstaller-Bootloader lebt weiter: Er
+#     räumt seinen Ordner unter `%TEMP%` auf. Zwei Laufzeit-Bibliotheken
+#     (`VCRUNTIME140.dll`, `VCRUNTIME140_1.dll`) blieben gesperrt, und er stand
+#     im Fenster "Failed to remove temporary directory" still.
+#   * Solange dieses Fenster steht, hält der Bootloader die `.exe`.
+#   * Das Skript wartete also auf eine Freigabe, die erst kam, wenn der Nutzer
+#     eine Warnung wegklickte, von der er nicht wusste, dass sie zum Update
+#     gehört. Nach zwei Minuten gab es auf — und im Programmordner blieb eine
+#     verwaiste 14-MB-Datei liegen. **Bei jedem Versuch aufs Neue.**
+#
+# Der Eigenbau ist deshalb weg. Unter Windows startet jetzt der Installer, und
+# der kann all das, was hier mühsam nachgebaut war: Er beendet das laufende
+# Programm über den Restart Manager (`CloseApplications=force` in
+# `installer.iss`, erkannt über `AppMutex`), ersetzt die Datei, pflegt den
+# Eintrag in „Apps & Features" und startet den Watcher danach wieder
+# (`RestartApplications=yes`).
+
+
+# ⚠ Unter Windows übernimmt der Installer auch den **Neustart**. `neu_starten()`
+# darf dann NICHT auch noch starten — sonst kommen zwei Fassungen hoch, und die
+# zweite legt sich über die Arbeit der ersten. Unter Linux bleibt es beim
+# Tausch, dort startet das Programm sich selbst neu.
+_TAUSCH_LAEUFT = [False]
+
+
 def einspielen(neue_datei):
     """Die laufende Fassung durch die neue ersetzen.
 
-    Gibt (True, '') zurück, wenn danach ein Neustart genügt — bei Windows
-    übernimmt ein Hilfsskript nach dem Beenden. Bei (False, Grund) muss der
-    Nutzer selbst ran."""
+    Zwei Wege, je nach Verpackung:
+
+    * **Linux** — das AppImage wird getauscht. Danach genügt ein Neustart.
+    * **Windows** — der Installer wird gestartet. Er beendet das laufende
+      Programm selbst, ersetzt die Datei und fährt den Watcher wieder hoch.
+
+    Gibt (True, '') zurück, wenn der Weg angetreten ist. Bei (False, Grund) muss
+    der Nutzer selbst ran."""
     art = verpackung()
     if art == 'quellcode':
         return False, 'quellcode'
-    ziel = os.environ.get('APPIMAGE') or sys.executable
+    ziel = eigenes_appimage() or sys.executable
+
+    # ⚠ Letzter Riegel vor dem Überschreiben: Der Dateiname muss zu uns gehören.
+    # Selbst wenn die Erkennung oben irgendwann wieder danebenliegt, wird dadurch
+    # keine fremde Datei ersetzt. Genau dieser Riegel hätte den Unfall vom
+    # 25.08.2026 verhindert, bei dem ein fremdes AppImage überschrieben wurde,
+    # weil `APPIMAGE` auf ein anderes Programm zeigte.
+    if 'sc-bp-watcher' not in os.path.basename(ziel).lower():
+        from . import sprache
+        return False, sprache.t('up_fremde_datei', os.path.basename(ziel))
     try:
         if art == 'appimage':
             # Unter Linux darf die laufende Datei ersetzt werden, solange man sie
             # austauscht statt hineinzuschreiben: Der laufende Prozess hält die
             # alte Inode, die neue liegt sofort am Platz.
-            os.replace(neue_datei, ziel)
+            #
+            # ⚠ `os.replace` schafft das nur **innerhalb eines Dateisystems**.
+            # Deshalb wird gleich daneben geladen (siehe `_ablageort_fuer_update`).
+            # Liegt die Datei doch woanders — Zielordner schreibgeschützt, eigener
+            # Pfad über `SC_BP_APPIMAGE` —, tut es `shutil.move`: Das kopiert bei
+            # Bedarf und räumt danach auf. Langsamer, aber es funktioniert.
+            try:
+                os.replace(neue_datei, ziel)
+            except OSError as grund:
+                if getattr(grund, 'errno', None) != errno.EXDEV:
+                    raise
+                import shutil
+                shutil.move(neue_datei, ziel)
             os.chmod(ziel, 0o755)
             return True, ''
-        # Windows: die laufende .exe ist gesperrt. Also ein Hilfsskript, das
-        # wartet, bis wir weg sind, dann tauscht und neu startet.
-        skript = os.path.join(tempfile.gettempdir(), 'sc-bp-watcher-update.cmd')
-        with open(skript, 'w', encoding='ascii', errors='ignore') as f:
-            f.write('@echo off\r\n'
-                    ':warten\r\n'
-                    'timeout /t 1 /nobreak >nul\r\n'
-                    'move /y "%s" "%s" >nul 2>&1 || goto warten\r\n'
-                    'start "" "%s"\r\n'
-                    'del "%%~f0"\r\n' % (neue_datei, ziel, ziel))
+        # Windows: den Installer starten. Er bringt alles mit, was hier frueher
+        # von Hand nachgebaut war — siehe die Erklaerung oben.
+        #
+        # `/SILENT` zeigt nur einen Fortschrittsbalken statt des ganzen
+        # Assistenten, `/NORESTART` verbietet ihm, den Rechner neu zu starten,
+        # und `/CLOSEAPPLICATIONS` laesst ihn den laufenden Watcher schliessen.
+        #
+        # ⚠ **Kein `/RESTARTAPPLICATIONS`.** Das war ein Fehler und hat am
+        # 26.08.2026 den Selbststart zerschossen. Der Schalter uebersteuert
+        # `RestartApplications=no` aus `installer.iss` — und dann starten
+        # **zwei** Wege den Watcher: der Restart Manager und der
+        # `[Run]`-Abschnitt. Im Protokoll steht beides direkt untereinander:
+        #
+        #     Attempting to restart applications.
+        #     -- Run entry --   Filename: ...\SC-BP-Watcher.exe
+        #
+        # Wird das Setup dabei aus dem Watcher heraus gestartet, passt die
+        # Prozesskette fuer den Neustart des Restart Managers nicht, und Inno
+        # bricht mit „Security validation failure: parent process has different
+        # executable!" ab. Aus einer PowerShell heraus faellt das nicht auf —
+        # deshalb war der Fehler zuerst nicht nachstellbar. Den Neustart macht
+        # allein `[Run]`.
         import subprocess
-        subprocess.Popen(['cmd', '/c', skript],
-                         creationflags=getattr(subprocess, 'DETACHED_PROCESS', 0))
+        _TAUSCH_LAEUFT[0] = True
+
+        # ⚠ Die Umgebung MUSS gesaeubert werden, das Arbeitsverzeichnis ebenso.
+        # Sonst erbt der Installer die PyInstaller-Variablen der laufenden
+        # Fassung und sucht seine Bibliotheken in dem Ordner unter `%TEMP%`, den
+        # der Bootloader gleich aufraeumen will. Genau diese Falle steht
+        # ausfuehrlich bei `neu_starten()`.
+        umgebung = dict(os.environ)
+        for name in ('_MEIPASS', '_MEIPASS2', 'TCL_LIBRARY', 'TK_LIBRARY',
+                     'TIX_LIBRARY', 'MATPLOTLIBDATA'):
+            umgebung.pop(name, None)
+
+        # ⚠ **`__COMPAT_LAYER` muss weg** — daran hing die Meldung
+        #
+        #     Security validation failure: parent process has different
+        #     executable!
+        #
+        # die vier Anläufe gekostet hat. Der Weg dahin, weil er sich sonst nicht
+        # wiederfinden lässt:
+        #
+        # Windows führt einen Kompatibilitäts-Speicher über Programme, die ihm
+        # auffällig vorkommen. `SC-BP-Watcher.exe` steht dort — kein Wunder, der
+        # Watcher wird bei jedem Update über `CloseApplications=force` hart
+        # beendet. Windows setzt dem Prozess daraufhin `__COMPAT_LAYER` in die
+        # Umgebung, und **jeder Kindprozess erbt die Variable**. Das Setup lief
+        # damit unter einem Shim, Inno erkannte einen fremden Zwischenprozess und
+        # brach ab.
+        #
+        # Nachgestellt und belegt (26.08.2026) — derselbe Aufruf, dieselbe Datei,
+        # derselbe Pfad, nur die Variable unterschiedlich:
+        #
+        #     gesetzt   →  Compatibility mode: Yes (DetectorsAppHealth)  → Fehler
+        #     entfernt  →  keine solche Zeile                            → läuft
+        #
+        # Genau deshalb war der Fehler aus einer PowerShell oder aus Python heraus
+        # **nie** nachstellbar: Dort ist die Variable nicht gesetzt. Drei frühere
+        # Erklärungen klangen schlüssig und wurden alle durch Messläufe widerlegt.
+        # Gefunden hat es erst das Setup-Protokoll aus rc48.
+        umgebung.pop('__COMPAT_LAYER', None)
+        # ⚠ **Das Setup schreibt ein Protokoll**, und zwar immer — nicht nur im
+        # Fehlerfall. Der Grund steht in der Geschichte dieser Funktion: Am
+        # 26.08.2026 meldete Inno beim Update
+        #
+        #     Security validation failure: parent process has different
+        #     executable!
+        #
+        # und **drei** Erklärungsversuche lagen daneben (vererbtes
+        # Arbeitsverzeichnis, `/RESTARTAPPLICATIONS`, sterbender
+        # Elternprozess). Jeder klang schlüssig, jeder wurde durch einen
+        # Messlauf widerlegt. Nachstellen ließ sich der Fehler nie: aus einer
+        # PowerShell oder aus Python heraus lief derselbe Aufruf sauber durch,
+        # mit lebendem wie mit sterbendem Elternprozess.
+        #
+        # Ohne Protokoll bleibt in so einem Fall nur Raten — und Raten hat hier
+        # drei Fassungen gekostet. Mit Protokoll beantwortet der nächste
+        # Fehlerfall die Frage selbst, auch wenn er bei einem Nutzer auftritt,
+        # dessen Rechner niemand ansehen kann.
+        #
+        # Es landet neben dem Fehlerbericht, wird also vom Diagnose-Bericht
+        # miterfasst. Eine Datei pro Lauf, die alte wird überschrieben — es geht
+        # um den letzten Versuch, nicht um ein Tagebuch.
+        protokoll_datei = ''
+        try:
+            from . import pfade
+            protokoll_datei = pfade.app_datei('update-setup.txt')
+        except Exception:
+            pass                     # ohne Protokoll ist der Weg derselbe
+
+        # ⚠ Der Umweg über `cmd` hält einen Elternprozess am Leben, solange das
+        # Setup läuft. Nachgemessen ist er **nicht** nötig — auch ein sofort
+        # abtretender Vater stört Inno nicht. Er bleibt trotzdem, weil er nichts
+        # kostet und der Fehler oben noch ungeklärt ist; fällt er weg, wäre es
+        # eine Änderung an einer Stelle, die gerade untersucht wird.
+        #
+        # Die doppelten Anführungszeichen sind cmd-Eigenart: `cmd /c "..."`
+        # streicht das äußere Paar, deshalb braucht ein Pfad mit Leerzeichen ein
+        # eigenes. Ohne das scheitert jeder Benutzername mit Leerzeichen —
+        # geprüft mit `C:\Users\Max Mustermann\...`.
+        schalter = '/SILENT /NORESTART /CLOSEAPPLICATIONS'
+        if protokoll_datei:
+            schalter += ' /LOG="%s"' % protokoll_datei
+        befehl = 'cmd /c ""%s" %s"' % (neue_datei, schalter)
+        # ⚠ `DETACHED_PROCESS` **und** eine eigene Prozessgruppe. Ohne das bleibt
+        # das Setup an uns gebunden — und wir treten gleich ab, damit der Restart
+        # Manager nicht 30 Sekunden auf uns wartet. Inno prueft aber seinen
+        # Elternprozess und meldet dann
+        #
+        #     Security validation failure: failed to obtain executable path for
+        #     parent process!
+        #
+        # Das ist die Schwester der Meldung ueber `__COMPAT_LAYER` weiter oben:
+        # einmal traegt der Elternprozess einen Shim, einmal ist er zum
+        # Pruefzeitpunkt gar nicht mehr da. Beide Male geht es um denselben
+        # Zusammenhang — wer ein Setup startet und sich sofort verabschiedet,
+        # muss es vorher **loesen**.
+        flags = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+        flags |= getattr(subprocess, 'DETACHED_PROCESS', 0)
+        flags |= getattr(subprocess, 'CREATE_NEW_PROCESS_GROUP', 0)
+        subprocess.Popen(befehl, env=umgebung, cwd=tempfile.gettempdir(),
+                         creationflags=flags)
         return True, ''
     except Exception as fehler:
         return False, str(fehler)
@@ -369,3 +747,121 @@ if __name__ == '__main__':
     for e in protokoll()[:6]:
         kopf = '%s %s' % (e['version'], ('(%s)' % e['datum']) if e['datum'] else '')
         print('  %-28s %s  %d Zeichen' % (kopf, e['quelle'], len(e['text'])))
+
+
+# --------------------------------------------------- Eintrag in "Apps & Features"
+# Der Installer trägt die Fassung dort ein. Ersetzt sich das Programm danach
+# selbst, bleibt der Eintrag auf dem alten Stand stehen — Windows zeigt dann
+# eine Nummer, die es gar nicht mehr gibt. Dazu: „Die Versionsanzeige
+# wäre schon wichtig, da User ja sonst nicht sehen ob sie aktuell sind."
+#
+# Der Schlüssel liegt unter HKCU (der Installer schreibt in den Benutzerzweig),
+# deshalb braucht das **keine Administratorrechte**.
+INNO_KENNUNG = '{7C4B1E93-2A6F-4D58-B0E1-9F3A5C8D2461}_is1'
+
+
+def neu_starten():
+    """Das Programm durch die frisch eingespielte Fassung ersetzen.
+
+    Nach einem Update läuft weiter die alte Fassung — der Prozess hält seine alte
+    Inode. „Beim nächsten Start läuft die neue" stimmt zwar, heißt aber: selbst
+    beenden und selbst wieder starten. Das nimmt dieser Weg ab.
+
+    ⚠ Reihenfolge: erst den Einzelinstanz-Wächter schließen, dann starten. Sonst
+    sieht die neue Fassung den belegten Port, hält sich für die zweite Instanz und
+    beendet sich sofort wieder.
+    """
+    import subprocess
+    from . import overlay as overlay_modul
+    ziel = eigenes_appimage() or sys.executable
+    if verpackung() == 'quellcode':
+        return False
+    try:
+        overlay_modul.waechter_stoppen()
+
+        # Wartet ein Hilfsskript darauf, die Datei zu tauschen, ist unser Teil
+        # hier **erledigt** — es startet die neue Fassung selbst. Siehe die
+        # Erklärung über `_TAUSCH_LAEUFT`.
+        if _TAUSCH_LAEUFT[0]:
+            return True
+
+        umgebung = dict(os.environ)
+        # Die Variablen des laufenden AppImage gehören der **alten** Fassung.
+        for name in ('APPIMAGE', 'APPDIR', 'OWD', 'ARGV0'):
+            umgebung.pop(name, None)
+
+        # ⚠ Dasselbe gilt unter Windows für die Variablen von PyInstaller — und
+        # dort ist es schlimmer, weil das Programm gar nicht mehr startet.
+        #
+        # Eine mit PyInstaller gebaute `.exe` entpackt sich beim Start nach
+        # `%TEMP%\_MEIxxxxxx` und zeigt mit `TCL_LIBRARY` und `TK_LIBRARY`
+        # dorthin. Erbt die neue Fassung diese Variablen, sucht sie ihre
+        # Tcl-Dateien im Ordner der **alten** — den die alte beim Beenden
+        # gerade aufräumt. Ergebnis, so beim Testen gemeldet (Haldjas,
+        # 25.08.2026):
+        #
+        #     Failed to execute script 'sc_bp_watcher' due to unhandled
+        #     exception: Can't find a usable init.tcl in the following
+        #     directories: C:\Users\…\AppData\Local\Temp\_MEI000067b42…
+        #
+        # Und gleich hinterher die Gegenseite: „Failed to remove temporary
+        # directory" — die alte Fassung kommt an ihren eigenen Ordner nicht
+        # mehr heran, weil die neue darin liest.
+        for name in ('_MEIPASS', '_MEIPASS2', 'TCL_LIBRARY', 'TK_LIBRARY',
+                     'TIX_LIBRARY', 'MATPLOTLIBDATA'):
+            umgebung.pop(name, None)
+        subprocess.Popen([ziel], env=umgebung, start_new_session=True,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return True
+    except Exception as ausnahme:
+        fehler.merken('aktualisierung.neu_starten', ausnahme)
+        return False
+
+
+def windows_eintrag_pflegen(eigene_version):
+    """Die angezeigte Fassung in Windows nachziehen. True, wenn geändert.
+
+    ⚠ Der Schlüssel liegt **nicht** immer unter HKCU. Der Kommentar über
+    `INNO_KENNUNG` behauptete das jahrelang, und die Funktion suchte nur dort —
+    also fand sie am 26.08.2026 auf dem Testrechner gar nichts, obwohl der
+    Eintrag existierte. Er lag unter **HKLM**.
+
+    Grund: `installer.iss` hat zwar `PrivilegesRequired=lowest`, dazu aber
+    `PrivilegesRequiredOverridesAllowed=dialog`. Inno fragt damit beim
+    Installieren nach, und wer "für alle Nutzer" wählt, bekommt seinen Eintrag
+    im Maschinenzweig. Gesucht wird deshalb in beiden.
+
+    Schreiben klappt in HKLM ohne Administratorrechte nicht — das ist in Ordnung
+    und **kein Fehler**: Dann bleibt die angezeigte Nummer eben stehen, statt
+    dass eine Ausnahme das Update aufhält.
+    """
+    if not sys.platform.startswith('win') or not eigene_version:
+        return False
+    try:
+        import winreg
+    except ImportError:
+        return False
+    pfad = (r'Software\Microsoft\Windows\CurrentVersion\Uninstall\%s'
+            % INNO_KENNUNG)
+    for zweig in (winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE):
+        try:
+            with winreg.OpenKey(zweig, pfad, 0,
+                                winreg.KEY_READ | winreg.KEY_WRITE) as schluessel:
+                try:
+                    steht_da = winreg.QueryValueEx(schluessel, 'DisplayVersion')[0]
+                except FileNotFoundError:
+                    steht_da = ''
+                if str(steht_da) == str(eigene_version):
+                    return False
+                winreg.SetValueEx(schluessel, 'DisplayVersion', 0, winreg.REG_SZ,
+                                  str(eigene_version))
+                return True
+        except FileNotFoundError:
+            continue          # in diesem Zweig nicht installiert
+        except PermissionError:
+            continue          # HKLM ohne Administratorrechte — hinnehmen
+        except Exception as ausnahme:
+            from . import fehler
+            fehler.merken('aktualisierung.windows_eintrag', ausnahme)
+            return False
+    return False

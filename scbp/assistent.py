@@ -37,6 +37,7 @@ import os
 import tkinter as tk
 from tkinter import filedialog
 
+from . import fehler
 from . import bestand as bestand_datei
 from . import logquelle, pfade, sprache
 from .sprache import t
@@ -44,6 +45,7 @@ from .sprache import t
 BG      = '#10141c'
 FLAECHE = '#161c28'
 BAR     = '#1b2230'
+LINIE   = '#2a3345'   # Rand runder Kästen und Felder — überall dieselbe Linie
 FG      = '#e6edf3'
 SUB     = '#8b98a5'
 ACCENT  = '#9ce430'
@@ -52,9 +54,19 @@ GELB    = '#d8a03a'
 SCHRITTE = 5
 
 
-def schrift(groesse, fett=False):
+def schrift(groesse, fett=False, unterstrichen=False):
+    """Die Schrift des Assistenten.
+
+    `unterstrichen` ist für Textlinks — im Haus die Auszeichnung dafür, dass
+    man auf etwas klicken kann. Ohne sie sieht ein Textlink aus wie ein
+    Hinweis und wird übersehen.
+    """
     fam = 'Segoe UI' if pfade.WINDOWS else 'Helvetica'
-    return (fam, groesse, 'bold' if fett else 'normal')
+    teile = [fam, groesse]
+    stil = ' '.join(x for x, an in (('bold', fett),
+                                    ('underline', unterstrichen)) if an)
+    teile.append(stil or 'normal')
+    return tuple(teile)
 
 
 def mono(groesse):
@@ -164,9 +176,9 @@ class Assistent:
         self.pfad.trace_add('write', lambda *_: self._pfad_pruefen())
         zeile = tk.Frame(f, bg=BG)
         zeile.pack(fill='x', pady=(18, 0))
-        feld = tk.Entry(zeile, textvariable=self.pfad, bg=FLAECHE, fg=FG,
-                        insertbackground=FG, relief='flat', font=mono(10))
-        feld.pack(side='left', fill='x', expand=True, ipady=7, padx=(0, 8))
+        from .hauptfenster import rundes_feld
+        feld = rundes_feld(zeile, self.pfad, mono(10), FLAECHE, LINIE, ACCENT, FG)
+        feld.halter.pack(side='left', fill='x', expand=True, padx=(0, 8))
         knopf = tk.Label(zeile, text=' %s ' % t('durchsuchen'), bg=BAR, fg=FG,
                          font=schrift(10), cursor='hand2', padx=8, pady=6)
         knopf.pack(side='right')
@@ -181,7 +193,31 @@ class Assistent:
             for ort in pfade.gesuchte_spielorte(4):
                 tk.Label(f, text=ort, bg=BG, fg=SUB, font=mono(8), anchor='w',
                          justify='left', wraplength=560).pack(fill='x')
+
+            # ⚠ Ohne diesen Ausweg sitzt fest, wer Star Citizen nicht auf
+            # diesem Rechner hat: Der Weiter-Knopf bleibt grau, und weil
+            # `noetig()` am fehlenden Spielordner hängt, kommt der Assistent
+            # bei jedem Start wieder. Genau so ging es beim Ansehen auf einem
+            # Zweitrechner — man kam nie über diese Seite hinaus.
+            # ⚠ Als schlichter grauer Text sieht das aus wie ein Hinweis, nicht
+            # wie etwas zum Anklicken — genau so wurde er beim Ausprobieren
+            # übersehen. Deshalb unterstrichen und in der Akzentfarbe: Das ist
+            # im Haus die Auszeichnung für „hier kann man klicken".
+            ohne = tk.Label(f, text='→  ' + t('ohne_spiel'), bg=BG, fg=ACCENT,
+                            font=schrift(10, unterstrichen=True),
+                            cursor='hand2')
+            ohne.pack(anchor='w', pady=(18, 0))
+            ohne.bind('<Button-1>', lambda e: self._ohne_spiel())
+            ohne.bind('<Enter>', lambda e: ohne.configure(fg=FG))
+            ohne.bind('<Leave>', lambda e: ohne.configure(fg=ACCENT))
         self._pfad_pruefen()
+
+    def _ohne_spiel(self):
+        """Weiter ohne Spielordner — bewusst und einmalig gemerkt."""
+        self.ohne_spielordner = True
+        pfade.einstellung_setzen('einrichtung_ohne_spiel', True)
+        self.schritt = SCHRITTE
+        self._zeichnen()
 
     def _waehlen(self):
         ordner = filedialog.askdirectory(title=t('spielordner'), parent=self.root)
@@ -223,6 +259,7 @@ class Assistent:
     def _nachlesen(self):
         """Läuft von selbst — hier muss niemand etwas tun."""
         self.nachlese_gelaufen = True
+        fehler.spur('Assistent: Logs nachlesen beginnt')
         try:
             anzahl_dateien = len(pfade.log_sicherungen())
             if anzahl_dateien:
@@ -236,6 +273,7 @@ class Assistent:
                     neu += 1
             if neu:
                 bestand_datei.speichern(b)
+            fehler.spur('Assistent: nachgelesen (%d neu)' % neu)
             self.ergebnis.configure(
                 text=t('nachgelesen_gross', neu, bericht.get('dateien', 0)),
                 fg=FG, font=schrift(12))
@@ -276,6 +314,12 @@ class Assistent:
     def _texte_holen(self, quelle):
         """Herunterladen, einsetzen, Bauplan-Angaben eintragen — in einem Zug."""
         from . import injektion, spieltexte, uebersetzung
+        # ⚠ Die Wahl **vor** dem Einrichten merken — genau wie auf der
+        # Einstellungsseite. Fehlte das hier, holte der Assistent zwar die Texte,
+        # aber unter „Angaben im Spiel" stand danach keine der drei Quellen
+        # angewählt: Der Assistent schrieb `inj_quelle` nie. Gemeldet von
+        # Haldjas, 25.08.2026 — „alle 3 Buttons sind nicht ausgewählt".
+        pfade.einstellung_setzen('inj_quelle', quelle)
         self.inj_meldung.configure(text=t('inj_laeuft'), fg=SUB)
         self.root.update()
         try:
@@ -319,14 +363,70 @@ class Assistent:
 
     # -------------------------------------------------------- 5. Fertig
     def _schritt_fertig(self):
+        if getattr(self, 'ohne_spielordner', False):
+            self._schritt_fertig_ohne_spiel()
+            return
         self.titel.configure(text=t('schritt_fertig'))
         f = self._flaeche()
         b = bestand_datei.laden()
         self._absatz(f, t('bauplaene') + ': %d' % bestand_datei.anzahl(b),
                      ACCENT, 15, fett=True)
         self._absatz(f, t('schritt_fertig_text'), FG, 11, oben=14)
-        self._absatz(f, '☰  ' + t('tipp_liste'), SUB, 10, oben=18)
-        self._absatz(f, '⟳  ' + t('tipp_erneut'), SUB, 10, oben=8)
+        # ⚠ Ohne führendes Zeichen. Hier stand `☰`, das es seit rc55 gar nicht
+        # mehr gibt (durch das Klemmbrett ersetzt) — der Tipp zeigte also auf
+        # ein Zeichen, das im Programm nicht vorkam. Die Texte benennen die
+        # Symbole jetzt in Worten.
+        self._absatz(f, t('tipp_liste'), SUB, 10, oben=18)
+        self._absatz(f, t('tipp_erneut'), SUB, 10, oben=8)
+
+        self._menueeintrag_anbieten(f)
+
+        knopf = tk.Label(f, text=' %s ' % t('liste_oeffnen'), bg=FLAECHE, fg=FG,
+                         font=schrift(10), cursor='hand2', padx=12, pady=7)
+        knopf.pack(anchor='w', pady=(22, 0))
+        knopf.bind('<Button-1>', lambda e: self._mit_liste())
+
+    def _menueeintrag_anbieten(self, flaeche):
+        """Unter Linux einen Startmenü-Eintrag anbieten.
+
+        ⚠ Warum überhaupt: Unter Windows legt der Installer alles an. Unter Linux
+        lädt man ein AppImage herunter — das liegt dann im Download-Ordner, steht
+        in keinem Menü und ist nach einem Neustart erst einmal verschwunden. Wer
+        es nicht selbst einträgt, sucht es jedes Mal.
+
+        Der Eintrag ist zugleich die Stelle, auf die sich ein Tastenkürzel legen
+        lässt; zusammen mit dem Einzelinstanz-Wächter holt das im Pop-up-Betrieb
+        das Overlay zurück.
+        """
+        from . import verknuepfung
+        if not verknuepfung.moeglich() or verknuepfung.vorhanden():
+            return
+        self._absatz(flaeche, t('as_menue_frage'), FG, 11, oben=18)
+        meldung = tk.Label(flaeche, text='', bg=BG, fg=SUB, font=schrift(9),
+                           anchor='w', justify='left')
+
+        def anlegen(_=None):
+            geklappt, wohin = verknuepfung.anlegen()
+            meldung.configure(text=(t('as_menue_da') % wohin) if geklappt
+                              else t('as_menue_nein') % wohin,
+                              fg=ACCENT if geklappt else SUB)
+
+        knopf = tk.Label(flaeche, text=' %s ' % t('as_menue_knopf'), bg=FLAECHE,
+                         fg=FG, font=schrift(10), cursor='hand2', padx=12, pady=6)
+        knopf.pack(anchor='w', pady=(8, 0))
+        knopf.bind('<Button-1>', anlegen)
+        meldung.pack(anchor='w', pady=(6, 0), fill='x')
+
+    def _schritt_fertig_ohne_spiel(self):
+        """Der Abschluss, wenn kein Spielordner eingetragen wurde.
+
+        Ehrlich sagen, was jetzt nicht geht — und was sehr wohl. Ein
+        „fertig eingerichtet" wäre gelogen, ein Abbruch wäre unnötig.
+        """
+        self.titel.configure(text=t('ohne_spiel_titel'))
+        f = self._flaeche()
+        self._absatz(f, t('ohne_spiel_text'), FG, 11)
+        self._absatz(f, t('ohne_spiel_wo'), SUB, 10, oben=14)
 
         knopf = tk.Label(f, text=' %s ' % t('liste_oeffnen'), bg=FLAECHE, fg=FG,
                          font=schrift(10), cursor='hand2', padx=12, pady=7)
@@ -371,7 +471,15 @@ class Assistent:
 
 
 def noetig():
-    """Muss der Assistent laufen? Beim ersten Mal, oder wenn das Spiel fehlt."""
+    """Muss der Assistent laufen? Beim ersten Mal, oder wenn das Spiel fehlt.
+
+    ⚠ Wer bewusst ohne Spielordner weitergemacht hat, bekommt ihn nicht bei
+    jedem Start erneut vorgesetzt. Vorher hing die Frage allein am gefundenen
+    Spiel — auf einem Rechner ohne Star Citizen hieß das: jedes Mal wieder von
+    vorn, und über die zweite Seite kam man nie hinaus.
+    """
+    if pfade.einstellung_wahrheit('einrichtung_ohne_spiel', False):
+        return False
     return (not os.path.exists(pfade.app_datei('logstand.json'))
             or not pfade.spiel_ordner())
 

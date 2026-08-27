@@ -1,0 +1,1706 @@
+# -*- coding: utf-8 -*-
+#
+# SC BP Watcher — zeigt live neue Star-Citizen-Baupläne an.
+# Copyright (C) 2026 Xharig
+#
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+Ein Fenster für alles — Reiter links, Inhalt rechts.
+
+**Warum der Umbau:** Bisher gab es zwei getrennte Fenster (Bauplan-Liste und
+Einstellungen), und man musste wissen, in welchem etwas steckt. Jetzt liegen
+beide zusammen: oben die Baupläne, darunter die Einstellungen, ganz unten
+eingeklappt, was nur Fortgeschrittene brauchen.
+
+**Aufbau des Rahmens** — die Reihenfolge beim Packen ist entscheidend:
+
+    1. Titelleiste      oben, fest
+    2. Fußzeile         unten, fest
+    3. Reiterleiste     links, fest
+    4. Inhaltsbereich   zuletzt, `expand=True` → bekommt den Rest
+
+Wer den Inhalt vor der Fußzeile packt, schiebt sie aus dem Fenster — das ist
+hier schon einmal passiert (der unsichtbare Speichern-Knopf). Steht auch in der
+`CLAUDE.md` des Projekts.
+
+**Seiten werden erst gezeichnet, wenn man sie öffnet.** Der Katalog hat über 700
+Einträge; alles beim Start aufzubauen kostet Sekunden, die niemand hergibt, um
+danach eine einzige Seite anzusehen.
+
+**Kein Speichern-Knopf.** Jede Änderung greift sofort und wird sofort geschrieben.
+Die Begründung: „Vergisst ein Nutzer das Speichern, ist der Ärger größer als
+der Nutzen des Knopfes."
+"""
+import os
+import sys
+import time
+import tkinter as tk
+import tkinter.font as tkfont
+
+from . import bildschirm, fehler, hinweis, neuheiten, pfade, zeichen
+from .sprache import t
+
+BG      = '#10141c'
+FLAECHE = '#161c28'
+BAR     = '#1b2230'
+FG      = '#e6edf3'
+SUB     = '#8b98a5'
+ACCENT  = '#9ce430'
+LINIE   = '#232c3d'
+GOLD    = '#e8c353'
+
+# Mindestgröße: Darunter bricht die Bedienung, und keine Layout-Regel hilft mehr.
+# Kleinste Größe, auf die sich das Fenster ziehen lässt — zugleich die Startgröße.
+#
+# **Breite:** `tools/randpruefung.py` zeigt, dass unterhalb von 1060 Pixel
+# Bedienelemente auf den Seiten „Ordner", „Angaben im Spiel", „Bestand" und „Über"
+# rechts herausragen — auf Englisch früher als auf Deutsch, weil die Wörter länger
+# sind. 1100 gibt etwas Luft.
+#
+# **Höhe:** Der Wert hier ist nur die Untergrenze. Die wirkliche Mindesthöhe wird
+# **gemessen** (siehe `_mindesthoehe_nachziehen`), denn wie viel Platz die
+# Seitenleiste braucht, hängt an Schriftgröße und Anzeige-Skalierung: bei 100 %
+# rund 674 Pixel, bei 125 % schon 842. Eine feste Zahl wäre auf dem einen
+# System zu klein — dann ist unten „Diagnose" abgeschnitten — und auf dem anderen
+# unnötig groß.
+#
+# Rücksicht auf kleine Laptop-Bildschirme braucht es nicht: Wer Star Citizen
+# spielt, sitzt nicht an einem 1366×768-Gerät. Ein Fenster, das sich nicht beliebig
+# klein ziehen lässt, macht weniger Ärger als abgeschnittene Knöpfe.
+MIN_BREITE, MIN_HOEHE = 1100, 760
+
+# Startbreite der Seitenleiste. Auch sie ist nur eine Untergrenze: Wie breit
+# „Angaben im Spiel" oder das englische „In-game details" wirklich wird, hängt
+# wieder an Schrift und Skalierung — bei 125 % ragte der Text aus der Leiste
+# heraus und war abgeschnitten.
+LEISTE_BREITE = 210
+
+# Wie viel Streichweg auf dem Trackpad eine Zeile ergibt. Ein Trackpad meldet
+# viele kleine Schritte statt Rasten; ohne Teiler säuselt die Liste am Finger
+# vorbei. Der Wert ist ein Startwert zum Nachjustieren — größer heißt ruhiger.
+TRACKPAD_TEILER = 12
+
+# Schriftgrößen als **eine** Stellschraube. Anlass: Das ⟳ in der Titelleiste war
+# mit Brille kaum zu erkennen. Alle Widgets teilen sich diese Font-Objekte —
+# `configure(size=…)` zieht damit die ganze Oberfläche mit, statt dass jede
+# Stelle einzeln angefasst werden müsste.
+STUFEN = {'klein': 0, 'normal': 1, 'gross': 3, 'sehrgross': 5}
+
+
+def _rundes_rechteck(leinwand, x1, y1, x2, y2, radius, **kw):
+    """Ein Rechteck mit runden Ecken.
+
+    Tk kennt so etwas nicht — aber ein Vieleck mit `smooth=True` rundet genau
+    dort ab, wo Punkte dicht beieinander liegen. Deshalb sitzt an jeder Ecke ein
+    Punktepaar im Abstand des Radius.
+    """
+    punkte = [
+        x1 + radius, y1, x2 - radius, y1, x2, y1,
+        x2, y1 + radius, x2, y2 - radius, x2, y2,
+        x2 - radius, y2, x1 + radius, y2, x1, y2,
+        x1, y2 - radius, x1, y1 + radius, x1, y1,
+    ]
+    return leinwand.create_polygon(punkte, smooth=True, **kw)
+
+
+def schiebeschalter(eltern, an, umschalten, grund=None):
+    """Ein runder Schiebeschalter — an oder aus, auf einen Blick.
+
+    Tk kennt nur Kästchen zum Ankreuzen, und die sehen auf jedem System anders
+    aus. Auf einer kleinen Leinwand lässt sich dagegen genau das zeichnen, was
+    heute jeder erwartet: eine Kapsel, in der ein Punkt nach rechts wandert.
+
+    `umschalten()` wird beim Klick aufgerufen und muss den neuen Zustand
+    zurückgeben — gezeichnet wird erst danach, damit nichts leuchtet, was gar
+    nicht gespeichert wurde.
+    """
+    grund = grund or BG
+    breite, hoehe = 44, 24
+    c = tk.Canvas(eltern, width=breite, height=hoehe, bg=grund,
+                  highlightthickness=0, bd=0, cursor='hand2')
+    kapsel = _rundes_rechteck(c, 2, 3, breite - 2, hoehe - 3, radius=9,
+                              fill='#2b3547', outline='')
+    punkt = c.create_oval(5, 6, 19, 20, fill=SUB, outline='')
+
+    def zeichnen(zustand):
+        c.itemconfigure(kapsel, fill='#2a3a1c' if zustand else '#2b3547')
+        c.itemconfigure(punkt, fill=ACCENT if zustand else SUB)
+        x = (breite - 24) if zustand else 0
+        c.coords(punkt, 5 + x, 6, 19 + x, 20)
+
+    def klick(_=None):
+        zeichnen(bool(umschalten()))
+
+    c.bind('<Button-1>', klick)
+    zeichnen(bool(an))
+    c.zeichnen = zeichnen
+    return c
+
+
+def regler(eltern, von, bis, wert, beim_ziehen, breite=190, grund=None):
+    """Ein Schieberegler in der Machart des Fensters.
+
+    Tk bringt zwar `Scale` mit, aber das ist ein Systemelement: Auf dem Mac ein
+    graues Kästchen, unter Windows ein anderes, unter Linux je nach Oberfläche
+    wieder anders. Selbst gezeichnet sieht es überall gleich aus — und passt zu
+    den Schaltern daneben.
+    """
+    grund = grund or BG
+    hoehe = 26
+    c = tk.Canvas(eltern, width=breite, height=hoehe, bg=grund,
+                  highlightthickness=0, bd=0, cursor='hand2')
+    y = hoehe // 2
+    _rundes_rechteck(c, 0, y - 3, breite, y + 3, radius=3,
+                     fill='#2b3547', outline='')
+    gefuellt = _rundes_rechteck(c, 0, y - 3, 10, y + 3, radius=3,
+                                fill=ACCENT, outline='')
+    knopf = c.create_oval(0, y - 8, 16, y + 8, fill=ACCENT, outline='')
+
+    spanne = float(max(1, bis - von))
+
+    def zeichnen(w):
+        anteil = max(0.0, min(1.0, (w - von) / spanne))
+        x = 8 + anteil * (breite - 16)
+        c.coords(gefuellt, *([0, y - 3, x, y - 3, x, y - 3, x, y + 3,
+                              x, y + 3, 0, y + 3, 0, y + 3, 0, y - 3]))
+        c.coords(knopf, x - 8, y - 8, x + 8, y + 8)
+
+    def aus_x(ereignis):
+        anteil = max(0.0, min(1.0, (ereignis.x - 8) / float(breite - 16)))
+        return int(round(von + anteil * spanne))
+
+    def ziehen(ereignis):
+        neuer = aus_x(ereignis)
+        zeichnen(neuer)
+        beim_ziehen(neuer)
+
+    c.bind('<Button-1>', ziehen)
+    c.bind('<B1-Motion>', ziehen)
+    zeichnen(wert)
+    c.zeichnen = zeichnen
+    return c
+
+
+
+def ecken(x1, y1, x2, y2, r):
+    """Die Punktfolge eines abgerundeten Rechtecks — für `coords`.
+
+    Wird gebraucht, wenn ein schon gezeichnetes Rechteck seine Größe ändert:
+    `create_polygon` legt die Punkte einmal fest, `coords` schiebt sie nach.
+    """
+    return [x1 + r, y1, x2 - r, y1, x2, y1, x2, y1 + r, x2, y2 - r, x2, y2,
+            x2 - r, y2, x1 + r, y2, x1, y2, x1, y2 - r, x1, y1 + r, x1, y1]
+
+
+def rundrahmen(eltern, grund, rand, radius=8, grundfarbe=None):
+    """Ein Kasten mit runden Ecken, in den beliebiger Inhalt kommt.
+
+    Tk kann Rahmen nur eckig — deshalb liegt hinter dem Inhalt eine Leinwand
+    mit einem gemalten Rechteck, und der Inhalt sitzt als Fenster darauf. Die
+    Leinwand zieht ihre Höhe nach, sobald der Inhalt steht; sonst bliebe sie
+    auf ihrer Anfangsgröße und schnitte alles ab.
+
+    Zurück kommt der innere Rahmen — dort hinein wird gepackt wie gewohnt.
+    Am Rückgabewert hängen `.leinwand` und `.form`, falls die Randfarbe später
+    wechseln soll (etwa bei einer Auswahl).
+
+    ⚠⚠ **Nur für Kästen, die ohnehin die volle Breite bekommen — nie für kleine
+    Elemente.**
+
+    Der Inhalt sitzt per `create_window` auf der Leinwand und zählt damit
+    **nicht** zur Wunschgröße des Kastens. Ein `rundrahmen` weiß also nicht,
+    wie groß er sein müsste: Er dehnt sich auf den verfügbaren Platz und bleibt
+    in der Höhe auf seinem Anfangswert, bis ihn jemand nachzieht.
+
+    Bei einer Karte über die volle Breite fällt das nicht auf — genau dafür ist
+    er gebaut. Bei allem, was seine eigene Größe haben soll, ist es der falsche
+    Baustein: Aus kompakten Etiketten wurden Balken über die halbe Karte, ein
+    Statusstreifen erschien als leerer Rahmen ohne Inhalt. Beides am 26.08.2026
+    im Serverstatus, und beides schon am Vormittag desselben Tages an anderer
+    Stelle.
+
+    **Für kleine Elemente ein schlichtes `tk.Label` mit `bg` und `padx/pady`
+    nehmen.** Eckig, aber richtig bemessen.
+    """
+    grundfarbe = grundfarbe or eltern.cget('bg')
+    halter = tk.Frame(eltern, bg=grundfarbe)
+    leinwand = tk.Canvas(halter, bg=grundfarbe, highlightthickness=0, bd=0,
+                         height=10)
+    leinwand.pack(fill='both', expand=True)
+    innen = tk.Frame(leinwand, bg=grund)
+    form = _rundes_rechteck(leinwand, 1, 1, 100, 100, radius=radius,
+                            fill=grund, outline=rand, width=1)
+    # ⚠ Ein per `create_window` eingesetztes Widget liegt in Tk IMMER über
+    # allem Gemalten — die Zeichenreihenfolge gilt dafür nicht. Säße der Inhalt
+    # bündig in der Ecke, deckte sein rechteckiger Hintergrund die Rundung ab,
+    # und der Kasten sähe trotz gemaltem Bogen eckig aus. Deshalb rückt der
+    # Inhalt um die halbe Rundung ein; dort bleibt der Bogen frei.
+    # Der ganze Radius, nicht die Hälfte: Bei halbem Einzug deckt der Inhalt
+    # die obere Hälfte des Bogens ab, und im Kasten sitzt sichtbar eine zweite,
+    # eckige Kante — das sah nach doppeltem Rahmen aus.
+    einzug = radius
+    fenster_id = leinwand.create_window(einzug, einzug, window=innen,
+                                        anchor='nw')
+
+    def nachziehen(_=None):
+        # ⚠ Solange nichts gezeichnet ist, meldet `winfo_width` eine 1. Dann
+        # die gewünschte Breite nehmen — sonst bliebe das Rechteck auf seinen
+        # Anfangskoordinaten stehen, seine Rundungen lägen außerhalb der
+        # Leinwand, und der Kasten sähe wieder eckig aus. Genau das ist bei den
+        # schmalen Zahlenfeldern passiert.
+        breite = leinwand.winfo_width()
+        if breite < 10:
+            breite = leinwand.winfo_reqwidth()
+        hoehe = innen.winfo_reqheight()
+        if breite < 10:
+            return
+        leinwand.configure(height=hoehe + einzug * 2)
+        leinwand.itemconfigure(fenster_id, width=breite - einzug * 2)
+        leinwand.coords(form, *ecken(1, 1, breite - 1,
+                                     hoehe + einzug * 2 - 1, radius))
+
+    innen.bind('<Configure>', nachziehen)
+    leinwand.bind('<Configure>', nachziehen)
+    leinwand.bind('<Map>', nachziehen)
+    # Merkmal für die Randprüfung: Dieser Rahmen wird bewusst auf die
+    # Kastenbreite gezwungen — sein Wunsch nach mehr Platz ist kein Fehler,
+    # der Text darin bricht um. Ohne die Markierung meldet jede Karte einen
+    # Fehlalarm.
+    innen.auf_mass_gesetzt = True
+    innen.nachziehen = nachziehen
+    innen.halter = halter
+    innen.leinwand = leinwand
+    innen.form = form
+    return innen
+
+
+def rundes_feld(eltern, textvariable, schrift, grund, rand, akzent, fg,
+                breite=None, **kw):
+    """Ein Eingabefeld mit runden Ecken — überall im Programm dasselbe.
+
+    Das Feld selbst bleibt ein gewöhnliches `Entry` (nur so lässt sich tippen),
+    aber ohne eigenen Rand; den runden Rand malt die Leinwand darunter. Beim
+    Hineinklicken wechselt der Rand auf die Akzentfarbe, damit man sieht, wo
+    man schreibt.
+    """
+    schrift = _als_schrift(schrift)
+    radius = 8
+    polster = 6
+    hoehe = schrift.metrics('linespace') + polster * 2
+    leinwand = tk.Canvas(eltern, height=hoehe, bg=eltern.cget('bg'),
+                         highlightthickness=0, bd=0)
+    form = _rundes_rechteck(leinwand, 1, 1, 100, hoehe - 1, radius=radius,
+                            fill=grund, outline=rand, width=1)
+    if textvariable is not None:
+        kw['textvariable'] = textvariable
+    feld = tk.Entry(leinwand, bg=grund, fg=fg, font=schrift, relief='flat',
+                    bd=0, highlightthickness=0, insertbackground=fg, **kw)
+    fenster_id = leinwand.create_window(polster + 2, hoehe / 2.0, window=feld,
+                                        anchor='w')
+
+    def nachziehen(_=None):
+        # ⚠ Der Rückruf aus `after(0, …)` kann drankommen, wenn die Leinwand
+        # längst zerstört ist — beim Seitenwechsel passiert genau das.
+        try:
+            if not leinwand.winfo_exists():
+                return
+        except tk.TclError:
+            return
+        b = leinwand.winfo_width()
+        if b < 10:
+            b = leinwand.winfo_reqwidth()
+        if b < 10:
+            return
+        try:
+            leinwand.coords(form, *ecken(1, 1, b - 1, hoehe - 1, radius))
+            leinwand.itemconfigure(fenster_id, width=b - (polster + 2) * 2)
+        except tk.TclError:
+            pass
+
+    leinwand.bind('<Configure>', nachziehen)
+    leinwand.bind('<Map>', nachziehen)
+    if breite:
+        # Feste Breite: so viele Ziffern plus Luft. Ohne das zieht `fill='x'`
+        # der Zeile das Feld über die halbe Seite.
+        leinwand.configure(width=schrift.measure('0') * breite + polster * 4)
+    feld.halter = leinwand
+    leinwand.after(0, nachziehen)
+    feld.bind('<FocusIn>',
+              lambda e: leinwand.itemconfigure(form, outline=akzent), add='+')
+    feld.bind('<FocusOut>',
+              lambda e: leinwand.itemconfigure(form, outline=rand), add='+')
+    return feld
+
+
+
+def _als_schrift(schrift):
+    """Eine Schrift als messbares Objekt.
+
+    Die älteren Fenster geben ihre Schrift als Tupel `('Helvetica', 10)`
+    weiter — damit lässt sich zeichnen, aber nicht messen. Ein gemalter Knopf
+    braucht aber die Breite des Wortes, sonst schneidet er es ab. Also hier
+    einmal umwandeln, statt an jeder Stelle daran zu denken.
+    """
+    if isinstance(schrift, (tuple, list)):
+        return tkfont.Font(family=schrift[0], size=schrift[1],
+                           weight=schrift[2] if len(schrift) > 2 else 'normal')
+    return schrift
+
+
+
+def rundbalken(eltern, hoehe, anteil, grund, leer, voll, breite=None):
+    """Ein Fortschrittsbalken mit runden Enden.
+
+    Zwei ineinandergeschobene Rahmen wären einfacher, hätten aber scharfe
+    Kanten — im Rest des Programms ist nichts scharfkantig. Also wieder eine
+    Leinwand: eine Rille in ganzer Länge, darüber der gefüllte Teil.
+
+    Der gefüllte Teil zieht mit, wenn sich die Breite ändert (Fenster größer,
+    Seitenleiste ein- oder ausgeklappt) — deshalb `<Configure>` statt einer
+    einmal ausgerechneten Pixelzahl.
+    """
+    r = hoehe / 2.0
+    c = tk.Canvas(eltern, height=hoehe, bg=grund, highlightthickness=0, bd=0)
+    if breite:
+        c.configure(width=breite)
+    rille = _rundes_rechteck(c, 0, 0, 100, hoehe, radius=r, fill=leer,
+                             outline='')
+    fuellung = _rundes_rechteck(c, 0, 0, 10, hoehe, radius=r, fill=voll,
+                                outline='')
+
+    def nachziehen(_=None):
+        b = c.winfo_width()
+        if b < 4:
+            return
+        c.coords(rille, *ecken(0, 0, b, hoehe, r))
+        if anteil <= 0:
+            c.itemconfigure(fuellung, state='hidden')
+            return
+        c.itemconfigure(fuellung, state='normal')
+        # Mindestens so breit wie hoch: Ein Balken bei 1 % wäre sonst ein
+        # Strich, den man für einen Zeichenfehler hält.
+        voll_breite = max(hoehe, b * anteil)
+        c.coords(fuellung, *ecken(0, 0, voll_breite, hoehe, r))
+
+    c.bind('<Configure>', nachziehen)
+    return c
+
+
+def rad_anschliessen(leinwand):
+    """Das Mausrad an eine Rollfläche hängen — für das ganze Fenster.
+
+    ⚠ Zwei Fehler steckten hier, und beide zusammen ließen das Rad wirkungslos
+    aussehen, während der Rollbalken von Hand funktionierte:
+
+    1. **Die Rechnung.** Vorher stand hier `int(-1 * e.delta / 120)`. Windows
+       meldet ±120, Linux meldet sich über Button-4/5 — beides ging auf.
+       macOS meldet aber **±1**, und `int(-1/120)` ist **0**: kein Ausschlag.
+       Deshalb zählt jetzt nur die Richtung, nie der Betrag.
+
+    2. **Die Bindung.** Vorher hingen die Ereignisse an drei Widgets
+       (Leinwand, Innenrahmen, Polster). Tk schickt das Rad aber an das
+       Element **unter dem Zeiger**, und das ist fast immer eine Beschriftung
+       oder ein Kasten darin — dort war nichts gebunden. Also greift die
+       Bindung jetzt am ganzen Fenster, und der Griff sucht sich die
+       Rollfläche unter dem Zeiger.
+
+    3. **Und der Grund, warum das trotzdem nicht wirkte:** Die Bauplan-Liste
+       rief `bind_all` **ohne** `add='+'` auf. Das ersetzt jede vorher
+       gesetzte Bindung im ganzen Fenster — und weil die Liste die Startseite
+       ist, war die Bindung der Seiten sofort wieder weg. Danach rollte das
+       Rad überall nur noch die Liste, auch wenn die gar nicht zu sehen war.
+       Deshalb hängen jetzt **alle** Rollflächen an dieser einen Stelle.
+
+    4. **Trackpad.** Gemessen mit `tools/rad_messen.py`: Vom Trackpad kommt
+       **kein einziges** `<MouseWheel>` an — nicht etwa ein zu kleiner Wert,
+       sondern gar nichts. Seit Tk 8.7 gibt es dafür ein eigenes Ereignis,
+       `<TouchpadScroll>`, und erst das liefert die Streichgesten. Es feuert
+       viel häufiger als eine Radraste und trägt beide Richtungen in **einer**
+       Zahl: untere 16 Bit waagerecht, obere 16 Bit senkrecht.
+
+       Ältere Tk-Fassungen (8.6, verbreitet unter Linux) kennen das Ereignis
+       nicht — dort wirft das Binden einen Fehler, der abgefangen wird. Dort
+       melden sich Trackpads ohnehin als Button-4/5.
+
+       Weil beide Wege kleine Beträge liefern, werden sie **aufaddiert**, bis
+       eine ganze Zeile zusammenkommt; der Rest bleibt für das nächste
+       Ereignis stehen.
+    """
+    wurzel = leinwand.winfo_toplevel()
+    if not hasattr(wurzel, 'rollflaechen'):
+        wurzel.rollflaechen = []
+        # Was noch keine ganze Zeile ergeben hat, wartet hier auf den Rest.
+        angesammelt = {'wert': 0.0}
+
+        def schritte_aus(e):
+            """Wie viele Zeilen sollen es sein? Negativ heißt nach oben."""
+            nummer = getattr(e, 'num', 0)
+            if nummer == 4:                      # Linux: Rad nach oben
+                return -1
+            if nummer == 5:                      # Linux: Rad nach unten
+                return 1
+            betrag = float(getattr(e, 'delta', 0) or 0)
+            if betrag == 0:
+                return 0
+            if abs(betrag) >= 120:               # Windows: eine Raste = 120
+                betrag /= 120.0
+            angesammelt['wert'] += betrag
+            ganze = int(angesammelt['wert'])     # schneidet Richtung null ab
+            angesammelt['wert'] -= ganze
+            return -ganze                        # nach oben = negativ
+
+        def flaeche_unter(e):
+            """Die registrierte Rollfläche unter dem Mauszeiger — oder nichts."""
+            unter = wurzel.winfo_containing(e.x_root, e.y_root)
+            while unter is not None:
+                if unter in wurzel.rollflaechen:
+                    return unter
+                unter = getattr(unter, 'master', None)
+            return None
+
+        def rollen(e):
+            ziel = flaeche_unter(e)
+            if ziel is None:
+                return
+            schritte = schritte_aus(e)
+            if not schritte:
+                return
+            try:
+                ziel.yview_scroll(schritte, 'units')
+            except tk.TclError:
+                pass
+
+        def streichen(e):
+            """Trackpad: beide Richtungen stecken gepackt in einer Zahl."""
+            ziel = flaeche_unter(e)
+            if ziel is None:
+                return
+            roh = int(getattr(e, 'delta', 0) or 0)
+            senkrecht = (roh >> 16) & 0xFFFF
+            if senkrecht >= 0x8000:          # als vorzeichenbehaftet lesen
+                senkrecht -= 0x10000
+            if not senkrecht:
+                return
+            # Ein Streich meldet viele kleine Schritte. `TEILER` bestimmt, wie
+            # weit eine Geste trägt — kleiner heißt schneller.
+            angesammelt['wert'] += senkrecht / float(TRACKPAD_TEILER)
+            ganze = int(angesammelt['wert'])
+            angesammelt['wert'] -= ganze
+            if not ganze:
+                return
+            # ⚠ Kein Minus wie beim Rad: `<TouchpadScroll>` zählt andersherum
+            # als `<MouseWheel>`. Mit dem Vorzeichen des Rades rollte die Liste
+            # genau falsch herum. Die vom Nutzer eingestellte Richtung
+            # („natürliches Scrollen") hat das System da schon eingerechnet.
+            try:
+                ziel.yview_scroll(ganze, 'units')
+            except tk.TclError:
+                pass
+
+        for ereignis in ('<MouseWheel>', '<Button-4>', '<Button-5>'):
+            wurzel.bind_all(ereignis, rollen, add='+')
+        try:
+            wurzel.bind_all('<TouchpadScroll>', streichen, add='+')
+        except tk.TclError:
+            # Tk 8.6 und älter kennen das Ereignis nicht. Dort melden sich
+            # Trackpads als Button-4/5, also fehlt nichts.
+            pass
+
+    if leinwand not in wurzel.rollflaechen:
+        wurzel.rollflaechen.append(leinwand)
+
+
+
+def rundleiste(eltern, leinwand, grund=None, breite=10):
+    """Eine Rollleiste mit runden Enden — statt der des Betriebssystems.
+
+    ⚠ `tk.Scrollbar` ist das einzige Bedienelement, das sich nicht einfärben
+    lässt: Tk reicht es an das System durch. Unter Linux ist sie grau, auf dem
+    Mac hellweiß — und damit der einzige Fleck im Fenster, der aus dem Bild
+    fällt. Die Entwurfsvorschau hatte dort eine schmale, abgerundete Leiste in
+    `#2b3547`; genau die wird hier nachgebaut.
+
+    Bedienung wie gewohnt: ziehen, und ein Klick daneben springt eine Seite
+    weiter. `leinwand` ist die Rollfläche, an der sie hängt.
+    """
+    grund = grund or BG
+    rille_farbe, griff_farbe, griff_hell = BG, '#2b3547', '#3a4658'
+    r = breite / 2.0
+
+    c = tk.Canvas(eltern, width=breite, bg=grund, highlightthickness=0, bd=0)
+    rille = c.create_rectangle(0, 0, breite, 10, fill=rille_farbe, outline='')
+    griff = _rundes_rechteck(c, 0, 0, breite, 30, radius=r,
+                             fill=griff_farbe, outline='')
+    c.auf_mass_gesetzt = True        # die Randprüfung soll sie nicht melden
+
+    lage = {'anfang': 0.0, 'ende': 1.0, 'griff_ab': 0, 'zieht': False}
+
+    def griff_lage():
+        """Wo der Griff **wirklich** gezeichnet ist — als (oben, unten, hoehe).
+
+        ⚠ Diese Rechnung muss an EINER Stelle stehen. Vorher zeichnete
+        `nachziehen` den Griff mit einer Mindesthöhe, während `springen` mit der
+        rechnerischen Höhe prüfte, ob man ihn getroffen hat. Bei 722 Bauplänen ist
+        der Griff rechnerisch rund zwölf Pixel hoch und gezeichnet vierundzwanzig:
+        Wer die untere Hälfte des sichtbaren Griffs anfasste, galt als „daneben“ —
+        die Leiste sprang, statt sich ziehen zu lassen. Sie sah also greifbar aus
+        und war es nicht.
+        """
+        hoehe = c.winfo_height() or 1
+        anfang, ende = lage['anfang'], lage['ende']
+        oben = anfang * hoehe
+        # Der Griff bleibt greifbar, auch wenn 700 Baupläne in der Liste
+        # stehen und er rechnerisch drei Pixel hoch wäre.
+        unten = max(oben + breite * 2.4, ende * hoehe)
+        if unten > hoehe:                 # am unteren Ende nach oben schieben
+            oben, unten = max(0.0, hoehe - (unten - oben)), hoehe
+        return oben, unten, hoehe
+
+    def nachziehen(*_):
+        hoehe = c.winfo_height()
+        if hoehe < 4:
+            return
+        c.coords(rille, 0, 0, breite, hoehe)
+        if lage['ende'] - lage['anfang'] >= 0.999:   # nichts zu rollen
+            c.itemconfigure(griff, state='hidden')
+            return
+        c.itemconfigure(griff, state='normal')
+        oben, unten, _ = griff_lage()
+        c.coords(griff, *ecken(0, oben, breite, unten, r))
+
+    def setzen(anfang, ende):
+        """Ruft Tk auf, wenn sich der sichtbare Ausschnitt ändert."""
+        lage['anfang'], lage['ende'] = float(anfang), float(ende)
+        nachziehen()
+
+    def springen(e):
+        oben, unten, hoehe = griff_lage()
+        spanne = lage['ende'] - lage['anfang']
+        if oben <= e.y <= unten:                  # auf dem Griff: ziehen
+            lage['zieht'] = True
+            lage['griff_ab'] = e.y - oben
+            return
+        ziel = max(0.0, min(1.0, (e.y / hoehe) - spanne / 2.0))
+        leinwand.yview_moveto(ziel)
+
+    def ziehen(e):
+        """Den Griff mitnehmen.
+
+        Gerechnet wird über den **Weg, den der Griff zurücklegen kann** — also die
+        Leistenhöhe minus Griffhöhe. Vorher wurde durch die volle Leistenhöhe
+        geteilt; weil der Griff eine Mindesthöhe hat, blieb das letzte Stück der
+        Liste unerreichbar: Man zog bis ganz nach unten und war trotzdem nicht am
+        Ende.
+        """
+        if not lage['zieht']:
+            return
+        oben, unten, hoehe = griff_lage()
+        weg = max(1.0, hoehe - (unten - oben))
+        spanne = lage['ende'] - lage['anfang']
+        anteil = (e.y - lage['griff_ab']) / weg
+        leinwand.yview_moveto(max(0.0, min(1.0, anteil * max(0.0, 1.0 - spanne))))
+
+    def loslassen(_=None):
+        lage['zieht'] = False
+
+    def rein(_=None):
+        c.itemconfigure(griff, fill=griff_hell)
+
+    def raus(_=None):
+        if not lage['zieht']:
+            c.itemconfigure(griff, fill=griff_farbe)
+
+    c.bind('<Configure>', nachziehen)
+    c.bind('<Button-1>', springen)
+    c.bind('<B1-Motion>', ziehen)
+    c.bind('<ButtonRelease-1>', loslassen)
+    c.bind('<Enter>', rein)
+    c.bind('<Leave>', raus)
+    # ⚠ `set` heißt hier englisch, weil Tk selbst diesen Namen aufruft:
+    # `leinwand.configure(yscrollcommand=leiste.set)`. `setzen` steht daneben,
+    # damit der Rest des Programms bei seiner Sprache bleiben kann.
+    c.set = setzen
+    c.setzen = setzen
+    return c
+
+
+# --- Discord-Zeichen ------------------------------------------------------
+# Die Umrisse stammen aus dem offiziellen SVG (svgrepo, viewBox 0 -28.5 256 256)
+# und sind auf 0..1 normiert. Die Bezier-Kurven des Pfades wurden dabei in
+# Strecken aufgelöst — Tk kennt keine Kurven, zeichnet aber Streckenzüge in
+# jeder Größe sauber.
+#
+# ⚠ **Warum kein Bild und kein Schriftzeichen:**
+#
+#   * Als Zeichen geht es nicht. Ein Discord-Logo gibt es in Unicode nicht, und
+#     die naheliegenden Sprechblasen (`U+1F4AC`, `U+1F5E8`) liegen außerhalb der
+#     Grundebene — genau die Falle, vor der weiter oben gewarnt wird: Im Fenster
+#     stünde ein Fragezeichen, und auffallen würde es erst im laufenden
+#     Programm.
+#   * Als PNG geht es schlecht. Tk lädt PNG zwar mit Bordmitteln, kann sie ohne
+#     Fremdpakete aber nur **ganzzahlig** skalieren (`subsample`, `zoom`). Bei
+#     vier Schriftstufen käme genau eine Größe sauber heraus und der Rest
+#     ausgefranst. Dazu käme eine Datei, die ins Paket muss.
+#
+# Als Vektor ist es in jeder Größe scharf, braucht keine Datei und hängt an
+# keiner Schriftart. Ein erster Versuch hatte die Form nur **angedeutet**;
+# der Autor am 26.08.2026 dazu: „und wieso nimmst du nicht das original logo, was
+# schärfer wäre und nicht so pixelig?" — zu Recht.
+_DC_UMRISS = (
+
+    (0.8471, 0.1762), (0.8144, 0.1617), (0.7809, 0.1487), (0.7468, 0.1371),
+    (0.7121, 0.1270), (0.6767, 0.1184), (0.6408, 0.1113), (0.6362, 0.1198),
+    (0.6316, 0.1289), (0.6269, 0.1383), (0.6224, 0.1479), (0.6182, 0.1573),
+    (0.6144, 0.1662), (0.5760, 0.1614), (0.5377, 0.1585), (0.4995, 0.1575),
+    (0.4615, 0.1585), (0.4235, 0.1614), (0.3857, 0.1662), (0.3819, 0.1573),
+    (0.3776, 0.1479), (0.3730, 0.1383), (0.3683, 0.1289), (0.3636, 0.1198),
+    (0.3590, 0.1113), (0.3230, 0.1184), (0.2876, 0.1270), (0.2529, 0.1371),
+    (0.2187, 0.1488), (0.1852, 0.1618), (0.1525, 0.1763), (0.0950, 0.2746),
+    (0.0521, 0.3721), (0.0228, 0.4689), (0.0058, 0.5650), (0.0000, 0.6606),
+    (0.0042, 0.7557), (0.0473, 0.7860), (0.0900, 0.8123), (0.1323, 0.8351),
+    (0.1742, 0.8547), (0.2159, 0.8713), (0.2573, 0.8853), (0.2673, 0.8712),
+    (0.2769, 0.8567), (0.2861, 0.8420), (0.2950, 0.8270), (0.3034, 0.8117),
+    (0.3115, 0.7961), (0.2967, 0.7902), (0.2821, 0.7839), (0.2677, 0.7772),
+    (0.2536, 0.7700), (0.2397, 0.7625), (0.2261, 0.7546), (0.2297, 0.7519),
+    (0.2332, 0.7492), (0.2367, 0.7464), (0.2402, 0.7437), (0.2436, 0.7409),
+    (0.2470, 0.7380), (0.3304, 0.7701), (0.4152, 0.7893), (0.5007, 0.7957),
+    (0.5861, 0.7893), (0.6704, 0.7701), (0.7529, 0.7380), (0.7564, 0.7409),
+    (0.7598, 0.7437), (0.7633, 0.7464), (0.7668, 0.7492), (0.7703, 0.7519),
+    (0.7739, 0.7546), (0.7602, 0.7625), (0.7463, 0.7701), (0.7322, 0.7772),
+    (0.7178, 0.7840), (0.7032, 0.7903), (0.6884, 0.7962), (0.6964, 0.8117),
+    (0.7048, 0.8270), (0.7137, 0.8420), (0.7229, 0.8568), (0.7325, 0.8713),
+    (0.7426, 0.8854), (0.7840, 0.8714), (0.8257, 0.8548), (0.8677, 0.8352),
+    (0.9100, 0.8124), (0.9527, 0.7860), (0.9957, 0.7557), (0.9998, 0.6482),
+    (0.9916, 0.5453), (0.9717, 0.4469), (0.9406, 0.3527), (0.8988, 0.2625),
+    (0.8471, 0.1762),
+)
+
+_DC_AUGE_LINKS = (
+
+    (0.3339, 0.6390), (0.3101, 0.6354), (0.2886, 0.6250), (0.2704, 0.6090),
+    (0.2563, 0.5882), (0.2472, 0.5638), (0.2440, 0.5368), (0.2472, 0.5097),
+    (0.2561, 0.4853), (0.2701, 0.4645), (0.2882, 0.4485), (0.3098, 0.4381),
+    (0.3339, 0.4344), (0.3581, 0.4381), (0.3797, 0.4485), (0.3980, 0.4645),
+    (0.4120, 0.4853), (0.4209, 0.5097), (0.4238, 0.5368), (0.4206, 0.5638),
+    (0.4117, 0.5882), (0.3977, 0.6090), (0.3795, 0.6250), (0.3580, 0.6354),
+    (0.3339, 0.6390),
+)
+
+_DC_AUGE_RECHTS = (
+
+    (0.6661, 0.6390), (0.6423, 0.6354), (0.6209, 0.6250), (0.6026, 0.6090),
+    (0.5885, 0.5882), (0.5794, 0.5638), (0.5762, 0.5368), (0.5794, 0.5097),
+    (0.5884, 0.4853), (0.6023, 0.4645), (0.6205, 0.4485), (0.6420, 0.4381),
+    (0.6661, 0.4344), (0.6903, 0.4381), (0.7120, 0.4485), (0.7302, 0.4645),
+    (0.7443, 0.4853), (0.7531, 0.5097), (0.7560, 0.5368), (0.7528, 0.5638),
+    (0.7439, 0.5882), (0.7299, 0.6090), (0.7118, 0.6250), (0.6902, 0.6354),
+    (0.6661, 0.6390),
+)
+
+
+def discord_zeichen(leinwand, x, mitte, hoehe, farbe):
+    """Das Discord-Zeichen, gezeichnet aus den Originalumrissen.
+
+    `x` ist die linke Kante, `mitte` die senkrechte Mitte, `hoehe` der
+    verfügbare Platz. Alle Punkte sind Anteile davon, das Zeichen wächst also
+    mit der Schriftgröße mit.
+    """
+    h = max(9.0, hoehe * 0.82)
+    b = h                      # der viewBox ist quadratisch
+    lx = x
+    oy = mitte - h / 2.0
+
+    def strecke(punkte):
+        flach = []
+        for ax, ay in punkte:
+            flach.append(lx + ax * b)
+            flach.append(oy + ay * h)
+        return flach
+
+    leinwand.create_polygon(strecke(_DC_UMRISS), fill=farbe, outline=farbe)
+    # Die Augen sind im SVG Aussparungen derselben Fläche. Tk kennt keine
+    # Löcher, deshalb werden sie in der Farbe des Untergrunds darübergelegt.
+    grund = leinwand['bg']
+    for auge in (_DC_AUGE_LINKS, _DC_AUGE_RECHTS):
+        leinwand.create_polygon(strecke(auge), fill=grund, outline=grund)
+
+
+# Von der Autor am 26.08.2026 bestätigt. ⚠ Wer sie ändert, prüft vorher, dass die
+# Seite wirklich erreichbar ist: Ein Knopf, der ins Leere führt, ist schlimmer
+# als keiner — wer ihn drückt, hält das Werkzeug für kaputt.
+KOFI_ADRESSE = 'https://ko-fi.com/xharig'
+
+
+def kaffee_zeichen(leinwand, x, mitte, hoehe, farbe):
+    """Eine Kaffeetasse — für den Ko-fi-Knopf.
+
+    ⚠ Gezeichnet, nicht getippt. Die Tassen-Zeichen in Unicode (`U+2615` ☕,
+    `U+1F375`) liegen entweder außerhalb der Grundebene oder werden von der
+    Oberflächenschrift als **farbiges Emoji** gerendert — beides passt nicht: Das
+    eine erscheint als Fragezeichen, das andere sprengt die einfarbige Leiste.
+    Dieselbe Überlegung wie beim Discord-Zeichen, siehe dort.
+
+    ⚠ **Der erste Entwurf hatte einen Dampffaden**, und der war bei Knopfgröße
+    nicht mehr zu sehen — ein Strich von einem Pixel Breite verschwindet. Für
+    kleine Zeichen gilt: **wenige, kräftige Formen.** Was man wegkürzen kann,
+    ohne dass das Motiv unklar wird, gehört weg. Bei einer Tasse tragen Becher
+    und Henkel, der Dampf ist Zierde.
+    """
+    h = max(9.0, hoehe * 0.72)
+    b = h * 1.05
+    lx = x
+    oy = mitte - h / 2.0
+
+    # Der Henkel — zuerst, damit der Becher ihn sauber überdeckt. Kräftig
+    # genug, dass er auch bei zwölf Pixeln noch trägt.
+    leinwand.create_arc(lx + b * 0.60, oy + h * 0.28,
+                        lx + b * 1.02, oy + h * 0.74,
+                        start=270, extent=180, style='arc',
+                        outline=farbe, width=max(2, int(h * 0.14)))
+
+    # Der Becher: oben breit, nach unten leicht zulaufend.
+    leinwand.create_polygon(
+        lx + b * 0.06, oy + h * 0.24,
+        lx + b * 0.74, oy + h * 0.24,
+        lx + b * 0.64, oy + h * 0.92,
+        lx + b * 0.16, oy + h * 0.92,
+        fill=farbe, outline=farbe)
+
+    # Ein abgesetzter Streifen als Kaffeespiegel — das macht aus dem Umriss
+    # erst eine gefüllte Tasse.
+    grund = leinwand['bg']
+    leinwand.create_rectangle(lx + b * 0.14, oy + h * 0.33,
+                              lx + b * 0.66, oy + h * 0.41,
+                              fill=grund, outline=grund)
+
+    # Die Untertasse — ein flacher Balken, der die Tasse auf den Boden stellt.
+    leinwand.create_rectangle(lx + b * 0.02, oy + h * 0.92,
+                              lx + b * 0.78, oy + h * 1.00,
+                              fill=farbe, outline=farbe)
+
+
+def rundknopf(eltern, text, tat, schrift, grund, fuellung, rand, fg,
+              radius=6, polster=(10, 5), cursor='hand2', malen=None):
+    """Ein klickbarer Knopf mit runden Ecken — der Standard im ganzen Programm.
+
+    Ein `Label` mit Hintergrundfarbe wäre einfacher, sähe aber überall eckig
+    aus; das Programm hat aber genau eine Formensprache. Deshalb wieder eine
+    kleine Leinwand mit gemaltem Rechteck.
+
+    Am Rückgabewert hängt `.setzen(fuellung, rand, fg)` — damit lässt sich der
+    Knopf später umfärben (an/aus, ausgewählt/nicht), ohne ihn neu zu bauen.
+
+    ⚠ **Das Rechteck wird bei jeder Größenänderung neu gemalt.** Vorher entstand
+    es genau einmal in Textbreite und blieb so. Wer den Knopf mit `fill='x'`
+    streckte, bekam ein breiteres Canvas mit einem schmalen Rechteck darin — der
+    Knopf sah je nach Textlänge unterschiedlich breit aus, obwohl beide dieselbe
+    Anweisung hatten. Aufgefallen an zwei Knöpfen untereinander (der Autor,
+    26.08.2026): „Discord Button sollte die Gleiche Breite haben wie SC Starten".
+
+    `malen` ist eine Funktion `(leinwand, x, mitte, hoehe, farbe)`, die links im
+    Knopf ein Symbol zeichnet — für alles, wofür es kein brauchbares Zeichen in
+    der Grundebene gibt (siehe die Warnung weiter oben zu `🗀` und `⇅`). Sie wird
+    bei jedem Neuzeichnen erneut gerufen und muss ihre eigenen Formen anlegen;
+    aufgeräumt wird vorher.
+    """
+    schrift = _als_schrift(schrift)
+    symbolbreite = 0
+    if malen:
+        # Platz für das Symbol plus Abstand — an der Schrifthöhe bemessen,
+        # damit es mit der Schriftgröße mitwächst.
+        symbolbreite = schrift.metrics('linespace') + 8
+    breite = schrift.measure(text) + polster[0] * 2 + symbolbreite
+    hoehe = schrift.metrics('linespace') + polster[1] * 2
+    c = tk.Canvas(eltern, width=breite, height=hoehe, bg=grund,
+                  highlightthickness=0, bd=0, cursor=cursor)
+
+    zustand = {'fuellung': fuellung, 'rand': rand, 'fg': fg}
+
+    def zeichnen(b=None, h=None):
+        b = b or int(c['width'])
+        h = h or int(c['height'])
+        c.delete('all')
+        c.form = _rundes_rechteck(c, 1, 1, b - 1, h - 1, radius=radius,
+                                  fill=zustand['fuellung'],
+                                  outline=zustand['rand'], width=1)
+        if malen:
+            malen(c, polster[0], h / 2.0, h - polster[1] * 2, zustand['fg'])
+        # ⚠ Der Text sitzt in der Mitte des **Restes**, nicht der ganzen
+        # Fläche. Sonst rückt ein Symbol links die Beschriftung nach rechts aus
+        # der Mitte, und zwei Knöpfe untereinander stehen krumm.
+        mitte_x = (b + symbolbreite) / 2.0 if malen else b / 2.0
+        c.beschriftung = c.create_text(mitte_x, h / 2.0, text=text,
+                                       fill=zustand['fg'], font=schrift,
+                                       anchor='center')
+
+    zeichnen(breite, hoehe)
+
+    # ⚠ Nur bei echter Änderung neu malen. Tk schickt `<Configure>` auch dann,
+    # wenn sich nichts an der Größe geändert hat — ein bedingungsloses
+    # Neuzeichnen darin läuft im Kreis.
+    letzte = {'b': breite, 'h': hoehe}
+
+    def _gewachsen(e):
+        if e.width == letzte['b'] and e.height == letzte['h']:
+            return
+        letzte['b'], letzte['h'] = e.width, e.height
+        zeichnen(e.width, e.height)
+
+    c.bind('<Configure>', _gewachsen)
+
+    def setzen(fuellung=None, neuer_rand=None, neues_fg=None):
+        if fuellung:
+            zustand['fuellung'] = fuellung
+            c.itemconfigure(c.form, fill=fuellung)
+        if neuer_rand:
+            zustand['rand'] = neuer_rand
+            c.itemconfigure(c.form, outline=neuer_rand)
+        if neues_fg:
+            zustand['fg'] = neues_fg
+            c.itemconfigure(c.beschriftung, fill=neues_fg)
+            if malen:
+                # Das Symbol traegt dieselbe Farbe wie die Schrift — neu malen
+                # ist einfacher, als sich jede Einzelform zu merken.
+                zeichnen()
+
+    c.setzen = setzen
+    c.ist_knopf = True          # damit tools/randpruefung.py ihn prüft
+    if tat:
+        c.bind('<Button-1>', lambda e: tat())
+    return c
+
+
+def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
+             breite=None):
+    """Ein Auswahlfeld im Hausstil — Knopf mit ▾, der eine Liste aufklappt.
+
+    ⚠ Warum selbst gebaut: Tk bringt `OptionMenu` und `ttk.Combobox` mit, und
+    beide sind Systemelemente — auf dem Mac ein graues Aqua-Feld, unter Windows
+    ein anderes, unter Linux je nach Oberfläche wieder anders. Das Programm hat
+    aber genau eine Formensprache, und ein Auswahlfeld ist zu auffällig, um
+    davon ausgenommen zu werden.
+
+    `eintraege` sind Paare `(wert, beschriftung)`. Ein Eintrag mit dem Wert `''`
+    ist der „alle"-Fall; ist etwas anderes gewählt, färbt sich das Feld in der
+    Akzentfarbe — so sieht man auf einen Blick, dass ein Filter greift, ohne
+    jede Liste aufklappen zu müssen.
+
+    Die aufgeklappte Liste ist ein rahmenloses Fenster: Nur so kann sie über
+    den Rand ihres Elternrahmens hinausragen, und genau das muss sie, wenn
+    zwanzig Arten zur Wahl stehen.
+    """
+    grund = grund or BG
+    s = _als_schrift(schrift)
+    zustand = {'wert': gewaehlt, 'liste': None, 'zu_seit': 0.0}
+
+    def beschriftung_zu(wert):
+        for w, text in eintraege:
+            if w == wert:
+                return text
+        return eintraege[0][1] if eintraege else ''
+
+    if breite is None:
+        breite = max(s.measure(text) for _, text in eintraege) + 42
+    hoehe = s.metrics('linespace') + 14
+
+    c = tk.Canvas(eltern, width=breite, height=hoehe, bg=grund,
+                  highlightthickness=0, bd=0, cursor='hand2')
+    form = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1, radius=5,
+                            fill='#0c1017', outline=LINIE, width=1)
+    text_id = c.create_text(11, hoehe / 2.0, text=beschriftung_zu(gewaehlt),
+                            fill=FG, font=s, anchor='w')
+    pfeil = c.create_text(breite - 12, hoehe / 2.0, text='▾', fill=SUB,
+                          font=s, anchor='e')
+    c.ist_knopf = True          # die Randprüfung soll ihn messen
+
+    def faerben():
+        gesetzt = bool(zustand['wert'])
+        c.itemconfigure(form, outline=ACCENT if gesetzt else LINIE)
+        c.itemconfigure(text_id, fill=ACCENT if gesetzt else FG)
+        c.itemconfigure(pfeil, fill=ACCENT if gesetzt else SUB)
+
+    def zuklappen(_=None):
+        if zustand['liste'] is not None:
+            try:
+                zustand['liste'].destroy()
+            except tk.TclError:
+                pass
+            zustand['liste'] = None
+            zustand['zu_seit'] = time.time()
+
+    def waehlen(wert):
+        zuklappen()
+        zustand['wert'] = wert
+        c.itemconfigure(text_id, text=beschriftung_zu(wert))
+        faerben()
+        beim_waehlen(wert)
+
+    def aufklappen(_=None):
+        if zustand['liste'] is not None:
+            zuklappen()
+            return
+        # ⚠ Ein Klick, der die Liste gerade eben geschlossen hat, darf sie nicht
+        # sofort wieder öffnen. Schließt das Fenster über `<FocusOut>`, kommt der
+        # Klick anschließend hier an — man sah die Liste aufblitzen und sofort
+        # wieder verschwinden, und erst der zweite Klick hielt sie offen.
+        if time.time() - zustand['zu_seit'] < 0.25:
+            return
+        fenster = tk.Toplevel(c)
+        fenster.overrideredirect(True)        # kein Titelbalken, kein Rahmen
+        fenster.configure(bg=LINIE)
+        zustand['liste'] = fenster
+
+        # ⚠ Die Liste muss rollen können. Bei 25 Arten ist sie höher als der
+        # Platz unter dem Feld — steht das Fenster weit unten, waren die
+        # letzten Einträge unerreichbar. Also: Höhe begrenzen, eigene
+        # Rollfläche, und wenn unten kein Platz ist, klappt sie nach oben.
+        aussen = tk.Frame(fenster, bg=FLAECHE)
+        aussen.pack(fill='both', expand=True, padx=1, pady=1)
+        leinwand = tk.Canvas(aussen, bg=FLAECHE, highlightthickness=0, bd=0)
+        innen = tk.Frame(leinwand, bg=FLAECHE)
+        fenster_id = leinwand.create_window((0, 0), window=innen, anchor='nw')
+
+        for wert, text in eintraege:
+            an = (wert == zustand['wert'])
+            zeile = tk.Label(innen, text=text, bg=FLAECHE,
+                             fg=ACCENT if an else FG, font=s, anchor='w',
+                             padx=11, pady=4, cursor='hand2')
+            zeile.pack(fill='x')
+            zeile.bind('<Button-1>', lambda e, w=wert: waehlen(w))
+            zeile.bind('<Enter>', lambda e, z=zeile: z.configure(bg=BAR))
+            zeile.bind('<Leave>', lambda e, z=zeile: z.configure(bg=FLAECHE))
+
+        c.update_idletasks()
+        innen.update_idletasks()
+        gebraucht_hoehe = innen.winfo_reqheight()
+        gebraucht_breite = max(breite, innen.winfo_reqwidth() + 2)
+
+        x = c.winfo_rootx()
+        unten = c.winfo_rooty() + hoehe + 2
+        # ⚠ Nicht `winfo_screenheight()`: Tk meldet damit die Höhe **aller**
+        # Bildschirme zusammen. Bei zwei übereinander stehenden Monitoren passt
+        # eine lange Liste rechnerisch immer nach unten — und klappt in
+        # Wirklichkeit unterhalb des Bildes auf. Gemeldet als „Alle Arten und
+        # Alle Quellen sind nicht auswählbar", also genau die beiden längsten
+        # Listen. Maßgeblich ist der Bildschirm, auf dem das Feld steht.
+        _sx, schirm_oben, _sb, schirm_hoch = bildschirm.schirm_fuer(
+            c, c.winfo_rootx(), c.winfo_rooty())
+        schirm_unten = schirm_oben + schirm_hoch
+        # So viel Platz ist nach unten bzw. nach oben — mit etwas Luft zum Rand.
+        platz_unten = schirm_unten - unten - 20
+        platz_oben = c.winfo_rooty() - schirm_oben - 20
+        nach_oben = gebraucht_hoehe > platz_unten and platz_oben > platz_unten
+        sicht = min(gebraucht_hoehe, max(platz_oben if nach_oben
+                                         else platz_unten, 120))
+        y = (c.winfo_rooty() - sicht - 2) if nach_oben else unten
+
+        leinwand.configure(width=gebraucht_breite - 2, height=sicht)
+        leinwand.pack(side='left', fill='both', expand=True)
+        if gebraucht_hoehe > sicht:
+            leiste = rundleiste(aussen, leinwand, grund=FLAECHE, breite=8)
+            leiste.pack(side='right', fill='y')
+            leinwand.configure(yscrollcommand=leiste.set)
+        leinwand.configure(scrollregion=(0, 0, gebraucht_breite,
+                                         gebraucht_hoehe))
+        leinwand.itemconfigure(fenster_id, width=gebraucht_breite - 2)
+        rad_anschliessen(leinwand)
+
+        fenster.geometry('%dx%d+%d+%d' % (gebraucht_breite, sicht + 2, x, y))
+        fenster.lift()
+        fenster.focus_set()
+
+        # Ein Klick irgendwo anders schließt die Liste — sonst bleibt sie stehen,
+        # sobald man es sich anders überlegt.
+        #
+        # ⚠ Die Bindung wird **verzögert** gesetzt. Direkt nach einer Auswahl baut
+        # die Bauplan-Liste sich neu auf (bis zu 670 Zeilen), und dabei wandert der
+        # Fokus noch einmal. Hing `<FocusOut>` sofort am frischen Fenster, fing es
+        # genau dieses Nachzucken ab und schloss sich von selbst: Wer nach einer
+        # Auswahl gleich das nächste Feld anklickte, sah die Liste aufblitzen und
+        # verschwinden — erst der zweite Klick hielt. Genau so gemeldet.
+        def wache_setzen():
+            try:
+                fenster.bind('<FocusOut>', zuklappen)
+            except tk.TclError:
+                pass
+
+        fenster.after(250, wache_setzen)
+
+    def stumm_setzen(wert):
+        """Anzeige umstellen, ohne den Rückruf auszulösen.
+
+        Gebraucht beim Zurücksetzen mehrerer Felder auf einmal: Sonst löst
+        jedes einzelne einen vollen Neuaufbau der Liste aus.
+        """
+        zuklappen()
+        zustand['wert'] = wert
+        c.itemconfigure(text_id, text=beschriftung_zu(wert))
+        faerben()
+
+    c.bind('<Button-1>', aufklappen)
+    faerben()
+    c.setzen = waehlen
+    c.stumm_setzen = stumm_setzen
+    c.wert = lambda: zustand['wert']
+    return c
+
+
+def marke(eltern, text, farbe, schrift, grund=None, mindestbreite=0):
+    """Eine abgerundete Blase mit farbigem Rand — „neu", „behoben" und Verwandte.
+
+    Ein farbiges Wort geht in einer Liste unter; eine umrandete Blase liest man
+    als Auszeichnung.
+
+    ⚠ Mit einem Label geht das nicht: `highlightthickness` zeichnet Tk je nach
+    System nur bei Fokus (auf dem Mac blieb der Rand unsichtbar), und
+    `relief='solid'` malt eine Systemlinie statt einer eigenen Farbe. Runde
+    Ecken kann ein Label ohnehin nicht. Deshalb eine kleine Leinwand: Sie kostet
+    ein paar Zeilen mehr und sieht auf allen drei Systemen gleich aus.
+    """
+    grund = grund or FLAECHE
+    hoehe = schrift.metrics('linespace') + 8
+    # ⚠ Genug Luft, und alle Blasen einer Gruppe gleich breit: Sonst wird die
+    # längste abgeschnitten, sobald der Platz feststeht — und die Wörter
+    # flattern, weil jede Blase anders breit ist.
+    breite = max(mindestbreite, schrift.measure(text) + 20)
+    c = tk.Canvas(eltern, width=breite, height=hoehe, bg=grund,
+                  highlightthickness=0, bd=0)
+    c.blase = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1,
+                               radius=max(4, hoehe // 3),
+                               fill=grund, outline=farbe, width=1)
+    c.create_text(breite / 2.0, hoehe / 2.0, text=text, fill=farbe,
+                  font=schrift, anchor='center')
+
+    def hintergrund(neuer):
+        """Beim Einfärben der Zeile mitziehen — Leinwand und Blasenfüllung."""
+        c.configure(bg=neuer)
+        c.itemconfigure(c.blase, fill=neuer)
+
+    c.hintergrund = hintergrund
+    return c
+
+
+class Hauptfenster:
+    """Der Rahmen mit der Reiterleiste. Die Seiten liefern andere Module."""
+
+    def __init__(self, eltern=None, beim_schliessen=None, version='',
+                 beim_schriftwechsel=None):
+        self.beim_schliessen = beim_schliessen
+        self.version = version
+        self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
+        self.root.title(t('hf_titel'))
+        self.root.configure(bg=BG)
+        # Start = Mindestgröße, mittig auf dem Hauptbildschirm. Mittig, damit das
+        # Fenster bei mehreren Monitoren nicht auf einer Kante landet.
+        self.root.geometry(bildschirm.mittig(self.root, MIN_BREITE, MIN_HOEHE))
+        self.root.minsize(MIN_BREITE, MIN_HOEHE)
+
+        self._schriften_anlegen()
+
+        self.seiten = {}          # kennung -> Frame
+        self.gezeichnet = set()   # welche Seiten schon Inhalt haben
+        self.knoepfe = {}         # kennung -> Reiter-Label
+        self.aktuell = None
+        self.fortgeschritten_offen = False
+        # Wer die Schriftgröße ändert, meint das ganze Programm — auch das
+        # Overlay. Das Fenster kennt es nicht, deshalb ein Rückruf.
+        self.beim_schriftwechsel = beim_schriftwechsel
+
+        self._titelleiste()
+        self._fusszeile()         # ⚠ vor dem Inhalt — sonst rutscht sie hinaus
+        self._korpus()
+
+        self.oeffnen('liste')
+        # Die Mindesthöhe hängt an Schriftgröße und Skalierung — einmal messen,
+        # sobald Tk die Seitenleiste gezeichnet hat.
+        self.root.after(50, self._mindesthoehe_nachziehen)
+        self.root.protocol('WM_DELETE_WINDOW', self.schliessen)
+
+    # ------------------------------------------------------------- Schriften
+    def _schriften_anlegen(self):
+        stufe = STUFEN.get(pfade.einstellung('schriftgroesse') or 'normal', 1)
+        self.f_grund  = tkfont.Font(family='Segoe UI', size=10 + stufe)
+        self.f_fett   = tkfont.Font(family='Segoe UI', size=10 + stufe, weight='bold')
+        self.f_klein  = tkfont.Font(family='Segoe UI', size=9 + stufe)
+        self.f_titel  = tkfont.Font(family='Segoe UI', size=12 + stufe, weight='bold')
+        # Siehe `Overlay.ZEICHEN_SCHRIFT`: `Segoe UI` enthält die Symbole nicht,
+        # Windows fällt sonst auf die **farbige** Segoe UI Emoji zurück.
+        self.f_zeichen = tkfont.Font(
+            family='Segoe UI Symbol' if pfade.WINDOWS else 'Segoe UI',
+            size=13 + stufe)
+
+    def schriftgroesse_setzen(self, stufe):
+        """Die ganze Oberfläche wächst oder schrumpft — sofort, ohne Neustart."""
+        n = STUFEN.get(stufe, 1)
+        for schrift, grund in ((self.f_grund, 10), (self.f_fett, 10),
+                               (self.f_klein, 9), (self.f_titel, 12),
+                               (self.f_zeichen, 13)):
+            schrift.configure(size=grund + n)
+        pfade.einstellung_setzen('schriftgroesse', stufe)
+        if self.beim_schriftwechsel:
+            try:
+                self.beim_schriftwechsel(stufe)
+            except Exception as ausnahme:
+                fehler.merken('hauptfenster.schriftwechsel', ausnahme)
+
+    # ------------------------------------------------------------ Titelleiste
+    def _titelleiste(self):
+        bar = tk.Frame(self.root, bg=BAR)
+        bar.pack(side='top', fill='x')
+
+        # Das Programm-Icon gehört hierhin — dort sucht man es.
+        self._icon_bild = None
+        png = _mitgeliefert(os.path.join('assets', 'icon.png'))
+        if png and os.path.exists(png):
+            try:
+                voll = tk.PhotoImage(file=png)
+                teiler = max(1, voll.width() // 22)
+                self._icon_bild = voll.subsample(teiler, teiler)
+                tk.Label(bar, image=self._icon_bild, bg=BAR).pack(side='left',
+                                                                 padx=(12, 8), pady=8)
+            except Exception as ausnahme:
+                fehler.merken('hauptfenster.icon', ausnahme)
+
+        tk.Label(bar, text=t('hf_titel'), bg=BAR, fg=FG,
+                 font=self.f_fett).pack(side='left')
+        tk.Label(bar, text='v%s' % (self.version or '—'), bg=BAR, fg=SUB,
+                 font=self.f_klein).pack(side='left', padx=(6, 0))
+
+        # Symbol UND Wort: Ein Symbol allein erklärt sich nur dem, der es gebaut
+        # hat — hier war selbst der Autor unsicher, was `⟳` bedeutet. Genau
+        # deshalb steht der Zauberstab jetzt neben dem Wort „Einrichtung
+        # starten": ein Verb sagt, dass etwas losgeht; „Einrichtung" allein
+        # klang nach einem Ort, an dem man etwas nachschlägt.
+        self.knopf_neu = self._titelknopf(bar, 'wasistneu', t('hf_wasistneu'),
+                                          t('hf_hinweis_neu'), self._was_ist_neu)
+        self._titelknopf(bar, 'einrichtung', t('hf_einrichtung'),
+                         t('hf_hinweis_einr'), self._einrichtung)
+
+    def _titelknopf(self, eltern, symbol, wort, erklaerung, tat):
+        rahmen = tk.Frame(eltern, bg=BAR, cursor='hand2')
+        rahmen.pack(side='right', padx=(0, 10), pady=6)
+        z = zeichen.knopf(rahmen, symbol, grund=BAR, schrift=self.f_zeichen)
+        z.pack(side='left')
+        w = tk.Label(rahmen, text=' ' + wort, bg=BAR, fg=SUB, font=self.f_klein)
+        w.pack(side='left')
+        for teil in (rahmen, z, w):
+            teil.bind('<Button-1>', lambda e, f=tat: f())
+        hinweis.anhaengen(rahmen, lambda: erklaerung)
+        rahmen.teile = (z, w)
+        return rahmen
+
+    # --------------------------------------------------------------- Fußzeile
+    def _fusszeile(self):
+        fuss = tk.Frame(self.root, bg=BAR)
+        fuss.pack(side='bottom', fill='x')
+        self.meldung = tk.Label(fuss, text=t('hf_sofort'), bg=BAR, fg=SUB,
+                                font=self.f_klein)
+        self.meldung.pack(side='left', padx=14, pady=9)
+        k = tk.Label(fuss, text=' %s ' % t('hf_schliessen'), bg=FLAECHE, fg=FG,
+                     font=self.f_klein, cursor='hand2', padx=10, pady=4)
+        k.pack(side='right', padx=12)
+        k.bind('<Button-1>', lambda e: self.schliessen())
+
+    def sagen(self, text):
+        """Kurze Rückmeldung in der Fußzeile — statt eines Speichern-Knopfes."""
+        try:
+            self.meldung.configure(text=text, fg=ACCENT)
+            self.root.after(4000, lambda: self.meldung.configure(
+                text=t('hf_sofort'), fg=SUB))
+        except Exception:
+            pass
+
+    # ----------------------------------------------------------------- Korpus
+    def _korpus(self):
+        # 210 ist nur der Startwert — die wirkliche Breite wird gemessen, sobald
+        # die Einträge stehen (siehe `_leistenbreite_nachziehen`).
+        self.leiste = tk.Frame(self.root, bg=FLAECHE, width=LEISTE_BREITE)
+        self.leiste.pack(side='left', fill='y')
+        self.leiste.pack_propagate(False)
+
+        self.inhalt = tk.Frame(self.root, bg=BG)
+        self.inhalt.pack(side='right', fill='both', expand=True)
+
+        self._gruppe(t('hf_gruppe_bp'))
+        self._reiter('liste', 'liste', t('hf_liste'))
+        self._reiter('fortschritt', 'fortschritt', t('hf_fortschritt'))
+
+        self._gruppe(t('hf_gruppe_einst'))
+        self._reiter('allgemein', 'einstellungen', t('hf_allgemein'))
+        self._reiter('anzeige', 'anzeige', t('hf_anzeige'))
+        self._reiter('spiel', 'auftragstexte', t('hf_spiel'))
+        self._reiter('bestand', 'bestand', t('hf_bestand'))
+
+        # „Was ist neu" und „Über" stellen nichts ein — sie erzählen etwas.
+        # Unter der Überschrift „Einstellungen" waren sie falsch einsortiert.
+        self._gruppe(t('hf_gruppe_info'))
+        self._reiter('wasistneu', 'wasistneu', t('hf_wasistneu'))
+        self._reiter('ueber', 'ueber', t('hf_ueber'))
+        # Direkt unter „Update & Über": Wer nicht ins Spiel kommt, sucht den
+        # Fehler zuerst bei sich. Ein eigener Reiter beantwortet das, statt die
+        # Auskunft unten an eine andere Seite zu hängen, wo niemand sie sucht.
+        self._reiter('serverstatus', 'serverstatus', t('hf_serverstatus'))
+        # ⚠ Eigener Reiter, kein Abschnitt auf „Update & Über": Die Seite dort
+        # ist mit Fassung, Katalogzahlen, Update-Kanal und Holen-Knopf schon
+        # voll, und wem was gehört, hat mit Updates nichts zu tun.
+        self._reiter('danke', 'quellen', t('hf_danke'))
+
+        # Fortgeschrittenes sitzt unten und ist zugeklappt — sichtbar, aber
+        # nicht im Weg. Wer es sucht, findet es; wer es nicht kennt, wird nicht
+        # erschlagen.
+        self.klapp = tk.Frame(self.leiste, bg=FLAECHE)
+        self.klapp.pack(side='bottom', fill='x', pady=(8, 6))
+        self.klappknopf = tk.Label(self.klapp, text=t('hf_fortgeschritten'),
+                                   bg=FLAECHE, fg=SUB, font=self.f_klein,
+                                   cursor='hand2', anchor='w', padx=16, pady=8)
+        self.klappknopf.pack(fill='x')
+        self.klappknopf.bind('<Button-1>', lambda e: self._klapp_umschalten())
+        self.klappinhalt = tk.Frame(self.klapp, bg=FLAECHE)
+
+        # --- Discord -----------------------------------------------------
+        # Wunsch von der Autor am 26.08.2026, nach dem Vorbild des
+        # SC-Deutsch-Launchers: „discord Button wäre tatsächlich auch sinnvoll."
+        #
+        # ⚠ Bewusst **ruhiger** als der Knopf darüber. Star Citizen zu starten
+        # ist die Handlung, für die jemand dieses Fenster offen hat; der Weg zum
+        # Discord ist ein Angebot. Zwei gleich laute Knöpfe nebeneinander nehmen
+        # sich gegenseitig die Wirkung — das markante Grün trägt nur, solange es
+        # an genau einer Stelle steht.
+        rahmen_dc = tk.Frame(self.leiste, bg=FLAECHE)
+        rahmen_dc.pack(side='bottom', fill='x', padx=12, pady=(0, 2))
+        self.discordknopf = rundknopf(
+            rahmen_dc, t('hf_discord'), self._discord_oeffnen, self.f_klein,
+            FLAECHE, FLAECHE, LINIE, SUB, radius=8, polster=(12, 6),
+            malen=discord_zeichen)
+        self.discordknopf.pack(fill='x')
+
+        # --- Ko-fi -------------------------------------------------------
+        # ⚠ Die Rechtslage dazu ist **zweigeteilt** und am 26.08.2026 geprüft:
+        #
+        #   * Die Fandom-FAQ von RSI führt „donations" wörtlich in der Liste
+        #     verbotener kommerzieller Nutzung.
+        #   * Die **Terms of Service** — das Dokument, das jeder Spieler mit
+        #     seinem Konto annimmt — verbieten für Fan-Seiten nur
+        #     Zugangsgebühren und Werbe- bzw. Sponsoreneinnahmen. Spenden kommen
+        #     dort nicht vor.
+        #
+        # der Autor hat sich nach beiden Fundstellen dafür entschieden, weil das
+        # Projekt echte Kosten verursacht und die ToS es nicht untersagen. Was in
+        # **beiden** Dokumenten verboten bleibt und deshalb hier nie entstehen
+        # darf: eine Bezahlschranke, ein Abo, Werbung. Der Knopf führt zu einer
+        # freiwilligen Seite, das Werkzeug bleibt vollständig und kostenlos.
+        rahmen_kofi = tk.Frame(self.leiste, bg=FLAECHE)
+        rahmen_kofi.pack(side='bottom', fill='x', padx=12, pady=(0, 2))
+        self.kofiknopf = rundknopf(
+            rahmen_kofi, t('hf_kofi'), self._kofi_oeffnen, self.f_klein,
+            FLAECHE, FLAECHE, LINIE, SUB, radius=8, polster=(12, 6),
+            malen=kaffee_zeichen)
+        self.kofiknopf.pack(fill='x')
+
+        # --- Star Citizen starten ---------------------------------------
+        # ⚠ Der Knopf stand erst auf der Seite „Auftragstexte", also dort, wo es
+        # um Bauplan-Angaben im Spiel geht — selbst der Autor fand ihn nicht
+        # wieder. Danach zog er ins Overlay; sichtbar war er dort nur, solange
+        # das Overlay eingeblendet ist.
+        #
+        # der Autor am 26.08.2026: „den SC Starten Button sollten wir über für
+        # Fortgeschrittene packen in dem markanten grün wie jetzt auch, da sieht
+        # man ihn sofort." Hier ist er auf **jeder** Seite zu sehen.
+        #
+        # ⚠ `side='bottom'` staffelt von unten nach oben: Was **später** gepackt
+        # wird, sitzt weiter oben. Dieser Knopf kommt deshalb nach dem
+        # Klappbereich und landet dadurch **über** ihm.
+        #
+        # Nur bauen, wenn wirklich ein Startweg gefunden wurde — unter Windows
+        # der RSI Launcher, unter Linux der lug-helper. Ein Knopf, der nichts
+        # tut, wäre schlimmer als keiner.
+        try:
+            from . import pfade as pfade_start
+            hat_starter = bool(pfade_start.spielstarter())
+        except Exception:
+            hat_starter = False
+        if hat_starter:
+            rahmen_start = tk.Frame(self.leiste, bg=FLAECHE)
+            rahmen_start.pack(side='bottom', fill='x', padx=12, pady=(8, 2))
+            self.spielknopf = rundknopf(
+                rahmen_start, t('s_sp_start_knopf'),
+                self._spiel_starten, self.f_klein,
+                FLAECHE, ACCENT, ACCENT, BG, radius=8, polster=(12, 7))
+            self.spielknopf.pack(fill='x')
+
+    def _kofi_oeffnen(self):
+        """Die Ko-fi-Seite im Browser aufmachen."""
+        import webbrowser
+        self.sagen(t('hf_kofi_auf'))
+        try:
+            webbrowser.open(KOFI_ADRESSE)
+        except Exception as ausnahme:
+            from . import fehler
+            fehler.merken('hauptfenster.kofi', ausnahme)
+
+    def _discord_oeffnen(self):
+        """Die Einladung im Browser aufmachen.
+
+        ⚠ Die Adresse steht **fest** im Code und ist die dauerhafte Einladung
+        (`CODE_OF_CONDUCT.md` nennt dieselbe). Ein Link, der irgendwann abläuft,
+        führt Leute auf eine Fehlerseite und niemand merkt es.
+        """
+        import webbrowser
+        self.sagen(t('hf_discord_auf'))
+        try:
+            webbrowser.open('https://discord.gg/g2E7e6XxZC')
+        except Exception as ausnahme:
+            from . import fehler
+            fehler.merken('hauptfenster.discord', ausnahme)
+
+    def _spiel_starten(self):
+        """Star Citizen aus dem Werkzeug heraus hochfahren."""
+        from . import pfade as pfade_start
+        self.sagen(t('s_sp_start_lauft'))
+        try:
+            ok, grund = pfade_start.spiel_starten()
+        except Exception as ausnahme:
+            ok, grund = False, str(ausnahme)
+        if not ok:
+            self.sagen(t('s_sp_start_nein', grund))
+
+        # --- Star Citizen starten ---------------------------------------
+        # ⚠ Der Knopf stand vorher auf der Seite „Auftragstexte", also dort, wo
+        # es um Bauplan-Angaben im Spiel geht. Selbst der Autor fand ihn nicht
+        # wieder. Danach zog er ins Overlay; sichtbar war er dort nur, solange
+        # das Overlay eingeblendet ist.
+        #
+        # der Autor am 26.08.2026: „den SC Starten Button sollten wir über für
+        # Fortgeschrittene packen in dem markanten grün wie jetzt auch, da sieht
+        # man ihn sofort." Genau hier ist er auf **jeder** Seite zu sehen, ohne
+        # dass man ihn suchen muss.
+        #
+        # ⚠ `side='bottom'` staffelt von unten nach oben: Was **spaeter**
+        # gepackt wird, sitzt weiter oben. Dieser Knopf kommt also nach dem
+        # Klappbereich und landet dadurch **ueber** ihm.
+        #
+        # Nur bauen, wenn wirklich ein Startweg gefunden wurde — unter Windows
+        # der RSI Launcher, unter Linux der lug-helper. Ein Knopf, der nichts
+        # tut, waere schlimmer als keiner.
+        try:
+            hat_starter = bool(pfade.spielstarter())
+        except Exception:
+            hat_starter = False
+        if hat_starter:
+            rahmen_start = tk.Frame(self.leiste, bg=FLAECHE)
+            rahmen_start.pack(side='bottom', fill='x', padx=12, pady=(8, 2))
+            self.spielknopf = rundknopf(
+                rahmen_start, t('s_sp_start_knopf'),
+                self._spiel_starten, self.f_klein,
+                FLAECHE, ACCENT, ACCENT, BG, radius=8, polster=(12, 7))
+            self.spielknopf.pack(fill='x')
+
+    def _spiel_starten(self):
+        """Star Citizen aus dem Werkzeug heraus hochfahren."""
+        from . import pfade as pfade_start
+        self.sagen(t('s_sp_start_lauft'))
+        try:
+            ok, grund = pfade_start.spiel_starten()
+        except Exception as ausnahme:
+            ok, grund = False, str(ausnahme)
+        if not ok:
+            self.sagen(t('s_sp_start_nein', grund))
+
+    def _gruppe(self, text):
+        tk.Label(self.leiste, text=text.upper(), bg=FLAECHE, fg=SUB,
+                 font=self.f_klein, anchor='w', padx=16,
+                 pady=6).pack(fill='x', pady=(10, 0))
+
+    # ⚠ Nur Zeichen aus der Grundebene benutzen. `🗀` und `⇅` liegen darüber und
+    # fehlen in der Oberflächenschrift — im Fenster stand statt des Symbols ein
+    # Fragezeichen. Auffallen tut das erst im laufenden Fenster, nicht im Code.
+    # Prüfen lässt es sich mit `tkfont.Font.measure`: Ein fehlendes Zeichen ist
+    # genauso breit wie das amtliche Ersatzzeichen `￿`.
+    def _reiter(self, kennung, symbol, text, wohin=None):
+        ziel = wohin if wohin is not None else self.leiste
+        zeile = tk.Frame(ziel, bg=FLAECHE, cursor='hand2')
+        zeile.pack(fill='x')
+        strich = tk.Frame(zeile, bg=FLAECHE, width=3)
+        strich.pack(side='left', fill='y')
+        # ⚠ `symbol` heißt der Parameter, nicht `zeichen` — sonst verdeckt er
+        # das gleichnamige Modul, aus dem das Bild kommt.
+        z = zeichen.knopf(zeile, symbol, grund=FLAECHE, schrift=self.f_zeichen)
+        z.pack(side='left', padx=(10, 4), pady=7)
+        b = tk.Label(zeile, text=text, bg=FLAECHE, fg=SUB, font=self.f_grund,
+                     anchor='w')
+        b.pack(side='left', fill='x', expand=True)
+
+        marke_widget = None
+        if neuheiten.ist_neu(kennung, self.version):
+            marke_widget = marke(zeile, t('hf_neu'), ACCENT, self.f_klein)
+            marke_widget.pack(side='right', padx=10)
+
+        for teil in (zeile, z, b):
+            teil.bind('<Button-1>', lambda e, k=kennung: self.oeffnen(k))
+        self.knoepfe[kennung] = (zeile, strich, z, b, marke_widget)
+
+    def _seitenleiste_bedarf(self):
+        """Wie viele Pixel Höhe die Seitenleiste für all ihre Einträge braucht.
+
+        Gerechnet wird über die Kinder, nicht über den Rahmen selbst: Die Leiste
+        hat eine feste Breite (`pack_propagate(False)`), und dann meldet Tk für den
+        Rahmen die gesetzte Größe statt der des Inhalts.
+        """
+        hoch = 0
+        for kind in self.leiste.winfo_children():
+            try:
+                polster = kind.pack_info().get('pady', 0)
+            except Exception:
+                polster = 0
+            if isinstance(polster, str):
+                polster = sum(int(teil) for teil in polster.split())
+            elif isinstance(polster, (tuple, list)):
+                polster = sum(int(teil) for teil in polster)
+            hoch += kind.winfo_reqheight() + 2 * int(polster or 0)
+        return hoch
+
+    def _leistenbreite_nachziehen(self):
+        """Die Seitenleiste so breit machen, dass der längste Eintrag hineinpasst.
+
+        ⚠ Die Leiste hat eine feste Breite (`pack_propagate(False)`) — sonst würde
+        sie mit dem Inhalt wandern. Feste Breite heißt aber auch: Was nicht
+        hineinpasst, wird **abgeschnitten**, ohne Hinweis. Bei 125 % Anzeige-
+        Skalierung traf das „Angaben im Spiel"; auf Englisch sind mehrere Einträge
+        noch länger. Deshalb wird die Breite aus den Einträgen gemessen.
+        """
+        try:
+            breiten = []
+            for eintrag in self.knoepfe.values():
+                if not eintrag or not eintrag[0]:
+                    continue
+                zeile, _strich, _z, beschriftung, _marke = eintrag
+                # ⚠ Der **aktive** Reiter wird fett gezeichnet, und fett ist breiter.
+                # Gemessen wird aber der Zustand, in dem die Zeile gerade ist — wer
+                # nur `winfo_reqwidth()` nimmt, misst bei allen anderen die schmale
+                # Fassung und macht die Leiste zu knapp. Genau deshalb war „Angaben
+                # im Spiel" abgeschnitten, sobald die Seite offen war.
+                zusatz = 0
+                try:
+                    text = beschriftung.cget('text')
+                    zusatz = max(0, self.f_fett.measure(text)
+                                 - self.f_grund.measure(text))
+                except tk.TclError:
+                    pass
+                breiten.append(zeile.winfo_reqwidth() + zusatz)
+            breiten.append(self.klappknopf.winfo_reqwidth())
+            noetig = max(LEISTE_BREITE, max(breiten) + 12)
+            if noetig != self.leiste.winfo_width():
+                self.leiste.configure(width=noetig)
+            return noetig
+        except (tk.TclError, ValueError):
+            return LEISTE_BREITE
+
+    def _mindesthoehe_nachziehen(self, versuch=0):
+        """Die Mindesthöhe an das anpassen, was die Seitenleiste braucht.
+
+        ⚠ Gerechnet wird immer für den **aufgeklappten** Zustand — auch solange
+        „Für Fortgeschrittene" noch zu ist. Sonst passte das Fenster genau, und beim
+        Aufklappen war „Diagnose" unten abgeschnitten: Die Reiter werden von oben
+        gepackt, der Klappteil von unten, und was dazwischen nicht hineinpasst,
+        fällt heraus. Genau so gemeldet. Ein Fenster, das beim Aufklappen von selbst
+        wächst, wäre die zweitbeste Lösung — es springt dann unter den Händen.
+
+        ⚠ Gemessen wird erst, wenn Tk die Leiste wirklich gezeichnet hat. Vorher ist
+        ihre Höhe 1 Pixel, und die Rechnung „Fenster minus Leiste" ergibt Unsinn —
+        im ersten Anlauf kam so eine Mindesthöhe von 1418 Pixeln heraus. Ist sie noch
+        nicht so weit, wird es kurz darauf noch einmal versucht.
+        """
+        try:
+            if self.leiste.winfo_height() < 50:
+                if versuch < 10:
+                    self.root.after(60, lambda: self._mindesthoehe_nachziehen(
+                        versuch + 1))
+                return
+            bedarf = self._seitenleiste_bedarf()
+            if not self.fortgeschritten_offen:
+                # Platz für die zwei Einträge mitrechnen, die beim Aufklappen
+                # dazukommen. Sie sind so hoch wie jeder andere Reiter.
+                zeile = self.knoepfe.get('liste')
+                if zeile:
+                    bedarf += 2 * zeile[0].winfo_reqheight()
+            kopf_und_fuss = max(0, self.root.winfo_height()
+                                - self.leiste.winfo_height())
+            noetig = max(MIN_HOEHE, bedarf + kopf_und_fuss)
+            # Wird die Leiste breiter, braucht auch das Fenster mehr — sonst geht
+            # der Platz auf Kosten des Inhalts daneben.
+            leiste_breit = self._leistenbreite_nachziehen()
+            breit = MIN_BREITE + max(0, leiste_breit - LEISTE_BREITE)
+            self.root.minsize(breit, noetig)
+            if self.root.winfo_height() < noetig or self.root.winfo_width() < breit:
+                self.root.geometry('%dx%d' % (max(breit, self.root.winfo_width()),
+                                              max(noetig, self.root.winfo_height())))
+        except tk.TclError:
+            pass
+
+    def _klapp_umschalten(self):
+        self.fortgeschritten_offen = not self.fortgeschritten_offen
+        if self.fortgeschritten_offen:
+            self.klappinhalt.pack(fill='x')
+            if not self.klappinhalt.winfo_children():
+                # Pfade liegen hier unten, seit die Erkennung sie selbst
+                # findet: Spielordner und Launcher werden gesucht, und wer doch
+                # nachhelfen muss, wird vom Einrichtungsassistenten geführt —
+                # der erklärt, was die Seite nur als Felder zeigt. Ein Reiter,
+                # den fast niemand braucht, steht oben nur im Weg.
+                self._reiter('ordner', 'ordner', t('hf_ordner'), self.klappinhalt)
+                self._reiter('erkennung', 'erkennung', t('hf_erkennung'), self.klappinhalt)
+                self._reiter('diagnose', 'diagnose', t('hf_diagnose'), self.klappinhalt)
+            self.klappknopf.configure(text=t('hf_fortgeschritten'))
+        else:
+            self.klappinhalt.pack_forget()
+            self.klappknopf.configure(text=t('hf_fortgeschritten'))
+        # Kurz warten, statt `after_idle`: Vorher hat Tk die neuen Einträge noch
+        # nicht vermessen — und `after_idle` kommt hier nicht zuverlässig dran,
+        # weil die Bauplan-Liste selbst Leerlauf-Aufgaben nachlegt.
+        self.root.after(30, self._mindesthoehe_nachziehen)
+
+    # ------------------------------------------------------------ Seitenwahl
+    def oeffnen(self, kennung):
+        """Eine Seite zeigen — und beim ersten Mal ihren Inhalt bauen."""
+        if kennung not in self.seiten:
+            self.seiten[kennung] = tk.Frame(self.inhalt, bg=BG)
+        if kennung not in self.gezeichnet:
+            self.gezeichnet.add(kennung)
+            try:
+                self._seite_fuellen(kennung, self.seiten[kennung])
+            except Exception as ausnahme:
+                fehler.merken('hauptfenster.seite:%s' % kennung, ausnahme)
+                tk.Label(self.seiten[kennung], text='—', bg=BG, fg=SUB,
+                         font=self.f_grund).pack(padx=20, pady=20)
+
+        if self.aktuell:
+            self.seiten[self.aktuell].pack_forget()
+        self.seiten[kennung].pack(fill='both', expand=True)
+        self.aktuell = kennung
+        self._reiter_faerben()
+        # Der aktive Reiter wird fett — und fett ist breiter. Die Leiste muss
+        # deshalb bei jedem Wechsel nachmessen, sonst wird der längste Eintrag
+        # genau dann abgeschnitten, wenn man auf ihm steht.
+        self._leistenbreite_nachziehen()
+
+        # Die „neu"-Marke hat ihren Zweck erfüllt, sobald man drin war.
+        if neuheiten.ist_neu(kennung, self.version):
+            neuheiten.gesehen(kennung, self.version)
+            eintrag = self.knoepfe.get(kennung)
+            if eintrag and eintrag[4] is not None:
+                eintrag[4].destroy()
+                # ⚠ Und aus der Liste nehmen! Ein zerstörtes Widget bleibt sonst
+                # im Tupel stehen, und das nächste Einfärben greift ins Leere
+                # (`invalid command name`). Das schlug beim zweiten Reiterwechsel
+                # zu — also bei jedem Nutzer sofort.
+                zeile, strich, z, b, _ = eintrag
+                self.knoepfe[kennung] = (zeile, strich, z, b, None)
+
+    def _reiter_faerben(self):
+        for kennung, (zeile, strich, z, b, marke) in self.knoepfe.items():
+            an = (kennung == self.aktuell)
+            grund = '#1d2634' if an else FLAECHE
+            for teil in (zeile, z, b):
+                teil.configure(bg=grund)
+            if marke is not None:
+                marke.hintergrund(grund)
+            # ⚠ Ein Bild nimmt kein `fg` an — die passend eingefärbte Fassung
+            # muss eingehängt werden.
+            z.faerben(zeichen.HELL if an else zeichen.GRAU)
+            b.configure(fg=FG if an else SUB, font=self.f_fett if an else self.f_grund)
+            strich.configure(bg=ACCENT if an else FLAECHE)
+
+    def neu_aufbauen(self):
+        """Alles neu zeichnen — nach einem Sprachwechsel.
+
+        Texte stehen in der Reiterleiste, in der Titelleiste, in der Fußzeile
+        und auf jeder Seite. Einzeln nachzuziehen wäre zwanzig Stellen, die man
+        vergessen kann; einmal neu aufbauen ist verlässlicher.
+        """
+        merker = self.aktuell
+        offen = self.fortgeschritten_offen
+        for kind in self.root.winfo_children():
+            kind.destroy()
+        self.seiten, self.gezeichnet, self.knoepfe = {}, set(), {}
+        self.aktuell = None
+        self._einst = None            # das geliehene Einstellungsfenster ist weg
+        self.fortgeschritten_offen = False
+
+        self._titelleiste()
+        self._fusszeile()
+        self._korpus()
+        if offen:
+            self._klapp_umschalten()
+        self.oeffnen(merker or 'liste')
+
+    def _seite_fuellen(self, kennung, rahmen):
+        """Hier hängen die Seiten ein — geliefert von `seiten.py`."""
+        from . import seiten
+        seiten.bauen(self, kennung, rahmen)
+
+    # ------------------------------------------------------------------ Tat
+    def _was_ist_neu(self):
+        """Kein eigenes Fenster mehr — die Änderungen sind ein Reiter.
+
+        Ein Fenster über dem Fenster verdeckt genau das, was man gerade
+        vergleichen will, und es gibt keinen Grund dafür: Der Platz ist da.
+        """
+        self.oeffnen('wasistneu')
+
+    def _einrichtung(self):
+        from . import assistent
+        try:
+            assistent.starten(self.root)
+        except Exception as ausnahme:
+            fehler.merken('hauptfenster.assistent', ausnahme)
+
+    def schliessen(self):
+        try:
+            if self.beim_schliessen:
+                self.beim_schliessen()
+        finally:
+            self.root.destroy()
+
+    def run(self):
+        """Das Fenster zeigen und auf Eingaben warten.
+
+        ⚠ Erst nach vorn holen. Ein frisch gestartetes Fenster liegt sonst
+        hinter dem, was gerade offen war — gemeldet als „es startet, aber ich
+        sehe nichts", während das Fenster nachweislich gebaut und sichtbar
+        war (1040×760, Zustand „normal"), nur eben verdeckt. Besonders auf
+        dem Mac: Wird das Programm aus einem Terminal gestartet, behält das
+        Terminal den Vordergrund.
+
+        `-topmost` wird gleich wieder abgeschaltet — es soll nach vorn
+        kommen, aber nicht dauerhaft über allem kleben.
+        """
+        try:
+            self.root.lift()
+            self.root.attributes('-topmost', True)
+            self.root.after(400, lambda: self.root.attributes('-topmost', False))
+            self.root.focus_force()
+        except tk.TclError:
+            pass                     # ohne Fenstermanager nicht möglich
+        self.root.mainloop()
+
+
+def _mitgeliefert(name):
+    """Pfad zu einer mitgelieferten Datei — im Quellcode wie im fertigen Paket."""
+    try:
+        basis = getattr(sys, '_MEIPASS', None) or os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__)))
+        return os.path.join(basis, name)
+    except Exception:
+        return None

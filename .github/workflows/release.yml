@@ -1,6 +1,6 @@
 # Baut bei jedem Versions-Tag die fertigen Dateien und haengt sie an ein Release.
 #
-# Warum das hier laeuft und nicht auf einem Rechner:
+# Warum das hier laeuft und nicht auf dem Entwicklungsrechner:
 #   * Niemand soll etwas selbst bauen muessen — weder die Nutzer noch der Autor.
 #   * Die .exe braucht Windows, das AppImage braucht Linux. Kein Rechner hat beides.
 #   * Frueher hing die veroeffentlichte .exe vier Versionen hinter dem Code, weil
@@ -57,13 +57,32 @@ jobs:
           python -m PyInstaller --noconfirm --onefile --windowed
           --name "SC-BP-Watcher" --icon "icon.ico"
           --add-data "CHANGELOG.md;." --add-data "CHANGELOG.de.md;."
+          --add-data "assets/icon.png;assets" --add-data "assets/xharig.png;assets" --add-data "icon.ico;."
+          --add-data "assets/symbole;assets/symbole"
           --add-data "daten;daten"
           sc_bp_watcher.py
+
+      # Installer bauen. Inno Setup ist auf den Windows-Baurechnern von GitHub
+      # vorinstalliert; falls nicht, wird es nachgeholt statt den Bau abzubrechen.
+      - name: Installer bauen
+        shell: pwsh
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            Write-Host "Inno Setup fehlt — wird geholt"
+            choco install innosetup --no-progress -y
+          }
+          if (-not (Test-Path $iscc)) { $iscc = "ISCC.exe" }
+          & $iscc "/DAppVersion=${{ env.TAG }}".Replace('/DAppVersion=v', '/DAppVersion=') `
+                  packaging\installer.iss
+          Get-ChildItem dist
 
       - uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: dist/SC-BP-Watcher.exe
+          path: |
+            dist/SC-BP-Watcher.exe
+            dist/SC-BP-Watcher-Setup.exe
 
   # -------------------------------------------------------------------- Linux
   linux:
@@ -103,6 +122,8 @@ jobs:
           python3 -m PyInstaller --noconfirm --onefile --windowed
           --name "SC-BP-Watcher"
           --add-data "CHANGELOG.md:." --add-data "CHANGELOG.de.md:."
+          --add-data "assets/icon.png:assets" --add-data "assets/xharig.png:assets"
+          --add-data "assets/symbole:assets/symbole"
           --add-data "daten:daten"
           sc_bp_watcher.py
 
@@ -138,6 +159,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        # ⚠ Mit voller Historie und Tags: `release_text.py` sucht die vorige
+        # Testfassung, um „was hat sich seit dann geändert" zu verlinken. Ein
+        # flacher Klon kennt keine Tags, und der Link fiele still weg.
+        with: { fetch-depth: 0 }
       - uses: actions/download-artifact@v4
         with: { path: dateien }
 
@@ -164,5 +189,21 @@ jobs:
           prerelease: ${{ steps.art.outputs.vorab }}
           body_path: release-text.md
           files: |
+            dateien/windows/SC-BP-Watcher-Setup.exe
             dateien/windows/SC-BP-Watcher.exe
             dateien/linux/SC-BP-Watcher-x86_64.AppImage
+
+      # Meldung im eigenen Discord — als lesbare Karte statt als nackter Link.
+      #
+      # Laeuft **nach** dem Release, damit der Link im Beitrag schon zieht. Ohne
+      # hinterlegten Schluessel passiert nichts und der Bau bleibt gruen: Eine
+      # Chat-Meldung darf eine fertige Veroeffentlichung nicht rot faerben.
+      #
+      # ⚠ Der Beitrag landet nur im EIGENEN Discord. Ob ihn das Kartell sieht,
+      # entscheidet weiterhin ein Klick auf „Veroeffentlichen" — genau diese
+      # Bremse ist gewollt (siehe Vault: „SC BP Watcher — Discord").
+      - name: Im Discord melden
+        if: always()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: python3 .github/scripts/discord_release.py "${GITHUB_REF_NAME}"

@@ -1,0 +1,33 @@
+{
+ "hinweis": "Welcher Patch welche Baupläne gebracht hat. Nur die Zugänge je Spielversion, nie der ganze Katalog — eine vollständige Liste wäre ein wesentlicher Teil einer fremden Datenbank.",
+ "quelle": "eigene Beobachtung des SC BP Watcher, gegengeprüft am eigenen Bestand",
+ "weitergabe": true,
+ "patches": {
+  "4.10.0-live.12519617": {
+   "datum": "2026-08-26",
+   "neu": [
+    "ADP-mk4 Helmet SecondWind",
+    "Antium Arms Maroon",
+    "BUL-H4 Armor Snow Camo",
+    "BUL-H4 Helmet Snow Camo",
+    "Clearcut Module",
+    "Comer Scraper Module",
+    "Deluge Module",
+    "FBL-8u Undersuit SecondWind",
+    "GOLEM MC-4 Ore Pod",
+    "H4-PBF Ammo Carrier Snow Camo",
+    "Hart Scraper Module",
+    "Lumin V \"SecondWind\" SMG",
+    "MISC Enhanced Ore Pod",
+    "MISC Ore Pod",
+    "Overrun Module",
+    "P4-AR \"SecondWind\" Rifle",
+    "R97 \"Scorched\" Shotgun",
+    "S-38 \"SecondWind\" Pistol",
+    "Stampede Module",
+    "Torrent III Module",
+    "Vendetta \"Snow Camo\" HMG"
+   ]
+  }
+ }
+}

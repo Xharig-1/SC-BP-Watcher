@@ -95,7 +95,14 @@ def _win_setzen(an):
                 except FileNotFoundError:
                     pass          # war schon aus
         return True
-    except Exception:
+    except Exception as ausnahme:
+        # Der Spieler hat den Schalter umgelegt und erwartet, dass es wirkt.
+        # Ohne Meldung sieht er beim nächsten Start nur, dass nichts passiert.
+        try:
+            from . import fehler
+            fehler.merken('autostart.setzen', ausnahme)
+        except Exception:
+            pass
         return False
 
 
@@ -144,9 +151,45 @@ def ist_an():
     return _win_an() if pfade.WINDOWS else _linux_an()
 
 
+# Wer den Autostart anzeigt, trägt sich hier ein.
+#
+# ⚠ Der Autostart wird an ZWEI Stellen umgeschaltet: am Symbol im Overlay und am
+# Schiebeschalter in den Einstellungen. Beide lasen ihren Zustand bisher nur
+# einmal — beim Zeichnen. Schaltete man an der einen Stelle um, blieb die andere
+# auf ihrem alten Stand stehen: Im Overlay leuchtete es grün, in den Einstellungen
+# stand „aus". Deshalb meldet `setzen()` jede Änderung an alle Anzeigen.
+ANZEIGEN = []
+
+
+def anzeige_anmelden(rueckruf):
+    """Einen Rückruf eintragen, der bei jeder Änderung aufgerufen wird."""
+    if rueckruf not in ANZEIGEN:
+        ANZEIGEN.append(rueckruf)
+
+
+def _melden():
+    """Alle Anzeigen auffrischen — und dabei aufräumen, was es nicht mehr gibt.
+
+    Die Seiten des Fensters werden bei einem Sprachwechsel neu gebaut; ihre alten
+    Rückrufe zeigen dann auf zerstörte Bedienelemente und werfen `TclError`. Die
+    fliegen hier still heraus, statt eine Fehlermeldung zu erzeugen.
+    """
+    for rueckruf in list(ANZEIGEN):
+        try:
+            rueckruf()
+        except Exception:
+            try:
+                ANZEIGEN.remove(rueckruf)
+            except ValueError:
+                pass
+
+
 def setzen(an):
     """Ein- oder ausschalten. Gibt zurück, ob es geklappt hat."""
-    return _win_setzen(an) if pfade.WINDOWS else _linux_setzen(an)
+    geklappt = _win_setzen(an) if pfade.WINDOWS else _linux_setzen(an)
+    if geklappt:
+        _melden()
+    return geklappt
 
 
 def moeglich():

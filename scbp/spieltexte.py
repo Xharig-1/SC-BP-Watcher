@@ -50,6 +50,7 @@ import sys
 import tempfile
 
 from . import pfade
+from .sprache import t
 
 # 7-Zip nur als letzter Strohhalm für altes Python. Es kann CIGs zstd meist
 # **nicht** — auf dem Testrechner scheiterte es mit „Headers Error". Der Eintrag
@@ -188,7 +189,7 @@ def holen(sprache='english', spielordner=None, fortschritt=None):
 
     archiv = p4k_pfad(spielordner)
     if not archiv:
-        return False, 'Data.p4k nicht gefunden'
+        return False, t('m_kein_p4k')
     ziel = None
     try:
         from . import uebersetzung
@@ -200,20 +201,20 @@ def holen(sprache='english', spielordner=None, fortschritt=None):
     if os.path.isfile(ziel):
         return True, 'vorhandene Datei behalten'
 
-    melde('Originaltexte werden aus dem Spiel geholt …')
+    melde(t('z_originaltexte'))
     try:
         groesse = os.path.getsize(archiv)
         with open(archiv, 'rb') as f:
             cd, _anzahl = lies_verzeichnis(f, groesse)
             treffer = suche(cd, archivpfad(sprache))
             if not treffer:
-                return False, 'global.ini im Archiv nicht gefunden'
+                return False, t('m_keine_ini_archiv')
             methode, cs, rs, off = treffer
             roh = hole_block(f, off, cs)
         # entpacke_zstd gibt (Daten, benutztes Verfahren) zurück
         if methode == 100:
             daten, weg = entpacke_zstd(roh, rs)
-            melde('entpackt mit %s' % weg)
+            melde(t('z_entpackt') % weg)
         else:
             daten = roh
         if not daten:

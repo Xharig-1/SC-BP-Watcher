@@ -51,7 +51,7 @@ import json
 import os
 import time
 
-from . import pfade
+from . import fehler, pfade
 
 DATEI_VERSION = 1
 
@@ -62,8 +62,8 @@ RANG = {'log': 1, 'nachlese': 1, 'start': 2, 'hand': 3, 'launcher': 4}
 
 
 def norm(s):
-    """Vergleichsform eines Namens — identisch zum Hauptprogramm."""
-    return s.lower().replace('\xa0', ' ').replace('�', ' ').strip()
+    """Vergleichsform eines Namens — siehe `pfade.namensform`."""
+    return pfade.namensform(s)
 
 
 def _jetzt():
@@ -114,7 +114,10 @@ def speichern(daten):
                 pass
         os.replace(temp, ziel)
         return True
-    except Exception:
+    except Exception as ausnahme:
+        # Hier ist der eigene Bauplan-Bestand betroffen — das Wichtigste, was
+        # das Werkzeug hat. Ein stiller Fehlschlag wäre nicht zu verzeihen.
+        fehler.merken('bestand.speichern', ausnahme, ziel)
         try:
             os.remove(temp)
         except OSError:

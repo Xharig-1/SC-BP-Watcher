@@ -8,51 +8,665 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ## Unveröffentlicht
 
-> Sammelt sich bis zum nächsten Veröffentlichungstag (mittwochs).
+> Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
-## v2.1.0 - 2026-08-26
+## v3.0.0-rc62 - 2026-08-27
+
+> **Der Patch-Filter zeigt wieder, was der Patch gebracht hat.**
+
+### Behoben
+
+- **Der Patch-Filter fand nichts, „neu im Spiel" blieb leer.** Wer den Watcher
+  schon vor rc55 benutzt hat, sitzt auf einem Katalog ohne Herkunftsstempel —
+  gestempelt wurde bisher nur beim Neubau, und neu gebaut wird nur bei einer
+  neuen Spielversion. Das Auswahlfeld zeigte deshalb „4.10.0 (21)" (es liest die
+  Historie direkt), die Liste darunter aber „Nichts gefunden". Die Stempel werden
+  jetzt beim Start nachgetragen, ohne Neubau und ohne Netz. Gefunden von
+  der Autor.
+- **Der nächste Patch wäre stumm geblieben.** Die Vergleichsgrundlage
+  (`bauplaene-gesehen.json`) kam ebenfalls erst mit rc55. Fehlte sie, griff die
+  Regel „erster Katalogbau überhaupt — nichts ist neu", und der nächste Patch
+  hätte **keinen einzigen** Zugang gemeldet. Fehlt die Datei, gilt jetzt der
+  vorhandene Katalog als Grundlage: Was darin steht, war vorher im Spiel.
+
+### Hinweise
+
+- **Der Selbsttest prüft diesen Fall jetzt selbst** (Abschnitt 19, elf neue
+  Prüfungen). Er hat sich sofort gelohnt: Das Nachziehen stand zuerst *hinter*
+  der Netzsperre `SC_BP_NO_NET` — wer ohne Netz startet, hätte nie einen Stempel
+  bekommen, obwohl Historie und Katalog beide auf der Platte liegen.
+
+## v3.0.0-rc61 - 2026-08-27
+
+> **Die Meldung im Discord sagt jetzt, worum es geht.**
 
 ### Hinzugefügt
 
-- **Startbaupläne werden erkannt und eingetragen.** Acht Baupläne hat jeder Spieler von
-  Anfang an — P4-AR Rifle und S-38 Pistol samt Magazinen, dazu der Field Recon Suit
-  (vier Teile). Sie standen bisher **nirgends**: nicht im Katalog, nicht im Bestand.
-  - Der Grund: Der Katalog entsteht aus den Belohnungs-Töpfen der Missionen, und ein
-    Startbauplan steht in keinem davon — man bekommt ihn ja nie als Belohnung. Der
-    Fortschritt zeigte dadurch weniger an, als man tatsächlich hat.
-  - Erkannt am Feld `isDefault` in `crafting_blueprints-<version>.json` — **nicht** in
-    `crafting_items`, dort gibt es das Feld nicht.
-  - Der Katalog wächst damit von **714 auf 722**, der Bestand um acht Einträge.
-  - In der Liste mit ◆ gekennzeichnet, damit niemand nach einem Auftrag sucht, den es
-    nicht gibt. Wer sie selbst abgehakt hat, behält seinen Eintrag (Rang `hand` schlägt
-    `start`).
-- **Bestand als Datei ausgeben** (`scbp/export.py`) — **drei Formate**, zwei Knöpfe:
-  - **„In die Ablage"** schreibt alle drei auf einmal in einen festen Ordner und öffnet
-    ihn. Wer regelmäßig hochlädt, klickt nicht dreimal durch einen Speichern-Dialog.
-  - **„Datei speichern …"** bleibt für den Einzelfall, mit freier Zielwahl.
-  - **KRT Profit Basetool** (`productName` + `receivedAt`) · **scmdb.net**
-    (`exportSchemaVersion`, `productName` + `ts` als Epochsekunden — abgelesen am
-    `--export` ihres eigenen Log-Watchers v0.1.9) · **vollständige Sicherung** mit Art,
-    Klasse, Größe, Gütegrad, Hersteller und Quelle.
-  - Ein Zeitwert, der sich nicht sauber umrechnen lässt, wird **weggelassen** statt
-    erfunden — das Feld ist optional, ein falscher Zeitpunkt wäre schlechter.
-  - ⚠️ **Der Zeitstempel ist nicht immer der echte Drop-Zeitpunkt.** Wer seinen Bestand
-    aus der Launcher-Datei übernommen hat, trägt für alle Einträge den Zeitpunkt des
-    Imports — wann ein Bauplan ursprünglich fiel, steht dort nicht drin. Aus den Logs
-    nachgelesene Einträge haben den richtigen.
-  - **Hochgeladen wird nichts.** Der Export schreibt Dateien, den Rest macht der Spieler.
-- **Overlay einklappen** (▾ in der Titelleiste). Es schiebt sich auf die Titelleiste
-  zusammen und gibt die Sicht frei — gedacht für alle mit **einem** Bildschirm, wo das
-  Fenster zwangsläufig über dem Spiel liegt und Durchsichtigkeit allein nicht reicht.
-  - Die Höhe **vor** dem Einklappen wird gemerkt, nicht eine feste Zahl: Wer sich das
-    Fenster auf 900 Pixel gezogen hat, bekommt es auch so zurück.
-  - Der Zustand überlebt einen Neustart.
-  - Gedacht für alle, die neben dem Spiel keinen Platz für ein zweites Fenster haben:
-    ein Streifen von der Höhe einer Titelleiste, ohne Zusatzpaket.
-- **Baupläne ohne bekannte Bezugsquelle sind als solche gekennzeichnet** (`?` statt `ⓘ`).
-  59 der 714 lassen sich über keinen Auftrag beziehen — überwiegend Event-Belohnungen
-  („Purgatory Camo", „SecondWind"). Ohne Zeichen sah die Zeile aus, als hätte jemand
-  vergessen, die Herkunft einzutragen.
+- **Die Release-Meldung im Discord ist jetzt eine lesbare Karte.** Statt
+  `[Repo] New release published: v3.0.0-rc60` steht dort der Changelog-Abschnitt
+  **dieser** Fassung — derselbe Text wie im Werkzeug unter „Was ist neu".
+  Testfassungen in Gold mit dem Hinweis „weniger lange erprobt", fertige in
+  Xharig-Grün, dazu das Programmsymbol. Angeregt von der Autor nach dem Vergleich
+  mit dem StarStrings-Kanal. Ohne hinterlegten Schlüssel passiert nichts und der
+  Bau bleibt grün — eine Chat-Meldung darf keine fertige Veröffentlichung rot
+  färben.
+
+## v3.0.0-rc60 - 2026-08-27
+
+> **Was der Diagnosebericht verriet.** Ein unsichtbares Kreuz, acht Fehler je
+> Seitenwechsel — und eine neue Prüfung, die beides künftig vorher findet.
+
+### Behoben
+
+- **Acht Fehler im Protokoll bei jedem Seitenwechsel.** `invalid command name
+  …!label` — Rückrufe, die den Zeilenumbruch nachziehen, kamen dran, wenn ihr
+  Label längst zerstört war. Sichtbar war davon nichts: Der Haken in `fehler.py`
+  fing sie ab, sie füllten nur den Bericht und verdeckten damit, was wirklich
+  wichtig gewesen wäre. Dieselbe Falle steckte in der Knopfreihe und im
+  Eingabefeld mit gezeichnetem Rahmen; alle drei prüfen jetzt vorher, ob es ihr
+  Widget noch gibt. Nachgemessen: 39 Seitenwechsel, **0** Fehler.
+  Gefunden von der Autor im Diagnosebericht.
+
+- **Das Kreuz zum Schließen des Herkunftskastens war unsichtbar.** In der
+  Bauplan-Liste blieb dort eine leere Lücke: Das Symbol `schliessen` gab es nur
+  in Knopfgröße, gebraucht wurde es in Zeilengröße. `zeichen.bild()` gibt bei
+  einer fehlenden Datei still `None` zurück — mit Absicht, damit ein fehlendes
+  Symbol das Programm nicht anhält, wodurch der Fehler aber unsichtbar blieb.
+  `tools/oberflaeche_pruefen.py` prüft das ab sofort mit. Gemeldet von der Autor.
+
+## v3.0.0-rc59 - 2026-08-27
+
+> **Die Anleitung stimmt wieder.** Alle Bildschirmfotos neu, je Sprache ein
+> eigener Satz, und alle Symbole darin stammen aus dem Satz des Programms.
+
+### Hinzugefügt
+
+- **Die farbigen Punkte standen im Fließtext noch als Emoji.** Die
+  Zeichen-Erklärung zeigte längst die echten Bilder, die Beschreibung darunter
+  aber weiter `🟢 🟡 🔵 ⭐` — zwei verschiedene Darstellungen desselben Zeichens
+  auf einer Seite. Gemeldet von der Autor.
+
+- **Auch die englische Anleitung zeigt jetzt die englische Oberfläche.** Sie
+  führte bis hierher deutsche Bildschirmfotos vor — bei elf Bildern und einem
+  Werkzeug, dessen Nutzer unter Linux überwiegend den englischen Client fahren,
+  keine Kleinigkeit. `tools/sprachen_pruefen.py` achtet ab sofort darauf: Er
+  zählte nur Abschnitte und hat Bilder nie angesehen. Gemeldet von der Autor.
+
+- **Alle Bilder in der Anleitung sind neu.** Die alten stammten aus
+  v3.0.0-rc11 und zeigten nicht nur die abgelösten Symbole, sondern auch einen
+  Stand ohne Serverstatus und ohne Patch-Filter. Dazu zwei Seiten, die noch nie
+  eins hatten: **Serverstatus** und **Danke & Lizenzen**.
+
+- **Die Merkmalstabelle in der Anleitung zeigte Emoji statt der echten Symbole.**
+  `⚡ 📋 🧭 ⭐ 🔔 …` haben mit dem Symbolsatz des Programms nichts zu tun und sehen
+  auf jedem System anders aus. Alle sechzehn stammen jetzt aus demselben Satz wie
+  die Oberfläche. Gemeldet von der Autor.
+
+- **Ein Bildschirmfoto zeigte den Heimatpfad des Autors.** `screenshot-pfade.png`
+  lag seit v3.0.0-rc11 im Repo und führte dreimal `/home/<benutzer>/` vor —
+  genau das, was der Fehlerbericht mit `pfade.kuerzen()` sonst herausnimmt.
+  Entfernt; die Ordner-Seite bekommt kein Bild mehr, weil dort zwangsläufig
+  Pfade stehen. An ihrer Stelle steht jetzt der Serverstatus, der nie eins
+  hatte. Gefunden von der Autor.
+
+### Behoben
+
+- **Die Filterknöpfe auf „Was ist neu" blieben auf Englisch deutsch.** „Alles /
+  Neu / Verbessert / Behoben" standen fest im Code statt in `sprache.py` — direkt
+  neben einem sauber übersetzten Änderungstext. Aufgefallen auf einem
+  Bildschirmfoto der englischen Oberfläche. Gefunden von der Autor.
+
+## v3.0.0-rc58 - 2026-08-27
+
+> **Wem was gehört — an einer Stelle.** Neuer Reiter „Danke & Lizenzen", der
+> die Lizenzen und die Beteiligten zusammenführt. Dazu Namen und Symbole, die
+> endlich zu dem passen, was sie tun.
+
+### Hinzugefügt
+
+- **Der Reiter „Auftragstexte" heißt jetzt „Texte im Spiel".** Der alte Name
+  sagte nicht, **wo** diese Texte auftauchen. „Ingame-Texte" stand kurz zur Wahl
+  und ist unter Spielern gängig — dagegen sprach, dass jeder andere Reiter der
+  Leiste deutsch ist und ein einzelner Anglizismus dazwischen auffällt.
+  Angestoßen von der Autor.
+- **Auf „Update & Über" steht das Programmsymbol neben der Fassung.** Die Seite
+  hatte gar kein Bild mehr, seit der Autor-Block auf „Danke & Lizenzen" gewandert
+  ist. Gemeldet von der Autor.
+
+- **Die Anleitung zeigte Zeichen, die es im Werkzeug nicht mehr gibt.** Die
+  Knopf-Legende in beiden READMEs führte `☰`, `ⓘ`, `⟳`, `⏻` und `🗑` auf — zwei
+  davon sind längst entfernt, die anderen sehen anders aus. Sie zeigt jetzt die
+  **echten Bilddateien** aus `assets/symbole/`; damit kann sie nicht mehr
+  veralten, weil sich mit einem getauschten Symbol das Bild in der Anleitung von
+  selbst mitändert. Dasselbe für die Zeichen-Erklärung der Meldungen. Gefunden
+  von der Autor.
+- **„Wer das gebaut hat" stand plötzlich zweimal.** Der Block mit Autor,
+  scmdb, SC Deutsch Launcher und StarStrings lag auf „Update & Über" — und die
+  neue Seite „Danke & Lizenzen" nannte dieselben Projekte noch einmal. Er liegt
+  jetzt nur noch auf „Danke & Lizenzen", und zwar mit dem Autor **ganz oben**:
+  Eine Seite, die fremde Arbeit aufzählt, muss die eigene zuerst nennen.
+  Gemeldet von der Autor.
+
+- **Der Spenden-Link war auf GitHub nirgends zu sehen.** Der Knopf „Kaffee
+  spendieren" gibt es im Werkzeug seit Langem — auf der Projektseite selbst
+  fehlte er aber komplett: kein Sponsor-Knopf, keine Erwähnung in der Anleitung.
+  Wer das Werkzeug noch nicht installiert hatte, konnte ihn also gar nicht
+  finden. Jetzt gibt es beides. Gefunden von der Autor.
+
+- **Neuer Reiter „Danke & Lizenzen"** unter *Info*. Bis hierher stand im ganzen
+  Programm **keine einzige Lizenzangabe** — weder die eigene (GPL-3.0) noch die
+  der mitgelieferten Symbole, und fremde Projekte wurden nur nebenbei genannt,
+  dort wo sie gerade gebraucht wurden. Jetzt steht an einer Stelle, wem was
+  gehört: das Programm selbst, die Symbole von Lucide, die Daten von scmdb,
+  StarStrings und der SC Deutsch Launcher — jeweils mit Lizenz und anklickbarem
+  Verweis. Dazu der Dank an die, aus deren Rückmeldung etwas geworden ist.
+  Vorgeschlagen von der Autor.
+
+## v3.0.0-rc57 - 2026-08-27
+
+> **Ein Symbolsatz statt vierzehn Schriftzeichen.** Die Zeichen der Melde-Leiste
+> waren unterschiedlich groß, im Stil gemischt und sahen auf jedem Betriebssystem
+> anders aus. Ersetzt durch fertige Bilder aus einem einzigen, einheitlich
+> gezeichneten Satz.
+
+### Geändert
+
+- **Alle Symbole sind jetzt gleich groß — und stammen aus einem Satz.** Die
+  Zeichen in der Melde-Leiste waren unterschiedlich groß, die Glocke war die
+  größte. Dahinter steckten drei Ursachen mit demselben Kern: *Die Schrift
+  entschied, nicht das Programm.* Ein Schriftzeichen füllt seine Box nur zu
+  50–70 % aus, und jedes anders; `🗑` und `▶` sind gefüllte Flächen, `⚙ ⟳ ✕`
+  dünne Striche; und jedes Betriebssystem greift zu einer anderen Ersatzschrift.
+  Ersetzt durch fertige Bilder aus dem **Lucide**-Satz — alle auf einem
+  24×24-Raster mit gleicher Strichstärke gezeichnet. Vorgeschlagen von der Autor.
+- **Auf Windows, Linux und Mac sieht die Oberfläche jetzt gleich aus.** Das war
+  vorher nicht so: Windows nahm `Segoe UI Symbol`, die anderen Systeme etwas
+  anderes. Wer auf einem Mac entwickelt, sah damit andere Zeichen als die
+  Nutzer unter Windows.
+- **Die farbigen Punkte vor den Bauplänen sind keine Emoji mehr.** `🟢 🟡 🔵 ⭐`
+  liegen außerhalb der Grundebene; Windows malte sie über die Farb-Emoji-Schrift
+  als bunte Klötzchen, die die eingestellte Farbe **ignorierten** — ausgerechnet
+  an der Stelle, die man am häufigsten sieht.
+- **Star Citizen starten heißt jetzt Rakete statt Abspielpfeil.** Ein `▶` heißt
+  überall „Video ab", nicht „Programm starten". Gemeldet von der Autor.
+- **Meldungen wegräumen heißt jetzt Radiergummi statt Mülleimer.** Der Knopf
+  löscht nichts — er räumt nur die Anzeige auf, die Baupläne bleiben. Ein
+  Mülleimer verspricht Vernichtung und schreckt vom Klicken ab. Angeregt von
+  der Autor.
+- **„Einrichtung" heißt jetzt „Einrichtung starten".** Ein Verb sagt, dass etwas
+  losgeht; das Wort allein klang nach einem Ort zum Nachschlagen. Vorgeschlagen
+  von der Autor.
+- Die Höhe der Melde-Leiste wächst jetzt mit der eingestellten Schriftgröße mit.
+  Sie stand fest auf 26 Pixel, wodurch die Symbole bei „groß" oben und unten
+  herausragten.
+
+### Entfernt
+
+- **Der Autostart-Schalter ist aus der Melde-Leiste verschwunden.** Ein
+  Ein/Aus-Zeichen heißt überall „Gerät ausschalten", und es saß direkt neben dem
+  Kreuz, das das Programm wirklich schließt — zwei Knöpfe, die beide nach „aus"
+  aussahen. Die Einstellung steht unverändert unter „Allgemein".
+- **Der Knopf für den Einrichtungs-Assistenten ist aus der Melde-Leiste
+  verschwunden.** Er bleibt im großen Fenster oben rechts erreichbar. der Autor:
+  „reicht glaube ich in den einstellungen, da gehen die leute eh hin wenn die
+  merken es klemmt etwas."
+
+### Behoben
+
+- **Ein Hilfetext zeigte auf ein Zeichen, das es nicht mehr gab.** „Mit ☰
+  öffnest du jederzeit die Bauplan-Liste" stand noch im Einrichtungs-Assistenten,
+  obwohl das `☰` seit v3.0.0-rc55 durch das Klemmbrett ersetzt war. Alle
+  Texte benennen die Symbole jetzt in Worten statt sie abzubilden.
+
+### Dank
+
+- **der Autor** — für den Anstoß zur ganzen Umstellung („die sollen alle gleich
+  groß sein, sind aber unterschiedlich groß") und für die Hinweise zu Rakete,
+  Radiergummi und „Einrichtung starten".
+
+## v3.0.0 - 2026-08-29
+
+> **Ein Fenster für alles.** Bauplan-Liste und Einstellungen lagen bisher in zwei
+> getrennten Fenstern, und man musste wissen, in welchem etwas steckt. Jetzt liegen sie
+> zusammen — mit Reitern links, einer sichtbaren Ablage für deine Dateien und einem
+> Installer, statt eine Datei von Hand irgendwohin zu ziehen.
+
+### Das Wichtigste in Kürze
+
+- **Die Liste zeigt, was mit dem Patch neu ins Spiel kam.** Neben „beobachtet"
+  steht jetzt **🔵 neu im Spiel**. Der Katalog stempelt jedem Bauplan die
+  Spielversion auf, in der es ihn zum ersten Mal gab; der Filter zeigt die des
+  aktuellen Patches. Kommt der nächste, rücken die neuen nach und die alten
+  fallen heraus — der Stempel bleibt aber stehen, du siehst später noch, mit
+  welchem Patch ein Bauplan kam. Mit 4.10.0 sind es 21.
+- **Eine eigene Patch-Historie**, damit die Angabe auch stimmt. Verglichen wird
+  nicht mehr gegen den Katalog von letzter Woche, sondern gegen **alle je
+  gesehenen** Baupläne. Der erste Versuch meldete 74 Zugänge, von denen 53
+  längst im Spiel waren — die Datenquelle hatte sie zwischendurch schlicht nicht
+  geführt. Nachsehen ließ es sich nicht mehr: scmdb hält nur die aktuelle
+  Spielversion vor, die Daten zu 4.9.0 waren am selben Tag schon gelöscht.
+  Deshalb schreibt das Werkzeug jetzt selbst mit, was ein Patch gebracht hat
+  (`daten/patch-historie.json`, im Repo nachlesbar) — nur die Zugänge, nie der
+  ganze Katalog.
+- **Ein Auswahlfeld „Patch"** neben den übrigen Filtern: dort lässt sich jeder
+  frühere Patch nachschlagen — „was kam mit 4.10.0?". Das Feld **erweitert sich
+  von allein**; jeder Patch, der Baupläne bringt, steht beim nächsten Öffnen
+  darin, mit der Anzahl dahinter.
+- **Ein Installer für Windows** — herunterladen, starten, fertig. Kein Herumschieben
+  von Dateien mehr.
+- **Ein Fenster statt zwei**, mit Reitern links. Dazu ein Symbol neben der Uhr,
+  über das du es jederzeit zurückholst.
+- **Das Overlay kann sich zurückhalten** und blendet sich nur bei einem Fund ein —
+  ein schmaler grüner Streifen bleibt am Rand, die Maus holt es zurück.
+- **Das Selbst-Update funktioniert jetzt auch unter Linux.** Dort scheiterte es
+  bisher **immer**; wer ein AppImage nutzt, musste jede Fassung von Hand holen.
+- **Star Citizen lässt sich aus dem Werkzeug heraus starten**, und ein
+  Diagnose-Bericht sammelt auf Knopfdruck alles, was eine Fehlermeldung braucht —
+  ohne Namen und ohne Pfade.
+
+### Beim Umstieg von v2.0.0
+
+- **Dein Bauplan-Bestand zieht von allein mit.** Er lag versteckt in
+  `%APPDATA%`, jetzt liegt er sichtbar unter `Dokumente\SC BP Watcher`. Beim
+  ersten Start wird er **kopiert**, nicht verschoben — der alte Ordner bleibt
+  unangetastet stehen, falls doch etwas fehlt.
+- **Nimm für dieses eine Update das Setup, nicht den Knopf im Programm.** Der
+  Knopf tut es auch, benutzt aber noch den Update-Weg von v2.0.0 — und der
+  lässt unter Windows ein Konsolenfenster stehen, bis du das Programm beendest.
+  Ein Fehler im Update-Weg kann sich nicht selbst reparieren; ab v3.0.0 ist das
+  erledigt, ab dann genügt der Knopf.
+- **Hast du die `.exe` bisher von Hand irgendwohin gelegt, lösch sie nach der
+  Installation.** Das Setup legt das Programm unter
+  `%LOCALAPPDATA%\Programs\SC BP Watcher` ab. Die alte Datei bleibt sonst
+  liegen, und irgendwann startest du versehentlich wieder die alte Fassung.
+- **Unter Linux ist nichts zu tun** — das AppImage tauscht sich selbst aus.
+
+### Hinzugefügt
+
+- **Ein eigener Reiter „Serverstatus".** Läuft Star Citizen gerade? Wer nicht
+  ins Spiel kommt, sucht den Fehler zuerst bei sich — ein Blick ins Werkzeug
+  beantwortet das vorher. Gezeigt wird, was CIG auf seiner Statusseite meldet:
+  die Lage der drei Systeme, dazu die Meldungen der letzten zwei Monate im
+  Volltext samt Update-Zeilen. Der Aufbau folgt der Statusseite, die Zustände
+  bleiben im **Wortlaut von CIG** (`operational`, `maintenance`) — eine
+  Übersetzung wäre eine Aussage, die RSI nie gemacht hat. Die Seite fragt
+  jede Minute nach, solange der Reiter offen ist; das kostet fast nichts, weil
+  mit `ETag` gefragt wird und der unveränderte Fall ohne Inhalt beantwortet
+  wird. Die Quelle steht als anklickbarer Verweis darunter.
+  ⚠️ Die Angaben sind **von Hand gepflegt, keine Messung** — das steht auch in
+  der Anzeige, damit niemand sie für eine Messung hält.
+- **Ein Knopf für „gib mir einfach die neueste".** Bisher musste man erst
+  verstehen, was ein Kanal ist, und den richtigen der beiden Kästen anklicken —
+  wer den falschen wählte, bekam gar nichts angeboten. Jetzt steht darüber ein
+  Knopf über die volle Breite, der sofort holt, was es gerade gibt, auch eine
+  Testfassung. An der Einstellung darunter ändert er nichts. Vorgeschlagen von
+  der Autor, nachdem Morkhan an genau dieser Stelle hängenblieb.
+
+- **Star Citizen lässt sich aus dem Werkzeug heraus starten.** Auf der Seite
+  „Angaben im Spiel" steht ein Knopf, der das Spiel über den Weg startet, den
+  man ohnehin benutzt: den RSI Launcher unter Windows, den `lug-helper` unter
+  Linux. Wird keiner der beiden gefunden, erscheint der Knopf gar nicht erst —
+  wer einen eigenen Weg hat (Lutris, Heroic), trägt ihn als `spielstarter` in
+  die Einstellungsdatei ein. Vorgeschlagen von Morkhan.
+
+- **Die Maus holt das Overlay zurück.** Im Aufblend-Betrieb genügt es, dorthin zu fahren, wo
+  es steht — es kommt von selbst und bleibt, solange der Zeiger darauf ist. Vorher musste
+  man das Programm dafür neu starten, und das verlangt kein anderes Overlay.
+
+- **Neustart direkt nach dem Update.** Bisher hieß es „beim nächsten Start läuft die neue
+  Fassung" — man musste selbst beenden und wieder starten. Jetzt wird der Holen-Knopf nach
+  dem Laden zu **„⟳ Jetzt neu starten"**. Der Einzelinstanz-Wächter wird dabei zuerst
+  geschlossen, sonst hielte sich die neue Fassung für die zweite und beendete sich sofort.
+
+- **Startverlauf im Diagnose-Bericht.** Ein Absturz beendet das Programm sofort — kein
+  Fehlerbericht wird mehr geschrieben, und es bleibt nur „es stürzt ab". Jeder Startschritt
+  wird jetzt sofort auf die Platte geschrieben; die letzte Zeile im Bericht sagt, wie weit
+  es kam.
+
+- **Fassung holen, direkt aus dem Fenster.** Unter jeder der beiden Karten („Nur fertige
+  Fassungen" / „Auch Testfassungen") steht ein Knopf über die volle Breite, der die letzte
+  Fassung dieses Kanals lädt und einspielt — auch zurück von einer Testfassung auf die
+  letzte fertige.
+
+- **Eintrag im Startmenü (Linux).** Der Assistent bietet ihn am Ende an, die Einstellungen
+  jederzeit. Unter Windows macht das der Installer — unter Linux lag das AppImage bisher
+  im Download-Ordner und stand in keinem Menü. Auf den Eintrag lässt sich außerdem eine
+  Tastenkombination legen, mit der das Overlay zurückkommt.
+- **Symbol im Infobereich (Windows).** Linksklick holt das Fenster, Rechtsklick zeigt ein
+  kleines Menü. Der Schalter dafür stand schon in den Einstellungen; das Symbol selbst
+  gab es nie.
+
+- **Das Overlay kann sich zurückhalten.** Neu wählbar: dauerhaft sichtbar wie bisher,
+  oder nur kurz aufblenden, wenn wirklich ein Bauplan dazukommt. Zurück holt man es,
+  indem man das Programm noch einmal startet — auf die Verknüpfung lässt sich eine
+  Tastenkombination des Systems legen. Angeregt von Haldjas (pr0): „Wenn ich im
+  Kampf mit der Maus ins Overlay komme, wird das unangenehm."
+- **Mausklicks lassen sich ins Spiel durchreichen.** Das Overlay bleibt sichtbar, fängt
+  aber keine Klicks mehr ab. Unter Windows über `WS_EX_TRANSPARENT`, unter Linux über die
+  XShape-Erweiterung; unter nativem Wayland geht es nicht, und das sagt die Einstellung
+  dann auch statt einen wirkungslosen Schalter zu zeigen.
+- **Ein zweiter Programmstart öffnet keine zweite Fassung mehr,** sondern holt die
+  laufende hervor.
+
+- **Ein Fenster mit Reitern.** Oben die Baupläne, darunter die Einstellungen, ganz unten
+  eingeklappt, was nur Fortgeschrittene brauchen. Das Overlay bleibt klein wie bisher;
+  dieses Fenster ist das, was sich dahinter öffnet.
+- **Ein Installer für Windows.** Startmenü-Eintrag, optionales Desktop-Symbol, optionaler
+  Autostart — und eine ordentliche Deinstallation. Wer lieber nichts installiert, findet
+  die blanke `.exe` weiterhin im Release.
+- **Deine Dateien liegen jetzt sichtbar** unter `Dokumente\SC BP Watcher`, getrennt nach
+  Bauplänen, Exporten, Einstellungen und Diagnose. Vorher lagen sie versteckt im
+  System — dort sucht niemand seinen Bauplan-Bestand. Beim ersten Start werden sie
+  **kopiert**, der alte Ordner bleibt als Rückweg liegen.
+- **Vorhandenen Bestand einlesen** — aus dem KRT Profit Basetool, von scmdb.net, aus der
+  Launcher-Datei oder einer eigenen Sicherung. Das Format wird am Inhalt erkannt, du
+  wählst nur eine Datei. Zusammengeführt, nie ersetzt.
+- **Fehler melden mit einem Klick.** „Fehler melden" öffnet ein fertig ausgefülltes
+  Formular; du schreibst nur noch dazu, was passiert ist. Der Bericht enthält keine Namen
+  und keine Pfade mit deinem Benutzernamen.
+- **Testfassungen auf Wunsch.** Wer beim Prüfen helfen will, schaltet sie unter *Über*
+  ein und bekommt neue Fassungen vor allen anderen — über dieselbe Update-Meldung.
+- **Schriftgröße in vier Stufen**, wirkt auf Schrift, Symbole und Knöpfe zugleich.
+- **Woher Baupläne ohne Auftrag kommen.** 55 Baupläne schüttet kein regulärer Auftrag
+  aus — sie stammen aus benannten Töpfen wie XenoThreat, RDC-Boss oder RedWind. Statt
+  eines Fragezeichens steht dort jetzt die Quelle, und man kann danach filtern.
+- **Was ist neu** als eigener Reiter, getrennt nach Neu, Verbessert und Behoben.
+- **Startbaupläne** werden erkannt und eingetragen — die acht, die jeder von Anfang an
+  hat, mit ◆ gekennzeichnet.
+- **Bestand ausgeben** in drei Formaten: KRT Profit Basetool, scmdb.net und eine
+  vollständige Sicherung.
+
+### Geändert
+
+- **„Pfade" ist zu den Fortgeschrittenen gewandert.** Spielordner und Launcher
+  werden gesucht und gefunden; wer doch nachhelfen muss, wird vom
+  Einrichtungsassistenten geführt, der erklärt, was die Seite nur als Felder
+  zeigt. Ein Reiter, den fast niemand braucht, stand oben nur im Weg.
+
+- **Star Citizen starten sitzt jetzt links unten**, im markanten Grün über
+  „Für Fortgeschrittene". Vorher stand der Knopf auf der Seite „Auftragstexte" —
+  dort, wo es um Bauplan-Angaben geht — und war danach nur im Overlay zu sehen,
+  also nur solange das eingeblendet ist. Jetzt ist er auf **jeder** Seite da.
+
+- **Ein Discord-Knopf** darunter, bewusst ruhiger gehalten: Das Spiel zu starten
+  ist die Handlung, für die man das Fenster offen hat, der Weg zum Discord ist
+  ein Angebot. Zwei gleich laute Knöpfe nehmen sich gegenseitig die Wirkung.
+
+- **„Jetzt nachsehen" heißt jetzt „Auf Aktualität prüfen".** Der alte Text sagte
+  nicht, wonach nachgesehen wird. „Aktualisieren" wäre falsch gewesen — der Knopf
+  prüft nur, geholt wird nichts.
+
+- **„Noch keine Fassung bekannt" klang nach einem Fehler.** Der Knopf sagte
+  nicht, was zu tun ist — jetzt steht dort „Erst oben auf ‚Jetzt nachsehen'
+  drücken". Und der Kasten „Nur fertige Fassungen" trägt den Zusatz
+  „empfohlen", damit niemand raten muss, was er wählen soll. Beides fiel bei
+  Morkhans Test auf.
+
+- **Der Reiter heißt „Update & Über".** „Über" allein findet niemand, der ein
+  Update sucht — der Autor selbst hat dort nicht danach gesucht.
+
+- **Der Startknopf für Star Citizen saß an einer Stelle, an der ihn niemand
+  sucht.** Er stand unter „Angaben im Spiel", also dort, wo es um Auftragstexte
+  geht — selbst der Autor fand ihn nicht wieder. Jetzt sitzt er als grünes „▶"
+  oben im Overlay bei den übrigen Zeichen: Wer das Spiel starten will, hat das
+  große Fenster ohnehin nicht offen. Beim Überfahren sagt die Statuszeile, was
+  der Klick tut.
+
+- **Vor dem Einsetzen einer Übersetzung wird gefragt.** „Deutsch" und
+  „StarStrings" ersetzen die Textdatei des Spiels vollständig — danach ist das
+  ganze Spiel in dieser Sprache, nicht nur die Bauplan-Angaben. Das stand
+  nirgends; jetzt sagt es der Erklärtext, und vor dem ersten Einsetzen kommt
+  eine Rückfrage. Einmal bestätigt, wird nicht wieder gefragt. „Original"
+  fragt nicht, weil es die Sprache nicht ändert.
+
+- **Das Overlay hinterlässt im Aufblend-Betrieb einen schmalen grünen Streifen.** Maus
+  darauf, und es ist wieder da. Der erste Versuch fragte dafür die Mausposition ab — das
+  kann unter Wayland nicht funktionieren: Gemessen meldete Tk zwölfmal denselben Wert,
+  während die Maus quer über den Schirm fuhr. Eine Anwendung erfährt die Zeigerposition
+  dort nur, solange er über einem **ihrer eigenen** Fenster steht. Der Streifen ist so ein
+  Fenster — und nebenbei ehrlicher als eine unsichtbare Zauberzone: Man sieht, wo das
+  Overlay wartet.
+
+- **Der Fehlerbericht sagt, aus welcher Fassung ein Fehler stammt** — und markiert die, die
+  aus einer älteren kommen. Der Speicher hebt die letzten zehn über Programmstarts hinweg
+  auf; nach einem Update standen dort Fehler, die längst behoben waren, und der Bericht sah
+  aus, als sei alles noch kaputt.
+
+- **Bis zu zwölf Bezugswege je Bauplan** statt drei. Gemessen: Über die Hälfte aller
+  Baupläne hatte vorher abgeschnittene Wege. Angezeigt wird weiterhin der leichteste, der
+  Rest klappt auf.
+- **Die Herkunft erscheint erst auf Klick** und lässt sich wieder schließen — bei kleinem
+  Fenster fraß sie sonst ein Drittel der Liste.
+- **Filtern nach Art, Klasse, Größe, Gütegrad und Quelle**, zusätzlich zu Suche und den
+  Listen „beobachtet / vorhanden / fehlt noch".
+- **Overlay einklappen** (▾): schiebt sich auf die Titelleiste zusammen.
+- **Kein Speichern-Knopf mehr** — Änderungen greifen sofort.
+
+### Behoben
+
+- **Das eingeklappte Overlay ließ sich nicht wieder aufklappen.** Der Knopf
+  schaltete um, sichtbar passierte nichts — das Werkzeug war zu und blieb es.
+  Ursache: Beim Einklappen wurde die aktuelle Fensterhöhe als „offene" Höhe
+  gemerkt. Liefen der gemerkte Zustand und die tatsächliche Geometrie einmal
+  auseinander, schrieb der nächste Einklapp-Vorgang die **Leistenhöhe** als
+  offene Höhe fest; ab da klappte das Fenster auf seine eigene Größe „auf".
+  Jetzt wird die Höhe nur gemerkt, wenn das Fenster wirklich offen ist, und
+  beim Aufklappen gilt eine Mindesthöhe.
+- **Der Ziehgriff für die Fenstergröße deckte im eingeklappten Zustand das ✕
+  zu.** Er sitzt unten rechts — bei einem auf Leistenhöhe geschrumpften Fenster
+  ist das dieselbe Stelle wie oben rechts, und man musste zielen, um das
+  Werkzeug überhaupt schließen zu können. Er hängt jetzt an der **Liste** statt
+  am Fenster — ist die eingeklappt, hat sie keine Höhe, und der Griff ist
+  zwangsläufig mit weg. Ihn stattdessen rechtzeitig auszublenden hat dreimal
+  nicht verlässlich geklappt: Ein Zustand, der sich aus dem Aufbau ergibt, ist
+  verlässlicher als einer, den man nachträglich herstellt.
+- **Bauplan-Namen waren ohne Launcher unlesbar** — „Golemmc4Orepod" statt
+  „GOLEM MC-4 Ore Pod". Der Rückfall war `.title()` auf den Vergleichsschlüssel,
+  in dem es keine Wortgrenzen mehr gibt; der lesbare Name lag die ganze Zeit
+  daneben im Zwischenspeicher. Betraf **jeden Linux-Nutzer**, weil es dort nie
+  einen Launcher gibt.
+- **Das Selbst-Update unter Windows kam nie an.** Wer auf „holen" klickte, bekam
+  eine Warnung und danach passierte nichts — außer 14 MB verwaister Datei im
+  Programmordner, bei jedem Versuch aufs Neue. Dahinter steckten **zwei**
+  Fehler, von denen jeder allein schon gereicht hätte:
+
+  Geholt wurde die **falsche Datei**. An jeder Freigabe hängen drei Anhänge,
+  gesucht wurde die erste auf `.exe` — und weil GitHub alphabetisch sortiert und
+  ein `-` vor einem `.` steht, kam `SC-BP-Watcher-Setup.exe` zuerst. Der
+  Installer wurde also über die Programmdatei geschoben, ohne je ausgeführt zu
+  werden: Wer den Watcher danach öffnete, bekam ein Setup-Fenster.
+
+  Und der Tausch konnte ohnehin nicht stattfinden. Nach dem Beenden lebt der
+  Bootloader weiter und räumt seinen Ordner unter `%TEMP%` auf; blieb dabei eine
+  Datei gesperrt, stand er im Fenster „Failed to remove temporary directory"
+  still — und hielt damit die `.exe`, auf deren Freigabe das Hilfsskript wartete.
+  Nach zwei Minuten gab es auf. Der Nutzer hätte eine Warnung wegklicken müssen,
+  von der niemand wusste, dass sie zum Update gehört.
+
+  **Unter Windows startet jetzt der Installer**, statt dass das Programm seine
+  eigene Datei tauscht. Er beendet den laufenden Watcher selbst, ersetzt ihn,
+  pflegt den Eintrag in „Apps & Features" und fährt ihn wieder hoch. Unter Linux
+  bleibt es beim bewährten Tausch des AppImage.
+
+- **Das Symbol neben der Uhr erschien unter Windows nie.** Es wurde bei jedem
+  Start angelegt und scheiterte jedes Mal an derselben Stelle, sichtbar nur im
+  Fehlerbericht: `argument 11: OverflowError: int too long to convert`. Der
+  Aufruf zum Anlegen des Fensters hatte keine Typangaben, und ohne die reicht
+  Python jeden Wert als 32-Bit-Zahl weiter — die Kennung, um die es ging, ist
+  unter 64-Bit-Windows breiter. Derselbe Fehler steckte im Rückgabetyp der
+  Fensterfunktion. Beim Beenden räumt das Symbol sich jetzt auch wirklich auf:
+  Der bisherige Weg durfte von außen gar nicht greifen und lief still ins Leere.
+
+- **Die angezeigte Fassung in „Apps & Features" blieb stehen.** Nachgesehen
+  wurde nur im Benutzerzweig der Registry. Wer beim Installieren „für alle
+  Nutzer" gewählt hatte, dessen Eintrag liegt aber im Maschinenzweig — dort
+  wurde nie nachgezogen, und Windows zeigte weiter eine Nummer, die es nicht
+  mehr gab. Jetzt werden beide Zweige durchsucht. Zusätzlich fragt der Installer
+  nicht mehr nach „für mich" oder „für alle": Das Programm landet ohnehin im
+  eigenen Benutzerordner, damit entfällt die Rückfrage und jede
+  Administrator-Abfrage beim Aktualisieren.
+
+- **Die Symbole in der Leiste sahen unter Windows entstellt aus.** In
+  `Segoe UI` steckt **kein einziges** der vierzehn Zeichen — Windows suchte
+  sich je Zeichen selbst eine Ersatzschrift und griff dabei zu **Segoe UI
+  Emoji**: bunte, quadratische Emoji-Bildchen in einer schlanken dunklen
+  Leiste, dazu in ungleichen Breiten (10 bis 21 Pixel bei gleicher Größe).
+  Deshalb ließen sich die Symbole auch nie über die Schriftgröße angleichen —
+  sie kamen aus verschiedenen Schriftdateien. Jetzt wird unter Windows
+  ausdrücklich **Segoe UI Symbol** verlangt: alle vierzehn Zeichen einfarbig,
+  in der eingestellten Textfarbe, halb so breit gestreut. Unter Linux war es
+  nie ein Problem und bleibt unverändert. Gemeldet von der Autor.
+
+- **Das Overlay blieb beim Umschalten auf Englisch deutsch.** Wer die Sprache
+  wechselte, bekam ein englisches Fenster und eine deutsche Melde-Leiste:
+  „8 Baupläne · Log ✓ · ohne Launcher · geprüft", dazu „Warte auf neue
+  Baupläne …" und der Autostart-Text. Die englischen Fassungen dieser Sätze
+  gab es längst — benutzt hat sie niemand, der Code setzte die deutschen
+  weiter fest zusammen. Zusätzlich erfuhr das Overlay vom Sprachwechsel
+  überhaupt nichts; nur das Einstellungsfenster beschriftete sich neu.
+  Dasselbe betraf die Meldung „neu im Spiel craftbar" der Katalog-Wache.
+  Und Meldungen, die beim Umschalten **schon in der Leiste standen**, blieben
+  ebenfalls deutsch — etwa „Keine Log-Sicherungen gefunden". Sie wurden fertig
+  zusammengesetzt in die Zeile geschrieben und waren damit in der Sprache von
+  vorhin eingefroren; erst ein Neustart räumte das auf. Meldungen tragen jetzt
+  ihren Textschlüssel mit und werden beim Sprachwechsel neu gesetzt — samt
+  Datum, das im Englischen anders geschrieben wird (2026-08-22 statt
+  22.08.2026). Gemeldet von der Autor.
+
+- **Der Hinweis am Startknopf ▶ überschrieb die Statuszeile.** Als einziges der
+  zehn Zeichen hatte er keine Erklärblase, sondern schrieb in die Statuszeile
+  und stellte danach einen Merker wieder her, der nie fortgeschrieben wurde —
+  eine Fundmeldung war nach einem Mausschlenker über das Zeichen weg.
+  Gemeldet von der Autor.
+
+- **Das Logo fehlte in der fertigen Fassung.** Auf „Update & Über" lud das
+  Programm `assets/xharig.png`, der Bau packte diese Datei aber nie ein — beim
+  Start aus dem Quellcode fiel das nie auf, weil sie dort liegt. Gemeldet von
+  der Autor, dem es im Bildschirmfoto eines Testers auffiel.
+
+- **Das „ⓘ" am Overlay öffnete ein eigenes Fenster mit eigener Update-Logik** —
+  und in dem fehlte der Neustart-Knopf. Wer darüber ging, lud die neue Fassung
+  herunter und stand dann vor einem Satz statt vor einem Knopf. Jetzt führt es
+  ins Hauptfenster auf „Was ist neu"; der Reiter „Update & Über" liegt daneben.
+  **Ein Weg statt zwei.** Gemeldet von Morkhan.
+- **Gestreckte Knöpfe füllten nur die halbe Breite.** Betraf vor allem die
+  Knöpfe unter den beiden Update-Kästen. Gemeldet von Morkhan.
+
+- **Das Update über das Infofenster kam nie an.** Wer über das grüne „ⓘ" am
+  Overlay ging statt über die Einstellungen, bekam nach dem Laden nur den Satz
+  „Beim nächsten Start läuft die neue Fassung" — **und keinen Knopf dafür**.
+  Unter Windows stimmt der Satz zudem nicht: Dort tauscht ein Hilfsskript die
+  Datei erst, wenn das Programm beendet ist, und gibt nach zwei Minuten auf. Wer
+  weiterspielte, hatte am Ende gar kein Update. Jetzt steht dort derselbe
+  „⟳ Jetzt neu starten"-Knopf wie in den Einstellungen. Gemeldet von Morkhan.
+- **Beim Update blitzte kurz ein Konsolenfenster auf.** Das Hilfsskript läuft
+  seit v3.0.0 unsichtbar — der `taskkill` davor, der ein schon laufendes Skript
+  wegräumt, wurde dabei übersehen. Gemeldet von Morkhan.
+
+- **Fünf Fehler scheiterten bisher lautlos.** Ließen sich Einstellungen, die
+  Merkliste, der „Neu"-Stand, der Autostart oder ein gespeicherter Bericht nicht
+  schreiben, passierte einfach nichts — die Einstellung war nach dem Neustart
+  wieder alt, und im Fehlerbericht stand nichts. Diese Stellen melden jetzt.
+
+- **Der Fehlerbericht ließ die Spielsprache leer.** Dort stand nur ein Strich,
+  obwohl die Erkennung einwandfrei lief — die Abfrage lieferte zwei Werte, der
+  Bericht erwartete einen, und der Fehler wurde stillschweigend verschluckt.
+  Jetzt steht dort, wonach im Log gesucht wird **und woher die Formulierung
+  stammt**: aus der `global.ini` des Spiels oder aus der eingebauten Tabelle.
+  Das ist die erste Frage bei „er erkennt meine Baupläne nicht".
+- **Abgeschnittene Beschreibungen an drei Stellen.** Bei schmalem Fenster fehlten
+  wenige Pixel, und die letzten Zeichen fielen weg. Betroffen waren die
+  Update-Kanäle, „Angaben in die Auftragstexte schreiben" und „Wie oft
+  nachgesehen wird".
+
+- **Der Assistent merkte sich die gewählte Textquelle nicht.** Er holte die
+  Texte und setzte sie ein, schrieb die Wahl aber nirgends hin — unter „Angaben
+  im Spiel" stand danach keine der drei Quellen angewählt. Gemeldet von Haldjas.
+- **Update unter Windows spuckte Konsolenfenster aus.** Das Hilfsskript, das die
+  laufende `.exe` austauscht, lief in einer Endlosschleife weiter, solange die
+  Datei gesperrt war — und sie bleibt gesperrt, bis das Programm beendet wird.
+  Jeder weitere Klick auf „holen" startete noch ein Fenster. Jetzt ist nach zwei
+  Minuten Schluss, das Fenster bleibt unsichtbar, und ein schon laufendes
+  Hilfsskript wird vorher beendet.
+- **„Jetzt nachsehen" hat nicht nachgesehen.** Der Knopf zeigte die Meldung „Suche nach
+  einer neuen Fassung …" und suchte nicht. Wessen Zwischenspeicher veraltet war, kam damit
+  nicht heraus — ein Tester bekam auf rc18 weiterhin rc12 angeboten. Jetzt wird wirklich
+  gefragt, das Ergebnis gesagt und die Anzeige nachgezogen.
+- **Das Selbst-Update ging unter Linux in den Windows-Zweig** und meldete „[Errno 2] No such
+  file or directory: 'cmd'". Der Riegel gegen fremde Programme verglich den eigenen Code mit
+  `APPDIR` — nur entpackt sich PyInstaller in ein **eigenes** Verzeichnis, der Vergleich
+  schlug also immer fehl. Maßgeblich ist jetzt der Dateiname.
+- **Das Selbst-Update hätte fremde Programme überschreiben können.** Es hielt jede Datei
+  für sich selbst, auf die die Umgebungsvariable `APPIMAGE` zeigte — und die steht in
+  **jedem** Programm, das aus einem AppImage heraus gestartet wurde. Jetzt muss auch der
+  eigene Code aus dem zugehörigen `APPDIR` kommen, und ein zweiter Riegel lehnt jede
+  Zieldatei ab, deren Name nicht zum Programm gehört.
+- **Das Selbst-Update scheiterte unter Linux immer.** Geladen wurde nach `/tmp`,
+  eingespielt mit `os.replace()` — und `/tmp` ist auf so gut wie jedem Linux ein eigenes
+  Dateisystem. Über Dateisystemgrenzen kann `os.replace` nicht verschieben, das endet mit
+  „[Errno 18] Invalid cross-device link". Der Kommentar im Code versprach schon immer
+  „neben das laufende Programm" — jetzt tut es der Code auch, und das Einspielen ist
+  nebenbei atomar geworden.
+- **Absturz beim allerersten Start** (`SIGSEGV`), gemeldet von Bomb20. Der Assistent legte
+  eine **eigene** Tk-Instanz an und zerstörte sie am Ende; das Overlay legte danach eine
+  zweite an. Nach dem `destroy()` der ersten leben Schriften, Bilder und offene Aufträge
+  weiter und zeigen auf einen toten Interpreter — ob das gutgeht, hängt am Zeitpunkt. Sein
+  Satz „mit Debugging an lief es durch" ist der Fingerabdruck dafür. Es gibt jetzt nur noch
+  **eine** Tk-Instanz im ganzen Programm.
+- **Die Marken `[SCBPW]` waren im Spiel sichtbar.** Im Auftragstitel stand „Security
+  Patrol**[SCBPW]** [BP 3/6]**[/SCBPW]**". Sie sorgten dafür, dass sich Eingefügtes exakt
+  wieder entfernen lässt — nur will das niemand in seinem Spiel lesen. Jetzt steht gar
+  keine Marke mehr im Text: Der **Wortlaut vor der Einfügung** wird gemerkt, und das
+  Zurücksetzen stellt ihn wieder her. Das ist genauer als vorher. Geprüft mit
+  `tools/injektion_pruefen.py` an der echten Datei: einspielen und entfernen lässt 743
+  Textstellen auf das Zeichen genau so, wie sie waren.
+- **Im Spiel stand nur die Zahl, nicht welche Baupläne.** Ein Auftrag hat einen Titel, aber
+  oft ein Dutzend Beschreibungen — je eine für „zur Ruinenstation", „zum Verteilzentrum"
+  und so weiter. Die Vertragsdaten nennen dazu nur **eine**; die übrigen blieben leer. Im
+  Titel stand „[BP 0/12]", und wer die Beschreibung öffnete, um zu sehen *welche* zwölf,
+  fand nichts. Gemessen: allein bei Covalex 51 Beschreibungen im Spiel, davon 7 mit
+  Angaben. Sie werden jetzt über den gemeinsamen Namensanfang mitversorgt.
+- **„Handfeuerwaffe" und „FPS-Waffe" waren zwei Gruppen für dieselbe Sache** — 87 unter
+  der einen Kennung, zwei unter der anderen.
+- **„Zeilen im Overlay" hatte keine Wirkung.** Die Einstellung wurde gespeichert und nie
+  gelesen; im Overlay galt fest die Zahl 200. Jetzt gilt der eingestellte Wert, mit 20 als
+  Vorgabe — 200 Baupläne sammelt in einer Sitzung ohnehin niemand.
+- **„Durchsuchen" öffnete keinen Dialog** — weder beim Star-Citizen-Ordner noch bei den
+  eigenen Dateien. Beide tun es jetzt, und unter Linux mit dem Dialog des Systems statt
+  dem grauen von Tk.
+- **Die letzten Baupläne der Liste lagen übereinander.** X11 rechnet Fensterkoordinaten in
+  16 Bit; alle 722 in einem Rahmen ergeben rund 33000 Pixel und damit 16 Zeilen jenseits
+  der Grenze. Die Liste wird jetzt bei Bedarf in Blöcken gezeigt — sichtbar bleibt alles.
+- **Die Rollleiste ließ sich nicht anfassen.** Gezeichnet wurde der Griff mit einer
+  Mindesthöhe, geprüft wurde mit der rechnerischen — wer die untere Hälfte traf, galt als
+  „daneben".
+- **Das Fenster startete außerhalb des Bildschirms.** Ohne gemerkte Lage stellte Tk es
+  nach `+0+0`; bei einem hochkant stehenden Monitor links außen liegt dort kein Bild.
+  Start und „Fensterlage zurücksetzen" setzen es jetzt mittig auf den Hauptbildschirm.
+- **Der Autostart war zwischen Overlay und Einstellungen nicht synchron.** Beide lasen
+  ihren Zustand nur beim Zeichnen.
+- **Das Fenster-Icon fehlte in jeder fertigen Fassung** — auf beiden Systemen. Die Datei
+  lag zur Laufzeit gar nicht bei.
+
+### Dank
+
+Diese Fassung ist zu einem großen Teil das Verdienst von zwei Testern, die sich
+die Mühe gemacht haben, Fehler nicht nur zu bemerken, sondern sie so genau zu
+beschreiben, dass sie zu finden waren:
+
+- **Haldjas** (pr0) — der Vorschlag mit dem Aufblend-Betrieb; dazu das
+  Setup, das an der laufenden Datei abbrach, die Konsolenfenster beim Update,
+  das verschwundene Symbol neben der Uhr, der Absturz nach dem Neustart, die
+  Schriftgröße, die das Overlay nicht erreichte, die vergessene Textquelle im
+  Assistenten — und der Fund, der alles erklärte: „da bleibt er bei rc25".
+- **Bomb20** (pr0) — der Absturz beim allerersten Start (der Fehler, den nur
+  neue Nutzer je gesehen hätten), der wirkungslose Knopf „Jetzt nachsehen" und
+  der Hinweis, dass die Textquelle „Deutsch" das ganze Spiel übersetzt.
+- **Morkhan** (KRT) — der Vorschlag, Star Citizen gleich aus dem Werkzeug
+  heraus starten zu können.
+
+Die Bauplan-Angaben beruhen auf den offen veröffentlichten Vertragsdaten des
+**SC-Deutsch-Launcher-Teams** und auf **scmdb.net**.
 
 ## v2.0.0 - 2026-08-24
 
@@ -159,7 +773,7 @@ selbst geführt, und zu den meisten Bauplänen steht dabei, woher man sie bekomm
 - **Merkliste per Klick** (`scbp/merkliste.py`). In der Bauplan-Liste macht ein Klick auf den Stern aus jedem Eintrag einen Wunsch — taucht er auf, meldet ihn der Watcher auffällig in Gold. Dafür muss niemand mehr eine `watchlist.json` von Hand anlegen.
   - Eigener Filter **⭐ beobachtet** zeigt, worauf man gerade wartet.
   - **Erfüllte Wünsche verschwinden von selbst.** Landet ein beobachteter Bauplan im Bestand, sagt der Watcher einmal Bescheid und trägt ihn aus — eine Liste voller längst erledigter Wünsche wäre keine Merkliste, sondern ein Archiv.
-  - Von außen eingetragene **Muster** funktionieren weiter (die des Autors: Skill „SC BP" schreibt dort die Teile der Staffelrüstung hinein, deren endgültige Namen noch niemand kennt).
+  - Von außen eingetragene **Muster** funktionieren weiter (ein eigenes Werkzeug des Autors schreibt dort Teile einer Rüstung hinein, deren endgültige Namen noch niemand kennt).
 - **Fertige Dateien für beide Systeme, gebaut von GitHub.** Ein Versions-Tag löst den Bau aus: ein Windows-Rechner baut die `.exe`, ein Linux-Rechner das AppImage, beide werden ans Release gehängt — samt Beschreibung aus dem CHANGELOG, damit im Werkzeug unter „Was ist neu" dasselbe steht wie auf GitHub.
   - Das AppImage wird **in einem Ubuntu-22.04-Container** gebaut (glibc 2.35). Auf neuerem glibc gebaut, würde es auf verbreiteten Systemen gar nicht erst starten.
   - Der Bau bricht ab, wenn Tag und `__version__` nicht zusammenpassen. Wer „v2.0.0" lädt, soll im Fenster nicht etwas anderes lesen.
@@ -195,8 +809,6 @@ selbst geführt, und zu den meisten Bauplänen steht dabei, woher man sie bekomm
 
 - **714 Baupläne, nicht 1573.** Die Datei `crafting_items` zählt alle craftbaren Gegenstände; ein Bauplan droppt nur für einen Teil davon. Für eine Liste zum Abhaken wäre die große Zahl irreführend — maßgeblich sind die `blueprintPools`.
 - **Die scmdb-Daten werden weiterhin nicht mitgeliefert** (CC BY-NC-ND), sondern beim Nutzer geholt. `SC_BP_NO_NET=1` schaltet es ab; ohne Katalog fehlt nur die Liste, die Erkennung läuft weiter.
-
-
 
 
 - **Läuft unter Linux.** Eine Codebasis für beide Systeme, keine zweite Fassung. Wo die Dateien liegen, entscheidet der neue Baustein `scbp/pfade.py`: unter Windows `%APPDATA%` und `C:\Program Files`, unter Linux `~/.config` und das Wine-Präfix (gesucht wird an den Stellen, an denen lug-helper, Lutris, Bottles und Heroic ihre Installationen ablegen). Eigene Wege gehen über `SC_BP_HOME`, `SC_INSTALL_DIR` und `SC_BP_LAUNCHER`.

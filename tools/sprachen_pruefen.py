@@ -103,6 +103,41 @@ def pruefe(melden=print):
             if re.search(muster, t_de):
                 fehler.append('%s verweist auf %s statt auf %s'
                               % (de, anderes_en, anderes_de))
+
+    # ⚠ Bildschirmfotos sind auch Sprache. Die englische Anleitung zeigte lange
+    # die **deutsche** Oberfläche — dem Prüfer war das entgangen, weil er nur
+    # Abschnitte zählt. Wer die Bilder tauscht, tauscht damit einen Teil der
+    # Übersetzung; genau darauf achtet dieser Block.
+    t_en = _lies('README.md') or ''
+    t_de = _lies('README.de.md') or ''
+    bilder_en = set(re.findall(r'assets/(screenshot-[a-z0-9-]+\.png)', t_en))
+    bilder_de = set(re.findall(r'assets/(screenshot-[a-z0-9-]+\.png)', t_de))
+
+    # Bewusst geteilte Bilder kämen hier hinein. Zurzeit gibt es keine: Auch das
+    # Overlay liegt in beiden Sprachen vor — die Funde mussten dafür simuliert
+    # werden (`tools/drops_vorfuehren.py`), sonst bliebe die Leiste leer und das
+    # Bild zeigte nichts von dem, worum es geht.
+    GETEILT_OK = set()
+
+    geteilt = sorted(b for b in bilder_en & bilder_de
+                     if not b.endswith('-en.png') and b not in GETEILT_OK)
+    if geteilt:
+        # ⚠ Bewusst **keine** Beanstandung, sondern ein Hinweis: Fehlende
+        # englische Bilder sind ein Schönheitsfehler, kein Grund, den Bau
+        # anzuhalten. Als Fehler gezählt stünde der Selbsttest so lange rot, bis
+        # jemand elf Bildschirmfotos gemacht hat — und ein dauerhaft roter Test
+        # wird irgendwann ignoriert, dann fällt auch das Echte nicht mehr auf.
+        melden('  HINWEIS  README.md zeigt %d deutsche Bilder — englische '
+               'Fassung fehlt noch' % len(geteilt))
+        melden('           (%s%s)'
+               % (', '.join(geteilt[:3]), ' …' if len(geteilt) > 3 else ''))
+
+    # Jedes eingebundene Bild muss es auch geben.
+    for datei, bilder in (('README.md', bilder_en), ('README.de.md', bilder_de)):
+        for b in sorted(bilder):
+            if not os.path.exists(os.path.join('assets', b)):
+                fehler.append('%s bindet assets/%s ein — Datei fehlt'
+                              % (datei, b))
     return fehler
 
 

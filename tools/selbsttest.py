@@ -31,8 +31,11 @@ Codes nicht sieht und die schon einmal Fehler verursacht haben — abgeschnitten
 Namensklammern, doppelt gezählte Meldungen, verlorene Lesestände. Sie stehen
 hier als Fälle drin, damit ein Umbau sie nicht unbemerkt wieder einreißt.
 """
+import importlib
+import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -70,7 +73,11 @@ ERWARTET = {
     'attrition-5 repeater',
     "7ca 'nargun'",
     'arclight pistol battery (30 cap)',
-    'cf-117 bulldog "hazard-zone" repeater',
+    # ⚠ Einfache Anführungszeichen, obwohl die Log-Zeile oben doppelte hat:
+    # `pfade.namensform()` zieht alle Anführungszeichen auf ein einfaches `'`,
+    # damit derselbe Bauplan aus Launcher-Export und scmdb-Katalog denselben
+    # Schlüssel bekommt.
+    "cf-117 bulldog 'hazard-zone' repeater",
     'singe cannon (s2)',
     'scalpel sniper rifle magazine (12 schuss)',
 }
@@ -191,7 +198,16 @@ def main():
         anders = os.path.join(basis, 'woanders', 'LIVE')
         os.makedirs(anders)
         open(os.path.join(anders, 'Game.log'), 'w').close()
-        pruefe(pf.spiel_ordner() is None, 'ohne Eintrag wird nichts gefunden')
+
+        # ⚠ Die Suche darf hier nichts finden — sonst prüft der Test nur, ob auf
+        # DIESEM Rechner zufällig kein Star Citizen liegt. Auf einem Spielrechner
+        # war er deshalb rot, obwohl das Programm richtig arbeitete. Also werden
+        # die Suchwurzeln für diesen Abschnitt geleert; gesucht wird gleich
+        # nochmal ausdrücklich MIT Wurzel.
+        echte_wurzeln = pf._spiel_wurzeln
+        pf._spiel_wurzeln = lambda: []
+        pruefe(pf.spiel_ordner() is None,
+               'ohne Eintrag und ohne Fundort wird nichts gefunden')
         datei = pf.vorlage_anlegen()
         pruefe(os.path.exists(datei), 'Einstellungsdatei wird zum Ausfüllen angelegt')
         d = json.load(open(datei, encoding='utf-8'))
@@ -204,6 +220,22 @@ def main():
         pruefe('_spiel_ordner_gesucht_wird_hier' in d2,
                'die Vorlage nennt die Suchorte beim Feld')
 
+        # Und die Gegenprobe: Liegt an einem Suchort wirklich ein Spiel, muss es
+        # gefunden werden. Ohne diese Hälfte wäre „nichts gefunden" wertlos —
+        # eine kaputte Suche fände auch nichts.
+        with open(datei, encoding='utf-8') as f:
+            ohne = json.load(f)
+        ohne['spiel_ordner'] = ''
+        with open(datei, 'w', encoding='utf-8') as f:
+            json.dump(ohne, f, ensure_ascii=False, indent=2)
+        wurzel_mit_spiel = os.path.join(basis, 'installiert')
+        echt = os.path.join(wurzel_mit_spiel, pf.SC_UNTERPFAD, 'LIVE')
+        os.makedirs(echt)
+        open(os.path.join(echt, 'Game.log'), 'w').close()
+        pf._spiel_wurzeln = lambda: [wurzel_mit_spiel]
+        pruefe(pf.spiel_ordner() == echt, 'ein Spiel an einem Suchort wird gefunden')
+        pf._spiel_wurzeln = echte_wurzeln
+
         print('\n6. Erster Start nimmt dem Spieler die Arbeit ab')
         from scbp import assistent as assi, pfade as pf2
         # Frischer Ordner, damit "erster Start" wirklich zutrifft
@@ -211,8 +243,11 @@ def main():
         os.makedirs(frisch)
         os.environ['SC_BP_HOME'] = frisch
         os.environ.pop('SC_INSTALL_DIR', None)
+        echte_wurzeln6 = pf2._spiel_wurzeln
+        pf2._spiel_wurzeln = lambda: []        # siehe Abschnitt 5
         pruefe(assi.noetig(), 'Assistent meldet sich beim ersten Start')
-        pruefe(pf2.spiel_ordner() is None, 'ohne Angabe wird nichts gefunden')
+        pruefe(pf2.spiel_ordner() is None, 'ohne Angabe und ohne Fundort: nichts')
+        pf2._spiel_wurzeln = echte_wurzeln6
         # Der Spieler wählt irgendeine Ebene — auch die falsche muss reichen
         gedeutet = pf2.spielordner_deuten(os.path.dirname(live))
         pruefe(gedeutet == live,
@@ -312,7 +347,7 @@ def main():
         pruefe(mk.enthaelt('wunschteil'), 'Groß- und Kleinschreibung egal')
         pruefe(mk.umschalten('Wunschteil') is False, 'zweiter Klick trägt aus')
         mk.umschalten('Wunschteil')
-        # Muster-Einträge von außen (die des Autors: Skill „SC BP" schreibt so)
+        # Muster-Einträge von außen (ein eigenes Werkzeug des Autors schreibt so)
         d = mk.laden()
         d['eintraege'].append({'titel': 'Staffelrüstung',
                                'muster': ['adp-mk4', 'woodland']})
@@ -333,6 +368,71 @@ def main():
         for b in beanstandungen[:5]:
             print('        ·', b)
 
+        # Der Bericht zählte einmal die Felder der Datei statt der Baupläne
+        # darin: „3 Baupläne" bei 394 im Bestand, weil die Datei drei Felder
+        # oben hat (version, stand, bauplaene). Eine falsche Zahl, die
+        # plausibel aussieht — genau die Sorte, die niemand nachprüft.
+        # Geprüft wird die Zählfunktion selbst, nicht der Bericht: Sie hängt
+        # nicht davon ab, wie viel gerade im Bestand steht.
+        import json as json_pruef
+        import scbp.bericht as bericht_pruef
+        probe = os.path.join(basis, 'zaehlprobe.json')
+        with open(probe, 'w', encoding='utf-8') as f:
+            json_pruef.dump({'version': 1, 'stand': 'x',
+                             'bauplaene': {'a': 1, 'b': 2, 'c': 3, 'd': 4}}, f)
+        pruefe(bericht_pruef._json_groesse(probe, 'bauplaene') == 4,
+               'die Zählung im Bericht nimmt die Einträge, nicht die Felder')
+        pruefe(bericht_pruef._json_groesse(probe, 'gibtsnicht') == '—',
+               'ein fehlender Schlüssel gibt „—" statt einer erfundenen Zahl')
+
+        # Testdaten mit ausgedachten Art-Kennungen sehen aus wie ein Fehler
+        # der Oberfläche: Alles landet in „Sonstiges", und der Filter „nur
+        # FPS-Waffen" zeigt nichts. Genau so ist es einmal gelaufen.
+        import probe_daten
+        unbekannt = probe_daten.arten_pruefen()
+        pruefe(not unbekannt,
+               'die Beispieldaten benutzen echte Art-Kennungen')
+        for art in unbekannt[:5]:
+            print('        · %s kennt katalog.ART_GRUPPE nicht' % art)
+
+        # ⚠ Die Namensform stand dreimal im Programm und lief auseinander.
+        # Folge: Der SC Deutsch Launcher schreibt 7MA "Lorica" mit geraden
+        # Anführungszeichen, scmdb mit einfachen — der Bauplan galt als
+        # „fehlt", obwohl er im Bestand stand. Hier wird geprüft, dass alle
+        # drei Module dieselbe Form liefern.
+        from scbp import bestand as b_norm, katalog as k_norm
+        from scbp import merkliste as m_norm, pfade as p_norm
+        proben = ('7MA "Lorica"', "7MA 'Lorica'", 'CF-117 „Hazard" Repeater',
+                  'Test\xa0Name')
+        gleich = all(b_norm.norm(x) == k_norm._norm(x) == m_norm._norm(x)
+                     == p_norm.namensform(x) for x in proben)
+        pruefe(gleich, 'alle Module vergleichen Namen gleich')
+        pruefe(p_norm.namensform('7MA "Lorica"')
+               == p_norm.namensform("7MA 'Lorica'"),
+               'gerade und einfache Anführungszeichen gelten als derselbe Name')
+
+        formatfehler = probe_daten.formate_pruefen()
+        pruefe(not formatfehler,
+               'die Beispieldaten haben die Formate des echten Katalogs')
+        for satz in formatfehler[:5]:
+            print('        · ' + satz)
+
+        # Die Dokumente allein reichen nicht: Die Oberfläche zeigte an über
+        # hundert Stellen deutschen Text, während oben alles grün meldete.
+        import texte_pruefen
+        feste = []
+        for name in sorted(os.listdir(os.path.join(WURZEL, 'scbp'))):
+            if name.endswith('.py'):
+                feste += texte_pruefen.pruefe(
+                    os.path.join(WURZEL, 'scbp', name))
+        pruefe(not feste,
+               'jeder sichtbare Text der Oberfläche läuft durch t()')
+        # ⚠ Nicht `zeile` als Schleifenvariable — so heißt weiter oben eine
+        # Hilfsfunktion, und Python macht daraus für die ganze Funktion eine
+        # lokale Variable. Der Selbsttest stirbt dann Hunderte Zeilen früher.
+        for nr, stelle, roh in feste[:5]:
+            print('        · Zeile %d (%s): %s' % (nr, stelle, roh[:50]))
+
         print('\n11. Fensterlage von einem fremden Rechner')
         if ANZEIGE:
             kaputt = w.geometrie_pruefen('440x1098+999999+-999999', _wurzel())
@@ -340,6 +440,925 @@ def main():
                    'unsinnige Position verworfen (%s)' % kaputt)
         else:
             uebersprungen('Fensterlage von einem fremden Rechner')
+
+        # ------------------------------------------------------------------ 12
+        # Fehler mitschreiben. Der Sinn der Sache ist, dass ein Nutzer den
+        # Bericht in ein **öffentliches** Issue kopieren kann — deshalb wird
+        # hier vor allem geprüft, dass kein Benutzername durchrutscht.
+        print()
+        print('12. Fehler werden mitgeschrieben')
+        os.environ['SC_BP_HOME'] = os.path.join(basis, 'fehlerbuch')
+        os.makedirs(os.environ['SC_BP_HOME'], exist_ok=True)
+        from scbp import fehler as fehlerbuch, bericht
+        importlib.reload(fehlerbuch)
+
+        fehlerbuch.leeren()
+        with fehlerbuch.gefangen('probe.stelle'):
+            raise ValueError('etwas ging schief in %s'
+                             % os.path.expanduser('~/geheim/pfad'))
+        eintraege = fehlerbuch.letzte(1)
+        pruefe(len(eintraege) == 1, 'ein gefangener Fehler wird festgehalten')
+        pruefe(eintraege and eintraege[0].get('stelle') == 'probe.stelle',
+               'die Stelle steht dabei')
+        pruefe(eintraege and eintraege[0].get('art') == 'ValueError',
+               'die Art des Fehlers steht dabei')
+
+        name = os.path.basename(os.path.expanduser('~').rstrip('/\\'))
+        roh = json.dumps(eintraege, ensure_ascii=False)
+        pruefe(len(name) < 3 or name.lower() not in roh.lower(),
+               'kein Benutzername im Protokoll')
+        pruefe('<heim>' in roh, 'der Heimatpfad ist ersetzt')
+
+        # Der Ringpuffer darf die Datei nicht wachsen lassen.
+        for i in range(fehlerbuch.HOECHSTENS + 12):
+            fehlerbuch.merken('probe.viele', ValueError('Nummer %d' % i))
+        pruefe(fehlerbuch.anzahl() == fehlerbuch.HOECHSTENS,
+               'es bleiben höchstens %d Einträge liegen' % fehlerbuch.HOECHSTENS)
+
+        text = bericht.bauen(version='0.0.0-test')
+        pruefe(bool(text) and 'SC BP Watcher' in text, 'der Bericht wird gebaut')
+
+        # ⚠ Ein Schreibfehler darf nicht spurlos verschwinden. Bis zum
+        # 26.08.2026 gab `einstellungen_schreiben` nur `False` zurück — und
+        # **kein einziger Aufrufer** wertet das aus. Eine Einstellung war nach
+        # dem Neustart einfach wieder alt, ohne jeden Hinweis.
+        # ⚠ Jede Datei, die der Code über `_mitgeliefert()` lädt, muss der Bau
+        # auch einpacken. Sonst fehlt sie NUR in der fertigen Fassung — beim
+        # Start aus dem Quellcode fällt es nie auf. Genau so fehlte das Logo auf
+        # der Seite „Update & Über": Der Code lud `assets/xharig.png`, der Bau
+        # lieferte nur `assets/icon.png`. Gemeldet am 26.08.2026 ,
+        # dem es im Bild eines Testers auffiel.
+        import re as re_
+        bauplan = open(os.path.join(WURZEL, '.github', 'workflows',
+                                    'release.yml'), encoding='utf-8').read()
+        gebraucht = set()
+        for datei in ('sc_bp_watcher.py',) + tuple(
+                os.path.join('scbp', n) for n in os.listdir(
+                    os.path.join(WURZEL, 'scbp')) if n.endswith('.py')):
+            quelle_ = open(os.path.join(WURZEL, datei), encoding='utf-8').read()
+            for treffer in re_.finditer(
+                    r"_mitgeliefert\(\s*(?:os\.path\.join\()?([^)]+)\)", quelle_):
+                teile = re_.findall(r"'([^']+)'", treffer.group(1))
+                if teile:
+                    gebraucht.add(teile[-1])
+        for name in sorted(gebraucht):
+            pruefe(name in bauplan,
+                   'der Bau liefert „%s" mit' % name)
+
+        # ⚠ Zwei Fallen stecken in diesem Test, beide am 26.08.2026 erlebt:
+        #
+        # 1. **Nicht per `chmod` sperren.** Auf den Bau-Rechnern läuft alles als
+        #    root, und root schreibt auch in einen Ordner mit entzogenen
+        #    Rechten. Der Test war dort grün, ohne etwas zu prüfen.
+        # 2. **Nicht den ganzen Ablageordner unbrauchbar machen.** Dann kann
+        #    auch das Fehlerprotokoll nicht mehr geschrieben werden — und genau
+        #    das soll ja geprüft werden.
+        #
+        # Deshalb wird **nur die Einstellungsdatei** blockiert: Dort, wo die
+        # Nebendatei `…json.tmp` entstehen müsste, liegt ein Ordner. Daran
+        # scheitert das Schreiben, unabhängig von Rechten und Benutzer — der
+        # Rest der Ablage bleibt heil.
+        sperr = os.path.join(basis, 'sperrprobe')
+        os.makedirs(sperr, exist_ok=True)
+        os.makedirs(os.path.join(sperr, 'einstellungen.json.tmp'),
+                    exist_ok=True)
+        alt_home = os.environ.get('SC_BP_HOME')
+        os.environ['SC_BP_HOME'] = sperr
+        try:
+            from scbp import pfade as pf_sperr
+            fehlerbuch.leeren()
+            geschrieben = pf_sperr.einstellung_setzen('probe', 2)
+            pruefe(not geschrieben,
+                   'ein blockiertes Ziel meldet einen Fehlschlag')
+            stellen = [e.get('stelle') for e in fehlerbuch.letzte(3)]
+            pruefe('pfade.einstellungen_schreiben' in stellen,
+                   'und der Grund steht im Fehlerprotokoll')
+        finally:
+            if alt_home:
+                os.environ['SC_BP_HOME'] = alt_home
+
+        # ⚠ Die Zeile „Spielsprache" stand drei Übergaben lang auf „—", weil
+        # `phrasen.sammeln()` ein Tupel liefert und der Bericht es wie eine
+        # Liste behandelte. Der TypeError wurde von `_sicher()` verschluckt.
+        # Geprüft wird deshalb der Wert selbst, nicht nur dass der Bericht baut.
+        pruefe(bericht._spielsprache() and 'Bauplan erhalten'
+               in bericht._spielsprache(),
+               'die Spielsprache-Zeile nennt die gesuchten Formulierungen')
+        for zeile_ in text.split('\n'):
+            if zeile_.startswith('Spielsprache') or zeile_.startswith('Game language'):
+                pruefe(zeile_.strip().rstrip() not in
+                       ('Spielsprache —', 'Game language —')
+                       and '—' != zeile_.split()[-1],
+                       'im Bericht steht bei der Spielsprache kein Strich')
+                break
+        pruefe(len(name) < 3 or name.lower() not in text.lower(),
+               'kein Benutzername im Bericht')
+        pruefe('Letzte Fehler' in text, 'die letzten Fehler stehen im Bericht')
+
+        fehlerbuch.leeren()
+        pruefe(fehlerbuch.anzahl() == 0, 'das Protokoll lässt sich leeren')
+
+        # ------------------------------------------------------------------ 13
+        # Bestand einlesen. Wichtig ist vor allem, dass NICHTS verloren geht:
+        # zusammenführen heißt zusammenführen.
+        print()
+        print('13. Vorhandenen Bestand einlesen')
+        from scbp import importieren, bestand as bestandsmodul
+
+        proben = {
+            'eigen': {'werkzeug': 'SC BP Watcher',
+                      'bauplaene': [{'name': 'XL-1', 'zeit': '2026-08-01 10:00:00'}]},
+            'scmdb': {'exportSchemaVersion': 1,
+                      'blueprints': [{'productName': 'XL-1', 'ts': 1756000000}]},
+            'basetool': {'blueprints': [{'productName': 'XL-1',
+                                         'receivedAt': '2026-08-02T01:49:03.322Z'}]},
+            'launcher': {'blueprints': [{'key': 'XL-1'}]},
+        }
+        erkannt = all(importieren.erkennen(d) == art for art, d in proben.items())
+        pruefe(erkannt, 'alle vier Formate werden am Inhalt erkannt')
+        pruefe(importieren.erkennen({'irgendwas': [1, 2, 3]}) is None,
+               'eine fremde Datei wird nicht erkannt')
+
+        datei = os.path.join(basis, 'einlesen.json')
+        with open(datei, 'w', encoding='utf-8') as f:
+            json.dump({'blueprints': [
+                {'productName': 'Attrition-5 Repeater',
+                 'receivedAt': '2026-08-02T01:49:03.322Z'},
+                {'productName': 'Attrition-5 Repeater'},          # Dublette
+                {'productName': 'Voll Neuer Bauplan'},
+            ]}, f)
+        art, eintraege = importieren.lesen(datei)
+        pruefe(art == 'basetool', 'die Datei wird als Basetool-Ausgabe gelesen')
+        pruefe(len(eintraege) == 3, 'alle Zeilen kommen an')
+
+        vorher = bestandsmodul.leer()
+        bestandsmodul.hinzufuegen(vorher, 'Attrition-5 Repeater', 'log')
+        bestandsmodul.hinzufuegen(vorher, 'Nur Im Bestand', 'log')
+        v = importieren.vorschau(eintraege, vorher,
+                                 katalog_namen=['Attrition-5 Repeater',
+                                                'Scalpel Sniper Rifle Magazine (12 cap)'])
+        pruefe(v['gesamt'] == 2, 'Dubletten in der Datei zählen einmal')
+        pruefe(v['neu'] == ['Voll Neuer Bauplan'], 'nur wirklich Neues gilt als neu')
+        pruefe(v['schon_da'] == ['Attrition-5 Repeater'], 'Vorhandenes wird erkannt')
+        pruefe(v['unbekannt'] == ['Voll Neuer Bauplan'],
+               'ein dem Katalog unbekannter Name wird gemeldet')
+
+        dazu = importieren.uebernehmen(eintraege, vorher, speichern=False)
+        pruefe(dazu == 1, 'genau ein Eintrag kommt dazu')
+        pruefe('nur im bestand' in vorher['bauplaene'],
+               'der vorhandene Bestand bleibt vollständig erhalten')
+        pruefe(vorher['bauplaene']['attrition-5 repeater']['quelle'] == 'log',
+               'ein Import überschreibt keine bessere Quelle')
+
+        # ------------------------------------------------------------------ 14
+        # "Neu"-Marken. Der ganze Nutzen haengt daran, dass sie wieder
+        # verschwinden — sonst ist nach drei Fassungen alles markiert.
+        print()
+        print('14. „Neu"-Marken an den Bereichen')
+        os.environ['SC_BP_HOME'] = os.path.join(basis, 'neu1')
+        os.makedirs(os.environ['SC_BP_HOME'], exist_ok=True)
+        from scbp import neuheiten
+        importlib.reload(neuheiten)
+
+        neuheiten.erster_start('3.0.0')
+        pruefe(neuheiten.offene('3.0.0') == [],
+               'frische Installation bekommt keine Marken')
+
+        os.environ['SC_BP_HOME'] = os.path.join(basis, 'neu2')
+        os.makedirs(os.environ['SC_BP_HOME'], exist_ok=True)
+        neuheiten.erster_start('2.0.0')
+        offen = sorted(neuheiten.offene('3.0.0'))
+        pruefe(offen == sorted(neuheiten.NEU_SEIT),
+               'wer von 2.0.0 kommt, sieht die neuen Bereiche')
+        neuheiten.gesehen('bestand', '3.0.0')
+        pruefe('bestand' not in neuheiten.offene('3.0.0'),
+               'die Marke verschwindet, sobald der Bereich offen war')
+        pruefe(len(neuheiten.offene('3.0.0')) == len(offen) - 1,
+               'die übrigen Marken bleiben stehen')
+        pruefe(not neuheiten.ist_neu('bestand', '2.0.0'),
+               'was es in der eigenen Fassung noch nicht gibt, wird nicht markiert')
+
+        # ------------------------------------------------------------------ 14a
+        # Der Änderungstext wird für „Was ist neu" zerlegt. Zwei Fallen, beide
+        # schon zugeschnappt: Unterpunkte als eigene Zeilen (Liste doppelt so
+        # lang) und verworfene Fortsetzungszeilen (Sätze enden mittendrin).
+        print()
+        print('14a. Änderungstext zerlegen')
+        from scbp import aktualisierung as akt
+        probe = """### Hinzugefügt
+- **Ein Fenster mit Reitern.** Oben die Baupläne, darunter die Einstellungen,
+  ganz unten eingeklappt, was nur Fortgeschrittene brauchen.
+  - Ein Unterpunkt, der nicht als eigene Zeile zählt
+### Behoben
+- **Das Icon fehlte.**
+"""
+        punkte = akt.punkte_nach_art(probe)
+        pruefe(len(punkte) == 2, 'zwei Punkte, nicht vier')
+        pruefe(punkte and punkte[0][0] == 'neu' and punkte[1][0] == 'fix',
+               'die Art kommt aus der Zwischenüberschrift')
+        pruefe(punkte and punkte[0][1].endswith('brauchen.'),
+               'die Fortsetzungszeile gehört zum Satz')
+        pruefe(punkte and 'Unterpunkt' not in punkte[0][1],
+               'ein Unterpunkt wird nicht angehängt')
+
+        # ------------------------------------------------------------------ 14b
+        # Sprachwechsel im Hauptfenster. Es darf dabei KEIN zweites Fenster
+        # aufgehen — das alte Einstellungsfenster baute sich bei einem Wechsel
+        # komplett neu auf, und als Seite im Hauptfenster wurde daraus ein
+        # eigenes Fenster mit halbem Inhalt.
+        if ANZEIGE:
+            print()
+            print('14b. Sprachwechsel im Hauptfenster')
+            from scbp import hauptfenster, seiten as seitenmodul, sprache as spr
+            import tkinter as _tk
+            spr.setzen('de')
+            hf = hauptfenster.Hauptfenster(version='3.0.0')
+            hf.root.withdraw()
+            try:
+                hf.oeffnen('allgemein')
+                hf.root.update()
+                vorher = hf.knoepfe['allgemein'][3].cget('text')
+
+                def fenster_zaehlen(w):
+                    n = 0
+                    for k in w.winfo_children():
+                        if isinstance(k, (_tk.Toplevel, _tk.Tk)):
+                            n += 1
+                        n += fenster_zaehlen(k)
+                    return n
+
+                seitenmodul._einstellungen(hf)._sprache_waehlen('en')
+                hf.root.update()
+                pruefe(fenster_zaehlen(hf.root) == 0,
+                       'kein zweites Fenster beim Sprachwechsel')
+                pruefe(vorher == 'Allgemein'
+                       and hf.knoepfe['allgemein'][3].cget('text') == 'General',
+                       'die Reiter sind übersetzt')
+                pruefe(hf.aktuell == 'allgemein',
+                       'die geöffnete Seite bleibt geöffnet')
+                # Feste Zahl mit Absicht: Der Test soll auffallen, wenn beim
+                # Sprachwechsel ein Reiter verschwindet. Kommt einer dazu,
+                # wird sie hier mitgezogen. 10 = die Hauptleiste ohne die drei
+                # unter „Für Fortgeschrittene".
+                pruefe(len(hf.knoepfe) == 10, 'alle Reiter sind wieder da')
+
+                # Die Wahl muss festgehalten werden — ohne Speichern-Knopf gibt
+                # es keinen zweiten Versuch. Vorher stand die Markierung
+                # danach weiter auf der alten Sprache.
+                from scbp import pfade as pf4
+                pruefe(pf4.einstellung('sprache') == 'en',
+                       'die gewählte Sprache ist gespeichert')
+                pruefe(seitenmodul._einstellungen(hf).sprache_wahl.get() == 'en',
+                       'und die Markierung steht darauf')
+            finally:
+                spr.setzen('de')
+                hf.root.destroy()
+        else:
+            uebersprungen('Sprachwechsel im Hauptfenster')
+
+        # ------------------------------------------------------------------ 15
+        # Umzug in den sichtbaren Ordner. Hier hängt der Bauplan-Bestand dran —
+        # geht das schief, steht ein Nutzer nach dem Update vor einer leeren
+        # Liste, obwohl er nichts verloren hat.
+        print()
+        print('15. Umzug in den sichtbaren Ordner')
+        import json as _json
+        from scbp import pfade as pf3
+        importlib.reload(pf3)
+
+        alt_ordner = os.path.join(basis, 'alt-appdata')
+        neu_ordner = os.path.join(basis, 'Dokumente')
+        os.makedirs(alt_ordner, exist_ok=True)
+        os.makedirs(neu_ordner, exist_ok=True)
+        os.environ.pop('SC_BP_HOME', None)
+        echte_alt, echte_dok = pf3.alter_app_ordner, pf3._dokumente
+        pf3.alter_app_ordner = lambda: alt_ordner
+        pf3._dokumente = lambda: neu_ordner
+        try:
+            with open(os.path.join(alt_ordner, 'bestand.json'), 'w',
+                      encoding='utf-8') as f:
+                _json.dump({'bauplaene': {'xl-1': {'name': 'XL-1'}}}, f)
+            with open(os.path.join(alt_ordner, 'katalog-cache.json'), 'w',
+                      encoding='utf-8') as f:
+                _json.dump({'x': 1}, f)
+
+            pruefe(pf3.umzug_noetig(), 'ein alter Ordner wird erkannt')
+            anzahl = pf3.umziehen()
+            pruefe(anzahl == 2, 'beide Dateien wandern mit')
+            pruefe(os.path.exists(os.path.join(neu_ordner, 'SC BP Watcher',
+                                               'Bauplaene', 'bestand.json')),
+                   'der Bestand landet unter „Bauplaene"')
+            pruefe(os.path.exists(os.path.join(neu_ordner, 'SC BP Watcher',
+                                               'Intern', 'katalog-cache.json')),
+                   'technischer Kleinkram landet unter „Intern"')
+            pruefe(os.path.exists(os.path.join(alt_ordner, 'bestand.json')),
+                   'der alte Ordner bleibt unangetastet liegen')
+            pruefe(not pf3.umzug_noetig(), 'ein zweiter Umzug ist nicht nötig')
+            pruefe(pf3.umziehen() == 0, 'und überschreibt nichts')
+
+            # ⚠ Die Ablage-Einstellung darf `app_ordner()` nicht in eine Schleife
+            # schicken. Ein scharfes Rekursionslimit macht das sofort sichtbar.
+            grenze = sys.getrecursionlimit()
+            sys.setrecursionlimit(120)
+            try:
+                pf3.app_datei('bestand.json')
+                pruefe(True, 'kein Kreisverkehr zwischen Ordner und Einstellungen')
+            except RecursionError:
+                pruefe(False, 'kein Kreisverkehr zwischen Ordner und Einstellungen')
+            finally:
+                sys.setrecursionlimit(grenze)
+        finally:
+            pf3.alter_app_ordner, pf3._dokumente = echte_alt, echte_dok
+            os.environ['SC_BP_HOME'] = os.path.join(basis, 'eigene')
+
+        # Der Klammer-Abgleich: (12 Schuss) gegen (12 cap) — derselbe Bauplan.
+        v2 = importieren.vorschau(
+            [{'name': 'Scalpel Sniper Rifle Magazine (12 Schuss)', 'zeit': None}],
+            bestandsmodul.leer(),
+            katalog_namen=['Scalpel Sniper Rifle Magazine (12 cap)'])
+        pruefe(v2['unbekannt'] == [],
+               'abweichender Klammer-Zusatz gilt nicht als unbekannt')
+
+        # ------------------------------------------------------------------ 16
+        # Neustart nach dem Update. Dieser Fehler ist dreimal aufgetreten und
+        # war jedes Mal schwer zu sehen, weil er nur in der verpackten Fassung
+        # unter Windows auftritt — hier wird deshalb die Entscheidung geprüft,
+        # nicht das Ergebnis.
+        print()
+        print('16. Neustart nach dem Update')
+        from scbp import aktualisierung as akt
+
+        gestartet = []
+
+        class _FalschesPopen(object):
+            def __init__(self, *a, **k):
+                gestartet.append(a[0] if a else None)
+
+        echtes_popen = subprocess.Popen
+        echte_verpackung = akt.verpackung
+        merker_vorher = akt._TAUSCH_LAEUFT[0]
+        try:
+            subprocess.Popen = _FalschesPopen
+            akt.verpackung = lambda: 'exe'
+
+            # Wartet ein Hilfsskript auf den Dateitausch, darf `neu_starten()`
+            # NICHT selbst starten: Auf der Platte liegt dann noch die ALTE
+            # `.exe`, und ein eigener Start fährt genau die wieder hoch. Sie
+            # hält danach den Temp-Ordner fest, der Tausch scheitert endgültig,
+            # und der Nutzer sieht die alte Fassung weiterlaufen.
+            akt._TAUSCH_LAEUFT[0] = True
+            akt.neu_starten()
+            pruefe(gestartet == [],
+                   'wartet ein Dateitausch, wird nichts selbst gestartet')
+
+            # Ohne wartenden Tausch (AppImage: schon getauscht) muss gestartet
+            # werden — sonst bliebe das Programm nach dem Update einfach zu.
+            akt._TAUSCH_LAEUFT[0] = False
+            akt.neu_starten()
+            pruefe(len(gestartet) == 1,
+                   'ohne wartenden Tausch startet die neue Fassung')
+        finally:
+            subprocess.Popen = echtes_popen
+            akt.verpackung = echte_verpackung
+            akt._TAUSCH_LAEUFT[0] = merker_vorher
+
+        # Den Spiel-Starter neben dem Spielordner finden. Feste Pfadlisten
+        # gehen genau dann schief, wenn jemand woanders installiert hat — und
+        # das ist der Normalfall, nicht die Ausnahme.
+        starter_basis = os.path.join(basis, 'starterprobe')
+        rsi = os.path.join(starter_basis, 'Program Files',
+                           'Roberts Space Industries')
+        spiel_pfad = os.path.join(rsi, 'StarCitizen', 'LIVE')
+        os.makedirs(spiel_pfad)
+        os.makedirs(os.path.join(rsi, 'RSI Launcher'))
+        launcher = os.path.join(rsi, 'RSI Launcher', 'RSI Launcher.exe')
+        open(launcher, 'w').close()
+
+        from scbp import pfade as pf_start
+        alt_windows = pf_start.WINDOWS
+        alt_ordner = pf_start.spiel_ordner
+        alt_einst = pf_start.einstellung
+        # ⚠ Die Registry-Suche muss ebenfalls stillgelegt werden. Sie geht an
+        # den umgebogenen Umgebungsvariablen vorbei und findet auf einem Rechner
+        # mit echtem Spiel den richtigen Launcher — der Test praeft sonst wieder
+        # den Rechner statt den Code.
+        alt_registry = pf_start._launcher_aus_registry
+        pf_start._launcher_aus_registry = lambda: None
+
+        # ⚠ Die Umgebungsvariablen MÜSSEN mit umgebogen werden. `spielstarter()`
+        # sucht nach dem Spielordner noch feste Orte unter `LOCALAPPDATA`,
+        # `PROGRAMFILES` und `PROGRAMW6432` ab — und auf einem Rechner, auf dem
+        # Star Citizen wirklich installiert ist, findet es dort den **echten**
+        # RSI Launcher. Die zweite Prüfung unten schlug deshalb bei der Autor
+        # unter Windows immer fehl, während sie auf Linux und Mac grün war: Der
+        # Test löschte seinen Schein-Launcher, und `spielstarter()` lieferte
+        # trotzdem einen Pfad — nur eben den vom richtigen Spiel.
+        #
+        # Ein Test, der vom Rechner abhängt, auf dem er läuft, prüft nichts.
+        alt_umgebung = {}
+        for schluessel in ('LOCALAPPDATA', 'PROGRAMFILES', 'PROGRAMW6432'):
+            alt_umgebung[schluessel] = os.environ.get(schluessel)
+            os.environ[schluessel] = starter_basis
+        try:
+            pf_start.WINDOWS = True
+            pf_start.spiel_ordner = lambda: spiel_pfad
+            pf_start.einstellung = lambda name: None
+            pruefe(pf_start.spielstarter() == launcher,
+                   'der Launcher wird neben dem Spielordner gefunden')
+
+            # Ohne Launcher darf KEIN Pfad zurückkommen — sonst erschiene ein
+            # Knopf, der nichts tut.
+            os.remove(launcher)
+            pruefe(pf_start.spielstarter() is None,
+                   'ohne Launcher gibt es keinen Knopf')
+        finally:
+            pf_start.WINDOWS = alt_windows
+            pf_start.spiel_ordner = alt_ordner
+            pf_start.einstellung = alt_einst
+            pf_start._launcher_aus_registry = alt_registry
+            for schluessel, wert in alt_umgebung.items():
+                if wert is None:
+                    os.environ.pop(schluessel, None)
+                else:
+                    os.environ[schluessel] = wert
+
+        # Jeder Ausgang beim Ablagesymbol muss im Startverlauf landen. Der
+        # Fehler war zweimal nicht zu finden, weil weder ein Fehler noch eine
+        # Spur im Bericht stand — geprüft wird hier deshalb, dass überhaupt
+        # gemeldet wird, nicht was dabei herauskommt (das geht nur unter
+        # Windows).
+        quelle_start = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
+                            encoding='utf-8').read()
+        block = quelle_start.split('def ablagesymbol_starten')[1].split('\n    def ')[0]
+        for erwartet, wofuer in (
+                ("fehler.spur('Ablagesymbol: entfällt", 'nicht Windows'),
+                ("fehler.spur('Ablagesymbol: abgeschaltet", 'abgeschaltet'),
+                ("fehler.spur('Ablagesymbol: %s'", 'angelegt oder nicht'),
+                ("fehler.spur('Ablagesymbol: Fehler", 'Ausnahme')):
+            pruefe(erwartet in block,
+                   'Ablagesymbol meldet den Fall „%s"' % wofuer)
+
+        symbol_quelle = open(os.path.join(WURZEL, 'scbp', 'ablagesymbol.py'),
+                             encoding='utf-8').read()
+        pruefe('except Exception:\n            bereit.set()' not in symbol_quelle,
+               'der Faden verschluckt Fehler nicht mehr stillschweigend')
+
+        # Der Notausgang darf nicht an Tk hängen: Feuert der `after`-Rückruf
+        # nicht, würde ein dort gestarteter Faden nie laufen — und der Prozess
+        # liefe weiter, während sein Temp-Ordner schon abgeräumt wird.
+        #
+        # ⚠ Geprüft wird **innerhalb** von `_abtreten()`. Früher lag der
+        # Notausgang direkt in `_fassung_holen`, und der Test schnitt die Quelle
+        # bei `def _abtreten` ab — damals der Name der dortigen *lokalen*
+        # Funktion. Seit `_abtreten()` eine eigene Funktion ist (beide
+        # Abtritts-Wege teilen sie sich), traf dieser Schnitt ins Leere.
+        quelle = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                      encoding='utf-8').read()
+        block = quelle.split('def _abtreten')[1].split('\ndef ')[0]
+        vor_rueckruf = block.split('fenster.root.after')[0]
+        pruefe('os._exit(0)' in vor_rueckruf,
+               'der Notausgang steht vor dem Tk-Rückruf, nicht darin')
+
+
+        # ---------------------------------------------------------------- 17
+        print()
+        print('17. Zweisprachigkeit: kein fester Text in der Oberfläche')
+        # ⚠ Warum das geprüft wird: Am 26.08.2026 stellte der Autor auf Englisch um
+        # und bekam ein englisches Hauptfenster mit einer **deutschen** Melde-
+        # Leiste. Die Übersetzungen dafür gab es längst — `ueberwache`,
+        # `mit_launcher`, `ohne_launcher`, `nachgelesen`, `vorlaeufig` —, nur
+        # benutzt hat sie niemand. Der Code setzte die deutschen Sätze weiter fest
+        # zusammen.
+        #
+        # Deshalb prüft das hier nicht „gibt es unbenutzte Schlüssel", sondern die
+        # eigentliche Ursache: **Steht sichtbarer Text fest im Code?**
+        import ast as _ast
+        import re as _re
+
+        _zeichen = _re.compile(r'^[\W\d_]+$', _re.UNICODE)   # ✕ ▾ ⏻ · ✓ – …
+
+        # Eigennamen bleiben in jeder Sprache gleich — die gehören nicht
+        # übersetzt, sondern stehen genau so da.
+        _namen = ('Xharig', 'Star Citizen', 'SC BP Watcher', 'GitHub',
+                  'Windows', 'Linux', 'Discord')
+
+        def _verdaechtig(wert):
+            """Ist das ein sichtbarer Satz statt eines Symbols?"""
+            if not isinstance(wert, str) or len(wert) < 4:
+                return False
+            if wert.strip() in _namen:
+                return False
+            if _zeichen.match(wert):        # reine Symbole sind keine Sprache
+                return False
+            return bool(_re.search(r'[A-Za-zÄÖÜäöüß]{3}', wert))
+
+        def _feste_texte(datei):
+            """Alle Stellen, die einem Element **wörtlich** Text mitgeben."""
+            quelle = open(datei, encoding="utf-8").read()
+            gefunden = []
+            for knoten in _ast.walk(_ast.parse(quelle)):
+                if not isinstance(knoten, _ast.Call):
+                    continue
+                # a) text='…' an einem Widget oder in .config()
+                for wort in knoten.keywords:
+                    if wort.arg != 'text':
+                        continue
+                    if (isinstance(wort.value, _ast.Constant)
+                            and _verdaechtig(wort.value.value)):
+                        gefunden.append((wort.value.lineno, wort.value.value))
+                # b) q.put(('status', '…')) und ('hinweis', '…')
+                for arg in knoten.args:
+                    if not isinstance(arg, _ast.Tuple) or len(arg.elts) != 2:
+                        continue
+                    erst, zweit = arg.elts
+                    if (isinstance(erst, _ast.Constant)
+                            and erst.value in ('status', 'hinweis')
+                            and isinstance(zweit, _ast.Constant)
+                            and _verdaechtig(zweit.value)):
+                        gefunden.append((zweit.lineno, zweit.value))
+            return gefunden
+
+        # ⚠ Zweiter Anlauf: Die erste Fassung dieser Prüfung sah nur
+        # `text='…'` direkt am Widget — und übersah dadurch
+        #     unten = f'{titel} — jetzt craftbar!' if titel else 'neu …'
+        # weil der Satz erst in eine Variable geht und später zusammengesetzt
+        # wird. Genau so lag der Fehler im Overlay. Deshalb prüfen die
+        # Oberflächen-Dateien zusätzlich **jedes** String-Literal auf deutsche
+        # Wörter, Docstrings ausgenommen.
+        _deutsch = _re.compile(
+            r'[äöüßÄÖÜ]|\b(?:jetzt|neu|nicht|kein[e]?|wird|wurde|von|aus|mit'
+            r'|noch|schon|hier|dein|alle)\b')
+
+        def _docstrings(baum):
+            raus = set()
+            for k in _ast.walk(baum):
+                if isinstance(k, (_ast.Module, _ast.FunctionDef,
+                                  _ast.AsyncFunctionDef, _ast.ClassDef)):
+                    kopf = k.body[0] if k.body else None
+                    if (isinstance(kopf, _ast.Expr)
+                            and isinstance(kopf.value, _ast.Constant)
+                            and isinstance(kopf.value.value, str)):
+                        raus.add(id(kopf.value))
+            return raus
+
+        def _deutsche_saetze(datei):
+            """Deutscher Satz irgendwo im Code — auch über eine Variable."""
+            quelle = open(datei, encoding='utf-8').read()
+            baum = _ast.parse(quelle)
+            weg = _docstrings(baum)
+            # Interne Protokolle (`fehler.merken`, `fehler.spur`) sind kein
+            # Oberflächentext. Über den Baum ausschließen, nicht über die
+            # Zeile: Ein Aufruf darf sich über mehrere Zeilen ziehen.
+            for _k in _ast.walk(baum):
+                if (isinstance(_k, _ast.Call)
+                        and getattr(_k.func, 'attr', '') in ('merken', 'spur')):
+                    for _teil in _ast.walk(_k):
+                        if isinstance(_teil, _ast.Constant):
+                            weg.add(id(_teil))
+                # Der `if __name__ == '__main__'`-Block ist der Aufruf von der
+                # Kommandozeile — den sieht kein Spieler, nur der Entwickler.
+                if (isinstance(_k, _ast.If) and isinstance(_k.test, _ast.Compare)
+                        and getattr(_k.test.left, 'id', '') == '__name__'):
+                    for _teil in _ast.walk(_k):
+                        if isinstance(_teil, _ast.Constant):
+                            weg.add(id(_teil))
+            gefunden = []
+            for k in _ast.walk(baum):
+                if not isinstance(k, _ast.Constant) or not isinstance(k.value, str):
+                    continue
+                if id(k) in weg:
+                    continue
+                wert = k.value.strip()
+                if len(wert) < 8 or not _deutsch.search(wert):
+                    continue
+                gefunden.append((k.lineno, wert))
+            return gefunden
+
+        _wurzelpfad = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        _zu_pruefen = [os.path.join(_wurzelpfad, 'sc_bp_watcher.py')]
+        for _name in sorted(os.listdir(os.path.join(_wurzelpfad, 'scbp'))):
+            if _name.endswith('.py') and _name not in ('sprache.py', 'fehler.py'):
+                _zu_pruefen.append(os.path.join(_wurzelpfad, 'scbp', _name))
+
+        _treffer = []
+        for _datei in _zu_pruefen:
+            for _zeilennr, _text in _feste_texte(_datei):
+                _treffer.append('%s:%d  %r' % (os.path.basename(_datei), _zeilennr,
+                                               _text[:45]))
+        if _treffer:
+            for _t in _treffer[:8]:
+                print('       ' + _t)
+        pruefe(not _treffer,
+               'kein fest eingebauter Anzeigetext (%d gefunden)' % len(_treffer))
+
+        # ⚠ ALLE Module, nicht nur die mit „Fenster" im Namen.
+        #
+        # Die erste Fassung prüfte eine Handauswahl von Oberflächen-Dateien —
+        # und ließ `logquelle.py` aus, weil das nach Hintergrund klingt. Genau
+        # von dort kam aber „Zwischen … hat Star Citizen Logs weggeräumt", und
+        # der Satz stand fest auf Deutsch im Overlay. Auch `pfade.py` gab „kein
+        # Starter gefunden" in die Statuszeile.
+        #
+        # Wer entscheidet, was „sichtbar" ist, irrt sich. Deshalb: alles
+        # prüfen, Ausnahmen einzeln benennen und begründen.
+        _AUSNAHMEN = {
+            # Suchwörter und Datenzuordnung — werden nie angezeigt
+            ('scbp/aktualisierung.py', 'geändert'),
+            ('scbp/aktualisierung.py', 'hinzugefügt'),
+            ('scbp/katalog.py', 'CDS-Rüstung'),
+            ('scbp/katalog.py', 'geschütz'),
+            # Datenfeld der Übersetzungsquellen, nirgends angezeigt (geprüft)
+            ('scbp/uebersetzung.py', 'Deutsche Übersetzung (rjcncpt)'),
+            ('scbp/uebersetzung.py', 'StarStrings (aufgeräumte englische Texte)'),
+        }
+        # Ganze Dateien, deren deutsche Texte begründet fest sind
+        _AUSNAHME_DATEIEN = {
+            # Was ins SPIEL geschrieben wird, folgt der Spielsprache — nicht
+            # der Sprache des Werkzeugs. Wer das deutsche Sprachpaket fährt,
+            # will deutsche Auftragstexte, auch wenn das Fenster englisch ist.
+            'scbp/injektion.py',
+            # `.desktop`-Dateien: Das Betriebssystem zeigt sie, nicht wir.
+            'scbp/autostart.py', 'scbp/verknuepfung.py',
+            # Kommentare in der einstellungen.json und eine Entwickler-Hilfe
+            # zum fehlenden Entpacker — beides kein Oberflächentext.
+            'scbp/pfade.py', 'scbp/spieltexte.py', 'scbp/phrasen.py',
+            # Erklärender Kopf in der patch-historie.json. Steht in der Datei,
+            # damit man sie im Repo ohne Quelltext versteht — nie im Fenster.
+            'scbp/patchhistorie.py',
+        }
+        _oberflaeche = ['sc_bp_watcher.py'] + [
+            'scbp/' + _n for _n in sorted(os.listdir(os.path.join(_wurzelpfad, 'scbp')))
+            if _n.endswith('.py') and _n not in ('sprache.py', 'fehler.py')
+            and ('scbp/' + _n) not in _AUSNAHME_DATEIEN]
+        _saetze = []
+        for _rel in _oberflaeche:
+            _voll = os.path.join(_wurzelpfad, _rel)
+            if not os.path.exists(_voll):
+                continue
+            for _nr, _satz in _deutsche_saetze(_voll):
+                if (_rel, _satz) in _AUSNAHMEN:
+                    continue
+                _saetze.append('%s:%d  %r' % (_rel, _nr, _satz[:44]))
+        for _s in _saetze[:14]:
+            print('       ' + _s)
+        pruefe(not _saetze,
+               'kein deutscher Satz fest in der Oberfläche (%d gefunden)'
+               % len(_saetze))
+
+        sys.path.insert(0, _wurzelpfad)
+        from scbp import sprache as _spr
+
+        # Der schärfste Test: jede Seite in **beiden** Sprachen wirklich
+        # bauen. `sprache.t()` gibt bei einem fehlenden Schlüssel dessen
+        # Namen zurück statt abzustürzen — sichtbar wird das erst, wenn die
+        # Seite vor einem steht. Genau so ließe sich ein zu viel gelöschter
+        # Eintrag sofort erkennen: Dann stünde `e_gespeichert` als
+        # Beschriftung da.
+        if not hat_anzeige():
+            uebersprungen('Seiten in beiden Sprachen bauen')
+        else:
+            import tkinter as _tk
+            from scbp import hauptfenster as _hf, seiten as _st
+            _schluesselartig = _re.compile(r'^[a-z][a-z0-9]*(_[a-z0-9]+){1,}$')
+
+            def _durchsuchen(widget, gefunden):
+                try:
+                    _text = widget.cget('text')
+                except Exception:
+                    _text = None
+                if isinstance(_text, str) and _schluesselartig.match(_text.strip()):
+                    gefunden.append(_text.strip())
+                for _kind in widget.winfo_children():
+                    _durchsuchen(_kind, gefunden)
+
+            _SEITEN = ('liste', 'fortschritt', 'allgemein', 'anzeige', 'pfade',
+                       'spieltexte', 'bestand', 'wasistneu', 'ueber')
+            _vorher = _spr.aktuelle()
+            _kaputt, _rohe = [], []
+            for _kuerzel in ('de', 'en'):
+                _spr.setzen(_kuerzel)
+                _f = _hf.Hauptfenster(version='0.0.0-test')
+                _f.root.geometry('900x600+3000+3000')       # aus dem Blick
+                for _seite in _SEITEN:
+                    _rahmen = _tk.Frame(_f.root)
+                    try:
+                        _st.bauen(_f, _seite, _rahmen)
+                        _f.root.update()
+                        _durchsuchen(_rahmen, _rohe)
+                    except Exception as _fehler:
+                        _kaputt.append('%s/%s: %s' % (_kuerzel, _seite,
+                                                      type(_fehler).__name__))
+                    _rahmen.destroy()
+                _f.root.destroy()
+            _spr.setzen(_vorher)
+            if _kaputt:
+                print('       ' + '; '.join(_kaputt[:4]))
+            pruefe(not _kaputt,
+                   'jede Seite baut auf Deutsch und Englisch (%d Fehler)'
+                   % len(_kaputt))
+            if _rohe:
+                print('       roh angezeigt: %s' % ', '.join(sorted(set(_rohe))[:6]))
+            pruefe(not _rohe,
+                   'kein Schlüsselname als Beschriftung (%d gefunden)'
+                   % len(set(_rohe)))
+
+        # Und die Gegenrichtung: Ein Schlüssel, den es nur auf Deutsch gibt, ist
+        # eine halbe Übersetzung — die wirkt schlechter als gar keine.
+        _halbe = [k for k, v in _spr.TEXTE.items()
+                  if not isinstance(v, tuple) or len(v) < 2 or not v[1]]
+        if _halbe:
+            print('       ohne englische Fassung: %s' % ', '.join(sorted(_halbe)[:6]))
+        pruefe(not _halbe,
+               'jeder Text hat eine englische Fassung (%d ohne)' % len(_halbe))
+
+        # ------------------------------------------------------------------ 18
+        # Meldungen ziehen beim Sprachwechsel mit.
+        #
+        # ⚠ Abschnitt 17 prüft, dass kein Text **fest** in der Oberfläche
+        # steht. Das reicht nicht: Ein Text kann sauber durch `t()` laufen und
+        # trotzdem falsch stehen bleiben — nämlich dann, wenn er einmal fertig
+        # zusammengesetzt in ein Label geschrieben wurde. Wer danach die
+        # Sprache wechselt, hat ein englisches Fenster mit einer deutschen
+        # Zeile darin. Genau so gefunden am 26.08.2026 bei „Keine
+        # Log-Sicherungen gefunden".
+        #
+        # Der Weg dagegen: `sprache.Satz` trägt Schlüssel und Werte mit, das
+        # Label merkt sich den Träger, `_neu_beschriften()` wertet ihn neu aus.
+        print()
+        print('18. Meldungen ziehen beim Sprachwechsel mit')
+        from scbp import sprache as spr18, logquelle as lq18
+
+        # a) Die Quelle liefert einen Träger, keinen fertigen Satz.
+        grund = lq18._luecke_pruefen(0.0, [__file__])['grund']
+        pruefe(spr18.auffrischbar(grund),
+               'die Lücken-Meldung kommt als Träger, nicht als fertiger Text')
+
+        spr18.setzen('de'); deutsch = str(grund)
+        spr18.setzen('en'); englisch = str(grund)
+        spr18.setzen('de')
+        pruefe(deutsch != englisch and 'First run' in englisch,
+               'derselbe Träger spricht beide Sprachen')
+        # Das Datum steckt mit drin: im Deutschen 22.08.2026, im Englischen
+        # 2026-08-22. Ein fertig formatiertes Datum bliebe deutsch.
+        pruefe(englisch.count('-') >= 2,
+               'auch das Datum wechselt seine Schreibweise')
+
+        # b) Am echten Fenster — nicht nur an der Datenschicht.
+        if ANZEIGE:
+            import tkinter as _tk18
+            spr18.setzen('de')
+            _wz = _tk18.Tk(); _wz.withdraw()
+            ov18 = None
+            try:
+                import sc_bp_watcher as _w18
+                ov18 = _w18.Overlay(wurzel=_wz)
+                ov18.root.withdraw()
+                ov18.add_hinweis(grund)
+                ov18._status_setzen(spr18.Satz('katalog_holt'))
+                ov18.root.update()
+
+                def _zeilen():
+                    raus = []
+                    for zeile in ov18.list.pack_slaves():
+                        for teil in zeile.winfo_children():
+                            if getattr(teil, '_quelle', None) is not None:
+                                raus.append(teil.cget('text'))
+                    return raus
+
+                vorher_h = _zeilen()
+                vorher_s = ov18.status.cget('text')
+                spr18.setzen('en')
+                ov18.root.update()
+                nachher_h = _zeilen()
+                nachher_s = ov18.status.cget('text')
+
+                pruefe(vorher_h and nachher_h and vorher_h != nachher_h
+                       and 'First run' in nachher_h[0],
+                       'eine stehende Hinweiszeile wird mit übersetzt')
+                pruefe(vorher_s != nachher_s and 'Fetching' in nachher_s,
+                       'die Statuszeile wird mit übersetzt')
+            finally:
+                spr18.setzen('de')
+                if ov18 is not None:
+                    try:
+                        ov18.root.destroy()
+                    except Exception:
+                        pass
+                else:
+                    _wz.destroy()
+        else:
+            uebersprungen('Sprachwechsel am Overlay')
+
+        # c) Rückfallschutz. Beides sind Fehler, die sich beim nächsten Umbau
+        #    leicht wieder einschleichen — und die man am laufenden Programm
+        #    erst merkt, wenn jemand die Sprache umstellt.
+        import re as _re18
+        _quelle18 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
+                         encoding='utf-8').read()
+        _alt_puts = _re18.findall(
+            r"q\.put\(\('(?:status|hinweis)', sprache\.t\(", _quelle18)
+        pruefe(not _alt_puts,
+               'keine Meldung geht als fertiger Text in die Warteschlange '
+               '(%d gefunden)' % len(_alt_puts))
+
+        # Jeder Schreibzugriff auf die Statuszeile muss durch `_status_setzen`
+        # gehen, sonst merkt sich niemand die Quelle — und beim nächsten
+        # Sprachwechsel springt eine **ältere** Meldung zurück auf den Schirm.
+        _direkt = [n for n, z in enumerate(_quelle18.splitlines(), 1)
+                   if 'self.status.config(' in z]
+        # Erlaubt: die Zeile in `_status_setzen` selbst und die beiden in
+        # `_neu_beschriften`, die genau dort bewusst neu setzen.
+        pruefe(len(_direkt) <= 3,
+               'die Statuszeile wird nicht an der Merkstelle vorbei gesetzt '
+               '(%d Direktzugriffe)' % len(_direkt))
+
+        # ------------------------------------------------------------------
+        # ⚠ Am 27.08.2026 stand im Auswahlfeld „4.10.0 (21)" und in der Liste
+        # darunter „Nichts gefunden". Grund: Das Feld liest die Patch-Historie
+        # direkt, der Filter prüft den Stempel `seit` im Katalog — und gestempelt
+        # wurde nur beim Neubau. Wer seinen Katalog vor rc55 geholt hat, wartet
+        # sonst bis zum nächsten Patch, und der wäre obendrein stumm geblieben.
+        print()
+        print('19. Der Katalog holt fehlende Patch-Stempel nach')
+        from scbp import katalog as kat19, patchhistorie as ph19
+
+        os.environ['SC_BP_HOME'] = os.path.join(basis, 'stempel')
+        os.makedirs(os.environ['SC_BP_HOME'], exist_ok=True)
+        _kat19 = os.path.join(os.environ['SC_BP_HOME'], 'katalog-cache.json')
+        _hist19 = {'4.9.9-live.1': {'datum': '2026-01-01',
+                                    'neu': ['Alter Bauplan']},
+                   '4.10.0-live.2': {'datum': '2026-08-26',
+                                     'neu': ['Neuer Bauplan']}}
+        ph19._schreib(os.path.join(os.environ['SC_BP_HOME'],
+                           'patch-historie.json'), _hist19)
+
+        def _katalog_schreiben(version, **zusatz):
+            eintraege = {'alter bauplan': {'n': 'Alter Bauplan'},
+                         'neuer bauplan': {'n': 'Neuer Bauplan'}}
+            eintraege.update(zusatz)
+            with open(_kat19, 'w', encoding='utf-8') as f:
+                json.dump({'version': version, 'geholt': '',
+                           'bauplaene': eintraege, 'missionen': {}}, f)
+
+        # a) Ein Katalog ohne jeden Stempel — wie bei jedem Bestandsnutzer.
+        _katalog_schreiben('4.10.0-live.2')
+        pruefe(kat19.stempel_nachziehen() == 2,
+               'beide fehlenden Stempel werden nachgetragen')
+
+        _d19 = kat19.laden()
+        pruefe(_d19['bauplaene']['neuer bauplan'].get('seit') == '4.10.0-live.2',
+               'der Neuzugang trägt die Version, die ihn gebracht hat')
+        pruefe(kat19.neue(_d19) == {'neuer bauplan'},
+               '„neu im Spiel" zeigt genau den einen Zugang')
+
+        # b) Zweiter Start: nichts zu tun. Sonst schriebe das Werkzeug bei
+        #    jedem Start eine Megabyte-Datei neu, ohne dass sich etwas ändert.
+        pruefe(kat19.stempel_nachziehen() == 0,
+               'ein zweiter Start schreibt nicht noch einmal')
+
+        # c) Ohne Katalog darf nichts passieren und nichts fliegen.
+        os.remove(_kat19)
+        pruefe(kat19.stempel_nachziehen() == 0,
+               'ohne Katalog bleibt es ruhig')
+
+        # d) ⚠ Der teurere Fehler: Fehlt die Vergleichsgrundlage, hielte
+        #    `erzeugen()` jeden Bauplan für „schon immer da" und der nächste
+        #    Patch meldete NULL Zugänge. Der vorhandene Katalog ist die
+        #    richtige Grundlage — was darin steht, war vorher im Spiel.
+        _katalog_schreiben('4.10.0-live.2')
+        pruefe(not ph19.gesehen(), 'Ausgangslage: keine Vergleichsgrundlage')
+        pruefe(kat19._vergleichsgrundlage() == {'alter bauplan', 'neuer bauplan'},
+               'ersatzweise gilt der vorhandene Katalog als Grundlage')
+        pruefe('quantum drive' not in kat19._vergleichsgrundlage(),
+               'was der Katalog nicht kennt, bleibt ein Zugang')
+
+        # Ist die Grundlage vorhanden, gilt sie — und nicht der Katalog.
+        ph19.gesehen_setzen({'alter bauplan'})
+        pruefe(kat19._vergleichsgrundlage() == {'alter bauplan'},
+               'die eigene Grundlage schlaegt den Katalog')
+
+        # ⚠ Beim allerersten Katalogbau gibt es beides nicht — dann MUSS die
+        # Grundlage leer bleiben, sonst staenden alle 738 als „neu" da.
+        os.remove(kat19.pfade.app_datei('bauplaene-gesehen.json'))
+        os.remove(_kat19)
+        pruefe(kat19._vergleichsgrundlage() == set(),
+               'beim allerersten Bau bleibt sie leer')
+
+        # e) ⚠ Und wird das Nachziehen ueberhaupt angestossen? Die Funktion
+        #    allein nuetzt nichts, wenn sie niemand ruft — und sie muss VOR dem
+        #    Netz drankommen, sonst bleibt der Stempel aus, sobald die Leitung
+        #    weg ist. Deshalb hier ohne Netz: Die Versionsabfrage wird
+        #    stillgelegt, gestempelt werden muss trotzdem.
+        _katalog_schreiben('4.10.0-live.2')
+        _echte_version = kat19.aktuelle_version
+        kat19.aktuelle_version = lambda: ''
+        try:
+            kat19.aktualisieren()
+        finally:
+            kat19.aktuelle_version = _echte_version
+        pruefe(kat19.laden()['bauplaene']['neuer bauplan'].get('seit')
+               == '4.10.0-live.2',
+               'auch ohne Netz stempelt der Start nach')
 
     finally:
         shutil.rmtree(basis, ignore_errors=True)

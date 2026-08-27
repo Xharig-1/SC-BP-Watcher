@@ -8,50 +8,622 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
-> Collecting until the next release day (Wednesdays).
+> Collects until the next release day (Saturdays).
 
-## v2.1.0 - 2026-08-26
+## v3.0.0-rc62 - 2026-08-27
+
+> **The patch filter shows again what the patch brought.**
+
+### Fixed
+
+- **The patch filter found nothing and "new in game" stayed empty.** Anyone who
+  used the Watcher before rc55 has a catalogue without origin stamps — stamping
+  only happened on a rebuild, and a rebuild only happens on a new game version.
+  So the dropdown showed "4.10.0 (21)" (it reads the history directly) while the
+  list below said "Nothing found". The stamps are now filled in at startup, with
+  no rebuild and no network needed. Found by der Autor.
+- **The next patch would have been silent.** The comparison baseline
+  (`bauplaene-gesehen.json`) also arrived only with rc55. Without it the rule
+  "very first catalogue build — nothing is new" kicked in, and the next patch
+  would have reported **zero** additions. If the file is missing, the existing
+  catalogue is now used as the baseline: whatever is in it was in the game
+  before.
+
+### Notes
+
+- **The self-test now covers this case** (section 19, eleven new checks). It paid
+  off immediately: the catch-up ran *behind* the `SC_BP_NO_NET` network switch at
+  first — anyone starting without a network would never have got a stamp, even
+  though both history and catalogue sit on disk.
+
+## v3.0.0-rc61 - 2026-08-27
+
+> **The Discord announcement now says what it is about.**
 
 ### Added
 
-- **Starter blueprints are recognised and added.** Every player has eight from the
-  start — P4-AR Rifle and S-38 Pistol with their magazines, plus the Field Recon Suit
-  (four pieces). Until now they appeared **nowhere**: not in the catalogue, not in your
-  collection.
-  - The reason: the catalogue is built from mission reward pools, and a starter
-    blueprint is in none of them — you never receive it as a reward. Progress therefore
-    showed less than you actually own.
-  - Detected via the `isDefault` field in `crafting_blueprints-<version>.json` — **not**
-    in `crafting_items`, which has no such field.
-  - The catalogue grows from **714 to 722**, your collection by eight entries.
-  - Marked with ◆ in the list, so nobody hunts for a contract that does not exist. If
-    you ticked them off yourself, your entry stands (`hand` outranks `start`).
-- **Export your collection to a file** (`scbp/export.py`) — **three formats**, two buttons:
-  - **"To the export folder"** writes all three at once into a fixed folder and opens it.
-    If you upload regularly, you should not have to click through a save dialog three times.
-  - **"Save file …"** remains for one-offs, with a free choice of destination.
-  - **KRT Profit Basetool** (`productName` + `receivedAt`) · **scmdb.net**
-    (`exportSchemaVersion`, `productName` + `ts` as epoch seconds — read off the
-    `--export` of their own log watcher v0.1.9) · **full backup** with type, class,
-    size, grade, manufacturer and source.
-  - A timestamp that cannot be converted cleanly is **omitted** rather than invented —
-    the field is optional, and a wrong time would be worse than none.
-  - ⚠️ **The timestamp is not always the real drop time.** If your collection came from
-    the launcher file, every entry carries the time of that import — when a blueprint
-    originally dropped is not recorded there. Entries read from logs have the real one.
-  - **Nothing is uploaded.** The export writes files; the rest is up to you.
-- **Collapse the overlay** (▾ in the title bar). It shrinks to just the title bar and
-  frees up the view — meant for anyone on a **single** screen, where the window
-  inevitably sits on top of the game and opacity alone is not enough.
-  - The height **before** collapsing is remembered rather than a fixed number: if you
-    dragged the window to 900 pixels, that is what you get back.
-  - The state survives a restart.
-  - Meant for anyone with no room for a second window next to the game: a strip the
-    height of a title bar, with no extra package.
-- **Blueprints with no known source are marked as such** (`?` instead of `ⓘ`). 59 of the
-  714 cannot be obtained from any contract — mostly event rewards ("Purgatory Camo",
-  "SecondWind"). Without a marker the row looked like someone had forgotten to fill in
-  the source.
+- **The Discord release announcement is now a readable card.** Instead of
+  `[Repo] New release published: v3.0.0-rc60` it shows the changelog section for
+  **this** build — the same text the tool shows under "What's new". Test builds
+  in gold with a "less thoroughly tested" note, finished ones in Xharig green,
+  plus the program icon. Prompted by der Autor after comparing with the
+  StarStrings channel. Without a stored key nothing happens and the build stays
+  green — a chat message must never turn a finished release red.
+
+## v3.0.0-rc60 - 2026-08-27
+
+> **What the diagnostics report revealed.** An invisible cross, eight errors per
+> page switch — and a new check that finds both in advance from now on.
+
+### Fixed
+
+- **Eight log entries on every page switch.** `invalid command name …!label` —
+  callbacks that adjust the line wrapping ran after their label had been
+  destroyed. Nothing was visible: the hook in `fehler.py` caught them, they only
+  filled up the report and buried what actually mattered. The same trap sat in
+  the button row and in the drawn-border entry field; all three now check whether
+  their widget still exists. Measured: 39 page switches, **0** errors. Found by
+  der Autor in the diagnostics report.
+
+- **The cross that closes the source box was invisible.** In the blueprint list
+  it left an empty gap: the `schliessen` symbol only existed at button size while
+  it was used at row size. `zeichen.bild()` silently returns `None` for a missing
+  file — deliberately, so a missing symbol never halts the program, which is
+  exactly what hid the bug. `tools/oberflaeche_pruefen.py` now checks for it.
+  Reported by der Autor.
+
+## v3.0.0-rc59 - 2026-08-27
+
+> **The readme is accurate again.** All screenshots redone, a separate set
+> per language, and every symbol in them comes from the program's own set.
+
+### Added
+
+- **The coloured dots were still emoji in the running text.** The symbol key
+  already showed the real images while the description below it kept using
+  `🟢 🟡 🔵 ⭐` — two different renderings of the same symbol on one page.
+  Reported by der Autor.
+
+- **The English readme now shows the English interface.** Until now it presented
+  German screenshots — with eleven images, and a tool whose Linux users mostly
+  run the English client, that is not a detail. `tools/sprachen_pruefen.py` now
+  checks for it: it only counted sections and never looked at images. Reported by
+  der Autor.
+
+- **Every screenshot in the readme is new.** The old ones were from v3.0.0-rc11
+  and showed not just the replaced symbols but a build without the server status
+  tab and without the patch filter. Two pages got their first screenshot at all:
+  **Server status** and **Thanks & Licenses**.
+
+- **The feature table in the readme used emoji instead of the real symbols.**
+  `⚡ 📋 🧭 ⭐ 🔔 …` have nothing to do with the program's icon set and look
+  different on every system. All sixteen now come from the same set as the
+  interface. Reported by der Autor.
+
+- **A screenshot exposed the author's home path.** `screenshot-pfade.png` had
+  been in the repo since v3.0.0-rc11, showing `/home/<user>/` three times — the
+  very thing `pfade.kuerzen()` strips from error reports. Removed; the folder
+  page gets no screenshot at all, since it necessarily shows paths. The server
+  status tab took its place. Found by der Autor.
+
+### Fixed
+
+- **The filter buttons on "What's new" stayed German in English.** "Alles / Neu /
+  Verbessert / Behoben" were hard-coded instead of living in `sprache.py` — right
+  next to a properly translated changelog. Spotted on a screenshot of the English
+  interface. Found by der Autor.
+
+## v3.0.0-rc58 - 2026-08-27
+
+> **What belongs to whom — in one place.** A new "Thanks & Licenses" tab that
+> brings the licences and the people together. Plus names and symbols that
+> finally match what they do.
+
+### Added
+
+- **The "Mission text" tab is now "In-game text".** The old name did not say
+  **where** those texts appear. Prompted by der Autor.
+- **The program icon now sits next to the version on "Update & About".** The page
+  had no image at all after the author block moved to "Thanks & Licenses".
+  Reported by der Autor.
+
+- **The readme showed symbols the tool no longer has.** The button legend in
+  both readmes listed `☰`, `ⓘ`, `⟳`, `⏻` and `🗑` — two of them are long gone,
+  the others look different now. It now shows the **actual image files** from
+  `assets/symbole/`, so it can no longer go stale: swapping a symbol updates the
+  readme picture by itself. Same for the message symbol key. Found by der Autor.
+- **"Who built this" suddenly appeared twice.** The block naming the author,
+  scmdb, the SC Deutsch Launcher and StarStrings sat on "Update & About" — and
+  the new "Thanks & Licenses" page listed the same projects again. It now lives
+  only on "Thanks & Licenses", with the author **at the top**: a page listing
+  other people's work has to name its own first. Reported by der Autor.
+
+- **The donation link was nowhere to be seen on GitHub.** The "Buy me a coffee"
+  button has been in the tool for a long time — but the project page itself had
+  nothing: no sponsor button, no mention in the readme. Anyone who had not
+  installed the tool yet could not find it at all. Both are there now. Found by
+  der Autor.
+
+- **New "Thanks & Licenses" tab** under *Info*. Until now the program showed
+  **no licence information at all** — neither its own (GPL-3.0) nor that of the
+  bundled symbols, and third-party projects were only mentioned in passing where
+  they happened to be used. There is now one place stating what belongs to whom:
+  the program itself, the Lucide symbols, the scmdb data, StarStrings and the SC
+  Deutsch Launcher — each with its licence and a clickable link. Plus thanks to
+  the people whose feedback turned into something. Suggested by der Autor.
+
+## v3.0.0-rc57 - 2026-08-27
+
+> **One icon set instead of fourteen glyphs.** The symbols in the notification
+> bar had different sizes, mixed styles, and looked different on every operating
+> system. Replaced with rendered images from a single, consistently drawn set.
+
+### Changed
+
+- **All symbols are the same size now — and come from one set.** The glyphs in
+  the notification bar had different sizes, the bell being the largest. Three
+  causes with the same root: *the font decided, not the program.* A glyph fills
+  only 50–70 % of its box, each one differently; `🗑` and `▶` are solid shapes
+  while `⚙ ⟳ ✕` are thin strokes; and every operating system picks a different
+  fallback font. Replaced with rendered images from the **Lucide** set — all
+  drawn on a 24×24 grid with the same stroke width. Suggested by der Autor.
+- **The interface now looks identical on Windows, Linux and macOS.** It did not
+  before: Windows used `Segoe UI Symbol`, other systems something else. Anyone
+  developing on a Mac saw different glyphs than their users on Windows.
+- **The coloured dots in front of blueprints are no longer emoji.** `🟢 🟡 🔵 ⭐`
+  live outside the basic plane; Windows rendered them through the colour emoji
+  font as coloured blocks that **ignored** the configured colour — in the very
+  place you look at most often.
+- **Launching Star Citizen now shows a rocket instead of a play arrow.** A `▶`
+  means "play video" everywhere, not "start a program". Reported by der Autor.
+- **Clearing messages now shows an eraser instead of a bin.** The button deletes
+  nothing — it only tidies the display, the blueprints stay. A bin promises
+  destruction and puts people off clicking it. Prompted by der Autor.
+- **"Setup" is now "Run setup".** A verb says something is about to happen; the
+  noun alone sounded like a place to look things up. Suggested by der Autor.
+- The height of the notification bar now grows with the configured font size. It
+  was fixed at 26 pixels, which made symbols stick out at "large".
+
+### Removed
+
+- **The autostart switch is gone from the notification bar.** A power symbol
+  means "turn the device off" everywhere, and it sat right next to the cross
+  that really does close the program — two buttons that both looked like "off".
+  The setting is unchanged under "General".
+- **The setup assistant button is gone from the notification bar.** It remains
+  available in the main window, top right. der Autor: "the settings are enough,
+  that is where people go anyway when they notice something is stuck."
+
+### Fixed
+
+- **A help text pointed at a glyph that no longer existed.** "Use ☰ to open the
+  blueprint list at any time" was still in the setup assistant, even though `☰`
+  had been replaced by the clipboard back in v3.0.0-rc55. All texts now name the
+  symbols in words instead of depicting them.
+
+### Thanks
+
+- **der Autor** — for prompting the whole change ("they should all be the same
+  size, but they are not, and the bell is even the largest") and for the notes
+  on the rocket, the eraser and "Run setup".
+
+## v3.0.0 - 2026-08-29
+
+> **One window for everything.** The blueprint list and the settings used to live in
+> two separate windows, and you had to know which one held what. They are now together —
+> tabs on the left, a visible folder for your files, and an installer instead of
+> dragging a file somewhere by hand.
+
+### The short version
+
+- **The list shows what the patch brought into the game.** Next to "watching"
+  there is now **🔵 new in game**. The catalogue stamps every blueprint with the
+  game version it first appeared in; the filter shows the current patch. When the
+  next one lands, the new ones move in and the old ones drop out — but the stamp
+  stays, so you can still tell which patch a blueprint came with. A **patch
+  dropdown** next to the other filters lets you look up any earlier patch, and it
+  extends itself as patches arrive. 4.10.0 added 21.
+- **A patch history of its own**, so that number is actually right. Comparison
+  now runs against **every blueprint ever seen**, not against last week's
+  catalogue. The first attempt reported 74 additions, 53 of which had been in
+  the game for ages — the data source simply had not listed them for a while.
+  And it could not be checked afterwards: scmdb only keeps the current game
+  version, and the 4.9.0 data was already gone the same day. So the tool now
+  records what each patch brought (`daten/patch-historie.json`, readable in the
+  repo) — additions only, never the whole catalogue.
+- **An installer for Windows** — download, run, done. No more moving files around.
+- **One window instead of two**, with tabs on the left. Plus a tray icon to bring
+  it back whenever you need it.
+- **The overlay can step aside** and only appears when something is found — a
+  narrow green strip stays at the edge, and the mouse brings it back.
+- **Self-update now works on Linux too.** It used to fail there **every single
+  time**; anyone on the AppImage had to fetch each version by hand.
+- **Star Citizen can be launched from the tool**, and a diagnostic report collects
+  everything a bug report needs at the press of a button — no names, no paths.
+
+### Upgrading from v2.0.0
+
+- **Your blueprint collection moves along by itself.** It used to sit hidden in
+  `%APPDATA%`, now it lives visibly in `Documents\SC BP Watcher`. On the first
+  start it is **copied**, not moved — the old folder stays untouched in case
+  something is missing after all.
+- **For this one update, use the setup rather than the button in the program.**
+  The button works, but it still runs v2.0.0's update path — and on Windows
+  that leaves a console window sitting there until you quit the program. A bug
+  in the update path cannot fix itself; from v3.0.0 on it is sorted and the
+  button is enough.
+- **If you put the `.exe` somewhere by hand, delete it after installing.** The
+  setup places the program in `%LOCALAPPDATA%\Programs\SC BP Watcher`. The old
+  file would otherwise stay behind, and one day you would start the old version
+  by accident.
+- **On Linux there is nothing to do** — the AppImage replaces itself.
+
+### Added
+
+- **A "Server status" tab of its own.** Is Star Citizen up? If you cannot get
+  into the game, you look for the fault on your own machine first — this
+  answers that beforehand. It shows what CIG reports on its status page: the
+  state of all three systems, plus the incidents of the last two months in full,
+  update lines included. The layout follows the status page, and the states stay
+  **in CIG's own wording** (`operational`, `maintenance`) — translating them
+  would be a statement RSI never made. While the tab is open it checks once a
+  minute; that costs almost nothing because it asks with `ETag` and an unchanged
+  page is answered without content. The source is linked below it.
+  ⚠️ These entries are **maintained by hand, not measured** — the page says so
+  too, so nobody mistakes it for a measurement.
+- **A button for „just give me the latest".** Until now you first had to
+  understand what a channel is and pick the right one of the two boxes — anyone
+  choosing the wrong one was offered nothing at all. There is now a full-width
+  button above them that immediately fetches whatever is available, including a
+  test build. It changes nothing about the setting below. Suggested by der Autor
+  after Morkhan got stuck at exactly this point.
+
+- **Star Citizen can be launched from the tool.** The „In-game details" page
+  has a button that starts the game the way you already do: the RSI Launcher on
+  Windows, `lug-helper` on Linux. If neither is found the button does not appear
+  at all — anyone using a different route (Lutris, Heroic) sets `spielstarter`
+  in the settings file. Suggested by Morkhan.
+
+- **The mouse brings the overlay back.** In pop-up mode just move to where it sits — it
+  reappears by itself and stays as long as the pointer is on it. Previously you had to
+  restart the program for that, which no other overlay asks of you.
+
+- **Restart right after an update.** It used to say „the new version runs on next start" —
+  you had to quit and start it yourself. The fetch button now turns into **„⟳ Restart now"**
+  once the download is done. The single-instance guard is closed first, otherwise the new
+  copy would think it is the second one and quit immediately.
+
+- **Start trace in the problem report.** A crash ends the program instantly — no report gets
+  written, and all that remains is „it crashes". Every startup step is now written straight
+  to disk; the last line in the report shows how far it got.
+
+- **Get a release straight from the window.** Under each of the two cards („Stable
+  releases only" / „Test builds too") there is a full-width button that downloads and
+  installs the latest release of that channel — including going back from a test build to
+  the last stable one.
+
+- **Application menu entry (Linux).** The wizard offers it at the end, the settings any
+  time. On Windows the installer handles this — on Linux the AppImage sat in the downloads
+  folder and appeared in no menu. You can also put a keyboard shortcut on the entry to
+  bring the overlay back.
+- **Notification area icon (Windows).** Left click brings the window back, right click
+  opens a small menu. The switch for it was already in the settings; the icon itself never
+  existed.
+
+- **The overlay can hold back.** Now selectable: permanently visible as before, or only
+  popping up briefly when a blueprint actually arrives. You bring it back by starting the
+  program again — you can put a system keyboard shortcut on the shortcut. Suggested by
+  Haldjas (pr0): „when I get into the overlay with my mouse during combat, that
+  will be unpleasant."
+- **Mouse clicks can be passed through to the game.** The overlay stays visible but no
+  longer catches clicks. On Windows via `WS_EX_TRANSPARENT`, on Linux via the XShape
+  extension; under native Wayland it is not possible, and the setting says so instead of
+  showing a switch that does nothing.
+- **Starting the program a second time no longer opens a second copy** — it brings the
+  running one to the front.
+
+- **One window with tabs.** Blueprints on top, settings below, and everything only
+  advanced users need collapsed at the bottom. The overlay stays as small as before; this
+  window is what opens behind it.
+- **An installer for Windows.** Start menu entry, optional desktop icon, optional
+  autostart — and a proper uninstall. If you would rather not install anything, the plain
+  `.exe` is still in the release.
+- **Your files are now visible** under `Documents\SC BP Watcher`, split into blueprints,
+  exports, settings and diagnostics. They used to sit hidden in the system — nobody looks
+  there for their blueprint inventory. On first start they are **copied**, the old folder
+  stays as a way back.
+- **Import an existing inventory** — from the KRT Profit Basetool, from scmdb.net, from
+  the launcher file or from your own backup. The format is recognised by its content, you
+  just pick a file. Merged, never replaced.
+- **Report a problem with one click.** "Report a problem" opens a pre-filled form; all
+  you add is what happened. The report contains no names and no paths with your user name.
+- **Test versions on request.** If you want to help checking, turn them on under *About*
+  and get new versions before everyone else — through the same update notice.
+- **Text size in four steps**, affecting text, icons and buttons alike.
+- **Where blueprints without a contract come from.** 55 blueprints are not handed out by
+  any regular contract — they come from named pools such as XenoThreat, RDC-Boss or
+  RedWind. Instead of a question mark the source is shown, and you can filter by it.
+- **What's new** as its own tab, split into new, improved and fixed.
+- **Starter blueprints** are detected and entered — the eight everyone has from the
+  start, marked with ◆.
+- **Export your inventory** in three formats: KRT Profit Basetool, scmdb.net and a full
+  backup.
+
+### Changed
+
+- **"Paths" moved to the advanced section.** The game folder and the launcher
+  are found automatically; anyone who does need to step in is guided by the
+  setup assistant, which explains what the page only shows as fields. A tab
+  almost nobody needs was just in the way at the top.
+
+- **Launching Star Citizen now sits at the bottom left**, in the accent green
+  above "Advanced". The button used to live on the "Mission text" page — where
+  blueprint wording is handled — and after that only in the overlay, so only
+  while that was visible. Now it is there on **every** page.
+
+- **A Discord button** below it, deliberately quieter: launching the game is what
+  you keep this window open for, the Discord link is an offer. Two equally loud
+  buttons cancel each other out.
+
+- **"Check now" is now "Check for updates".** The old label never said what it
+  checked for. "Update" would have been wrong — the button only looks, it
+  fetches nothing.
+
+- **„No release known yet" sounded like an error.** The button did not say what
+  to do — it now reads „Press ‚Check now' above first". And the „Finished
+  versions only" box is marked „recommended", so nobody has to guess what to
+  pick. Both came up during Morkhan's test.
+
+- **The tab is now called „Update & About".** Nobody looking for an update finds
+  it under „About" — not even the author looked there.
+
+- **The „launch Star Citizen" button sat where nobody would look for it.** It
+  was on the „In-game details" page, which is about mission text — even the
+  author could not find it again. It now sits as a green „▶" in the overlay's
+  top bar with the other icons: anyone who wants to start the game does not have
+  the main window open anyway. Hovering it explains what the click does.
+
+- **You are asked before a translation is installed.** „German" and
+  „StarStrings" replace the game’s text file completely — after that the whole
+  game is in that language, not just the blueprint details. That was documented
+  nowhere; now the help text says so, and a prompt appears before the first
+  install. Confirmed once, it does not ask again. „Original" does not ask,
+  because it does not change the language.
+
+- **In pop-up mode the overlay leaves a narrow green strip behind.** Hover it and the
+  overlay is back. The first attempt polled the mouse position — which cannot work under
+  Wayland: measured, Tk reported the same coordinates twelve times in a row while the mouse
+  moved across the screen. An application only learns the pointer position there while it is
+  over one of **its own** windows. The strip is such a window — and it is more honest than
+  an invisible magic zone: you can see where the overlay is waiting.
+
+- **The problem report says which version an error came from** — and marks those from an
+  older one. The store keeps the last ten across restarts; after an update it listed errors
+  that had long been fixed, making the report look like nothing worked.
+
+- **Up to twelve sources per blueprint** instead of three. Measured: more than half of
+  all blueprints had sources cut off before. The easiest route is still shown first, the
+  rest unfolds.
+- **The source details appear on click** and can be closed again — in a small window they
+  used to eat a third of the list.
+- **Filter by type, class, size, grade and source**, on top of search and the
+  "watched / owned / still missing" lists.
+- **Collapse the overlay** (▾): it folds into its title bar.
+- **No more save button** — changes take effect right away.
+
+### Fixed
+
+- **A collapsed overlay could not be opened again.** The button toggled, but
+  nothing happened on screen — the tool was shut and stayed shut. Cause: on
+  collapsing, the current window height was stored as the "open" height. Once
+  the stored state and the actual geometry drifted apart, the next collapse
+  wrote the **title bar height** as the open height; from then on the window
+  "expanded" to its own size. The height is now only remembered while the window
+  really is open, and expanding enforces a minimum height.
+- **The resize grip covered the ✕ while collapsed.** It sits at the bottom
+  right — on a window shrunk to title bar height that is the same spot as the
+  top right, and you had to aim to close the tool at all. It now belongs to the
+  **list** rather than the window — when the list is collapsed it has no height,
+  so the grip is necessarily gone with it. Hiding it in time instead failed
+  three times: a state that follows from how things are built is more reliable
+  than one restored afterwards.
+- **Blueprint names were unreadable without the launcher** — "Golemmc4Orepod"
+  instead of "GOLEM MC-4 Ore Pod". The fallback ran `.title()` on the comparison
+  key, which has no word boundaries left; the readable name sat right next to it
+  in the cache the whole time. This affected **every Linux user**, because there
+  is never a launcher there.
+- **Self-update never arrived on Windows.** Clicking "get it" produced a warning
+  and then nothing at all — except an orphaned 14 MB file in the program folder,
+  once per attempt. Two separate bugs were behind it, either of which would have
+  been enough on its own:
+
+  The **wrong file** was fetched. Every release carries three assets, and the
+  code took the first one ending in `.exe`. GitHub sorts alphabetically and a
+  `-` sorts before a `.`, so `SC-BP-Watcher-Setup.exe` came first. The installer
+  was moved on top of the program file without ever being run: opening the
+  watcher afterwards gave you a setup window.
+
+  And the swap could not have happened anyway. After the app exits, the
+  bootloader stays alive to clean up its folder under `%TEMP%`; when a file
+  there stayed locked it sat in a "Failed to remove temporary directory" dialog
+  — holding the very `.exe` the helper script was waiting to be released. After
+  two minutes it gave up. The user would have had to dismiss a warning nobody
+  knew was part of the update.
+
+  **On Windows the installer is now launched** instead of the program swapping
+  its own file. It closes the running watcher itself, replaces it, keeps the
+  "Apps & Features" entry current and starts it back up. On Linux the proven
+  AppImage swap stays as it was.
+
+- **The tray icon never appeared on Windows.** It was created on every start and
+  failed at the same spot every time, visible only in the error report:
+  `argument 11: OverflowError: int too long to convert`. The call that creates
+  the window had no type declarations, and without them Python passes every
+  value as a 32-bit number — the handle involved is wider than that on 64-bit
+  Windows. The same mistake sat in the window procedure's return type. Shutdown
+  now cleans the icon up for real, too: the previous route was not allowed to
+  work from outside and failed silently.
+
+- **The version shown in "Apps & Features" stayed put.** Only the per-user
+  registry branch was checked. Anyone who picked "for all users" during install
+  has their entry in the machine branch, which was never updated — so Windows
+  kept showing a version that no longer existed. Both branches are searched now.
+  On top of that the installer no longer asks "just me" or "all users": the
+  program lands in your own user folder either way, which removes the question
+  and any administrator prompt when updating.
+
+- **The icons in the bar looked mangled on Windows.** `Segoe UI` contains
+  **not one** of the fourteen glyphs — Windows picked a fallback per character
+  and reached for **Segoe UI Emoji**: colourful, square emoji images in a slim
+  dark bar, at uneven widths (10 to 21 pixels at the same size). That is also
+  why the icons could never be evened out via the font size — they came from
+  different font files. Windows now explicitly asks for **Segoe UI Symbol**:
+  all fourteen glyphs monochrome, in the configured text colour, with half the
+  spread. On Linux this was never a problem and nothing changes. Reported by
+  der Autor.
+
+- **The overlay stayed German when you switched to English.** Changing the
+  language gave you an English window and a German status bar:
+  „8 Baupläne · Log ✓ · ohne Launcher · geprüft", plus the waiting message and
+  the autostart text. English versions of those strings had existed all along —
+  nobody used them, the code kept assembling the German ones. On top of that
+  the overlay never heard about a language change at all; only the settings
+  window relabelled itself.
+  The catalogue watch message „newly craftable in game“ had the same
+  problem. Messages **already sitting in the bar** when you switched stayed
+  German too — „Keine Log-Sicherungen gefunden", for one. They had been written
+  into the line as finished sentences, frozen in the language of the moment;
+  only a restart cleared them. Messages now carry their text key along and are
+  rewritten on a language change — including the date, which reads differently
+  in English (2026-08-22 rather than 22.08.2026). Reported by der Autor.
+
+- **The hint on the ▶ launch button overwrote the status bar.** It was the only
+  one of the ten icons without a tooltip; instead it wrote into the status bar
+  and afterwards restored a value that was never kept up to date — so a
+  blueprint message was gone after the mouse passed over the icon.
+  Reported by der Autor.
+
+- **The logo was missing from the finished build.** On „Update & About" the
+  program loaded `assets/xharig.png`, but the build never packed that file — it
+  never showed when starting from source, where the file is present. Reported by
+  der Autor, who spotted it in a tester's screenshot.
+
+- **The „ⓘ" on the overlay opened a separate window with its own update logic** —
+  and that one had no restart button. Anyone going that way downloaded the new
+  version and was then left with a sentence instead of a button. It now opens the
+  main window on „What's new", with the „Update & About" tab right beside it.
+  **One route instead of two.** Reported by Morkhan.
+- **Stretched buttons only filled half the width.** Mostly affected the buttons
+  below the two update boxes. Reported by Morkhan.
+
+- **Updating through the info window never arrived.** Anyone using the green
+  „ⓘ" on the overlay instead of the settings page only got the line „the new
+  version runs on next start" — **and no button for it**. On Windows that line
+  is not even true: a helper script only swaps the file once the program has
+  quit, and gives up after two minutes. Anyone who kept playing ended up with no
+  update at all. The same „⟳ Restart now" button as in the settings is now
+  there. Reported by Morkhan.
+- **A console window flashed up briefly during updates.** The helper script has
+  run invisibly since v3.0.0 — the `taskkill` before it, which clears away an
+  already running script, was overlooked. Reported by Morkhan.
+
+- **Five failures used to happen silently.** If the settings, the watchlist, the
+  „new" markers, the autostart entry or a saved report could not be written,
+  nothing happened at all — the setting was simply back to its old value after a
+  restart, and the error report said nothing. Those places now report.
+
+- **The error report left the game language empty.** It showed only a dash even
+  though detection worked perfectly — the query returned two values, the report
+  expected one, and the error was swallowed silently. It now states what is being
+  searched for in the log **and where the wording comes from**: the game's
+  `global.ini` or the built-in table. That is the first question whenever someone
+  says „it doesn't detect my blueprints".
+- **Truncated descriptions in three places.** On a narrow window a few pixels
+  were missing and the last characters fell off. Affected were the update
+  channels, „Write details into mission text" and „How often to look".
+
+- **The setup wizard did not remember the chosen text source.** It fetched and
+  installed the texts but never stored the choice — afterwards none of the three
+  sources was selected under „In-game details". Reported by Haldjas.
+- **Updating on Windows spawned console windows.** The helper script that
+  swaps the running `.exe` looped forever while the file was locked — and it
+  stays locked until the program quits. Every further click on „get" started
+  another window. It now gives up after two minutes, stays invisible, and an
+  already running helper is stopped first.
+- **„Check now" did not check.** The button showed „Looking for a new version …" and did
+  nothing else. Anyone with a stale cache could not get out of it — one tester was still
+  offered rc12 while running rc18. It now really asks, reports the result and updates the
+  display.
+- **Self-update took the Windows path on Linux** and reported „[Errno 2] No such file or
+  directory: 'cmd'". The guard against foreign programs compared our own code against
+  `APPDIR` — but PyInstaller extracts into a directory of its own, so the comparison always
+  failed. The filename decides now.
+- **Self-update could have overwritten other programs.** It treated any file the `APPIMAGE`
+  environment variable pointed at as its own — and that variable is set in **every** program
+  started from an AppImage. Now our own code must come from the matching `APPDIR`, and a
+  second guard rejects any target whose filename does not belong to this program.
+- **Self-update always failed on Linux.** The download went to `/tmp` and was installed
+  with `os.replace()` — and on virtually every Linux `/tmp` is a separate filesystem.
+  `os.replace` cannot move across filesystems; it ends in „[Errno 18] Invalid cross-device
+  link". The comment in the code always promised „next to the running program" — now the
+  code does too, and installing became atomic along the way.
+- **Crash on the very first start** (`SIGSEGV`), reported by Bomb20. The wizard created its
+  **own** Tk instance and destroyed it at the end; the overlay then created a second one.
+  After the first is destroyed, fonts, images and pending callbacks live on pointing at a
+  dead interpreter — whether that goes well is a matter of timing. His „it ran fine with
+  debugging on" is the fingerprint of exactly that. There is now only **one** Tk instance in
+  the whole program.
+- **The `[SCBPW]` markers were visible in game.** The contract title read „Security
+  Patrol**[SCBPW]** [BP 3/6]**[/SCBPW]**". They made sure inserted text could be removed
+  exactly — but nobody wants to read that in their game. There is no marker in the text at
+  all now: the **wording before the insertion** is remembered, and removing restores it.
+  That is more precise than before. Verified with `tools/injektion_pruefen.py` against the
+  real file: inserting and removing leaves all 743 passages character-for-character as they
+  were.
+- **In game only the number showed, not which blueprints.** A contract has one title but
+  often a dozen descriptions — one for „to the ruin station", one for „to the distribution
+  centre" and so on. The contract data names only **one** of them; the rest stayed empty.
+  The title said „[BP 0/12]", and anyone opening the description to see *which* twelve
+  found nothing. Measured: 51 Covalex descriptions in the game, 7 of them with details.
+  They are now filled via the shared key prefix.
+- **„Personal weapon" and „FPS weapon" were two groups for the same thing** — 87 under one
+  key, two under the other.
+- **„Rows in the overlay" had no effect.** The setting was saved and never read; the
+  overlay used a fixed 200. The configured value now applies, with 20 as the default — no
+  one collects 200 blueprints in one session anyway.
+- **„Browse" opened no dialog** — neither for the Star Citizen folder nor for your own
+  files. Both do now, and on Linux with the system's dialog instead of Tk's grey one.
+- **The last blueprints in the list overlapped.** X11 uses 16-bit window coordinates; all
+  722 in one frame come to about 33000 pixels, putting 16 rows past the limit. The list is
+  now shown in blocks when needed — nothing is hidden.
+- **The scrollbar could not be grabbed.** The handle was drawn with a minimum height but
+  tested against the calculated one — hitting its lower half counted as „beside it".
+- **The window started off-screen.** With no remembered position Tk placed it at `+0+0`;
+  with a portrait monitor on the left there is no picture there. Startup and „Reset window
+  position" now centre it on the main screen.
+- **Autostart was out of sync between overlay and settings.** Both read their state only
+  when drawn.
+- **The window icon was missing from every finished build** — on both systems. The file
+  was not shipped with the program at all.
+
+### Thanks
+
+This release owes a great deal to two testers who took the trouble not just to
+notice problems, but to describe them precisely enough to be found:
+
+- **Haldjas** (pr0) — the pop-up mode suggestion; plus the setup that
+  failed on the running file, the console windows during updates, the missing
+  tray icon, the crash after restarting, the font size that never reached the
+  overlay, the text source the wizard forgot — and the observation that
+  explained everything: „it stays on rc25".
+- **Bomb20** (pr0) — the crash on the very first start (a bug only new users
+  would ever have hit), the „check now" button that did nothing, and the note
+  that the „German" text source translates the entire game.
+- **Morkhan** (KRT) — the suggestion to launch Star Citizen straight from
+  the tool.
+
+The blueprint details are based on the openly published contract data of the
+**SC Deutsch Launcher team** and on **scmdb.net**.
 
 ## v2.0.0 - 2026-08-24
 

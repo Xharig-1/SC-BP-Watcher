@@ -55,8 +55,10 @@ Rangfolge, wenn mehrere Angaben da sind:
   3. die Suche an den üblichen Stellen
 """
 import glob
+import shutil
 import json
 import os
+import re
 import sys
 
 WINDOWS = sys.platform.startswith('win')
@@ -70,17 +72,108 @@ SC_UNTERPFAD = os.path.join('Roberts Space Industries', 'StarCitizen')
 
 
 # ------------------------------------------------------------ 1. Eigene Dateien
-def app_ordner():
-    """Ordner für unsere eigenen Dateien. Wird bei Bedarf angelegt."""
-    eigen = os.environ.get('SC_BP_HOME')
-    if eigen:
-        p = os.path.expanduser(eigen)
-    elif WINDOWS:
-        p = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')),
-                         'sc-bp-watcher')
+# Wohin welche Datei gehört. Zweck: Wer den Ordner öffnet, soll sehen, was
+# seins ist — Baupläne und Ausgaben getrennt vom technischen Kleinkram.
+# Was hier nicht steht, landet in „Intern"; das sind Zwischenspeicher und
+# Lesestände, die niemanden interessieren.
+UNTERORDNER = {
+    'bestand.json':      'Bauplaene',
+    'bestand.bak.json':  'Bauplaene',
+    'merkliste.json':    'Bauplaene',
+    'watchlist.json':    'Bauplaene',
+    'catalog-seen.json': 'Bauplaene',
+    'bp-overrides.json': 'Bauplaene',
+    'einstellungen.json': 'Einstellungen',
+    'phrasen.json':       'Einstellungen',
+    'gesehen.json':       'Einstellungen',
+    'fehler.json':        'Diagnose',
+    'bericht.txt':        'Diagnose',
+    # Das Protokoll des Setups beim Selbst-Update. Gehoert zur Diagnose:
+    # Meldet jemand 'das Update geht nicht', steht hier, woran es lag.
+    'update-setup.txt':   'Diagnose',
+}
+ORDNERNAME = 'SC BP Watcher'
+EINSTELLUNGEN = 'einstellungen.json'
+
+
+def _dokumente():
+    """Der Dokumente-Ordner des Nutzers — oder das Heimatverzeichnis."""
+    heim = os.path.expanduser('~')
+    if WINDOWS:
+        # Der Ordner kann umbenannt oder verschoben sein; die Registry weiß es.
+        try:
+            import winreg
+            schluessel = (r'Software\Microsoft\Windows\CurrentVersion'
+                          r'\Explorer\Shell Folders')
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, schluessel) as k:
+                wert = winreg.QueryValueEx(k, 'Personal')[0]
+                if wert and os.path.isdir(os.path.expandvars(wert)):
+                    return os.path.expandvars(wert)
+        except Exception:
+            pass
     else:
-        basis = os.environ.get('XDG_CONFIG_HOME') or os.path.expanduser('~/.config')
-        p = os.path.join(basis, 'sc-bp-watcher')
+        # Unter Linux sagt es die XDG-Angabe; sie ist übersetzt („Dokumente“).
+        try:
+            konfig = os.path.join(os.environ.get('XDG_CONFIG_HOME')
+                                  or os.path.join(heim, '.config'),
+                                  'user-dirs.dirs')
+            with open(konfig, encoding='utf-8') as f:
+                for zeile in f:
+                    if zeile.startswith('XDG_DOCUMENTS_DIR'):
+                        wert = zeile.split('=', 1)[1].strip().strip('"')
+                        wert = wert.replace('$HOME', heim)
+                        if os.path.isdir(wert):
+                            return wert
+        except Exception:
+            pass
+    for name in ('Documents', 'Dokumente'):
+        p = os.path.join(heim, name)
+        if os.path.isdir(p):
+            return p
+    return heim
+
+
+def alter_app_ordner():
+    """Wo die Dateien bis v2.x lagen — Rückfall und Quelle für den Umzug."""
+    if WINDOWS:
+        return os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')),
+                            'sc-bp-watcher')
+    basis = os.environ.get('XDG_CONFIG_HOME') or os.path.expanduser('~/.config')
+    return os.path.join(basis, 'sc-bp-watcher')
+
+
+def _ablage_aus_datei():
+    """Einen selbst gewählten Ablage-Ort lesen — **ohne** `einstellung()`.
+
+    ⚠ Hier lauert eine Schleife: `einstellung()` liest ihre Datei über
+    `app_datei()`, und das fragt wieder `app_ordner()`. Wer an dieser Stelle die
+    normale Einstellungs-Funktion benutzt, baut eine Endlosrekursion — die
+    obendrein unsichtbar bleibt, weil ringsherum `try/except` steht. Deshalb
+    wird die Datei hier am Standardort direkt gelesen.
+    """
+    try:
+        standard = os.path.join(_dokumente(), ORDNERNAME, 'Einstellungen',
+                                EINSTELLUNGEN)
+        if not os.path.isfile(standard):
+            return None
+        with open(standard, encoding='utf-8') as f:
+            wert = json.load(f).get('ablage_ordner')
+        return wert.strip() if isinstance(wert, str) and wert.strip() else None
+    except Exception:
+        return None
+
+
+def app_ordner():
+    """Ordner für unsere eigenen Dateien. Wird bei Bedarf angelegt.
+
+    Seit v3.0.0 liegt er **sichtbar** unter Dokumente statt versteckt in
+    `%APPDATA%` bzw. `~/.config` — dort sucht kein normaler Spieler, und seinen
+    Bauplan-Bestand sollte er finden können. Ein eigener Ort geht weiterhin über
+    `SC_BP_HOME` oder die Einstellung `ablage_ordner`.
+    """
+    eigen = os.environ.get('SC_BP_HOME') or _ablage_aus_datei()
+    p = (os.path.expanduser(eigen) if eigen
+         else os.path.join(_dokumente(), ORDNERNAME))
     try:
         os.makedirs(p, exist_ok=True)
     except OSError:
@@ -88,13 +181,90 @@ def app_ordner():
     return p
 
 
+def programm_datei(name):
+    """Voller Pfad zu einer **mitgelieferten** Datei aus dem Ordner `daten/`.
+
+    Das sind Dateien, die zum Programm gehören und nur gelesen werden — im
+    Gegensatz zu `app_datei()`, wo die Daten des Nutzers liegen.
+
+    ⚠ Zwei Fälle: Läuft das Programm aus dem Quellcode, liegt `daten/` neben
+    `scbp/`. Ist es zu einer Datei gepackt (PyInstaller, AppImage), entpackt
+    sich alles in einen Wegwerf-Ordner, dessen Pfad in `sys._MEIPASS` steht.
+    Wer das nicht abfängt, sucht im gepackten Programm an der falschen Stelle
+    und findet nichts."""
+    gepackt = getattr(sys, '_MEIPASS', None)
+    basis = gepackt or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(basis, 'daten', name)
+
+
 def app_datei(name):
-    """Voller Pfad zu einer eigenen Datei, z. B. app_datei('bestand.json')."""
-    return os.path.join(app_ordner(), name)
+    """Voller Pfad zu einer eigenen Datei, z. B. app_datei('bestand.json').
+
+    Sortiert nach `UNTERORDNER` in Unterordner ein. Wer ein `SC_BP_HOME` gesetzt
+    hat (Selbsttest, Sonderfälle), bekommt den flachen Ordner von früher — dort
+    geht es um Wegwerf-Ordner, nicht um Übersicht.
+    """
+    basis = app_ordner()
+    if os.environ.get('SC_BP_HOME'):
+        return os.path.join(basis, name)
+    unter = UNTERORDNER.get(name, 'Intern')
+    ziel = os.path.join(basis, unter)
+    try:
+        os.makedirs(ziel, exist_ok=True)
+    except OSError:
+        return os.path.join(basis, name)
+    return os.path.join(ziel, name)
+
+
+def umzug_noetig():
+    """Liegen im alten Ordner Dateien, die im neuen fehlen?"""
+    alt = alter_app_ordner()
+    if not os.path.isdir(alt) or os.environ.get('SC_BP_HOME'):
+        return False
+    try:
+        vorhanden = [n for n in os.listdir(alt) if n.endswith(('.json', '.txt'))]
+    except OSError:
+        return False
+    if not vorhanden:
+        return False
+    # Schon umgezogen? Dann liegt der Bestand am neuen Ort.
+    return not os.path.exists(app_datei('bestand.json'))
+
+
+def umziehen():
+    """Die Dateien aus dem alten Ordner in den neuen **kopieren**.
+
+    Kopieren, nicht verschieben: Geht beim Umzug etwas schief — Rechte, ein
+    Virenscanner, ein abgebrochener Start — ist der mühsam gesammelte
+    Bauplan-Bestand sonst weg. Der alte Ordner bleibt unangetastet liegen; er
+    kostet ein paar Kilobyte und ist der Rückweg.
+
+    Gibt die Zahl der kopierten Dateien zurück.
+    """
+    import shutil
+    alt = alter_app_ordner()
+    kopiert = 0
+    try:
+        namen = sorted(os.listdir(alt))
+    except OSError:
+        return 0
+    for name in namen:
+        quelle = os.path.join(alt, name)
+        if not os.path.isfile(quelle):
+            continue
+        ziel = app_datei(name)
+        if os.path.exists(ziel):
+            continue                     # nichts überschreiben
+        try:
+            os.makedirs(os.path.dirname(ziel), exist_ok=True)
+            shutil.copy2(quelle, ziel)
+            kopiert += 1
+        except OSError:
+            pass
+    return kopiert
 
 
 # ------------------------------------------------------- Selbst gesetzte Pfade
-EINSTELLUNGEN = 'einstellungen.json'
 
 def gesuchte_spielorte(hoechstens=6):
     """Die Orte, an denen tatsächlich nach Star Citizen gesucht wird.
@@ -180,6 +350,25 @@ def _vorlage():
     }
 
 
+def _melden(stelle, ausnahme):
+    """Einen Fehler ins Protokoll geben, ohne dabei selbst zu scheitern.
+
+    ⚠ Der Import steht **absichtlich** in der Funktion: `scbp/fehler.py`
+    importiert seinerseits `pfade`. Auf Modulebene wäre das ein Zirkelbezug und
+    keines der beiden Module ließe sich mehr laden.
+
+    ⚠ Und das Melden hängt in einem eigenen `try`: Wenn schon das Schreiben der
+    Einstellungen scheitert, kann auch das Fehlerprotokoll klemmen. Dann ist der
+    ursprüngliche Fehler zwar verloren — aber das Programm läuft weiter, und
+    darum geht es.
+    """
+    try:
+        from . import fehler
+        fehler.merken(stelle, ausnahme)
+    except Exception:
+        pass
+
+
 def einstellungen():
     """Die selbst eingetragenen Pfade. Fehlt die Datei, ist sie leer."""
     try:
@@ -211,7 +400,12 @@ def einstellung_setzen(name, wert):
             json.dump(daten, f, ensure_ascii=False, indent=2)
         os.replace(temp, ziel)
         return True
-    except OSError:
+    except OSError as ausnahme:
+        # ⚠ Niemand prüft den Rückgabewert dieser Funktion — geprüft am
+        # 26.08.2026, alle Aufrufer werfen ihn weg. Scheitert das Schreiben
+        # (volle Platte, fehlende Rechte, Ordner weg), wäre die Einstellung
+        # nach dem Neustart einfach wieder alt, ohne jeden Hinweis.
+        _melden('pfade.einstellungen_schreiben', ausnahme)
         return False
 
 
@@ -367,6 +561,199 @@ def spielordner_deuten(gewaehlt):
     return None
 
 
+
+def _launcher_aus_registry():
+    r"""Wo der RSI Launcher laut Windows installiert ist — oder None.
+
+    ⚠ Feste Pfadlisten gehen genau dann schief, wenn jemand woanders
+    installiert hat. Genau das ist am 26.08.2026 passiert: Bei der Autors Bruder
+    fehlte der Startknopf im Overlay, weil keiner der abgesuchten Orte passte.
+
+    Der Eintrag in der Deinstallations-Liste ist verlässlicher, hat aber zwei
+    Tücken, die beide geprüft sind:
+
+    * **Der Schlüsselname ist eine GUID** und bei jeder Installation anders —
+      es hilft nur, alle Einträge durchzugehen und den `DisplayName` zu prüfen.
+    * **`InstallLocation` ist leer.** Der Pfad steckt statt dessen in
+      `DisplayIcon`, das auf `…\RSI Launcher\uninstallerIcon.ico` zeigt. Aus
+      dessen Ordner ergibt sich der Launcher.
+
+    Gesucht wird in allen drei Zweigen — der Launcher trägt sich unter HKLM ein,
+    aber eine Installation nur für den angemeldeten Nutzer landet unter HKCU.
+    """
+    if not WINDOWS:
+        return None
+    try:
+        import winreg
+    except ImportError:
+        return None
+
+    zweige = (
+        (winreg.HKEY_LOCAL_MACHINE,
+         r'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'),
+        (winreg.HKEY_LOCAL_MACHINE,
+         r'SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall'),
+        (winreg.HKEY_CURRENT_USER,
+         r'Software\Microsoft\Windows\CurrentVersion\Uninstall'),
+    )
+    for wurzel, pfad in zweige:
+        try:
+            with winreg.OpenKey(wurzel, pfad) as liste:
+                anzahl = winreg.QueryInfoKey(liste)[0]
+                for i in range(anzahl):
+                    try:
+                        name = winreg.EnumKey(liste, i)
+                        with winreg.OpenKey(liste, name) as eintrag:
+                            gefunden = _launcher_aus_eintrag(winreg, eintrag)
+                            if gefunden:
+                                return gefunden
+                    except OSError:
+                        continue      # einzelner Eintrag unlesbar — weiter
+        except OSError:
+            continue                  # Zweig gibt es nicht
+    return None
+
+
+def _launcher_aus_eintrag(winreg, eintrag):
+    """Aus einem Deinstallations-Eintrag den Launcher-Pfad ziehen — oder None."""
+    def wert(feld):
+        try:
+            return str(winreg.QueryValueEx(eintrag, feld)[0] or '')
+        except OSError:
+            return ''
+
+    if 'rsi launcher' not in wert('DisplayName').lower():
+        return None
+
+    kandidaten = []
+    ort = wert('InstallLocation').strip('" ')
+    if ort:
+        kandidaten.append(os.path.join(ort, 'RSI Launcher.exe'))
+    # `DisplayIcon` zeigt auf eine Datei **im** Launcher-Ordner.
+    symbol = wert('DisplayIcon').split(',')[0].strip('" ')
+    if symbol:
+        kandidaten.append(os.path.join(os.path.dirname(symbol),
+                                       'RSI Launcher.exe'))
+    for pfad in kandidaten:
+        if pfad and os.path.isfile(pfad):
+            return pfad
+    return None
+
+
+
+def spielstarter():
+    """Womit sich Star Citizen starten lässt — oder `None`.
+
+    Auf beiden Systemen dieselbe Frage, nur ein anderer Ort:
+
+    * **Windows** — der RSI Launcher unter `%LOCALAPPDATA%\\Programs`. Das ist
+      derselbe Weg, den auch der SC-Deutsch-Launcher geht.
+    * **Linux** — der `lug-helper` der Star Citizen Linux Users Group. Er ist
+      dort der übliche Weg, bringt den passenden Wine-Unterbau mit und lässt
+      sich einfach aufrufen. Ein eigener Wine-Aufruf wäre hier falsch: Der
+      Helfer weiß, welches Präfix und welche Wine-Fassung gerade gelten.
+
+    Ein eigener Weg geht über die Einstellung `spielstarter` — wer Lutris oder
+    Heroic benutzt, trägt dort seinen Startbefehl ein.
+
+    Wird nichts gefunden, gibt es auch keinen Knopf. Ein Knopf, der nichts tut,
+    ist schlimmer als keiner.
+    """
+    eigen = (einstellung('spielstarter') or '').strip()
+    if eigen:
+        return eigen if os.path.exists(os.path.expanduser(eigen)) else eigen
+
+    if WINDOWS:
+        orte = []
+
+        # ⚠ **Zuerst neben dem Spielordner suchen** — das ist der einzige Ort,
+        # den wir sicher kennen. Der Launcher legt sich standardmäßig neben die
+        # Spielinstallation:
+        #
+        #     …\Roberts Space Industries\StarCitizen\LIVE   ← das Spiel
+        #     …\Roberts Space Industries\RSI Launcher\      ← der Launcher
+        #
+        # Vorher wurden nur feste Orte unter %LOCALAPPDATA% und %PROGRAMFILES%
+        # abgesucht. Bei Haldjas liegt das Spiel in
+        # `C:\Program Files\Roberts Space Industries\…` — der Launcher damit an
+        # einer Stelle, die nicht in der Liste stand, und der Knopf erschien gar
+        # nicht erst: „nicht sicher wo sich die funktion versteckt, aber ich hab
+        # sie nicht gefunden" (25.08.2026).
+        #
+        # Vom Spielordner aus zu suchen trifft jede Installation, egal wohin sie
+        # gelegt wurde — statt immer neue feste Pfade nachzutragen.
+        spiel = spiel_ordner()
+        if spiel:
+            # …\StarCitizen\LIVE  →  zwei Ebenen hoch  →  …\Roberts Space Industries
+            rsi = os.path.dirname(os.path.dirname(spiel))
+            orte.append(os.path.join(rsi, 'RSI Launcher', 'RSI Launcher.exe'))
+            # Eine Ebene weiter hoch, falls jemand ohne Zweig-Ordner installiert
+            orte.append(os.path.join(os.path.dirname(rsi), 'RSI Launcher',
+                                     'RSI Launcher.exe'))
+
+        # ⚠ **Vor** den festen Orten: Was Windows selbst weiss, schlaegt jede
+        # Liste. Wer den Launcher auf ein anderes Laufwerk gelegt hat, faellt
+        # sonst durch — genau so fehlte bei der Autors Bruder der Startknopf.
+        aus_registry = _launcher_aus_registry()
+        if aus_registry:
+            orte.append(aus_registry)
+
+
+        for umgebung in ('LOCALAPPDATA', 'PROGRAMFILES', 'PROGRAMW6432'):
+            wurzel = os.environ.get(umgebung)
+            if not wurzel:
+                continue
+            orte.append(os.path.join(wurzel, 'Programs', 'RSI Launcher',
+                                     'RSI Launcher.exe'))
+            orte.append(os.path.join(wurzel, 'RSI Launcher',
+                                     'RSI Launcher.exe'))
+            orte.append(os.path.join(wurzel, 'Roberts Space Industries',
+                                     'RSI Launcher', 'RSI Launcher.exe'))
+        for ort in orte:
+            if os.path.isfile(ort):
+                return ort
+        return None
+
+    # Linux: erst im Suchpfad, dann an den üblichen Ablagen.
+    name = 'lug-helper'
+    fertig = shutil.which(name)
+    if fertig:
+        return fertig
+    heim = os.path.expanduser('~')
+    for ort in (os.path.join(heim, '.local', 'bin', name),
+                os.path.join('/usr', 'bin', name),
+                os.path.join('/usr', 'local', 'bin', name),
+                os.path.join(heim, 'Games', name)):
+        if os.path.isfile(ort) and os.access(ort, os.X_OK):
+            return ort
+    return None
+
+
+def spiel_starten():
+    """Star Citizen starten. Gibt (True, '') oder (False, Grund) zurück."""
+    starter = spielstarter()
+    if not starter:
+        # ⚠ Dieser Grund landet über `s_sp_start_nein` sichtbar in der
+        # Statuszeile — also übersetzen. `sprache` lokal holen: `pfade` wird
+        # sehr früh geladen, ein Import oben wäre ein Zirkelbezug.
+        from . import sprache
+        return False, sprache.t('s_sp_kein_starter')
+    try:
+        import subprocess
+        # Losgelöst starten: Der Watcher soll weiterlaufen und nicht am Spiel
+        # hängen — und beim Beenden das Spiel nicht mitreißen.
+        zusatz = {}
+        if WINDOWS:
+            zusatz['creationflags'] = getattr(subprocess, 'DETACHED_PROCESS', 0)
+        else:
+            zusatz['start_new_session'] = True
+        subprocess.Popen([starter], stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL, **zusatz)
+        return True, ''
+    except Exception as ausnahme:
+        return False, str(ausnahme)
+
+
 def game_log(ordner=None):
     """Pfad zur aktiven Game.log oder None."""
     ordner = ordner or spiel_ordner()
@@ -474,6 +861,32 @@ def launcher_datei(name, ordner=None):
 
 
 # ------------------------------------------------------------------ Übersicht
+def kuerzen(text):
+    """Persönliches aus einem Text nehmen — für Fehlerprotokoll und Bericht.
+
+    Pfade verraten den Benutzernamen (`C:\\Users\\Spieler\\…`,
+    `/home/spieler/…`), und genau solche Texte landen in einem **öffentlichen**
+    Issue. Ersetzt werden das Heimatverzeichnis und danach jedes weitere
+    Vorkommen des Benutzernamens.
+
+    Lieber einmal zu viel ersetzt als ein Name zu viel im Netz.
+    """
+    try:
+        text = str(text)
+        heim = os.path.expanduser('~')
+        name = os.path.basename(heim.rstrip('\\/'))
+
+        for was in (heim, heim.replace('\\', '/'), heim.replace('/', '\\')):
+            if was and len(was) > 3:
+                text = text.replace(was, '<heim>')
+
+        if name and len(name) > 2:
+            text = re.sub(re.escape(name), '<benutzer>', text, flags=re.I)
+        return text
+    except Exception:
+        return str(text)
+
+
 def uebersicht():
     """Was wurde gefunden — für Statusanzeige und Fehlersuche."""
     spiel = spiel_ordner()
@@ -493,3 +906,38 @@ def uebersicht():
 if __name__ == '__main__':
     for k, v in uebersicht().items():
         print('%-14s %s' % (k, v))
+
+
+# --------------------------------------------------------- Namen vergleichen
+# Alle Anführungszeichen, die in Bauplan-Namen vorkommen — gerade,
+# typografische und die französischen. Beim Vergleichen werden sie auf ein
+# einfaches `'` gezogen.
+ANFUEHRUNG = str.maketrans({
+    '"': "'", '„': "'", '“': "'", '”': "'",
+    '‘': "'", '’': "'", '«': "'", '»': "'",
+})
+
+
+def namensform(s):
+    """Ein Bauplan-Name als Vergleichsschlüssel — die EINZIGE Stelle dafür.
+
+    ⚠ Diese Funktion stand dreimal im Programm: in `bestand.py`, `katalog.py`
+    und `merkliste.py`. Der Kommentar in `bestand.py` behauptete „identisch zum
+    Hauptprogramm" — und war es nicht mehr. Wer eine davon anfasst, verschiebt
+    stillschweigend, welche Baupläne noch zueinander finden.
+
+    Angeglichen wird dreierlei:
+
+    * **Groß- und Kleinschreibung.**
+    * **Geschützte und kaputte Leerzeichen** (`\xa0`, `\ufffd`).
+    * **Anführungszeichen.** Der SC Deutsch Launcher exportiert
+      `7MA "Lorica"` mit geraden doppelten, scmdb führt denselben Bauplan als
+      `7MA 'Lorica'` mit einfachen. Ohne Angleichung sind das zwei Schlüssel,
+      und der Bauplan gilt als „fehlt", obwohl er im Bestand steht. Gefunden
+      an einem echten Bestand mit 392 Bauplänen — genau einer fiel durch.
+    """
+    return (str(s).lower()
+.replace('\xa0', ' ')
+.replace('\ufffd', ' ')
+.translate(ANFUEHRUNG)
+.strip())

@@ -23,7 +23,9 @@ Four things are deliberate and will stay that way:
 | ✅ | **Blueprint list** to look up, filter and tick off, with progress |
 | ✅ | **Where each blueprint drops** — faction, contract, required standing, payout |
 | ✅ | Catalogue watch: reports what becomes **newly craftable** in the game, plus a watchlist |
-| ✅ | Class, grade and size tag (`M/A/1`) |
+| ✅ | **New in game** filter plus a patch dropdown: see what each patch added |
+| ✅ | **Server status**: a tab of its own with CIG's live status, refreshing itself |
+| ✅ | Class, size and grade tag (`M/1/A`) |
 | ✅ | Setup wizard, repeatable at any time |
 | ✅ | German and English, switchable |
 | ✅ | Windows and Linux, with autostart on both |

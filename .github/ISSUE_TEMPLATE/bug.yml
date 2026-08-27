@@ -1,0 +1,41 @@
+# English bug report. The tool opens this form from "Report a problem" and
+# pre-fills the `bericht` field — see scbp/bericht.py, issue_adresse().
+name: Report a problem (English)
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time.
+
+        If you got here from the tool, the report below is already filled in — all
+        that is missing is **what happened**. It contains no names and no
+        credentials; paths are shortened.
+
+  - type: textarea
+    id: was
+    attributes:
+      label: What happened?
+      description: What did you do, and what came out of it?
+      placeholder: |
+        I received a blueprint, but nothing showed up in the overlay.
+    validations:
+      required: true
+
+  - type: textarea
+    id: erwartet
+    attributes:
+      label: What did you expect?
+      placeholder: The blueprint should have appeared in the list.
+
+  - type: textarea
+    id: bericht
+    attributes:
+      label: Report from the tool
+      description: >
+        Settings → Diagnostics → "Copy details". Without this block there is very
+        little to go on.
+      render: text
+    validations:
+      required: false

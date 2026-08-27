@@ -50,6 +50,7 @@ from .sprache import t
 BG      = '#10141c'
 FLAECHE = '#161c28'
 BAR     = '#1b2230'
+LINIE   = '#2a3345'   # Rand runder Kästen und Felder — überall dieselbe Linie
 FG      = '#e6edf3'
 SUB     = '#8b98a5'
 ACCENT  = '#9ce430'
@@ -65,11 +66,19 @@ def schrift(groesse, fett=False):
 class Einstellungsfenster:
     """Ein Fenster, kein Dauerzustand — beim Schließen ist es weg."""
 
-    def __init__(self, eltern=None):
-        self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
-        self.root.title(t('titel_einstellungen'))
-        self.root.configure(bg=BG)
-        self.root.geometry('660x900')
+    def __init__(self, eltern=None, rahmen=None):
+        """Ohne `rahmen` ein eigenes Fenster; mit `rahmen` liefert es nur seine
+        Bausteine, die das Hauptfenster auf die Reiter verteilt."""
+        self.eingebettet = rahmen is not None
+        self.beim_sprachwechsel = None      # setzt das Hauptfenster
+        if self.eingebettet:
+            self.root = rahmen
+            self.root.configure(bg=BG)
+        else:
+            self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
+            self.root.title(t('titel_einstellungen'))
+            self.root.configure(bg=BG)
+            self.root.geometry('660x900')
 
         # Werte laden. Leere Felder heißen „selbst suchen" — das bleibt so,
         # ein leeres Feld ist hier kein Fehler.
@@ -84,6 +93,9 @@ class Einstellungsfenster:
         self.ton = tk.BooleanVar(value=pfade.einstellung_wahrheit('signalton', True))
         self.deckkraft = tk.IntVar(
             value=pfade.einstellung_zahl('deckkraft_prozent', 93, 30, 100))
+
+        if self.eingebettet:
+            return                     # die Bausteine holt sich `seiten.py`
 
         self._kopf()
         # ⚠ Reihenfolge ist entscheidend: Der Fuß mit dem Speichern-Knopf wird
@@ -120,8 +132,8 @@ class Einstellungsfenster:
         rahmen = tk.Frame(self.root, bg=BG)
         rahmen.pack(fill='both', expand=True)
         self.leinwand = tk.Canvas(rahmen, bg=BG, highlightthickness=0)
-        rolle = tk.Scrollbar(rahmen, orient='vertical',
-                             command=self.leinwand.yview)
+        from .hauptfenster import rundleiste
+        rolle = rundleiste(rahmen, self.leinwand, grund=BG)
         innen = tk.Frame(self.leinwand, bg=BG)
         innen.bind('<Configure>', lambda e: self.leinwand.configure(
             scrollregion=self.leinwand.bbox('all')))
@@ -183,11 +195,20 @@ class Einstellungsfenster:
         ohne es zu übernehmen."""
         self.sprache_wahl.set(wert)
         sprache.setzen(wert)
+        # ⚠ Seit v3.0.0 gibt es keinen Speichern-Knopf mehr — also muss die Wahl
+        # hier festgehalten werden. Vorher wurde nur der laufende Betrieb
+        # umgestellt: Die Oberfläche sprach Deutsch, die Markierung stand
+        # weiter auf der alten Sprache, und nach einem Neustart war alles beim
+        # Alten. Das sah aus wie ein Anzeigefehler, war aber verlorene Eingabe.
+        pfade.einstellung_setzen('sprache', wert)
         self._sprach_knoepfe_faerben()
         self._neu_beschriften()
 
     def _sprach_knoepfe_faerben(self):
-        for wert, knopf in self.sprach_knoepfe.items():
+        # Im Hauptfenster zeichnet `seiten.py` die Sprachwahl selbst — dort gibt
+        # es diese Knöpfe gar nicht. Ohne die Prüfung stirbt der Sprachwechsel
+        # mit einem Attributfehler, und zwar mitten im Umschalten.
+        for wert, knopf in getattr(self, 'sprach_knoepfe', {}).items():
             an = wert == self.sprache_wahl.get()
             knopf.configure(fg=BG if an else SUB, bg=ACCENT if an else FLAECHE)
 
@@ -195,13 +216,49 @@ class Einstellungsfenster:
         self._titel(eltern, titel, hilfe)
         reihe = tk.Frame(eltern, bg=BG)
         reihe.pack(fill='x')
-        feld = tk.Entry(reihe, textvariable=variable, bg=FLAECHE, fg=FG,
-                        insertbackground=FG, relief='flat', font=schrift(10))
-        feld.pack(side='left', fill='x', expand=True, ipady=6, padx=(0, 8))
+        from .hauptfenster import rundes_feld
+        feld = rundes_feld(reihe, variable, schrift(10), FLAECHE, LINIE, ACCENT, FG)
+        feld.halter.pack(side='left', fill='x', expand=True, padx=(0, 8))
         knopf = tk.Label(reihe, text=' %s ' % t('e_durchsuchen'), bg=FLAECHE,
                          fg=FG, font=schrift(10), cursor='hand2', padx=8, pady=6)
         knopf.pack(side='left')
         knopf.bind('<Button-1>', lambda e, v=variable, ti=titel: self._waehlen(v, ti))
+
+    # ------------------------------------------------------- Rückmeldungen
+    #
+    # ⚠ Hier lag ein Totalausfall: Alle Rückmeldungen gingen direkt an
+    # `self.meldung` — das Label im Fuß des **eigenständigen** Einstellungsfensters.
+    # Eingebettet in das Hauptfenster wird dieser Fuß nie gebaut, das Label gibt es
+    # also gar nicht. Jeder Klick auf „Jetzt auffrischen", „Prüfen" oder eine
+    # Textquelle brach sofort mit `AttributeError` ab — noch **vor** der eigentlichen
+    # Arbeit. Die Seite sah vollständig aus und tat nichts.
+    #
+    # Deshalb laufen alle Meldungen jetzt durch `_melden()`. Eingebettet gehen sie
+    # an den Rückruf, den das Hauptfenster setzt (seine Fußzeile), sonst an das
+    # eigene Label.
+    melder = None                 # setzt das Hauptfenster beim Einbetten
+    lage_melder = None            # dito, für den Zustandsblock der Seite
+
+    def _melden(self, text, farbe=None):
+        if getattr(self, 'melder', None):
+            try:
+                self.melder(text)
+                return
+            except Exception:
+                pass
+        label = getattr(self, 'meldung', None)
+        if label is not None:
+            try:
+                label.configure(text=text, fg=farbe or SUB)
+            except tk.TclError:
+                pass
+
+    def _weiterarbeiten(self):
+        """Tk Gelegenheit geben, die Meldung wirklich zu zeigen."""
+        try:
+            self.root.update()
+        except tk.TclError:
+            pass
 
     def _waehlen(self, variable, titel):
         ordner = filedialog.askdirectory(title=titel, parent=self.root,
@@ -211,9 +268,10 @@ class Einstellungsfenster:
 
     def _intervallfeld(self, eltern):
         self._titel(eltern, t('e_intervall'), t('e_intervall_hilfe'))
-        tk.Entry(eltern, textvariable=self.intervall, bg=FLAECHE, fg=FG,
-                 insertbackground=FG, relief='flat', font=schrift(10),
-                 width=8).pack(anchor='w', ipady=6)
+        from .hauptfenster import rundes_feld
+        feld = rundes_feld(eltern, self.intervall, schrift(10), FLAECHE, LINIE,
+                           ACCENT, FG, breite=8)
+        feld.halter.pack(anchor='w')
 
     def _tonfeld(self, eltern):
         self._titel(eltern, t('e_ton'), t('e_ton_hilfe'))
@@ -265,10 +323,10 @@ class Einstellungsfenster:
         jeder Spiel-Patch schreibt die `global.ini` neu — die Angaben sind dann
         stillschweigend weg. Deshalb steht hier immer, ob sie gerade drin sind."""
         self._titel(eltern, t('schritt_spiel_texte'), t('inj_wie'))
-        self.inj_lage = tk.Label(eltern, text='', bg=BG, fg=SUB,
+        self.inj_lage_lbl = tk.Label(eltern, text='', bg=BG, fg=SUB,
                                  font=schrift(10), anchor='w', justify='left',
                                  wraplength=600)
-        self.inj_lage.pack(fill='x', pady=(0, 8))
+        self.inj_lage_lbl.pack(fill='x', pady=(0, 8))
 
         # Quelle wechseln — dieselben drei Wege wie im Einrichtungsassistenten.
         # Wer sich später umentscheidet (etwa vom deutschen auf den englischen
@@ -302,10 +360,49 @@ class Einstellungsfenster:
         self._inj_lage_zeigen()
 
     def _inj_wechseln(self, quelle):
-        """Auf eine andere Textquelle umstellen — holen, einsetzen, auszeichnen."""
+        """Auf eine andere Textquelle umstellen — holen, einsetzen, auszeichnen.
+
+        ⚠ Vor dem ersten Einsetzen einer **fremden** Quelle wird gefragt. Grund
+        aus dem Test (Bomb20, 25.08.2026): „übrigens tauscht das tool — wenn auf
+        deutsch gestellt — auch im Spiel alles englische gegen deutsches aus."
+        Das ist so gewollt, aber niemand rechnet damit: Wer einen Bauplan-Melder
+        installiert, erwartet keine vollständige Spielübersetzung. Eine
+        Überraschung an der Spielinstallation ist genau das, was dieses
+        Werkzeug nicht sein will.
+
+        „Original" fragt nicht — das nimmt die Texte aus der eigenen
+        Installation und ändert die Sprache nicht.
+        """
+        if quelle in ('deutsch', 'starstrings') and not self._quelle_bestaetigt(quelle):
+            return
+        self._inj_wechseln_jetzt(quelle)
+
+    def _quelle_bestaetigt(self, quelle):
+        """Einmal je Quelle fragen, bevor die Textdatei ersetzt wird.
+
+        Einmal bestätigt, wird nicht wieder gefragt — wer die Quelle schon
+        benutzt, weiß, was sie tut. Gemerkt wird das in den Einstellungen.
+        """
+        gemerkt = pfade.einstellung('inj_bestaetigt') or ''
+        if quelle in gemerkt.split(','):
+            return True
+
+        from tkinter import messagebox
+        name = {'deutsch': t('s_sp_q_de'),
+                'starstrings': t('s_sp_q_ss')}.get(quelle, quelle)
+        if not messagebox.askyesno(t('s_sp_warnung_titel'),
+                                   t('s_sp_warnung') % name,
+                                   parent=self.root):
+            return False
+        neu = [x for x in gemerkt.split(',') if x] + [quelle]
+        pfade.einstellung_setzen('inj_bestaetigt', ','.join(neu))
+        return True
+
+    def _inj_wechseln_jetzt(self, quelle):
+        """Der eigentliche Wechsel — ohne Rückfrage."""
         def melde(x):
-            self.meldung.configure(text=x, fg=SUB)
-            self.root.update()
+            self._melden(x)
+            self._weiterarbeiten()
 
         melde(t('inj_laeuft'))
         try:
@@ -315,7 +412,7 @@ class Einstellungsfenster:
                 sprache_ordner = 'english'
                 ok, meldung = spieltexte.holen(sprache_ordner, fortschritt=melde)
                 if not ok:
-                    self.meldung.configure(text=t('inj_fehler', meldung), fg=ROT)
+                    self._melden(t('inj_fehler', meldung), ROT)
                     return
                 ziel = uebersetzung.ziel_ini(sprache_ordner)
                 uebersetzung.user_cfg_setzen(sprache_ordner)
@@ -323,22 +420,41 @@ class Einstellungsfenster:
             else:
                 ok, meldung = uebersetzung.holen(quelle, fortschritt=melde)
                 if not ok:
-                    self.meldung.configure(text=t('inj_fehler', meldung), fg=ROT)
+                    self._melden(t('inj_fehler', meldung), ROT)
                     return
                 sprache_ordner = uebersetzung.QUELLEN[quelle]['sprache']
                 ziel = uebersetzung.ziel_ini(sprache_ordner)
             ok, n, meldung = injektion.einrichten(ziel, sprache_ordner,
                                                   fortschritt=melde)
-            self.meldung.configure(
-                text=t('inj_aktiv', n) if ok else t('inj_fehler', meldung),
-                fg=SUB if ok else ROT)
+            self._melden(t('inj_aktiv', n) if ok else t('inj_fehler', meldung),
+                         SUB if ok else ROT)
         except Exception as e:
-            self.meldung.configure(text=t('inj_fehler', e), fg=ROT)
+            self._melden(t('inj_fehler', e), ROT)
         self._inj_lage_zeigen()
 
     def _inj_ini(self):
-        """Die global.ini, um die es geht — nach der eingestellten Sprache."""
-        for quelle in ('deutsch', 'starstrings'):
+        """Die global.ini, um die es geht — nach der **gewählten** Textquelle.
+
+        ⚠ Hier stand eine feste Reihenfolge: erst „deutsch", dann „starstrings",
+        und die erste eingerichtete gewann. Wer beide einmal benutzt hatte und
+        dann auf StarStrings umstellte, bekam trotzdem weiter „Quelle: Deutsch
+        (rjcncpt)" angezeigt — die deutsche war ja auch noch eingerichtet. Genau
+        so gemeldet. Maßgeblich ist, was der Nutzer **gewählt** hat; die
+        Reihenfolge greift nur, solange nichts gewählt wurde.
+        """
+        gewaehlt = pfade.einstellung('inj_quelle')
+        reihenfolge = ['deutsch', 'starstrings']
+        if gewaehlt in reihenfolge:
+            reihenfolge.remove(gewaehlt)
+            reihenfolge.insert(0, gewaehlt)
+        elif gewaehlt == 'original':
+            # Die Originaltexte kommen aus dem Spiel selbst, nicht aus einem
+            # fremden Projekt — dort gibt es keine Fassung zu vermerken.
+            for sprache_ordner in ('english', 'german_(germany)'):
+                pfad = uebersetzung.ziel_ini(sprache_ordner)
+                if pfad and os.path.isfile(pfad):
+                    return pfad, sprache_ordner, None
+        for quelle in reihenfolge:
             if uebersetzung.installiert(quelle):
                 sprache_ordner = uebersetzung.QUELLEN[quelle]['sprache']
                 return uebersetzung.ziel_ini(sprache_ordner), sprache_ordner, quelle
@@ -349,32 +465,46 @@ class Einstellungsfenster:
                 return p, sprache_ordner, None
         return None, 'english', None
 
+    def inj_lage(self=None):
+        """Steht etwas im Spiel, und aus welcher Quelle? (dict für die Seite)"""
+        pfad, _sprache, quelle = self._inj_ini()
+        da = bool(pfad and os.path.isfile(pfad))
+        drin = bool(da and injektion.ist_drin(pfad))
+        return {'datei': pfad, 'drin': drin, 'quelle': quelle,
+                'stand': uebersetzung.installiert(quelle) if quelle else None}
+
     def _inj_lage_zeigen(self):
-        pfad, _, quelle = self._inj_ini()
-        if not pfad or not os.path.isfile(pfad):
-            self.inj_lage.configure(text='—', fg=SUB)
-            return
-        drin = injektion.ist_drin(pfad)
-        stand = uebersetzung.installiert(quelle) if quelle else None
-        text = t('inj_steht') if drin else t('inj_steht_nicht')
-        if stand:
-            text += ' · %s' % stand
-        self.inj_lage.configure(text=text, fg=ACCENT if drin else SUB)
+        lage = self.inj_lage()
+        text = t('inj_steht') if lage['drin'] else t('inj_steht_nicht')
+        if lage['stand']:
+            text += ' · %s' % lage['stand']
+        if not lage['datei']:
+            text = '—'
+        label = getattr(self, 'inj_lage_lbl', None)
+        if label is not None:
+            try:
+                label.configure(text=text,
+                                fg=ACCENT if lage['drin'] else SUB)
+            except tk.TclError:
+                pass
+        if getattr(self, 'lage_melder', None):
+            try:
+                self.lage_melder()
+            except Exception:
+                pass
 
     def _inj_erneuern(self):
         pfad, sprache_ordner, _ = self._inj_ini()
         if not pfad:
-            self.meldung.configure(text=t('inj_fehler', 'global.ini'), fg=ROT)
+            self._melden(t('inj_fehler', 'global.ini'), ROT)
             return
-        self.meldung.configure(text=t('inj_laeuft'), fg=SUB)
-        self.root.update()
+        self._melden(t('inj_laeuft'))
+        self._weiterarbeiten()
         ok, n, meldung = injektion.aktualisieren(
             pfad, sprache_ordner,
-            fortschritt=lambda x: (self.meldung.configure(text=x),
-                                   self.root.update()))
-        self.meldung.configure(text=t('inj_aktiv', n) if ok
-                               else t('inj_fehler', meldung),
-                               fg=SUB if ok else ROT)
+            fortschritt=lambda x: (self._melden(x), self._weiterarbeiten()))
+        self._melden(t('inj_aktiv', n) if ok else t('inj_fehler', meldung),
+                     SUB if ok else ROT)
         self._inj_lage_zeigen()
 
     def _inj_entfernen(self):
@@ -382,20 +512,27 @@ class Einstellungsfenster:
         if not pfad:
             return
         ok, n, meldung = injektion.entfernen(pfad, sprache_ordner)
-        self.meldung.configure(text=meldung, fg=SUB if ok else ROT)
+        self._melden(meldung, SUB if ok else ROT)
         self._inj_lage_zeigen()
 
     def _inj_pruefen(self):
         """Gibt es bei der benutzten Quelle etwas Neues?"""
-        _, _, quelle = self._inj_ini()
+        pfad, _sprache, quelle = self._inj_ini()
+        drin = bool(pfad and os.path.isfile(pfad) and injektion.ist_drin(pfad))
         if not quelle:
-            self.meldung.configure(text=t('inj_aktuell'), fg=SUB)
+            # Keine Übersetzung vermerkt — dann bleibt nur die Aussage, ob die
+            # Angaben gerade im Spiel stehen.
+            self._melden(t('inj_steht') if drin else t('inj_steht_nicht'))
             return
-        self.meldung.configure(text=t('inj_laeuft'), fg=SUB)
-        self.root.update()
+        self._melden(t('inj_laeuft'))
+        self._weiterarbeiten()
         neu, kennung = uebersetzung.update_da(quelle)
-        self.meldung.configure(
-            text=t('inj_update_da', kennung) if neu else t('inj_aktuell'), fg=SUB)
+        stand = uebersetzung.installiert(quelle)
+        teile = [t('inj_steht') if drin else t('inj_steht_nicht')]
+        if stand:
+            teile.append(str(stand))
+        teile.append(t('inj_update_da', kennung) if neu else t('inj_aktuell'))
+        self._melden(' · '.join(teile))
 
     def _fuss(self):
         fuss = tk.Frame(self.root, bg=BG)
@@ -414,7 +551,20 @@ class Einstellungsfenster:
 
     def _neu_beschriften(self):
         """Nach einem Sprachwechsel alles neu aufbauen — einfacher und
-        verlässlicher, als zwanzig Beschriftungen einzeln nachzuziehen."""
+        verlässlicher, als zwanzig Beschriftungen einzeln nachzuziehen.
+
+        ⚠ Im **eingebetteten** Zustand (als Seite im Hauptfenster) darf hier
+        nichts neu erzeugt werden: `self.root` ist dann ein Rahmen im großen
+        Fenster, und ein neues `Einstellungsfenster` daneben ginge als eigenes
+        Fenster auf. Genau das ist passiert. Stattdessen sagt das Modul dem
+        Hauptfenster Bescheid, und **das** zeichnet seine Seiten neu — dort
+        stehen ja ebenfalls überall Texte.
+        """
+        if getattr(self, 'eingebettet', False):
+            if callable(getattr(self, 'beim_sprachwechsel', None)):
+                self.beim_sprachwechsel()
+            return
+
         werte = (self.sprache_wahl.get(), self.spiel.get(), self.launcher.get(),
                  self.intervall.get(), self.ton.get(), self.deckkraft.get())
         eltern = self.root.master
@@ -436,7 +586,7 @@ class Einstellungsfenster:
         for variable in (self.spiel, self.launcher):
             wert = variable.get().strip()
             if wert and not os.path.isdir(os.path.expanduser(wert)):
-                self.meldung.configure(text=t('e_pfad_fehlt'), fg=ROT)
+                self._melden(t('e_pfad_fehlt'), ROT)
                 return
 
         try:
@@ -456,7 +606,7 @@ class Einstellungsfenster:
         # Ehrlich sagen, was sofort gilt und was nicht: Die Sprache schaltet
         # dieses Fenster gerade selbst um, Ordner und Takt liest der laufende
         # Watcher-Thread aber nur beim Start.
-        self.meldung.configure(text=t('e_neustart_noetig'), fg=SUB)
+        self._melden(t('e_neustart_noetig'))
 
     def schliessen(self):
         self.root.destroy()

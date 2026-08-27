@@ -25,7 +25,7 @@ raus, denn eine Merkliste voller längst erledigter Wünsche ist keine.
 
 Gepflegt wird sie **im Fenster mit einem Klick** — niemand soll dafür eine
 Datei bearbeiten müssen. Die Datei (`watchlist.json`) bleibt trotzdem lesbar
-und von Hand änderbar, denn die des Autors: Skill „SC BP" schreibt dort die Teile der
+und von Hand änderbar, denn ein eigenes Werkzeug des Autors schreibt dort Teile der
 Staffelrüstung hinein.
 
 Zwei Arten von Einträgen leben nebeneinander:
@@ -51,7 +51,8 @@ DATEI = 'watchlist.json'
 
 
 def _norm(s):
-    return str(s).lower().replace('\xa0', ' ').strip()
+    """Vergleichsform eines Namens — siehe `pfade.namensform`."""
+    return pfade.namensform(s)
 
 
 def pfad():
@@ -86,7 +87,12 @@ def speichern(daten):
             json.dump(daten, f, ensure_ascii=False, indent=1)
         os.replace(temp, ziel)
         return True
-    except OSError:
+    except OSError as ausnahme:
+        try:
+            from . import fehler
+            fehler.merken('merkliste.speichern', ausnahme)
+        except Exception:
+            pass
         try:
             os.remove(temp)
         except OSError:
