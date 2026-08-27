@@ -17,10 +17,22 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
-- **On Windows there is only the installer now.** The standalone
-  `SC-BP-Watcher.exe` is gone. It dated from the early days, when the point was
-  to build trust in an unsigned program — by now two routes only mean two
-  sources of error and twice the support. Linux is unchanged.
+- **On Windows there is only one download now: the installer.** The standalone
+  `SC-BP-Watcher.exe` is gone.
+
+  **What you get out of it:** no more wondering which of the two files is the
+  right one. The watcher ends up in your start menu instead of sitting
+  somewhere in your downloads folder. Updates genuinely replace the program
+  rather than putting a second copy next to it — the most common reason someone
+  keeps using an old version for months without noticing. Autostart is a
+  checkbox during setup, and *Apps & Features* removes everything cleanly.
+
+  The standalone file dates from the early days: an unsigned program without an
+  installer looks less alarming, and the point back then was to earn trust at
+  all. That is done — and two routes side by side mean twice as many places
+  where something can go wrong. Better one route that works.
+
+  Nothing changes on Linux: the AppImage stays.
 - **Anyone still on v2.0.0 comes along anyway.** Their update path picks the
   first file ending in `.exe` — which is now the installer — and starts it
   afterwards. So it runs by itself and sets everything up properly. The

@@ -178,7 +178,16 @@ Nothing else. No Python, no account — and whether you install is your call (se
 
 2. Run it. Done.
 
-No Python, no extra packages — the installer brings everything with it and can be removed again through *Apps & Features*. On Linux, make the AppImage executable once (right click → Properties → *Executable as program*, or `chmod +x SC-BP-Watcher-x86_64.AppImage`).
+No Python, no extra packages — the installer brings everything with it and can be removed again through *Apps & Features*.
+
+> **Why the standalone `.exe` is gone** (as of v3.0.0): it existed for a long
+> time as a second route, for anyone who did not want to install anything. That
+> came at a price you only noticed later — an update put the new version
+> **beside** the old file instead of replacing it. Anyone clicking their usual
+> shortcut afterwards kept using the old version for months without noticing.
+> With the installer that cannot happen: a start-menu entry, updates that
+> genuinely replace, autostart as a checkbox, and a clean uninstall. On Linux
+> the AppImage stays as it is. On Linux, make the AppImage executable once (right click → Properties → *Executable as program*, or `chmod +x SC-BP-Watcher-x86_64.AppImage`).
 
 On first start a **wizard** walks you through setup: language, finding Star Citizen, collecting your existing blueprints. It takes a minute, and then your inventory is there.
 

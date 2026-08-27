@@ -17,11 +17,24 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
-- **Unter Windows gibt es nur noch den Installer.** Die einzelne
-  `SC-BP-Watcher.exe` ohne Installation entfällt. Sie stammte aus der
-  Anfangszeit, als es darum ging, Vertrauen in ein unsigniertes Programm
-  aufzubauen — inzwischen bedeuten zwei Wege nur zwei Fehlerquellen und
-  doppelte Unterstützung. Unter Linux bleibt alles wie es ist.
+- **Unter Windows gibt es nur noch einen Download: den Installer.** Die
+  einzelne `SC-BP-Watcher.exe` entfällt.
+
+  **Was du davon hast:** Du musst nicht mehr überlegen, welche der beiden
+  Dateien die richtige ist. Der Watcher steht danach im Startmenü, statt
+  irgendwo im Download-Ordner zu liegen. Updates ersetzen wirklich das
+  Programm, statt eine zweite Fassung danebenzulegen — der häufigste Grund
+  dafür, dass jemand monatelang unbemerkt eine alte Version benutzt. Autostart
+  ist ein Häkchen bei der Installation, und über *Apps & Features* wird alles
+  wieder sauber los.
+
+  Die einzelne Datei stammte aus der Anfangszeit: Ein unsigniertes Programm
+  ohne Installer wirkt harmloser, und es ging darum, überhaupt erst Vertrauen
+  zu gewinnen. Das ist erreicht — und zwei Wege nebeneinander heißen doppelt so
+  viele Stellen, an denen etwas klemmen kann. Lieber ein Weg, der zuverlässig
+  funktioniert.
+
+  Unter Linux ändert sich nichts: dort bleibt es beim AppImage.
 - **Wer noch v2.0.0 hat, kommt trotzdem mit.** Deren Update-Weg greift die
   erste Datei auf `.exe` — das ist jetzt der Installer — und startet sie
   anschließend. Er läuft damit von selbst und richtet alles ordentlich ein.

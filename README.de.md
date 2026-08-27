@@ -179,7 +179,16 @@ Sonst nichts. Kein Python, kein Konto — und ob du installieren willst, entsche
 
 2. Starten. Fertig.
 
-Kein Python, keine Zusatzpakete — der Installer bringt alles mit und lässt sich über *Apps & Features* wieder entfernen. Unter Linux muss das AppImage einmalig ausführbar gemacht werden (Rechtsklick → Eigenschaften → *Als Programm ausführbar*, oder `chmod +x SC-BP-Watcher-x86_64.AppImage`).
+Kein Python, keine Zusatzpakete — der Installer bringt alles mit und lässt sich über *Apps & Features* wieder entfernen.
+
+> **Warum es die einzelne `.exe` nicht mehr gibt** (seit v3.0.0): Es gab sie
+> lange als zweiten Weg, für alle, die nichts installieren wollten. Das hatte
+> aber einen Preis, den man erst später merkte — ein Update legte die neue
+> Fassung **neben** die alte Datei, statt sie zu ersetzen. Wer danach seine
+> gewohnte Verknüpfung anklickte, benutzte monatelang unbemerkt die alte
+> Version. Mit dem Installer kann das nicht passieren: Startmenü-Eintrag,
+> Updates ersetzen wirklich, Autostart ist ein Häkchen, und deinstallieren
+> lässt es sich ordentlich. Unter Linux bleibt alles beim AppImage. Unter Linux muss das AppImage einmalig ausführbar gemacht werden (Rechtsklick → Eigenschaften → *Als Programm ausführbar*, oder `chmod +x SC-BP-Watcher-x86_64.AppImage`).
 
 Beim ersten Start führt dich ein **Assistent** durch die Einrichtung: Sprache, Star Citizen finden, bisherige Baupläne holen. Das dauert eine Minute, danach steht dein Bestand.
 
