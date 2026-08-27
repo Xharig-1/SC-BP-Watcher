@@ -1609,6 +1609,13 @@ class Hauptfenster:
             self.seiten[kennung] = tk.Frame(self.inhalt, bg=BG)
         if kennung not in self.gezeichnet:
             self.gezeichnet.add(kennung)
+            # ⚠ Die Spur führt jetzt auch über die Bedienung, nicht nur über den
+            # Start. Grund: Bomb20 meldete am 27.08.2026 einen reproduzierbaren
+            # Absturz beim Öffnen von „Was ist neu" — und sein Bericht wusste
+            # nichts davon. Die Fehlerhaken greifen nur bei Python-Ausnahmen,
+            # und die Spur endete beim letzten Startschritt. Fehlt die zweite
+            # Zeile hier, hat es beim Bauen genau dieser Seite geknallt.
+            fehler.spur('Seite %s: bauen beginnt' % kennung)
             try:
                 self._seite_fuellen(kennung, self.seiten[kennung])
             except Exception as ausnahme:
@@ -1620,6 +1627,7 @@ class Hauptfenster:
             self.seiten[self.aktuell].pack_forget()
         self.seiten[kennung].pack(fill='both', expand=True)
         self.aktuell = kennung
+        fehler.spur('Seite %s: steht' % kennung)
         self._reiter_faerben()
         # Der aktive Reiter wird fett — und fett ist breiter. Die Leiste muss
         # deshalb bei jedem Wechsel nachmessen, sonst wird der längste Eintrag

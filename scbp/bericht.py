@@ -248,6 +248,20 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
         for eintrag in spur[-12:]:
             zeilen.append('  ' + eintrag)
 
+    # ⚠ Und danach der harte Abbruch, falls es einen gab. Er steht **vor** den
+    # Fehlern, weil er der schwerere Befund ist: Ein Eintrag in der Fehlerliste
+    # heißt, das Programm hat weitergelebt; hier war es mitten im Befehl weg.
+    # Nur die erste Handvoll Zeilen — der volle Aufrufweg aller Fäden füllt
+    # Seiten, und der Melder soll den Bericht noch verschicken können.
+    absturz = _sicher(fehler.letzter_absturz, [])
+    if absturz:
+        zeilen.append('')
+        zeilen.append(t('b_absturz'))
+        for eintrag in absturz[:14]:
+            zeilen.append('  ' + eintrag)
+        if len(absturz) > 14:
+            zeilen.append('  … (%d)' % (len(absturz) - 14))
+
     letzte = _sicher(lambda: fehler.letzte(fehleranzahl), [])
     gesamt = _sicher(fehler.anzahl, 0)
     zeilen.append('')

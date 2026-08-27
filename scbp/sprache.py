@@ -431,6 +431,8 @@ TEXTE = {
     's_ub_auf_nein':   ('Ließ sich nicht öffnen: %s', 'Could not be opened: %s'),
     'b_spur':          ('Startverlauf des letzten Laufs (die letzte Zeile sagt, wie weit es kam)',
                           'Start trace of the last run (the last line shows how far it got)'),
+    'b_absturz':       ('Harter Abbruch beim vorigen Lauf — das Programm wurde mitten im Befehl beendet',
+                          'Hard crash during the previous run — the program was killed mid-instruction'),
     'b_fehler_alt':    ('(aus einer älteren Version — vermutlich längst behoben)',
                           '(from an older version — most likely fixed since)'),
     's_sp_start':      ('Star Citizen starten', 'Launch Star Citizen'),
@@ -824,6 +826,18 @@ TEXTE = {
                          'be launched from the tool, that the restart after an update '
                          'never came, and that fetching a new version did nothing at '
                          'all. All three would have hit everyone on release day.'),
+    # ⚠ Der vierte Fund ist kein behobener Fehler, und genau so steht er da.
+    # Wer „behoben" schreibt, wo nur „sichtbar gemacht" stimmt, belügt den
+    # nächsten Melder.
+    's_dk_bomb_blind':  ('Am selben Abend legte er eine Lücke frei, die gar keine '
+                         'Fehlermeldung war: Sein Absturz beim Öffnen von „Was ist '
+                         'neu" stand im Diagnosebericht **überhaupt nicht drin**. '
+                         'Harte Abbrüche hinterließen bis dahin keine Spur — seit '
+                         'rc74 tun sie es.',
+                         'That same evening he exposed a gap that was not a bug '
+                         "report at all: his crash when opening “What's new” did "
+                         'not appear in the diagnostic report **at all**. Hard '
+                         'crashes left no trace until then — since rc74 they do.'),
     's_dk_bomb_bugs':   ('Davor: **der Absturz beim allerersten Start** — der Fehler, '
                          'den sonst nur neue Nutzer je gesehen hätten und der Autor '
                          'nie · der wirkungslose Knopf „Jetzt nachsehen" · der '

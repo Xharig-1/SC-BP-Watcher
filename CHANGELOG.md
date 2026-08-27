@@ -10,6 +10,37 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc74 - 2026-08-27
+
+> **A crash now leaves a trace.**
+
+### Added
+
+- **Hard crashes are recorded.** Until now the tool only caught Python errors.
+  A crash that kills the process mid-instruction (from inside the Tk library,
+  say) left **nothing behind**: no entry, no message, nothing to attach. From
+  now on a handler writes the call path of every thread to a file, and the next
+  diagnostic report shows it under "Hard crash during the previous run".
+- **The trace now covers usage, not just startup.** It stopped after the last
+  startup step — which page someone opened was recorded nowhere. Every page
+  switch now writes two lines. If the second one is missing, it broke while
+  building exactly that page. The file is capped so it cannot grow forever.
+
+### Notes
+
+- **The crash Bomb20 reported when opening "What's new" is not fixed by this,
+  it is measurable.** It could not be reproduced here, and his report could not
+  show it at all — that is the gap rc74 closes. If it happens again, it will be
+  in the next report.
+
+### Thanks
+
+- **Bomb20** (pr0citizen) — for a report that turned out to be about something
+  bigger than a single crash: the tool was blind at that spot. And for sending
+  it even though it looked like a false alarm.
+- **Haldjas** (SC4M) and **Xharig** — for the counter-test on Windows: the
+  update from rc71 to rc73 and the interface since rc61, both without findings.
+
 ## v3.0.0-rc73 - 2026-08-27
 
 > **The thanks page now says what actually happened today.**
