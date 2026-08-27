@@ -670,10 +670,12 @@ def _anzeige(fenster, rahmen):
                  [(s, t('hf_s_' + s))
                   for s in ('klein', 'normal', 'gross', 'sehrgross')],
                  pfade.einstellung('schriftgroesse') or 'normal',
-                 lambda k: (wahl.setzen(k),
-                            fenster.schriftgroesse_setzen(k),
-                            fenster.sagen('%s: %s' % (t('hf_schrift'),
-                                                      t('hf_s_' + k)))))
+                 # ⚠ Nur noch der eine Aufruf. `schriftgroesse_setzen()` baut
+                 # das Fenster neu auf — damit zeichnet sich die Wahl selbst
+                 # richtig, und die Rückmeldung kommt von dort, nach dem
+                 # Aufbau. Das frühere `wahl.setzen(k)` und `sagen()` hier
+                 # liefen beide ins Leere, sobald neu gezeichnet wurde.
+                 lambda k: fenster.schriftgroesse_setzen(k))
     wahl.pack()
 
     ziel = _feld(fenster, innen, t('e_deckkraft'),
@@ -1586,15 +1588,24 @@ def _jetzt_nachsehen(fenster):
             return
 
         def melden():
-            if neuere:
-                fenster.sagen(t('s_ub_gefunden') % neuere.get('version'))
-            else:
-                fenster.sagen(t('s_ub_aktuell'))
-            # Die Kanal-Kästen tragen die Fassungsnummern — sie müssen mitziehen.
+            # ⚠ **Erst neu aufbauen, dann sagen.** `neu_aufbauen()` zerstoert
+            # saemtliche Kinder des Fensters und baut sie neu — auch die
+            # Fusszeile, in der `sagen()` schreibt. Stand das `sagen()` davor,
+            # existierte die Antwort ein paar Millisekunden und war dann weg:
+            # Der Knopf blieb bei „Suche nach einer neuen Fassung …" stehen und
+            # meldete nie ein Ergebnis. Genau so gemeldet von der Autor am
+            # 27.08.2026, direkt nach der Reparatur des `datei`-Fehlers.
+            #
+            # Der Neuaufbau muss trotzdem sein: Die Kanal-Kaesten tragen die
+            # Fassungsnummern und muessen mitziehen.
             try:
                 fenster.neu_aufbauen()
             except Exception:
                 pass
+            if neuere:
+                fenster.sagen(t('s_ub_gefunden') % neuere.get('version'))
+            else:
+                fenster.sagen(t('s_ub_aktuell'))
 
         try:
             fenster.root.after(0, melden)
@@ -1879,10 +1890,13 @@ def _fassung_holen(fenster, mit_vorab):
             # Linux: Das AppImage ist getauscht, laufen tut aber noch die alte
             # Fassung. Hier bleibt der zweite Klick sinnvoll — er beendet und
             # startet neu.
-            fenster.root.after(0, lambda: fenster.sagen(t('s_ub_bereit')))
-            # Den Kasten neu zeichnen, damit aus „holen" ein „Jetzt neu
-            # starten" wird — sonst muesste man raten, wie es weitergeht.
-            fenster.root.after(50, fenster.neu_aufbauen)
+            # ⚠ Dieselbe Reihenfolge wie oben: erst zeichnen, dann melden.
+            # Der Neuaufbau macht aus „holen" ein „Jetzt neu starten" — er
+            # zerstoert dabei aber die Fusszeile. Stand das `sagen()` zuerst
+            # (after 0) und der Aufbau danach (after 50), war die Meldung nach
+            # einer zwanzigstel Sekunde wieder weg.
+            fenster.root.after(0, fenster.neu_aufbauen)
+            fenster.root.after(50, lambda: fenster.sagen(t('s_ub_bereit')))
         except Exception as ausnahme:
             grund = str(ausnahme)
             fehler.merken('seiten.fassung_holen', ausnahme)
@@ -1894,7 +1908,7 @@ def _fassung_holen(fenster, mit_vorab):
 
 def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text='',
                  untereinander=False, holen=None, holen_text='',
-                 holen_aktiv=True):
+                 holen_aktiv=True, platz=0):
     """Eine Wahlmöglichkeit als Kasten — wie in der Vorschau.
 
     Ein Schalter mit „an/aus" beantwortet die Frage nicht, die der Spieler hat:
@@ -1905,6 +1919,14 @@ def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text='',
     verteilt dann nicht etwa gerecht, sondern gibt dem ersten seine volle
     Wunschbreite und quetscht den zweiten auf 49 Pixel zusammen. Gemessen bei
     720×520: 329 Pixel fehlten.
+
+    ⚠ **`grid` statt `pack`, und zwar wegen `uniform`.** Mit
+    `pack(expand=True)` verteilt Tk nur den **Überschuss** gleichmäßig, nicht
+    die Gesamtbreite: Wer mehr Text hat, bleibt breiter. Die beiden Kästen
+    standen deshalb sichtbar ungleich nebeneinander — gemeldet von der Autor am
+    27.08.2026 („die müssen aber gleich sein"). `columnconfigure(…,
+    uniform=…)` ist die einzige Zusage in Tk, die zwei Spalten wirklich gleich
+    breit macht; bei `pack` gibt es nichts Vergleichbares.
     """
     from .hauptfenster import marke as blase
     from .hauptfenster import rundrahmen
@@ -1912,9 +1934,15 @@ def _kanalkasten(fenster, eltern, titel, text, gewaehlt, tat, marke_text='',
                        radius=8, grundfarbe=BG)
     rand = innen.halter
     if untereinander:
-        rand.pack(side='top', fill='x', expand=False, pady=(0, 10))
+        eltern.grid_columnconfigure(0, weight=1, uniform='')
+        rand.grid(row=platz, column=0, sticky='ew', pady=(0, 10))
     else:
-        rand.pack(side='left', fill='both', expand=True, padx=(0, 10))
+        # `uniform` bindet die Spalten aneinander: gleiche Breite, egal wie
+        # lang der Text ist. `sticky='nsew'` zieht beide auf dieselbe Höhe.
+        eltern.grid_columnconfigure(platz, weight=1, uniform='kanal')
+        eltern.grid_rowconfigure(0, weight=1)
+        rand.grid(row=0, column=platz, sticky='nsew',
+                  padx=(0, 5) if platz == 0 else (5, 0))
     rand.configure(cursor='hand2')
     innen.configure(cursor='hand2')
     innen.leinwand.configure(cursor='hand2')
@@ -2741,12 +2769,13 @@ def _ueber(fenster, rahmen):
         kaesten.zuletzt_eng = eng
         _kanalkasten(fenster, kaesten, t('s_ub_fertig'), t('s_ub_fertig_h'),
                      not an, lambda: kanal_setzen(False), untereinander=eng,
+                     platz=0,
                      holen=lambda: _fassung_holen(fenster, False),
                      holen_text=_holen_text(False, fenster.version),
                      holen_aktiv=_holen_moeglich(False, fenster.version))
         _kanalkasten(fenster, kaesten, t('s_ub_test'), t('s_ub_test_h'),
                      an, lambda: kanal_setzen(True), marke_text='rc',
-                     untereinander=eng,
+                     untereinander=eng, platz=1,
                      holen=lambda: _fassung_holen(fenster, True),
                      holen_text=_holen_text(True, fenster.version),
                      holen_aktiv=_holen_moeglich(True, fenster.version))

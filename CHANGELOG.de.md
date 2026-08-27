@@ -10,6 +10,55 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc64 - 2026-08-27
+
+> **Der Neuaufbau frisst die Meldung** — dreimal dieselbe Falle, an drei
+> verschiedenen Stellen.
+
+### Behoben
+
+- **„Auf Aktualität prüfen" meldete weiterhin kein Ergebnis.** Der Fehler aus
+  rc63 war weg, die Antwort kam trotzdem nicht: Der Knopf blieb bei „Suche nach
+  einer neuen Fassung …" stehen. `neu_aufbauen()` zerstört **alle** Kinder des
+  Fensters — auch die Fußzeile, in der die Meldung steht. Sie wurde gesetzt und
+  Millisekunden später mitzerstört. Jetzt wird erst aufgebaut, dann gemeldet.
+  Gemeldet von der Autor.
+
+- **Dieselbe Falle nach dem Update unter Linux.** „Fertig — jetzt neu starten"
+  wurde bei `after(0)` gesagt und bei `after(50)` weggeräumt. Reihenfolge
+  getauscht.
+
+- **Bei „sehr groß" fehlte die halbe linke Leiste.** „Star Citizen starten",
+  „Kaffee spendieren" und „Discord" fielen unten aus dem Fenster — sie werden
+  von unten gepackt, und was zwischen Reitern und Fußzeile nicht hineinpasst,
+  fällt heraus. Die Mindestgröße des Fensters hängt an der Höhe der
+  Seitenleiste, und die hängt an der Schrift. Gerechnet hat das Programm das
+  immer richtig, nur lief die Rechnung nie nach einem Schrift- oder
+  Sprachwechsel — jetzt gehört sie zum Neuaufbau. Gemeldet von der Autor: „wenn
+  jemand so schlecht sehen sollte, was ja möglich ist, dann muss die minimale
+  Größe eben im Verhältnis mitwachsen."
+
+- **Die beiden Kästen unter „Wovon willst du Bescheid bekommen?" waren
+  ungleich groß.** `pack(expand=True)` verteilt nur den **Überschuss**
+  gleichmäßig — wer mehr Text hat, bleibt breiter. Sie liegen jetzt in einem
+  `grid` mit `uniform`, der einzigen Zusage in Tk, die zwei Spalten wirklich
+  gleich breit macht; gemessen 545 px zu 545 px, gleiche Höhe. Gemeldet von
+  der Autor.
+
+- **Bei „sehr groß" waren die Knöpfe abgeschnitten.** Ein benanntes Tk-Font
+  wirkt sofort auf jeden Text — aber die gezeichneten Rundknöpfe legen ihre
+  Leinwand beim Bauen **einmal** auf die gemessene Textbreite fest. Nachgemessen
+  an der Overlay-Wahl: Kasten 177 px, Text 206 px, **29 px fehlten**. Das
+  Umstellen der Schriftgröße baut die Oberfläche jetzt neu auf — wie der
+  Sprachwechsel es längst tut —, damit jede Leinwand neu misst. Gemeldet von
+  der Autor.
+
+### Hinweise
+
+- **Selbsttest-Abschnitt 21.** Prüft beides zusammen: dass ein fertiger
+  Rundknopf tatsächlich nicht von allein wächst (sonst liefe die zweite Prüfung
+  ins Leere), und dass der Schriftwechsel neu aufbaut **und danach** meldet.
+
 ## v3.0.0-rc63 - 2026-08-27
 
 > **„Auf Aktualität prüfen" prüft wieder** — und der Hinweis vor dem Update

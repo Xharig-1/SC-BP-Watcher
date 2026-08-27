@@ -10,6 +10,49 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc64 - 2026-08-27
+
+> **The rebuild eats the message** — the same trap three times, in three
+> different places.
+
+### Fixed
+
+- **"Check for updates" still reported nothing.** The rc63 crash was gone but no
+  answer appeared: the button stayed on "Looking for a new version …".
+  `neu_aufbauen()` destroys **every** child of the window — including the footer
+  the message lives in. It was set and torn down milliseconds later. It now
+  rebuilds first and reports afterwards. Reported by der Autor.
+
+- **Same trap after updating on Linux.** "Ready — restart now" was said at
+  `after(0)` and swept away at `after(50)`. Order swapped.
+
+- **At "very large" half the sidebar was missing.** "Launch Star Citizen", "Buy
+  me a coffee" and "Discord" dropped out of the window — they are packed from
+  the bottom, and whatever does not fit between tabs and footer falls out. The
+  window's minimum size depends on the sidebar height, which depends on the
+  font. The program always calculated this correctly; the calculation simply
+  never ran after a font or language change. It is now part of the rebuild.
+  Reported by der Autor.
+
+- **The two boxes under "What do you want to hear about?" were unequal.**
+  `pack(expand=True)` distributes only the **surplus** evenly — whichever has
+  more text stays wider. They now sit in a `grid` with `uniform`, the only
+  guarantee in Tk that makes two columns truly equal; measured 545 px to
+  545 px, same height. Reported by der Autor.
+
+- **At "very large" the buttons were cut off.** A named Tk font applies to every
+  text instantly — but the drawn round buttons fix their canvas to the measured
+  text width **once**, at build time. Measured on the overlay choice: canvas
+  177 px, text 206 px, **29 px short**. Changing the font size now rebuilds the
+  interface — as the language switch has always done — so every canvas measures
+  anew. Reported by der Autor.
+
+### Notes
+
+- **Self-test section 21.** Checks both halves: that a finished round button
+  really does not grow on its own (otherwise the second check would pass
+  vacuously), and that the font switch rebuilds **and then** reports.
+
 ## v3.0.0-rc63 - 2026-08-27
 
 > **"Check for updates" checks again** — and the notice before an update finally

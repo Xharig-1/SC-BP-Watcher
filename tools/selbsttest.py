@@ -1395,6 +1395,107 @@ def main():
                    'kein undefinierter Name im ganzen Programm (%d gefunden)'
                    % len(_offen))
 
+        # ------------------------------------------------------------------
+        # ⚠ Am 27.08.2026 meldete der Autor, dass bei „sehr gross" die Knoepfe
+        # der Overlay-Wahl abgeschnitten sind. Ein benanntes Tk-Font wirkt
+        # sofort auf jeden Text — aber die gezeichneten Rundknoepfe legen ihre
+        # Leinwand beim Bauen **einmal** auf `schrift.measure(text)` fest.
+        # Gemessen: 177 px Kasten, 206 px Text. 29 px fehlten.
+        print()
+        print('21. Groessere Schrift sprengt keine Knoepfe mehr')
+        import tkinter as tk21
+        import tkinter.font as tkfont21
+        from scbp import seiten as se21
+        from scbp.hauptfenster import Hauptfenster as HF21
+
+        wurzel = _wurzel()
+        _sch21 = tkfont21.Font(root=wurzel, family='Segoe UI', size=10)
+
+        class _Traeger21:
+            f_klein = _sch21
+
+        _wahl21 = se21._wahl(_Traeger21(), tk21.Frame(wurzel),
+                             [('popup', 'nur bei einem Neuzugang')],
+                             'popup', lambda k: None)
+        wurzel.update_idletasks()
+        _vorher21 = _wahl21.winfo_children()[0].winfo_reqwidth()
+        _sch21.configure(size=12)              # klein -> sehr gross
+        wurzel.update_idletasks()
+        _nachher21 = _wahl21.winfo_children()[0].winfo_reqwidth()
+        _noetig21 = _sch21.measure('nur bei einem Neuzugang') + 26
+
+        # a) Die Falle gibt es wirklich — sonst prueft (b) ins Leere.
+        pruefe(_nachher21 == _vorher21 and _noetig21 > _nachher21,
+               'ein fertiger Rundknopf waechst NICHT von allein (%d px fehlen)'
+               % (_noetig21 - _nachher21))
+
+        # b) Deshalb muss das Umstellen der Schriftgroesse neu aufbauen — und
+        #    die Rueckmeldung DANACH sagen, sonst zerstoert der Aufbau sie.
+        _ablauf21 = []
+
+        class _Fenster21:
+            f_grund = f_fett = f_klein = f_titel = f_zeichen = _sch21
+            beim_schriftwechsel = None
+            root = wurzel
+            neu_aufbauen = lambda self: _ablauf21.append('aufbauen')
+            sagen = lambda self, text: _ablauf21.append('sagen')
+
+        HF21.schriftgroesse_setzen(_Fenster21(), 'gross')
+        wurzel.update()                        # die `after`-Schlange abarbeiten
+        pruefe(_ablauf21 == ['aufbauen', 'sagen'],
+               'Schriftwechsel baut neu auf und meldet danach (%s)'
+               % (' -> '.join(_ablauf21) or 'nichts passiert'))
+
+        # c) ⚠ Die Mindestgroesse haengt an der Seitenleiste, die Seitenleiste
+        #    an der Schrift. Ohne Nachziehen ragen bei „sehr gross" die unteren
+        #    Eintraege („Star Citizen starten", „Kaffee spendieren", „Discord")
+        #    aus dem Fenster — sie werden von unten gepackt und fallen heraus.
+        #    Gerechnet wurde immer richtig; der Aufruf fehlte im Neuaufbau.
+        import inspect as _ins21
+        _quelle21 = _ins21.getsource(HF21.neu_aufbauen)
+        pruefe('_mindesthoehe_nachziehen' in _quelle21,
+               'der Neuaufbau zieht die Mindestgroesse nach')
+
+        # d) ⚠ Die zwei Kanal-Kaesten muessen gleich gross sein. `pack` kann das
+        #    nicht: Es verteilt nur den UEBERSCHUSS gleichmaessig, der laengere
+        #    Text bleibt breiter. Nur `grid` mit `uniform` sagt Gleichheit zu.
+        # ⚠ Ohne echte Fenstergroesse meldet Tk fuer beide Kaesten 1 Pixel —
+        # dann waeren sie „gleich gross" und die Pruefung ginge immer durch.
+        # Deshalb eine Groesse setzen und das Layout wirklich rechnen lassen.
+        # ⚠ `_wurzel()` liefert ein verstecktes Fenster — ein verstecktes Fenster
+        # rechnet Tk nicht aus, beide Kaesten meldeten 1 Pixel. Dann waeren sie
+        # „gleich gross" und die Pruefung ginge immer durch. Also kurz zeigen.
+        wurzel.geometry('1100x760')
+        wurzel.deiconify()
+        _rahmen21 = tk21.Frame(wurzel)
+        _rahmen21.pack(fill='both', expand=True)
+
+        class _Traeger21b:
+            f_klein = _sch21
+            f_fett = _sch21
+            version = '0.0.0'
+
+        _t21 = _Traeger21b()
+        se21._kanalkasten(_t21, _rahmen21, 'Kurz', 'Zwei Woerter.',
+                          True, lambda: None, platz=0)
+        se21._kanalkasten(_t21, _rahmen21, 'Deutlich laenger',
+                          'Ein merklich laengerer Satz, der mehr Platz braucht '
+                          'als der andere Kasten daneben.',
+                          False, lambda: None, platz=1)
+        wurzel.update()
+        _br21 = [k.winfo_width() for k in _rahmen21.winfo_children()]
+        _ho21 = [k.winfo_height() for k in _rahmen21.winfo_children()]
+        # ⚠ Erst pruefen, dass ueberhaupt gezeichnet wurde. Sonst vergliche man
+        # zwei Einsen und haette nichts geprueft.
+        pruefe(len(_br21) == 2 and min(_br21) > 100,
+               'die Kanal-Kaesten wurden wirklich gezeichnet (%s px)' % _br21)
+        pruefe(len(_br21) == 2 and _br21[0] == _br21[1] and _ho21[0] == _ho21[1],
+               'beide Kanal-Kaesten sind gleich gross (%s px breit, %s hoch)'
+               % (_br21, _ho21))
+
+        wurzel.withdraw()
+        wurzel.destroy()
+
     finally:
         shutil.rmtree(basis, ignore_errors=True)
 
