@@ -31,6 +31,7 @@ Four things are deliberate and will stay that way:
 | ✅ | Windows and Linux, with autostart on both |
 | ✅ | Export your inventory — for the KRT Profit Basetool, for scmdb.net and as a full backup |
 | ✅ | Collapse the overlay, for anyone on a single screen |
+| ✅ | **Item details in game** — class, size and grade at the tractor beam, seeker type for missiles |
 
 ## What is being worked on
 

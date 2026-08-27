@@ -10,6 +10,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc76 - 2026-08-27
+
+> **The tractor beam now tells you what you are looking at — and on Windows
+> there is only one route left.**
+
 ### Fixed
 
 - **On Windows there is only the installer now.** The standalone
@@ -45,6 +50,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
   Can be switched off under *In-game text → Details on the item*. To undo it,
   use „Remove again" — the original names come back to the character.
+
+### Thanks
+
+- **Xharig** — for two finds in one evening: that the switches on the same page
+  sat sometimes centred, sometimes right („symmetry is EXTREMELY important to me
+  in basically everything"), and for asking whether there is any route at all
+  from v2.0.0 to v3.0.0. There was — but it led astray.
 
 ## v3.0.0-rc75 - 2026-08-27
 

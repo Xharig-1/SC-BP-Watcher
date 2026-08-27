@@ -31,6 +31,7 @@ Vier Dinge sind Absicht und bleiben so:
 | ✅ | Windows und Linux, mit Autostart auf beiden |
 | ✅ | Bestand ausgeben — für das KRT Profit Basetool, für scmdb.net und als vollständige Sicherung |
 | ✅ | Overlay einklappen, für alle mit einem Bildschirm |
+| ✅ | **Angaben am Gegenstand im Spiel** — Klasse, Größe und Gütegrad am Traktorstrahl, bei Raketen der Suchkopf |
 
 ## Woran gearbeitet wird
 

@@ -10,6 +10,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc76 - 2026-08-27
+
+> **Am Traktorstrahl steht jetzt, womit man es zu tun hat — und unter Windows
+> gibt es nur noch einen Weg.**
+
 ### Behoben
 
 - **Unter Windows gibt es nur noch den Installer.** Die einzelne
@@ -47,6 +52,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Abschaltbar unter *Texte im Spiel → Angaben am Gegenstand*. Wer sie wieder
   loswerden will, nimmt „Wieder entfernen" — die ursprünglichen Namen kommen
   auf das Zeichen genau zurück.
+
+### Dank
+
+- **Xharig** — für zwei Funde an einem Abend: dass die Schalter auf derselben
+  Seite mal mittig, mal rechts standen („Symmetrie ist für mich EXTREM wichtig
+  bei eigentlich allem"), und für die Frage, ob von v2.0.0 überhaupt ein Weg
+  auf v3.0.0 führt. Er führte — aber in die Irre.
 
 ## v3.0.0-rc75 - 2026-08-27
 
