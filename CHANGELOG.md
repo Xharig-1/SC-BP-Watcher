@@ -10,6 +10,42 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc67 - 2026-08-27
+
+> **The restart after an update works on Linux** — and can no longer fail
+> silently.
+
+### Fixed
+
+- **After an update the watcher shut down and never came back.** It downloaded
+  the new version, installed it, closed itself — and stayed closed. Reported by
+  **Bomb20** (pr0citizen) with the decisive sentence "it does shut down but
+  doesn't start", reproduced the same day by **der Autor** on his own machine.
+  - **The cause:** when starting the new version, only `APPIMAGE`, `APPDIR`,
+    `OWD` and `ARGV0` were removed from the environment — `LD_LIBRARY_PATH`,
+    `PYTHONHOME` and `PYTHONPATH` stayed. Inside an AppImage those point into the
+    **extracted mount of the old version**. Two seconds later the old one exits,
+    its mount disappears, and the new one looks for its libraries in a directory
+    that no longer exists. It dies before a window appears.
+  - The proper cleanup already existed (`saubere_umgebung`); the restart just
+    carried its own incomplete copy. Both now live in `scbp/pfade.py` — **one**
+    cleanup, used by everyone.
+- **And it can no longer fail silently.** The old version only steps aside once
+  the new one has survived its first seconds. If it dies, the watcher stays open
+  and says so: "The new version did not come up." Previously the old one closed
+  dutifully while the new one was already dead — leaving the machine without a
+  watcher and without a word of explanation.
+  - Same lesson as the launch button in rc65: **starting a program does not mean
+    it is running.** `Popen` reports success as soon as the process exists.
+
+### Thanks
+
+- **Bomb20** (pr0citizen) — for sticking with it. His matter-of-fact "it does
+  shut down but doesn't start" pinned down the bug after it had first been
+  dismissed as a user error. He was right, we were not.
+- **der Autor** — for reproducing it on his own machine, which finally ruled out
+  "it's something on his system".
+
 ## v3.0.0-rc66 - 2026-08-27
 
 > **The export files keep themselves up to date** — and the file chooser finally
@@ -49,6 +85,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   - Folders already had this path; files did not. Both now live in one place
     (`scbp/dateiwahl.py`) instead of three.
 
+
+### Thanks
+
+- **der Autor** — for the observations while demonstrating the tool: that the
+  export files are not kept up to date, that "Save individually" only handled one
+  format, and that the file chooser on Linux looks like it came from the nineties.
+
 ## v3.0.0-rc65 - 2026-08-27
 
 > **The launch button called the wrong program on Linux.**
@@ -65,6 +108,14 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   - No more fallback to `lug-helper`: it would be found, the button would
     appear, and it would do nothing again. Anyone playing through Lutris or
     Heroic still enters their launch command in the `spielstarter` setting.
+
+
+### Thanks
+
+- **Bomb20** (pr0citizen) — for reporting that Star Citizen could not be launched
+  from the tool, and for the patience of sending two diagnostic reports in one
+  morning. Without the second one it would not have come out that `lug-helper`
+  cannot launch the game at all.
 
 ## v3.0.0-rc64 - 2026-08-27
 

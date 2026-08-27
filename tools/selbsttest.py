@@ -790,9 +790,15 @@ def main():
 
         gestartet = []
 
+        umgebungen = []
+
         class _FalschesPopen(object):
             def __init__(self, *a, **k):
                 gestartet.append(a[0] if a else None)
+                umgebungen.append(k.get('env') or {})
+
+            def poll(self):
+                return None          # tut so, als lebe die neue Fassung
 
         echtes_popen = subprocess.Popen
         echte_verpackung = akt.verpackung
@@ -817,6 +823,33 @@ def main():
             akt.neu_starten()
             pruefe(len(gestartet) == 1,
                    'ohne wartenden Tausch startet die neue Fassung')
+
+            # ⚠ **Die Umgebung muss gewaschen sein.** Genau hier ist der
+            # Neustart unter Linux monatelang gescheitert: `LD_LIBRARY_PATH`,
+            # `PYTHONHOME` und `PYTHONPATH` zeigen im AppImage in den entpackten
+            # Mount der ALTEN Fassung. Zwei Sekunden spaeter beendet sie sich,
+            # der Mount verschwindet, und die neue Fassung findet ihre
+            # Bibliotheken nicht mehr. Fuer den Nutzer: „es geht aus, startet
+            # aber nicht" (Bomb20, 27.08.2026).
+            geerbt = umgebungen[-1] if umgebungen else {}
+            uebrig = [n for n in ('LD_LIBRARY_PATH', 'PYTHONHOME', 'PYTHONPATH',
+                                  'APPIMAGE', 'APPDIR', 'ARGV0', '_MEIPASS')
+                      if n in geerbt]
+            pruefe(not uebrig,
+                   'die neue Fassung erbt keine Pfade der alten (%s)'
+                   % (', '.join(uebrig) or 'keine'))
+
+            # Und: Stirbt die neue Fassung sofort, darf die alte NICHT abtreten.
+            class _TotesPopen(_FalschesPopen):
+                def poll(self):
+                    return 1         # schon gestorben
+            akt._GESTARTET[0] = _TotesPopen('x')
+            pruefe(akt.neue_fassung_laeuft(wartezeit=0.3) is False,
+                   'eine sofort gestorbene neue Fassung wird erkannt')
+            akt._GESTARTET[0] = _FalschesPopen('x')
+            pruefe(akt.neue_fassung_laeuft(wartezeit=0.3) is True,
+                   'eine laufende neue Fassung gilt als geglueckt')
+            akt._GESTARTET[0] = None
         finally:
             subprocess.Popen = echtes_popen
             akt.verpackung = echte_verpackung

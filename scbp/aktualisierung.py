@@ -760,6 +760,42 @@ if __name__ == '__main__':
 INNO_KENNUNG = '{7C4B1E93-2A6F-4D58-B0E1-9F3A5C8D2461}_is1'
 
 
+# Die frisch gestartete Fassung. Gebraucht wird sie nur, um **nachzusehen, ob
+# sie noch lebt** — siehe `neue_fassung_laeuft()`.
+_GESTARTET = [None]
+
+
+def neue_fassung_laeuft(wartezeit=3.0):
+    """Lebt die eben gestartete Fassung noch? Erst danach darf die alte gehen.
+
+    ⚠ **Ein Programm zu starten heißt nicht, dass es läuft.** `Popen` meldet
+    Erfolg, sobald der Prozess angelegt ist; ob er eine Sekunde später an einer
+    fehlenden Bibliothek stirbt, erfährt niemand — `stdout` und `stderr` gehen
+    nach `/dev/null`, und auf den Rückgabewert wartete bisher keiner.
+
+    Genau so ist der Neustart unter Linux monatelang **stumm** gescheitert: Die
+    alte Fassung trat pflichtschuldig ab, die neue war da schon tot, und übrig
+    blieb ein Rechner ohne Watcher. Der Nutzer sieht nur „es geht aus und kommt
+    nicht wieder" und kann nicht einmal sagen, woran es lag.
+
+    Diese Prüfung kostet ein paar Sekunden Warten — sie gehört deshalb in einen
+    eigenen Faden, nicht in den Tk-Faden.
+
+    Gibt `True` zurück, wenn die neue Fassung die Wartezeit überlebt hat oder es
+    gar keinen eigenen Prozess gibt (Windows: dort startet der Installer neu).
+    """
+    prozess = _GESTARTET[0]
+    if prozess is None:
+        return True
+    import time
+    ende = time.monotonic() + wartezeit
+    while time.monotonic() < ende:
+        if prozess.poll() is not None:
+            return False
+        time.sleep(0.15)
+    return True
+
+
 def neu_starten():
     """Das Programm durch die frisch eingespielte Fassung ersetzen.
 
@@ -785,7 +821,22 @@ def neu_starten():
         if _TAUSCH_LAEUFT[0]:
             return True
 
-        umgebung = dict(os.environ)
+        # ⚠ **Hier stand `dict(os.environ)`** — und genau daran ist der Neustart
+        # unter Linux gescheitert. Entfernt wurden nur `APPIMAGE` und Freunde;
+        # `LD_LIBRARY_PATH`, `PYTHONHOME` und `PYTHONPATH` blieben stehen, und
+        # die zeigen im AppImage in den **entpackten Mount der alten Fassung**.
+        # Zwei Sekunden später beendet sich die alte, ihr Mount verschwindet —
+        # und die neue sucht ihre Bibliotheken in einem Verzeichnis, das es nicht
+        # mehr gibt. Sie stirbt, bevor ein Fenster kommt.
+        #
+        # Für den Nutzer sah das so aus: „es geht dann aus aber startet nicht"
+        # (Bomb20, 27.08.2026), von der Autor am selben Tag reproduziert.
+        #
+        # `pfade.saubere_umgebung()` macht genau diese Wäsche — sie war längst da,
+        # nur benutzte der Neustart eine eigene, unvollständige Fassung davon.
+        # Zwei Wäschen sind eine zu viel.
+        from . import pfade as pfade_modul
+        umgebung = pfade_modul.saubere_umgebung()
         # Die Variablen des laufenden AppImage gehören der **alten** Fassung.
         for name in ('APPIMAGE', 'APPDIR', 'OWD', 'ARGV0'):
             umgebung.pop(name, None)
@@ -810,8 +861,9 @@ def neu_starten():
         for name in ('_MEIPASS', '_MEIPASS2', 'TCL_LIBRARY', 'TK_LIBRARY',
                      'TIX_LIBRARY', 'MATPLOTLIBDATA'):
             umgebung.pop(name, None)
-        subprocess.Popen([ziel], env=umgebung, start_new_session=True,
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        _GESTARTET[0] = subprocess.Popen(
+            [ziel], env=umgebung, start_new_session=True,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return True
     except Exception as ausnahme:
         fehler.merken('aktualisierung.neu_starten', ausnahme)
