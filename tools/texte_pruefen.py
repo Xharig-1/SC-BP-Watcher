@@ -209,8 +209,10 @@ def pruefe(pfad):
     # gebaut sind. Eine Prüfung, die so oft danebenliegt, wird übergangen, und
     # dann fällt auch das Echte nicht mehr auf.
     #
-    # Bis jemand eine bessere Heuristik hat, hilft nur der Blick auf die
-    # **englische** Oberfläche: Was dort deutsch steht, steht fest im Code.
+    # Geschlossen wird die Lücke von der anderen Seite: `oberflaeche_pruefen.py`
+    # baut das Fenster auf **Englisch** auf und sieht nach, ob ein sichtbarer
+    # Text wörtlich in der deutschen Spalte von `sprache.py` steht. Das braucht
+    # keine Heuristik und fand alle vier Stellen sofort.
     return sorted(funde)
 
 
