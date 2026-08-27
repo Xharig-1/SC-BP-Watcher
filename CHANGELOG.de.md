@@ -284,7 +284,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Das Overlay kann sich zurückhalten.** Neu wählbar: dauerhaft sichtbar wie bisher,
   oder nur kurz aufblenden, wenn wirklich ein Bauplan dazukommt. Zurück holt man es,
   indem man das Programm noch einmal startet — auf die Verknüpfung lässt sich eine
-  Tastenkombination des Systems legen. Angeregt von Haldjas (pr0citizen): „Wenn ich im
+  Tastenkombination des Systems legen. Angeregt von Haldjas (pr0): „Wenn ich im
   Kampf mit der Maus ins Overlay komme, wird das unangenehm."
 - **Mausklicks lassen sich ins Spiel durchreichen.** Das Overlay bleibt sichtbar, fängt
   aber keine Klicks mehr ab. Unter Windows über `WS_EX_TRANSPARENT`, unter Linux über die
@@ -599,12 +599,12 @@ Diese Fassung ist zu einem großen Teil das Verdienst von zwei Testern, die sich
 die Mühe gemacht haben, Fehler nicht nur zu bemerken, sondern sie so genau zu
 beschreiben, dass sie zu finden waren:
 
-- **Haldjas** (pr0citizen) — der Vorschlag mit dem Aufblend-Betrieb; dazu das
+- **Haldjas** (pr0) — der Vorschlag mit dem Aufblend-Betrieb; dazu das
   Setup, das an der laufenden Datei abbrach, die Konsolenfenster beim Update,
   das verschwundene Symbol neben der Uhr, der Absturz nach dem Neustart, die
   Schriftgröße, die das Overlay nicht erreichte, die vergessene Textquelle im
   Assistenten — und der Fund, der alles erklärte: „da bleibt er bei rc25".
-- **Bomb20** (pr0citizen) — der Absturz beim allerersten Start (der Fehler, den nur
+- **Bomb20** (pr0) — der Absturz beim allerersten Start (der Fehler, den nur
   neue Nutzer je gesehen hätten), der wirkungslose Knopf „Jetzt nachsehen" und
   der Hinweis, dass die Textquelle „Deutsch" das ganze Spiel übersetzt.
 - **Morkhan** (KRT) — der Vorschlag, Star Citizen gleich aus dem Werkzeug

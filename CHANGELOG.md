@@ -260,7 +260,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **The overlay can hold back.** Now selectable: permanently visible as before, or only
   popping up briefly when a blueprint actually arrives. You bring it back by starting the
   program again — you can put a system keyboard shortcut on the shortcut. Suggested by
-  Haldjas (pr0citizen): „when I get into the overlay with my mouse during combat, that
+  Haldjas (pr0): „when I get into the overlay with my mouse during combat, that
   will be unpleasant."
 - **Mouse clicks can be passed through to the game.** The overlay stays visible but no
   longer catches clicks. On Windows via `WS_EX_TRANSPARENT`, on Linux via the XShape
@@ -558,12 +558,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 This release owes a great deal to two testers who took the trouble not just to
 notice problems, but to describe them precisely enough to be found:
 
-- **Haldjas** (pr0citizen) — the pop-up mode suggestion; plus the setup that
+- **Haldjas** (pr0) — the pop-up mode suggestion; plus the setup that
   failed on the running file, the console windows during updates, the missing
   tray icon, the crash after restarting, the font size that never reached the
   overlay, the text source the wizard forgot — and the observation that
   explained everything: „it stays on rc25".
-- **Bomb20** (pr0citizen) — the crash on the very first start (a bug only new users
+- **Bomb20** (pr0) — the crash on the very first start (a bug only new users
   would ever have hit), the „check now" button that did nothing, and the note
   that the „German" text source translates the entire game.
 - **Morkhan** (KRT) — the suggestion to launch Star Citizen straight from
