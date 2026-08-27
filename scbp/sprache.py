@@ -867,11 +867,15 @@ TEXTE = {
                          'des Werkzeugs — einfach so.',
                          'And on top of that a month of Discord Nitro for the '
                          "tool's server — just like that."),
-    's_dk_morkhan_idee': ('**Star Citizen lässt sich aus dem Werkzeug heraus '
-                          'starten.** Sein Vorschlag — über den Weg, den man ohnehin '
-                          'benutzt.',
-                          '**Launching Star Citizen from the tool.** His suggestion — '
-                          'using the launcher you already use anyway.'),
+    's_dk_morkhan_idee': ('**Die Angaben am Gegenstand im Spiel** — dass am '
+                          'Traktorstrahl nicht nur der Name steht, sondern auch '
+                          'Klasse, Größe und Gütegrad. Dazu: **Star Citizen lässt '
+                          'sich aus dem Werkzeug heraus starten**, über den Weg, den '
+                          'man ohnehin benutzt.',
+                          '**Item details in game** — that the tractor beam shows '
+                          'more than just the name: class, size and grade. Plus: '
+                          '**launching Star Citizen from the tool**, using the '
+                          'launcher you already use anyway.'),
     's_dk_morkhan_bugs': ('Dazu: das Update über das Infofenster, das nie ankam '
                           '(dreimal vergeblich geladen) · die gestreckten Knöpfe, die '
                           'nur die halbe Breite füllten · und die verwirrenden '

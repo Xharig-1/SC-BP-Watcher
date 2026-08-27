@@ -96,6 +96,8 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   längst, nur in der Beschreibung, die man erst aufklappen muss. Das Werkzeug
   schreibt sie dorthin um, wo man sie im Gefecht auch sieht.
 
+  Vorgeschlagen von **Morkhan**.
+
   Abschaltbar unter *Texte im Spiel → Angaben am Gegenstand*. Wer sie wieder
   loswerden will, nimmt „Wieder entfernen" — die ursprünglichen Namen kommen
   auf das Zeichen genau zurück.

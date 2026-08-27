@@ -93,6 +93,8 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   there, just inside the description you have to open first. The tool merely
   moves them to where you can actually see them.
 
+  Suggested by **Morkhan**.
+
   Can be switched off under *In-game text → Details on the item*. To undo it,
   use „Remove again" — the original names come back to the character.
 
