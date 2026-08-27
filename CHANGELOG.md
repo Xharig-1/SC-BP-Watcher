@@ -38,7 +38,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **Bomb20** (pr0citizen) — for a report that turned out to be about something
   bigger than a single crash: the tool was blind at that spot. And for sending
   it even though it looked like a false alarm.
-- **Haldjas** (SC4M) and **Xharig** — for the counter-test on Windows: the
+- **Haldjas** (pr0citizen) and **Xharig** — for the counter-test on Windows: the
   update from rc71 to rc73 and the interface since rc61, both without findings.
 
 ## v3.0.0-rc73 - 2026-08-27
