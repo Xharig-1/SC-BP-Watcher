@@ -10,6 +10,19 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Added
+
+- **A lock on the overlay brings you back when clicks pass through to the
+  game.** Until now this was a one-way street: turning the setting on made the
+  overlay unreachable — no button, no bar, and certainly not the settings
+  themselves. The only way back was starting the program a second time. Which
+  means leaving the game — exactly what the setting is meant to avoid.
+
+  There is now a small lock at the top right of the overlay, the one thing that
+  stays clickable. One click and the overlay catches clicks again. It only
+  appears when clicks really do pass through, and disappears by itself — also
+  when you switch it over in the settings.
+
 ## v3.0.0-rc77 - 2026-08-27
 
 > **„Original texts from the game" now works without a helper program.**

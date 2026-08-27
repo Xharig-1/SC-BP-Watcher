@@ -143,6 +143,11 @@ KNOPF_SYMBOLE = {
                                          # Ein Mülleimer verspricht Vernichtung
                                          # und schreckt vom Klicken ab.
     'schliessen':   'x',
+    # Klicks werden ins Spiel durchgereicht (zu) oder abgefangen (offen). Das
+    # Schloss bleibt als einziges Element klickbar — sonst käme man aus dem
+    # durchlässigen Zustand nur heraus, indem man aus dem Spiel heraustabbt.
+    'schloss_zu':   'lock',
+    'schloss_auf':  'lock-open',
     'ziehgriff':    'grip',              # die Ecke zum Größerziehen
     # --- Seitenleiste und Titelknöpfe des großen Fensters ---
     'fortschritt':  'chart-column',

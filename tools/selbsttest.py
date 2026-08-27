@@ -1947,6 +1947,55 @@ def main():
                'und zwar den Ordner des laufenden Programms')
 
         print()
+        print('31. Das Schloss holt einen aus dem Durchreichen zurueck')
+        # ⚠ der Autor am 27.08.2026: „der zweite Programmstart ist die denkbar
+        # duemmste Loesung, weil man dann raustabben muss aus dem Spiel."
+        #
+        # Und er hat recht: Wer Klicks durchreichen laesst, will im Spiel
+        # bleiben. Bis dahin fuehrte der einzige Rueckweg genau dort hinaus.
+        # Ryze loest es beim TeamSpeak-Plugin mit einem Schloss, das anklickbar
+        # bleibt — dasselbe macht jetzt ein eigenes kleines Fenster, das nie
+        # durchlaessig gemacht wird.
+        from scbp import overlay as ov31
+        pruefe(hasattr(ov31, 'SCHLOSS_RUECKRUF'),
+               'overlay kennt den Rueckruf fuers Schloss')
+        # Der Rueckruf MUSS beim Umschalten kommen — sonst bliebe das Schloss
+        # stehen, obwohl niemand mehr durchklickt (oder umgekehrt).
+        gerufen31 = []
+        alt31 = ov31.SCHLOSS_RUECKRUF[0]
+        ov31.SCHLOSS_RUECKRUF[0] = lambda an: gerufen31.append(an)
+        try:
+            ov31.durchklickbar_setzen(None, False)
+        except Exception:
+            pass
+        ov31.SCHLOSS_RUECKRUF[0] = alt31
+        pruefe(len(gerufen31) == 1,
+               'jedes Umschalten meldet sich beim Schloss (%d Rufe)' % len(gerufen31))
+        # ⚠ Scheitert das Durchreichen, darf KEIN Schloss stehen — es waere ein
+        # Schloss an einer Tuer, die offen ist.
+        pruefe(gerufen31 == [False],
+               'ohne wirksames Durchreichen kommt auch kein Schloss')
+        # Ein Rueckruf, der wirft, darf das Schalten nicht kippen.
+        ov31.SCHLOSS_RUECKRUF[0] = lambda an: 1 / 0
+        try:
+            ov31.durchklickbar_setzen(None, False)
+            heil31 = True
+        except ZeroDivisionError:
+            heil31 = False
+        ov31.SCHLOSS_RUECKRUF[0] = alt31
+        pruefe(heil31, 'ein Fehler im Schloss reisst das Umschalten nicht mit')
+        # Die Symbole muessen da sein — sonst ist das Schloss unsichtbar, und
+        # genau das ist heute schon einmal passiert (das X im Herkunftskasten).
+        for name31 in ('schloss_zu', 'schloss_auf'):
+            pfad31 = os.path.join(WURZEL, 'assets', 'symbole', '18',
+                                  name31 + '-gruen.png')
+            pruefe(os.path.isfile(pfad31), 'Symbol %s liegt in 18 px vor' % name31)
+        from scbp import sprache as sp31
+        for schl31 in ('hinweis_schloss', 'ov_schloss_offen'):
+            pruefe(bool(sp31.t(schl31)) and schl31 not in sp31.t(schl31),
+                   'Text %s ist gesetzt, nicht der Schluesselname' % schl31)
+
+        print()
         print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')
         # ⚠ Wer ueber Lutris, Heroic oder Flatpak spielt, bekam GAR KEINEN
         # Startknopf. Der Ausweg (Einstellung `spielstarter`) existierte, stand

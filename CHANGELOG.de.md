@@ -10,6 +10,20 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Hinzugefügt
+
+- **Ein Schloss am Overlay holt dich zurück, wenn Klicks ins Spiel
+  durchgereicht werden.** Bisher war das eine Einbahnstraße: Wer die
+  Einstellung einschaltete, kam an das Overlay nicht mehr heran — kein Knopf,
+  keine Leiste, und die Einstellungen selbst schon gar nicht. Der einzige
+  Rückweg war, das Programm ein zweites Mal zu starten. Dafür muss man aus dem
+  Spiel heraus — also genau das tun, was die Einstellung vermeiden soll.
+
+  Jetzt liegt oben rechts am Overlay ein kleines Schloss, das als Einziges
+  klickbar bleibt. Ein Klick, und das Overlay fängt wieder Klicks ab. Es
+  erscheint nur, wenn wirklich durchgereicht wird, und verschwindet von selbst
+  — auch wenn du drüben in den Einstellungen umschaltest.
+
 ## v3.0.0-rc77 - 2026-08-27
 
 > **„Originaltexte aus dem Spiel" funktioniert jetzt ohne Zusatzprogramm.**
