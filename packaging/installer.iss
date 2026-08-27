@@ -122,7 +122,15 @@ DisableProgramGroupPage=yes
 DisableDirPage=auto
 
 OutputDir=..\dist
-OutputBaseFilename=SC-BP-Watcher-Setup
+; ⚠ Unterstrich, kein Bindestrich — das ist Absicht und kein Schönheitsfehler.
+; GitHub liefert die Anhänge einer Freigabe **alphabetisch**. Ein `-` (0x2D)
+; steht vor einem `.` (0x2E), ein `_` (0x5F) dahinter. Hieße der Installer
+; `SC-BP-Watcher-Setup.exe`, käme er in der Liste VOR `SC-BP-Watcher.exe` —
+; und v2.0.0 greift beim Update die **erste** Datei auf `.exe`. Die alte
+; Fassung schöbe also den Installer roh über das laufende Programm, ohne ihn
+; auszuführen: Danach öffnet sich beim Start ein Installationsfenster statt
+; des Watchers. Mit dem Unterstrich greift v2.0.0 die richtige Datei.
+OutputBaseFilename=SC-BP-Watcher_Setup
 SetupIconFile=..\icon.ico
 UninstallDisplayIcon={app}\SC-BP-Watcher.exe
 UninstallDisplayName={#AppName}

@@ -1896,6 +1896,50 @@ def main():
                % len(falsch29))
 
         print()
+        print('30. Update von v2.0.0 auf v3.0.0 — die Reihenfolge der Anhaenge')
+        # ⚠ Der Fund vom 27.08.2026, auf der Autors Frage hin: „von 2.0.0 auf
+        # 3.0.0 kein update weg vorhanden?"
+        #
+        # GitHub liefert die Anhaenge einer Freigabe **alphabetisch** (gemessen:
+        # alle drei zur selben Sekunde hochgeladen, Reihenfolge im Workflow ist
+        # eine andere, die API sortiert trotzdem nach Namen). Und **v2.0.0**
+        # greift beim Update die ERSTE Datei, die auf `.exe` endet:
+        #
+        #     for datei in freigabe['dateien']:
+        #         if name.endswith(endung): return datei
+        #
+        # `-` ist 0x2D, `.` ist 0x2E, `_` ist 0x5F. Mit dem alten Namen
+        # `SC-BP-Watcher-Setup.exe` stand der Installer VOR dem Programm — die
+        # alte Fassung haette ihn roh ueber die laufende `.exe` geschoben, ohne
+        # ihn auszufuehren. Danach oeffnet sich beim Start ein
+        # Installationsfenster statt des Watchers.
+        from scbp import aktualisierung as ak30
+        anhaenge30 = sorted(['SC-BP-Watcher_Setup.exe',
+                             'SC-BP-Watcher-x86_64.AppImage',
+                             'SC-BP-Watcher.exe'])
+        erste_exe30 = next(n for n in anhaenge30 if n.lower().endswith('.exe'))
+        pruefe(erste_exe30 == 'SC-BP-Watcher.exe',
+               'v2.0.0 greift das Programm, nicht den Installer (%s)' % erste_exe30)
+        pruefe(anhaenge30.index('SC-BP-Watcher.exe')
+               < anhaenge30.index('SC-BP-Watcher_Setup.exe'),
+               'der Installer steht alphabetisch HINTER dem Programm')
+        # Und die aktuelle Fassung findet umgekehrt weiterhin den Installer.
+        pruefe(any(n.lower().endswith(ak30.WINDOWS_INSTALLER)
+                   for n in anhaenge30),
+               'ab rc39 wird der Installer weiter erkannt')
+        pruefe('-setup.exe' in ak30.WINDOWS_INSTALLER,
+               'der alte Name bleibt in der Liste — sonst brechen rc39 bis rc75')
+        # Was gebaut wird, muss zu dem passen, was gesucht wird.
+        iss30 = open(os.path.join(WURZEL, 'packaging', 'installer.iss'),
+                     encoding='utf-8').read()
+        pruefe('OutputBaseFilename=SC-BP-Watcher_Setup' in iss30,
+               'der Installer wird auch wirklich so gebaut')
+        yml30 = open(os.path.join(WURZEL, '.github', 'workflows',
+                                  'release.yml'), encoding='utf-8').read()
+        pruefe('SC-BP-Watcher-Setup.exe' not in yml30.replace('#', ''),
+               'im Bau-Ablauf steht nirgends mehr der alte Name')
+
+        print()
         print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')
         # ⚠ Wer ueber Lutris, Heroic oder Flatpak spielt, bekam GAR KEINEN
         # Startknopf. Der Ausweg (Einstellung `spielstarter`) existierte, stand

@@ -89,7 +89,7 @@ jobs:
           name: windows
           path: |
             dist/SC-BP-Watcher.exe
-            dist/SC-BP-Watcher-Setup.exe
+            dist/SC-BP-Watcher_Setup.exe
 
   # -------------------------------------------------------------------- Linux
   linux:
@@ -196,7 +196,7 @@ jobs:
           prerelease: ${{ steps.art.outputs.vorab }}
           body_path: release-text.md
           files: |
-            dateien/windows/SC-BP-Watcher-Setup.exe
+            dateien/windows/SC-BP-Watcher_Setup.exe
             dateien/windows/SC-BP-Watcher.exe
             dateien/linux/SC-BP-Watcher-x86_64.AppImage
 

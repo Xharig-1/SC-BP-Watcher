@@ -472,9 +472,9 @@ def verpackung():
 #
 # An jeder Freigabe hängen drei Dateien:
 #
-#     SC-BP-Watcher-Setup.exe          der Installer
 #     SC-BP-Watcher-x86_64.AppImage    Linux
 #     SC-BP-Watcher.exe                das nackte Programm
+#     SC-BP-Watcher_Setup.exe          der Installer
 #
 # ⚠ Bis rc39 wurde hier nach der **ersten** Datei auf `.exe` gesucht. GitHub
 # liefert sie alphabetisch, ein `-` (0x2D) steht vor einem `.` (0x2E), also kam
@@ -491,7 +491,14 @@ def verpackung():
 #
 # Unter Linux bleibt es beim Tausch des AppImage — dort gibt es keinen
 # Installer, und ein laufendes AppImage darf ersetzt werden.
-WINDOWS_INSTALLER = ('-setup.exe', '-installer.exe')
+# ⚠ Der Unterstrich ist Absicht (seit v3.0.0). GitHub sortiert die Anhänge
+# alphabetisch, und `_` (0x5F) steht hinter `.` (0x2E) — dadurch kommt der
+# Installer in der Liste NACH `SC-BP-Watcher.exe`. Das ist die Brücke für
+# **v2.0.0**: Dessen Update-Logik greift die erste Datei auf `.exe`, und mit
+# dem alten Namen `-Setup.exe` wäre das der Installer gewesen — roh über das
+# laufende Programm geschoben, ohne ihn je auszuführen. Der Bindestrich bleibt
+# in der Liste, damit die Testfassungen rc39–rc75 weiter erkannt werden.
+WINDOWS_INSTALLER = ('_setup.exe', '-setup.exe', '-installer.exe')
 
 
 def passende_datei(freigabe, art=None):

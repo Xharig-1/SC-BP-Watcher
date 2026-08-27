@@ -10,6 +10,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Behoben
+
+- **Wer noch v2.0.0 hat, kann jetzt direkt auf v3.0.0 aktualisieren.** Der
+  Installer heißt ab sofort `SC-BP-Watcher_Setup.exe` statt
+  `SC-BP-Watcher-Setup.exe` — mit Unterstrich. Grund: GitHub sortiert die
+  Dateien einer Freigabe alphabetisch, und v2.0.0 greift beim Update die
+  **erste** Datei auf `.exe`. Mit dem Bindestrich stand das der Installer,
+  und die alte Fassung hätte ihn über das laufende Programm geschoben, ohne
+  ihn auszuführen: Beim nächsten Start wäre ein Installationsfenster
+  aufgegangen statt des Watchers.
+
 ### Hinzugefügt
 
 - **Angaben am Gegenstand — Klasse, Größe und Gütegrad stehen jetzt am Namen.**
