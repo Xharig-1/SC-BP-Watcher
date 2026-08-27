@@ -40,7 +40,14 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          # ⚠ 3.14 ist Absicht, keine Modepflege: Erst ab dieser Fassung
+          # bringt Python `compression.zstd` in der Standardbibliothek mit —
+          # und genau das braucht `scbp/spieltexte.py`, um die englische
+          # `global.ini` aus CIGs `Data.p4k` zu holen (CIG komprimiert mit
+          # zstd). Mit 3.12 blieb dem Nutzer nur „installier dir 7-Zip", und
+          # damit stand jeder vor einer Wand, der englisch spielt und bloss die
+          # Angaben am Gegenstand haben will.
+          python-version: '3.14'
 
       - name: Version gegen den Tag pruefen
         if: inputs.tag != '' || github.ref_type == 'tag'
@@ -112,9 +119,21 @@ jobs:
           # einpackt (libpython3.x.so). Im schlanken Container fehlt sie sonst.
           # xvfb liefert den Bildschirm fuer den Selbsttest.
           apt-get install -y -qq --no-install-recommends \
-            python3 python3-dev python3-pip python3-tk \
+            software-properties-common gpg-agent \
             binutils file wget ca-certificates git xvfb
+          # ⚠ Python 3.14 statt der 3.10 aus Ubuntu 22.04 — wegen
+          # `compression.zstd` (siehe Windows-Job). Der **Container** bleibt
+          # bewusst 22.04: Sein altes glibc ist der Grund, warum das AppImage
+          # auch auf betagteren Systemen startet. Nur das Python ist neuer.
+          add-apt-repository -y ppa:deadsnakes/ppa
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends \
+            python3.14 python3.14-dev python3.14-tk python3.14-venv
+          update-alternatives --install /usr/bin/python3 python3 \
+            /usr/bin/python3.14 1
+          wget -qO- https://bootstrap.pypa.io/get-pip.py | python3.14
           python3 -m pip install --quiet --upgrade pip pyinstaller pyflakes
+          python3 -c "import compression.zstd; print('zstd in der Standardbibliothek: ok')"
 
       - uses: actions/checkout@v4
 
