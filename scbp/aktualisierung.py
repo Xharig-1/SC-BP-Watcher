@@ -816,6 +816,11 @@ INNO_KENNUNG = '{7C4B1E93-2A6F-4D58-B0E1-9F3A5C8D2461}_is1'
 # sie noch lebt** — siehe `neue_fassung_laeuft()`.
 _GESTARTET = [None]
 
+# Wohin die Fehlerausgabe der frisch gestarteten Fassung läuft, und die offene
+# Datei dazu. Ohne das ist ein gescheiterter Neustart nicht aufzuklären.
+START_AUSGABE = 'neustart-ausgabe.txt'
+_AUSGABE = [None]
+
 
 def neue_fassung_laeuft(wartezeit=3.0):
     """Lebt die eben gestartete Version noch? Erst danach darf die alte gehen.
@@ -843,9 +848,33 @@ def neue_fassung_laeuft(wartezeit=3.0):
     ende = time.monotonic() + wartezeit
     while time.monotonic() < ende:
         if prozess.poll() is not None:
+            _tot_melden(prozess.returncode)
             return False
         time.sleep(0.15)
     return True
+
+
+def _tot_melden(rueckgabe):
+    """Warum die neue Fassung gestorben ist — ins Fehlerprotokoll damit.
+
+    ⚠ Ohne das steht im Diagnosebericht **gar nichts**: Bis rc69 wurde nur die
+    Meldung ins Fenster geschrieben, und wer den Bericht schickte, hatte keinen
+    einzigen Eintrag dazu. der Autor am 27.08.2026 — Neustart klappte nicht,
+    Protokoll leer, Ursache im Dunkeln.
+    """
+    text = ''
+    datei = _AUSGABE[0]
+    if datei is not None:
+        try:
+            datei.flush()
+            datei.seek(0)
+            text = (datei.read() or '').strip()[-800:]
+        except Exception:
+            text = ''
+    fehler.merken('aktualisierung.neustart_tot',
+                  RuntimeError('Rückgabewert %s%s' % (
+                      rueckgabe, (' — ' + text) if text else
+                      ' — keine Ausgabe')))
 
 
 def neu_starten():
@@ -913,9 +942,25 @@ def neu_starten():
         for name in ('_MEIPASS', '_MEIPASS2', 'TCL_LIBRARY', 'TK_LIBRARY',
                      'TIX_LIBRARY', 'MATPLOTLIBDATA'):
             umgebung.pop(name, None)
+        # ⚠ **`stderr` NICHT wegwerfen.** Hier stand `DEVNULL` — und genau
+        # deshalb war der gescheiterte Neustart unter Linux monatelang nicht
+        # aufzuklären: Die neue Fassung schrieb ihren Grund brav auf die
+        # Fehlerausgabe, und wir haben ihn ins Nichts geleitet. Übrig blieb
+        # „geht aus, kommt nicht wieder" und Raten.
+        #
+        # Jetzt läuft die Ausgabe in eine Datei neben den Diagnosebericht. Kommt
+        # die neue Fassung nicht hoch, steht dort, woran es lag — und
+        # `neue_fassung_laeuft()` hängt es ins Fehlerprotokoll, wo es im Bericht
+        # auftaucht.
+        try:
+            _AUSGABE[0] = open(pfade_modul.app_datei(START_AUSGABE), 'w+',
+                               encoding='utf-8', errors='replace')
+        except Exception:
+            _AUSGABE[0] = None
         _GESTARTET[0] = subprocess.Popen(
             [ziel], env=umgebung, start_new_session=True,
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            stdout=subprocess.DEVNULL,
+            stderr=_AUSGABE[0] or subprocess.DEVNULL)
         return True
     except Exception as ausnahme:
         fehler.merken('aktualisierung.neu_starten', ausnahme)

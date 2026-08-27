@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc69'
+__version__ = '3.0.0-rc70'
 
 
 def _mitgeliefert(name):
@@ -1633,6 +1633,19 @@ class Overlay:
     # direkt neben dem `✕`, das das Programm wirklich schließt — zwei Knöpfe,
     # die beide nach „aus" aussehen. Und es ist eine **Einstellung**, kein
     # Werkzeug; dort steht sie ohnehin (Reiter „Allgemein").
+
+    # ⚠ `_dx`/`_dy` **hier** vorbelegen, nicht erst in `_drag_start`. Tk liefert
+    # `<B1-Motion>` nicht immer nach einem `<Button-1>` auf demselben Fenster:
+    # Wer den Knopf ausserhalb drückt und in das Overlay zieht, löst nur die
+    # Bewegung aus — und `self._dx` gab es dann nicht. Ergebnis war jedes Mal
+    # `AttributeError: 'Overlay' object has no attribute '_dx'`.
+    #
+    # Der Fehler stand am 25.08.2026 in Bomb20s Bericht (rc18) und am 27.08.2026
+    # in der Autors (rc69) — dazwischen nie behoben, weil er nichts kaputt macht,
+    # was man sieht: Das Ziehen tut einmal nichts, und der Fehler landet
+    # lautlos im Protokoll.
+    _dx = 0
+    _dy = 0
 
     def _drag_start(self, e): self._dx, self._dy = e.x, e.y
     def _drag_move(self, e):

@@ -10,6 +10,42 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc70 - 2026-08-27
+
+> **Wenn der Neustart scheitert, steht künftig im Bericht, warum.**
+
+### Behoben
+
+- **`'Overlay' object has no attribute '_dx'` beim Ziehen des Overlays.** Tk
+  liefert eine Mausbewegung nicht immer nach einem Klick auf dasselbe Fenster:
+  Wer den Knopf außerhalb drückt und ins Overlay zieht, löst nur die Bewegung
+  aus — und den Startpunkt gab es dann nicht. Das Ziehen tat einmal nichts, der
+  Fehler landete lautlos im Protokoll. Gemeldet von **Bomb20** (pr0citizen, am
+  25.08.2026 auf rc18) und **der Autor** (27.08.2026 auf rc69) — dazwischen nie
+  behoben, weil er nichts kaputt macht, was man sieht.
+
+### Geändert
+
+- **Ein gescheiterter Neustart hinterlässt jetzt eine Spur.** Die
+  Fehlerausgabe der frisch gestarteten Version lief bisher nach `/dev/null` —
+  deshalb war „geht aus, kommt nicht wieder" nicht aufzuklären: Im
+  Diagnosebericht stand dazu **gar nichts**. Sie wird jetzt aufgefangen, und
+  kommt die neue Version nicht hoch, hängt ihr letztes Wort im Fehlerprotokoll
+  und damit im Bericht.
+  - Das ist keine Reparatur, sondern eine Messung. Nach zwei Anläufen, die den
+    Neustart bei **der Autor** nicht gelöst haben, wird nicht ein drittes Mal
+    geraten.
+
+### Dank
+
+- **der Autor** — fürs Nachstellen auf dem eigenen Rechner und dafür, den
+  Unterschied klarzumachen: „ich habe selber aus gemacht und gestartet." Ohne
+  diesen Satz hätte ein geglückter Handstart wie ein geglückter Neustart
+  ausgesehen.
+- **Bomb20** (pr0citizen) — für den Ziehen-Fehler, der zwei Tage lang in
+  Berichten stand, ohne dass ihn jemand ernst genommen hat.
+
+
 ## v3.0.0-rc69 - 2026-08-27
 
 > **Das Update wurde bei manchen gar nicht erst heruntergeladen** — schuld war
