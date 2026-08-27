@@ -10,6 +10,43 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc69 - 2026-08-27
+
+> **Das Update wurde bei manchen gar nicht erst heruntergeladen** — schuld war
+> die Fortschrittsanzeige.
+
+### Behoben
+
+- **Klick auf „Version holen", und es passierte nichts.** Kein Fortschritt, kein
+  Neustart, keine Meldung — nach einem Neustart lief weiter die alte Version.
+  Gemeldet von **Bomb20** (pr0citizen): „ich habe auf get 68 geklickt, aber da
+  kam nix mit restart oder install."
+  - **Die Ursache war die Anzeige, nicht der Download.** Heruntergeladen wird in
+    einem eigenen Faden, der den Fortschritt ans Fenster meldet. Dieser Aufruf
+    kann werfen (`RuntimeError: main thread is not in main loop`) — und die
+    Ausnahme riss den **ganzen Faden** mit, gleich beim ersten Prozentschritt. In
+    Bomb20s Bericht stand der Fehler dreimal, einmal pro Klick.
+  - Zeichnen ist Beiwerk, das Herunterladen ist der Zweck. Jede Anzeige im
+    Update-Faden läuft jetzt gekapselt: Geht sie schief, wird das vermerkt und
+    der Vorgang läuft weiter.
+- **„Auf Aktualität prüfen" gab fälschlich Entwarnung.** Bomb20 bekam „du hast
+  die neueste rc67" gemeldet, während rc68 seit zwei Minuten veröffentlicht war.
+  GitHub erlaubt anonym **60 Abfragen pro Stunde und Adresse**; wer an einem
+  Vormittag viel klickt, läuft dagegen. Der Abruf scheiterte — und wurde still
+  verschluckt, sodass mit dem alten Stand weitergerechnet wurde.
+  - „Nichts Neues" und „konnte nicht nachsehen" sind das Gegenteil voneinander
+    und werden jetzt auseinandergehalten. Bei erreichter Stundengrenze steht da,
+    was los ist und dass es in einer Stunde wieder geht.
+  - **Ein Prüfknopf, der fälschlich Entwarnung gibt, ist schlimmer als keiner.**
+
+### Dank
+
+- **Bomb20** (pr0citizen) — für den dritten Diagnosebericht an einem Vormittag,
+  genau im richtigen Moment abgeschickt. Ohne ihn wäre „da kam nix" nicht von
+  „Download klemmt" zu unterscheiden gewesen; mit ihm stand die Ursache in einer
+  Zeile da.
+
+
 ## v3.0.0-rc68 - 2026-08-27
 
 > **Der Update-Knopf steht da, wo man ihn sucht** — und „Fassung" heißt jetzt

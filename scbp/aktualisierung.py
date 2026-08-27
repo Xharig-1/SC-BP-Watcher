@@ -136,6 +136,34 @@ def _cache_schreiben(daten):
         pass
 
 
+# Hat der letzte erzwungene Blick zu GitHub geklappt? `None` = noch nicht
+# versucht, `False` = Abruf gescheitert (Netz weg, Grenze erreicht).
+_ABRUF = {'ok': None, 'grenze': False}
+
+
+def abruf_geglueckt():
+    """Hat der letzte Blick zu GitHub wirklich stattgefunden?
+
+    ⚠ **Ohne das kann „nichts Neues" zweierlei heißen** — und die zwei sind das
+    Gegenteil voneinander: entweder „du bist aktuell" oder „ich konnte gar nicht
+    nachsehen". Der Prüfknopf meldete bisher in beiden Fällen Entwarnung.
+
+    Aufgefallen am 27.08.2026: Bomb20 drückte „Auf Aktualität prüfen", bekam „du
+    hast die neueste rc67" — und rc68 war seit zwei Minuten draußen. GitHub
+    erlaubt anonym nur **60 Abfragen pro Stunde und Adresse**; wer an einem
+    Vormittag viel klickt, läuft dagegen. Der Abruf scheiterte, der Code fing das
+    still ab und rechnete mit dem alten Stand weiter.
+
+    Ein Prüfknopf, der fälschlich Entwarnung gibt, ist schlimmer als keiner.
+    """
+    return _ABRUF['ok']
+
+
+def grenze_erreicht():
+    """War der letzte Fehlschlag die Stundengrenze von GitHub?"""
+    return _ABRUF['grenze']
+
+
 def nachsehen(eigene_version, erzwingen=False):
     """Gibt es etwas Neues? Rückgabe: dict mit Angaben oder None.
 
@@ -163,8 +191,18 @@ def nachsehen(eigene_version, erzwingen=False):
                 } for f in freigaben if not f.get('draft')],
             }
             _cache_schreiben(zwischen)
-        except Exception:
-            pass                      # ohne Netz bleibt der letzte Stand
+            _ABRUF['ok'] = True
+            _ABRUF['grenze'] = False
+        except Exception as ausnahme:
+            # ⚠ Nicht mehr stillschweigend: Ob der Blick stattgefunden hat, ist
+            # eine andere Auskunft als „es gibt nichts Neues". Siehe
+            # `abruf_geglueckt()`.
+            _ABRUF['ok'] = False
+            _ABRUF['grenze'] = '403' in str(ausnahme) or 'rate limit' in str(
+                ausnahme).lower()
+            fehler.merken('aktualisierung.nachsehen', ausnahme)
+            # Der letzte bekannte Stand gilt weiter — ohne Netz ist das besser
+            # als gar nichts.
 
     # Vorabversionen bekommt **niemand ungefragt** angeboten — eine Vorabfassung
     # ist zum Prüfen da, nicht zum Verteilen. Angeboten werden sie in drei Fällen:
@@ -533,7 +571,21 @@ def herunterladen(datei, fortschritt=None):
             f.write(block)
             geladen += len(block)
             if fortschritt and gesamt:
-                fortschritt(round(100 * geladen / gesamt))
+                # ⚠ **Die Anzeige darf den Download nicht umbringen.** Sie ist
+                # Beiwerk, das Herunterladen ist der Zweck — und genau
+                # andersherum lief es: Der Rückruf zeichnet ins Fenster, und
+                # wenn das aus einem Nebenfaden schiefgeht (`RuntimeError: main
+                # thread is not in main loop`), riss die Ausnahme den ganzen
+                # Faden mit. Der Nutzer sah: nichts. Kein Fortschritt, kein
+                # Update, keine Meldung.
+                #
+                # Bomb20 am 27.08.2026, dreimal in Folge im Diagnosebericht:
+                # „und ich habe auf get 68 geklickt, aber da kam nix mit restart
+                # oder install." Es wurde nie etwas geladen.
+                try:
+                    fortschritt(round(100 * geladen / gesamt))
+                except Exception:
+                    fortschritt = None      # einmal daneben, nie wieder fragen
     return ziel
 
 

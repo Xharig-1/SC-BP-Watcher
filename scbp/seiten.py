@@ -1574,6 +1574,15 @@ def _jetzt_nachsehen(fenster):
                 pass
             if neuere:
                 fenster.sagen(t('s_ub_gefunden') % neuere.get('version'))
+            elif aktualisierung.abruf_geglueckt() is False:
+                # ⚠ **Nicht „du bist aktuell" sagen, wenn gar nicht nachgesehen
+                # werden konnte.** Die beiden Auskünfte sind das Gegenteil
+                # voneinander. Bomb20 bekam am 27.08.2026 „du hast die neueste
+                # rc67" gemeldet, während rc68 seit zwei Minuten draußen war —
+                # der Abruf war an GitHubs Stundengrenze gescheitert und wurde
+                # still verschluckt.
+                fenster.sagen(t('s_ub_grenze') if aktualisierung.grenze_erreicht()
+                              else t('s_ub_sucht_fehler'))
             else:
                 fenster.sagen(t('s_ub_aktuell'))
 
@@ -1704,6 +1713,27 @@ def _holen_text(mit_vorab, eigene=''):
 _BEREIT = [None]
 
 
+def _im_tk(fenster, tat):
+    """Etwas im Tk-Faden erledigen — und daran nicht scheitern.
+
+    ⚠ **Zeichnen ist Beiwerk, die Arbeit ist der Zweck.** `root.after()` aus
+    einem Nebenfaden kann werfen (`RuntimeError: main thread is not in main
+    loop`), etwa wenn das Fenster gerade zugeht. Bis rc68 riss so eine Ausnahme
+    den ganzen Update-Faden mit: Der Download brach beim ersten Fortschritt ab,
+    es wurde nie etwas geholt, und der Nutzer sah gar nichts.
+
+    Bomb20 am 27.08.2026: „ich habe auf get 68 geklickt, aber da kam nix mit
+    restart oder install." In seinem Bericht stand der Fehler dreimal, bei jedem
+    Klick einmal.
+    """
+    try:
+        fenster.root.after(0, tat)
+        return True
+    except Exception as ausnahme:
+        fehler.merken('seiten.im_tk', ausnahme)
+        return False
+
+
 def _nach_neustart_abtreten(fenster):
     """Erst nachsehen, ob die neue Version lebt — dann erst selbst gehen.
 
@@ -1815,8 +1845,8 @@ def _fassung_holen(fenster, mit_vorab):
     def arbeit():
         try:
             ziel = aktualisierung.herunterladen(
-                datei, fortschritt=lambda p: fenster.root.after(
-                    0, lambda: fenster.sagen(t('wird_geladen', p))))
+                datei, fortschritt=lambda p: _im_tk(
+                    fenster, lambda: fenster.sagen(t('wird_geladen', p))))
 
             # ⚠ Sagen, was gleich passiert — **vor** dem Einspielen.
             #
@@ -1846,12 +1876,12 @@ def _fassung_holen(fenster, mit_vorab):
                     finally:
                         gelesen.set()
 
-                fenster.root.after(0, bescheid_geben)
+                _im_tk(fenster, bescheid_geben)
                 gelesen.wait(120)      # ⚠ nicht ewig: ein Fenster kann zugehen
 
             geklappt, grund = aktualisierung.einspielen(ziel)
             if not geklappt:
-                fenster.root.after(0, lambda: fenster.sagen(
+                _im_tk(fenster, lambda: fenster.sagen(
                     t('update_fehler', grund)))
                 return
             _BEREIT[0] = freigabe.get('version') or ''
@@ -1880,8 +1910,7 @@ def _fassung_holen(fenster, mit_vorab):
             # Treten wir gleich ab, entfaellt das Warten vollstaendig, und der
             # `[Run]`-Abschnitt des Installers faehrt uns danach wieder hoch.
             if art == 'exe':
-                fenster.root.after(0, lambda: fenster.sagen(
-                    t('s_ub_startet_neu')))
+                _im_tk(fenster, lambda: fenster.sagen(t('s_ub_startet_neu')))
                 _abtreten(fenster)
                 return
 
@@ -1893,13 +1922,15 @@ def _fassung_holen(fenster, mit_vorab):
             # zerstoert dabei aber die Fusszeile. Stand das `sagen()` zuerst
             # (after 0) und der Aufbau danach (after 50), war die Meldung nach
             # einer zwanzigstel Sekunde wieder weg.
-            fenster.root.after(0, fenster.neu_aufbauen)
-            fenster.root.after(50, lambda: fenster.sagen(t('s_ub_bereit')))
+            _im_tk(fenster, fenster.neu_aufbauen)
+            try:
+                fenster.root.after(50, lambda: fenster.sagen(t('s_ub_bereit')))
+            except Exception:
+                pass
         except Exception as ausnahme:
             grund = str(ausnahme)
             fehler.merken('seiten.fassung_holen', ausnahme)
-            fenster.root.after(0, lambda: fenster.sagen(
-                t('update_fehler', grund)))
+            _im_tk(fenster, lambda: fenster.sagen(t('update_fehler', grund)))
 
     threading.Thread(target=arbeit, daemon=True).start()
 
