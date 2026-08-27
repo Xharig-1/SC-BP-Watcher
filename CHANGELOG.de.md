@@ -10,6 +10,10 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc62 - 2026-08-27
+
+> **Der Patch-Filter zeigt wieder, was der Patch gebracht hat.**
+
 ### Behoben
 
 - **Der Patch-Filter fand nichts, „neu im Spiel" blieb leer.** Wer den Watcher
@@ -24,6 +28,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Regel „erster Katalogbau überhaupt — nichts ist neu", und der nächste Patch
   hätte **keinen einzigen** Zugang gemeldet. Fehlt die Datei, gilt jetzt der
   vorhandene Katalog als Grundlage: Was darin steht, war vorher im Spiel.
+
+### Hinweise
+
+- **Der Selbsttest prüft diesen Fall jetzt selbst** (Abschnitt 19, elf neue
+  Prüfungen). Er hat sich sofort gelohnt: Das Nachziehen stand zuerst *hinter*
+  der Netzsperre `SC_BP_NO_NET` — wer ohne Netz startet, hätte nie einen Stempel
+  bekommen, obwohl Historie und Katalog beide auf der Platte liegen.
 
 ## v3.0.0-rc61 - 2026-08-27
 

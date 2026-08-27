@@ -10,6 +10,10 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc62 - 2026-08-27
+
+> **The patch filter shows again what the patch brought.**
+
 ### Fixed
 
 - **The patch filter found nothing and "new in game" stayed empty.** Anyone who
@@ -24,6 +28,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   would have reported **zero** additions. If the file is missing, the existing
   catalogue is now used as the baseline: whatever is in it was in the game
   before.
+
+### Notes
+
+- **The self-test now covers this case** (section 19, eleven new checks). It paid
+  off immediately: the catch-up ran *behind* the `SC_BP_NO_NET` network switch at
+  first — anyone starting without a network would never have got a stamp, even
+  though both history and catalogue sit on disk.
 
 ## v3.0.0-rc61 - 2026-08-27
 

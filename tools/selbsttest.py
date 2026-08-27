@@ -32,6 +32,7 @@ Namensklammern, doppelt gezählte Meldungen, verlorene Lesestände. Sie stehen
 hier als Fälle drin, damit ein Umbau sie nicht unbemerkt wieder einreißt.
 """
 import importlib
+import json
 import os
 import shutil
 import subprocess
@@ -1270,6 +1271,94 @@ def main():
         pruefe(len(_direkt) <= 3,
                'die Statuszeile wird nicht an der Merkstelle vorbei gesetzt '
                '(%d Direktzugriffe)' % len(_direkt))
+
+        # ------------------------------------------------------------------
+        # ⚠ Am 27.08.2026 stand im Auswahlfeld „4.10.0 (21)" und in der Liste
+        # darunter „Nichts gefunden". Grund: Das Feld liest die Patch-Historie
+        # direkt, der Filter prüft den Stempel `seit` im Katalog — und gestempelt
+        # wurde nur beim Neubau. Wer seinen Katalog vor rc55 geholt hat, wartet
+        # sonst bis zum nächsten Patch, und der wäre obendrein stumm geblieben.
+        print()
+        print('19. Der Katalog holt fehlende Patch-Stempel nach')
+        from scbp import katalog as kat19, patchhistorie as ph19
+
+        os.environ['SC_BP_HOME'] = os.path.join(basis, 'stempel')
+        os.makedirs(os.environ['SC_BP_HOME'], exist_ok=True)
+        _kat19 = os.path.join(os.environ['SC_BP_HOME'], 'katalog-cache.json')
+        _hist19 = {'4.9.9-live.1': {'datum': '2026-01-01',
+                                    'neu': ['Alter Bauplan']},
+                   '4.10.0-live.2': {'datum': '2026-08-26',
+                                     'neu': ['Neuer Bauplan']}}
+        ph19._schreib(os.path.join(os.environ['SC_BP_HOME'],
+                           'patch-historie.json'), _hist19)
+
+        def _katalog_schreiben(version, **zusatz):
+            eintraege = {'alter bauplan': {'n': 'Alter Bauplan'},
+                         'neuer bauplan': {'n': 'Neuer Bauplan'}}
+            eintraege.update(zusatz)
+            with open(_kat19, 'w', encoding='utf-8') as f:
+                json.dump({'version': version, 'geholt': '',
+                           'bauplaene': eintraege, 'missionen': {}}, f)
+
+        # a) Ein Katalog ohne jeden Stempel — wie bei jedem Bestandsnutzer.
+        _katalog_schreiben('4.10.0-live.2')
+        pruefe(kat19.stempel_nachziehen() == 2,
+               'beide fehlenden Stempel werden nachgetragen')
+
+        _d19 = kat19.laden()
+        pruefe(_d19['bauplaene']['neuer bauplan'].get('seit') == '4.10.0-live.2',
+               'der Neuzugang trägt die Version, die ihn gebracht hat')
+        pruefe(kat19.neue(_d19) == {'neuer bauplan'},
+               '„neu im Spiel" zeigt genau den einen Zugang')
+
+        # b) Zweiter Start: nichts zu tun. Sonst schriebe das Werkzeug bei
+        #    jedem Start eine Megabyte-Datei neu, ohne dass sich etwas ändert.
+        pruefe(kat19.stempel_nachziehen() == 0,
+               'ein zweiter Start schreibt nicht noch einmal')
+
+        # c) Ohne Katalog darf nichts passieren und nichts fliegen.
+        os.remove(_kat19)
+        pruefe(kat19.stempel_nachziehen() == 0,
+               'ohne Katalog bleibt es ruhig')
+
+        # d) ⚠ Der teurere Fehler: Fehlt die Vergleichsgrundlage, hielte
+        #    `erzeugen()` jeden Bauplan für „schon immer da" und der nächste
+        #    Patch meldete NULL Zugänge. Der vorhandene Katalog ist die
+        #    richtige Grundlage — was darin steht, war vorher im Spiel.
+        _katalog_schreiben('4.10.0-live.2')
+        pruefe(not ph19.gesehen(), 'Ausgangslage: keine Vergleichsgrundlage')
+        pruefe(kat19._vergleichsgrundlage() == {'alter bauplan', 'neuer bauplan'},
+               'ersatzweise gilt der vorhandene Katalog als Grundlage')
+        pruefe('quantum drive' not in kat19._vergleichsgrundlage(),
+               'was der Katalog nicht kennt, bleibt ein Zugang')
+
+        # Ist die Grundlage vorhanden, gilt sie — und nicht der Katalog.
+        ph19.gesehen_setzen({'alter bauplan'})
+        pruefe(kat19._vergleichsgrundlage() == {'alter bauplan'},
+               'die eigene Grundlage schlaegt den Katalog')
+
+        # ⚠ Beim allerersten Katalogbau gibt es beides nicht — dann MUSS die
+        # Grundlage leer bleiben, sonst staenden alle 738 als „neu" da.
+        os.remove(kat19.pfade.app_datei('bauplaene-gesehen.json'))
+        os.remove(_kat19)
+        pruefe(kat19._vergleichsgrundlage() == set(),
+               'beim allerersten Bau bleibt sie leer')
+
+        # e) ⚠ Und wird das Nachziehen ueberhaupt angestossen? Die Funktion
+        #    allein nuetzt nichts, wenn sie niemand ruft — und sie muss VOR dem
+        #    Netz drankommen, sonst bleibt der Stempel aus, sobald die Leitung
+        #    weg ist. Deshalb hier ohne Netz: Die Versionsabfrage wird
+        #    stillgelegt, gestempelt werden muss trotzdem.
+        _katalog_schreiben('4.10.0-live.2')
+        _echte_version = kat19.aktuelle_version
+        kat19.aktuelle_version = lambda: ''
+        try:
+            kat19.aktualisieren()
+        finally:
+            kat19.aktuelle_version = _echte_version
+        pruefe(kat19.laden()['bauplaene']['neuer bauplan'].get('seit')
+               == '4.10.0-live.2',
+               'auch ohne Netz stempelt der Start nach')
 
     finally:
         shutil.rmtree(basis, ignore_errors=True)

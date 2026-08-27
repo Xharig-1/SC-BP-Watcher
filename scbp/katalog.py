@@ -515,9 +515,7 @@ def erzeugen(version=None, fortschritt=None, aus_datei=None):
     # fälschlich, und der **nächste** Patch bliebe stumm: alles gälte als
     # „schon immer da". Der alte Katalog ist die richtige Grundlage — was darin
     # steht, war vor diesem Lauf im Spiel.
-    bekannt = patchhistorie.gesehen()
-    if not bekannt:
-        bekannt = set(laden().get('bauplaene') or {})
+    bekannt = _vergleichsgrundlage()
     if bekannt:
         zugang = [e['n'] for k, e in bauplaene.items() if k not in bekannt]
         if zugang:
@@ -554,6 +552,20 @@ def laden():
     except Exception:
         pass
     return {'version': '', 'geholt': '', 'bauplaene': {}, 'missionen': {}}
+
+
+def _vergleichsgrundlage():
+    """Wogegen dieser Lauf vergleicht, um Zugänge zu erkennen.
+
+    Normalerweise die Liste aller je gesehenen Baupläne. Fehlt sie — jeder, der
+    den Watcher vor v3.0.0-rc55 benutzt hat, hat sie nicht —, gilt ersatzweise
+    der Katalog, der schon auf der Platte liegt: Was darin steht, war vor diesem
+    Lauf im Spiel. Ohne diesen Ersatz griffe beim nächsten Patch die Regel
+    „erster Katalogbau überhaupt", und er meldete **keinen einzigen** Zugang.
+
+    Leer ist das Ergebnis nur beim allerersten Katalogbau — dann ist es richtig
+    so, sonst stünden alle 738 Baupläne als „neu" da."""
+    return patchhistorie.gesehen() or set(laden().get('bauplaene') or {})
 
 
 def stempel_nachziehen():
@@ -602,13 +614,15 @@ def aktualisieren(fortschritt=None):
     Gibt (True, Anzahl, Version) zurück, wenn etwas passiert ist. Wirft nie —
     ohne Netz gilt der letzte Stand, und der Watcher läuft ohne Katalog weiter
     (dann fehlt nur die Liste, nicht die Erkennung)."""
+    # ⚠ Ganz am Anfang — vor der Netzsperre und vor dem Netz-Zugriff. Bringt
+    # eine neue Programmfassung Historie mit, die der Katalog auf der Platte
+    # noch nicht kennt, muss der Stempel auch dann nachkommen, wenn gar keine
+    # neue Spielversion ansteht. `AUS` verbietet das **Netz**, nicht die Arbeit:
+    # Historie und Katalog liegen beide auf der Platte. Stand die Zeile hinter
+    # dem Riegel, blieb die Liste bei abgeschaltetem Netz für immer leer.
+    stempel_nachziehen()
     if AUS:
         return False, 0, ''
-    # ⚠ Vor dem Netz-Zugriff, nicht danach: Bringt eine neue Programmfassung
-    # Historie mit, die der Katalog auf der Platte noch nicht kennt, muss der
-    # Stempel auch dann nachkommen, wenn gar keine neue Spielversion ansteht —
-    # und auch dann, wenn gerade kein Netz da ist.
-    stempel_nachziehen()
     try:
         version = aktuelle_version()
         if not version or version == laden().get('version'):
