@@ -12,6 +12,20 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Baupläne aus dem Launcher oder einer Sicherung wurden nicht abgehakt.** Wer
+  seinen Stand aus dem SC Deutsch Launcher, dem KRT Profit Basetool, von
+  scmdb.net oder aus einer eigenen Sicherung mitbrachte, sah in der Liste leere
+  Kästchen — obwohl die Baupläne im Bestand standen.
+
+  Der Grund: Namen dieser Quellen tragen oft den Klassen-Zusatz
+  (`XL-1 (Mil/2/A)`), abgeschnitten wurde er aber nur beim Lesen der
+  Spielprotokolle. Damit standen `xl-1 (mil/2/a)` und `xl-1` als zwei
+  verschiedene Einträge da und fanden nie zueinander. Das passiert jetzt an der
+  zentralen Stelle — gleich, woher ein Name kommt.
+
+  Betroffen war ausgerechnet, wer schon länger spielt und seinen Stand
+  mitbringt. Gefunden beim Nachgehen einer Meldung von **Morkhan**.
+
 - **Das Werkzeug sagte nicht, dass die Änderungen erst beim nächsten
   Spielstart wirken.** Star Citizen liest die Textdatei **einmal beim
   Hochfahren**. Wer das Spiel offen hatte, spielte die Angaben ein, las

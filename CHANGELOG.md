@@ -12,6 +12,20 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **Blueprints from the launcher or a backup were not ticked off.** Anyone
+  bringing their collection over from the SC Deutsch Launcher, the KRT Profit
+  Basetool, scmdb.net or their own backup saw empty boxes in the list — even
+  though the blueprints were in the collection.
+
+  The reason: names from those sources often carry the class suffix
+  (`XL-1 (Mil/2/A)`), but it was only stripped when reading the game logs. So
+  `xl-1 (mil/2/a)` and `xl-1` stood there as two separate entries and never
+  found each other. That now happens centrally, no matter where a name comes
+  from.
+
+  This hit precisely those who have been playing longer and bring their
+  collection with them. Found while following up a report from **Morkhan**.
+
 - **The tool did not say that changes only take effect the next time the game
   starts.** Star Citizen reads the text file **once, while launching**. Anyone
   with the game running would install the details, read „in place (1608

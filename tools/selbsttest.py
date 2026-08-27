@@ -2053,6 +2053,51 @@ def main():
                    'logquelle kennt das Kuerzel %s aus angaben.py' % kurz32)
 
         print()
+        print('33. Bestand und Liste finden zueinander, egal woher der Name kam')
+        # ⚠ Der Fehler, der Morkhans leere Kaestchen erklaert (28.08.2026).
+        #
+        # `pfade.namensform()` nennt sich selbst „die EINZIGE Stelle" fuer
+        # Vergleichsschluessel — schnitt den Klassen-Zusatz aber nicht ab. Das
+        # tat nur `logquelle.teile_namen()`. Also:
+        #
+        #     aus der Game.log:        'xl-1'            ✅ geschnitten
+        #     aus der Launcher-Datei:  'xl-1 (mil/2/a)'  ❌ ungeschnitten
+        #     aus einem Import:        'xl-1 (mil/2/a)'  ❌ ungeschnitten
+        #
+        # Zwei Schluessel, die nie zueinander finden: Der Bauplan galt als
+        # fehlend, obwohl er im Bestand stand. Betroffen war jeder, der seinen
+        # Stand aus dem SC Deutsch Launcher oder einer Sicherung mitbrachte —
+        # also genau die Leute, die schon laenger spielen.
+        from scbp.pfade import namensform as nfm33
+        gleich33 = [
+            ('XL-1 (Mil/2/A)',            'XL-1'),
+            ('7CA \'Nargun\' (Civ/3/A)',   "7CA 'Nargun'"),
+            ('7MA "Lorica" (Civ/3/B)',    "7MA 'Lorica'"),
+            ('P4-AR Rifle (Bal)',         'P4-AR Rifle'),
+            ("'Arrow' I Missile (IR1)",   "'Arrow' I Missile"),
+            ('Argos IX Torpedo (CS9)',    'Argos IX Torpedo'),
+            ('Glacis (Ind/4/\u2013)',       'Glacis'),
+            ('V60-26 (Mil/\u2013/B)',       'V60-26'),
+        ]
+        for mit33, ohne33 in gleich33:
+            pruefe(nfm33(mit33) == nfm33(ohne33),
+                   'mit und ohne Kuerzel derselbe Schluessel: %s' % mit33)
+        # ⚠ Gegenrichtung: Echte Namensklammern MUESSEN bleiben, sonst waeren
+        # zwei verschiedene Waffen plötzlich derselbe Eintrag.
+        for roh33 in ('Singe Cannon (S2)', 'Irgendwas (30 cap)',
+                      'Ding (Alpha/1/A)'):
+            pruefe(nfm33(roh33) == roh33.lower(),
+                   'unangetastet: %s' % roh33)
+        # Und der Weg, um den es eigentlich geht: Ein Bestand aus der
+        # Launcher-Datei muss die Liste abhaken koennen.
+        from scbp import katalog as kat33
+        habe33 = {nfm33('XL-1 (Mil/2/A)'), nfm33('Siren (Mil/1/B)')}
+        pruefe(kat33._norm('XL-1') in habe33,
+               'ein Launcher-Bestand hakt die Bauplan-Liste ab')
+        pruefe(kat33._norm('Siren') in habe33,
+               'und zwar fuer jeden Namen, nicht nur zufaellig einen')
+
+        print()
         print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')
         # ⚠ Wer ueber Lutris, Heroic oder Flatpak spielt, bekam GAR KEINEN
         # Startknopf. Der Ausweg (Einstellung `spielstarter`) existierte, stand
