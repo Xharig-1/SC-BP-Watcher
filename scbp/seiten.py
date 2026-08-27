@@ -653,7 +653,7 @@ def _anzeige(fenster, rahmen):
     dauer.bind('<FocusOut>', dauer_merken)
     dauer.bind('<Return>', dauer_merken)
 
-    ziel = _feld(fenster, innen, t('s_ov_durch'), t('s_ov_durch_h'), breit=True)
+    ziel = _feld(fenster, innen, t('s_ov_durch'), t('s_ov_durch_h'))
     if _durchklick_moeglich():
         schiebeschalter(ziel, pfade.einstellung_wahrheit('durchklickbar', False),
                         lambda: _durchklick_um(fenster)).pack()
@@ -1082,7 +1082,7 @@ def _spiel(fenster, rahmen):
     # ⚠ Der Schalter fehlte ganz. Wer auf PTU spielt oder die Textdatei in Ruhe
     # lassen will, hatte keine Möglichkeit außer „Wieder entfernen" — und beim
     # nächsten Start schrieb das Werkzeug wieder hinein.
-    ziel = _feld(fenster, innen, t('s_sp_an'), t('s_sp_an_h'), breit=True)
+    ziel = _feld(fenster, innen, t('s_sp_an'), t('s_sp_an_h'))
 
     def inj_an_um():
         neu_wert = not pfade.einstellung_wahrheit('inj_an', True)
@@ -1121,8 +1121,7 @@ def _spiel(fenster, rahmen):
     # Klasse, Größe und Gütegrad direkt am Namen — bei Raketen der Suchkopf.
     # Abschaltbar, weil es die Gegenstandsnamen im Spiel verändert: Wer das
     # nicht will, soll die Bauplan-Angaben trotzdem behalten können.
-    ziel = _feld(fenster, innen, t('s_sp_angaben'), t('s_sp_angaben_h'),
-                 breit=True)
+    ziel = _feld(fenster, innen, t('s_sp_angaben'), t('s_sp_angaben_h'))
 
     def angaben_um():
         from . import injektion as inj_modul

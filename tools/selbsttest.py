@@ -1839,6 +1839,63 @@ def main():
                'englisch original: g_language wird ebenfalls gesetzt')
 
         print()
+        print('29. Bedienelemente stehen einheitlich — Symmetrie')
+        # ⚠ der Autor am 27.08.2026: „im gleichen tab sind die einstellings
+        # schalter mal mittig mal rechts, das muss einheitlich sein, im gesamten
+        # projekt gilt das natuerlich." Und: „Symetrie ist fuer mich EXTREM
+        # wichtig bei eigentlich allem."
+        #
+        # Woher der Unterschied kam: `_feld(..., breit=True)` legt das
+        # Bedienelement UNTER die Beschreibung, ueber die volle Breite — ein
+        # `.pack()` ohne Anker sitzt darin **mittig**. Ohne `breit` steht es
+        # rechts neben dem Text. Auf der Seite „Texte im Spiel" standen dadurch
+        # drei Schiebeschalter untereinander: mittig, rechts, mittig.
+        #
+        # `breit=True` ist fuer BREITE Bedienelemente da (Knopfreihen, die auf
+        # Englisch sonst abgeschnitten werden). Ein Schiebeschalter ist schmal
+        # und gehoert nach rechts — wie in jeder Einstellungsliste.
+        import re as _re29
+        quelle29 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                        encoding='utf-8').read().split('\n')
+
+        def _aufruf29(zeilen, start):
+            """Der VOLLSTAENDIGE `_feld(...)`-Aufruf ab `start`.
+
+            ⚠ Nicht bei der ersten `)` abschneiden — die schliesst `t('...')`,
+            und `breit=True` steht dahinter. Genau daran ist die erste Fassung
+            dieser Pruefung gescheitert: Sie meldete brav 0 Ausreisser, auch
+            als absichtlich einer eingebaut wurde. Deshalb zaehlen."""
+            text, tiefe = '', 0
+            for _z in zeilen[start:start + 4]:
+                for _c in _z:
+                    text += _c
+                    if _c == '(':
+                        tiefe += 1
+                    elif _c == ')':
+                        tiefe -= 1
+                        if tiefe == 0:
+                            return text
+                text += ' '
+            return text
+
+        offen29, falsch29 = None, []
+        for _i29, _z29 in enumerate(quelle29):
+            _m29 = _re29.search(r"_feld\(fenster, \w+, t\('([^']+)'\)", _z29)
+            if _m29:
+                _ab29 = _z29.index('_feld(') + 5
+                _voll29 = _aufruf29([_z29[_ab29:]] + quelle29[_i29 + 1:], 0)
+                offen29 = (_m29.group(1), 'breit=True' in _voll29, _i29 + 1)
+            elif 'schiebeschalter(' in _z29 and offen29:
+                if offen29[1]:
+                    falsch29.append('%s (Zeile %d)' % (offen29[0], offen29[2]))
+                offen29 = None
+        for _f29 in falsch29:
+            print('       mittig statt rechts: ' + _f29)
+        pruefe(not falsch29,
+               'jeder Schiebeschalter steht rechts, keiner mittig (%d Ausreisser)'
+               % len(falsch29))
+
+        print()
         print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')
         # ⚠ Wer ueber Lutris, Heroic oder Flatpak spielt, bekam GAR KEINEN
         # Startknopf. Der Ausweg (Einstellung `spielstarter`) existierte, stand
