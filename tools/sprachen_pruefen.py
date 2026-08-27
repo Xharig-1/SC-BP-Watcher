@@ -142,6 +142,15 @@ def pruefe(melden=print):
 
 
 def main():
+    # ⚠ Unter Windows steht die Konsole auf cp1252 — und daran starb dieses
+    # Werkzeug mit `UnicodeEncodeError`, sobald es das erste `↔` ausgeben
+    # wollte. Geprueft wurde damit nichts mehr; wer unter Windows entwickelt,
+    # bekam nur einen Stapelabzug zu sehen. Gefunden am 27.08.2026.
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass                      # aeltere Pythons, umgeleitete Ausgabe
+
     print('Sprachfassungen:')
     fehler = pruefe()
     print()
