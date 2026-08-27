@@ -10,6 +10,20 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc61 - 2026-08-27
+
+> **The Discord announcement now says what it is about.**
+
+### Added
+
+- **The Discord release announcement is now a readable card.** Instead of
+  `[Repo] New release published: v3.0.0-rc60` it shows the changelog section for
+  **this** build — the same text the tool shows under "What's new". Test builds
+  in gold with a "less thoroughly tested" note, finished ones in Xharig green,
+  plus the program icon. Prompted by der Autor after comparing with the
+  StarStrings channel. Without a stored key nothing happens and the build stays
+  green — a chat message must never turn a finished release red.
+
 ## v3.0.0-rc60 - 2026-08-27
 
 > **What the diagnostics report revealed.** An invisible cross, eight errors per

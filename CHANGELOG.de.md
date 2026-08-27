@@ -10,6 +10,21 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc61 - 2026-08-27
+
+> **Die Meldung im Discord sagt jetzt, worum es geht.**
+
+### Hinzugefügt
+
+- **Die Release-Meldung im Discord ist jetzt eine lesbare Karte.** Statt
+  `[Repo] New release published: v3.0.0-rc60` steht dort der Changelog-Abschnitt
+  **dieser** Fassung — derselbe Text wie im Werkzeug unter „Was ist neu".
+  Testfassungen in Gold mit dem Hinweis „weniger lange erprobt", fertige in
+  Xharig-Grün, dazu das Programmsymbol. Angeregt von der Autor nach dem Vergleich
+  mit dem StarStrings-Kanal. Ohne hinterlegten Schlüssel passiert nichts und der
+  Bau bleibt grün — eine Chat-Meldung darf keine fertige Veröffentlichung rot
+  färben.
+
 ## v3.0.0-rc60 - 2026-08-27
 
 > **Was der Diagnosebericht verriet.** Ein unsichtbares Kreuz, acht Fehler je
