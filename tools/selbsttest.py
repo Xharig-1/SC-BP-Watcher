@@ -1546,7 +1546,15 @@ def main():
         # ⚠ `_wurzel()` liefert ein verstecktes Fenster — ein verstecktes Fenster
         # rechnet Tk nicht aus, beide Kaesten meldeten 1 Pixel. Dann waeren sie
         # „gleich gross" und die Pruefung ginge immer durch. Also kurz zeigen.
-        wurzel.geometry('1100x760')
+        # ⚠ **Weit ausserhalb des Bildschirms** zeigen, nicht mittendrin.
+        # Tk rechnet ein verstecktes Fenster nicht aus, gezeigt werden muss es
+        # also — aber es muss niemand sehen. Der Selbsttest laeuft nach jeder
+        # Aenderung, und jedes Mal sprang hier ein 1100x760-Fenster ueber den
+        # Bildschirm und riss den Fokus mit. Gemeldet am 28.08.2026: „du hast
+        # mich staendig aus dem rausgezogen was ich mache, den ganzen Abend
+        # schon." Negative Koordinaten loesen das auf beiden Systemen.
+        wurzel.geometry('1100x760+-4000+-4000')
+        wurzel.attributes('-alpha', 0.0)
         wurzel.deiconify()
         _rahmen21 = tk21.Frame(wurzel)
         _rahmen21.pack(fill='both', expand=True)
