@@ -89,7 +89,7 @@ def main():
     ap.add_argument('--src', default=os.path.join('assets', 'icon-source.png'),
                     help='Hauptmotiv (für 40 Pixel und größer)')
     ap.add_argument('--src-small', default=os.path.join('assets', 'icon-source-small.png'),
-                    help='vereinfachte Fassung für 16–32 Pixel; fehlt sie, wird '
+                    help='vereinfachte Version für 16–32 Pixel; fehlt sie, wird '
                          'das Hauptmotiv zugezoomt verwendet')
     ap.add_argument('--ico', default='icon.ico')
     ap.add_argument('--png', default=os.path.join('assets', 'icon.png'))
@@ -104,7 +104,7 @@ def main():
     motiv = eng_beschneiden(quelle)
     print('  eng beschnitten: %dx%d' % motiv.size)
 
-    # Eigene vereinfachte Fassung für die kleinen Größen — sonst Notlösung Zoom.
+    # Eigene vereinfachte Version für die kleinen Größen — sonst Notlösung Zoom.
     if os.path.exists(args.src_small):
         klein = eng_beschneiden(Image.open(args.src_small).convert('RGBA'))
         print('Kleinmotiv: %s  -> %dx%d' % (args.src_small, klein.size[0], klein.size[1]))

@@ -430,7 +430,7 @@ def rad_anschliessen(leinwand):
        viel häufiger als eine Radraste und trägt beide Richtungen in **einer**
        Zahl: untere 16 Bit waagerecht, obere 16 Bit senkrecht.
 
-       Ältere Tk-Fassungen (8.6, verbreitet unter Linux) kennen das Ereignis
+       Ältere Tk-Versionen (8.6, verbreitet unter Linux) kennen das Ereignis
        nicht — dort wirft das Binden einen Fehler, der abgefangen wird. Dort
        melden sich Trackpads ohnehin als Button-4/5.
 
@@ -1284,7 +1284,7 @@ class Hauptfenster:
         # Auskunft unten an eine andere Seite zu hängen, wo niemand sie sucht.
         self._reiter('serverstatus', 'serverstatus', t('hf_serverstatus'))
         # ⚠ Eigener Reiter, kein Abschnitt auf „Update & Über": Die Seite dort
-        # ist mit Fassung, Katalogzahlen, Update-Kanal und Holen-Knopf schon
+        # ist mit Version, Katalogzahlen, Update-Kanal und Holen-Knopf schon
         # voll, und wem was gehört, hat mit Updates nichts zu tun.
         self._reiter('danke', 'quellen', t('hf_danke'))
 
@@ -1520,7 +1520,7 @@ class Hauptfenster:
                 # ⚠ Der **aktive** Reiter wird fett gezeichnet, und fett ist breiter.
                 # Gemessen wird aber der Zustand, in dem die Zeile gerade ist — wer
                 # nur `winfo_reqwidth()` nimmt, misst bei allen anderen die schmale
-                # Fassung und macht die Leiste zu knapp. Genau deshalb war „Angaben
+                # Version und macht die Leiste zu knapp. Genau deshalb war „Angaben
                 # im Spiel" abgeschnitten, sobald die Seite offen war.
                 zusatz = 0
                 try:
@@ -1647,7 +1647,7 @@ class Hauptfenster:
                 teil.configure(bg=grund)
             if marke is not None:
                 marke.hintergrund(grund)
-            # ⚠ Ein Bild nimmt kein `fg` an — die passend eingefärbte Fassung
+            # ⚠ Ein Bild nimmt kein `fg` an — die passend eingefärbte Version
             # muss eingehängt werden.
             z.faerben(zeichen.HELL if an else zeichen.GRAU)
             b.configure(fg=FG if an else SUB, font=self.f_fett if an else self.f_grund)

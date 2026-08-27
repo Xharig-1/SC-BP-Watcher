@@ -32,7 +32,7 @@ Reihenfolge:
 
   1. `compression.zstd`  (Python >= 3.14)
   2. `zstandard` / `pyzstd`  (falls installiert)
-  3. **7-Zip** ab Fassung 22 kann zstd und ist auf den meisten Rechnern ohnehin da
+  3. **7-Zip** ab Version 22 kann zstd und ist auf den meisten Rechnern ohnehin da
 
 Läuft NICHT beim Nutzer — nur hier, einmal je SC-Patch, als Vorstufe zu
 `build_catalog.py`.
@@ -170,7 +170,7 @@ def entpacke_zstd(roh, erwartet):
         'Kein zstd-Entpacker gefunden. Möglichkeiten:\n'
         '  * Python 3.14 oder neuer (bringt compression.zstd mit)\n'
         '  * pip install zstandard\n'
-        '  * 7-Zip ab Fassung 22 installieren (Pfad notfalls über SEVENZIP setzen)')
+        '  * 7-Zip ab Version 22 installieren (Pfad notfalls über SEVENZIP setzen)')
 
 
 def main():

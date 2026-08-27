@@ -34,7 +34,7 @@ Vier Dinge sind Absicht und bleiben so:
 
 ## Woran gearbeitet wird
 
-Ohne Zeitplan und ohne feste Reihenfolge — Stand der Dinge steht im [`CHANGELOG.de.md`](CHANGELOG.de.md), und im Fenster „Was ist neu" lässt sich nachlesen, was jede Fassung gebracht hat.
+Ohne Zeitplan und ohne feste Reihenfolge — Stand der Dinge steht im [`CHANGELOG.de.md`](CHANGELOG.de.md), und im Fenster „Was ist neu" lässt sich nachlesen, was jede Version gebracht hat.
 
 Gerade in Arbeit sind mehr Komfort beim Einrichten und ein Ablage-Symbol.
 

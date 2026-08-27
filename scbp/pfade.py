@@ -672,7 +672,7 @@ def spielstarter():
       derselbe Weg, den auch der SC-Deutsch-Launcher geht.
     * **Linux** — das Startskript `sc-launch.sh` im Wine-Präfix, das der
       `lug-helper` der Star Citizen Linux Users Group beim Einrichten anlegt.
-      Es bringt Präfix, Wine-Fassung und Umgebung schon mit. Ein eigener
+      Es bringt Präfix, Wine-Version und Umgebung schon mit. Ein eigener
       Wine-Aufruf wäre hier falsch. **Nicht** der `lug-helper` selbst: Der
       verwaltet nur und kann das Spiel gar nicht starten (siehe unten).
 

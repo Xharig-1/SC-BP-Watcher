@@ -40,7 +40,7 @@ def saubere_umgebung():
 
     ⚠ Sie stand hier, weil die Dateiauswahl sie zuerst brauchte. Am 27.08.2026
     stellte sich heraus, dass der **Neustart nach einem Update** dieselbe Wäsche
-    braucht und eine eigene, unvollständige Fassung mitführte — mit dem Ergebnis,
+    braucht und eine eigene, unvollständige Version mitführte — mit dem Ergebnis,
     dass sich das Werkzeug unter Linux nicht selbst neu starten konnte. Eine
     Wäsche an einer Stelle, benutzt von allen.
     """

@@ -187,7 +187,7 @@ def _bauen(eltern, name, satz, tat, farbe, grund, ersatz, text, schrift):
 
     def faerben(neu):
         """Statt `configure(fg=…)` — ein Bild nimmt keine Vordergrundfarbe an,
-        es muss gegen eine andersfarbige Fassung getauscht werden."""
+        es muss gegen eine andersfarbige Version getauscht werden."""
         w.symbol_farbe = neu
         w.configure(fg=neu if b is None else w.cget('fg'))
         zeigen()

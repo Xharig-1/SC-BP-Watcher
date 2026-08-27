@@ -77,13 +77,13 @@ def _lesen():
         return []
 
 
-# Die laufende Fassung. Das Hauptprogramm trägt sie beim Start ein.
+# Die laufende Version. Das Hauptprogramm trägt sie beim Start ein.
 #
 # ⚠ Warum das im Fehlerspeicher steht: Er hebt die letzten zehn Einträge auf,
 # über Programmstarts hinweg. Nach einem Update stehen dort also Fehler, die
 # längst behoben sind — und im Bericht sieht das aus, als sei alles noch kaputt.
 # Genau so passiert: Ein Bericht aus rc9 führte acht `AttributeError` auf, die in
-# rc1 behoben worden waren. Mit der Fassung daneben ist das auf einen Blick
+# rc1 behoben worden waren. Mit der Version daneben ist das auf einen Blick
 # erkennbar.
 VERSION = ['']
 

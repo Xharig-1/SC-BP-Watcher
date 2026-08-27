@@ -451,7 +451,7 @@ class Einstellungsfenster:
             reihenfolge.insert(0, gewaehlt)
         elif gewaehlt == 'original':
             # Die Originaltexte kommen aus dem Spiel selbst, nicht aus einem
-            # fremden Projekt — dort gibt es keine Fassung zu vermerken.
+            # fremden Projekt — dort gibt es keine Version zu vermerken.
             for sprache_ordner in ('english', 'german_(germany)'):
                 pfad = uebersetzung.ziel_ini(sprache_ordner)
                 if pfad and os.path.isfile(pfad):

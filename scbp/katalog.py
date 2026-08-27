@@ -375,7 +375,7 @@ def _missionen(merged):
     Angehängt wird an den **Textschlüssel** (`descriptionLocKey`,
     `titleLocKey`), nicht an den Missionsnamen: Der Schlüssel ist in jeder
     Sprache derselbe, der Name nicht. Dadurch funktioniert dieselbe Zuordnung
-    für die deutsche Übersetzung wie für die englische Fassung — und für die
+    für die deutsche Übersetzung wie für die englische Version — und für die
     neun weiteren Sprachen im Spiel gleich mit."""
     pools = {}
     for guid, pool in (merged.get('blueprintPools') or {}).items():

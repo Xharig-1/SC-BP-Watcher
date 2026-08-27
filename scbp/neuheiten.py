@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-„Neu"-Marken an den Bereichen, die eine Fassung mitgebracht hat.
+„Neu"-Marken an den Bereichen, die eine Version mitgebracht hat.
 
 Eine Änderungsliste liest kaum jemand. Eine kleine Marke am Reiter dagegen sieht
 man beim ersten Blick — und sie führt den Spieler genau dorthin, wo das Neue
@@ -26,13 +26,13 @@ liegt, statt es ihm zu beschreiben.
 Damit das trägt, gelten zwei Regeln:
 
   1. **Die Marke verschwindet, sobald der Bereich einmal offen war.** Ohne das
-     wäre nach drei Fassungen alles markiert, und niemand schaut mehr hin. Eine
+     wäre nach drei Versionen alles markiert, und niemand schaut mehr hin. Eine
      Marke, die bleibt, ist Deko; eine, die verschwindet, ist eine Nachricht.
   2. **Bei einer frischen Installation wird nichts markiert.** Für einen
      Neuling ist alles neu — Marken an jedem Reiter wären dort nur Lärm. Sie
-     erscheinen nur, wenn jemand von einer älteren Fassung kommt.
+     erscheinen nur, wenn jemand von einer älteren Version kommt.
 
-Gepflegt wird nur die Tabelle unten: Bereich -> in welcher Fassung kam er dazu.
+Gepflegt wird nur die Tabelle unten: Bereich -> in welcher Version kam er dazu.
 Der Rest ergibt sich.
 """
 import json
@@ -41,14 +41,14 @@ from . import pfade
 
 DATEI = 'gesehen.json'
 
-# Welcher Bereich kam mit welcher Fassung? Beim Bauen eines neuen Bereichs hier
+# Welcher Bereich kam mit welcher Version? Beim Bauen eines neuen Bereichs hier
 # **eine Zeile ergänzen** — mehr ist nicht zu tun.
 NEU_SEIT = {
     'liste':       '3.0.0',    # Bauplan-Liste im neuen Fenster
     'fortschritt': '3.0.0',    # Fortschritt je Art
     'bestand':     '3.0.0',    # Bestand einlesen und ausgeben
     'wasistneu':   '3.0.0',    # Änderungen als eigener Reiter
-    'ueber':       '3.0.0',    # Fassung, Testkanal, Autor
+    'ueber':       '3.0.0',    # Version, Testkanal, Autor
     'diagnose':    '3.0.0',    # Fehlerbericht und Melden
     'serverstatus': '3.0.0',   # Lage der CIG-Server als eigener Reiter
     'danke':       '3.0.0',    # wem was gehört, und Dank an die Beteiligten
@@ -92,7 +92,7 @@ def _schreiben(daten):
 
 
 def erster_start(eigene_version):
-    """Merkt sich beim allerersten Lauf die Fassung — ohne Marken zu setzen.
+    """Merkt sich beim allerersten Lauf die Version — ohne Marken zu setzen.
 
     Genau hier entscheidet sich Regel 2: Wer frisch installiert, hat nichts
     verpasst und bekommt deshalb auch nichts markiert.

@@ -1,10 +1,10 @@
-"""Prüft den Selbst-Update-Weg — **ohne** eine neue Fassung zu brauchen.
+"""Prüft den Selbst-Update-Weg — **ohne** eine neue Version zu brauchen.
 
 Das Problem beim Testen einer Update-Funktion: Der Fix steckt immer erst in der
-Fassung *nach* der kaputten. Aus einer defekten Fassung heraus lässt sich also
+Version *nach* der kaputten. Aus einer defekten Version heraus lässt sich also
 nicht prüfen, ob die Reparatur wirkt.
 
-Dieses Werkzeug umgeht das: Es lädt die **eigene** Fassung noch einmal herunter
+Dieses Werkzeug umgeht das: Es lädt die **eigene** Version noch einmal herunter
 und spielt sie ein. Am Ergebnis ändert sich nichts — geprüft wird der *Weg*:
 Kommt die Datei an? Liegt sie auf demselben Dateisystem? Läuft das Einspielen
 durch, ohne an „[Errno 18] Invalid cross-device link" zu scheitern?
@@ -44,7 +44,7 @@ def main():
     if not freigabe:
         print('Keine Freigabe gefunden — ohne Netz geht das nicht.')
         return 1
-    print('Neueste Fassung:', freigabe.get('version'))
+    print('Neueste Version:', freigabe.get('version'))
 
     datei = aktualisierung.passende_datei(freigabe, art='appimage')
     if not datei:

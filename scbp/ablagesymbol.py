@@ -197,7 +197,7 @@ def _signaturen_setzen():
 try:
     _signaturen_setzen()
 except Exception:
-    # Läuft etwas davon auf einer alten Windows-Fassung nicht, ist das kein
+    # Läuft etwas davon auf einer alten Windows-Version nicht, ist das kein
     # Grund, das Programm nicht zu starten — dann eben ohne Symbol.
     pass
 

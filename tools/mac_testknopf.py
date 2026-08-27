@@ -8,10 +8,10 @@ dass es benutzt wird.
 
 Zwei Dinge macht dieses Skript:
 
-1. **Die Fassungsnummer im Dateinamen nachziehen.** Sie steht dort, damit auf
+1. **Die Versionsnummer im Dateinamen nachziehen.** Sie steht dort, damit auf
    einen Blick klar ist, welcher Stand gerade startet — bei einem Werkzeug, von
    dem es Testfassungen im Tagesabstand gibt, ist das keine Kleinigkeit. Und
-   `(Test)` bleibt im Namen, damit die Datei nie mit einer fertigen Fassung
+   `(Test)` bleibt im Namen, damit die Datei nie mit einer fertigen Version
    verwechselt wird.
 2. **Das Programmsymbol setzen.** Ohne das zeigt der Finder das weiße Blatt für
    Terminal-Dateien.
@@ -40,9 +40,9 @@ PROJEKT = os.path.dirname(HIER)
 DESKTOP = os.path.expanduser('~/Desktop')
 SYMBOL = os.path.join(PROJEKT, 'assets', 'icon.png')
 
-# Was auf dem Desktop gesucht wird — mit oder ohne Fassungsnummer im Namen.
+# Was auf dem Desktop gesucht wird — mit oder ohne Versionsnummer im Namen.
 #
-# ⚠ `.+` und nicht `[^.]*`: Eine Fassungsnummer enthält **Punkte** („3.0.0-rc58").
+# ⚠ `.+` und nicht `[^.]*`: Eine Versionsnummer enthält **Punkte** („3.0.0-rc58").
 # Das erste Muster verbot sie und fand deshalb ausgerechnet die Datei nicht mehr,
 # die das Skript selbst benannt hatte — beim ersten Lauf fiel das nicht auf, weil
 # im Namen damals noch gar keine Nummer stand.
@@ -50,7 +50,7 @@ MUSTER = re.compile(r'^SC BP Watcher \(Test\)( v.+)?\.command$')
 
 
 def fassung():
-    """Die Fassungsnummer aus `sc_bp_watcher.py`, ohne die Datei zu laden."""
+    """Die Versionsnummer aus `sc_bp_watcher.py`, ohne die Datei zu laden."""
     quelle = os.path.join(PROJEKT, 'sc_bp_watcher.py')
     with open(quelle, encoding='utf-8') as f:
         for zeile in f:
@@ -89,7 +89,7 @@ def main():
     treffer = [n for n in os.listdir(DESKTOP) if MUSTER.match(n)]
     if not treffer:
         sys.exit('Keine Start-Datei auf dem Desktop gefunden.\n'
-                 'Erwartet: „SC BP Watcher (Test).command" oder mit Fassung '
+                 'Erwartet: „SC BP Watcher (Test).command" oder mit Version '
                  'dahinter.')
     if len(treffer) > 1:
         print('  ! Mehrere gefunden, nehme die erste: %s' % ', '.join(treffer))
@@ -97,7 +97,7 @@ def main():
     alt = os.path.join(DESKTOP, treffer[0])
     v = fassung()
     if not v:
-        sys.exit('Fassungsnummer nicht gefunden in sc_bp_watcher.py')
+        sys.exit('Versionsnummer nicht gefunden in sc_bp_watcher.py')
 
     neu = os.path.join(DESKTOP, 'SC BP Watcher (Test) v%s.command' % v)
     if alt != neu:

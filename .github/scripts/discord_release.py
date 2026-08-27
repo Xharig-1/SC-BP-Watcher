@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Meldet eine neue Fassung im eigenen Discord — als lesbare Karte.
+"""Meldet eine neue Version im eigenen Discord — als lesbare Karte.
 
 **Warum nicht die GitHub-Discord-Anbindung?** Die richtet man in Discord ein und
 sie postet immer denselben Einzeiler: `[Repo] New release published: v3.0.0-rc60`.
@@ -12,7 +12,7 @@ Dieses Skript baut stattdessen eine **Embed** aus dem CHANGELOG — dieselbe Que
 aus der auch die Release-Beschreibung und „Was ist neu" im Werkzeug gespeist
 werden. Ein Text, drei Orte.
 
-⚠ **Es steht nur drin, was in DIESER Fassung neu ist.** `release_text.abschnitt()`
+⚠ **Es steht nur drin, was in DIESER Version neu ist.** `release_text.abschnitt()`
 fällt bei einer Vorabfassung ohne eigenen Abschnitt auf die **Grundversion**
 zurück — sinnvoll für die Release-Seite, hier aber falsch: Dann stünde in der
 Meldung zu `rc60` alles, was seit `v3.0.0` je dazukam. Deshalb prüft dieses
@@ -106,8 +106,8 @@ def bauen(tag):
         beschreibung = fuer_discord(inhalt)
     else:
         # Lieber ehrlich kurz als versehentlich der Sammelblock einer
-        # anderen Fassung.
-        beschreibung = ('Im Changelog steht zu dieser Fassung noch nichts — '
+        # anderen Version.
+        beschreibung = ('Im Changelog steht zu dieser Version noch nichts — '
                         'was drin ist, sagt die [Release-Seite](%s).' % link)
 
     einbettung = {
@@ -118,7 +118,7 @@ def bauen(tag):
         'thumbnail': {'url': LOGO},
         'footer': {'text': (
             'Testfassung · läuft normal, ist aber weniger lange erprobt'
-            if vorab else 'Fertige Fassung')},
+            if vorab else 'Fertige Version')},
     }
     return {'embeds': [einbettung]}
 
@@ -143,7 +143,7 @@ def main():
         with urllib.request.urlopen(anfrage, timeout=20) as antwort:
             print('Discord: gemeldet (HTTP %s)' % antwort.status)
     except Exception as ausnahme:
-        # ⚠ Auch hier kein Abbruch. Die Fassung ist gebaut und veröffentlicht;
+        # ⚠ Auch hier kein Abbruch. Die Version ist gebaut und veröffentlicht;
         # eine gescheiterte Chat-Meldung darf das nicht rot färben.
         print('Discord-Meldung fehlgeschlagen: %s' % ausnahme)
     return 0
