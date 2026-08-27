@@ -10,6 +10,10 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc81 - 2026-08-28
+
+> **One button instead of nine steps: send the error report.**
+
 ### Added
 
 - **A red „Send error report" button.** If something is stuck, you press it —

@@ -10,6 +10,10 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc81 - 2026-08-28
+
+> **Ein Knopf statt neun Schritten: Fehlerbericht absenden.**
+
 ### Hinzugefügt
 
 - **Ein roter Knopf „Fehlerbericht absenden".** Klemmt etwas, drückst du ihn —
