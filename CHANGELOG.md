@@ -18,6 +18,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **The feature table in the readme used emoji instead of the real symbols.**
+  `⚡ 📋 🧭 ⭐ 🔔 …` have nothing to do with the program's icon set and look
+  different on every system. All sixteen now come from the same set as the
+  interface. Reported by der Autor.
+- **A screenshot exposed the author's home path.** `screenshot-pfade.png` had
+  been in the repo since v3.0.0-rc11, showing `/home/<user>/` three times — the
+  very thing `pfade.kuerzen()` strips from error reports. Removed; the folder
+  page gets no screenshot at all, since it necessarily shows paths. The server
+  status tab took its place. Found by der Autor.
+
 - **The "Mission text" tab is now "In-game text".** The old name did not say
   **where** those texts appear. Prompted by der Autor.
 - **The program icon now sits next to the version on "Update & About".** The page

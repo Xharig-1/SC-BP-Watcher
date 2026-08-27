@@ -153,6 +153,20 @@ KNOPF_SYMBOLE = {
     'erkennung':    'scan-search',
     'diagnose':     'stethoscope',
     'quellen':      'heart-handshake',   # fremde Arbeit + Lizenzen
+    # --- nur für die Anleitung (README-Merkmalstabelle) ---
+    # ⚠ Die standen dort als Emoji (⚡ 🧭 🏷️ 🔔 …). Emoji sehen auf jedem System
+    # anders aus und haben mit dem Symbolsatz des Programms nichts zu tun — in
+    # einer Anleitung für genau dieses Programm ist das ein Bruch.
+    'blitz':        'zap',
+    'herkunft':     'compass',
+    'kuerzel':      'tag',
+    'ton':          'volume-2',
+    'vordergrund':  'pin',
+    'verschieben':  'move',
+    'sprachen':     'languages',
+    'nurlesend':    'shield-check',
+    'eigenbuch':    'notebook-pen',
+    'abhaken':      'check-check',
     'einrichtung':  'wand-sparkles',     # der Assistent — ein Zauberstab ist das
                                          # übliche Bild für „führt dich durch".
     'neustart':     'rotate-cw',

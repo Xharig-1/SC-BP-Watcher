@@ -18,6 +18,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Die Merkmalstabelle in der Anleitung zeigte Emoji statt der echten Symbole.**
+  `⚡ 📋 🧭 ⭐ 🔔 …` haben mit dem Symbolsatz des Programms nichts zu tun und sehen
+  auf jedem System anders aus. Alle sechzehn stammen jetzt aus demselben Satz wie
+  die Oberfläche. Gemeldet von der Autor.
+- **Ein Bildschirmfoto zeigte den Heimatpfad des Autors.** `screenshot-pfade.png`
+  lag seit v3.0.0-rc11 im Repo und führte dreimal `/home/<benutzer>/` vor —
+  genau das, was der Fehlerbericht mit `pfade.kuerzen()` sonst herausnimmt.
+  Entfernt; die Ordner-Seite bekommt kein Bild mehr, weil dort zwangsläufig
+  Pfade stehen. An ihrer Stelle steht jetzt der Serverstatus, der nie eins
+  hatte. Gefunden von der Autor.
+
 - **Der Reiter „Auftragstexte" heißt jetzt „Texte im Spiel".** Der alte Name
   sagte nicht, **wo** diese Texte auftauchen. „Ingame-Texte" stand kurz zur Wahl
   und ist unter Spielern gängig — dagegen sprach, dass jeder andere Reiter der

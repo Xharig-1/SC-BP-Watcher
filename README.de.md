@@ -108,8 +108,8 @@ Der Watcher schreibt in die Auftragstexte des Spiels, **welche** Baupläne ein A
 <sub><b>Allgemein</b> — Sprache, Signalton, Autostart, Startmenü-Eintrag</sub>
 </td>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-pfade.png" alt="Pfade" width="100%"><br>
-<sub><b>Pfade</b> — wo Star Citizen liegt und wohin das Werkzeug schreibt</sub>
+<img src="assets/screenshot-serverstatus.png" alt="Serverstatus" width="100%"><br>
+<sub><b>Serverstatus</b> — läuft Star Citizen gerade?</sub>
 </td>
 </tr>
 </table>
@@ -123,7 +123,7 @@ Bauplan-Listen gibt es mehrere. Vier Dinge machen den Unterschied im Alltag:
 - **Du musst nicht aus dem Spiel.** Das Overlay liegt über Star Citizen. Kein zweites Fenster, kein Alt-Tab, kein Nachschlagen im Browser — der neue Bauplan steht einfach da, während du weiterspielst.
 - **Es weiß, was du schon hast.** Der Watcher führt deinen Bauplan-Bestand selbst und liest beim ersten Start die aufgehobenen Spielprotokolle nach — du bekommst deinen bisherigen Stand geschenkt, ohne etwas einzutippen. Bleibt trotzdem eine Lücke, sagt er das, statt eine unvollständige Liste als vollständig auszugeben.
 - **Es sagt dir, woher du das Fehlende bekommst.** Für **655 der 722** Baupläne steht dabei, welche Fraktion sie auslobt, in welchem Auftrag, ab welchem Rang und was er einbringt — sortiert nach dem leichtesten Weg. „Mir fehlt X" ist die halbe Information; die ganze ist „X gibt es bei Foxwell ab Veteran Contractor".
-- **Es meldet auch, was du noch gar nicht haben kannst.** Die Katalog-Wache erkennt, wenn CIG mit einem Patch etwas **neu craftbar** macht — unabhängig von deinem eigenen Freischalt-Stand (🔵). Wer auf ein bestimmtes Teil wartet, trägt es in die Beobachtungsliste ein und wird beim Auftauchen auffällig darauf gestoßen (⭐).
+- **Es meldet auch, was du noch gar nicht haben kannst.** Die Katalog-Wache erkennt, wenn CIG mit einem Patch etwas **neu craftbar** macht — unabhängig von deinem eigenen Freischalt-Stand — solche Zeilen sind blau. Wer auf ein bestimmtes Teil wartet, trägt es in die Beobachtungsliste ein und wird beim Auftauchen auffällig darauf gestoßen.
 - **Nichts verlässt deinen Rechner.** Kein Konto, keine Anmeldung, keine Cloud. Das Tool liest ausschließlich Dateien, die ohnehin auf deiner Platte liegen, und schreibt nichts zurück ins Spiel.
 
 Dazu: Klasse, Größe und Gütegrad stehen direkt in der Zeile (`M/1/A`), die Oberfläche gibt es auf Deutsch und Englisch, und das Ganze läuft mit reiner Python-Standardbibliothek — keine Zusatzpakete, keine Abhängigkeiten, die morgen zerbrechen.
@@ -132,22 +132,22 @@ Dazu: Klasse, Größe und Gütegrad stehen direkt in der Zeile (`M/1/A`), die Ob
 
 | | |
 |---|---|
-| ⚡ **Sofort-Meldung** | Liest die Star-Citizen-`Game.log` mit → der Bauplan steht **in Sekunden** in der Liste |
-| 📋 **Bauplan-Liste** | Alle Baupläne durchsuchen, nach Art gruppiert, Filter *alle / habe ich / fehlt mir / beobachtet / neu im Spiel*, mit Fortschrittsanzeige. Häkchen per Klick |
-| 🧭 **Herkunft je Bauplan** | Ein Klick zeigt Fraktion, Auftrag, nötigen Rang und Belohnung — für **655 von 722** Bauplänen, sortiert nach dem leichtesten Weg |
-| 🧙 **Einrichtungsassistent** | Vier Schritte beim ersten Start — und **jederzeit wiederholbar**, ohne sich durch Menüs zu klicken |
-| 🔵 **Katalog-Wache** | Meldet auch, wenn im **Spiel** etwas neu craftbar wird — also wenn CIG einen Bauplan nachreicht, den es vorher gar nicht gab (nicht nur, was du selbst freischaltest) |
-| ◉ **Serverstatus** | Eigener Reiter: **Läuft Star Citizen gerade?** Zeigt, was CIG auf seiner Statusseite meldet — die drei Systeme und die Meldungen der letzten zwei Monate im Volltext. Frischt sich jede Minute selbst auf. Die Zustände bleiben im Wortlaut von CIG; die Angaben sind von Hand gepflegt, keine Messung |
-| 🔵 **Neu im Spiel** | Eigener Filter in der Liste: **nur das, was mit dem aktuellen Patch dazukam**. Jeder Bauplan trägt die Spielversion, in der es ihn zuerst gab; beim nächsten Patch rücken die neuen nach und die alten fallen aus dem Filter — der Stempel bleibt. Ein Auswahlfeld **Patch** zeigt zusätzlich jeden früheren Patch und erweitert sich von allein |
-| ⭐ **Merkliste** | Klick auf den Stern in der Liste — taucht der Bauplan auf, wird er auffällig gemeldet und **verschwindet danach von selbst** von der Merkliste |
-| 🏷️ **Klasse · Size · Grade** | Kompakt-Kürzel `Klasse/Size/Grade` je Bauplan, z. B. `M/1/A` (Military · Size 1 · Grade A) |
-| 🔔 **Signalton** | Kurzer Ton bei jedem Neuzugang — du musst nicht aufs Fenster schauen |
-| 🧷 **Immer im Vordergrund** | Randloses, leicht durchscheinendes Overlay über dem Spiel |
-| 🖱️ **Verschiebbar & skalierbar** | An der Titelleiste ziehen, Größe am Griff ◢ unten rechts — **Position & Größe werden gemerkt** |
-| 🌐 **Deutsch und Englisch** | Oberfläche umschaltbar. Die Bauplan-Meldung im Log erkennt der Watcher **in jeder Spielsprache** — er findet die Formulierung selbst heraus |
-| 🆕 **Sagt Bescheid** | Merkt selbst, wenn es eine neue Fassung gibt — mit „Was ist neu" zum Nachlesen, auch für ältere Versionen |
-| 🔒 **Nur lesend** | Verändert am Spiel nichts — liest die `Game.log` und, falls vorhanden, die Launcher-Dateien |
-| 📒 **Eigener Bestand** | Führt selbst Buch, welche Baupläne du hast — auch ohne den SC Deutsch Launcher |
+| <img src="assets/symbole/22/blitz-gruen.png" width="22" alt=""> **Sofort-Meldung** | Liest die Star-Citizen-`Game.log` mit → der Bauplan steht **in Sekunden** in der Liste |
+| <img src="assets/symbole/22/liste-gruen.png" width="22" alt=""> **Bauplan-Liste** | Alle Baupläne durchsuchen, nach Art gruppiert, Filter *alle / habe ich / fehlt mir / beobachtet / neu im Spiel*, mit Fortschrittsanzeige. Häkchen per Klick |
+| <img src="assets/symbole/22/herkunft-gruen.png" width="22" alt=""> **Herkunft je Bauplan** | Ein Klick zeigt Fraktion, Auftrag, nötigen Rang und Belohnung — für **655 von 722** Bauplänen, sortiert nach dem leichtesten Weg |
+| <img src="assets/symbole/22/einrichtung-gruen.png" width="22" alt=""> **Einrichtungsassistent** | Vier Schritte beim ersten Start — und **jederzeit wiederholbar**, ohne sich durch Menüs zu klicken |
+| <img src="assets/symbole/22/punkt-blau.png" width="22" alt=""> **Katalog-Wache** | Meldet auch, wenn im **Spiel** etwas neu craftbar wird — also wenn CIG einen Bauplan nachreicht, den es vorher gar nicht gab (nicht nur, was du selbst freischaltest) |
+| <img src="assets/symbole/22/serverstatus-gruen.png" width="22" alt=""> **Serverstatus** | Eigener Reiter: **Läuft Star Citizen gerade?** Zeigt, was CIG auf seiner Statusseite meldet — die drei Systeme und die Meldungen der letzten zwei Monate im Volltext. Frischt sich jede Minute selbst auf. Die Zustände bleiben im Wortlaut von CIG; die Angaben sind von Hand gepflegt, keine Messung |
+| <img src="assets/symbole/22/punkt-blau.png" width="22" alt=""> **Neu im Spiel** | Eigener Filter in der Liste: **nur das, was mit dem aktuellen Patch dazukam**. Jeder Bauplan trägt die Spielversion, in der es ihn zuerst gab; beim nächsten Patch rücken die neuen nach und die alten fallen aus dem Filter — der Stempel bleibt. Ein Auswahlfeld **Patch** zeigt zusätzlich jeden früheren Patch und erweitert sich von allein |
+| <img src="assets/symbole/22/gemerkt-gruen.png" width="22" alt=""> **Merkliste** | Klick auf den Stern in der Liste — taucht der Bauplan auf, wird er auffällig gemeldet und **verschwindet danach von selbst** von der Merkliste |
+| <img src="assets/symbole/22/kuerzel-gruen.png" width="22" alt=""> **Klasse · Size · Grade** | Kompakt-Kürzel `Klasse/Size/Grade` je Bauplan, z. B. `M/1/A` (Military · Size 1 · Grade A) |
+| <img src="assets/symbole/22/ton-gruen.png" width="22" alt=""> **Signalton** | Kurzer Ton bei jedem Neuzugang — du musst nicht aufs Fenster schauen |
+| <img src="assets/symbole/22/vordergrund-gruen.png" width="22" alt=""> **Immer im Vordergrund** | Randloses, leicht durchscheinendes Overlay über dem Spiel |
+| <img src="assets/symbole/22/verschieben-gruen.png" width="22" alt=""> **Verschiebbar & skalierbar** | An der Titelleiste ziehen, Größe am Griff ◢ unten rechts — **Position & Größe werden gemerkt** |
+| <img src="assets/symbole/22/sprachen-gruen.png" width="22" alt=""> **Deutsch und Englisch** | Oberfläche umschaltbar. Die Bauplan-Meldung im Log erkennt der Watcher **in jeder Spielsprache** — er findet die Formulierung selbst heraus |
+| <img src="assets/symbole/22/abhaken-gruen.png" width="22" alt=""> **Sagt Bescheid** | Merkt selbst, wenn es eine neue Fassung gibt — mit „Was ist neu" zum Nachlesen, auch für ältere Versionen |
+| <img src="assets/symbole/22/nurlesend-gruen.png" width="22" alt=""> **Nur lesend** | Verändert am Spiel nichts — liest die `Game.log` und, falls vorhanden, die Launcher-Dateien |
+| <img src="assets/symbole/22/eigenbuch-gruen.png" width="22" alt=""> **Eigener Bestand** | Führt selbst Buch, welche Baupläne du hast — auch ohne den SC Deutsch Launcher |
 | 🕓 **Nachlese** | Liest beim Start die aufgehobenen Logs früherer Sitzungen und holt nach, was ohne laufenden Watcher freigeschaltet wurde |
 | 🐧 **Windows und Linux** | Eine Fassung für beide Systeme, inklusive Autostart und Spracherkennung im Log |
 
@@ -264,7 +264,7 @@ Was die Farbpunkte in der Liste bedeuten:
 2. **Im Hintergrund** (eigener Thread) wird die **`Game.log`** gelesen — alle 3 Sekunden, einstellbar. Schreibt das Spiel beim Freischalten `Added notification "Bauplan erhalten: <Name>: "`, steht der Bauplan **sofort** in der Liste (🟢) und im Bestand.
    - **Ist zusätzlich der SC Deutsch Launcher installiert**, wird zweistufig gemeldet: erst *vorläufig* aus dem Log, dann 🟢 *bestätigt*, sobald der Launcher nachzieht und seine Angaben liefert. Ohne Launcher gibt es diese Zwischenstufe nicht — dann ist die Log-Meldung die Auskunft.
 3. Jede neue Zeile wird oben eingefügt (Name · Art · `M/1/A` · Uhrzeit) und ein kurzer Ton gespielt.
-   - **Einmal pro Minute** wird der Craftbar-Katalog geprüft. Ist er gewachsen, hat CIG mit einem Patch etwas **neu craftbar** gemacht → 🔵-Zeile. Das hat nichts mit deinem Freischalt-Stand zu tun. Der Vergleichsstand liegt als `catalog-seen.json` im eigenen Ordner und überlebt Neustarts; beim allerersten Start wird nur die Basis gesetzt.
+   - **Einmal pro Minute** wird der Craftbar-Katalog geprüft. Ist er gewachsen, hat CIG mit einem Patch etwas **neu craftbar** gemacht → eine blaue Zeile. Das hat nichts mit deinem Freischalt-Stand zu tun. Der Vergleichsstand liegt als `catalog-seen.json` im eigenen Ordner und überlebt Neustarts; beim allerersten Start wird nur die Basis gesetzt.
 4. **Art, Größe, Gütegrad und Klasse** kommen aus den Craftdaten von scmdb.net und aus den mitgelieferten Spieldaten. Ist der SC Deutsch Launcher da, hat sein gepflegter Katalog Vorrang (deutsche Bezeichnungen). Über allem stehen deine eigenen Korrekturen aus `bp-overrides.json`.
 5. **Dein Bestand** wächst dabei mit und bleibt in `bestand.json` erhalten — mit Vermerk, woher jeder Bauplan stammt (Log, Nachlese, Launcher). Das ist die Liste „welche habe ich", die bisher allein vom Launcher kam.
 
@@ -314,7 +314,7 @@ In `spiel_ordner` gehört der Ordner, in dem die `Game.log` liegt (meist `LIVE`)
 
 ### Auf bestimmte Gegenstände warten
 
-Wartest du auf einen ganz bestimmten Bauplan, klick in der Bauplan-Liste auf den **Stern** neben seinem Namen. Über das Suchfeld findest du ihn in Sekunden, und der Filter **⭐ beobachtet** zeigt dir, worauf du gerade wartest.
+Wartest du auf einen ganz bestimmten Bauplan, klick in der Bauplan-Liste auf den **Stern** neben seinem Namen. Über das Suchfeld findest du ihn in Sekunden, und der Filter **beobachtet** zeigt dir, worauf du gerade wartest.
 
 Taucht ein beobachteter Bauplan auf, meldet ihn der Watcher auffällig in Gold mit einem Stern und eigenem Signalton — und **nimmt ihn danach von selbst von der Merkliste**. Was du hast, muss dort nicht mehr stehen.
 

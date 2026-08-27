@@ -108,8 +108,8 @@ The watcher writes into the game's mission text **which** blueprints a contract 
 <sub><b>General</b> — language, sound, autostart, menu entry</sub>
 </td>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-pfade.png" alt="Paths" width="100%"><br>
-<sub><b>Paths</b> — where Star Citizen lives and where the tool writes</sub>
+<img src="assets/screenshot-serverstatus.png" alt="Server status" width="100%"><br>
+<sub><b>Server status</b> — is Star Citizen up?</sub>
 </td>
 </tr>
 </table>
@@ -131,22 +131,22 @@ On top of that: class, size and grade are right there in the line (`M/1/A`), the
 
 | | |
 |---|---|
-| ⚡ **Instant** | Reads Star Citizen's `Game.log` → the blueprint is in the list **within seconds** |
-| 📋 **Blueprint list** | Search everything, grouped by type, filters *all / owned / missing / watching / new in game*, with progress. Tick items with one click |
-| 🧭 **Where it drops** | One click shows faction, contract, required standing and payout — for **655 of 722** blueprints, sorted by the easiest route |
-| 🧙 **Setup wizard** | Four steps on first start — and **repeatable any time**, no digging through menus |
-| 🔵 **Catalogue watch** | Also reports when something becomes **newly craftable in the game** — a blueprint CIG added that did not exist before |
-| ◉ **Server status** | A tab of its own: **is Star Citizen up?** Shows what CIG reports on its status page — all three systems plus the incidents of the last two months in full. Refreshes itself once a minute. States stay in CIG's own wording; the entries are maintained by hand, not measured |
-| 🔵 **New in game** | Its own filter in the list: **only what the current patch added**. Every blueprint carries the game version it first appeared in; when the next patch lands, the new ones move in and the old ones drop out of the filter — the stamp stays |
-| ⭐ **Watchlist** | Click the star next to anything you are waiting for. When it shows up it is announced in gold — and **removed from the watchlist by itself** |
-| 🏷️ **Class · size · grade** | Compact tag `class/size/grade` per blueprint, e.g. `M/1/A` (Military · Size 1 · Grade A) |
-| 🔔 **Sound** | A short beep on every find — you don't have to watch the window |
-| 🧷 **Always on top** | Borderless, slightly translucent overlay above the game |
-| 🖱️ **Movable & resizable** | Drag the title bar, resize at the ◢ handle — **position and size are remembered** |
-| 🌐 **German and English** | Interface switchable; the in-game blueprint message is recognised in both languages |
-| 🆕 **Tells you about updates** | Notices new versions by itself — with „What's new" to read up on, including older releases |
-| 🔒 **Read only** | Changes nothing in the game — reads `Game.log` and, if present, the launcher files |
-| 📒 **Own inventory** | Keeps track of which blueprints you have — without the SC Deutsch Launcher |
+| <img src="assets/symbole/22/blitz-gruen.png" width="22" alt=""> **Instant** | Reads Star Citizen's `Game.log` → the blueprint is in the list **within seconds** |
+| <img src="assets/symbole/22/liste-gruen.png" width="22" alt=""> **Blueprint list** | Search everything, grouped by type, filters *all / owned / missing / watching / new in game*, with progress. Tick items with one click |
+| <img src="assets/symbole/22/herkunft-gruen.png" width="22" alt=""> **Where it drops** | One click shows faction, contract, required standing and payout — for **655 of 722** blueprints, sorted by the easiest route |
+| <img src="assets/symbole/22/einrichtung-gruen.png" width="22" alt=""> **Setup wizard** | Four steps on first start — and **repeatable any time**, no digging through menus |
+| <img src="assets/symbole/22/punkt-blau.png" width="22" alt=""> **Catalogue watch** | Also reports when something becomes **newly craftable in the game** — a blueprint CIG added that did not exist before |
+| <img src="assets/symbole/22/serverstatus-gruen.png" width="22" alt=""> **Server status** | A tab of its own: **is Star Citizen up?** Shows what CIG reports on its status page — all three systems plus the incidents of the last two months in full. Refreshes itself once a minute. States stay in CIG's own wording; the entries are maintained by hand, not measured |
+| <img src="assets/symbole/22/punkt-blau.png" width="22" alt=""> **New in game** | Its own filter in the list: **only what the current patch added**. Every blueprint carries the game version it first appeared in; when the next patch lands, the new ones move in and the old ones drop out of the filter — the stamp stays |
+| <img src="assets/symbole/22/gemerkt-gruen.png" width="22" alt=""> **Watchlist** | Click the star next to anything you are waiting for. When it shows up it is announced in gold — and **removed from the watchlist by itself** |
+| <img src="assets/symbole/22/kuerzel-gruen.png" width="22" alt=""> **Class · size · grade** | Compact tag `class/size/grade` per blueprint, e.g. `M/1/A` (Military · Size 1 · Grade A) |
+| <img src="assets/symbole/22/ton-gruen.png" width="22" alt=""> **Sound** | A short beep on every find — you don't have to watch the window |
+| <img src="assets/symbole/22/vordergrund-gruen.png" width="22" alt=""> **Always on top** | Borderless, slightly translucent overlay above the game |
+| <img src="assets/symbole/22/verschieben-gruen.png" width="22" alt=""> **Movable & resizable** | Drag the title bar, resize at the ◢ handle — **position and size are remembered** |
+| <img src="assets/symbole/22/sprachen-gruen.png" width="22" alt=""> **German and English** | Interface switchable; the in-game blueprint message is recognised in both languages |
+| <img src="assets/symbole/22/abhaken-gruen.png" width="22" alt=""> **Tells you about updates** | Notices new versions by itself — with „What's new" to read up on, including older releases |
+| <img src="assets/symbole/22/nurlesend-gruen.png" width="22" alt=""> **Read only** | Changes nothing in the game — reads `Game.log` and, if present, the launcher files |
+| <img src="assets/symbole/22/eigenbuch-gruen.png" width="22" alt=""> **Own inventory** | Keeps track of which blueprints you have — without the SC Deutsch Launcher |
 | 🕓 **Catch-up** | Reads stored logs of earlier sessions on start and picks up what was unlocked while it wasn't running |
 | 🐧 **Windows and Linux** | One build for both systems, including autostart and log language detection |
 
@@ -261,7 +261,7 @@ What the coloured dots mean:
 2. **In the background** the **`Game.log`** is read — every 3 seconds, adjustable. *(The wording of the blueprint message depends on your game language — the watcher works it out by itself, see below.)* When the game writes `Added notification "Blueprint Received: <name>: "` on unlock, the blueprint is in the list **immediately** (🟢) and in your inventory.
    - **If the SC Deutsch Launcher is installed as well**, reporting is two-stage: first *provisional* from the log, then 🟢 *confirmed* once the launcher catches up and supplies its data. Without the launcher there is no intermediate stage — the log message is the answer.
 3. Every new line is inserted at the top (name · type · `M/1/A` · time) and a short sound plays.
-   - **Once a minute** the craftable catalogue is checked. If it grew, CIG made something **newly craftable** with a patch → 🔵 line. This has nothing to do with your own unlocks.
+   - **Once a minute** the craftable catalogue is checked. If it grew, CIG made something **newly craftable** with a patch → a blue line. This has nothing to do with your own unlocks.
 4. **Type, size, grade and class** come from scmdb.net's crafting data and from the bundled game data. If the SC Deutsch Launcher is present, its maintained catalogue takes precedence (German names). Above all of it are your own corrections from `bp-overrides.json`.
 5. **Your inventory** grows along and stays in `bestand.json` — with a note where each blueprint came from (log, catch-up, launcher).
 
@@ -311,7 +311,7 @@ If Star Citizen (or the SC Deutsch Launcher) isn't in one of the usual places, y
 
 ### Waiting for specific items
 
-Waiting for one particular blueprint? Click the **star** next to its name in the blueprint list. The search box finds it in seconds, and the **⭐ watching** filter shows what you're waiting for.
+Waiting for one particular blueprint? Click the **star** next to its name in the blueprint list. The search box finds it in seconds, and the **watching** filter shows what you're waiting for.
 
 When a watched blueprint appears, the watcher announces it in gold with a star and its own sound — and then **removes it from the watchlist by itself**. What you have doesn't need to be on there.
 
