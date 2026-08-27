@@ -1538,6 +1538,78 @@ def main():
         wurzel.withdraw()
         wurzel.destroy()
 
+        print()
+        print('22. Die Ablage schreibt bei jedem neuen Bauplan mit')
+        # Bis rc65 wurden die drei Ausgabe-Dateien NUR auf Knopfdruck
+        # geschrieben. Wer einmal geklickt hatte, hielt sie fuer aktuell — sie
+        # standen aber fuer immer auf dem Stand jenes Klicks.
+        import importlib as _imp22
+        heim22 = os.path.join(basis, 'ablageprobe')
+        os.makedirs(heim22)
+        alt_heim22 = os.environ.get('SC_BP_HOME')
+        os.environ['SC_BP_HOME'] = heim22
+        try:
+            from scbp import pfade as pf22
+            _imp22.reload(pf22)
+            from scbp import bestand as be22, export as ex22
+            _imp22.reload(ex22)
+            _imp22.reload(be22)
+
+            ordner22 = ex22.ablage_ordner()
+            # Altbestand aus der Zeit der datierten Namen — und eine fremde
+            # Datei, die auf keinen Fall angefasst werden darf.
+            for name in ('SC-Blueprints-Basetool-2026-08-01.json',
+                         'scmdb-import-2026-07-30.json'):
+                open(os.path.join(ordner22, name), 'w').close()
+            open(os.path.join(ordner22, 'meine-notiz.json'), 'w').close()
+
+            daten22 = be22.leer()
+            be22.hinzufuegen(daten22, 'Testbauplan Alpha', 'log')
+            be22.speichern(daten22)
+
+            liegt = set(os.listdir(ordner22))
+            pruefe({'SC-Blueprints-Basetool.json', 'scmdb-import.json',
+                    'SC-BP-Watcher-Bestand.json'} <= liegt,
+                   'speichern() schreibt alle drei Fassungen mit')
+
+            # ⚠ Ohne Datum im Namen — sonst entstuenden taeglich drei neue
+            # Dateien, und niemand wuesste, welche die aktuelle ist.
+            be22.hinzufuegen(daten22, 'Testbauplan Beta', 'log')
+            be22.speichern(daten22)
+            json_dateien = [d for d in os.listdir(ordner22)
+                            if d.endswith('.json')]
+            pruefe(len(json_dateien) == 4,      # drei Fassungen + fremde Datei
+                   'zweimal speichern erzeugt keine zweite Garnitur (%d Dateien)'
+                   % len(json_dateien))
+
+            pruefe(os.path.isfile(os.path.join(ordner22, 'meine-notiz.json')),
+                   'eine fremde Datei im Ordner bleibt unangetastet')
+            aelter = os.path.join(ordner22, ex22.ALTORDNER)
+            pruefe(os.path.isdir(aelter) and len(os.listdir(aelter)) == 2,
+                   'die alten datierten Fassungen sind weggeraeumt, nicht geloescht')
+
+            # Der Speichern-Dialog dagegen behaelt das Datum: Dort haelt jemand
+            # bewusst einen Stand fest.
+            pruefe('2026' in ex22.vorschlag('scmdb') or
+                   time.strftime('%Y') in ex22.vorschlag('scmdb'),
+                   'der Speichern-Dialog schlaegt weiterhin einen Namen mit Datum vor')
+
+            # Und der Knopf je Zeile muss die Fassung durchreichen, statt
+            # 'basetool' fest verdrahtet zu haben.
+            quelle22 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                            encoding='utf-8').read()
+            pruefe('def einzeln(art):' in quelle22,
+                   'Einzeln speichern nimmt die Fassung entgegen')
+            pruefe("export.schreiben(ziel, art=art)" in quelle22,
+                   'und gibt sie auch weiter (nicht mehr fest basetool)')
+        finally:
+            if alt_heim22 is None:
+                os.environ.pop('SC_BP_HOME', None)
+            else:
+                os.environ['SC_BP_HOME'] = alt_heim22
+            from scbp import pfade as pf22b
+            _imp22.reload(pf22b)
+
     finally:
         shutil.rmtree(basis, ignore_errors=True)
 

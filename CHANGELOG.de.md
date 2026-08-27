@@ -10,6 +10,45 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc66 - 2026-08-27
+
+> **Die Ausgabe-Dateien halten sich von allein aktuell** — und die Dateiauswahl
+> sieht endlich nach dem System aus, auf dem sie läuft.
+
+### Hinzugefügt
+
+- **Die Ablage wird bei jedem neuen Bauplan mitgeschrieben.** Bisher entstanden
+  die drei Ausgabe-Dateien (KRT Profit Basetool, scmdb.net, Vollsicherung) nur
+  auf Knopfdruck — wer einmal geklickt hatte, hielt sie für aktuell, dabei
+  standen sie für immer auf dem Stand jenes Klicks. Jetzt hängt das Schreiben am
+  Bestand selbst: Jeder Fund im Spiel, jede Nachlese beim Start, jede Bestätigung
+  durch den Launcher und jeder Import ziehen die Dateien mit. Gemeldet von
+  **der Autor**.
+  - **Feste Dateinamen in der Ablage.** Mit Datum im Namen wären dort täglich
+    drei neue Dateien entstanden, und niemand wüsste, welche die aktuelle ist.
+    Der Speichern-Dialog schlägt weiterhin einen Namen mit Datum vor — wer von
+    Hand speichert, hält bewusst einen Stand fest.
+  - **Früher abgelegte Dateien mit Datum wandern nach `Ältere/`** — verschoben,
+    nicht gelöscht. Was sonst noch im Ordner liegt, bleibt unangetastet.
+- **Ein Speichern-Knopf je Fassung**, direkt an der Fassung, statt eines
+  gemeinsamen Knopfes weiter unten.
+
+### Behoben
+
+- **„Einzeln speichern …" speicherte immer die Basetool-Fassung.** Die Fassung
+  war im Code fest verdrahtet; scmdb und die Vollsicherung waren über den Dialog
+  überhaupt nicht erreichbar. Gemeldet von **der Autor**.
+- **Die Dateiauswahl unter Linux war der alte Tk-Kasten** — eine Spaltenliste mit
+  jedem versteckten Ordner, kein Sortieren, keine Vorschau. Jetzt öffnet sich der
+  Dialog des Schreibtischs (`kdialog` unter KDE, sonst `zenity`), überall dort,
+  wo eine Datei oder ein Ordner gewählt wird: Bestand einlesen, Bestand
+  speichern, Spielordner, Launcher-Ordner, eigener Ordner und der
+  Einrichtungs-Assistent. Fehlt beides, bleibt der Tk-Dialog als Rückfall —
+  **nichts hängt davon ab.** Unter Windows und macOS ändert sich nichts, dort
+  reicht Tk schon den echten Systemdialog durch. Gemeldet von **der Autor**.
+  - Für Ordner gab es diesen Weg längst; für Dateien nicht. Beides steht jetzt
+    an einer Stelle (`scbp/dateiwahl.py`) statt an dreien.
+
 ## v3.0.0-rc65 - 2026-08-27
 
 > **Der Startknopf rief unter Linux das falsche Programm auf.**

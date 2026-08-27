@@ -931,75 +931,22 @@ def _overlay_modus(fenster, wahl, kennung):
 
 
 def saubere_umgebung():
-    """Umgebung für fremde Programme — ohne unsere eigenen Bibliothekspfade.
+    """Weiterleitung — die Wahrheit steht in `dateiwahl`.
 
-    ⚠ Das ist im AppImage entscheidend. Dort zeigen `LD_LIBRARY_PATH`, `PYTHONHOME`
-    und `PYTHONPATH` in das entpackte Paket. Startet man daraus ein Systemprogramm
-    wie `zenity`, lädt es unsere mitgelieferten Bibliotheken statt seiner eigenen
-    und stirbt sofort — der Dialog erscheint nicht, und für den Nutzer sieht es
-    aus, als täte der Knopf nichts. AppImage setzt die ursprünglichen Werte unter
-    `*_ORIG` ab; die gelten hier wieder.
+    ⚠ Sie stand jahrelang hier, weil sie hier zuerst gebraucht wurde. Seit die
+    Dateiauswahl ein eigenes Modul hat, gehört sie dorthin: Beide brauchen
+    dieselbe Wäsche, und zwei Fassungen davon wären eine zu viel. Die
+    Weiterleitung bleibt, weil `_ordner_zeigen` und der Spielstart sie hier
+    aufrufen.
     """
-    import os
-    umgebung = dict(os.environ)
-    for name in ('LD_LIBRARY_PATH', 'PYTHONHOME', 'PYTHONPATH', 'PYTHONDONTWRITEBYTECODE',
-                 'QT_PLUGIN_PATH', 'GTK_PATH', 'GDK_PIXBUF_MODULE_FILE',
-                 'GI_TYPELIB_PATH', 'XDG_DATA_DIRS', 'PERLLIB', 'GSETTINGS_SCHEMA_DIR'):
-        urspruenglich = umgebung.pop(name + '_ORIG', None)
-        if urspruenglich:
-            umgebung[name] = urspruenglich
-        else:
-            umgebung.pop(name, None)
-    return umgebung
+    from . import dateiwahl
+    return dateiwahl.saubere_umgebung()
 
 
 def ordner_waehlen(titel, start=None):
-    """Einen Ordner auswählen lassen — möglichst mit dem Dialog des Systems.
-
-    ⚠ Tk bringt unter Linux einen eigenen Dialog mit, und der stammt optisch aus
-    den Neunzigern: graue Motif-Knöpfe, eigene Schrift, nichts davon passt zum
-    Rest des Fensters. Unter Windows und macOS ruft Tk dagegen den **echten**
-    Systemdialog auf — dort ist alles in Ordnung.
-
-    Deshalb wird unter Linux zuerst nach `kdialog` (KDE) und `zenity` (GNOME und
-    fast überall vorhanden) gesucht. Beide sehen aus wie der Rest des Systems.
-    Gibt es keines von beiden, bleibt der Tk-Dialog als Rückfall — hässlich, aber
-    funktionierend ist besser als gar nichts.
-
-    ⚠ Rückgabecodes auseinanderhalten: **1 heißt „abgebrochen"** und ist eine
-    gültige Antwort — dann ist der Nutzer fertig und wir hören auf. Jeder andere
-    Code heißt, das Werkzeug selbst ist gescheitert; dann wird das nächste
-    versucht und am Ende der Tk-Dialog. Vorher galt beides als Abbruch, und ein
-    im AppImage abgestürztes `zenity` sah aus wie ein Knopf ohne Funktion.
-    """
-    import subprocess
-    if not sys.platform.startswith(('win', 'darwin')):
-        umgebung = saubere_umgebung()
-        befehle = [
-            ['kdialog', '--getexistingdirectory',
-             start or os.path.expanduser('~'), '--title', titel],
-            ['zenity', '--file-selection', '--directory', '--title', titel]
-            + (['--filename', start.rstrip('/') + '/'] if start else []),
-        ]
-        for befehl in befehle:
-            if not _im_pfad(befehl[0]):
-                continue
-            try:
-                fertig = subprocess.run(befehl, capture_output=True, text=True,
-                                        timeout=600, env=umgebung)
-            except Exception as ausnahme:
-                fehler.merken('seiten.ordner_waehlen:%s' % befehl[0], ausnahme)
-                continue
-            gewaehlt = (fertig.stdout or '').strip()
-            if fertig.returncode == 0 and gewaehlt:
-                return gewaehlt
-            if fertig.returncode == 1:
-                return ''                      # bewusst abgebrochen
-            fehler.merken('seiten.ordner_waehlen:%s' % befehl[0],
-                          RuntimeError('Code %s: %s' % (fertig.returncode,
-                                                        (fertig.stderr or '')[:200])))
-    from tkinter import filedialog
-    return filedialog.askdirectory(title=titel, initialdir=start or None) or ''
+    """Weiterleitung — siehe `dateiwahl.ordner_waehlen`."""
+    from . import dateiwahl
+    return dateiwahl.ordner_waehlen(titel, start)
 
 
 def _im_pfad(name):
@@ -1185,16 +1132,27 @@ def _bestand(fenster, rahmen):
     _fliesstext(innen, t('s_be_aus_h'), fenster.f_klein,
                 fill='x', pady=(0, 12))
 
+    # ⚠ Ein Speichern-Knopf **je Fassung**, direkt an der Fassung. Vorher gab es
+    # nur einen gemeinsamen Knopf „Einzeln speichern …", und der schrieb immer
+    # die Basetool-Fassung. Wer beim Vorführen scmdb einzeln speichern wollte,
+    # suchte vergeblich — es gab den Weg schlicht nicht.
     karte = _karte(innen)
-    for name, wofuer in (('KRT Profit Basetool', t('s_be_n_bp') % anzahl),
-                         ('scmdb.net', t('s_be_n_bp') % anzahl),
-                         (t('s_be_voll'), t('s_be_voll_h'))):
+    for art, name, wofuer in (('basetool', 'KRT Profit Basetool',
+                               t('s_be_n_bp') % anzahl),
+                              ('scmdb', 'scmdb.net', t('s_be_n_bp') % anzahl),
+                              ('voll', t('s_be_voll'), t('s_be_voll_h'))):
         z = tk.Frame(karte, bg=FLAECHE)
         z.pack(fill='x', padx=16, pady=5)
         tk.Label(z, text=name, bg=FLAECHE, fg=FG, font=fenster.f_klein,
                  width=26, anchor='w').pack(side='left')
         tk.Label(z, text=wofuer, bg=FLAECHE, fg=SUB,
                  font=fenster.f_klein).pack(side='left')
+        # ⚠ `a=art` als Vorgabewert, nicht `art` direkt. Ein Lambda merkt sich
+        # die **Variable**, nicht ihren Wert — ohne diese Zeile hätten alle drei
+        # Knöpfe am Ende der Schleife auf „voll" gezeigt und dreimal dasselbe
+        # gespeichert.
+        _knopf(fenster, z, t('s_be_speichern_kurz'),
+               lambda a=art: einzeln(a)).pack(side='right')
 
     reihe = tk.Frame(innen, bg=BG)
     reihe.pack(fill='x', pady=(12, 0))
@@ -1209,25 +1167,37 @@ def _bestand(fenster, rahmen):
             fehler.merken('seiten.bestand.ablegen', ausnahme)
             fenster.sagen(t('s_be_schiefging'))
 
-    def einzeln():
-        from tkinter import filedialog
-        ziel = filedialog.asksaveasfilename(
-            title=t('s_be_speichern'), defaultextension='.json',
-            initialfile=export.vorschlag('basetool'))
+    def einzeln(art):
+        """Eine einzelne Fassung speichern — die, an deren Zeile der Knopf steht.
+
+        ⚠ Hier stand `art='basetool'` **fest verdrahtet**, während der Knopf
+        „Einzeln speichern …" hieß. Wer scmdb oder die Vollsicherung einzeln
+        wollte, bekam wortlos die Basetool-Fassung; über den Dialog waren die
+        anderen beiden gar nicht erreichbar. Gemeldet von der Autor am
+        27.08.2026 („bei einzeln speichern speichert er nur basetool").
+        """
+        from . import dateiwahl
+        ziel = dateiwahl.datei_speichern(
+            t('s_be_speichern'), vorschlag=export.vorschlag(art),
+            endung='.json', start=export.ablage_ordner())
         if not ziel:
             return
         try:
-            export.schreiben(ziel, art='basetool')
+            export.schreiben(ziel, art=art)
             fenster.sagen(t('s_be_gespeichert') % os.path.basename(ziel))
         except Exception as ausnahme:
             fehler.merken('seiten.bestand.einzeln', ausnahme)
 
     _knopf(fenster, reihe, t('s_be_alle_drei'), in_ablage,
            stark=True).pack(side='left')
-    _knopf(fenster, reihe, t('s_be_einzeln'), einzeln).pack(side='left',
-                                                            padx=8)
     _knopf(fenster, reihe, t('s_be_ablage'),
-           lambda: _ordner_zeigen(export.ablage_ordner())).pack(side='left')
+           lambda: _ordner_zeigen(export.ablage_ordner())).pack(side='left',
+                                                                padx=8)
+
+    # Der Satz nimmt die häufigste Frage vorweg: „Muss ich das jedes Mal von
+    # Hand machen?" Nein — seit die Ablage bei jedem neuen Bauplan mitgeschrieben
+    # wird, sind die drei Dateien von allein aktuell.
+    _fliesstext(innen, t('s_be_fort'), fenster.f_klein, fill='x', pady=(8, 0))
 
     tk.Label(innen, text=t('s_be_ein'), bg=BG, fg=FG,
              font=fenster.f_titel, anchor='w').pack(fill='x', pady=(28, 2))
@@ -1237,10 +1207,10 @@ def _bestand(fenster, rahmen):
     vorschau_platz = tk.Frame(innen, bg=BG)
 
     def einlesen():
-        from tkinter import filedialog
-        pfad = filedialog.askopenfilename(
-            title=t('s_be_ein'),
-            filetypes=[('JSON', '*.json'), (t('alle_dateien'), '*.*')])
+        from . import dateiwahl
+        pfad = dateiwahl.datei_oeffnen(
+            t('s_be_ein'),
+            muster=(('JSON', '*.json'), (t('alle_dateien'), '*.*')))
         if not pfad:
             return
         art, eintraege = importieren.lesen(pfad)

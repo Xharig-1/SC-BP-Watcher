@@ -36,7 +36,6 @@ Klick auf ⓘ klappt die Bezugsquellen aus.
 """
 import os
 import tkinter as tk
-from tkinter import filedialog
 
 from . import fehler
 from . import bestand as bestand_datei
@@ -316,12 +315,13 @@ class Bestandsfenster:
 
     def _exportieren(self, art):
         """Bestand als Datei ausgeben — Ziel wählt der Spieler."""
-        pfad = filedialog.asksaveasfilename(
-            parent=self.root, title=t('export_basetool' if art == 'basetool'
-                                      else 'export_alles'),
-            initialfile=export_modul.vorschlag(art),
-            defaultextension='.json',
-            filetypes=[('JSON', '*.json'), (t('alle_dateien'), '*.*')])
+        # ⚠ Siehe `dateiwahl` — der Systemdialog statt des Tk-Kastens.
+        from . import dateiwahl
+        pfad = dateiwahl.datei_speichern(
+            t('export_basetool' if art == 'basetool' else 'export_alles'),
+            vorschlag=export_modul.vorschlag(art), endung='.json',
+            start=export_modul.ablage_ordner(),
+            muster=(('JSON', '*.json'), (t('alle_dateien'), '*.*')))
         if not pfad:
             return
         ok, meldung = export_modul.schreiben(pfad, art, self.bestand,
