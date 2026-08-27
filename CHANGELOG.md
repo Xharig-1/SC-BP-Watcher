@@ -10,6 +10,10 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc78 - 2026-08-28
+
+> **Passing clicks through to the game is no longer a one-way street.**
+
 ### Added
 
 - **A lock on the overlay brings you back when clicks pass through to the

@@ -10,6 +10,10 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc78 - 2026-08-28
+
+> **Klicks ins Spiel durchreichen ist keine Einbahnstraße mehr.**
+
 ### Hinzugefügt
 
 - **Ein Schloss am Overlay holt dich zurück, wenn Klicks ins Spiel
