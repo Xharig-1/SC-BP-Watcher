@@ -43,20 +43,6 @@ jobs:
       # wird sie aus dem Secret in die Datei geschrieben, die dann mitgebaut
       # wird. Fehlt das Secret, bleibt sie leer und der Knopf erscheint gar
       # nicht erst (`berichtziel.moeglich()`).
-      - name: Berichtsziel einsetzen
-        shell: bash
-        run: |
-          printf '%s\n' \
-            '# -*- coding: utf-8 -*-' \
-            '"""Beim Bau eingesetzt — siehe die Fassung im Repo."""' \
-            "WEBHOOK = '${{ secrets.BERICHT_WEBHOOK }}'" \
-            '' \
-            'def ziel():' \
-            '    return (WEBHOOK or "").strip()' \
-            '' \
-            'def moeglich():' \
-            '    return ziel().startswith("https://")' \
-            > scbp/berichtziel.py
 
       - uses: actions/setup-python@v5
         with:
@@ -83,6 +69,20 @@ jobs:
       - name: Selbsttest
         run: python tools/selbsttest.py
 
+      - name: Berichtsziel einsetzen
+        shell: bash
+        run: |
+          printf '%s\n' \
+            '# -*- coding: utf-8 -*-' \
+            '"""Beim Bau eingesetzt — siehe die Fassung im Repo."""' \
+            "WEBHOOK = '${{ secrets.BERICHT_WEBHOOK }}'" \
+            '' \
+            'def ziel():' \
+            '    return (WEBHOOK or "").strip()' \
+            '' \
+            'def moeglich():' \
+            '    return ziel().startswith("https://")' \
+            > scbp/berichtziel.py
       - name: PyInstaller
         run: pip install --upgrade pyinstaller
 
@@ -158,6 +158,13 @@ jobs:
       - uses: actions/checkout@v4
 
       # Dasselbe wie im Windows-Job — siehe die Begruendung dort.
+
+      - name: Selbsttest
+        # xvfb-run stellt einen Bildschirm bereit, den es auf einem Bau-Rechner
+        # sonst nicht gibt. Ohne ihn wuerden die Fenster-Pruefungen still
+        # uebersprungen — geprueft werden soll aber alles.
+        run: xvfb-run -a python3 tools/selbsttest.py
+
       - name: Berichtsziel einsetzen
         run: |
           printf '%s\n' \
@@ -171,13 +178,6 @@ jobs:
             'def moeglich():' \
             '    return ziel().startswith("https://")' \
             > scbp/berichtziel.py
-
-      - name: Selbsttest
-        # xvfb-run stellt einen Bildschirm bereit, den es auf einem Bau-Rechner
-        # sonst nicht gibt. Ohne ihn wuerden die Fenster-Pruefungen still
-        # uebersprungen — geprueft werden soll aber alles.
-        run: xvfb-run -a python3 tools/selbsttest.py
-
       - name: Binaerdatei bauen
         run: >
           python3 -m PyInstaller --noconfirm --onefile --windowed
