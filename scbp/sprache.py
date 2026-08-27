@@ -732,18 +732,53 @@ TEXTE = {
                         'Anyone who finds a bug or makes a good suggestion is named '
                         'in the changelog — listed here are those whose feedback '
                         'became something that would not exist otherwise.'),
-    's_dk_haldjas':    ('Von ihm kam der Hinweis, dass ein Overlay, das dauernd im '
-                        'Bild steht und Mausklicks abfängt, im Kampf mehr stört als '
-                        'hilft. Daraus wurden zwei Sachen: das kurze Aufblenden nur '
-                        'bei einem Fund, und das Durchreichen der Mausklicks.',
-                        'He pointed out that an overlay permanently in view, '
-                        'swallowing mouse clicks, gets in the way during combat. '
-                        'Two things came out of that: the brief pop-up on a find '
-                        'only, and passing mouse clicks through.'),
-    's_dk_morkhan':    ('Hat den Update-Weg so lange getestet, bis er stand — und '
-                        'gesagt, wo er verwirrend war.',
-                        'Tested the update path until it worked — and said where it '
-                        'was confusing.'),
+    's_dk_beitraege':  ('%d Beiträge', '%d contributions'),
+    's_dk_aufklappen': ('Klick auf einen Namen zeigt, was daraus geworden ist.',
+                        'Click a name to see what came of it.'),
+    's_dk_haldjas_idee': ('**Der Aufblend-Betrieb und die durchgereichten '
+                          'Mausklicks.** Sein Hinweis war, dass ein Overlay, das '
+                          'dauernd im Bild steht und Klicks abfängt, im Kampf mehr '
+                          'stört als hilft. Beides gäbe es ohne ihn nicht.',
+                          '**The pop-up mode and click-through.** He pointed out '
+                          'that an overlay permanently in view, swallowing clicks, '
+                          'gets in the way during combat. Neither would exist '
+                          'without him.'),
+    's_dk_haldjas_bugs': ('Dazu: das Setup, das an der laufenden Datei abbrach · '
+                          'die Konsolenfenster beim Update · das verschwundene '
+                          'Symbol neben der Uhr · der Absturz nach dem Neustart · '
+                          'die Schriftgröße, die das Overlay nicht erreichte · die '
+                          'vergessene Textquelle im Assistenten · und der Fund, der '
+                          'alles erklärte: „da bleibt er bei rc25".',
+                          'Also: the installer that failed on the running file · the '
+                          'console windows during updates · the tray symbol that '
+                          'vanished · the crash after restarting · the font size that '
+                          'never reached the overlay · the forgotten text source in '
+                          'the assistant · and the find that explained everything: '
+                          '"it stays on rc25".'),
+    's_dk_bomb_idee':   ('**Der Absturz beim allerersten Start** — der Fehler, den '
+                         'sonst nur neue Nutzer je gesehen hätten und der Autor nie.',
+                         '**The crash on the very first start** — the bug only new '
+                         'users would ever have seen, and the author never.'),
+    's_dk_bomb_bugs':   ('Dazu: der wirkungslose Knopf „Jetzt nachsehen" · und der '
+                         'Hinweis, dass die Textquelle „Deutsch" das **ganze** Spiel '
+                         'übersetzt, nicht nur die Bauplan-Angaben.',
+                         'Also: the "Check now" button that did nothing · and the '
+                         'note that the text source "German" translates the **whole** '
+                         'game, not just the blueprint details.'),
+    's_dk_morkhan_idee': ('**Star Citizen lässt sich aus dem Werkzeug heraus '
+                          'starten.** Sein Vorschlag — über den Weg, den man ohnehin '
+                          'benutzt.',
+                          '**Launching Star Citizen from the tool.** His suggestion — '
+                          'using the launcher you already use anyway.'),
+    's_dk_morkhan_bugs': ('Dazu: das Update über das Infofenster, das nie ankam '
+                          '(dreimal vergeblich geladen) · die gestreckten Knöpfe, die '
+                          'nur die halbe Breite füllten · und die verwirrenden '
+                          'Update-Kanäle, aus denen der Knopf „Jetzt die neueste '
+                          'Fassung holen" wurde.',
+                          'Also: the update from the info window that never arrived '
+                          '(downloaded three times in vain) · the stretched buttons '
+                          'that filled only half the width · and the confusing update '
+                          'channels that became the "Get the latest version" button.'),
     's_dk_marken':     ('SC BP Watcher ist ein eigenständiges, inoffizielles '
                         'Zusatzwerkzeug und steht in keiner offiziellen Verbindung '
                         'zum SC Deutsch Launcher oder zu Cloud Imperium Games. Alle '

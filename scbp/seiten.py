@@ -2444,6 +2444,58 @@ def _dankblock(fenster, eltern, name, lizenz, was, adresse=None):
         link.bind('<Leave>', lambda e: link.configure(fg=ACCENT))
 
 
+def _person(fenster, eltern, name, gruppe, idee, funde):
+    """Ein Name in der Dankliste — aufklappbar.
+
+    Sichtbar ist immer nur die Kopfzeile (Name + Gruppe). Was die Person
+    beigetragen hat, steht darunter und erscheint erst auf Klick. Grund: Die
+    Liste soll vollständig bleiben, auch wenn irgendwann fünfzig Leute
+    daraufstehen — vollständig **und** überschaubar geht nur so.
+    """
+    from .hauptfenster import marke as blase
+    kasten = tk.Frame(eltern, bg=FLAECHE)
+    kasten.pack(fill='x', pady=(0, 6))
+
+    kopf = tk.Frame(kasten, bg=FLAECHE, cursor='hand2')
+    kopf.pack(fill='x', padx=16, pady=10)
+    pfeil = zeichen.zeile(kopf, 'aufklappen', grund=FLAECHE,
+                          schrift=fenster.f_klein)
+    pfeil.pack(side='left', padx=(0, 8))
+    tk.Label(kopf, text=name, bg=FLAECHE, fg=FG, font=fenster.f_fett,
+             anchor='w').pack(side='left')
+    if gruppe:
+        blase(kopf, gruppe, ACCENT, fenster.f_klein).pack(side='left', padx=8)
+
+    koerper = tk.Frame(kasten, bg=FLAECHE)
+
+    gebaut = []
+
+    def zeichnen():
+        if gebaut:
+            return
+        for text, farbe in ((idee, FG), (funde, SUB)):
+            if not text:
+                continue
+            lab = tk.Label(koerper, text=text.replace('**', ''), bg=FLAECHE,
+                           fg=farbe, font=fenster.f_klein, anchor='w',
+                           justify='left')
+            lab.pack(fill='x', padx=(46, 16), pady=(0, 8))
+            _umbruch(lab, abzug=62)
+        gebaut.append(True)
+
+    def umschalten(_=None):
+        if koerper.winfo_ismapped():
+            koerper.pack_forget()
+            pfeil.symbol_tauschen('aufklappen')
+        else:
+            zeichnen()
+            koerper.pack(fill='x', after=kopf)
+            pfeil.symbol_tauschen('zuklappen')
+
+    for teil in (kopf, pfeil) + tuple(kopf.winfo_children()):
+        teil.bind('<Button-1>', umschalten)
+
+
 def _danke(fenster, rahmen):
     """Wem was gehört — und Dank an die, ohne die es das Werkzeug nicht gäbe.
 
@@ -2490,12 +2542,25 @@ def _danke(fenster, rahmen):
                t('s_dk_scdl'), 'https://www.sc-deutsch-launcher.de/')
 
     # --- Menschen ---
+    # ⚠ Aufklappbar, und zwar mit Absicht: Die Liste wird wachsen. der Autor am
+    # 27.08.2026: „das werden später ja mal richtig viele, ich möchte schon alle
+    # drauf haben aber nichts überladen." Sichtbar bleibt darum immer nur der
+    # Name mit seiner Gruppe — was daraus geworden ist, steht eine Zeile tiefer
+    # und nur auf Klick. So trägt die Seite auch fünfzig Namen noch.
     tk.Label(innen, text=t('s_dk_leute'), bg=BG, fg=FG, font=fenster.f_titel,
              anchor='w').pack(fill='x', pady=(18, 2))
     _fliesstext(innen, t('s_dk_leute_h'), fenster.f_klein, fill='x',
-                pady=(0, 10))
-    _dankblock(fenster, innen, 'Haldjas', 'pr0citizen', t('s_dk_haldjas'))
-    _dankblock(fenster, innen, 'Morkhan', t('s_dk_tester'), t('s_dk_morkhan'))
+                pady=(0, 2))
+    _fliesstext(innen, t('s_dk_aufklappen'), fenster.f_klein, farbe=SUB,
+                fill='x', pady=(0, 10))
+
+    for name, gruppe, idee, funde in (
+            ('Haldjas', 'pr0citizen', t('s_dk_haldjas_idee'),
+             t('s_dk_haldjas_bugs')),
+            ('Bomb20', 'SC4M', t('s_dk_bomb_idee'), t('s_dk_bomb_bugs')),
+            ('Morkhan', 'KRT', t('s_dk_morkhan_idee'),
+             t('s_dk_morkhan_bugs'))):
+        _person(fenster, innen, name, gruppe, idee, funde)
 
     # --- Marken ---
     _fliesstext(innen, t('s_dk_marken'), fenster.f_klein, fill='x',
