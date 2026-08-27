@@ -113,6 +113,7 @@ def speichern(daten):
             except OSError:
                 pass
         os.replace(temp, ziel)
+        _ablage_nachziehen(daten)
         return True
     except Exception as ausnahme:
         # Hier ist der eigene Bauplan-Bestand betroffen — das Wichtigste, was
@@ -123,6 +124,36 @@ def speichern(daten):
         except OSError:
             pass
         return False
+
+
+def _ablage_nachziehen(daten):
+    """Die drei Ausgabe-Dateien auf den neuen Stand bringen — still.
+
+    ⚠ **Warum das hier hängt und nicht am Knopf.** Die Ausgabe-Dateien für das
+    KRT Profit Basetool, für scmdb.net und die Vollsicherung wurden bisher
+    **nur** geschrieben, wenn jemand auf „Alle drei in die Ablage" klickte.
+    Wer das einmal gemacht hatte, hielt sie danach für aktuell — sie standen
+    aber für immer auf dem Stand jenes Klicks. der Autor fiel es auf, als er das
+    Werkzeug jemandem vorführte und selbst suchen musste, wo die Dateien
+    herkommen (27.08.2026): „die werden ja bei drops direkt fortgeschrieben
+    oder?" Nein — bis jetzt nicht.
+
+    An `speichern()` hängt es, weil hier **jede** Bestandsänderung
+    vorbeikommt: der Fund im Spiel, die Nachlese beim Start, die Bestätigung
+    durch den Launcher und der Import einer fremden Datei. Ein Aufruf statt
+    fünf, und keine Stelle kann vergessen werden.
+
+    ⚠ **Fehler bleiben still.** Diese Dateien sind eine Bequemlichkeit; der
+    Bestand ist die Hauptsache und liegt zu diesem Zeitpunkt bereits sicher auf
+    der Platte. Ein voller Datenträger oder ein gesperrter Ordner darf die
+    Erkennung nicht anhalten — gemerkt wird der Fehler trotzdem, damit er im
+    Diagnosebericht auftaucht.
+    """
+    try:
+        from . import export
+        export.ablegen(daten)
+    except Exception as ausnahme:
+        fehler.merken('bestand.ablage_nachziehen', ausnahme)
 
 
 def hinzufuegen(daten, name, quelle='log', zeit=None):

@@ -38,7 +38,6 @@ Ersteinrichtung; dieses Fenster ist zum gezielten Nachstellen einer Sache.
 """
 import os
 import tkinter as tk
-from tkinter import filedialog
 
 from . import injektion
 from . import pfade
@@ -261,8 +260,11 @@ class Einstellungsfenster:
             pass
 
     def _waehlen(self, variable, titel):
-        ordner = filedialog.askdirectory(title=titel, parent=self.root,
-                                         initialdir=variable.get() or None)
+        # ⚠ Nicht `filedialog`: Unter Linux zeichnet Tk seinen eigenen
+        # Motif-Kasten. `dateiwahl` nimmt den Dialog des Systems, wo es einen
+        # gibt, und fällt sonst auf Tk zurück.
+        from . import dateiwahl
+        ordner = dateiwahl.ordner_waehlen(titel, variable.get() or None)
         if ordner:
             variable.set(ordner)
 

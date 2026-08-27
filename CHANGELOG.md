@@ -10,6 +10,45 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc66 - 2026-08-27
+
+> **The export files keep themselves up to date** — and the file chooser finally
+> looks like the system it runs on.
+
+### Added
+
+- **The export folder is updated with every new blueprint.** Until now the three
+  files (KRT Profit Basetool, scmdb.net, full backup) were only written on a
+  button press — anyone who had clicked once assumed they were current, while
+  they stayed frozen at the moment of that click. Writing is now tied to the
+  inventory itself: every find in the game, every catch-up at startup, every
+  confirmation from the launcher and every import carries the files along.
+  Reported by **der Autor**.
+  - **Fixed file names in the folder.** With a date in the name, three new files
+    would appear there every day and nobody would know which one is current. The
+    save dialog still suggests a name with a date — saving by hand means
+    deliberately preserving a state.
+  - **Previously stored dated files move to `Ältere/`** — moved, not deleted.
+    Anything else in the folder is left alone.
+- **A save button per format**, right next to the format, instead of one shared
+  button further down.
+
+### Fixed
+
+- **"Save individually …" always saved the Basetool format.** The format was
+  hard-coded; scmdb and the full backup were not reachable through the dialog at
+  all. Reported by **der Autor**.
+- **The file chooser on Linux was the old Tk box** — a column list showing every
+  hidden folder, no sorting, no preview. It now opens the desktop's own dialog
+  (`kdialog` on KDE, otherwise `zenity`), everywhere a file or folder is chosen:
+  import inventory, save inventory, game folder, launcher folder, own folder and
+  the setup assistant. If neither is present, the Tk dialog remains as a
+  fallback — **nothing depends on it.** Nothing changes on Windows and macOS,
+  where Tk already passes through the real system dialog. Reported by
+  **der Autor**.
+  - Folders already had this path; files did not. Both now live in one place
+    (`scbp/dateiwahl.py`) instead of three.
+
 ## v3.0.0-rc65 - 2026-08-27
 
 > **The launch button called the wrong program on Linux.**

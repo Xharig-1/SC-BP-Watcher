@@ -557,6 +557,14 @@ TEXTE = {
                           'with type, class, size and grade'),
     's_be_alle_drei':  ('Alle drei in die Ablage', 'All three to the folder'),
     's_be_einzeln':    ('Einzeln speichern …', 'Save individually …'),
+    # ⚠ Ein Knopf je Fassung, direkt an der Fassung. Vorher gab es nur
+    # „Einzeln speichern …", und das schrieb **immer** die Basetool-Fassung —
+    # scmdb und die Vollsicherung waren über den Dialog gar nicht erreichbar.
+    # Aufgefallen, als der Autor das Werkzeug jemandem vorführte und selbst
+    # suchen musste (27.08.2026).
+    's_be_speichern_kurz': ('Speichern …', 'Save …'),
+    's_be_fort':       ('Wird bei jedem neuen Bauplan mitgeschrieben.',
+                        'Kept up to date with every new blueprint.'),
     's_be_ablage':     ('Ablage öffnen', 'Open folder'),
     's_be_geschrieben': ('%s Dateien in die Ablage geschrieben',
                           '%s files written to the folder'),

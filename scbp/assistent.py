@@ -35,7 +35,6 @@ nur, wer muss — und nur das, was wirklich keine Logdatei mehr hergibt.
 """
 import os
 import tkinter as tk
-from tkinter import filedialog
 
 from . import fehler
 from . import bestand as bestand_datei
@@ -220,7 +219,10 @@ class Assistent:
         self._zeichnen()
 
     def _waehlen(self):
-        ordner = filedialog.askdirectory(title=t('spielordner'), parent=self.root)
+        # ⚠ Siehe `dateiwahl`: Der Tk-Dialog wäre hier besonders unglücklich —
+        # das ist der allererste Bildschirm, den ein neuer Nutzer sieht.
+        from . import dateiwahl
+        ordner = dateiwahl.ordner_waehlen(t('spielordner'))
         if ordner:
             self.pfad.set(ordner)
 

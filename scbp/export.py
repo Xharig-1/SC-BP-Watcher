@@ -184,9 +184,21 @@ DATEINAMEN = {
 }
 
 
-def vorschlag(art='basetool'):
-    """Ein sinnvoller Dateiname für den Speichern-Dialog."""
-    return DATEINAMEN.get(art, DATEINAMEN['voll']) % time.strftime('%Y-%m-%d')
+def vorschlag(art='basetool', mit_datum=True):
+    """Ein sinnvoller Dateiname.
+
+    ⚠ **Mit Datum nur im Speichern-Dialog.** Wer von Hand speichert, hält einen
+    Stand fest — da gehört der Tag in den Namen. Die Ablage dagegen wird bei
+    jedem neuen Bauplan mitgeschrieben; mit Datum entstünden dort **jeden Tag
+    drei neue Dateien**, und wer eine hochladen will, müsste erst die richtige
+    heraussuchen. Genau das Suchen sollte die Ablage abschaffen. Dort steht
+    deshalb immer derselbe Name, und die Datei ist immer die aktuelle.
+    """
+    name = DATEINAMEN.get(art, DATEINAMEN['voll'])
+    if not mit_datum:
+        # „…-%s.json" → „….json", ohne den Bindestrich davor stehen zu lassen.
+        return name.replace('-%s', '').replace('%s', '')
+    return name % time.strftime('%Y-%m-%d')
 
 
 def ablage_ordner():
@@ -205,6 +217,56 @@ def ablage_ordner():
     return ordner
 
 
+ALTORDNER = 'Ältere'
+
+
+def _altbestand_wegraeumen(ordner):
+    """Früher abgelegte Dateien **mit Datum** in einen Unterordner schieben.
+
+    ⚠ Bis rc65 trug jede abgelegte Datei den Tag im Namen. Wer die Ablage ein
+    halbes Jahr lang benutzt hat, hat dort dreistellig viele Dateien liegen —
+    der Autor am 27.08.2026: „da liegen eh schon viele drin". Neben den drei
+    Dateien mit festem Namen wäre nicht mehr zu erkennen, welche die aktuelle
+    ist. Genau das Suchen sollte die Ablage abnehmen.
+
+    ⚠ **Nichts wird gelöscht.** Verschoben wird in `Ältere/`, und nur, was zu
+    einem unserer drei Namensmuster passt. Was jemand sonst in den Ordner gelegt
+    hat, bleibt unangetastet — es ist sein Ordner, nicht unserer.
+    """
+    muster = [(name.split('-%s')[0], name.split('%s')[-1])
+              for name in DATEINAMEN.values()]
+    umzug = []
+    try:
+        vorhanden = os.listdir(ordner)
+    except OSError:
+        return
+    for datei in vorhanden:
+        voll = os.path.join(ordner, datei)
+        if not os.path.isfile(voll):
+            continue
+        # Nur die alten, datierten Fassungen: Anfang und Endung wie bei uns,
+        # aber länger als der feste Name — das Datum steckt dazwischen.
+        for anfang, endung in muster:
+            if (datei.startswith(anfang) and datei.endswith(endung)
+                    and len(datei) > len(anfang) + len(endung)):
+                umzug.append(datei)
+                break
+    if not umzug:
+        return
+    alt = os.path.join(ordner, ALTORDNER)
+    try:
+        os.makedirs(alt, exist_ok=True)
+        for datei in umzug:
+            ziel = os.path.join(alt, datei)
+            if os.path.exists(ziel):
+                os.remove(os.path.join(ordner, datei))   # liegt dort schon
+            else:
+                os.replace(os.path.join(ordner, datei), ziel)
+    except OSError as ausnahme:
+        from . import fehler
+        fehler.merken('export.altbestand', ausnahme, ordner)
+
+
 def ablegen(bestand=None, katalog=None, version=''):
     """**Alle** Fassungen auf einmal in die Ablage schreiben.
 
@@ -212,9 +274,10 @@ def ablegen(bestand=None, katalog=None, version=''):
     Fassung lässt die anderen nicht ausfallen — lieber zwei von drei Dateien
     als gar keine."""
     ordner = ablage_ordner()
+    _altbestand_wegraeumen(ordner)
     geschrieben = []
     for art in ('basetool', 'scmdb', 'voll'):
-        ziel = os.path.join(ordner, vorschlag(art))
+        ziel = os.path.join(ordner, vorschlag(art, mit_datum=False))
         ok, _meldung = schreiben(ziel, art, bestand, katalog, version)
         if ok:
             geschrieben.append(os.path.basename(ziel))
