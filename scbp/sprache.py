@@ -839,6 +839,15 @@ TEXTE = {
     's_ub_nachsehen':  ('Auf Aktualität prüfen', 'Check for updates'),
     's_ub_aktuell':    ('Du hast die neueste Version.', 'You have the latest version.'),
     's_ub_gefunden':   ('Neue Version gefunden: %s', 'New version found: %s'),
+    # ⚠ Der Unterschied zwischen „nichts Neues" und „konnte nicht nachsehen".
+    # Bis rc68 meldete der Knopf in beiden Fällen Entwarnung — siehe
+    # `aktualisierung.abruf_geglueckt`.
+    's_ub_grenze':     ('GitHub lässt nur 60 Abfragen pro Stunde zu, und die '
+                        'sind für den Moment aufgebraucht. In einer Stunde geht '
+                        'es wieder — der Knopf zum Holen funktioniert weiter.',
+                        'GitHub allows only 60 requests per hour, and those are '
+                        'used up for now. It will work again in an hour — the '
+                        'fetch button still works.'),
     's_ub_sucht_fehler': ('Nachsehen ging nicht — Näheres steht in der Diagnose.',
                           'Check failed — see Diagnostics for details.'),
     's_ub_sucht':      ('Suche nach einer neuen Version …',

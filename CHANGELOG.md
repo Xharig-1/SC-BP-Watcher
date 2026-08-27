@@ -10,6 +10,43 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc69 - 2026-08-27
+
+> **For some, the update was never downloaded at all** — the progress display
+> was to blame.
+
+### Fixed
+
+- **Click "get version", and nothing happened.** No progress, no restart, no
+  message — after a restart the old version was still running. Reported by
+  **Bomb20** (pr0citizen): "I clicked get 68, but nothing came up about restart
+  or install."
+  - **The cause was the display, not the download.** Downloading runs in its own
+    thread that reports progress to the window. That call can throw
+    (`RuntimeError: main thread is not in main loop`) — and the exception took
+    the **entire thread** with it, on the very first percent step. Bomb20's
+    report showed the error three times, once per click.
+  - Drawing is incidental, downloading is the point. Every display call in the
+    update thread is now wrapped: if it fails, that is recorded and the work
+    carries on.
+- **"Check for updates" wrongly gave the all-clear.** Bomb20 was told "you have
+  the latest, rc67" while rc68 had been published two minutes earlier. GitHub
+  allows only **60 requests per hour per address** anonymously; anyone clicking a
+  lot in one morning runs into it. The request failed — and was swallowed
+  silently, so the old state was used instead.
+  - "Nothing new" and "could not check" are opposites and are now kept apart.
+    When the hourly limit is reached, the message says so and that it will work
+    again within the hour.
+  - **A check button that wrongly gives the all-clear is worse than none.**
+
+### Thanks
+
+- **Bomb20** (pr0citizen) — for the third diagnostic report of the morning, sent
+  at exactly the right moment. Without it, "nothing came up" could not have been
+  told apart from "the download is stuck"; with it, the cause was there in one
+  line.
+
+
 ## v3.0.0-rc68 - 2026-08-27
 
 > **The update button is where you look for it** — and "Fassung" is now called
