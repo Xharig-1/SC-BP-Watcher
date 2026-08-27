@@ -668,6 +668,92 @@ TEXTE = {
     's_wn_aenderungen': ('  %d Änderungen', '  %d changes'),
 
     # -- Seite „Über" --
+    # --- Danke & Lizenzen -------------------------------------------------
+    # ⚠ Diese Seite gibt es seit v3.0.0-rc58. Vorher stand im ganzen Programm
+    # **keine** Lizenzangabe — weder die eigene (GPL) noch die der Symbole. Und
+    # fremde Projekte wurden nur nebenbei genannt, dort wo sie gerade gebraucht
+    # wurden (StarStrings auf der Auftragstexte-Seite). Wer wissen wollte, wem
+    # was gehört, fand es nur in der README auf GitHub.
+    's_dk_lead':       ('Was hier drinsteckt, stammt nicht nur von mir. Diese Seite '
+                        'sagt, wem was gehört — und bedankt sich bei denen, ohne '
+                        'die es das Werkzeug nicht gäbe.',
+                        'Not everything in here is mine. This page says what belongs '
+                        'to whom — and thanks the people without whom this tool '
+                        'would not exist.'),
+    's_dk_selbst':     ('Dieses Programm', 'This program'),
+    's_dk_selbst_h':   ('Frei benutzbar, veränderbar und weitergebbar. Wer es '
+                        'weitergibt — verändert oder nicht —, muss den Quellcode '
+                        'unter derselben Lizenz mitliefern. Es gibt keine Garantie.',
+                        'Free to use, change and pass on. Anyone passing it on — '
+                        'changed or not — must include the source code under the '
+                        'same licence. There is no warranty.'),
+    's_dk_dabei':      ('Mitgeliefert', 'Bundled'),
+    's_dk_dabei_h':    ('Steckt in der Programmdatei und läuft ohne Internet.',
+                        'Part of the program file, works without an internet '
+                        'connection.'),
+    's_dk_symbole':    ('Alle Symbole der Oberfläche. Ein Satz, von denselben '
+                        'Leuten gezeichnet — deshalb sehen sie überall gleich aus.',
+                        'Every symbol in the interface. One set, drawn by the same '
+                        'people — which is why they look the same everywhere.'),
+    's_dk_extern':     ('Wird geladen, nicht mitgeliefert',
+                        'Fetched, not bundled'),
+    's_dk_extern_h':   ('Fremde Projekte mit eigenen Lizenzen. Sie werden bei '
+                        'Bedarf von ihrer eigenen Adresse geholt — eine '
+                        'mitgelieferte Kopie wäre eine Weitergabe und damit nicht '
+                        'erlaubt.',
+                        'Separate projects with their own licences. They are '
+                        'fetched from their own addresses when needed — bundling a '
+                        'copy would count as redistribution and is not allowed.'),
+    's_dk_scmdb':      ('Art, Größe, Gütegrad, Klasse und Herkunft je Bauplan. Ein '
+                        'Hobbyprojekt, das die Spieldaten aufbereitet und frei '
+                        'zugänglich macht. Abgerufen wird sparsam: nur bei einer '
+                        'neuen Spielversion.',
+                        'Type, size, grade, class and source for each blueprint. A '
+                        'hobby project that prepares the game data and makes it '
+                        'freely available. Fetched sparingly: only when a new game '
+                        'version appears.'),
+    's_dk_ss':         ('Aufgeräumte englische Spieltexte — eine der Grundlagen, '
+                        'in die die Bauplan-Angaben geschrieben werden können.',
+                        'Cleaned-up English game text — one of the bases the '
+                        'blueprint details can be written into.'),
+    's_dk_scdl':       ('War anfangs die einzige Datenquelle — ohne ihn gäbe es '
+                        'dieses Projekt nicht. Ist er installiert, bestätigt er die '
+                        'Funde und liefert die deutschen Bezeichnungen.',
+                        'Was the only data source at the start — without it this '
+                        'project would not exist. If installed, it confirms finds '
+                        'and supplies the German names.'),
+    's_dk_freiwillig': ('freiwillig', 'optional'),
+    's_dk_tester':     ('Tester', 'tester'),
+    's_dk_leute':      ('Und Danke an', 'And thanks to'),
+    's_dk_leute_h':    ('Wer einen Fehler findet oder einen guten Vorschlag macht, '
+                        'steht namentlich im Änderungsprotokoll — hier stehen die, '
+                        'aus deren Rückmeldung etwas geworden ist, das es sonst '
+                        'nicht gäbe.',
+                        'Anyone who finds a bug or makes a good suggestion is named '
+                        'in the changelog — listed here are those whose feedback '
+                        'became something that would not exist otherwise.'),
+    's_dk_haldjas':    ('Von ihm kam der Hinweis, dass ein Overlay, das dauernd im '
+                        'Bild steht und Mausklicks abfängt, im Kampf mehr stört als '
+                        'hilft. Daraus wurden zwei Sachen: das kurze Aufblenden nur '
+                        'bei einem Fund, und das Durchreichen der Mausklicks.',
+                        'He pointed out that an overlay permanently in view, '
+                        'swallowing mouse clicks, gets in the way during combat. '
+                        'Two things came out of that: the brief pop-up on a find '
+                        'only, and passing mouse clicks through.'),
+    's_dk_morkhan':    ('Hat den Update-Weg so lange getestet, bis er stand — und '
+                        'gesagt, wo er verwirrend war.',
+                        'Tested the update path until it worked — and said where it '
+                        'was confusing.'),
+    's_dk_marken':     ('SC BP Watcher ist ein eigenständiges, inoffizielles '
+                        'Zusatzwerkzeug und steht in keiner offiziellen Verbindung '
+                        'zum SC Deutsch Launcher oder zu Cloud Imperium Games. Alle '
+                        'Marken- und Projektnamen gehören ihren jeweiligen '
+                        'Eigentümern.',
+                        'SC BP Watcher is an independent, unofficial companion tool '
+                        'with no official connection to the SC Deutsch Launcher or '
+                        'Cloud Imperium Games. All trademarks and project names '
+                        'belong to their respective owners.'),
+
     's_ub_lead':       ('Welche Fassung läuft, wer sie gebaut hat — und ob du Neues vor allen anderen bekommen willst.',
                           'Which version is running, who built it — and whether you want new things before everyone else.'),
     # ⚠ „Jetzt nachsehen" sagte nicht, wonach. Und „Aktualisieren" waere
@@ -904,6 +990,7 @@ TEXTE = {
     # Gemeldet am 26.08.2026: „ich suche updates auch nicht bei Über“.
     'hf_ueber':          ('Update & Über', 'Update & About'),
     'hf_serverstatus':   ('Serverstatus', 'Server status'),
+    'hf_danke':          ('Danke & Lizenzen', 'Thanks & Licenses'),
     's_st_lead':         ('Läuft Star Citizen gerade? Was CIG auf seiner '
                           'Statusseite meldet.',
                           'Is Star Citizen up? What CIG reports on its status page.'),

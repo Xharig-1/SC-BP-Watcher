@@ -695,7 +695,11 @@ def main():
                        'die Reiter sind übersetzt')
                 pruefe(hf.aktuell == 'allgemein',
                        'die geöffnete Seite bleibt geöffnet')
-                pruefe(len(hf.knoepfe) == 9, 'alle Reiter sind wieder da')
+                # Feste Zahl mit Absicht: Der Test soll auffallen, wenn beim
+                # Sprachwechsel ein Reiter verschwindet. Kommt einer dazu,
+                # wird sie hier mitgezogen. 10 = die Hauptleiste ohne die drei
+                # unter „Für Fortgeschrittene".
+                pruefe(len(hf.knoepfe) == 10, 'alle Reiter sind wieder da')
 
                 # Die Wahl muss festgehalten werden — ohne Speichern-Knopf gibt
                 # es keinen zweiten Versuch. Vorher stand die Markierung

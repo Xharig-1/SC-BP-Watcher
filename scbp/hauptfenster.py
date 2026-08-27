@@ -1242,6 +1242,10 @@ class Hauptfenster:
         # Fehler zuerst bei sich. Ein eigener Reiter beantwortet das, statt die
         # Auskunft unten an eine andere Seite zu hängen, wo niemand sie sucht.
         self._reiter('serverstatus', 'serverstatus', t('hf_serverstatus'))
+        # ⚠ Eigener Reiter, kein Abschnitt auf „Update & Über": Die Seite dort
+        # ist mit Fassung, Katalogzahlen, Update-Kanal und Holen-Knopf schon
+        # voll, und wem was gehört, hat mit Updates nichts zu tun.
+        self._reiter('danke', 'quellen', t('hf_danke'))
 
         # Fortgeschrittenes sitzt unten und ist zugeklappt — sichtbar, aber
         # nicht im Weg. Wer es sucht, findet es; wer es nicht kennt, wird nicht

@@ -375,6 +375,8 @@ The values for type, size, grade and class as well as the origin of each bluepri
 
 And thanks to **Haldjas** from **pr0citizen**: he pointed out that an overlay permanently in the way, catching mouse clicks, hurts more than it helps in combat. Two things came out of his suggestion that would not exist otherwise — the overlay can now **pop up only when a blueprint arrives**, and mouse clicks can be **passed through to the game**. Both live under *Display*. Good call, well spotted. 🙏
 
+The interface symbols come from the **[Lucide](https://lucide.dev)** set (ISC licence) — all drawn on the same grid with the same stroke width, which is why they look identical on Windows, Linux and macOS. **Thanks** to the Lucide community! 🙏 The licence text ships with the tool (`assets/symbole/LIZENZ.txt`) and is shown under **Thanks & Licenses**.
+
 SC BP Watcher is an independent, unofficial companion tool with **no** official connection to the SC Deutsch Launcher or Cloud Imperium Games. All brand and project names belong to their respective owners.
 
 ## Author

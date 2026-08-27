@@ -419,6 +419,8 @@ Die Werte zu Art, Größe, Gütegrad und Klasse sowie die Herkunft je Bauplan st
 
 Und Dank an **Haldjas** von **pr0citizen**: Von ihm kam die Rückmeldung, dass ein Overlay, das dauernd im Bild steht und Mausklicks abfängt, im Kampf mehr stört als hilft. Aus seinem Vorschlag sind zwei Sachen geworden, die es ohne ihn nicht gäbe — das Overlay blendet auf Wunsch **nur noch bei einem neuen Bauplan** kurz auf, und Mausklicks lassen sich **ins Spiel durchreichen**. Beides steht unter *Anzeige*. Gute Idee, sauber getroffen. 🙏
 
+Die Symbole der Oberfläche stammen aus dem **[Lucide](https://lucide.dev)**-Satz (ISC-Lizenz) — alle auf demselben Raster mit gleicher Strichstärke gezeichnet, weshalb sie unter Windows, Linux und macOS gleich aussehen. **Danke** an die Lucide-Gemeinschaft! 🙏 Der Lizenztext liegt bei (`assets/symbole/LIZENZ.txt`) und steht im Werkzeug unter **Danke & Lizenzen**.
+
 SC BP Watcher ist ein eigenständiges, inoffizielles Zusatz-Tool und steht in **keiner** offiziellen Verbindung zum SC Deutsch Launcher oder zu Cloud Imperium Games. Alle Marken- und Projektnamen gehören ihren jeweiligen Eigentümern.
 
 ## Author

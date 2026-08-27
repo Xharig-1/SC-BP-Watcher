@@ -10,6 +10,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Hinzugefügt
+
+- **Neuer Reiter „Danke & Lizenzen"** unter *Info*. Bis hierher stand im ganzen
+  Programm **keine einzige Lizenzangabe** — weder die eigene (GPL-3.0) noch die
+  der mitgelieferten Symbole, und fremde Projekte wurden nur nebenbei genannt,
+  dort wo sie gerade gebraucht wurden. Jetzt steht an einer Stelle, wem was
+  gehört: das Programm selbst, die Symbole von Lucide, die Daten von scmdb,
+  StarStrings und der SC Deutsch Launcher — jeweils mit Lizenz und anklickbarem
+  Verweis. Dazu der Dank an die, aus deren Rückmeldung etwas geworden ist.
+  Vorgeschlagen von der Autor.
+
 ## v3.0.0-rc57 - 2026-08-27
 
 > **Ein Symbolsatz statt vierzehn Schriftzeichen.** Die Zeichen der Melde-Leiste

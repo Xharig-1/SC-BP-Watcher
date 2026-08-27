@@ -10,6 +10,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Added
+
+- **New "Thanks & Licenses" tab** under *Info*. Until now the program showed
+  **no licence information at all** — neither its own (GPL-3.0) nor that of the
+  bundled symbols, and third-party projects were only mentioned in passing where
+  they happened to be used. There is now one place stating what belongs to whom:
+  the program itself, the Lucide symbols, the scmdb data, StarStrings and the SC
+  Deutsch Launcher — each with its licence and a clickable link. Plus thanks to
+  the people whose feedback turned into something. Suggested by der Autor.
+
 ## v3.0.0-rc57 - 2026-08-27
 
 > **One icon set instead of fourteen glyphs.** The symbols in the notification

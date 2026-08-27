@@ -152,6 +152,7 @@ KNOPF_SYMBOLE = {
     'ordner':       'folder',
     'erkennung':    'scan-search',
     'diagnose':     'stethoscope',
+    'quellen':      'heart-handshake',   # fremde Arbeit + Lizenzen
     'einrichtung':  'wand-sparkles',     # der Assistent — ein Zauberstab ist das
                                          # übliche Bild für „führt dich durch".
     'neustart':     'rotate-cw',

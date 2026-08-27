@@ -60,6 +60,7 @@ def bauen(fenster, kennung, rahmen):
         'wasistneu':   _wasistneu,
         'ueber':       _ueber,
         'serverstatus': _serverstatus,
+        'danke':       _danke,
         'erkennung':   _erkennung,
         'diagnose':    _diagnose,
     }.get(kennung)
@@ -2403,6 +2404,102 @@ def _uhrzeit(stempel):
     if not stempel:
         return '—'
     return _t.strftime('%d.%m.%Y %H:%M', _t.localtime(stempel))
+
+
+def _dankblock(fenster, eltern, name, lizenz, was, adresse=None):
+    """Ein Beitrag: wer, unter welcher Lizenz, wofür — und wo er zu finden ist."""
+    kasten = tk.Frame(eltern, bg=FLAECHE)
+    kasten.pack(fill='x', pady=(0, 8))
+
+    from .hauptfenster import marke as blase
+    kopf = tk.Frame(kasten, bg=FLAECHE)
+    kopf.pack(fill='x', padx=16, pady=(12, 2))
+    tk.Label(kopf, text=name, bg=FLAECHE, fg=FG, font=fenster.f_fett,
+             anchor='w').pack(side='left')
+    # Die Lizenz als Blase daneben — sie gehört zum Namen, nicht in den Fließtext.
+    blase(kopf, lizenz, ACCENT, fenster.f_klein).pack(side='left', padx=8)
+
+    text = tk.Label(kasten, text=was, bg=FLAECHE, fg=SUB, font=fenster.f_klein,
+                    anchor='w', justify='left')
+    text.pack(fill='x', padx=16, pady=(0, 10))
+    _umbruch(text)
+
+    if adresse:
+        # ⚠ Nicht `_quellzeile`: die reserviert 24 Zeichen für eine
+        # Beschriftung, und ohne Beschriftung stünde der Verweis eingerückt
+        # mitten in der Karte statt am linken Rand wie der Text darüber.
+        link = tk.Label(kasten, text=adresse, bg=FLAECHE, fg=ACCENT,
+                        font=fenster.f_klein, anchor='w', cursor='hand2')
+        link.pack(fill='x', padx=16, pady=(0, 12))
+
+        def oeffnen(_=None):
+            import webbrowser
+            try:
+                webbrowser.open(adresse)
+            except Exception as ausnahme:
+                fehler.merken('seiten.danke_link', ausnahme)
+
+        link.bind('<Button-1>', oeffnen)
+        link.bind('<Enter>', lambda e: link.configure(fg=FG))
+        link.bind('<Leave>', lambda e: link.configure(fg=ACCENT))
+
+
+def _danke(fenster, rahmen):
+    """Wem was gehört — und Dank an die, ohne die es das Werkzeug nicht gäbe.
+
+    ⚠ Diese Seite gibt es seit v3.0.0-rc58. Vorher stand im ganzen Programm
+    **keine** Lizenzangabe: weder die eigene (GPL-3.0) noch die der Symbole. Bei
+    einem GPL-Programm gehört die eigene Lizenz sichtbar hin, und die
+    ISC-Lizenz von Lucide verlangt, dass ihr Hinweis mitgeliefert wird — eine
+    Datei tief in der entpackten `.exe` erfüllt das formal, findet aber niemand.
+
+    Ein **eigener Reiter** statt eines Abschnitts auf „Update & Über": Die Seite
+    dort ist mit Fassung, Katalogzahlen, Update-Kanal und Holen-Knopf schon voll,
+    und wem was gehört, hat mit Updates nichts zu tun. der Autor am 27.08.2026:
+    „fremdleistungen gehören doch als eigener tab ehr in info oder?"
+    """
+    _ueberschrift(fenster, rahmen, t('hf_danke'), t('s_dk_lead'))
+    innen = _rollflaeche(rahmen)
+
+    # --- Das Programm selbst ---
+    tk.Label(innen, text=t('s_dk_selbst'), bg=BG, fg=FG, font=fenster.f_titel,
+             anchor='w').pack(fill='x', pady=(0, 2))
+    _fliesstext(innen, t('s_dk_selbst_h'), fenster.f_klein, fill='x',
+                pady=(0, 10))
+    _dankblock(fenster, innen, 'SC BP Watcher', 'GPL-3.0-only',
+               'der Autor', 'https://github.com/Xharig-1/SC-BP-Watcher')
+
+    # --- Mitgeliefert ---
+    tk.Label(innen, text=t('s_dk_dabei'), bg=BG, fg=FG, font=fenster.f_titel,
+             anchor='w').pack(fill='x', pady=(18, 2))
+    _fliesstext(innen, t('s_dk_dabei_h'), fenster.f_klein, fill='x',
+                pady=(0, 10))
+    _dankblock(fenster, innen, 'Lucide', 'ISC', t('s_dk_symbole'),
+               'https://lucide.dev')
+
+    # --- Wird geladen, nicht mitgeliefert ---
+    tk.Label(innen, text=t('s_dk_extern'), bg=BG, fg=FG, font=fenster.f_titel,
+             anchor='w').pack(fill='x', pady=(18, 2))
+    _fliesstext(innen, t('s_dk_extern_h'), fenster.f_klein, fill='x',
+                pady=(0, 10))
+    _dankblock(fenster, innen, 'Star Citizen Mission DataBase',
+               'CC BY-NC-ND 4.0', t('s_dk_scmdb'), 'https://scmdb.net')
+    _dankblock(fenster, innen, 'StarStrings (MrKraken)', 'CC BY-NC-SA 4.0',
+               t('s_dk_ss'), 'https://starstrings.app')
+    _dankblock(fenster, innen, 'SC Deutsch Launcher', t('s_dk_freiwillig'),
+               t('s_dk_scdl'), 'https://www.sc-deutsch-launcher.de/')
+
+    # --- Menschen ---
+    tk.Label(innen, text=t('s_dk_leute'), bg=BG, fg=FG, font=fenster.f_titel,
+             anchor='w').pack(fill='x', pady=(18, 2))
+    _fliesstext(innen, t('s_dk_leute_h'), fenster.f_klein, fill='x',
+                pady=(0, 10))
+    _dankblock(fenster, innen, 'Haldjas', 'pr0citizen', t('s_dk_haldjas'))
+    _dankblock(fenster, innen, 'Morkhan', t('s_dk_tester'), t('s_dk_morkhan'))
+
+    # --- Marken ---
+    _fliesstext(innen, t('s_dk_marken'), fenster.f_klein, fill='x',
+                pady=(18, 20))
 
 
 def _ueber(fenster, rahmen):
