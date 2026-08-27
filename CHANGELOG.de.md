@@ -16,6 +16,10 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Die Diagnose-Seite steht jetzt in der Hauptleiste**, direkt unter
+  „Serverstatus“ — nicht mehr im zugeklappten Menü „Für Fortgeschrittene“.
+  Wer sie braucht, hat ein Problem und sucht sie nicht dort, wo „nichts für
+  mich“ draufsteht.
 - **Ein roter Knopf „Fehlerbericht absenden".** Klemmt etwas, drückst du ihn —
   und der Bericht ist beim Entwickler. Kein Kopieren, kein Suchen nach dem
   richtigen Kanal, kein „die Nachricht ist zu lang".

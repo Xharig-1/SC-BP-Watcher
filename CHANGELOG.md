@@ -16,6 +16,10 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **The diagnostics page now sits in the main sidebar**, right below
+  „Server status“ — no longer inside the collapsed „Advanced“ menu. Anyone
+  who needs it has a problem, and will not look for it under a heading that
+  reads „not for me“.
 - **A red „Send error report" button.** If something is stuck, you press it —
   and the report is with the developer. No copying, no hunting for the right
   channel, no „message too long".
