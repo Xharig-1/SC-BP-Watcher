@@ -15,6 +15,20 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 > **The tractor beam now tells you what you are looking at — and on Windows
 > there is only one route left.**
 
+> [!important]
+> **Windows: the installer is the only download now.** The standalone
+> `SC-BP-Watcher.exe` is no longer attached to releases as of this version.
+>
+> The reason concerns you, not us: an update used to place the new version
+> **beside** the old file instead of replacing it. Anyone clicking their usual
+> shortcut afterwards kept using the old version for months without noticing.
+> With the installer that cannot happen.
+>
+> **If you have been using the standalone file:** download
+> `SC-BP-Watcher-Setup.exe` once and install over it — your blueprint
+> collection stays, it lives elsewhere anyway. You can delete the old file
+> afterwards. Nothing changes on Linux.
+
 ### Fixed
 
 - **On Windows there is only one download now: the installer.** The standalone

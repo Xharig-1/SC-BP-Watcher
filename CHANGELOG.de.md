@@ -15,6 +15,20 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 > **Am Traktorstrahl steht jetzt, womit man es zu tun hat — und unter Windows
 > gibt es nur noch einen Weg.**
 
+> [!important]
+> **Windows: Es gibt nur noch den Installer.** Die einzelne
+> `SC-BP-Watcher.exe` hängt ab dieser Fassung nicht mehr am Release.
+>
+> Der Grund betrifft dich, nicht uns: Ein Update legte die neue Fassung
+> **neben** die alte Datei, statt sie zu ersetzen. Wer danach seine gewohnte
+> Verknüpfung anklickte, benutzte monatelang unbemerkt die alte Version. Mit
+> dem Installer kann das nicht passieren.
+>
+> **Wenn du bisher die einzelne Datei benutzt hast:** Lade einmal
+> `SC-BP-Watcher-Setup.exe`, installiere darüber — dein Bauplan-Bestand bleibt,
+> er liegt ohnehin woanders. Die alte Datei kannst du danach löschen.
+> Unter Linux ändert sich nichts.
+
 ### Behoben
 
 - **Unter Windows gibt es nur noch einen Download: den Installer.** Die
