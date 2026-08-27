@@ -96,10 +96,20 @@ The watcher writes into the game's mission text **which** blueprints a contract 
 <sub><b>What's new</b> — every release expandable, filtered by kind</sub>
 </td>
 </tr>
+</tr>
+<tr>
+<td valign="top" align="center">
+<img src="assets/screenshot-danke.png" alt="Thanks and licenses" width="100%"><br>
+<sub><b>Thanks &amp; Licenses</b> — what belongs to whom, and who helped</sub>
+</td>
+<td valign="top" align="center">
+<img src="assets/screenshot-serverstatus.png" alt="Server status" width="100%"><br>
+<sub><b>Server status</b> — is Star Citizen up?</sub>
+</td>
 </table>
 
 <details>
-<summary>And the rest: General and Paths</summary>
+<summary>And the rest: General</summary>
 
 <table>
 <tr>
@@ -108,8 +118,6 @@ The watcher writes into the game's mission text **which** blueprints a contract 
 <sub><b>General</b> — language, sound, autostart, menu entry</sub>
 </td>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-serverstatus.png" alt="Server status" width="100%"><br>
-<sub><b>Server status</b> — is Star Citizen up?</sub>
 </td>
 </tr>
 </table>

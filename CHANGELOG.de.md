@@ -18,6 +18,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Alle Bilder in der Anleitung sind neu.** Die alten stammten aus
+  v3.0.0-rc11 und zeigten nicht nur die abgelösten Symbole, sondern auch einen
+  Stand ohne Serverstatus und ohne Patch-Filter. Dazu zwei Seiten, die noch nie
+  eins hatten: **Serverstatus** und **Danke & Lizenzen**.
+
 - **Die Merkmalstabelle in der Anleitung zeigte Emoji statt der echten Symbole.**
   `⚡ 📋 🧭 ⭐ 🔔 …` haben mit dem Symbolsatz des Programms nichts zu tun und sehen
   auf jedem System anders aus. Alle sechzehn stammen jetzt aus demselben Satz wie

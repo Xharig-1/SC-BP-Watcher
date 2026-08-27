@@ -96,10 +96,20 @@ Der Watcher schreibt in die Auftragstexte des Spiels, **welche** Baupläne ein A
 <sub><b>Was ist neu</b> — jede Fassung aufklappbar, gefiltert nach Art</sub>
 </td>
 </tr>
+<tr>
+<td valign="top" align="center">
+<img src="assets/screenshot-danke.png" alt="Danke und Lizenzen" width="100%"><br>
+<sub><b>Danke &amp; Lizenzen</b> — wem was gehört, und wer mitgeholfen hat</sub>
+</td>
+<td valign="top" align="center">
+<img src="assets/screenshot-serverstatus.png" alt="Serverstatus" width="100%"><br>
+<sub><b>Serverstatus</b> — läuft Star Citizen gerade?</sub>
+</td>
+</tr>
 </table>
 
 <details>
-<summary>Und der Rest: Allgemein und Pfade</summary>
+<summary>Und der Rest: Allgemein</summary>
 
 <table>
 <tr>
@@ -108,8 +118,6 @@ Der Watcher schreibt in die Auftragstexte des Spiels, **welche** Baupläne ein A
 <sub><b>Allgemein</b> — Sprache, Signalton, Autostart, Startmenü-Eintrag</sub>
 </td>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-serverstatus.png" alt="Serverstatus" width="100%"><br>
-<sub><b>Serverstatus</b> — läuft Star Citizen gerade?</sub>
 </td>
 </tr>
 </table>

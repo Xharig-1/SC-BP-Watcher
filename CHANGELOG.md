@@ -18,6 +18,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **Every screenshot in the readme is new.** The old ones were from v3.0.0-rc11
+  and showed not just the replaced symbols but a build without the server status
+  tab and without the patch filter. Two pages got their first screenshot at all:
+  **Server status** and **Thanks & Licenses**.
+
 - **The feature table in the readme used emoji instead of the real symbols.**
   `⚡ 📋 🧭 ⭐ 🔔 …` have nothing to do with the program's icon set and look
   different on every system. All sixteen now come from the same set as the
