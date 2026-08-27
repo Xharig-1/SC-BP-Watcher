@@ -223,7 +223,7 @@ TEXTE = {
                           'You can run this setup again at any time — no need to '
                           'dig through menus.'),
 
-    # -- Neue Fassungen --
+    # -- Neue Versionen --
     'was_ist_neu':       ('Was ist neu', 'What\'s new'),
     'neue_version_da':   ('Version %s ist da', 'Version %s is available'),
     'du_hast':           ('Du hast %s', 'You have %s'),
@@ -233,11 +233,11 @@ TEXTE = {
     # Hilfsskript die Datei erst, wenn das Programm beendet ist — wer
     # weiterspielt, bei dem gibt es nach zwei Minuten auf. Der Satz muss zum
     # Neustart auffordern, nicht vertrösten.
-    'neustart_noetig':   ('Fertig geladen. Jetzt neu starten, damit die neue Fassung läuft.',
+    'neustart_noetig':   ('Fertig geladen. Jetzt neu starten, damit die neue Version läuft.',
                           'Downloaded. Restart now so the new version takes over.'),
     'update_fehler':     ('Das hat nicht geklappt: %s',
                           'That did not work: %s'),
-    'selbst_holen':      ('Bitte hol die neue Fassung selbst von der '
+    'selbst_holen':      ('Bitte hol die neue Version selbst von der '
                           'Releases-Seite.',
                           'Please download the new version yourself from the '
                           'releases page.'),
@@ -248,7 +248,7 @@ TEXTE = {
                           'otherwise your changes would be overwritten.'),
     'keine_versionen':   ('Noch keine Versionsangaben vorhanden.',
                           'No version information yet.'),
-    'aktuelle_fassung':  ('Du hast die neueste Fassung.',
+    'aktuelle_version':  ('Du hast die neueste Version.',
                           'You have the latest version.'),
 
     # -- Statuszeilen und Meldungen --
@@ -282,7 +282,7 @@ TEXTE = {
                           'Run through setup again'),
     'hinweis_versionen': ('Was ist neu — die Versionsgeschichte',
                           'What is new — the version history'),
-    'hinweis_neue_version': ('Eine neuere Fassung ist da — hier steht, was sie bringt',
+    'hinweis_neue_version': ('Eine neuere Version ist da — hier steht, was sie bringt',
                              'A newer version is available — see what it brings'),
     'hinweis_autostart_an': ('Läuft beim Anmelden mit — Klick schaltet es aus',
                              'Starts on login — click to turn off'),
@@ -408,21 +408,21 @@ TEXTE = {
     'as_menue_nein':   ('Hat nicht geklappt: %s', 'Did not work: %s'),
     's_ub_holen':      ('%s holen', 'Get %s'),
     's_ub_neustart':   ('Jetzt neu starten', 'Restart now'),
-    's_ub_bereit':     ('Fertig geladen — ein Neustart, dann läuft die neue Fassung.',
+    's_ub_bereit':     ('Fertig geladen — ein Neustart, dann läuft die neue Version.',
                           'Downloaded — one restart and the new version runs.'),
     's_ub_startet_neu': ('Startet neu …', 'Restarting …'),
     # ⚠ Der Fall, den es vorher gar nicht gab: Der Start hat geklappt, die neue
-    # Fassung ist aber sofort wieder gestorben. Bis rc66 trat die alte trotzdem
+    # Version ist aber sofort wieder gestorben. Bis rc66 trat die alte trotzdem
     # ab, und der Rechner stand ohne Watcher da — ohne ein Wort dazu.
-    's_ub_neustart_tot': ('Die neue Fassung ist nicht hochgekommen. Der Watcher '
+    's_ub_neustart_tot': ('Die neue Version ist nicht hochgekommen. Der Watcher '
                          'bleibt offen — bitte starte ihn von Hand neu.',
                          'The new version did not come up. The watcher stays '
                          'open — please restart it by hand.'),
     's_ub_neustart_nein': ('Neustart ging nicht — bitte von Hand beenden und starten.',
                           'Restart failed — please close and start it yourself.'),
     's_ub_holen_zurueck': ('zurück auf %s', 'back to %s'),
-    's_ub_holen_gleich': ('%s ist schon da', '%s is already installed'),
-    # ⚠ „Noch keine Fassung bekannt“ klingt nach einem Fehler und sagt nicht,
+    's_ub_holen_gleich': ('%s ist schon installiert', '%s is already installed'),
+    # ⚠ „Noch keine Version bekannt“ klingt nach einem Fehler und sagt nicht,
     # was zu tun ist. Genau dieser Knopf stand bei Morkhan da (26.08.2026).
     's_ub_holen_keine': ('Erst oben auf „Jetzt nachsehen“ drücken',
                         'Press “Check now” above first'),
@@ -431,7 +431,7 @@ TEXTE = {
     's_ub_auf_nein':   ('Ließ sich nicht öffnen: %s', 'Could not be opened: %s'),
     'b_spur':          ('Startverlauf des letzten Laufs (die letzte Zeile sagt, wie weit es kam)',
                           'Start trace of the last run (the last line shows how far it got)'),
-    'b_fehler_alt':    ('(aus einer älteren Fassung — vermutlich längst behoben)',
+    'b_fehler_alt':    ('(aus einer älteren Version — vermutlich längst behoben)',
                           '(from an older version — most likely fixed since)'),
     's_sp_start':      ('Star Citizen starten', 'Launch Star Citizen'),
     's_sp_start_h':    ('Startet das Spiel über den Weg, den du ohnehin '
@@ -564,8 +564,8 @@ TEXTE = {
                           'with type, class, size and grade'),
     's_be_alle_drei':  ('Alle drei in die Ablage', 'All three to the folder'),
     's_be_einzeln':    ('Einzeln speichern …', 'Save individually …'),
-    # ⚠ Ein Knopf je Fassung, direkt an der Fassung. Vorher gab es nur
-    # „Einzeln speichern …", und das schrieb **immer** die Basetool-Fassung —
+    # ⚠ Ein Knopf je Version, direkt an der Version. Vorher gab es nur
+    # „Einzeln speichern …", und das schrieb **immer** die Basetool-Version —
     # scmdb und die Vollsicherung waren über den Dialog gar nicht erreichbar.
     # Aufgefallen, als der Autor das Werkzeug jemandem vorführte und selbst
     # suchen musste (27.08.2026).
@@ -796,7 +796,7 @@ TEXTE = {
                           '(dreimal vergeblich geladen) · die gestreckten Knöpfe, die '
                           'nur die halbe Breite füllten · und die verwirrenden '
                           'Update-Kanäle, aus denen der Knopf „Jetzt die neueste '
-                          'Fassung holen" wurde.',
+                          'Version holen" wurde.',
                           'Also: the update from the info window that never arrived '
                           '(downloaded three times in vain) · the stretched buttons '
                           'that filled only half the width · and the confusing update '
@@ -811,7 +811,7 @@ TEXTE = {
                         'Cloud Imperium Games. All trademarks and project names '
                         'belong to their respective owners.'),
 
-    's_ub_lead':       ('Welche Fassung läuft, wer sie gebaut hat — und ob du Neues vor allen anderen bekommen willst.',
+    's_ub_lead':       ('Welche Version läuft, wer sie gebaut hat — und ob du Neues vor allen anderen bekommen willst.',
                           'Which version is running, who built it — and whether you want new things before everyone else.'),
     # ⚠ „Jetzt nachsehen" sagte nicht, wonach. Und „Aktualisieren" waere
     # falsch: Der Knopf **prueft** nur, er holt nichts. Der
@@ -823,10 +823,10 @@ TEXTE = {
     'hf_discord':      ('Discord', 'Discord'),
     'hf_discord_auf':  ('Discord wird im Browser geöffnet …',
                         'Opening Discord in your browser …'),
-    's_ub_hinweis_titel': ('Neue Fassung einspielen',
+    's_ub_hinweis_titel': ('Neue Version einspielen',
                           'Install the new version'),
     's_ub_hinweis_neustart': (
-        'Die neue Fassung wird jetzt eingespielt.\n\n'
+        'Die neue Version wird jetzt eingespielt.\n\n'
         'Der Watcher schließt sich dabei und startet nicht von '
         'selbst wieder — bitte starte ihn danach über das Startmenü '
         'oder die Verknüpfung neu.\n\n'
@@ -837,34 +837,38 @@ TEXTE = {
         'your shortcut.\n\n'
         'Your blueprint collection stays untouched.'),
     's_ub_nachsehen':  ('Auf Aktualität prüfen', 'Check for updates'),
-    's_ub_aktuell':    ('Du hast die neueste Fassung.', 'You have the latest version.'),
-    's_ub_gefunden':   ('Neue Fassung gefunden: %s', 'New version found: %s'),
+    's_ub_aktuell':    ('Du hast die neueste Version.', 'You have the latest version.'),
+    's_ub_gefunden':   ('Neue Version gefunden: %s', 'New version found: %s'),
     's_ub_sucht_fehler': ('Nachsehen ging nicht — Näheres steht in der Diagnose.',
                           'Check failed — see Diagnostics for details.'),
-    's_ub_sucht':      ('Suche nach einer neuen Fassung …',
+    's_ub_sucht':      ('Suche nach einer neuen Version …',
                           'Looking for a new version …'),
     's_ub_einrichtung': ('Einrichtung wiederholen', 'Run setup again'),
-    's_ub_taeglich':   ('Täglich nach neuen Fassungen sehen',
+    's_ub_taeglich':   ('Täglich nach neuen Versionen sehen',
                           'Check daily for new versions'),
     's_ub_taeglich_h': ('Höchstens einmal am Tag, ausschließlich bei GitHub. Ist etwas da, färbt sich die Glocke in der Titelleiste grün.',
                           'At most once a day, only at GitHub. If there is something, the bell in the title bar turns green.'),
-    's_up_sofort':     ('Jetzt die neueste Fassung holen',
+    's_up_sofort':     ('Jetzt die neueste Version holen',
                         'Get the latest version now'),
-    's_up_sofort_h':   ('Holt sofort, was es gerade gibt — auch eine Testfassung. '
+    's_up_sofort_h':   ('Holt sofort, was es gerade gibt — auch eine Testversion. '
                         'An deiner Einstellung darunter ändert das nichts.',
                         'Fetches whatever is available right now — including a test '
                         'build. This does not change your setting below.'),
     's_ub_kanal':         ('Wovon willst du Bescheid bekommen?',
                                    'What should I tell you about?'),
-    's_ub_kanal_h':       ('Beim Testen mithelfen oder lieber Ruhe haben — beides ist in Ordnung. Klick auf einen Kasten, um zu wechseln; der Knopf darin holt die Fassung sofort.',
+    's_ub_kanal_h':       ('Beim Testen mithelfen oder lieber Ruhe haben — beides ist in Ordnung. Klick auf einen Kasten, um zu wechseln; der Knopf darin holt die Version sofort.',
                                      'Help with testing or rather have some quiet — both are fine. Click a box to switch; the button inside fetches that version right away.'),
     's_ub_wer_h':      ('Und woher die Daten kommen, ohne die es das Werkzeug nicht gäbe.',
                           'And where the data comes from, without which this tool would not exist.'),
-    's_ub_fertig':     ('Nur fertige Fassungen  ·  empfohlen',
-                        'Finished versions only  ·  recommended'),
-    's_ub_fertig_h':      ('Das Übliche: eine Meldung, wenn eine geprüfte Fassung erscheint. Samstags, höchstens einmal die Woche.',
+    # ⚠ Hieß bis rc68 „Nur fertige Versionen". Das war falsch: Das Werkzeug wird
+    # laufend weiterentwickelt, „fertig" klingt nach abgeschlossen. der Autor am
+    # 27.08.2026: „nenn es Stable Version, nicht fertige Versionen, weil es ein
+    # laufend bearbeitetes Projekt ist."
+    's_ub_fertig':     ('Stabile Version  ·  empfohlen',
+                        'Stable version  ·  recommended'),
+    's_ub_fertig_h':      ('Das Übliche: eine Meldung, wenn eine geprüfte Version erscheint. Samstags, höchstens einmal die Woche.',
                                       'The usual: a notice when a tested version appears. Saturdays, at most once a week.'),
-    's_ub_test':       ('Auch Testfassungen', 'Test versions too'),
+    's_ub_test':       ('Auch Testversionen', 'Test versions too'),
     's_ub_test_h':        ('Du siehst Neues zuerst und hilfst beim Prüfen. Läuft ganz normal, ist aber weniger lange erprobt — es kann mal klemmen.',
                                     'You see new things first and help with testing. Runs normally, but has been tried out for less time — it can occasionally hiccup.'),
     # Die Herkunftsangaben im Dank-Block. ⚠ Sie standen als Datentabelle im
@@ -931,7 +935,7 @@ TEXTE = {
     'm_kein_p4k':      ('Data.p4k nicht gefunden', 'Data.p4k not found'),
     'm_keine_ini_archiv': ('global.ini im Archiv nicht gefunden',
                           'global.ini not found in the archive'),
-    'm_keine_fassung': ('Fassung nicht gefunden', 'version not found'),
+    'm_keine_version': ('Version nicht gefunden', 'version not found'),
     'm_kein_zertifikat': ('Sichere Verbindung fehlgeschlagen — die Zertifikate des Systems wurden nicht gefunden',
                           'Secure connection failed — the system certificates were not found'),
     'm_keine_logs':    ('Keine Log-Sicherungen gefunden — der bisherige Bestand lässt sich nicht nachlesen.',
@@ -964,7 +968,7 @@ TEXTE = {
     'z_einsetzen':     ('wird eingesetzt …', 'installing …'),
 
     # -- Kennzahlen auf der Über-Seite --
-    's_ub_fassung':    ('Fassung', 'Version'),
+    's_ub_version':    ('Version', 'Version'),
     's_ub_bekannt':    ('Baupläne bekannt', 'Blueprints known'),
     's_ub_davon':      ('Davon deine', 'Of those yours'),
 
@@ -1117,7 +1121,7 @@ TEXTE = {
                           'Sprache, Spielordner und Bestand',
                           'Repeat setup — walks you through language, game folder '
                           'and inventory again'),
-    'hf_hinweis_neu':    ('Was ist neu — die Änderungen dieser und älterer Fassungen',
+    'hf_hinweis_neu':    ('Was ist neu — die Änderungen dieser und älterer Versionen',
                           "What's new — the changes in this and earlier versions"),
     'hf_schrift':        ('Schriftgröße', 'Text size'),
     'hf_schrift_hilfe':  ('Vergrößert Schrift, Symbole und Knöpfe im ganzen Fenster. '
@@ -1144,7 +1148,7 @@ TEXTE = {
                           'affiliated with the Cloud Imperium Games Corporation or '
                           'its subsidiaries. All content of this tool that is not '
                           'by Xharig belongs to its respective owners.'),
-    'e_vorab':           ('Auch Testfassungen anbieten',
+    'e_vorab':           ('Auch Testversionen anbieten',
                           'Offer test versions too'),
     'e_ton':             ('Signalton', 'Sound'),
     'e_ton_hilfe':       ('Kurzer Ton, wenn ein Bauplan erscheint.',
@@ -1192,7 +1196,7 @@ TEXTE = {
                           'Blueprint notes are not in place'),
     'inj_entfernen':     ('Angaben wieder entfernen', 'Remove the notes again'),
     'inj_erneuern':      ('Angaben auffrischen', 'Refresh the notes'),
-    'inj_update_da':     ('Neue Fassung verfügbar: %s', 'New version available: %s'),
+    'inj_update_da':     ('Neue Version verfügbar: %s', 'New version available: %s'),
     'inj_aktuell':       ('Ist auf dem neuesten Stand', 'Up to date'),
     'inj_pruefen':       ('Auf Updates prüfen', 'Check for updates'),
     'texte_erneuert':    ('Übersetzung aktualisiert (%s)',
@@ -1392,7 +1396,7 @@ class Kette:
     """Mehrere Träger hintereinander, mit einem Trennzeichen dazwischen.
 
     Für die seltenen Fälle, in denen zwei eigenständige Sätze eine Zeile
-    bilden („Fassung 3.0.0 verfügbar — Was ist neu"). Bewusst kein eigener
+    bilden („Version 3.0.0 verfügbar — Was ist neu"). Bewusst kein eigener
     Sprachschlüssel: Das Trennzeichen ist Satzzeichen, kein Text."""
 
     def __init__(self, trenner, *teile):

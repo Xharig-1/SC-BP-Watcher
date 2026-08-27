@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-Prüft, ob die deutschen und englischen Fassungen zusammenpassen.
+Prüft, ob die deutschen und englischen Versionen zusammenpassen.
 
 Zweisprachig ist entweder ganz oder gar nicht. Eine Projektseite auf Englisch
 mit einer Änderungsliste auf Deutsch dahinter sieht nicht nach Zweisprachigkeit
@@ -28,7 +28,7 @@ Geprüft wird:
   * Haben beide dieselben Abschnitte (bei Doku) bzw. dieselben Versionen
     (beim Changelog)?
   * Steht in beiden oben der Sprachumschalter, und zeigt er richtig?
-  * Verlinkt jede Fassung ihre eigenen Geschwister — keine Sprachsprünge?
+  * Verlinkt jede Version ihre eigenen Geschwister — keine Sprachsprünge?
 
 Aufruf:  python3 tools/sprachen_pruefen.py
 Läuft auch als Teil von `tools/selbsttest.py`.
@@ -91,14 +91,14 @@ def pruefe(melden=print):
         melden('  %-16s %2d ↔ %2d  %s' % (en, len(a), len(b),
                                           'ok' if not fehler else ''))
 
-    # Keine Sprachsprünge: Die deutsche Fassung darf nicht auf englische
+    # Keine Sprachsprünge: Die deutsche Version darf nicht auf englische
     # Geschwister zeigen (außer im Umschalter) und umgekehrt.
     for en, de, _ in PAARE:
         t_de = _lies(de) or ''
         for anderes_en, anderes_de, _x in PAARE:
             if anderes_en == en:
                 continue
-            # Verweis auf die englische Fassung eines ANDEREN Dokuments
+            # Verweis auf die englische Version eines ANDEREN Dokuments
             muster = r'\]\(%s\)' % re.escape(anderes_en)
             if re.search(muster, t_de):
                 fehler.append('%s verweist auf %s statt auf %s'
@@ -128,7 +128,7 @@ def pruefe(melden=print):
         # jemand elf Bildschirmfotos gemacht hat — und ein dauerhaft roter Test
         # wird irgendwann ignoriert, dann fällt auch das Echte nicht mehr auf.
         melden('  HINWEIS  README.md zeigt %d deutsche Bilder — englische '
-               'Fassung fehlt noch' % len(geteilt))
+               'Version fehlt noch' % len(geteilt))
         melden('           (%s%s)'
                % (', '.join(geteilt[:3]), ' …' if len(geteilt) > 3 else ''))
 

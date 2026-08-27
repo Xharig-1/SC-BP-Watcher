@@ -3,7 +3,7 @@
 
 Englisch steht oben, Deutsch in einem aufklappbaren Block darunter: Auf der
 Release-Seite lesen überwiegend Menschen, die kein Deutsch können, aber die
-deutschsprachige Community soll ihre Fassung auch bekommen.
+deutschsprachige Community soll ihre Version auch bekommen.
 
 Dieselben Texte zeigt das Werkzeug unter „Was ist neu" — dort allerdings jedem
 nur in seiner Sprache.
@@ -21,7 +21,7 @@ DATEIEN = {'en': 'CHANGELOG.md', 'de': 'CHANGELOG.de.md'}
 
 
 def grundversion(tag):
-    """Aus `v3.0.0-rc5` wird `3.0.0` — die Fassung, auf die es hinausläuft."""
+    """Aus `v3.0.0-rc5` wird `3.0.0` — die Version, auf die es hinausläuft."""
     return tag.lstrip('v').split('-', 1)[0]
 
 
@@ -104,7 +104,7 @@ def zusammensetzen(englisch, deutsch):
 # Fester Anhang unter jeder Release-Notiz.
 #
 # Warum bei **jedem** Release und nicht nur einmal: Die SmartScreen-Meldung
-# kommt bei jeder neuen Fassung wieder — jede Datei ist neu und damit wieder
+# kommt bei jeder neuen Version wieder — jede Datei ist neu und damit wieder
 # „unbekannt". Auch beim Selbst-Update aus dem Werkzeug heraus. Ohne den Hinweis
 # an der Stelle, wo die Leute die Datei holen, ist das jede Woche dieselbe Frage.
 #
@@ -136,7 +136,7 @@ die Meldung nicht wieder.
 
 SmartScreen prüft nicht, *ob* ein Programm schädlich ist, sondern ob es **bekannt** ist.
 Bekannt wird eine Datei durch eine gekaufte Code-Signatur oder sehr viele Downloads — ein
-kostenloses Fan-Werkzeug hat beides nicht, und jede neue Fassung fängt wieder bei null an.
+kostenloses Fan-Werkzeug hat beides nicht, und jede neue Version fängt wieder bei null an.
 Der Quellcode ist offen, die Datei wird **nicht von mir** gebaut, sondern von GitHub
 Actions aus genau diesem Quellcode, und jede Datei oben trägt ihre SHA-256-Prüfsumme.
 Unter Linux gibt es diese Meldung nicht.

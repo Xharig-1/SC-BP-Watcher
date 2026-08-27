@@ -20,7 +20,7 @@
 Die Textdatei des Spiels holen und aktuell halten.
 
 Star Citizen liest seine Texte aus `Data/Localization/<sprache>/global.ini`.
-Liegt dort eine Datei, hat sie **Vorrang** vor der Fassung im `Data.p4k` —
+Liegt dort eine Datei, hat sie **Vorrang** vor der Version im `Data.p4k` —
 genau darauf beruhen die Community-Übersetzungen, und CIG gibt das
 ausdrücklich frei.
 
@@ -29,7 +29,7 @@ Drei mögliche Grundlagen:
   1. **Deutsche Übersetzung** — `rjcncpt/StarCitizen-Deutsch-INI`, das Projekt,
      aus dem auch der SC Deutsch Launcher schöpft (CC-BY-NC-SA-4.0)
   2. **StarStrings** — `MrKraken/StarStrings`, aufgeräumte englische Texte
-  3. **Original** — die englische Fassung direkt aus dem `Data.p4k` des Spielers
+  3. **Original** — die englische Version direkt aus dem `Data.p4k` des Spielers
      (kein Download nötig, siehe `tools/extract_global_ini.py`)
 
 > **Nichts davon wird mitgeliefert.** Beide Fremdprojekte behalten ihre Rechte,
@@ -89,7 +89,7 @@ def _hole(url, roh=False):
 
 # --------------------------------------------------------------- Was ist neu?
 # Der zuletzt aufgetretene Netzfehler — im Klartext, für die Anzeige.
-# Ohne diese Zeile stand bei einem Zertifikatsproblem nur „Fassung nicht
+# Ohne diese Zeile stand bei einem Zertifikatsproblem nur „Version nicht
 # gefunden" im Fenster, was nach „das Release existiert nicht" aussieht und in
 # die völlig falsche Richtung führt. Die Diagnose kostete am 24.08.2026 eine
 # halbe Stunde, obwohl die Ausnahme den Grund kannte.
@@ -97,7 +97,7 @@ letzter_fehler = [None]
 
 
 def neueste(quelle):
-    """Die neueste Fassung einer Quelle: (Kennung, Adresse, Größe) oder None.
+    """Die neueste Version einer Quelle: (Kennung, Adresse, Größe) oder None.
 
     Die Kennung ist der Release-Tag. Bei StarStrings heißt der Tag immer
     `latest` — dort taugt er nicht zum Vergleichen, deshalb wird zusätzlich
@@ -158,7 +158,7 @@ def vermerken(quelle, kennung):
 
 
 def installiert(quelle):
-    """Welche Fassung liegt hier? Kennung oder None."""
+    """Welche Version liegt hier? Kennung oder None."""
     return (_merk().get(quelle) or {}).get('kennung')
 
 

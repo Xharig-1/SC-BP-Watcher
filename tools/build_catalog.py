@@ -34,7 +34,7 @@ QUELLEN — in dieser Reihenfolge:
      Das ist der saubere Weg: reine CIG-Daten, weitergabefähig.
 
   2. Ohne `--ini`: die im Spielordner liegende Sprachdatei. ACHTUNG — wer den
-     SC Deutsch Launcher nutzt, hat dort eine **bearbeitete** Fassung: Der Launcher
+     SC Deutsch Launcher nutzt, hat dort eine **bearbeitete** Version: Der Launcher
      hängt Kürzel an die Namen ("SparkFire (Cmp/2/C)") und die deutschen
      Übersetzungen sind seine Arbeit. Zum Selbernutzen in Ordnung, aber das
      Ergebnis darf dann NICHT weitergegeben werden. Das Skript schreibt in dem
@@ -62,7 +62,7 @@ SC_DIRS = [
 ]
 LOC_REL = os.path.join('data', 'Localization')
 
-# Aus `item_Desc…` — die Datei nennt die Werte im Klartext. Die beiden Fassungen
+# Aus `item_Desc…` — die Datei nennt die Werte im Klartext. Die beiden Versionen
 # beschriften sie unterschiedlich:
 #
 #   CIG, englisch:   Item Type: Quantum Drive\nManufacturer: RAMP Corporation
@@ -219,10 +219,10 @@ def main():
     if not weitergabe:
         print()
         print('!! ACHTUNG: gebaut aus einer NICHT-englischen Sprachdatei.')
-        print('!! Wer den SC Deutsch Launcher nutzt, hat dort eine bearbeitete Fassung')
+        print('!! Wer den SC Deutsch Launcher nutzt, hat dort eine bearbeitete Version')
         print('!! (angehängte Kürzel, deutsche Übersetzungen = Arbeit des Launcher-Teams).')
         print('!! Diese Datei ist zum Selbernutzen gedacht und darf NICHT weitergegeben')
-        print('!! werden. Für eine weitergabefähige Fassung die englische global.ini aus')
+        print('!! werden. Für eine weitergabefähige Version die englische global.ini aus')
         print('!! Data.p4k extrahieren (unp4k) und mit --ini übergeben.')
 
     ziel = os.path.abspath(args.out)

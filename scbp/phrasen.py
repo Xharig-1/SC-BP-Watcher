@@ -30,7 +30,7 @@ ist unter Linux keine Randerscheinung mehr, dort spielen die meisten auf Englisc
 Drei Quellen, in dieser Rangfolge:
 
   1. **Eigene Ergänzung** — `phrasen.json` im App-Ordner. Wer eine Formulierung
-     findet, die hier fehlt, trägt sie ein, ohne auf eine neue Fassung zu warten.
+     findet, die hier fehlt, trägt sie ein, ohne auf eine neue Version zu warten.
   2. **Die `global.ini` der eigenen Installation** — die genaueste Quelle, denn
      sie ist die Datei, aus der das Spiel den Text selbst nimmt. Dort steht
 

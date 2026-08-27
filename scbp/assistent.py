@@ -326,7 +326,7 @@ class Assistent:
         self.root.update()
         try:
             if quelle == 'original':
-                # Kein Download nötig: Die englische Fassung liegt im Data.p4k
+                # Kein Download nötig: Die englische Version liegt im Data.p4k
                 # des Spielers und wird von dort geholt (0,2 s). Eine bereits
                 # vorhandene Datei wird nicht ersetzt.
                 sprache_ordner = 'english'

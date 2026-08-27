@@ -17,14 +17,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-„Was ist neu" — Versionsgeschichte zum Nachlesen, und der Weg zur neuen Fassung.
+„Was ist neu" — Versionsgeschichte zum Nachlesen, und der Weg zur neuen Version.
 
 Vorbild ist das Info-Log des SC Deutsch Launcher: nicht nur die Meldung, dass es
 etwas Neues gibt, sondern auch **was** neu ist — und das auch für ältere
-Fassungen. Wer eine Version übersprungen hat, soll nachlesen können, was
+Versionen. Wer eine Version übersprungen hat, soll nachlesen können, was
 dazwischen passiert ist.
 
-Oben steht, falls vorhanden, die neue Fassung mit einem Knopf zum Holen.
+Oben steht, falls vorhanden, die neue Version mit einem Knopf zum Holen.
 Darunter die Geschichte, neueste zuerst.
 """
 import threading
@@ -136,7 +136,7 @@ class Versionsfenster:
 
     # ------------------------------------------------------------------ Banner
     def _banner(self):
-        """Der Hinweis auf die neue Fassung — nur wenn es eine gibt."""
+        """Der Hinweis auf die neue Version — nur wenn es eine gibt."""
         self.banner = tk.Frame(self.root, bg=FLAECHE)
         self.banner.pack(fill='x', padx=14, pady=(12, 0))
         if not self.neue:
@@ -199,7 +199,7 @@ class Versionsfenster:
                                    + t('selbst_holen'), fg=GELB)
             return
 
-        # ⚠ Hier stand nur „Beim nächsten Start läuft die neue Fassung" — und
+        # ⚠ Hier stand nur „Beim nächsten Start läuft die neue Version" — und
         # genau das stimmt unter Windows **nicht**. Dort tauscht ein Hilfsskript
         # die Datei erst, wenn das Programm beendet ist; wer einfach weiterspielt,
         # bei dem gibt es nach zwei Minuten auf, und aktualisiert ist nichts.
@@ -228,7 +228,7 @@ class Versionsfenster:
         knopf.bind('<Button-1>', lambda e: self._neu_starten())
 
     def _neu_starten(self):
-        """Die frisch geladene Fassung übernehmen.
+        """Die frisch geladene Version übernehmen.
 
         ⚠ Derselbe Ablauf wie auf der Einstellungsseite: Der Notausgang wird
         **sofort** scharf gestellt, nicht erst in einem Tk-Rückruf — feuert der
@@ -240,8 +240,8 @@ class Versionsfenster:
             self.meldung.configure(text=t('s_ub_neustart_nein'), fg=GELB)
             return
 
-        # ⚠ **Erst nachsehen, ob die neue Fassung lebt.** Vorher wurde der
-        # Notausgang hier sofort scharf gestellt — war die neue Fassung schon
+        # ⚠ **Erst nachsehen, ob die neue Version lebt.** Vorher wurde der
+        # Notausgang hier sofort scharf gestellt — war die neue Version schon
         # tot (unter Linux monatelang der Regelfall), stand der Rechner ohne
         # Watcher da, und niemand erfuhr den Grund. Siehe
         # `aktualisierung.neue_fassung_laeuft`.
@@ -297,7 +297,7 @@ class Versionsfenster:
         block.pack(fill='x', pady=(0, 18))
         kopf = tk.Frame(block, bg=BG)
         kopf.pack(fill='x')
-        # Die eigene Fassung hervorheben — dann sieht man auf einen Blick,
+        # Die eigene Version hervorheben — dann sieht man auf einen Blick,
         # wie weit man zurückliegt.
         eigen = (aktualisierung._teile(e['version'])
                  == aktualisierung._teile(self.eigene))

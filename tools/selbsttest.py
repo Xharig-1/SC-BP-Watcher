@@ -483,7 +483,7 @@ def main():
         # **kein einziger Aufrufer** wertet das aus. Eine Einstellung war nach
         # dem Neustart einfach wieder alt, ohne jeden Hinweis.
         # ⚠ Jede Datei, die der Code über `_mitgeliefert()` lädt, muss der Bau
-        # auch einpacken. Sonst fehlt sie NUR in der fertigen Fassung — beim
+        # auch einpacken. Sonst fehlt sie NUR in der fertigen Version — beim
         # Start aus dem Quellcode fällt es nie auf. Genau so fehlte das Logo auf
         # der Seite „Update & Über": Der Code lud `assets/xharig.png`, der Bau
         # lieferte nur `assets/icon.png`. Gemeldet am 26.08.2026 ,
@@ -612,7 +612,7 @@ def main():
 
         # ------------------------------------------------------------------ 14
         # "Neu"-Marken. Der ganze Nutzen haengt daran, dass sie wieder
-        # verschwinden — sonst ist nach drei Fassungen alles markiert.
+        # verschwinden — sonst ist nach drei Versionen alles markiert.
         print()
         print('14. „Neu"-Marken an den Bereichen')
         os.environ['SC_BP_HOME'] = os.path.join(basis, 'neu1')
@@ -636,7 +636,7 @@ def main():
         pruefe(len(neuheiten.offene('3.0.0')) == len(offen) - 1,
                'die übrigen Marken bleiben stehen')
         pruefe(not neuheiten.ist_neu('bestand', '2.0.0'),
-               'was es in der eigenen Fassung noch nicht gibt, wird nicht markiert')
+               'was es in der eigenen Version noch nicht gibt, wird nicht markiert')
 
         # ------------------------------------------------------------------ 14a
         # Der Änderungstext wird für „Was ist neu" zerlegt. Zwei Fallen, beide
@@ -781,7 +781,7 @@ def main():
 
         # ------------------------------------------------------------------ 16
         # Neustart nach dem Update. Dieser Fehler ist dreimal aufgetreten und
-        # war jedes Mal schwer zu sehen, weil er nur in der verpackten Fassung
+        # war jedes Mal schwer zu sehen, weil er nur in der verpackten Version
         # unter Windows auftritt — hier wird deshalb die Entscheidung geprüft,
         # nicht das Ergebnis.
         print()
@@ -798,7 +798,7 @@ def main():
                 umgebungen.append(k.get('env') or {})
 
             def poll(self):
-                return None          # tut so, als lebe die neue Fassung
+                return None          # tut so, als lebe die neue Version
 
         echtes_popen = subprocess.Popen
         echte_verpackung = akt.verpackung
@@ -811,7 +811,7 @@ def main():
             # NICHT selbst starten: Auf der Platte liegt dann noch die ALTE
             # `.exe`, und ein eigener Start fährt genau die wieder hoch. Sie
             # hält danach den Temp-Ordner fest, der Tausch scheitert endgültig,
-            # und der Nutzer sieht die alte Fassung weiterlaufen.
+            # und der Nutzer sieht die alte Version weiterlaufen.
             akt._TAUSCH_LAEUFT[0] = True
             akt.neu_starten()
             pruefe(gestartet == [],
@@ -822,13 +822,13 @@ def main():
             akt._TAUSCH_LAEUFT[0] = False
             akt.neu_starten()
             pruefe(len(gestartet) == 1,
-                   'ohne wartenden Tausch startet die neue Fassung')
+                   'ohne wartenden Tausch startet die neue Version')
 
             # ⚠ **Die Umgebung muss gewaschen sein.** Genau hier ist der
             # Neustart unter Linux monatelang gescheitert: `LD_LIBRARY_PATH`,
             # `PYTHONHOME` und `PYTHONPATH` zeigen im AppImage in den entpackten
-            # Mount der ALTEN Fassung. Zwei Sekunden spaeter beendet sie sich,
-            # der Mount verschwindet, und die neue Fassung findet ihre
+            # Mount der ALTEN Version. Zwei Sekunden spaeter beendet sie sich,
+            # der Mount verschwindet, und die neue Version findet ihre
             # Bibliotheken nicht mehr. Fuer den Nutzer: „es geht aus, startet
             # aber nicht" (Bomb20, 27.08.2026).
             geerbt = umgebungen[-1] if umgebungen else {}
@@ -836,19 +836,19 @@ def main():
                                   'APPIMAGE', 'APPDIR', 'ARGV0', '_MEIPASS')
                       if n in geerbt]
             pruefe(not uebrig,
-                   'die neue Fassung erbt keine Pfade der alten (%s)'
+                   'die neue Version erbt keine Pfade der alten (%s)'
                    % (', '.join(uebrig) or 'keine'))
 
-            # Und: Stirbt die neue Fassung sofort, darf die alte NICHT abtreten.
+            # Und: Stirbt die neue Version sofort, darf die alte NICHT abtreten.
             class _TotesPopen(_FalschesPopen):
                 def poll(self):
                     return 1         # schon gestorben
             akt._GESTARTET[0] = _TotesPopen('x')
             pruefe(akt.neue_fassung_laeuft(wartezeit=0.3) is False,
-                   'eine sofort gestorbene neue Fassung wird erkannt')
+                   'eine sofort gestorbene neue Version wird erkannt')
             akt._GESTARTET[0] = _FalschesPopen('x')
             pruefe(akt.neue_fassung_laeuft(wartezeit=0.3) is True,
-                   'eine laufende neue Fassung gilt als geglueckt')
+                   'eine laufende neue Version gilt als geglueckt')
             akt._GESTARTET[0] = None
         finally:
             subprocess.Popen = echtes_popen
@@ -1053,7 +1053,7 @@ def main():
                         gefunden.append((zweit.lineno, zweit.value))
             return gefunden
 
-        # ⚠ Zweiter Anlauf: Die erste Fassung dieser Prüfung sah nur
+        # ⚠ Zweiter Anlauf: Die erste Version dieser Prüfung sah nur
         # `text='…'` direkt am Widget — und übersah dadurch
         #     unten = f'{titel} — jetzt craftbar!' if titel else 'neu …'
         # weil der Satz erst in eine Variable geht und später zusammengesetzt
@@ -1128,7 +1128,7 @@ def main():
 
         # ⚠ ALLE Module, nicht nur die mit „Fenster" im Namen.
         #
-        # Die erste Fassung prüfte eine Handauswahl von Oberflächen-Dateien —
+        # Die erste Version prüfte eine Handauswahl von Oberflächen-Dateien —
         # und ließ `logquelle.py` aus, weil das nach Hintergrund klingt. Genau
         # von dort kam aber „Zwischen … hat Star Citizen Logs weggeräumt", und
         # der Satz stand fest auf Deutsch im Overlay. Auch `pfade.py` gab „kein
@@ -1242,9 +1242,9 @@ def main():
         _halbe = [k for k, v in _spr.TEXTE.items()
                   if not isinstance(v, tuple) or len(v) < 2 or not v[1]]
         if _halbe:
-            print('       ohne englische Fassung: %s' % ', '.join(sorted(_halbe)[:6]))
+            print('       ohne englische Version: %s' % ', '.join(sorted(_halbe)[:6]))
         pruefe(not _halbe,
-               'jeder Text hat eine englische Fassung (%d ohne)' % len(_halbe))
+               'jeder Text hat eine englische Version (%d ohne)' % len(_halbe))
 
         # ------------------------------------------------------------------ 18
         # Meldungen ziehen beim Sprachwechsel mit.
@@ -1572,6 +1572,67 @@ def main():
         wurzel.destroy()
 
         print()
+        print('23. Bei der Mindestgroesse ist alles Wichtige sichtbar')
+        # ⚠ Die Seite „Update & Ueber" ist die einzige, auf der ein nicht
+        # gefundener Knopf richtig weh tut: Wer den Update-Knopf nicht sieht,
+        # updatet nicht. der Autor am 27.08.2026: „das nervt user weil die den
+        # button zum updaten nicht sofort finden."
+        #
+        # Geprueft wird bei der MINDESTGROESSE des Fensters (1100x760) — nicht
+        # bei der Groesse, die der Entwickler zufaellig offen hat.
+        import tkinter as tk23
+        import tkinter.font as tkfont23
+        from scbp import seiten as se23
+        from scbp.hauptfenster import MIN_BREITE as MB23, MIN_HOEHE as MH23
+
+        wurzel23 = tk23.Tk()
+        _k23 = tkfont23.Font(root=wurzel23, family='Segoe UI', size=10)
+        _t23 = tkfont23.Font(root=wurzel23, family='Segoe UI', size=12,
+                             weight='bold')
+
+        class _Traeger23:
+            f_klein = _k23; f_titel = _t23; f_fett = _t23; f_gross = _t23
+            f_mittel = _k23; f_normal = _k23; version = '3.0.0'
+            def sagen(self, *a, **k): pass
+            def oeffnen(self, *a, **k): pass
+            def _einrichtung(self, *a, **k): pass
+
+        try:
+            rahmen23 = tk23.Frame(wurzel23)
+            rahmen23.pack(fill='both', expand=True)
+            wurzel23.geometry('%dx%d' % (MB23, MH23))
+            se23._ueber(_Traeger23(), rahmen23)
+            wurzel23.update_idletasks()
+            wurzel23.update()
+
+            hoehe23 = wurzel23.winfo_height()
+            abgeschnitten = []
+            def _sammeln(w):
+                for kind in w.winfo_children():
+                    if (kind.winfo_class() == 'Canvas'
+                            and kind.winfo_height() > 20
+                            and kind.winfo_width() > 300):
+                        y = kind.winfo_rooty() - wurzel23.winfo_rooty()
+                        unten = y + kind.winfo_height()
+                        # Die Rollflaeche selbst reicht bis zum Rand — die zaehlt
+                        # nicht als abgeschnitten.
+                        if unten > hoehe23 + 2 and kind.winfo_height() < hoehe23 - 50:
+                            abgeschnitten.append((y, unten))
+                    _sammeln(kind)
+            _sammeln(rahmen23)
+            pruefe(hoehe23 >= MH23 - 2,
+                   'die Probe laeuft wirklich bei der Mindestgroesse (%d px)'
+                   % hoehe23)
+            pruefe(not abgeschnitten,
+                   'kein Knopf der Update-Seite faellt unter die Kante (%s)'
+                   % (abgeschnitten or 'keiner'))
+        finally:
+            try:
+                wurzel23.destroy()
+            except Exception:
+                pass
+
+        print()
         print('22. Die Ablage schreibt bei jedem neuen Bauplan mit')
         # Bis rc65 wurden die drei Ausgabe-Dateien NUR auf Knopfdruck
         # geschrieben. Wer einmal geklickt hatte, hielt sie fuer aktuell — sie
@@ -1603,7 +1664,7 @@ def main():
             liegt = set(os.listdir(ordner22))
             pruefe({'SC-Blueprints-Basetool.json', 'scmdb-import.json',
                     'SC-BP-Watcher-Bestand.json'} <= liegt,
-                   'speichern() schreibt alle drei Fassungen mit')
+                   'speichern() schreibt alle drei Versionen mit')
 
             # ⚠ Ohne Datum im Namen — sonst entstuenden taeglich drei neue
             # Dateien, und niemand wuesste, welche die aktuelle ist.
@@ -1611,7 +1672,7 @@ def main():
             be22.speichern(daten22)
             json_dateien = [d for d in os.listdir(ordner22)
                             if d.endswith('.json')]
-            pruefe(len(json_dateien) == 4,      # drei Fassungen + fremde Datei
+            pruefe(len(json_dateien) == 4,      # drei Versionen + fremde Datei
                    'zweimal speichern erzeugt keine zweite Garnitur (%d Dateien)'
                    % len(json_dateien))
 
@@ -1619,7 +1680,7 @@ def main():
                    'eine fremde Datei im Ordner bleibt unangetastet')
             aelter = os.path.join(ordner22, ex22.ALTORDNER)
             pruefe(os.path.isdir(aelter) and len(os.listdir(aelter)) == 2,
-                   'die alten datierten Fassungen sind weggeraeumt, nicht geloescht')
+                   'die alten datierten Versionen sind weggeraeumt, nicht geloescht')
 
             # Der Speichern-Dialog dagegen behaelt das Datum: Dort haelt jemand
             # bewusst einen Stand fest.
@@ -1627,12 +1688,12 @@ def main():
                    time.strftime('%Y') in ex22.vorschlag('scmdb'),
                    'der Speichern-Dialog schlaegt weiterhin einen Namen mit Datum vor')
 
-            # Und der Knopf je Zeile muss die Fassung durchreichen, statt
+            # Und der Knopf je Zeile muss die Version durchreichen, statt
             # 'basetool' fest verdrahtet zu haben.
             quelle22 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
                             encoding='utf-8').read()
             pruefe('def einzeln(art):' in quelle22,
-                   'Einzeln speichern nimmt die Fassung entgegen')
+                   'Einzeln speichern nimmt die Version entgegen')
             pruefe("export.schreiben(ziel, art=art)" in quelle22,
                    'und gibt sie auch weiter (nicht mehr fest basetool)')
         finally:

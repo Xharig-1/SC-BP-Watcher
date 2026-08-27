@@ -3,7 +3,7 @@
 Einspielen und wieder entfernen muss den Wortlaut unverändert lassen. Genau das
 misst dieses Werkzeug — an der echten Datei, aber nie in ihr.
 
-⚠ Warum es das gibt: Beim Umbau auf die markenlose Fassung schnitt ein zu grobes
+⚠ Warum es das gibt: Beim Umbau auf die markenlose Version schnitt ein zu grobes
 Muster 589 Zeichen aus einem Auftragstext, der uns gar nichts anging. Aufgefallen
 ist das nur, weil hier Zeichen für Zeichen verglichen wird. Auf dem Bildschirm
 hätte es niemand gesehen.

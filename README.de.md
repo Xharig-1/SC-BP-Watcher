@@ -24,9 +24,9 @@
 
 Ein kleines, randloses Overlay, das beim Spielen **in Echtzeit** meldet, sobald ein neuer Bauplan (Blueprint) dazukommt — inklusive Name, Art und Uhrzeit. Ohne Account, ohne Cloud. Läuft unter **Windows und Linux**.
 
-> 💬 **Es gibt einen Discord.** Fragen, Hilfe bei Problemen, neue Fassungen und ein Forum für Fehler und Wünsche: **[discord.gg/g2E7e6XxZC](https://discord.gg/g2E7e6XxZC)**. Wer lieber hier bleibt, macht ein [Issue](../../issues) auf — beides wird gelesen.
+> 💬 **Es gibt einen Discord.** Fragen, Hilfe bei Problemen, neue Versionen und ein Forum für Fehler und Wünsche: **[discord.gg/g2E7e6XxZC](https://discord.gg/g2E7e6XxZC)**. Wer lieber hier bleibt, macht ein [Issue](../../issues) auf — beides wird gelesen.
 
-> 🧪 **Testfassungen ausprobieren.** Vor jeder Veröffentlichung gibt es **Vorabversionen** (`-rc`) unter [Releases](../../releases) — dort steht bei jeder, was sie bringt und was sich seit der vorigen geändert hat. Sie werden **niemandem als Update angeboten**: Wer sie will, lädt sie dort herunter. Wer eine ausprobiert und etwas findet, macht bitte ein [Issue](../../issues) auf — genau dafür sind sie da.
+> 🧪 **Testversionen ausprobieren.** Vor jeder Veröffentlichung gibt es **Vorabversionen** (`-rc`) unter [Releases](../../releases) — dort steht bei jeder, was sie bringt und was sich seit der vorigen geändert hat. Sie werden **niemandem als Update angeboten**: Wer sie will, lädt sie dort herunter. Wer eine ausprobiert und etwas findet, macht bitte ein [Issue](../../issues) auf — genau dafür sind sie da.
 
 > ℹ️ **Der SC Deutsch Launcher ist nicht mehr Voraussetzung.** Die eigentliche Quelle ist die `Game.log` von Star Citizen — dort steht jeder freigeschaltete Bauplan im Klartext. Ist der Launcher da, wird er weiter genutzt: Er bestätigt die Funde und liefert deutsche Bezeichnungen. Ist er nicht da (unter Linux immer), läuft der Watcher trotzdem.
 
@@ -63,7 +63,7 @@ Der Watcher schreibt in die Auftragstexte des Spiels, **welche** Baupläne ein A
 ### Das Fenster
 
 > [!NOTE]
-> Die folgenden Bilder zeigen **v3.0.0** (derzeit als Testfassung `v3.0.0-rc` unter [Releases](../../releases)). In v2.0.0 sieht das Fenster noch anders aus — wer dort etwas sucht, was hier zu sehen ist, findet es nicht. Das ist kein Fehler, sondern die ältere Fassung.
+> Die folgenden Bilder zeigen **v3.0.0** (derzeit als Testversion `v3.0.0-rc` unter [Releases](../../releases)). In v2.0.0 sieht das Fenster noch anders aus — wer dort etwas sucht, was hier zu sehen ist, findet es nicht. Das ist kein Fehler, sondern die ältere Version.
 
 <table>
 <tr>
@@ -89,11 +89,11 @@ Der Watcher schreibt in die Auftragstexte des Spiels, **welche** Baupläne ein A
 <tr>
 <td valign="top" align="center">
 <img src="assets/screenshot-ueber.png" alt="Über und Update-Kanal" width="100%"><br>
-<sub><b>Über</b> — fertige Fassungen oder Testfassungen, mit Knopf zum Holen</sub>
+<sub><b>Über</b> — stabile Version oder Testversionen, mit Knopf zum Holen</sub>
 </td>
 <td valign="top" align="center">
 <img src="assets/screenshot-wasistneu.png" alt="Was ist neu" width="100%"><br>
-<sub><b>Was ist neu</b> — jede Fassung aufklappbar, gefiltert nach Art</sub>
+<sub><b>Was ist neu</b> — jede Version aufklappbar, gefiltert nach Art</sub>
 </td>
 </tr>
 <tr>
@@ -153,11 +153,11 @@ Dazu: Klasse, Größe und Gütegrad stehen direkt in der Zeile (`M/1/A`), die Ob
 | <img src="assets/symbole/22/vordergrund-gruen.png" width="22" alt=""> **Immer im Vordergrund** | Randloses, leicht durchscheinendes Overlay über dem Spiel |
 | <img src="assets/symbole/22/verschieben-gruen.png" width="22" alt=""> **Verschiebbar & skalierbar** | An der Titelleiste ziehen, Größe am Griff ◢ unten rechts — **Position & Größe werden gemerkt** |
 | <img src="assets/symbole/22/sprachen-gruen.png" width="22" alt=""> **Deutsch und Englisch** | Oberfläche umschaltbar. Die Bauplan-Meldung im Log erkennt der Watcher **in jeder Spielsprache** — er findet die Formulierung selbst heraus |
-| <img src="assets/symbole/22/abhaken-gruen.png" width="22" alt=""> **Sagt Bescheid** | Merkt selbst, wenn es eine neue Fassung gibt — mit „Was ist neu" zum Nachlesen, auch für ältere Versionen |
+| <img src="assets/symbole/22/abhaken-gruen.png" width="22" alt=""> **Sagt Bescheid** | Merkt selbst, wenn es eine neue Version gibt — mit „Was ist neu" zum Nachlesen, auch für ältere Versionen |
 | <img src="assets/symbole/22/nurlesend-gruen.png" width="22" alt=""> **Nur lesend** | Verändert am Spiel nichts — liest die `Game.log` und, falls vorhanden, die Launcher-Dateien |
 | <img src="assets/symbole/22/eigenbuch-gruen.png" width="22" alt=""> **Eigener Bestand** | Führt selbst Buch, welche Baupläne du hast — auch ohne den SC Deutsch Launcher |
 | 🕓 **Nachlese** | Liest beim Start die aufgehobenen Logs früherer Sitzungen und holt nach, was ohne laufenden Watcher freigeschaltet wurde |
-| 🐧 **Windows und Linux** | Eine Fassung für beide Systeme, inklusive Autostart und Spracherkennung im Log |
+| 🐧 **Windows und Linux** | Eine Version für beide Systeme, inklusive Autostart und Spracherkennung im Log |
 
 ## Voraussetzungen
 
@@ -193,7 +193,7 @@ von SignPath unterschrieben, und Windows zeigt statt „unbekannter
 Herausgeber" einen Namen an.
 
 Gebaut wird ausschließlich über einen öffentlichen GitHub-Actions-Ablauf —
-[SECURITY.md](SECURITY.md) beschreibt, wie eine Fassung entsteht und was das
+[SECURITY.md](SECURITY.md) beschreibt, wie eine Version entsteht und was das
 Programm sendet (und was nicht).
 
 ### ⚠️ Windows meldet „Der Computer wurde durch Windows geschützt"
@@ -242,7 +242,7 @@ Die schmale Leiste liegt über dem Spiel und meldet Neuzugänge. Alles Weitere s
 
 | Zeichen | Was es tut |
 |---|---|
-| <img src="assets/symbole/22/glocke-grau.png" width="22" alt=""> | **Glocke** — neue Fassung verfügbar; färbt sich grün, sobald es eine gibt |
+| <img src="assets/symbole/22/glocke-grau.png" width="22" alt=""> | **Glocke** — neue Version verfügbar; färbt sich grün, sobald es eine gibt |
 | <img src="assets/symbole/22/starten-grau.png" width="22" alt=""> | **Rakete** — Star Citizen starten. Erscheint nur, wenn ein Weg dorthin gefunden wurde |
 | <img src="assets/symbole/22/einstellungen-grau.png" width="22" alt=""> | **Zahnrad** — Einstellungen öffnen |
 | <img src="assets/symbole/22/liste-grau.png" width="22" alt=""> | **Klemmbrett** — Bauplan-Liste: durchsuchen, filtern, abhaken, Herkunft nachschlagen |
@@ -391,19 +391,19 @@ Die Formulierungen, an denen ein Bauplan im Log erkannt wird, stehen nicht mehr 
 
 ## Beim Testen mithelfen
 
-Neue Fassungen erscheinen **samstags**. Wer nicht warten will, bekommt sie vorher:
+Neue Versionen erscheinen **samstags**. Wer nicht warten will, bekommt sie vorher:
 
-**Info → Update & Über → „Auch Testfassungen"**
+**Info → Update & Über → „Auch Testversionen"**
 
-Danach meldet das Werkzeug auch Testfassungen (erkennbar am `rc` in der Nummer) — über
+Danach meldet das Werkzeug auch Testversionen (erkennbar am `rc` in der Nummer) — über
 dieselbe Update-Meldung wie sonst. Nichts von Hand herunterladen, nichts suchen.
 
-- **Testfassungen sind fertig gebaut und lauffähig**, aber noch nicht lange erprobt.
+- **Testversionen sind fertig gebaut und lauffähig**, aber noch nicht lange erprobt.
   Es kann etwas klemmen — genau dafür sind sie da.
 - **Der Rückweg steht immer offen.** Schaltest du wieder um, bekommst du die nächste
-  fertige Fassung angeboten: Eine fertige gilt immer als neuer als jede Testfassung
+  stabile Version angeboten: Eine stabile gilt immer als neuer als jede Testversion
   derselben Nummer. Man bleibt also nicht versehentlich im Testkanal hängen.
-- **Ohne diese Einstellung merkst du von Testfassungen nichts.** Wer Ruhe will, muss
+- **Ohne diese Einstellung merkst du von Testversionen nichts.** Wer Ruhe will, muss
   nichts tun — das ist die Voreinstellung.
 
 Etwas gefunden? Ein [Issue](../../issues) hilft mehr als jede Vermutung — oder das Forum
@@ -413,7 +413,7 @@ Textblock enthält alles, was zur Fehlersuche gebraucht wird, ohne persönliche 
 
 ## Weitergeben
 
-> 🔒 **Es gehört dir.** Kein Konto, keine Anmeldung, keine Cloud. Das Werkzeug liest Dateien, die ohnehin auf deiner Platte liegen, und verändert an der Spielinstallation nichts. Ins Netz greift es nur für zwei Dinge: die Werte- und Herkunftsdaten von scmdb.net (einmal je Spielversion) und die Frage, ob es eine neue Fassung gibt. Beides lässt sich mit `SC_BP_NO_NET=1` abschalten.
+> 🔒 **Es gehört dir.** Kein Konto, keine Anmeldung, keine Cloud. Das Werkzeug liest Dateien, die ohnehin auf deiner Platte liegen, und verändert an der Spielinstallation nichts. Ins Netz greift es nur für zwei Dinge: die Werte- und Herkunftsdaten von scmdb.net (einmal je Spielversion) und die Frage, ob es eine neue Version gibt. Beides lässt sich mit `SC_BP_NO_NET=1` abschalten.
 
 Gib einfach die Datei von der [Releases-Seite](../../releases) weiter — der Empfänger braucht weder Python noch einen Launcher, nur Star Citizen.
 
@@ -442,7 +442,7 @@ If you fork this project, please keep the credit in the footer or mention the or
 
 ## Was noch kommt
 
-Es wird weitergebaut — was genau, steht in keiner Liste. Was eine Fassung gebracht hat, liest du im [`CHANGELOG.de.md`](CHANGELOG.de.md) oder direkt im Werkzeug unter **„Was ist neu"**.
+Es wird weitergebaut — was genau, steht in keiner Liste. Was eine Version gebracht hat, liest du im [`CHANGELOG.de.md`](CHANGELOG.de.md) oder direkt im Werkzeug unter **„Was ist neu"**.
 
 Wünsche und Fehlermeldungen gern als [Issue](../../issues) oder im [Discord](https://discord.gg/g2E7e6XxZC) — Vorschläge landen eher im nächsten Bau als Gedankenlesen.
 

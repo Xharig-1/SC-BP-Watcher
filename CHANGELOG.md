@@ -10,6 +10,36 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc68 - 2026-08-27
+
+> **The update button is where you look for it** — and "Fassung" is now called
+> "Version" throughout the German interface.
+
+### Changed
+
+- **The "Get the latest version" button now sits at the very top**, right below
+  the version card. Previously it came after the button row and the daily
+  toggle, which put it **below the edge** at the window's minimum size — someone
+  who cannot find it will not update. Reported by **der Autor**.
+  - Making the window taller would have been the wrong answer: on a 1366×768
+    laptop it would no longer fit at all. The most important button belongs at
+    the top, not the window in the sky.
+- **Both channel boxes are fully visible at minimum size too** — they hold the
+  button that fetches the stable version specifically. The daily toggle moved
+  below them; it is a side setting, the boxes are the point of the page.
+  Reported by **der Autor**.
+- **"Finished versions only" is now "Stable version".** "Finished" sounds like
+  something that is done — this tool is under continuous development. Suggested
+  by **der Autor**.
+- **"rcXX is already there" is now "rcXX is already installed"** — clearer, and
+  the English string already said so. Reported by **der Autor**.
+
+### Thanks
+
+- **der Autor** — for looking at the tool through a user's eyes while
+  demonstrating it to someone. Every point in this version came from that.
+
+
 ## v3.0.0-rc67 - 2026-08-27
 
 > **The restart after an update works on Linux** — and can no longer fail

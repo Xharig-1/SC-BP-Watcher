@@ -22,7 +22,7 @@ Ein Fehlerbericht, mit dem sich arbeiten lässt.
 „Bei mir geht es nicht" ist keine Fehlermeldung. Dieses Modul baut daraus einen
 Textblock, den der Spieler in ein Issue einfügt — und der die Fragen schon
 beantwortet, die man sonst einzeln stellen müsste: Welches System, welche
-Verpackung, welche Tk-Fassung, welcher Bildschirmaufbau, ist das Spiel
+Verpackung, welche Tk-Version, welcher Bildschirmaufbau, ist das Spiel
 gefunden, welche Sprache wurde erkannt, wie weit ist das Protokoll gelesen,
 was steht im Katalog — und was ist zuletzt schiefgegangen.
 
@@ -229,7 +229,7 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
     if letzte:
         zeilen.append(t('b_fehler') % (len(letzte), gesamt))
         for e in letzte:
-            # ⚠ Die Fassung dazuschreiben und Altlasten kennzeichnen. Der Speicher
+            # ⚠ Die Version dazuschreiben und Altlasten kennzeichnen. Der Speicher
             # hebt die letzten zehn Einträge über Programmstarts hinweg auf; nach
             # einem Update stehen dort Fehler, die längst behoben sind. Ohne
             # Kennzeichnung sucht der Nächste nach einem Fehler, den es nicht mehr

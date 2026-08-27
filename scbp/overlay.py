@@ -30,7 +30,7 @@ Zwei getrennte Antworten darauf, beide abschaltbar:
 Overlay unsichtbar und taucht bei einem neuen Bauplan für ein paar Sekunden auf.
 Was dann noch fehlt, ist ein Weg zurück — den liefert der Einzelinstanz-Wächter
 (siehe `zeigen_bitte`): Das Programm ein zweites Mal starten holt das vorhandene
-Fenster hervor, statt eine zweite Fassung zu öffnen. Damit reicht eine ganz normale
+Fenster hervor, statt eine zweite Version zu öffnen. Damit reicht eine ganz normale
 Tastenkombination des Systems auf die Verknüpfung.
 
 **2. Mausklicks durchreichen.** Das Fenster ist dann zwar sichtbar, fängt aber keine
@@ -190,7 +190,7 @@ def waechter_starten(beim_ruf):
     an keine Einstellung mehr. Statt einen eigenen Tastatur-Haken ins System zu
     setzen (unter Windows fragil, unter Wayland unmöglich), nutzen wir den
     einfachsten Weg, den jedes System schon kennt: **das Programm noch einmal
-    starten**. Die zweite Fassung merkt, dass schon eine läuft, sagt ihr Bescheid
+    starten**. Die zweite Version merkt, dass schon eine läuft, sagt ihr Bescheid
     und beendet sich. Auf die Verknüpfung lässt sich dann eine ganz normale
     Tastenkombination legen.
 
@@ -203,7 +203,7 @@ def waechter_starten(beim_ruf):
         horcher.bind(('127.0.0.1', WAECHTER_PORT))
         horcher.listen(4)
     except OSError:
-        return False                     # läuft schon — wir sind die zweite Fassung
+        return False                     # läuft schon — wir sind die zweite Version
     _waechter[0] = horcher
 
     def lauschen():
@@ -233,9 +233,9 @@ def waechter_stoppen():
     """Den Horcher schließen — nötig vor einem Neustart des Programms.
 
     ⚠ Ohne das kann sich das Programm nicht selbst neu starten: Die frisch
-    gestartete Fassung sieht den belegten Port, hält sich für die zweite Instanz,
+    gestartete Version sieht den belegten Port, hält sich für die zweite Instanz,
     sagt der alten „zeig dich" und beendet sich. Man bliebe ewig auf der alten
-    Fassung sitzen und wüsste nicht, warum.
+    Version sitzen und wüsste nicht, warum.
     """
     horcher = _waechter[0]
     _waechter[0] = None
@@ -248,7 +248,7 @@ def waechter_stoppen():
 
 
 def zeigen_bitte():
-    """Einer laufenden Fassung sagen, sie soll sich zeigen. True = ausgerichtet."""
+    """Einer laufenden Version sagen, sie soll sich zeigen. True = ausgerichtet."""
     try:
         with socket.create_connection(('127.0.0.1', WAECHTER_PORT), timeout=2) as s:
             s.sendall(b'zeigen')

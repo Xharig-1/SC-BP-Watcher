@@ -89,13 +89,13 @@ STRICH = 2.0
 #        zur Leiste.
 KNOPF = {'klein': 18, 'normal': 22, 'gross': 26, 'sehrgross': 30}
 ZEILE = {'klein': 12, 'normal': 14, 'gross': 16, 'sehrgross': 18}
-# Muss zu `scbp/zeichen.py` passen — sonst fehlt die 22er-Fassung und das
+# Muss zu `scbp/zeichen.py` passen — sonst fehlt die 22er-Version und das
 # Zeichen verschwindet bei „sehr gross" stillschweigend (`bild()` gibt `None`).
 ANTIPPBAR = {'klein': 14, 'normal': 16, 'gross': 18, 'sehrgross': 22}
 
 # ⚠ **Kein 2×-Satz für hochauflösende Bildschirme.** Der Gedanke lag nahe —
 # Retina-Macs und Windows mit 125 % Skalierung blasen ein kleines Bild auf, eine
-# scharfe Fassung daneben müsste helfen. Am 27.08.2026 nachgemessen: **Tk kann
+# scharfe Version daneben müsste helfen. Am 27.08.2026 nachgemessen: **Tk kann
 # das nicht.** Es zeichnet einen Bildpunkt als einen Punkt, ohne umzurechnen —
 # ein 44-px-Symbol erscheint schlicht doppelt so groß, nicht doppelt so scharf.
 # Verkleinern ginge nur mit `PhotoImage.subsample()`, und das wirft jeden zweiten
@@ -131,7 +131,7 @@ KNOPF_SYMBOLE = {
                                          # Weltraum. der Autor am 27.08.2026:
                                          # „SC Starten ist das symbol nicht
                                          # eindeutig genug".
-    'glocke':       'bell',              # neue Fassung verfügbar
+    'glocke':       'bell',              # neue Version verfügbar
     'liste':        'clipboard-list',    # die Bauplan-Liste
     'einstellungen': 'settings',
     'einklappen':   'chevron-down',    # Zustand „offen" — Klick klappt zu
@@ -174,7 +174,7 @@ KNOPF_SYMBOLE = {
                                          # übliche Bild für „führt dich durch".
     'neustart':     'rotate-cw',
     'herunterladen': 'download',
-    'zurueck':      'undo-2',            # auf eine ältere Fassung zurück
+    'zurueck':      'undo-2',            # auf eine ältere Version zurück
 }
 
 ZEILEN_SYMBOLE = {
@@ -198,7 +198,7 @@ ZEILEN_SYMBOLE = {
     # ⚠ Steht **auch** unter KNOPF_SYMBOLE. Das Kreuz schließt nicht nur
     # Fenster (groß, in der Leiste), sondern auch Kästen mitten auf einer
     # Seite (klein, in der Zeile) — etwa den Herkunftskasten der Bauplan-
-    # Liste. Fehlte die kleine Fassung, blieb dort eine leere Lücke statt
+    # Liste. Fehlte die kleine Version, blieb dort eine leere Lücke statt
     # eines Kreuzes; gemeldet von der Autor am 27.08.2026.
     'schliessen':   'x',
 }

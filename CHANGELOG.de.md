@@ -10,6 +10,42 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc68 - 2026-08-27
+
+> **Der Update-Knopf steht da, wo man ihn sucht** — und „Fassung" heißt jetzt
+> überall „Version".
+
+### Geändert
+
+- **Der Knopf „Jetzt die neueste Version holen" steht ganz oben**, direkt unter
+  der Versionskarte. Vorher kam er erst nach der Knopfreihe und dem
+  Tagesschalter und lag bei der Mindestgröße des Fensters **unterhalb der
+  Kante** — wer ihn nicht findet, updatet nicht. Gemeldet von **der Autor**.
+  - Das Fenster größer zu machen wäre die falsche Antwort gewesen: Auf einem
+    1366×768-Laptop passt es dann gar nicht mehr. Der wichtigste Knopf gehört
+    nach oben, nicht das Fenster in die Höhe.
+- **Auch die beiden Kanal-Kästen sind bei der Mindestgröße vollständig
+  sichtbar** — in ihnen sitzt der Knopf, mit dem man gezielt die stabile Version
+  holt. Der Tagesschalter steht dafür jetzt darunter; er ist eine
+  Nebeneinstellung, die Kästen sind der Zweck der Seite. Gemeldet von
+  **der Autor**.
+- **„Nur fertige Fassungen" heißt jetzt „Stabile Version".** „Fertig" klingt nach
+  abgeschlossen — das Werkzeug wird laufend weiterentwickelt. Vorgeschlagen von
+  **der Autor**.
+- **„Fassung" heißt überall „Version".** Ein sperriges Wort, das sonst niemand
+  benutzt; in der Oberfläche, in der Anleitung und in den Kommentaren steht jetzt
+  durchgehend „Version". Einzige Ausnahme ist die **Sprachfassung** — damit ist
+  die Übersetzung gemeint, nicht die Programmversion. Vorgeschlagen von
+  **der Autor**.
+- **„rcXX ist schon da" heißt jetzt „rcXX ist schon installiert"** — klarer, und
+  im Englischen stand es längst so. Gemeldet von **der Autor**.
+
+### Dank
+
+- **der Autor** — fürs Hinsehen mit den Augen eines Nutzers, während er das
+  Werkzeug jemandem vorführte. Alle fünf Punkte dieser Version stammen daher.
+
+
 ## v3.0.0-rc67 - 2026-08-27
 
 > **Der Neustart nach dem Update funktioniert unter Linux** — und kann nicht mehr
@@ -18,21 +54,21 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 ### Behoben
 
 - **Nach dem Update ging der Watcher aus und kam nicht wieder.** Er lud die neue
-  Fassung, spielte sie ein, schloss sich — und blieb zu. Gemeldet von **Bomb20**
+  Version, spielte sie ein, schloss sich — und blieb zu. Gemeldet von **Bomb20**
   (pr0citizen) mit dem entscheidenden Satz „es geht dann aus aber startet nicht",
   am selben Tag von **der Autor** auf seinem Rechner reproduziert.
-  - **Die Ursache:** Beim Start der neuen Fassung wurden nur `APPIMAGE`, `APPDIR`,
+  - **Die Ursache:** Beim Start der neuen Version wurden nur `APPIMAGE`, `APPDIR`,
     `OWD` und `ARGV0` aus der Umgebung entfernt — `LD_LIBRARY_PATH`, `PYTHONHOME`
     und `PYTHONPATH` blieben stehen. Die zeigen im AppImage in den **entpackten
-    Mount der alten Fassung**. Zwei Sekunden später beendet sich die alte, ihr
+    Mount der alten Version**. Zwei Sekunden später beendet sich die alte, ihr
     Mount verschwindet, und die neue sucht ihre Bibliotheken in einem Verzeichnis,
     das es nicht mehr gibt. Sie stirbt, bevor ein Fenster erscheint.
   - Die passende Wäsche gab es längst (`saubere_umgebung`), nur führte der
-    Neustart eine eigene, unvollständige Fassung davon mit. Beide liegen jetzt in
+    Neustart eine eigene, unvollständige Version davon mit. Beide liegen jetzt in
     `scbp/pfade.py` — **eine** Wäsche, benutzt von allen.
-- **Und er kann nicht mehr stumm scheitern.** Die alte Fassung tritt erst ab,
+- **Und er kann nicht mehr stumm scheitern.** Die alte Version tritt erst ab,
   wenn die neue die ersten Sekunden überlebt hat. Stirbt sie, bleibt der Watcher
-  offen und sagt es: „Die neue Fassung ist nicht hochgekommen." Vorher schloss
+  offen und sagt es: „Die neue Version ist nicht hochgekommen." Vorher schloss
   sich die alte pflichtschuldig, während die neue schon tot war — und der Rechner
   stand ohne Watcher da, ohne ein Wort dazu.
   - Dahinter derselbe Merksatz wie beim Startknopf in rc65: **Ein Programm zu
@@ -67,12 +103,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
     Hand speichert, hält bewusst einen Stand fest.
   - **Früher abgelegte Dateien mit Datum wandern nach `Ältere/`** — verschoben,
     nicht gelöscht. Was sonst noch im Ordner liegt, bleibt unangetastet.
-- **Ein Speichern-Knopf je Fassung**, direkt an der Fassung, statt eines
+- **Ein Speichern-Knopf je Version**, direkt an der Version, statt eines
   gemeinsamen Knopfes weiter unten.
 
 ### Behoben
 
-- **„Einzeln speichern …" speicherte immer die Basetool-Fassung.** Die Fassung
+- **„Einzeln speichern …" speicherte immer die Basetool-Version.** Die Version
   war im Code fest verdrahtet; scmdb und die Vollsicherung waren über den Dialog
   überhaupt nicht erreichbar. Gemeldet von **der Autor**.
 - **Die Dateiauswahl unter Linux war der alte Tk-Kasten** — eine Spaltenliste mit
@@ -91,7 +127,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 - **der Autor** — für die Beobachtungen beim Vorführen des Werkzeugs: dass die
   Ausgabe-Dateien nicht mitgeschrieben werden, dass „Einzeln speichern" nur eine
-  Fassung kann und dass die Dateiauswahl unter Linux aussieht wie aus den
+  Version kann und dass die Dateiauswahl unter Linux aussieht wie aus den
   Neunzigern.
 
 ## v3.0.0-rc65 - 2026-08-27
@@ -129,7 +165,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 - **„Auf Aktualität prüfen" meldete weiterhin kein Ergebnis.** Der Fehler aus
   rc63 war weg, die Antwort kam trotzdem nicht: Der Knopf blieb bei „Suche nach
-  einer neuen Fassung …" stehen. `neu_aufbauen()` zerstört **alle** Kinder des
+  einer neuen Version …" stehen. `neu_aufbauen()` zerstört **alle** Kinder des
   Fensters — auch die Fußzeile, in der die Meldung steht. Sie wurde gesetzt und
   Millisekunden später mitzerstört. Jetzt wird erst aufgebaut, dann gemeldet.
   Gemeldet von der Autor.
@@ -179,9 +215,9 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **„Auf Aktualität prüfen" antwortete mit `name 'datei' is not defined`.**
   Im Knopf stand nicht das Nachsehen, sondern der **Holen**-Ablauf: herunter-
   laden, einspielen, abtreten — mit zwei Variablen, die es in dieser Funktion
-  nie gab. Egal ob eine neue Fassung da war oder nicht, unten stand „Das hat
+  nie gab. Egal ob eine neue Version da war oder nicht, unten stand „Das hat
   nicht geklappt". Jetzt meldet der Knopf wieder, was er findet: die gefundene
-  Fassung — oder **„Du hast die neueste Fassung."** Diesen Satz gab es die
+  Version — oder **„Du hast die neueste Version."** Diesen Satz gab es die
   ganze Zeit, ihn zeigte nur niemand. Gemeldet von der Autor.
 
 - **Der Hinweis vor dem Update kam bei keinem einzigen Update.** Seit rc52 soll
@@ -250,7 +286,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 - **Die Release-Meldung im Discord ist jetzt eine lesbare Karte.** Statt
   `[Repo] New release published: v3.0.0-rc60` steht dort der Changelog-Abschnitt
-  **dieser** Fassung — derselbe Text wie im Werkzeug unter „Was ist neu".
+  **dieser** Version — derselbe Text wie im Werkzeug unter „Was ist neu".
   Testfassungen in Gold mit dem Hinweis „weniger lange erprobt", fertige in
   Xharig-Grün, dazu das Programmsymbol. Angeregt von der Autor nach dem Vergleich
   mit dem StarStrings-Kanal. Ohne hinterlegten Schlüssel passiert nichts und der
@@ -335,7 +371,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   und ist unter Spielern gängig — dagegen sprach, dass jeder andere Reiter der
   Leiste deutsch ist und ein einzelner Anglizismus dazwischen auffällt.
   Angestoßen von der Autor.
-- **Auf „Update & Über" steht das Programmsymbol neben der Fassung.** Die Seite
+- **Auf „Update & Über" steht das Programmsymbol neben der Version.** Die Seite
   hatte gar kein Bild mehr, seit der Autor-Block auf „Danke & Lizenzen" gewandert
   ist. Gemeldet von der Autor.
 
@@ -465,7 +501,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Das Overlay kann sich zurückhalten** und blendet sich nur bei einem Fund ein —
   ein schmaler grüner Streifen bleibt am Rand, die Maus holt es zurück.
 - **Das Selbst-Update funktioniert jetzt auch unter Linux.** Dort scheiterte es
-  bisher **immer**; wer ein AppImage nutzt, musste jede Fassung von Hand holen.
+  bisher **immer**; wer ein AppImage nutzt, musste jede Version von Hand holen.
 - **Star Citizen lässt sich aus dem Werkzeug heraus starten**, und ein
   Diagnose-Bericht sammelt auf Knopfdruck alles, was eine Fehlermeldung braucht —
   ohne Namen und ohne Pfade.
@@ -484,7 +520,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Hast du die `.exe` bisher von Hand irgendwohin gelegt, lösch sie nach der
   Installation.** Das Setup legt das Programm unter
   `%LOCALAPPDATA%\Programs\SC BP Watcher` ab. Die alte Datei bleibt sonst
-  liegen, und irgendwann startest du versehentlich wieder die alte Fassung.
+  liegen, und irgendwann startest du versehentlich wieder die alte Version.
 - **Unter Linux ist nichts zu tun** — das AppImage tauscht sich selbst aus.
 
 ### Hinzugefügt
@@ -520,18 +556,18 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   man das Programm dafür neu starten, und das verlangt kein anderes Overlay.
 
 - **Neustart direkt nach dem Update.** Bisher hieß es „beim nächsten Start läuft die neue
-  Fassung" — man musste selbst beenden und wieder starten. Jetzt wird der Holen-Knopf nach
+  Version" — man musste selbst beenden und wieder starten. Jetzt wird der Holen-Knopf nach
   dem Laden zu **„⟳ Jetzt neu starten"**. Der Einzelinstanz-Wächter wird dabei zuerst
-  geschlossen, sonst hielte sich die neue Fassung für die zweite und beendete sich sofort.
+  geschlossen, sonst hielte sich die neue Version für die zweite und beendete sich sofort.
 
 - **Startverlauf im Diagnose-Bericht.** Ein Absturz beendet das Programm sofort — kein
   Fehlerbericht wird mehr geschrieben, und es bleibt nur „es stürzt ab". Jeder Startschritt
   wird jetzt sofort auf die Platte geschrieben; die letzte Zeile im Bericht sagt, wie weit
   es kam.
 
-- **Fassung holen, direkt aus dem Fenster.** Unter jeder der beiden Karten („Nur fertige
-  Fassungen" / „Auch Testfassungen") steht ein Knopf über die volle Breite, der die letzte
-  Fassung dieses Kanals lädt und einspielt — auch zurück von einer Testfassung auf die
+- **Version holen, direkt aus dem Fenster.** Unter jeder der beiden Karten („Nur fertige
+  Versionen" / „Auch Testfassungen") steht ein Knopf über die volle Breite, der die letzte
+  Version dieses Kanals lädt und einspielt — auch zurück von einer Testfassung auf die
   letzte fertige.
 
 - **Eintrag im Startmenü (Linux).** Der Assistent bietet ihn am Ende an, die Einstellungen
@@ -551,7 +587,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   aber keine Klicks mehr ab. Unter Windows über `WS_EX_TRANSPARENT`, unter Linux über die
   XShape-Erweiterung; unter nativem Wayland geht es nicht, und das sagt die Einstellung
   dann auch statt einen wirkungslosen Schalter zu zeigen.
-- **Ein zweiter Programmstart öffnet keine zweite Fassung mehr,** sondern holt die
+- **Ein zweiter Programmstart öffnet keine zweite Version mehr,** sondern holt die
   laufende hervor.
 
 - **Ein Fenster mit Reitern.** Oben die Baupläne, darunter die Einstellungen, ganz unten
@@ -571,7 +607,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Formular; du schreibst nur noch dazu, was passiert ist. Der Bericht enthält keine Namen
   und keine Pfade mit deinem Benutzernamen.
 - **Testfassungen auf Wunsch.** Wer beim Prüfen helfen will, schaltet sie unter *Über*
-  ein und bekommt neue Fassungen vor allen anderen — über dieselbe Update-Meldung.
+  ein und bekommt neue Versionen vor allen anderen — über dieselbe Update-Meldung.
 - **Schriftgröße in vier Stufen**, wirkt auf Schrift, Symbole und Knöpfe zugleich.
 - **Woher Baupläne ohne Auftrag kommen.** 55 Baupläne schüttet kein regulärer Auftrag
   aus — sie stammen aus benannten Töpfen wie XenoThreat, RDC-Boss oder RedWind. Statt
@@ -602,9 +638,9 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   nicht, wonach nachgesehen wird. „Aktualisieren" wäre falsch gewesen — der Knopf
   prüft nur, geholt wird nichts.
 
-- **„Noch keine Fassung bekannt" klang nach einem Fehler.** Der Knopf sagte
+- **„Noch keine Version bekannt" klang nach einem Fehler.** Der Knopf sagte
   nicht, was zu tun ist — jetzt steht dort „Erst oben auf ‚Jetzt nachsehen'
-  drücken". Und der Kasten „Nur fertige Fassungen" trägt den Zusatz
+  drücken". Und der Kasten „Nur fertige Versionen" trägt den Zusatz
   „empfohlen", damit niemand raten muss, was er wählen soll. Beides fiel bei
   Morkhans Test auf.
 
@@ -633,7 +669,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Fenster — und nebenbei ehrlicher als eine unsichtbare Zauberzone: Man sieht, wo das
   Overlay wartet.
 
-- **Der Fehlerbericht sagt, aus welcher Fassung ein Fehler stammt** — und markiert die, die
+- **Der Fehlerbericht sagt, aus welcher Version ein Fehler stammt** — und markiert die, die
   aus einer älteren kommen. Der Speicher hebt die letzten zehn über Programmstarts hinweg
   auf; nach einem Update standen dort Fehler, die längst behoben waren, und der Bericht sah
   aus, als sei alles noch kaputt.
@@ -703,7 +739,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Fensterfunktion. Beim Beenden räumt das Symbol sich jetzt auch wirklich auf:
   Der bisherige Weg durfte von außen gar nicht greifen und lief still ins Leere.
 
-- **Die angezeigte Fassung in „Apps & Features" blieb stehen.** Nachgesehen
+- **Die angezeigte Version in „Apps & Features" blieb stehen.** Nachgesehen
   wurde nur im Benutzerzweig der Registry. Wer beim Installieren „für alle
   Nutzer" gewählt hatte, dessen Eintrag liegt aber im Maschinenzweig — dort
   wurde nie nachgezogen, und Windows zeigte weiter eine Nummer, die es nicht
@@ -726,7 +762,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Das Overlay blieb beim Umschalten auf Englisch deutsch.** Wer die Sprache
   wechselte, bekam ein englisches Fenster und eine deutsche Melde-Leiste:
   „8 Baupläne · Log ✓ · ohne Launcher · geprüft", dazu „Warte auf neue
-  Baupläne …" und der Autostart-Text. Die englischen Fassungen dieser Sätze
+  Baupläne …" und der Autostart-Text. Die englischen Versionen dieser Sätze
   gab es längst — benutzt hat sie niemand, der Code setzte die deutschen
   weiter fest zusammen. Zusätzlich erfuhr das Overlay vom Sprachwechsel
   überhaupt nichts; nur das Einstellungsfenster beschriftete sich neu.
@@ -745,13 +781,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   eine Fundmeldung war nach einem Mausschlenker über das Zeichen weg.
   Gemeldet von der Autor.
 
-- **Das Logo fehlte in der fertigen Fassung.** Auf „Update & Über" lud das
+- **Das Logo fehlte in der fertigen Version.** Auf „Update & Über" lud das
   Programm `assets/xharig.png`, der Bau packte diese Datei aber nie ein — beim
   Start aus dem Quellcode fiel das nie auf, weil sie dort liegt. Gemeldet von
   der Autor, dem es im Bildschirmfoto eines Testers auffiel.
 
 - **Das „ⓘ" am Overlay öffnete ein eigenes Fenster mit eigener Update-Logik** —
-  und in dem fehlte der Neustart-Knopf. Wer darüber ging, lud die neue Fassung
+  und in dem fehlte der Neustart-Knopf. Wer darüber ging, lud die neue Version
   herunter und stand dann vor einem Satz statt vor einem Knopf. Jetzt führt es
   ins Hauptfenster auf „Was ist neu"; der Reiter „Update & Über" liegt daneben.
   **Ein Weg statt zwei.** Gemeldet von Morkhan.
@@ -760,7 +796,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 - **Das Update über das Infofenster kam nie an.** Wer über das grüne „ⓘ" am
   Overlay ging statt über die Einstellungen, bekam nach dem Laden nur den Satz
-  „Beim nächsten Start läuft die neue Fassung" — **und keinen Knopf dafür**.
+  „Beim nächsten Start läuft die neue Version" — **und keinen Knopf dafür**.
   Unter Windows stimmt der Satz zudem nicht: Dort tauscht ein Hilfsskript die
   Datei erst, wenn das Programm beendet ist, und gibt nach zwei Minuten auf. Wer
   weiterspielte, hatte am Ende gar kein Update. Jetzt steht dort derselbe
@@ -795,7 +831,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Minuten Schluss, das Fenster bleibt unsichtbar, und ein schon laufendes
   Hilfsskript wird vorher beendet.
 - **„Jetzt nachsehen" hat nicht nachgesehen.** Der Knopf zeigte die Meldung „Suche nach
-  einer neuen Fassung …" und suchte nicht. Wessen Zwischenspeicher veraltet war, kam damit
+  einer neuen Version …" und suchte nicht. Wessen Zwischenspeicher veraltet war, kam damit
   nicht heraus — ein Tester bekam auf rc18 weiterhin rc12 angeboten. Jetzt wird wirklich
   gefragt, das Ergebnis gesagt und die Anzeige nachgezogen.
 - **Das Selbst-Update ging unter Linux in den Windows-Zweig** und meldete „[Errno 2] No such
@@ -851,12 +887,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Start und „Fensterlage zurücksetzen" setzen es jetzt mittig auf den Hauptbildschirm.
 - **Der Autostart war zwischen Overlay und Einstellungen nicht synchron.** Beide lasen
   ihren Zustand nur beim Zeichnen.
-- **Das Fenster-Icon fehlte in jeder fertigen Fassung** — auf beiden Systemen. Die Datei
+- **Das Fenster-Icon fehlte in jeder fertigen Version** — auf beiden Systemen. Die Datei
   lag zur Laufzeit gar nicht bei.
 
 ### Dank
 
-Diese Fassung ist zu einem großen Teil das Verdienst von zwei Testern, die sich
+Diese Version ist zu einem großen Teil das Verdienst von zwei Testern, die sich
 die Mühe gemacht haben, Fehler nicht nur zu bemerken, sondern sie so genau zu
 beschreiben, dass sie zu finden waren:
 
@@ -935,7 +971,7 @@ Star-Citizen-Installation, mit deutschem **und** englischem Client.
 - **Deutsch und Englisch**, umschaltbar, wirkt sofort.
 - Erklärtexte beim Überfahren jedes Zeichens, einstellbare Durchsichtigkeit (wichtig für
   alle mit nur einem Bildschirm), Signalton, Autostart.
-- **Update-Meldung mit Änderungsprotokoll** — auch für übersprungene Fassungen.
+- **Update-Meldung mit Änderungsprotokoll** — auch für übersprungene Versionen.
 
 ### Verteilung
 
@@ -955,7 +991,7 @@ Star-Citizen-Installation, mit deutschem **und** englischem Client.
 
 Die Bauplan-Angaben beruhen auf den offen veröffentlichten Vertragsdaten des
 **SC-Deutsch-Launcher-Teams** (813 Verträge, deutsch und englisch) und auf **scmdb.net**.
-Ohne beide gäbe es diese Fassung nicht.
+Ohne beide gäbe es diese Version nicht.
 
 ## v2.0.0-rc1 - 2026-08-24
 
@@ -971,11 +1007,11 @@ selbst geführt, und zu den meisten Bauplänen steht dabei, woher man sie bekomm
 ### Hinzugefügt
 
 
-- **Der Watcher findet die Spielsprache selbst heraus.** Die Bauplan-Meldung im Log ist übersetzt; bisher war nur die deutsche Formulierung gemessen, die englischen waren geraten und andere Sprachen gar nicht vorgesehen. Jetzt erschließt er sie aus den eigenen Logs: Er kennt über 700 Bauplan-Namen — steht in einer Logzeile einer davon, ist der Text davor die gesuchte Formulierung. An einer erfundenen französischen Fassung geprüft.
+- **Der Watcher findet die Spielsprache selbst heraus.** Die Bauplan-Meldung im Log ist übersetzt; bisher war nur die deutsche Formulierung gemessen, die englischen waren geraten und andere Sprachen gar nicht vorgesehen. Jetzt erschließt er sie aus den eigenen Logs: Er kennt über 700 Bauplan-Namen — steht in einer Logzeile einer davon, ist der Text davor die gesuchte Formulierung. An einer erfundenen französischen Version geprüft.
   - Verlangt werden **zwei** verschiedene Treffer für dieselbe Formulierung. Bei einem könnte es Zufall sein (ein Bauplan-Name taucht auch in anderen Meldungen auf).
   - Gefundenes landet in `phrasen.json` — derselben Datei, die man auch von Hand pflegen kann. Keine zweite, versteckte Wahrheit.
   - Damit ist das Werkzeug nicht mehr auf die Sprachen angewiesen, die jemand vorher eingetragen hat.
-- **Projektseite auf Englisch und Deutsch**, mit Umschalter oben in beiden Fassungen. **Englisch ist die Hauptseite** (`README.md`), Deutsch liegt daneben (`README.de.md`) — auf GitHub ist das Publikum international, und wer über die Star-Citizen-Foren kommt, sollte nicht erst einen Umschalter suchen müssen. Deutschsprachige Spieler kommen mit Englisch zurecht; umgekehrt gilt das seltener.
+- **Projektseite auf Englisch und Deutsch**, mit Umschalter oben in beiden Versionen. **Englisch ist die Hauptseite** (`README.md`), Deutsch liegt daneben (`README.de.md`) — auf GitHub ist das Publikum international, und wer über die Star-Citizen-Foren kommt, sollte nicht erst einen Umschalter suchen müssen. Deutschsprachige Spieler kommen mit Englisch zurecht; umgekehrt gilt das seltener.
 - **Merkliste per Klick** (`scbp/merkliste.py`). In der Bauplan-Liste macht ein Klick auf den Stern aus jedem Eintrag einen Wunsch — taucht er auf, meldet ihn der Watcher auffällig in Gold. Dafür muss niemand mehr eine `watchlist.json` von Hand anlegen.
   - Eigener Filter **⭐ beobachtet** zeigt, worauf man gerade wartet.
   - **Erfüllte Wünsche verschwinden von selbst.** Landet ein beobachteter Bauplan im Bestand, sagt der Watcher einmal Bescheid und trägt ihn aus — eine Liste voller längst erledigter Wünsche wäre keine Merkliste, sondern ein Archiv.
@@ -984,7 +1020,7 @@ selbst geführt, und zu den meisten Bauplänen steht dabei, woher man sie bekomm
   - Das AppImage wird **in einem Ubuntu-22.04-Container** gebaut (glibc 2.35). Auf neuerem glibc gebaut, würde es auf verbreiteten Systemen gar nicht erst starten.
   - Der Bau bricht ab, wenn Tag und `__version__` nicht zusammenpassen. Wer „v2.0.0" lädt, soll im Fenster nicht etwas anderes lesen.
   - Niemand baut mehr selbst — weder die Nutzer noch der Autor.
-- **Neue Fassungen werden gemeldet und lassen sich nachlesen** (`scbp/aktualisierung.py`, `scbp/versionsfenster.py`). Das Werkzeug sieht höchstens einmal am Tag nach; gibt es etwas Neues, färbt sich ⓘ in der Titelleiste. Dahinter liegt die Versionsgeschichte — **auch für ältere Fassungen**, damit man nachlesen kann, was man übersprungen hat.
+- **Neue Versionen werden gemeldet und lassen sich nachlesen** (`scbp/aktualisierung.py`, `scbp/versionsfenster.py`). Das Werkzeug sieht höchstens einmal am Tag nach; gibt es etwas Neues, färbt sich ⓘ in der Titelleiste. Dahinter liegt die Versionsgeschichte — **auch für ältere Versionen**, damit man nachlesen kann, was man übersprungen hat.
   - Geladen wird ausschließlich von `github.com`; eine Datei von woanders wird abgelehnt.
   - Unter Linux ersetzt sich das AppImage selbst, unter Windows übernimmt ein Hilfsskript nach dem Beenden (eine laufende `.exe` kann sich nicht selbst überschreiben). Wer aus dem Quellcode startet, bekommt keinen Selbstersatz angeboten — dort ist `git pull` der richtige Weg.
 - **Prüfintervall und Signalton sind einstellbar** (`pruefintervall_sekunden`, `signalton` in `einstellungen.json`). Grenzen 1–60; eine vertippte `0` wird auf 1 gezogen statt zur Dauerschleife.
@@ -1017,7 +1053,7 @@ selbst geführt, und zu den meisten Bauplänen steht dabei, woher man sie bekomm
 - **Die scmdb-Daten werden weiterhin nicht mitgeliefert** (CC BY-NC-ND), sondern beim Nutzer geholt. `SC_BP_NO_NET=1` schaltet es ab; ohne Katalog fehlt nur die Liste, die Erkennung läuft weiter.
 
 
-- **Läuft unter Linux.** Eine Codebasis für beide Systeme, keine zweite Fassung. Wo die Dateien liegen, entscheidet der neue Baustein `scbp/pfade.py`: unter Windows `%APPDATA%` und `C:\Program Files`, unter Linux `~/.config` und das Wine-Präfix (gesucht wird an den Stellen, an denen lug-helper, Lutris, Bottles und Heroic ihre Installationen ablegen). Eigene Wege gehen über `SC_BP_HOME`, `SC_INSTALL_DIR` und `SC_BP_LAUNCHER`.
+- **Läuft unter Linux.** Eine Codebasis für beide Systeme, keine zweite Version. Wo die Dateien liegen, entscheidet der neue Baustein `scbp/pfade.py`: unter Windows `%APPDATA%` und `C:\Program Files`, unter Linux `~/.config` und das Wine-Präfix (gesucht wird an den Stellen, an denen lug-helper, Lutris, Bottles und Heroic ihre Installationen ablegen). Eigene Wege gehen über `SC_BP_HOME`, `SC_INSTALL_DIR` und `SC_BP_LAUNCHER`.
 - **Eigener Bauplan-Bestand** (`bestand.json` im eigenen Ordner). Jeder Fund wird dauerhaft festgehalten, mit Herkunft (Log, Nachlese, Launcher, von Hand). Geschrieben wird über eine Nebendatei und Umbenennen, damit ein Absturz mitten im Speichern nichts zerreißt; die Vorgängerfassung bleibt als `bestand.bak.json` liegen.
 - **Nachlese beim Start.** Die aufgehobenen Logs vergangener Sitzungen (`logbackups/`) werden durchgesehen und still in den Bestand übernommen — wer ohne laufenden Watcher gespielt hat, verliert nichts mehr. Beim allerersten Start wird auch die **laufende** Game.log von vorn gelesen, sonst wäre ausgerechnet die gerade laufende Sitzung ein Loch.
 - **Ehrlicher Lückenhinweis.** Reichen die vorhandenen Sicherungen nicht bis zum letzten bekannten Stand zurück, sagt der Watcher das als eigene Zeile (ℹ) — statt eine unvollständige Liste als Bestand auszugeben. Dafür gibt es die Liste zum Abhaken.

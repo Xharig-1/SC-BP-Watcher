@@ -3,7 +3,7 @@
 Prueft, ob heute eine Veroeffentlichung faellig ist.
 
 Gedacht fuer den Zeitplan-Ablauf `geplant.yml`, der mittwochs nachsieht. Er darf
-**nicht** blind jede Woche taggen — sonst geht irgendwann eine halbfertige Fassung
+**nicht** blind jede Woche taggen — sonst geht irgendwann eine halbfertige Version
 raus, nur weil Mittwoch ist. Faellig ist eine Version genau dann, wenn alle vier
 Punkte stimmen:
 
@@ -57,7 +57,7 @@ def abschnitt_datum(pfad, nummer):
 
 
 def tag_existiert(tag):
-    """Gibt es den Tag schon? Dann ist die Fassung laengst draussen."""
+    """Gibt es den Tag schon? Dann ist die Version laengst draussen."""
     fertig = subprocess.run(['git', 'tag', '--list', tag],
                             cwd=WURZEL, capture_output=True, text=True)
     return bool(fertig.stdout.strip())

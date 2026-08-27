@@ -935,7 +935,7 @@ def saubere_umgebung():
 
     ⚠ Sie stand jahrelang hier, weil sie hier zuerst gebraucht wurde. Seit die
     Dateiauswahl ein eigenes Modul hat, gehört sie dorthin: Beide brauchen
-    dieselbe Wäsche, und zwei Fassungen davon wären eine zu viel. Die
+    dieselbe Wäsche, und zwei Versionen davon wären eine zu viel. Die
     Weiterleitung bleibt, weil `_ordner_zeigen` und der Spielstart sie hier
     aufrufen.
     """
@@ -1132,9 +1132,9 @@ def _bestand(fenster, rahmen):
     _fliesstext(innen, t('s_be_aus_h'), fenster.f_klein,
                 fill='x', pady=(0, 12))
 
-    # ⚠ Ein Speichern-Knopf **je Fassung**, direkt an der Fassung. Vorher gab es
+    # ⚠ Ein Speichern-Knopf **je Version**, direkt an der Version. Vorher gab es
     # nur einen gemeinsamen Knopf „Einzeln speichern …", und der schrieb immer
-    # die Basetool-Fassung. Wer beim Vorführen scmdb einzeln speichern wollte,
+    # die Basetool-Version. Wer beim Vorführen scmdb einzeln speichern wollte,
     # suchte vergeblich — es gab den Weg schlicht nicht.
     karte = _karte(innen)
     for art, name, wofuer in (('basetool', 'KRT Profit Basetool',
@@ -1168,11 +1168,11 @@ def _bestand(fenster, rahmen):
             fenster.sagen(t('s_be_schiefging'))
 
     def einzeln(art):
-        """Eine einzelne Fassung speichern — die, an deren Zeile der Knopf steht.
+        """Eine einzelne Version speichern — die, an deren Zeile der Knopf steht.
 
         ⚠ Hier stand `art='basetool'` **fest verdrahtet**, während der Knopf
         „Einzeln speichern …" hieß. Wer scmdb oder die Vollsicherung einzeln
-        wollte, bekam wortlos die Basetool-Fassung; über den Dialog waren die
+        wollte, bekam wortlos die Basetool-Version; über den Dialog waren die
         anderen beiden gar nicht erreichbar. Gemeldet von der Autor am
         27.08.2026 („bei einzeln speichern speichert er nur basetool").
         """
@@ -1302,7 +1302,7 @@ def _vorschau_zeigen(fenster, eltern, art, eintraege, v):
 def _wasistneu(fenster, rahmen):
     """Die Änderungen — als Reiter, nicht als Fenster über dem Fenster.
 
-    Zwei Dinge halten die Seite kurz, auch wenn zwanzig Fassungen zusammenkommen:
+    Zwei Dinge halten die Seite kurz, auch wenn zwanzig Versionen zusammenkommen:
     Nur die **neueste** ist aufgeklappt, und ein Filter zeigt bei Bedarf nur
     Behobenes. Wer einen Fehler gemeldet hat, sucht genau danach.
     """
@@ -1334,7 +1334,7 @@ def _wasistneu(fenster, rahmen):
             if not punkte:
                 continue
             gezeigt += 1
-            # Nur die neueste Fassung offen; ältere sind einen Klick entfernt.
+            # Nur die neueste Version offen; ältere sind einen Klick entfernt.
             offen = (nummer == 0) or stand['art'] != 'alle'
             _fassung(fenster, behaelter, e, punkte, offen)
         if not gezeigt:
@@ -1390,7 +1390,7 @@ def _art_wort(art):
 
 
 def _fassung(fenster, eltern, eintrag, punkte, offen):
-    """Eine Fassung mit Kopfzeile zum Auf- und Zuklappen."""
+    """Eine Version mit Kopfzeile zum Auf- und Zuklappen."""
     zustand = {'offen': offen}
     kopf = tk.Frame(eltern, bg=BG, cursor='hand2')
     kopf.pack(fill='x', padx=24, pady=(12, 2))
@@ -1410,7 +1410,7 @@ def _fassung(fenster, eltern, eintrag, punkte, offen):
         koerper.pack(fill='x')
 
     from .hauptfenster import marke
-    # Der Vorstellungssatz der Fassung steht **hier**, unter ihrer Überschrift —
+    # Der Vorstellungssatz der Version steht **hier**, unter ihrer Überschrift —
     # nicht irgendwo am Seitenende. Wer eine Version aufklappt, will zuerst wissen,
     # worum es ging, und dann die Einzelheiten.
     from . import aktualisierung as _akt
@@ -1480,8 +1480,8 @@ def _fassung(fenster, eltern, eintrag, punkte, offen):
         if zustand['offen']:
             # ⚠ `after=kopf` ist der ganze Witz. Ohne das packt Tk den Inhalt ans
             # **Ende** der Fläche — also unter alle anderen Versionen. Bei elf
-            # Fassungen klappte man v3.0.0 auf und der Text erschien unterhalb von
-            # v1.0.0; wer nicht weit genug rollt, hält die Fassung für leer. Beim
+            # Versionen klappte man v3.0.0 auf und der Text erschien unterhalb von
+            # v1.0.0; wer nicht weit genug rollt, hält die Version für leer. Beim
             # ersten Zeichnen fiel das nicht auf, weil dort Kopf und Inhalt
             # ohnehin nacheinander gepackt werden.
             koerper.pack(fill='x', after=kopf)
@@ -1531,14 +1531,14 @@ def _jetzt_nachsehen(fenster):
 
     ⚠ Hier stand nur `fenster.sagen(t('s_ub_sucht'))` — der Knopf **meldete**, dass
     er sucht, und suchte nicht. Ein Nutzer (Bomb20, 25.08.2026) hatte deshalb auf
-    rc18 weiterhin rc12 als neueste Fassung angeboten bekommen: Sein
+    rc18 weiterhin rc12 als neueste Version angeboten bekommen: Sein
     Zwischenspeicher blieb auf dem alten Stand, und der einzige Knopf, der ihn
     hätte auffrischen können, tat nichts.
 
     ⚠ Und danach stand hier zeitweise der **Holen**-Ablauf: herunterladen,
     einspielen, abtreten — mit `datei` und `freigabe`, die es in dieser Funktion
     nie gab. Der Knopf antwortete deshalb mit `name 'datei' is not defined`,
-    egal ob eine neue Fassung da war oder nicht. Gemeldet von der Autor am
+    egal ob eine neue Version da war oder nicht. Gemeldet von der Autor am
     27.08.2026. Nachsehen ist nachsehen: Dieser Knopf lädt nichts.
 
     Läuft im eigenen Faden — die Abfrage geht ins Netz. Gezeichnet wird nur im
@@ -1562,12 +1562,12 @@ def _jetzt_nachsehen(fenster):
             # saemtliche Kinder des Fensters und baut sie neu — auch die
             # Fusszeile, in der `sagen()` schreibt. Stand das `sagen()` davor,
             # existierte die Antwort ein paar Millisekunden und war dann weg:
-            # Der Knopf blieb bei „Suche nach einer neuen Fassung …" stehen und
+            # Der Knopf blieb bei „Suche nach einer neuen Version …" stehen und
             # meldete nie ein Ergebnis. Genau so gemeldet von der Autor am
             # 27.08.2026, direkt nach der Reparatur des `datei`-Fehlers.
             #
             # Der Neuaufbau muss trotzdem sein: Die Kanal-Kaesten tragen die
-            # Fassungsnummern und muessen mitziehen.
+            # Versionsnummern und muessen mitziehen.
             try:
                 fenster.neu_aufbauen()
             except Exception:
@@ -1641,7 +1641,7 @@ def _holen_moeglich(mit_vorab, eigene=''):
     sind gar keine Aufforderung, sondern eine Zustandsmeldung: „v3.0.0-rc41 ist
     schon da" und „Erst oben auf ‚Jetzt nachsehen' druecken". Der Knopf blieb
     trotzdem ein Knopf — wer auf „ist schon da" drueckte, bekam die laufende
-    Fassung noch einmal installiert. der Autor am 26.08.2026: „in dem gruenen
+    Version noch einmal installiert. der Autor am 26.08.2026: „in dem gruenen
     kasten steht aber rc41 ist schon da, wenn man klickt will er auch direkt
     installieren."
 
@@ -1667,7 +1667,7 @@ def _holen_moeglich(mit_vorab, eigene=''):
 
 
 def _holen_text(mit_vorab, eigene=''):
-    """Die Beschriftung des Knopfes — mit der Fassung, die dahinter steckt.
+    """Die Beschriftung des Knopfes — mit der Version, die dahinter steckt.
 
     Aus dem Zwischenspeicher, ohne ins Netz zu gehen: Die Seite soll sofort
     stehen. Kurz darauf frischt `_kanaele_auffrischen` sie auf.
@@ -1675,7 +1675,7 @@ def _holen_text(mit_vorab, eigene=''):
     ⚠ Und sie sagt, **wohin** es geht. „v2.0.0 holen" neben einer laufenden
     v3.0.0-rc15 sieht aus wie ein Update und ist ein Rückschritt — der Autor ist
     am 25.08.2026 genau darauf hereingefallen und stand danach wieder auf rc13.
-    Ist die angebotene Fassung älter, steht das jetzt dabei; ist es dieselbe,
+    Ist die angebotene Version älter, steht das jetzt dabei; ist es dieselbe,
     steht das auch da.
     """
     from . import aktualisierung
@@ -1686,7 +1686,7 @@ def _holen_text(mit_vorab, eigene=''):
     if not freigabe:
         return t('s_ub_holen_keine')
     fassung = freigabe.get('version') or ''
-    # Nach einem geglückten Update ist die neue Fassung auf der Platte, aber der
+    # Nach einem geglückten Update ist die neue Version auf der Platte, aber der
     # laufende Prozess hält noch die alte. Statt „beim nächsten Start" zu sagen,
     # wird der Knopf zum Neustart-Knopf.
     if _BEREIT[0] and _BEREIT[0] == fassung:
@@ -1700,14 +1700,14 @@ def _holen_text(mit_vorab, eigene=''):
     return t('s_ub_holen') % fassung
 
 
-# Welche Fassung geholt und eingespielt wurde und nur noch einen Neustart braucht.
+# Welche Version geholt und eingespielt wurde und nur noch einen Neustart braucht.
 _BEREIT = [None]
 
 
 def _nach_neustart_abtreten(fenster):
-    """Erst nachsehen, ob die neue Fassung lebt — dann erst selbst gehen.
+    """Erst nachsehen, ob die neue Version lebt — dann erst selbst gehen.
 
-    ⚠ Vorher trat die alte Fassung **sofort** ab. War die neue schon tot (unter
+    ⚠ Vorher trat die alte Version **sofort** ab. War die neue schon tot (unter
     Linux monatelang der Regelfall, siehe `aktualisierung.neue_fassung_laeuft`),
     stand der Rechner ohne Watcher da, und niemand erfuhr den Grund.
 
@@ -1737,7 +1737,7 @@ def _abtreten(fenster, notausgang=2.0, gleich=400):
 
     ⚠ `quit()` allein reicht nicht: Es beendet die Ereignisschleife, nicht den
     Prozess. Gemeldet als „er schliesst das fenster nicht selbst" (Haldjas,
-    25.08.2026) — die neue Fassung lief, die alte stand daneben. Also der Reihe
+    25.08.2026) — die neue Version lief, die alte stand daneben. Also der Reihe
     nach: Fenster zu, Schleife beenden, und wenn nach zwei Sekunden immer noch
     etwas haengt (ein Faden, ein Overlay), hart raus.
 
@@ -1768,12 +1768,12 @@ def _abtreten(fenster, notausgang=2.0, gleich=400):
 
 
 def _fassung_holen(fenster, mit_vorab):
-    """Die neueste Fassung dieses Kanals holen und einspielen.
+    """Die neueste Version dieses Kanals holen und einspielen.
 
     ⚠ Nicht `nachsehen()` benutzen: Das meldet nur, was **neuer** ist als die
-    laufende Fassung. Wer eine Testfassung fährt und zurück auf die letzte
+    laufende Version. Wer eine Testfassung fährt und zurück auf die letzte
     fertige will, bekäme damit nichts. `neueste()` fragt den Kanal, nicht den
-    Abstand zur eigenen Fassung.
+    Abstand zur eigenen Version.
 
     Heruntergeladen wird in einem eigenen Faden — es sind zwölf Megabyte, und
     das Fenster darf so lange nicht einfrieren.
@@ -1782,7 +1782,7 @@ def _fassung_holen(fenster, mit_vorab):
     from . import aktualisierung
     # ⚠ Erst nachsehen, dann greifen. Die Liste der Freigaben steht im
     # Zwischenspeicher und frischt sich nur einmal am Tag auf — ohne diesen
-    # Schritt holt der Knopf die Fassung von gestern, obwohl heute eine neuere
+    # Schritt holt der Knopf die Version von gestern, obwohl heute eine neuere
     # da ist. Gemessen: Der Knopf bot v3.0.0-rc2 an, während rc7 längst
     # veröffentlicht war.
     try:
@@ -1886,7 +1886,7 @@ def _fassung_holen(fenster, mit_vorab):
                 return
 
             # Linux: Das AppImage ist getauscht, laufen tut aber noch die alte
-            # Fassung. Hier bleibt der zweite Klick sinnvoll — er beendet und
+            # Version. Hier bleibt der zweite Klick sinnvoll — er beendet und
             # startet neu.
             # ⚠ Dieselbe Reihenfolge wie oben: erst zeichnen, dann melden.
             # Der Neuaufbau macht aus „holen" ein „Jetzt neu starten" — er
@@ -2568,7 +2568,7 @@ def _danke(fenster, rahmen):
     Datei tief in der entpackten `.exe` erfüllt das formal, findet aber niemand.
 
     Ein **eigener Reiter** statt eines Abschnitts auf „Update & Über": Die Seite
-    dort ist mit Fassung, Katalogzahlen, Update-Kanal und Holen-Knopf schon voll,
+    dort ist mit Version, Katalogzahlen, Update-Kanal und Holen-Knopf schon voll,
     und wem was gehört, hat mit Updates nichts zu tun. der Autor am 27.08.2026:
     „fremdleistungen gehören doch als eigener tab ehr in info oder?"
     """
@@ -2706,19 +2706,6 @@ def _ueber(fenster, rahmen):
                uebersicht.get('app_ordner') or '—')
     tk.Frame(karte, bg=FLAECHE, height=10).pack()
 
-    reihe = tk.Frame(innen, bg=BG)
-    reihe.pack(fill='x', pady=(10, 4))
-    _knopfreihe(reihe, [
-        _knopf(fenster, reihe, t('s_ub_nachsehen'),
-               lambda: _jetzt_nachsehen(fenster), stark=True),
-        _knopf(fenster, reihe, t('hf_wasistneu'),
-               lambda: fenster.oeffnen('wasistneu')),
-        _knopf(fenster, reihe, t('s_ub_einrichtung'), fenster._einrichtung),
-    ])
-
-    ziel = _feld(fenster, innen, t('s_ub_taeglich'), t('s_ub_taeglich_h'))
-    _schalter(fenster, ziel, 'update_pruefen', True)
-
     # --- Einmal holen, ohne etwas umzustellen ---
     #
     # ⚠ Der häufigste Wunsch ist der einfachste: „gib mir die neueste, egal
@@ -2726,14 +2713,31 @@ def _ueber(fenster, rahmen):
     # den richtigen Kasten anklicken. Morkhan am 26.08.2026 dazu: „das ist
     # verwirrend" — er hatte den falschen gewählt und bekam gar nichts.
     #
-    # Dieser Knopf beantwortet den Wunsch direkt, ohne dass jemand eine
-    # Entscheidung treffen muss, die er nicht treffen will. Die Kästen darunter
-    # bleiben für alle, die es genauer steuern wollen.
+    # ⚠ **Und er steht ganz oben, direkt unter der Versionskarte.** Vorher kam er
+    # erst nach der Knopfreihe und dem Tagesschalter — bei der Mindestgröße des
+    # Fensters lag er damit **unterhalb der Kante**. der Autor am 27.08.2026:
+    # „das nervt User, weil die den Button zum Updaten nicht sofort finden."
+    # Das Fenster größer zu machen wäre die falsche Antwort gewesen: Auf einem
+    # 1366×768-Laptop passt es dann gar nicht mehr. Der wichtigste Knopf gehört
+    # nach oben, nicht das Fenster in die Höhe.
     _fliesstext(innen, t('s_up_sofort_h'), fenster.f_klein,
-                pady=(14, 6))
+                pady=(10, 6))
     _knopf(fenster, innen, t('s_up_sofort'),
            lambda: _fassung_holen(fenster, True),
-           stark=True).pack(fill='x', pady=(0, 6))
+           stark=True).pack(fill='x', pady=(0, 10))
+
+    reihe = tk.Frame(innen, bg=BG)
+    reihe.pack(fill='x', pady=(4, 4))
+    _knopfreihe(reihe, [
+        # ⚠ Nicht mehr "stark": Der hervorgehobene Knopf der Seite ist jetzt
+        # der Hol-Knopf darüber. Zwei starke Knöpfe nebeneinander heben sich
+        # gegenseitig auf — dann sticht keiner mehr hervor.
+        _knopf(fenster, reihe, t('s_ub_nachsehen'),
+               lambda: _jetzt_nachsehen(fenster)),
+        _knopf(fenster, reihe, t('hf_wasistneu'),
+               lambda: fenster.oeffnen('wasistneu')),
+        _knopf(fenster, reihe, t('s_ub_einrichtung'), fenster._einrichtung),
+    ])
 
     # --- Testkanal: zwei Kästen statt eines Schalters ---
     tk.Label(innen, text=t('s_ub_kanal'), bg=BG, fg=FG,
@@ -2781,10 +2785,19 @@ def _ueber(fenster, rahmen):
         # sofort steht. Der frischt sich aber nur einmal am Tag auf — auf einem
         # Bildschirmfoto vom 25.08.2026 bot der Knopf „v3.0.0-rc9 holen" an,
         # während rc12 lief und rc13 schon draußen war. Der Knopf holt zwar die
-        # richtige Fassung (er sieht vorher nach), aber was draufsteht, führt in
+        # richtige Version (er sieht vorher nach), aber was draufsteht, führt in
         # die Irre. Deshalb einmal im Hintergrund nachsehen und die Kästen neu
         # zeichnen, wenn sich etwas geändert hat.
         _kanaele_auffrischen(fenster, kaesten, kanal_zeichnen)
+
+    # ⚠ Der Tagesschalter steht **hinter** den Kanal-Kästen, nicht davor. Davor
+    # drückte er die Kästen bei der Mindestgröße des Fensters unter die Kante —
+    # und in ihnen sitzt der Knopf, mit dem man die stabile Version holt.
+    # der Autor am 27.08.2026: „bei der stable version dann bitte auch."
+    # Der Schalter ist eine Nebeneinstellung, die Kästen sind der Zweck der
+    # Seite; also gehören sie nach oben.
+    ziel = _feld(fenster, innen, t('s_ub_taeglich'), t('s_ub_taeglich_h'))
+    _schalter(fenster, ziel, 'update_pruefen', True)
 
     def kanal_pruefen(_=None):
         """Nur neu bauen, wenn die Anordnung wirklich kippt — sonst flackert es."""

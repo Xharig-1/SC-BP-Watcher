@@ -155,7 +155,7 @@ def vollstaendig(bestand=None, katalog=None):
 
 
 def schreiben(pfad, art='basetool', bestand=None, katalog=None, version=''):
-    """Eine Fassung in eine Datei schreiben. (Erfolg, Meldung)."""
+    """Eine Version in eine Datei schreiben. (Erfolg, Meldung)."""
     try:
         if art == 'basetool':
             doc = fuer_basetool(bestand)
@@ -244,7 +244,7 @@ def _altbestand_wegraeumen(ordner):
         voll = os.path.join(ordner, datei)
         if not os.path.isfile(voll):
             continue
-        # Nur die alten, datierten Fassungen: Anfang und Endung wie bei uns,
+        # Nur die alten, datierten Versionen: Anfang und Endung wie bei uns,
         # aber länger als der feste Name — das Datum steckt dazwischen.
         for anfang, endung in muster:
             if (datei.startswith(anfang) and datei.endswith(endung)
@@ -268,10 +268,10 @@ def _altbestand_wegraeumen(ordner):
 
 
 def ablegen(bestand=None, katalog=None, version=''):
-    """**Alle** Fassungen auf einmal in die Ablage schreiben.
+    """**Alle** Versionen auf einmal in die Ablage schreiben.
 
     Gibt (Erfolg, Ordner, Liste der Dateien) zurück. Ein Fehler bei einer
-    Fassung lässt die anderen nicht ausfallen — lieber zwei von drei Dateien
+    Version lässt die anderen nicht ausfallen — lieber zwei von drei Dateien
     als gar keine."""
     ordner = ablage_ordner()
     _altbestand_wegraeumen(ordner)

@@ -4,7 +4,7 @@ Baut aus dem CHANGELOG die **Versionsmeldung fürs Discord**.
 
 Zum Projekt gehoert ein eigenes Discord, das wie ein Forum aufgebaut ist: ein Kanal
 nur für Versionsmeldungen, daneben Kanäle für Fragen und Fehlermeldungen. Der
-Meldungs-Kanal soll sauber bleiben — eine Nachricht je Fassung, immer gleich
+Meldungs-Kanal soll sauber bleiben — eine Nachricht je Version, immer gleich
 aufgebaut, ohne Diskussion dazwischen.
 
 Warum ein Skript und keine Handarbeit: Der CHANGELOG-Eintrag ist zu lang und zu
@@ -60,7 +60,7 @@ def bauen(tag, sprache='de'):
     punkte = punkte_aus(block)[:PUNKTE]
     if sprache == 'de':
         kopf = '## SC BP Watcher %s ist da' % tag
-        rest = ('Was diese Fassung bringt:' if punkte else '')
+        rest = ('Was diese Version bringt:' if punkte else '')
         fuss = ('\n**Herunterladen:** <%s/releases/latest>\n'
                 'Fehler gefunden oder eine Frage? Ab damit in die passenden Kanäle — '
                 'hier bleibt es bei den Versionsmeldungen.' % REPO)

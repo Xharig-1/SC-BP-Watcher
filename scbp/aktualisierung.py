@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-Neue Fassungen bemerken, nachlesen und holen.
+Neue Versionen bemerken, nachlesen und holen.
 
 Niemand geht regelmäßig auf GitHub nachsehen, ob es etwas Neues gibt. Also
-schaut das Programm selbst nach, sagt Bescheid und holt die neue Fassung auf
+schaut das Programm selbst nach, sagt Bescheid und holt die neue Version auf
 Knopfdruck. Und weil „es gibt eine neue Version" allein nichts wert ist, kann
-man **nachlesen, was sich geändert hat** — auch bei älteren Fassungen.
+man **nachlesen, was sich geändert hat** — auch bei älteren Versionen.
 
 Drei Teile:
 
@@ -63,7 +63,7 @@ KENNUNG = 'SC-BP-Watcher (+https://github.com/%s)' % REPO
 CACHE = 'versionen.json'
 # Wie lange ein Blick auf GitHub gilt. Früher standen hier 24 Stunden — „einmal
 # am Tag reicht". Tut es nicht: Wer das Programm mehrmals startet, bekam beim
-# zweiten Mal nichts mehr zu sehen, obwohl inzwischen eine neue Fassung
+# zweiten Mal nichts mehr zu sehen, obwohl inzwischen eine neue Version
 # vorlag. Gemeldet am 24.08.2026, an einem Tag mit zehn Vorabversionen.
 #
 # Eine Stunde ist der Kompromiss: Beim Starten wird praktisch immer nachgesehen,
@@ -101,11 +101,11 @@ def ist_neuer(fremd, eigen):
     a, b = _teile(fremd), _teile(eigen)
     if a != b:
         return a > b
-    # Gleiche Zahl: Eine Fassung mit Zusatz (-dev, -rc1, -beta) gilt als älter
+    # Gleiche Zahl: Eine Version mit Zusatz (-dev, -rc1, -beta) gilt als älter
     # als dieselbe Zahl ohne. Wer 2.0.0-rc1 fährt, soll 2.0.0 angeboten bekommen.
     va, vb = _vorab(fremd), _vorab(eigen)
     if va != vb:
-        return vb           # nur die fertige Fassung ist neuer
+        return vb           # nur die fertige Version ist neuer
     if not va:
         return False        # beide fertig und gleiche Zahl
     # Beide Vorabversionen: nach der Nummer dahinter (rc1 < rc2 < rc10)
@@ -171,11 +171,11 @@ def nachsehen(eigene_version, erzwingen=False):
     #
     #   1. Der Spieler hat es in den Einstellungen ausdrücklich verlangt
     #      (`vorabversionen`, Standard aus). Das ist der Testkanal: Wer mithelfen
-    #      will, bekommt die Fassungen vor allen anderen — wer Ruhe will, merkt
-    #      von ihnen nichts und bleibt auf den fertigen Fassungen.
+    #      will, bekommt die Versionen vor allen anderen — wer Ruhe will, merkt
+    #      von ihnen nichts und bleibt auf den fertigen Versionen.
     #   2. Er fährt selbst schon eine Vorabfassung; dann wäre es unsinnig, ihm
     #      die nächste zu verschweigen.
-    #   3. Die fertige Fassung zur selben Nummer erscheint — die ist ohnehin
+    #   3. Die fertige Version zur selben Nummer erscheint — die ist ohnehin
     #      "neuer" als jede Vorabfassung (siehe `ist_neuer`), also endet der
     #      Testkanal nie in einer Sackgasse.
     eigene_ist_vorab = (_vorab(eigene_version)
@@ -183,7 +183,7 @@ def nachsehen(eigene_version, erzwingen=False):
     # ⚠ **Nicht** den ersten Treffer nehmen, sondern den höchsten.
     # GitHub gibt die Freigaben nach Erstellungszeit des Tags zurück, nicht nach
     # Versionsnummer — und das ist nicht dasselbe: In der Liste stand `rc10`
-    # hinter `rc9`, weshalb Nutzern die **vorletzte** Fassung als „neu" gemeldet
+    # hinter `rc9`, weshalb Nutzern die **vorletzte** Version als „neu" gemeldet
     # wurde. Gemeldet am 24.08.2026.
     bester = None
     for f in zwischen.get('freigaben') or []:
@@ -199,11 +199,11 @@ def nachsehen(eigene_version, erzwingen=False):
 
 
 def neueste(mit_vorab):
-    """Die neueste bekannte Freigabe eines Kanals — unabhängig von der eigenen Fassung.
+    """Die neueste bekannte Freigabe eines Kanals — unabhängig von der eigenen Version.
 
     ⚠ Nicht dasselbe wie `nachsehen()`. Das meldet nur, was **neuer** ist als die
-    laufende Fassung — richtig für eine Update-Meldung, unbrauchbar für einen
-    Knopf „hol mir die letzte fertige Fassung". Wer eine Testfassung fährt, will
+    laufende Version — richtig für eine Update-Meldung, unbrauchbar für einen
+    Knopf „hol mir die letzte fertige Version". Wer eine Testfassung fährt, will
     ja gerade zurück auf die fertige können.
     """
     bester = None
@@ -250,7 +250,7 @@ def _changelog_datei():
 
 
 # Welche Überschrift im CHANGELOG bedeutet was. Die Zuordnung ist bewusst
-# großzügig — englische wie deutsche Fassung, und wer eine neue Überschrift
+# großzügig — englische wie deutsche Version, und wer eine neue Überschrift
 # erfindet, landet unter „neu" statt im Nichts.
 _ARTEN = (
     ('fix',  ('behoben', 'fixed', 'korrigiert', 'bugfix')),
@@ -261,10 +261,10 @@ _ARTEN = (
 
 
 def einleitung(text):
-    """Der Satz, mit dem eine Fassung vorgestellt wird — das Zitat im Changelog.
+    """Der Satz, mit dem eine Version vorgestellt wird — das Zitat im Changelog.
 
     Im Markdown steht er als `> …`-Block über den Aufzählungen: „Ein Fenster für
-    alles." Er sagt in einem Satz, worum es in der Fassung ging, und war bisher
+    alles." Er sagt in einem Satz, worum es in der Version ging, und war bisher
     nirgends zu sehen — `punkte_nach_art` wirft alles weg, was keine Aufzählung
     ist. Genau dieser Satz gehört aber unter die Version, wenn man sie aufklappt.
     """
@@ -321,7 +321,7 @@ def protokoll():
 
     Zusammengesetzt aus zwei Quellen: der **mitgelieferten** `CHANGELOG.de.md`
     bzw. `CHANGELOG.md` — je nach eingestellter Sprache — und den Release-Texten
-    von GitHub, die auch Fassungen kennen, die neuer sind als die eigene.
+    von GitHub, die auch Versionen kennen, die neuer sind als die eigene.
 
     ⚠ Der mitgelieferte Changelog hat Vorrang, **weil nur er die Sprache kennt**.
     Der Release-Text auf GitHub ist bewusst zweisprachig aufgebaut: Englisch oben,
@@ -329,7 +329,7 @@ def protokoll():
     richtig — im Fenster wurde daraus eine englische Liste für jemanden, der die
     Oberfläche auf Deutsch stehen hat. Genau so gemeldet.
 
-    GitHub springt nur dort ein, wo der Changelog nichts hat: bei Fassungen, die
+    GitHub springt nur dort ein, wo der Changelog nichts hat: bei Versionen, die
     neuer sind als die eigene.
     """
     eintraege, gesehen = [], {}
@@ -358,7 +358,7 @@ def protokoll():
             eintraege.append(eintrag)
 
     # Und nun alles, was der mitgelieferte Changelog noch nicht kennt — das sind
-    # die Fassungen, die nach dieser hier erschienen sind.
+    # die Versionen, die nach dieser hier erschienen sind.
     for f in freigaben():
         schluessel = _teile(f.get('version'))
         if schluessel in gesehen or not f.get('version'):
@@ -479,7 +479,7 @@ def _url_ok(url):
 
 
 def _ablageort_fuer_update(name):
-    """Wohin die neue Fassung geladen wird.
+    """Wohin die neue Version geladen wird.
 
     **Windows** — in den Temp-Ordner. Geholt wird dort ein Installer, der nur
     einmal gestartet und danach nie wieder gebraucht wird; Windows räumt den
@@ -511,10 +511,10 @@ def _ablageort_fuer_update(name):
 
 
 def herunterladen(datei, fortschritt=None):
-    """Lädt die neue Fassung in eine Nebendatei. Gibt deren Pfad zurück.
+    """Lädt die neue Version in eine Nebendatei. Gibt deren Pfad zurück.
 
     Geladen wird **neben** das laufende Programm, nicht darüber: Bricht die
-    Leitung ab, ist die alte Fassung noch vollständig da."""
+    Leitung ab, ist die alte Version noch vollständig da."""
     url = datei.get('url')
     if not _url_ok(url):
         # ⚠ Der Text dieser Ausnahme landet über `str(fehler)` sichtbar
@@ -560,14 +560,14 @@ def herunterladen(datei, fortschritt=None):
 
 
 # ⚠ Unter Windows übernimmt der Installer auch den **Neustart**. `neu_starten()`
-# darf dann NICHT auch noch starten — sonst kommen zwei Fassungen hoch, und die
+# darf dann NICHT auch noch starten — sonst kommen zwei Versionen hoch, und die
 # zweite legt sich über die Arbeit der ersten. Unter Linux bleibt es beim
 # Tausch, dort startet das Programm sich selbst neu.
 _TAUSCH_LAEUFT = [False]
 
 
 def einspielen(neue_datei):
-    """Die laufende Fassung durch die neue ersetzen.
+    """Die laufende Version durch die neue ersetzen.
 
     Zwei Wege, je nach Verpackung:
 
@@ -637,7 +637,7 @@ def einspielen(neue_datei):
 
         # ⚠ Die Umgebung MUSS gesaeubert werden, das Arbeitsverzeichnis ebenso.
         # Sonst erbt der Installer die PyInstaller-Variablen der laufenden
-        # Fassung und sucht seine Bibliotheken in dem Ordner unter `%TEMP%`, den
+        # Version und sucht seine Bibliotheken in dem Ordner unter `%TEMP%`, den
         # der Bootloader gleich aufraeumen will. Genau diese Falle steht
         # ausfuehrlich bei `neu_starten()`.
         umgebung = dict(os.environ)
@@ -687,7 +687,7 @@ def einspielen(neue_datei):
         # mit lebendem wie mit sterbendem Elternprozess.
         #
         # Ohne Protokoll bleibt in so einem Fall nur Raten — und Raten hat hier
-        # drei Fassungen gekostet. Mit Protokoll beantwortet der nächste
+        # drei Versionen gekostet. Mit Protokoll beantwortet der nächste
         # Fehlerfall die Frage selbst, auch wenn er bei einem Nutzer auftritt,
         # dessen Rechner niemand ansehen kann.
         #
@@ -742,7 +742,7 @@ if __name__ == '__main__':
     eigene = '1.6.0-dev'
     print('Verpackung:', verpackung())
     neu = nachsehen(eigene, erzwingen='--jetzt' in sys.argv)
-    print('Neuere Fassung:', (neu or {}).get('version') or 'keine')
+    print('Neuere Version:', (neu or {}).get('version') or 'keine')
     print('\nÄnderungsprotokoll:')
     for e in protokoll()[:6]:
         kopf = '%s %s' % (e['version'], ('(%s)' % e['datum']) if e['datum'] else '')
@@ -750,7 +750,7 @@ if __name__ == '__main__':
 
 
 # --------------------------------------------------- Eintrag in "Apps & Features"
-# Der Installer trägt die Fassung dort ein. Ersetzt sich das Programm danach
+# Der Installer trägt die Version dort ein. Ersetzt sich das Programm danach
 # selbst, bleibt der Eintrag auf dem alten Stand stehen — Windows zeigt dann
 # eine Nummer, die es gar nicht mehr gibt. Dazu: „Die Versionsanzeige
 # wäre schon wichtig, da User ja sonst nicht sehen ob sie aktuell sind."
@@ -760,13 +760,13 @@ if __name__ == '__main__':
 INNO_KENNUNG = '{7C4B1E93-2A6F-4D58-B0E1-9F3A5C8D2461}_is1'
 
 
-# Die frisch gestartete Fassung. Gebraucht wird sie nur, um **nachzusehen, ob
+# Die frisch gestartete Version. Gebraucht wird sie nur, um **nachzusehen, ob
 # sie noch lebt** — siehe `neue_fassung_laeuft()`.
 _GESTARTET = [None]
 
 
 def neue_fassung_laeuft(wartezeit=3.0):
-    """Lebt die eben gestartete Fassung noch? Erst danach darf die alte gehen.
+    """Lebt die eben gestartete Version noch? Erst danach darf die alte gehen.
 
     ⚠ **Ein Programm zu starten heißt nicht, dass es läuft.** `Popen` meldet
     Erfolg, sobald der Prozess angelegt ist; ob er eine Sekunde später an einer
@@ -774,14 +774,14 @@ def neue_fassung_laeuft(wartezeit=3.0):
     nach `/dev/null`, und auf den Rückgabewert wartete bisher keiner.
 
     Genau so ist der Neustart unter Linux monatelang **stumm** gescheitert: Die
-    alte Fassung trat pflichtschuldig ab, die neue war da schon tot, und übrig
+    alte Version trat pflichtschuldig ab, die neue war da schon tot, und übrig
     blieb ein Rechner ohne Watcher. Der Nutzer sieht nur „es geht aus und kommt
     nicht wieder" und kann nicht einmal sagen, woran es lag.
 
     Diese Prüfung kostet ein paar Sekunden Warten — sie gehört deshalb in einen
     eigenen Faden, nicht in den Tk-Faden.
 
-    Gibt `True` zurück, wenn die neue Fassung die Wartezeit überlebt hat oder es
+    Gibt `True` zurück, wenn die neue Version die Wartezeit überlebt hat oder es
     gar keinen eigenen Prozess gibt (Windows: dort startet der Installer neu).
     """
     prozess = _GESTARTET[0]
@@ -797,14 +797,14 @@ def neue_fassung_laeuft(wartezeit=3.0):
 
 
 def neu_starten():
-    """Das Programm durch die frisch eingespielte Fassung ersetzen.
+    """Das Programm durch die frisch eingespielte Version ersetzen.
 
-    Nach einem Update läuft weiter die alte Fassung — der Prozess hält seine alte
+    Nach einem Update läuft weiter die alte Version — der Prozess hält seine alte
     Inode. „Beim nächsten Start läuft die neue" stimmt zwar, heißt aber: selbst
     beenden und selbst wieder starten. Das nimmt dieser Weg ab.
 
     ⚠ Reihenfolge: erst den Einzelinstanz-Wächter schließen, dann starten. Sonst
-    sieht die neue Fassung den belegten Port, hält sich für die zweite Instanz und
+    sieht die neue Version den belegten Port, hält sich für die zweite Instanz und
     beendet sich sofort wieder.
     """
     import subprocess
@@ -816,7 +816,7 @@ def neu_starten():
         overlay_modul.waechter_stoppen()
 
         # Wartet ein Hilfsskript darauf, die Datei zu tauschen, ist unser Teil
-        # hier **erledigt** — es startet die neue Fassung selbst. Siehe die
+        # hier **erledigt** — es startet die neue Version selbst. Siehe die
         # Erklärung über `_TAUSCH_LAEUFT`.
         if _TAUSCH_LAEUFT[0]:
             return True
@@ -824,7 +824,7 @@ def neu_starten():
         # ⚠ **Hier stand `dict(os.environ)`** — und genau daran ist der Neustart
         # unter Linux gescheitert. Entfernt wurden nur `APPIMAGE` und Freunde;
         # `LD_LIBRARY_PATH`, `PYTHONHOME` und `PYTHONPATH` blieben stehen, und
-        # die zeigen im AppImage in den **entpackten Mount der alten Fassung**.
+        # die zeigen im AppImage in den **entpackten Mount der alten Version**.
         # Zwei Sekunden später beendet sich die alte, ihr Mount verschwindet —
         # und die neue sucht ihre Bibliotheken in einem Verzeichnis, das es nicht
         # mehr gibt. Sie stirbt, bevor ein Fenster kommt.
@@ -833,11 +833,11 @@ def neu_starten():
         # (Bomb20, 27.08.2026), von der Autor am selben Tag reproduziert.
         #
         # `pfade.saubere_umgebung()` macht genau diese Wäsche — sie war längst da,
-        # nur benutzte der Neustart eine eigene, unvollständige Fassung davon.
+        # nur benutzte der Neustart eine eigene, unvollständige Version davon.
         # Zwei Wäschen sind eine zu viel.
         from . import pfade as pfade_modul
         umgebung = pfade_modul.saubere_umgebung()
-        # Die Variablen des laufenden AppImage gehören der **alten** Fassung.
+        # Die Variablen des laufenden AppImage gehören der **alten** Version.
         for name in ('APPIMAGE', 'APPDIR', 'OWD', 'ARGV0'):
             umgebung.pop(name, None)
 
@@ -846,7 +846,7 @@ def neu_starten():
         #
         # Eine mit PyInstaller gebaute `.exe` entpackt sich beim Start nach
         # `%TEMP%\_MEIxxxxxx` und zeigt mit `TCL_LIBRARY` und `TK_LIBRARY`
-        # dorthin. Erbt die neue Fassung diese Variablen, sucht sie ihre
+        # dorthin. Erbt die neue Version diese Variablen, sucht sie ihre
         # Tcl-Dateien im Ordner der **alten** — den die alte beim Beenden
         # gerade aufräumt. Ergebnis, so beim Testen gemeldet (Haldjas,
         # 25.08.2026):
@@ -856,7 +856,7 @@ def neu_starten():
         #     directories: C:\Users\…\AppData\Local\Temp\_MEI000067b42…
         #
         # Und gleich hinterher die Gegenseite: „Failed to remove temporary
-        # directory" — die alte Fassung kommt an ihren eigenen Ordner nicht
+        # directory" — die alte Version kommt an ihren eigenen Ordner nicht
         # mehr heran, weil die neue darin liest.
         for name in ('_MEIPASS', '_MEIPASS2', 'TCL_LIBRARY', 'TK_LIBRARY',
                      'TIX_LIBRARY', 'MATPLOTLIBDATA'):
@@ -871,7 +871,7 @@ def neu_starten():
 
 
 def windows_eintrag_pflegen(eigene_version):
-    """Die angezeigte Fassung in Windows nachziehen. True, wenn geändert.
+    """Die angezeigte Version in Windows nachziehen. True, wenn geändert.
 
     ⚠ Der Schlüssel liegt **nicht** immer unter HKCU. Der Kommentar über
     `INNO_KENNUNG` behauptete das jahrelang, und die Funktion suchte nur dort —

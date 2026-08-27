@@ -250,7 +250,7 @@ def _saeubern(text, schluessel='', urtext=None):
 
       1. **Der gemerkte Originaltext.** Der genaueste: Er stellt den Wortlaut
          wieder her, statt etwas herauszuschneiden.
-      2. **Das alte Marken-Paar.** Für alles, was frühere Fassungen eingetragen
+      2. **Das alte Marken-Paar.** Für alles, was frühere Versionen eingetragen
          haben — die stehen ja noch in der Datei von jemandem, der aktualisiert.
       3. **Der eingefügte Block an seiner Form erkannt.** Der Notnagel, wenn die
          Merkdatei fehlt (anderer Rechner, aufgeräumt) und keine Marke dasteht.
@@ -501,7 +501,7 @@ def einspielen(ini_pfad, sprache, katalog=None, bestand=None, nur_entfernen=Fals
 
     Gibt (Erfolg, Anzahl geänderter Zeilen, Meldung) zurück. Die Datei wird
     erst vollständig neu geschrieben und dann umbenannt — bricht etwas ab,
-    bleibt die alte Fassung unversehrt."""
+    bleibt die alte Version unversehrt."""
     if not ini_pfad or not os.path.isfile(ini_pfad):
         return False, 0, t('m_keine_ini')
 
@@ -629,7 +629,7 @@ def scdl_update_da(sprachkuerzel):
 
 
 def scdl_stand(sprachkuerzel):
-    """Welche Fassung der Vertragsdaten liegt hier? Oder None."""
+    """Welche Version der Vertragsdaten liegt hier? Oder None."""
     d = scdl_laden(sprachkuerzel)
     return (d.get('_meta') or {}).get('version') if d else None
 
@@ -645,7 +645,7 @@ def ist_drin(ini_pfad):
     Seit v3.0.0 stehen keine Marken mehr im Text (sie waren im Spiel sichtbar),
     also wird nach der **Form** der Einfügung gesucht: dem Titelzusatz
     `<EM4>[BP 3/6]</EM4>`. Die alte Marke gilt weiter — in der Datei von jemandem,
-    der von einer früheren Fassung kommt, steht sie noch.
+    der von einer früheren Version kommt, steht sie noch.
 
     Nur die ersten Zeilen zu lesen genügt nicht: Die Auftragstexte liegen mitten
     in einer Datei mit über hunderttausend Zeilen.

@@ -89,7 +89,7 @@ def main():
     wurzel.bind_all('<Shift-MouseWheel>', lambda e: notieren(e, 'Shift-Wheel'))
     # ⚠ Der eigentliche Grund für dieses Werkzeug: Vom Trackpad kam kein
     # einziges <MouseWheel> an. Seit Tk 8.7 gibt es dafür ein eigenes
-    # Ereignis; ältere Fassungen kennen es nicht und werfen beim Binden.
+    # Ereignis; ältere Versionen kennen es nicht und werfen beim Binden.
     try:
         wurzel.bind_all('<TouchpadScroll>', streichen, add='+')
         kopf.configure(text=kopf.cget('text') + '\n(Tk %s — Trackpad-Ereignis '

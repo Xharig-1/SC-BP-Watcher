@@ -52,7 +52,7 @@ SEITEN = ('liste', 'fortschritt', 'allgemein', 'anzeige', 'spiel', 'bestand',
 
 
 def _sollbestand():
-    """Deutsche Fassung -> (Schlüssel, englische Fassung).
+    """Deutsche Version -> (Schlüssel, englische Version).
 
     Nur Paare, die sich **unterscheiden**: Was in beiden Sprachen gleich heißt
     („Discord", „Star Citizen"), darf in der englischen Oberfläche stehen.

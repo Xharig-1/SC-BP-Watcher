@@ -54,7 +54,7 @@ from .sprache import t
 
 # 7-Zip nur als letzter Strohhalm für altes Python. Es kann CIGs zstd meist
 # **nicht** — auf dem Testrechner scheiterte es mit „Headers Error". Der Eintrag
-# bleibt für den Fall, dass jemand eine Fassung mit zstd-Unterstützung hat.
+# bleibt für den Fall, dass jemand eine Version mit zstd-Unterstützung hat.
 SIEBENZIP = [
     os.environ.get('SEVENZIP', ''),
     '/usr/bin/7z', '/usr/bin/7za', '/usr/local/bin/7z',
@@ -174,7 +174,7 @@ def entpacke_zstd(roh, erwartet):
         'Kein zstd-Entpacker gefunden. Möglichkeiten:\n'
         '  * Python 3.14 oder neuer (bringt compression.zstd mit)\n'
         '  * pip install zstandard\n'
-        '  * 7-Zip ab Fassung 22 installieren (Pfad notfalls über SEVENZIP setzen)')
+        '  * 7-Zip ab Version 22 installieren (Pfad notfalls über SEVENZIP setzen)')
 
 def holen(sprache='english', spielordner=None, fortschritt=None):
     """Die `global.ini` einer Sprache aus dem Archiv holen. (Erfolg, Meldung).

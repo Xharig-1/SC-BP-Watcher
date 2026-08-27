@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc67'
+__version__ = '3.0.0-rc68'
 
 
 def _mitgeliefert(name):
@@ -552,7 +552,7 @@ def geometrie_pruefen(geom, root):
     steht — beim Autor auf dem oberen von drei Monitoren, also bei X≈3656 und
     negativem Y. Auf einem Rechner mit einem einzigen Bildschirm zeigt dieselbe
     Angabe ins Nichts: Das Fenster ist unsichtbar, unter macOS reißt Tk sogar
-    das ganze Programm mit. Sobald die Fassung öffentlich wird, landet sie auf
+    das ganze Programm mit. Sobald die Version öffentlich wird, landet sie auf
     genau solchen Rechnern.
 
     Geprüft wird **großzügig**: Mehrere Monitore sollen weiter funktionieren
@@ -788,7 +788,7 @@ class Watcher(threading.Thread):
         kuerzel = injektion._sprachkuerzel(sprache_ordner)
         neu_noetig = False
 
-        # 1. Neue Fassung der Übersetzung? Die schreibt die Datei komplett neu,
+        # 1. Neue Version der Übersetzung? Die schreibt die Datei komplett neu,
         #    danach ist die Injektion in jedem Fall weg.
         if quelle:
             da, kennung = uebersetzung.update_da(quelle)
@@ -1125,7 +1125,7 @@ def sicherer_cursor(name):
     """Gibt den Zeigernamen zurück, wenn dieses System ihn kennt — sonst ''.
 
     Geprüft wird an einem Wegwerf-Widget: Das ist der einzige verlässliche Weg,
-    weil die Namensliste von der Tk-Fassung abhängt, nicht nur vom System."""
+    weil die Namensliste von der Tk-Version abhängt, nicht nur vom System."""
     try:
         probe = tk.Label(None, cursor=name)
         probe.destroy()
@@ -1190,7 +1190,7 @@ class Overlay:
         self.root.bind('<Leave>', lambda e: setattr(self, '_maus_drauf', False),
                        add='+')
         overlay.OVERLAY_STEUERUNG[0] = self
-        # Damit jeder festgehaltene Fehler weiß, aus welcher Fassung er stammt.
+        # Damit jeder festgehaltene Fehler weiß, aus welcher Version er stammt.
         fehler.VERSION[0] = __version__
         self.root.title('SC BP Watcher')
         self.root.configure(bg=BG)
@@ -1330,7 +1330,7 @@ class Overlay:
 
         # ⚠ Eine Glocke statt des `ⓘ`. Ein „i" heisst „hier steht etwas", eine
         # Glocke heisst „fuer dich ist etwas da" — und genau darum geht es hier,
-        # denn das Zeichen faerbt sich gruen, wenn eine neue Fassung bereitsteht.
+        # denn das Zeichen faerbt sich gruen, wenn eine neue Version bereitsteht.
         # der Autor (26.08.2026): „Die Glocke für Updates ist auch besser."
         self.info_lbl = zeichen.knopf(bar, 'glocke',
                                       lambda: self.fenster_oeffnen('ueber'),
@@ -1537,7 +1537,7 @@ class Overlay:
         `iconbitmap` mit einer `.ico` ist **Windows-only**, unter Linux blieb das
         Fenster ohne Icon. Und die Datei lag zur Laufzeit gar nicht daneben —
         PyInstallers `--icon` setzt nur das Symbol der `.exe` selbst, es packt
-        die Datei nicht mit ein. In der fertigen Fassung gab es das Icon also
+        die Datei nicht mit ein. In der fertigen Version gab es das Icon also
         nirgends, auch unter Windows nicht.
 
         `iconphoto(True, …)` mit dem PNG kann Tk auf beiden Systemen, und das
@@ -2258,7 +2258,7 @@ class Overlay:
         self.verhalten_anwenden()
         self.ablagesymbol_starten()
         # Ein zweiter Start soll das vorhandene Fenster hervorholen, statt eine
-        # zweite Fassung zu öffnen. Der Rückruf kommt aus einem eigenen Faden —
+        # zweite Version zu öffnen. Der Rückruf kommt aus einem eigenen Faden —
         # deshalb die Arbeit per `after` an Tk übergeben, nicht dort erledigen.
         overlay.waechter_starten(
             lambda: self.root.after(0, self.hervorholen))
@@ -2276,7 +2276,7 @@ if __name__ == '__main__':
     #      bekommt der Spieler seinen ganzen bisherigen Bestand geschenkt.
     #   3. Erst danach darf von Hand nachgetragen werden, und nur das, was
     #      wirklich keine Logdatei mehr hergibt.
-    # ⚠ Läuft schon eine Fassung? Dann keine zweite öffnen, sondern der
+    # ⚠ Läuft schon eine Version? Dann keine zweite öffnen, sondern der
     # vorhandenen sagen, sie soll sich zeigen. Genau darüber führt der Weg zurück,
     # wenn das Overlay im Pop-up-Betrieb unsichtbar ist.
     if overlay.zeigen_bitte():
@@ -2310,7 +2310,7 @@ if __name__ == '__main__':
     #
     # Sie bleibt versteckt, bis das Overlay sie übernimmt: Ein leeres graues
     # Fenster hinter dem Assistenten hätte niemand erklären können.
-    fehler.spur('Start, Fassung %s, %s' % (__version__, sys.platform))
+    fehler.spur('Start, Version %s, %s' % (__version__, sys.platform))
     wurzel = tk.Tk()
     wurzel.withdraw()
     fehler.spur('Tk-Wurzel steht')
