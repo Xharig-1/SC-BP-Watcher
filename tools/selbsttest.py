@@ -841,6 +841,8 @@ def main():
 
             # Und: Stirbt die neue Version sofort, darf die alte NICHT abtreten.
             class _TotesPopen(_FalschesPopen):
+                returncode = 1
+
                 def poll(self):
                     return 1         # schon gestorben
             akt._GESTARTET[0] = _TotesPopen('x')
