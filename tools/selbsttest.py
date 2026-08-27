@@ -1996,6 +1996,55 @@ def main():
                    'Text %s ist gesetzt, nicht der Schluesselname' % schl31)
 
         print()
+        print('32. Die Log-Erkennung kennt UNSERE eigenen Zusaetze')
+        # ⚠ Der gefaehrlichste Fehler dieser Nacht, gefunden am 28.08.2026 beim
+        # Nachgehen einer Frage von Morkhan.
+        #
+        # Seit rc76 schreibt das Werkzeug die Angaben selbst an die
+        # Gegenstandsnamen (`scbp/angaben.py`). Das Spiel schreibt den Namen
+        # anschliessend **mitsamt Zusatz** in die Game.log:
+        #
+        #     Bauplan erhalten: Spectre (Sth/1/A)
+        #
+        # `SUFFIX_RE` kannte aber nur `Civ|Mil|Ind|Sth|Cmp` mit Grad `A-D` —
+        # also genau die Form, die der SC Deutsch Launcher erzeugte. Alles, was
+        # wir zusaetzlich schreiben, blieb am Namen kleben: Der Bauplan landet
+        # unter falschem Namen im Bestand und wird **nie abgehakt**.
+        #
+        # Betroffen waeren 344 Waffen und 62 Raketen gewesen — und niemand
+        # haette es gemerkt, weil das Werkzeug ja etwas anzeigt.
+        from scbp.logquelle import teile_namen as tn32
+        faelle32 = [
+            ('Spectre (Sth/1/A)',            'Spectre'),
+            ('7CA \'Nargun\' (Civ/3/A)',      "7CA 'Nargun'"),
+            ('Omnisky III Cannon (Las/2/A)', 'Omnisky III Cannon'),
+            ('Inspire Advanced (Ind/2/C)',   'Inspire Advanced'),
+            ('P4-AR Rifle (Bal)',            'P4-AR Rifle'),
+            ('Arrowhead Sniper Rifle (Las)', 'Arrowhead Sniper Rifle'),
+            ("'Arrow' I Missile (IR1)",      "'Arrow' I Missile"),
+            ('Argos IX Torpedo (CS9)',       'Argos IX Torpedo'),
+            ('Pioneer I-G Missile (EM1)',    'Pioneer I-G Missile'),
+            ('Glacis (Ind/4/\u2013)',          'Glacis'),
+            ('V60-26 (Mil/\u2013/B)',          'V60-26'),
+        ]
+        for roh32, erwartet32 in faelle32:
+            pruefe(tn32(roh32)[0] == erwartet32,
+                   'abgeschnitten: %s' % roh32)
+        # ⚠ Und die Gegenrichtung: Echte Namensklammern duerfen NICHT fallen.
+        # Sonst hiesse „Singe Cannon (S2)" plötzlich nur noch „Singe Cannon",
+        # und zwei verschiedene Waffen waeren derselbe Eintrag.
+        for roh32 in ('Singe Cannon (S2)', 'Irgendwas (30 cap)',
+                      'Ding (Alpha/1/A)', 'Sache (Mil/1/Z)'):
+            pruefe(tn32(roh32)[0] == roh32,
+                   'unangetastet: %s' % roh32)
+        # Die Kuerzel-Liste MUSS zu angaben.py passen — sonst reisst genau
+        # diese Luecke beim naechsten neuen Kuerzel wieder auf.
+        from scbp import angaben as an32, logquelle as lq32
+        for _teile32, kurz32 in an32.KLASSEN:
+            pruefe(kurz32.lower() in lq32._KUERZEL.lower(),
+                   'logquelle kennt das Kuerzel %s aus angaben.py' % kurz32)
+
+        print()
         print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')
         # ⚠ Wer ueber Lutris, Heroic oder Flatpak spielt, bekam GAR KEINEN
         # Startknopf. Der Ausweg (Einstellung `spielstarter`) existierte, stand

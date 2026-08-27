@@ -14,7 +14,39 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > **Klicks ins Spiel durchreichen ist keine Einbahnstraße mehr.**
 
+### Behoben
+
+- **Baupläne, deren Name ein Kürzel trägt, wurden nicht mehr abgehakt.** Seit
+  die Angaben am Gegenstand eingetragen werden, schreibt das Spiel den Namen
+  **mitsamt Kürzel** in seine Logdatei — `Bauplan erhalten: Spectre (Sth/1/A)`.
+  Abgeschnitten wurden bisher nur die fünf Fraktions-Kürzel; alles Neue blieb
+  am Namen kleben, und der Bauplan landete unter falschem Namen im Bestand.
+  Betroffen wären **344 Waffen und 62 Raketen** gewesen — und niemand hätte es
+  bemerkt, weil ja etwas angezeigt wurde. Gefunden beim Nachgehen einer Frage
+  von **Morkhan**.
+
+- **Eine Mission versprach „12 Baupläne" im Titel und zeigte darunter
+  keine.** Eine Mission hat im Spiel **mehr Beschreibungen**, als der Katalog
+  kennt — verschiedene Zielorte und Waren derselben Mission. Gemessen:
+  `Covalex_HaulCargo_SingleToMulti` führt drei Beschreibungen im Katalog, in
+  der Textdatei des Spiels stehen **acht**. Wer eine der übrigen fünf erwischte,
+  sah den Zähler und darunter nichts. Der Weg über die Vertragsdaten des
+  SCDL-Teams löste das längst, der eigene Weg über den Bauplan-Katalog nicht.
+  Gemeldet von **Morkhan**.
+
 ### Hinzugefügt
+
+- **Ein Rufzeichen im Auftragstitel, wenn die Baupläne an Bedingungen hängen.**
+  `[BP 0/19!]` statt `[BP 0/19]`. Bei **332 von 818 Aufträgen** (41 %) fallen
+  Baupläne nur in bestimmten Preisstufen oder ab einem Rang — „nur für
+  256.500 / 264.000 aUEC", „nur ab Meister-Rang". Das stand zwar im
+  Beschreibungstext, aber in der Auftragsliste sah man nur den Zähler, und
+  genau danach entscheidet man, ob man annimmt. Gemeldet von **Morkhan**, der
+  eine Transportmission mehrfach flog, in der nie einer fallen konnte.
+
+  ⚠️ Warum es nicht sauberer geht: Alle Preisstufen einer Mission teilen sich
+  **einen** Beschreibungstext im Spiel. Für die kleine Variante zeigt Star
+  Citizen denselben Text wie für die große — unterscheiden lässt sich das nicht.
 
 - **Ein Schloss am Overlay holt dich zurück, wenn Klicks ins Spiel
   durchgereicht werden.** Bisher war das eine Einbahnstraße: Wer die

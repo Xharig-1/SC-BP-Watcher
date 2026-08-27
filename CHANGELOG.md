@@ -14,7 +14,39 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > **Passing clicks through to the game is no longer a one-way street.**
 
+### Fixed
+
+- **Blueprints whose name carries a suffix stopped being ticked off.** Now that
+  item details are written in, the game puts the name **including the suffix**
+  into its log — `Blueprint received: Spectre (Sth/1/A)`. Only the five faction
+  suffixes were stripped; everything new stayed stuck to the name, and the
+  blueprint went into the collection under the wrong one. **344 weapons and 62
+  missiles** would have been affected — and nobody would have noticed, because
+  something was still being displayed. Found while following up a question from
+  **Morkhan**.
+
+- **A mission promised „12 blueprints" in its title and showed none below.**
+  A mission has **more descriptions** in game than the catalogue knows —
+  different destinations and cargo for the same mission. Measured:
+  `Covalex_HaulCargo_SingleToMulti` lists three descriptions in the catalogue,
+  the game's text file holds **eight**. Anyone hitting one of the other five saw
+  the counter and nothing underneath. The route via the SCDL team's contract
+  data had long solved this; our own route via the blueprint catalogue had not.
+  Reported by **Morkhan**.
+
 ### Added
+
+- **An exclamation mark in the contract title when blueprints come with
+  conditions.** `[BP 0/19!]` instead of `[BP 0/19]`. In **332 of 818 contracts**
+  (41 %) blueprints only drop at certain payout tiers or from a given rank —
+  „only for the 256,500 / 264,000 aUEC mission", „only from Master rank". That
+  was in the description text, but the contract list only showed the counter,
+  and that is what you decide on. Reported by **Morkhan**, who flew a hauling
+  mission repeatedly in which none could ever drop.
+
+  ⚠️ Why it cannot be cleaner: all payout tiers of a mission share **one**
+  description text in the game. Star Citizen shows the small variant the same
+  text as the large one — there is no way to tell them apart.
 
 - **A lock on the overlay brings you back when clicks pass through to the
   game.** Until now this was a one-way street: turning the setting on made the
