@@ -234,12 +234,13 @@ Die schmale Leiste liegt über dem Spiel und meldet Neuzugänge. Alles Weitere s
 
 | Zeichen | Was es tut |
 |---|---|
-| **☰** | Bauplan-Liste öffnen — durchsuchen, filtern, abhaken, Herkunft nachschlagen |
-| **ⓘ** | „Was ist neu" — Versionsgeschichte; leuchtet grün, wenn es eine neue Fassung gibt |
-| **⟳** | Einrichtung noch einmal durchgehen |
-| **⏻** | Mit dem Rechner starten (an/aus) |
-| **🗑** | Liste leeren |
-| **✕** | Schließen |
+| <img src="assets/symbole/22/glocke-grau.png" width="22" alt=""> | **Glocke** — neue Fassung verfügbar; färbt sich grün, sobald es eine gibt |
+| <img src="assets/symbole/22/starten-grau.png" width="22" alt=""> | **Rakete** — Star Citizen starten. Erscheint nur, wenn ein Weg dorthin gefunden wurde |
+| <img src="assets/symbole/22/einstellungen-grau.png" width="22" alt=""> | **Zahnrad** — Einstellungen öffnen |
+| <img src="assets/symbole/22/liste-grau.png" width="22" alt=""> | **Klemmbrett** — Bauplan-Liste: durchsuchen, filtern, abhaken, Herkunft nachschlagen |
+| <img src="assets/symbole/22/einklappen-grau.png" width="22" alt=""> | **Pfeil** — Overlay einklappen, bis nur noch die Leiste dasteht |
+| <img src="assets/symbole/22/leeren-grau.png" width="22" alt=""> | **Radiergummi** — angezeigte Meldungen wegräumen. Deine Baupläne bleiben |
+| <img src="assets/symbole/22/schliessen-grau.png" width="22" alt=""> | **Kreuz** — schließen |
 
 | Aktion | Wie |
 |---|---|
@@ -252,16 +253,16 @@ Was die Farbpunkte in der Liste bedeuten:
 
 | | |
 |---|---|
-| 🟢 | Bauplan freigeschaltet — steht in deinem Bestand |
-| 🟡 | aus der Spiel-Log gelesen, wartet auf Bestätigung durch den SC Deutsch Launcher (nur mit ihm) |
-| 🔵 | im **Spiel** neu craftbar geworden — noch nichts, was *du* hast |
-| ⭐ | etwas von deiner Merkliste ist aufgetaucht |
-| ℹ | ein Hinweis, keine Freischaltung (z. B. eine Lücke im Bestand) |
+| <img src="assets/symbole/18/bestaetigt-gruen.png" width="18" alt=""> | Bauplan freigeschaltet — steht in deinem Bestand |
+| <img src="assets/symbole/18/vorlaeufig-gelb.png" width="18" alt=""> | aus der Spiel-Log gelesen, wartet auf Bestätigung durch den SC Deutsch Launcher (nur mit ihm) |
+| <img src="assets/symbole/18/punkt-blau.png" width="18" alt=""> | im **Spiel** neu craftbar geworden — noch nichts, was *du* hast |
+| <img src="assets/symbole/18/gemerkt-gelb.png" width="18" alt=""> | etwas von deiner Merkliste ist aufgetaucht |
+| <img src="assets/symbole/18/hinweiszeile-grau.png" width="18" alt=""> | ein Hinweis, keine Freischaltung (z. B. eine Lücke im Bestand) |
 
 
 1. **Beim Start** sieht das Tool die aufgehobenen Logs vergangener Sitzungen durch (`logbackups/`) und übernimmt alles Gefundene still in deinen Bestand — wer ohne laufenden Watcher gespielt hat, verliert nichts. Diese Baupläne werden **nicht** als neu gemeldet. Reichen die Sicherungen nicht weit genug zurück, sagt der Watcher das als ℹ-Zeile, statt eine unvollständige Liste als vollständig auszugeben.
 2. **Im Hintergrund** (eigener Thread) wird die **`Game.log`** gelesen — alle 3 Sekunden, einstellbar. Schreibt das Spiel beim Freischalten `Added notification "Bauplan erhalten: <Name>: "`, steht der Bauplan **sofort** in der Liste (🟢) und im Bestand.
-   - **Ist zusätzlich der SC Deutsch Launcher installiert**, wird zweistufig gemeldet: erst 🟡 *vorläufig* aus dem Log, dann 🟢 *bestätigt*, sobald der Launcher nachzieht und seine Angaben liefert. Ohne Launcher gibt es diese Zwischenstufe nicht — dann ist die Log-Meldung die Auskunft.
+   - **Ist zusätzlich der SC Deutsch Launcher installiert**, wird zweistufig gemeldet: erst *vorläufig* aus dem Log, dann 🟢 *bestätigt*, sobald der Launcher nachzieht und seine Angaben liefert. Ohne Launcher gibt es diese Zwischenstufe nicht — dann ist die Log-Meldung die Auskunft.
 3. Jede neue Zeile wird oben eingefügt (Name · Art · `M/1/A` · Uhrzeit) und ein kurzer Ton gespielt.
    - **Einmal pro Minute** wird der Craftbar-Katalog geprüft. Ist er gewachsen, hat CIG mit einem Patch etwas **neu craftbar** gemacht → 🔵-Zeile. Das hat nichts mit deinem Freischalt-Stand zu tun. Der Vergleichsstand liegt als `catalog-seen.json` im eigenen Ordner und überlebt Neustarts; beim allerersten Start wird nur die Basis gesetzt.
 4. **Art, Größe, Gütegrad und Klasse** kommen aus den Craftdaten von scmdb.net und aus den mitgelieferten Spieldaten. Ist der SC Deutsch Launcher da, hat sein gepflegter Katalog Vorrang (deutsche Bezeichnungen). Über allem stehen deine eigenen Korrekturen aus `bp-overrides.json`.
@@ -313,9 +314,9 @@ In `spiel_ordner` gehört der Ordner, in dem die `Game.log` liegt (meist `LIVE`)
 
 ### Auf bestimmte Gegenstände warten
 
-Wartest du auf einen ganz bestimmten Bauplan, klick in der Liste (**☰**) auf den **Stern** neben seinem Namen. Über das Suchfeld findest du ihn in Sekunden, und der Filter **⭐ beobachtet** zeigt dir, worauf du gerade wartest.
+Wartest du auf einen ganz bestimmten Bauplan, klick in der Bauplan-Liste auf den **Stern** neben seinem Namen. Über das Suchfeld findest du ihn in Sekunden, und der Filter **⭐ beobachtet** zeigt dir, worauf du gerade wartest.
 
-Taucht ein beobachteter Bauplan auf, meldet ihn der Watcher auffällig in Gold mit ⭐ und eigenem Signalton — und **nimmt ihn danach von selbst von der Merkliste**. Was du hast, muss dort nicht mehr stehen.
+Taucht ein beobachteter Bauplan auf, meldet ihn der Watcher auffällig in Gold mit einem Stern und eigenem Signalton — und **nimmt ihn danach von selbst von der Merkliste**. Was du hast, muss dort nicht mehr stehen.
 
 <details>
 <summary>Für Fortgeschrittene: Muster statt Namen</summary>
@@ -433,7 +434,7 @@ If you fork this project, please keep the credit in the footer or mention the or
 
 ## Was noch kommt
 
-Es wird weitergebaut — was genau, steht in keiner Liste. Was eine Fassung gebracht hat, liest du im [`CHANGELOG.de.md`](CHANGELOG.de.md) oder direkt im Werkzeug unter **ⓘ „Was ist neu"**.
+Es wird weitergebaut — was genau, steht in keiner Liste. Was eine Fassung gebracht hat, liest du im [`CHANGELOG.de.md`](CHANGELOG.de.md) oder direkt im Werkzeug unter **„Was ist neu"**.
 
 Wünsche und Fehlermeldungen gern als [Issue](../../issues) oder im [Discord](https://discord.gg/g2E7e6XxZC) — Vorschläge landen eher im nächsten Bau als Gedankenlesen.
 

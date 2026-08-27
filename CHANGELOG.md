@@ -12,6 +12,17 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **The readme showed symbols the tool no longer has.** The button legend in
+  both readmes listed `☰`, `ⓘ`, `⟳`, `⏻` and `🗑` — two of them are long gone,
+  the others look different now. It now shows the **actual image files** from
+  `assets/symbole/`, so it can no longer go stale: swapping a symbol updates the
+  readme picture by itself. Same for the message symbol key. Found by der Autor.
+- **"Who built this" suddenly appeared twice.** The block naming the author,
+  scmdb, the SC Deutsch Launcher and StarStrings sat on "Update & About" — and
+  the new "Thanks & Licenses" page listed the same projects again. It now lives
+  only on "Thanks & Licenses", with the author **at the top**: a page listing
+  other people's work has to name its own first. Reported by der Autor.
+
 - **The donation link was nowhere to be seen on GitHub.** The "Buy me a coffee"
   button has been in the tool for a long time — but the project page itself had
   nothing: no sponsor button, no mention in the readme. Anyone who had not

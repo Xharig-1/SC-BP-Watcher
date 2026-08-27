@@ -12,6 +12,20 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Die Anleitung zeigte Zeichen, die es im Werkzeug nicht mehr gibt.** Die
+  Knopf-Legende in beiden READMEs führte `☰`, `ⓘ`, `⟳`, `⏻` und `🗑` auf — zwei
+  davon sind längst entfernt, die anderen sehen anders aus. Sie zeigt jetzt die
+  **echten Bilddateien** aus `assets/symbole/`; damit kann sie nicht mehr
+  veralten, weil sich mit einem getauschten Symbol das Bild in der Anleitung von
+  selbst mitändert. Dasselbe für die Zeichen-Erklärung der Meldungen. Gefunden
+  von der Autor.
+- **„Wer das gebaut hat" stand plötzlich zweimal.** Der Block mit Autor,
+  scmdb, SC Deutsch Launcher und StarStrings lag auf „Update & Über" — und die
+  neue Seite „Danke & Lizenzen" nannte dieselben Projekte noch einmal. Er liegt
+  jetzt nur noch auf „Danke & Lizenzen", und zwar mit dem Autor **ganz oben**:
+  Eine Seite, die fremde Arbeit aufzählt, muss die eigene zuerst nennen.
+  Gemeldet von der Autor.
+
 - **Der Spenden-Link war auf GitHub nirgends zu sehen.** Der Knopf „Kaffee
   spendieren" gibt es im Werkzeug seit Langem — auf der Projektseite selbst
   fehlte er aber komplett: kein Sponsor-Knopf, keine Erwähnung in der Anleitung.

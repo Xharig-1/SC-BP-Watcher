@@ -2513,13 +2513,45 @@ def _danke(fenster, rahmen):
     _ueberschrift(fenster, rahmen, t('hf_danke'), t('s_dk_lead'))
     innen = _rollflaeche(rahmen)
 
-    # --- Das Programm selbst ---
-    tk.Label(innen, text=t('s_dk_selbst'), bg=BG, fg=FG, font=fenster.f_titel,
+    # --- Wer das gebaut hat ---
+    # ⚠ Ganz oben und mit Avatar, nicht als eine Zeile unter vielen. Diese Seite
+    # nennt fremde Arbeit, und genau deshalb muss die eigene zuerst stehen —
+    # sonst schmälert die Aufzählung das, worum es hier eigentlich geht.
+    # der Autor am 27.08.2026: „ich bin zwar dankbar, aber so dankbar nun auch
+    # wieder nicht, zudem wieso sollte ich meine Leistung dadurch schmälern."
+    #
+    # Der Block stand bis dahin auf „Update & Über" und ist von dort hierher
+    # gewandert — dieselben Angaben an zwei Stellen waren die eigentliche Klage.
+    tk.Label(innen, text=t('hf_wer'), bg=BG, fg=FG, font=fenster.f_titel,
              anchor='w').pack(fill='x', pady=(0, 2))
+    tk.Label(innen, text=t('s_ub_wer_h'), bg=BG, fg=SUB, font=fenster.f_klein,
+             anchor='w').pack(fill='x', pady=(0, 12))
+
+    autor = _karte(innen)
+    zeile = tk.Frame(autor, bg=FLAECHE)
+    zeile.pack(fill='x', padx=16, pady=14)
+    from .hauptfenster import _mitgeliefert
+    logo = _mitgeliefert(os.path.join('assets', 'xharig.png'))
+    if logo and os.path.exists(logo):
+        try:
+            voll = tk.PhotoImage(file=logo)
+            teiler = max(1, voll.width() // 64)
+            fenster._autorlogo = voll.subsample(teiler, teiler)
+            tk.Label(zeile, image=fenster._autorlogo, bg=FLAECHE).pack(
+                side='left', padx=(0, 16))
+        except Exception as ausnahme:
+            fehler.merken('seiten.danke.logo', ausnahme)
+    rechts = tk.Frame(zeile, bg=FLAECHE)
+    rechts.pack(side='left', fill='x', expand=True)
+    tk.Label(rechts, text='Xharig', bg=FLAECHE, fg=ACCENT, font=fenster.f_titel,
+             anchor='w').pack(fill='x')
+    tk.Label(rechts, text='SC BP Watcher %s · GPL-3.0-only'
+             % (fenster.version or ''), bg=FLAECHE, fg=SUB,
+             font=fenster.f_klein, anchor='w').pack(fill='x')
+    _adresse(fenster, rechts, 'github.com/Xharig-1/SC-BP-Watcher',
+             'https://github.com/Xharig-1/SC-BP-Watcher')
     _fliesstext(innen, t('s_dk_selbst_h'), fenster.f_klein, fill='x',
-                pady=(0, 10))
-    _dankblock(fenster, innen, 'SC BP Watcher', 'GPL-3.0-only',
-               'der Autor', 'https://github.com/Xharig-1/SC-BP-Watcher')
+                pady=(10, 0))
 
     # --- Mitgeliefert ---
     tk.Label(innen, text=t('s_dk_dabei'), bg=BG, fg=FG, font=fenster.f_titel,
@@ -2677,57 +2709,6 @@ def _ueber(fenster, rahmen):
     kanal_zeichnen()
     kaesten.bind('<Configure>', kanal_pruefen, add='+')
 
-    # --- Wer das gebaut hat ---
-    tk.Label(innen, text=t('hf_wer'), bg=BG, fg=FG, font=fenster.f_titel,
-             anchor='w').pack(fill='x', pady=(28, 2))
-    tk.Label(innen, text=t('s_ub_wer_h'), bg=BG, fg=SUB, font=fenster.f_klein,
-             anchor='w').pack(fill='x', pady=(0, 12))
-
-    autor = _karte(innen)
-    zeile = tk.Frame(autor, bg=FLAECHE)
-    zeile.pack(fill='x', padx=16, pady=14)
-    from .hauptfenster import _mitgeliefert
-    logo = _mitgeliefert(os.path.join('assets', 'xharig.png'))
-    if logo and os.path.exists(logo):
-        try:
-            voll = tk.PhotoImage(file=logo)
-            teiler = max(1, voll.width() // 64)
-            fenster._autorlogo = voll.subsample(teiler, teiler)
-            tk.Label(zeile, image=fenster._autorlogo, bg=FLAECHE).pack(
-                side='left', padx=(0, 16))
-        except Exception as ausnahme:
-            fehler.merken('seiten.ueber.logo', ausnahme)
-    rechts = tk.Frame(zeile, bg=FLAECHE)
-    rechts.pack(side='left', fill='x', expand=True)
-    tk.Label(rechts, text='Xharig', bg=FLAECHE, fg=ACCENT, font=fenster.f_titel,
-             anchor='w').pack(fill='x')
-    tk.Label(rechts, text='SC BP Watcher %s · GPL-3.0-only'
-             % (fenster.version or ''), bg=FLAECHE, fg=SUB,
-             font=fenster.f_klein, anchor='w').pack(fill='x')
-    _adresse(fenster, rechts, 'github.com/Xharig-1/SC-BP-Watcher',
-             'https://github.com/Xharig-1/SC-BP-Watcher')
-
-    dank = _karte(innen, pady=(10, 0))
-    tk.Label(dank, text=t('hf_dank'), bg=FLAECHE, fg=FG, font=fenster.f_klein,
-             anchor='w').pack(fill='x', padx=16, pady=(12, 6))
-    for quelle, wofuer in (('scmdb.net', t('s_ub_q_katalog')),
-                           ('rjcncpt / SC Deutsch Launcher',
-                            t('s_ub_q_uebersetzung')),
-                           ('MrKraken · StarStrings',
-                            t('s_ub_q_vorbild'))):
-        z = tk.Frame(dank, bg=FLAECHE)
-        z.pack(fill='x', padx=16, pady=1)
-        tk.Label(z, text='·', bg=FLAECHE, fg=SUB,
-                 font=fenster.f_klein).pack(side='left', padx=(0, 6))
-        tk.Label(z, text=quelle, bg=FLAECHE, fg=FG,
-                 font=fenster.f_klein).pack(side='left')
-        tk.Label(z, text=' — ' + wofuer, bg=FLAECHE, fg=SUB,
-                 font=fenster.f_klein).pack(side='left')
-    _fliesstext(dank, t('hf_nichts_dabei'), fenster.f_klein,
-                grund=FLAECHE, abzug=32, fill='x', padx=16, pady=(8, 12))
-
-    _fliesstext(innen, t('hf_fancontent'), fenster.f_klein,
-                fill='x', pady=(14, 24))
 
 
 def _adresse(fenster, eltern, text, ziel, grund=None):

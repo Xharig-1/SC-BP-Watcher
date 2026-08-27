@@ -232,12 +232,13 @@ The narrow bar sits above the game and reports new finds. Everything else is beh
 
 | Symbol | What it does |
 |---|---|
-| **☰** | Open the blueprint list — search, filter, tick off, look up where things drop |
-| **ⓘ** | „What's new" — version history; turns green when a new build is available |
-| **⟳** | Run the setup wizard again |
-| **⏻** | Start with the computer (on/off) |
-| **🗑** | Clear the list |
-| **✕** | Close |
+| <img src="assets/symbole/22/glocke-grau.png" width="22" alt=""> | **Bell** — a new build is available; turns green as soon as there is one |
+| <img src="assets/symbole/22/starten-grau.png" width="22" alt=""> | **Rocket** — launch Star Citizen. Only appears if a way to start it was found |
+| <img src="assets/symbole/22/einstellungen-grau.png" width="22" alt=""> | **Gear** — open the settings |
+| <img src="assets/symbole/22/liste-grau.png" width="22" alt=""> | **Clipboard** — blueprint list: search, filter, tick off, look up where things drop |
+| <img src="assets/symbole/22/einklappen-grau.png" width="22" alt=""> | **Chevron** — fold the overlay down to just its bar |
+| <img src="assets/symbole/22/leeren-grau.png" width="22" alt=""> | **Eraser** — clear the messages on screen. Your blueprints stay |
+| <img src="assets/symbole/22/schliessen-grau.png" width="22" alt=""> | **Cross** — close |
 
 | Action | How |
 |---|---|
@@ -250,15 +251,15 @@ What the coloured dots mean:
 
 | | |
 |---|---|
-| 🟢 | Blueprint unlocked — it's in your inventory |
-| 🟡 | Read from the game log, waiting for confirmation by the SC Deutsch Launcher (only with it) |
-| 🔵 | Became newly craftable **in the game** — not something *you* have yet |
-| ⭐ | Something from your watchlist has appeared |
-| ℹ | A note, not an unlock (e.g. a gap in your inventory) |
+| <img src="assets/symbole/18/bestaetigt-gruen.png" width="18" alt=""> | Blueprint unlocked — it's in your inventory |
+| <img src="assets/symbole/18/vorlaeufig-gelb.png" width="18" alt=""> | Read from the game log, waiting for confirmation by the SC Deutsch Launcher (only with it) |
+| <img src="assets/symbole/18/punkt-blau.png" width="18" alt=""> | Became newly craftable **in the game** — not something *you* have yet |
+| <img src="assets/symbole/18/gemerkt-gelb.png" width="18" alt=""> | Something from your watchlist has appeared |
+| <img src="assets/symbole/18/hinweiszeile-grau.png" width="18" alt=""> | A note, not an unlock (e.g. a gap in your inventory) |
 
 1. **On start** the tool goes through the stored logs of earlier sessions (`logbackups/`) and quietly adds everything it finds to your inventory — nothing is lost if you played without the watcher running. Those blueprints are **not** reported as new. If the stored logs don't reach far enough back, the watcher says so as an ℹ line instead of passing off an incomplete list as complete.
 2. **In the background** the **`Game.log`** is read — every 3 seconds, adjustable. *(The wording of the blueprint message depends on your game language — the watcher works it out by itself, see below.)* When the game writes `Added notification "Blueprint Received: <name>: "` on unlock, the blueprint is in the list **immediately** (🟢) and in your inventory.
-   - **If the SC Deutsch Launcher is installed as well**, reporting is two-stage: first 🟡 *provisional* from the log, then 🟢 *confirmed* once the launcher catches up and supplies its data. Without the launcher there is no intermediate stage — the log message is the answer.
+   - **If the SC Deutsch Launcher is installed as well**, reporting is two-stage: first *provisional* from the log, then 🟢 *confirmed* once the launcher catches up and supplies its data. Without the launcher there is no intermediate stage — the log message is the answer.
 3. Every new line is inserted at the top (name · type · `M/1/A` · time) and a short sound plays.
    - **Once a minute** the craftable catalogue is checked. If it grew, CIG made something **newly craftable** with a patch → 🔵 line. This has nothing to do with your own unlocks.
 4. **Type, size, grade and class** come from scmdb.net's crafting data and from the bundled game data. If the SC Deutsch Launcher is present, its maintained catalogue takes precedence (German names). Above all of it are your own corrections from `bp-overrides.json`.
@@ -310,9 +311,9 @@ If Star Citizen (or the SC Deutsch Launcher) isn't in one of the usual places, y
 
 ### Waiting for specific items
 
-Waiting for one particular blueprint? Click the **star** next to its name in the list (**☰**). The search box finds it in seconds, and the **⭐ watching** filter shows what you're waiting for.
+Waiting for one particular blueprint? Click the **star** next to its name in the blueprint list. The search box finds it in seconds, and the **⭐ watching** filter shows what you're waiting for.
 
-When a watched blueprint appears, the watcher announces it in gold with ⭐ and its own sound — and then **removes it from the watchlist by itself**. What you have doesn't need to be on there.
+When a watched blueprint appears, the watcher announces it in gold with a star and its own sound — and then **removes it from the watchlist by itself**. What you have doesn't need to be on there.
 
 ## Settings
 
@@ -389,7 +390,7 @@ If you fork this project, please keep the credit in the footer or mention the or
 
 ## What's next
 
-Work continues — what exactly is not on a list. What a build brought you can read in [`CHANGELOG.md`](CHANGELOG.md) or right in the tool under **ⓘ „What's new"**.
+Work continues — what exactly is not on a list. What a build brought you can read in [`CHANGELOG.md`](CHANGELOG.md) or right in the tool under **„What's new"**.
 
 Wishes and bug reports are welcome as an [issue](../../issues) or on [Discord](https://discord.gg/g2E7e6XxZC) — suggestions make it into the next build more reliably than mind reading.
 
