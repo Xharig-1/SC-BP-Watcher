@@ -1718,6 +1718,65 @@ def main():
                'ein Name ohne Beschreibung kommt nicht in die Tabelle')
 
         print()
+        print('28. Ohne Launcher: Ordner und user.cfg entstehen selbst')
+        # ⚠ der Autor am 27.08.2026: „das hat bei mir und meinem bruder nur
+        # geklappt WEIL wir vorher den launcher hatten von sc deutsch." Genau
+        # das ist der ungetestete Fall — wer den SC Deutsch Launcher nie hatte,
+        # hat **keinen** Ordner `data/Localization/<sprache>/`, und ohne den
+        # landet die Datei irgendwo, wo Star Citizen sie nicht sucht.
+        #
+        # Dazu die Tonspur: Star Citizen hat **keine deutsche Sprachausgabe**.
+        # Ohne `g_languageAudio = english` neben der deutschen Textsprache
+        # fehlt der Ton. Der Launcher setzt beides, also müssen wir es auch.
+        from scbp import uebersetzung as ue28
+        frisch28 = os.path.join(basis, 'frischeinstallation', 'LIVE')
+        os.makedirs(frisch28)
+        open(os.path.join(frisch28, 'Data.p4k'), 'w').close()
+
+        ziel28 = ue28.ziel_ini('german_(germany)', frisch28)
+        pruefe(ziel28.endswith(os.path.join('data', 'Localization',
+                                            'german_(germany)', 'global.ini')),
+               'der Zielpfad steht dort, wo Star Citizen sucht')
+        os.makedirs(os.path.dirname(ziel28), exist_ok=True)
+        pruefe(os.path.isdir(os.path.dirname(ziel28)),
+               'die ganze Ordnerkette entsteht ohne Launcher')
+
+        ue28.user_cfg_setzen('german_(germany)', 'english', frisch28)
+        cfg28 = open(os.path.join(frisch28, 'user.cfg'), encoding='utf-8').read()
+        pruefe('g_language = german_(germany)' in cfg28,
+               'g_language wird gesetzt — sonst liest das Spiel die Datei nicht')
+        pruefe('g_languageAudio = english' in cfg28,
+               'g_languageAudio = english MUSS mit rein (SC hat keinen deutschen Ton)')
+
+        # Eine vorhandene user.cfg voller Grafikeinstellungen darf das nicht
+        # verlieren — dort steht die Arbeit des Spielers drin.
+        cfgpfad28 = os.path.join(frisch28, 'user.cfg')
+        with open(cfgpfad28, 'w', encoding='utf-8') as f28:
+            f28.write('r_DisplayInfo = 3\nsys_maxfps = 0\n'
+                      'g_language = english\n')
+        ue28.user_cfg_setzen('german_(germany)', 'english', frisch28)
+        cfg28b = open(cfgpfad28, encoding='utf-8').read()
+        pruefe('r_DisplayInfo = 3' in cfg28b and 'sys_maxfps = 0' in cfg28b,
+               'vorhandene Grafikeinstellungen bleiben unangetastet')
+        pruefe('g_language = english' not in cfg28b,
+               'eine alte Sprachzeile wird ersetzt, nicht verdoppelt')
+        pruefe(cfg28b.count('g_language =') == 1,
+               'g_language steht genau einmal da')
+
+        # Der Weg ueber die EINSTELLUNGEN (Assistent abgebrochen) muss dasselbe
+        # tun wie der Assistent. Beide laufen ueber `uebersetzung.holen()`.
+        quelle28 = open(os.path.join(WURZEL, 'scbp', 'uebersetzung.py'),
+                        encoding='utf-8').read()
+        holen28 = quelle28[quelle28.index('def holen('):]
+        holen28 = holen28[:holen28.index('\ndef ', 1)] if '\ndef ' in holen28[1:] else holen28
+        pruefe('os.makedirs(' in holen28,
+               'holen() legt die Ordnerkette selbst an')
+        pruefe('user_cfg_setzen(' in holen28,
+               'holen() setzt die user.cfg — auch wenn der Assistent uebersprungen wurde')
+        pruefe(ue28.QUELLEN['deutsch']['ton'] == 'english',
+               'die deutsche Quelle bringt den englischen Ton mit')
+
+        print()
         print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')
         # ⚠ Wer ueber Lutris, Heroic oder Flatpak spielt, bekam GAR KEINEN
         # Startknopf. Der Ausweg (Einstellung `spielstarter`) existierte, stand
