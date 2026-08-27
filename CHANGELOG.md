@@ -19,6 +19,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   when updating. With the hyphen that was the installer, and the old version
   would have pushed it over the running program without ever executing it:
   the next start would have opened an installer window instead of the watcher.
+- **An update now installs where the program already is** — instead of putting a
+  second copy beside it. v2.0.0 shipped only as a bare `.exe`, so all of its
+  users run „portable" without ever choosing to. Without this, the installer
+  would have gone to `%LOCALAPPDATA%\Programs` on the update after next and left
+  the old file behind — anyone starting it from a shortcut would have kept
+  using the old version forever.
 
 ### Added
 

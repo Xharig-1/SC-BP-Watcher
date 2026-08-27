@@ -782,6 +782,25 @@ def einspielen(neue_datei):
         # eigenes. Ohne das scheitert jeder Benutzername mit Leerzeichen —
         # geprüft mit `C:\Users\Max Mustermann\...`.
         schalter = '/SILENT /NORESTART /CLOSEAPPLICATIONS'
+        # ⚠ Dorthin installieren, wo das laufende Programm liegt — sonst gibt es
+        # zwei Kopien.
+        #
+        # v2.0.0 wurde **nur** als nackte `SC-BP-Watcher.exe` ausgeliefert; alle
+        # ihre Nutzer laufen zwangsläufig „portabel", ohne es gewollt zu haben.
+        # der Autor am 27.08.2026: „niemand nutzt sowas portabel … niemand
+        # schiebt es auf nen Stick, um an nem anderen PC SC zu spielen."
+        #
+        # Ohne `/DIR` nimmt Inno seinen Standardordner
+        # (`%LOCALAPPDATA%\Programs\…`) — die alte Datei bliebe daneben liegen,
+        # und wer sie per Verknüpfung startet, benutzt für immer die alte
+        # Fassung. Mit `/DIR` wird ersetzt statt danebengelegt.
+        #
+        # Läuft das Programm bereits installiert, zeigt `sys.executable` auf den
+        # Installationsordner — dann ist es derselbe Wert, den Inno ohnehin
+        # gewählt hätte. Ein Fall, zwei Wege, dieselbe Zeile.
+        eigener_ordner = os.path.dirname(os.path.abspath(sys.executable))
+        if eigener_ordner:
+            schalter += ' /DIR="%s"' % eigener_ordner
         if protokoll_datei:
             schalter += ' /LOG="%s"' % protokoll_datei
         befehl = 'cmd /c ""%s" %s"' % (neue_datei, schalter)

@@ -20,6 +20,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   und die alte Fassung hätte ihn über das laufende Programm geschoben, ohne
   ihn auszuführen: Beim nächsten Start wäre ein Installationsfenster
   aufgegangen statt des Watchers.
+- **Ein Update installiert dorthin, wo das Programm liegt** — statt eine zweite
+  Fassung daneben anzulegen. v2.0.0 gab es nur als nackte `.exe`, alle ihre
+  Nutzer laufen also „portabel", ohne es gewollt zu haben. Ohne diesen Zusatz
+  hätte der Installer beim übernächsten Update unter
+  `%LOCALAPPDATA%\Programs` installiert und die alte Datei liegen lassen — wer
+  sie per Verknüpfung startet, benutzte für immer die alte Fassung.
 
 ### Hinzugefügt
 

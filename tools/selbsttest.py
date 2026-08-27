@@ -1939,6 +1939,19 @@ def main():
         pruefe('SC-BP-Watcher-Setup.exe' not in yml30.replace('#', ''),
                'im Bau-Ablauf steht nirgends mehr der alte Name')
 
+        # ⚠ Und der Schritt danach: Wer von v2.0.0 kommt, laeuft anschliessend
+        # „portabel" — v2.0.0 gab es nur als nackte .exe. Ohne `/DIR` legt der
+        # Installer beim naechsten Update eine ZWEITE Fassung unter
+        # %LOCALAPPDATA%\Programs an, und die alte Datei bleibt liegen. Wer sie
+        # per Verknuepfung startet, benutzt fuer immer die alte Version.
+        ak30q = open(os.path.join(WURZEL, 'scbp', 'aktualisierung.py'),
+                     encoding='utf-8').read()
+        start30 = ak30q[ak30q.index("schalter = '/SILENT"):][:1400]
+        pruefe("/DIR=" in start30,
+               'der Installer bekommt /DIR — ersetzen statt danebenlegen')
+        pruefe('sys.executable' in start30,
+               'und zwar den Ordner des laufenden Programms')
+
         print()
         print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')
         # ⚠ Wer ueber Lutris, Heroic oder Flatpak spielt, bekam GAR KEINEN
