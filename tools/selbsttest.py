@@ -1620,9 +1620,15 @@ def main():
                             abgeschnitten.append((y, unten))
                     _sammeln(kind)
             _sammeln(rahmen23)
-            pruefe(hoehe23 >= MH23 - 2,
-                   'die Probe laeuft wirklich bei der Mindestgroesse (%d px)'
-                   % hoehe23)
+            # ⚠ **Nicht auf MIN_HOEHE bestehen.** Der Windows-Runner hat einen
+            # virtuellen Bildschirm, auf dem Tk das Fenster nur 749 px hoch
+            # bekommt — die Pruefung schlug dort fehl und brach den Bau von
+            # rc68 ab, obwohl am Code nichts falsch war. Ist das Fenster
+            # kleiner als die Mindestgroesse, wird die Kanten-Pruefung darunter
+            # sogar STRENGER; verlangt wird deshalb nur ein echtes Fenster.
+            pruefe(hoehe23 >= 600,
+                   'die Probe hat ein echtes Fenster (%d px, Mindestgroesse %d)'
+                   % (hoehe23, MH23))
             pruefe(not abgeschnitten,
                    'kein Knopf der Update-Seite faellt unter die Kante (%s)'
                    % (abgeschnitten or 'keiner'))
