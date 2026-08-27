@@ -34,6 +34,7 @@ Drei Dinge, für die es da ist:
 Bedienung: tippen filtert, Klick auf eine Zeile setzt oder entfernt das Häkchen,
 Klick auf ⓘ klappt die Bezugsquellen aus.
 """
+import os
 import tkinter as tk
 from tkinter import filedialog
 
@@ -1233,8 +1234,11 @@ class Bestandsfenster:
 
         if eintrag.get('q'):
             symbol = 'zuklappen' if name in self.offen else 'hinweiszeile'
-            info = zeichen.zeile(zeile, symbol, grund=FLAECHE,
-                                 schrift=schrift(11))
+            # ⚠ `antippbar()` statt `zeile()`: eine Stufe groesser. Das Zeichen
+            # oeffnet den Herkunftskasten — in reiner Zeilengroesse war es zu
+            # klein, um es als Schaltflaeche zu erkennen und zu treffen.
+            info = zeichen.antippbar(zeile, symbol, grund=FLAECHE,
+                                     schrift=schrift(11))
             info.configure(cursor='hand2', padx=12)
             info.pack(side='right')
             info.bind('<Button-1>', lambda e, n=name: self._herkunft_umschalten(n))

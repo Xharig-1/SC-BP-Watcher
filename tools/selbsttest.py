@@ -1360,6 +1360,41 @@ def main():
                == '4.10.0-live.2',
                'auch ohne Netz stempelt der Start nach')
 
+        # ------------------------------------------------------------------
+        # ⚠ Am 27.08.2026 antwortete „Auf Aktualität prüfen" mit
+        # `name 'datei' is not defined` — ein Rückruf griff auf eine Variable
+        # zu, die es in seiner Funktion nie gab. Python merkt das erst beim
+        # **Klicken**; im Selbsttest lief die Zeile nie. Zwei weitere Fälle
+        # derselben Art steckten still im Code (`os` im Bestandsfenster, `t`
+        # statt `sprache.t` beim Ordner-Umzug) — beide in einem `except`
+        # begraben, also unsichtbar.
+        #
+        # Ein undefinierter Name ist ohne Ausführen findbar. Genau das prüft
+        # `pyflakes`. Fehlt es, wird die Prüfung übersprungen statt zu scheitern:
+        # Der Selbsttest soll auf jedem Rechner laufen, auch ohne Zusatzpaket.
+        print()
+        print('20. Kein Zugriff auf Namen, die es nicht gibt')
+        try:
+            from pyflakes import api as _pfapi, reporter as _pfrep
+        except ImportError:
+            print('  [--]   pyflakes fehlt — Prüfung übersprungen '
+                  '(pip install pyflakes)')
+        else:
+            import io as _io20
+            _wurzel20 = os.path.dirname(os.path.dirname(
+                os.path.abspath(__file__)))
+            _aus, _err = _io20.StringIO(), _io20.StringIO()
+            for _ort in ('scbp', 'tools', 'sc_bp_watcher.py'):
+                _pfapi.checkRecursive([os.path.join(_wurzel20, _ort)],
+                                      _pfrep.Reporter(_aus, _err))
+            _offen = [z for z in _aus.getvalue().splitlines()
+                      if 'undefined name' in z]
+            for _z in _offen:
+                print('         ' + _z.replace(_wurzel20 + os.sep, ''))
+            pruefe(not _offen,
+                   'kein undefinierter Name im ganzen Programm (%d gefunden)'
+                   % len(_offen))
+
     finally:
         shutil.rmtree(basis, ignore_errors=True)
 

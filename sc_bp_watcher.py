@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc62'
+__version__ = '3.0.0-rc63'
 
 
 def _mitgeliefert(name):
@@ -1155,8 +1155,8 @@ class Overlay:
             if pfade.umzug_noetig():
                 anzahl = pfade.umziehen()
                 if anzahl:
-                    self.umzug_meldung = t('umzug_fertig', anzahl,
-                                           pfade.app_ordner())
+                    self.umzug_meldung = sprache.t('umzug_fertig', anzahl,
+                                                   pfade.app_ordner())
                     sys.stdout.write(self.umzug_meldung + '\n')
         except Exception as ausnahme:
             fehler.merken('start.umzug', ausnahme)

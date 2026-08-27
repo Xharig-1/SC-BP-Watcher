@@ -1563,6 +1563,12 @@ def _jetzt_nachsehen(fenster):
     Zwischenspeicher blieb auf dem alten Stand, und der einzige Knopf, der ihn
     hätte auffrischen können, tat nichts.
 
+    ⚠ Und danach stand hier zeitweise der **Holen**-Ablauf: herunterladen,
+    einspielen, abtreten — mit `datei` und `freigabe`, die es in dieser Funktion
+    nie gab. Der Knopf antwortete deshalb mit `name 'datei' is not defined`,
+    egal ob eine neue Fassung da war oder nicht. Gemeldet von der Autor am
+    27.08.2026. Nachsehen ist nachsehen: Dieser Knopf lädt nichts.
+
     Läuft im eigenen Faden — die Abfrage geht ins Netz. Gezeichnet wird nur im
     Tk-Faden.
     """
@@ -1570,65 +1576,30 @@ def _jetzt_nachsehen(fenster):
     from . import aktualisierung
     fenster.sagen(t('s_ub_sucht'))
 
-    def einspielen_und_gehen(ziel):
-        """Einspielen — und vorher sagen, was gleich passiert.
-
-        ⚠ Der Hinweis kommt **vor** dem Start des Setups, nicht danach. Sonst
-        liefe im Hintergrund schon der Restart Manager und zählte seine dreißig
-        Sekunden herunter, während der Nutzer noch liest — und beendete den
-        Watcher mitten im Dialog.
-
-        ⚠ Läuft im Tk-Faden, nicht im Ladefaden: `messagebox` gehört dorthin,
-        wo die Oberfläche lebt.
-        """
-        if aktualisierung.verpackung() == 'exe':
-            from tkinter import messagebox
-            messagebox.showinfo(t('s_ub_hinweis_titel'),
-                                t('s_ub_hinweis_neustart'))
-        geklappt, grund = aktualisierung.einspielen(ziel)
-        if not geklappt:
-            fenster.sagen(t('update_fehler', grund))
-            return
-        _BEREIT[0] = freigabe.get('version') or ''
-
-        # ⚠ Unter Windows ist hier **Schluss** — kein zweiter Klick mehr.
-        #
-        # Der Ablauf mit „erst holen, dann auf ‚Jetzt neu starten' drücken"
-        # stammt aus der Zeit des Dateitauschs: Damals lag die neue Datei nur
-        # bereit, getauscht wurde beim Beenden. Der Installer dagegen **läuft
-        # schon** — und wartet darauf, dass wir endlich gehen. Genau das hat am
-        # 26.08.2026 die lange Pause verursacht, die der Autor gemeldet hat
-        # („wieso es solange dauert bis er alles geschlossen hat, das wirkt
-        # komisch auf user"). Im Inno-Protokoll stand sie auf die Millisekunde:
-        # 31,4 Sekunden, der Standard-Timeout des Restart Managers.
-        #
-        # Gestartet wird danach **nichts** mehr von allein — deshalb der Hinweis
-        # oben. Fünf Versuche, den Selbststart zum Laufen zu bringen, sind an
-        # einer Sicherheitsprüfung von Inno 6.7 gescheitert; ein Doppelklick des
-        # Nutzers ist der ehrlichere Weg als ein Fehler, dessen Ursache in der
-        # Werkzeugkette liegt.
-        if aktualisierung.verpackung() == 'exe':
-            _abtreten(fenster)
-            return
-
-        # Linux: Das AppImage ist getauscht, laufen tut aber noch die alte
-        # Fassung. Hier bleibt der zweite Klick sinnvoll — er beendet und
-        # startet neu.
-        fenster.sagen(t('s_ub_bereit'))
-        fenster.root.after(50, fenster.neu_aufbauen)
-
     def arbeit():
         try:
-            ziel = aktualisierung.herunterladen(
-                datei, fortschritt=lambda p: fenster.root.after(
-                    0, lambda: fenster.sagen(t('wird_geladen', p))))
-            # Weiter im Tk-Faden — dort darf ein Dialog stehen.
-            fenster.root.after(0, lambda: einspielen_und_gehen(ziel))
+            neuere = aktualisierung.nachsehen(fenster.version or '0.0.0',
+                                              erzwingen=True)
         except Exception as ausnahme:
-            grund = str(ausnahme)
-            fehler.merken('seiten.fassung_holen', ausnahme)
-            fenster.root.after(0, lambda: fenster.sagen(
-                t('update_fehler', grund)))
+            fehler.merken('seiten.jetzt_nachsehen', ausnahme)
+            fenster.root.after(0, lambda: fenster.sagen(t('s_ub_sucht_fehler')))
+            return
+
+        def melden():
+            if neuere:
+                fenster.sagen(t('s_ub_gefunden') % neuere.get('version'))
+            else:
+                fenster.sagen(t('s_ub_aktuell'))
+            # Die Kanal-Kästen tragen die Fassungsnummern — sie müssen mitziehen.
+            try:
+                fenster.neu_aufbauen()
+            except Exception:
+                pass
+
+        try:
+            fenster.root.after(0, melden)
+        except Exception:
+            pass
 
     threading.Thread(target=arbeit, daemon=True).start()
 
@@ -1837,6 +1808,38 @@ def _fassung_holen(fenster, mit_vorab):
             ziel = aktualisierung.herunterladen(
                 datei, fortschritt=lambda p: fenster.root.after(
                     0, lambda: fenster.sagen(t('wird_geladen', p))))
+
+            # ⚠ Sagen, was gleich passiert — **vor** dem Einspielen.
+            #
+            # Das war die eigentliche Neuerung von rc52: Ein Programm, das sich
+            # wortlos schliesst und nicht wiederkommt, sieht aus wie ein
+            # Absturz. Der Hinweis nennt das Schliessen, das Einspielen und den
+            # noetigen Neustart, und beruhigt wegen des Bestands.
+            #
+            # ⚠ Nur stand er bis rc62 in `_jetzt_nachsehen` — einer Funktion,
+            # die gar nichts einspielt und deren Block ohnehin an einem
+            # `NameError` starb. Beim echten Update kam er also **nie**.
+            # Gefunden am 27.08.2026 beim Nachgehen des Nachsehen-Fehlers.
+            #
+            # ⚠ `messagebox` gehoert in den Tk-Faden, nicht hierher. Deshalb
+            # `after(0, …)` und das Warten auf die Quittung: Erst wenn der
+            # Nutzer gelesen hat, laeuft das Setup los. Sonst zaehlte der
+            # Restart Manager schon seine dreissig Sekunden, waehrend der
+            # Dialog noch offen steht.
+            if art == 'exe':
+                gelesen = threading.Event()
+
+                def bescheid_geben():
+                    try:
+                        from tkinter import messagebox
+                        messagebox.showinfo(t('s_ub_hinweis_titel'),
+                                            t('s_ub_hinweis_neustart'))
+                    finally:
+                        gelesen.set()
+
+                fenster.root.after(0, bescheid_geben)
+                gelesen.wait(120)      # ⚠ nicht ewig: ein Fenster kann zugehen
+
             geklappt, grund = aktualisierung.einspielen(ziel)
             if not geklappt:
                 fenster.root.after(0, lambda: fenster.sagen(

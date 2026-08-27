@@ -89,6 +89,9 @@ STRICH = 2.0
 #        zur Leiste.
 KNOPF = {'klein': 18, 'normal': 22, 'gross': 26, 'sehrgross': 30}
 ZEILE = {'klein': 12, 'normal': 14, 'gross': 16, 'sehrgross': 18}
+# Muss zu `scbp/zeichen.py` passen — sonst fehlt die 22er-Fassung und das
+# Zeichen verschwindet bei „sehr gross" stillschweigend (`bild()` gibt `None`).
+ANTIPPBAR = {'klein': 14, 'normal': 16, 'gross': 18, 'sehrgross': 22}
 
 # ⚠ **Kein 2×-Satz für hochauflösende Bildschirme.** Der Gedanke lag nahe —
 # Retina-Macs und Windows mit 125 % Skalierung blasen ein kleines Bild auf, eine
@@ -206,8 +209,14 @@ ZEILEN_SYMBOLE = {
 # beide Reihen. Vorher überschrieb die zweite Schleife die erste — der Name
 # verlor stillschweigend seine Knopfgrößen, und in der Melde-Leiste wäre statt
 # des Kreuzes eine Lücke geblieben.
+# Zeichen, die in einer Zeile sitzen, aber angeklickt werden — sie brauchen
+# zusaetzlich die Reihe aus `ANTIPPBAR`.
+ANTIPPBAR_SYMBOLE = {n: ZEILEN_SYMBOLE[n]
+                     for n in ('hinweiszeile', 'zuklappen')}
+
 SYMBOLE = {}
-for _tabelle, _satz in ((KNOPF_SYMBOLE, KNOPF), (ZEILEN_SYMBOLE, ZEILE)):
+for _tabelle, _satz in ((KNOPF_SYMBOLE, KNOPF), (ZEILEN_SYMBOLE, ZEILE),
+                        (ANTIPPBAR_SYMBOLE, ANTIPPBAR)):
     for _n, _v in _tabelle.items():
         _vorlage, _groessen = SYMBOLE.get(_n, (_v, set()))
         SYMBOLE[_n] = (_vorlage, _groessen | set(_satz.values()))

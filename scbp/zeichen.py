@@ -55,6 +55,13 @@ GELB, BLAU = 'gelb', 'blau'
 # genau daher kamen die abweichenden Maße zwischen Mac und Windows.
 KNOPF = {'klein': 18, 'normal': 22, 'gross': 26, 'sehrgross': 30}
 ZEILE = {'klein': 12, 'normal': 14, 'gross': 16, 'sehrgross': 18}
+# ⚠ Eine Stufe groesser als `ZEILE` — fuer Zeichen, die man **treffen** muss.
+# Das ⓘ am rechten Rand der Bauplan-Liste oeffnet den Herkunftskasten; in
+# Zeilengroesse (14 px bei „normal") war es zu klein, um es als Schaltflaeche zu
+# erkennen und sicher zu treffen. Gemeldet von der Autor am 27.08.2026. Ein
+# eigener Satz statt eines groesseren `ZEILE`, damit die Statuspunkte im Overlay
+# unveraendert bleiben — die will niemand anklicken.
+ANTIPPBAR = {'klein': 14, 'normal': 16, 'gross': 18, 'sehrgross': 22}
 
 # Tk räumt Bilder weg, sobald keine Python-Variable mehr auf sie zeigt — auch
 # dann, wenn sie gerade angezeigt werden; das Widget allein hält sie nicht. Ohne
@@ -209,6 +216,17 @@ def knopf(eltern, name, tat=None, farbe=GRAU, grund=None, ersatz='',
     `.groesse_nachziehen()`.
     """
     return _bauen(eltern, name, KNOPF, tat, farbe, grund, ersatz, text, schrift)
+
+
+def antippbar(eltern, name, tat=None, farbe=GRAU, grund=None, ersatz='',
+              text='', schrift=None):
+    """Wie `zeile()`, nur eine Stufe groesser — fuer Zeichen zum Anklicken.
+
+    Zwischen `zeile()` (blosse Anzeige) und `knopf()` (eigene Schaltflaeche in
+    einer Leiste): sitzt in einer Textzeile, ist aber ein Bedienelement und
+    muss deshalb getroffen werden koennen."""
+    return _bauen(eltern, name, ANTIPPBAR, tat, farbe, grund, ersatz, text,
+                  schrift)
 
 
 def zeile(eltern, name, tat=None, farbe=GRAU, grund=None, ersatz='',
