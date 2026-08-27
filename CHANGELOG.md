@@ -10,6 +10,38 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc72 - 2026-08-27
+
+> **The update page now tells the truth** — it checks by itself, and the route to
+> the stable version is no longer a dead end.
+
+### Fixed
+
+- **The page showed an outdated version number as long as it stayed open.** It
+  asked **once per page build**. Anyone with the page open while a new version
+  appeared kept seeing the old number on the button — and assumed they were up to
+  date. Reported by **Bomb20** (pr0citizen): "I still get 67 shown", while rc68
+  had been published minutes earlier. It now checks every five minutes while the
+  page is open.
+  - Five minutes is the compromise: often enough that nobody misses a version,
+    rare enough for GitHub's limit of 60 requests per hour.
+- **The "Stable version" box was a dead end.** Instead of a button it said "First
+  press 'Check now' above" — anyone wanting the stable version saw no route, just
+  homework.
+  - **The cause was too small a query:** the last **20** releases were fetched,
+    and among 83 published releases not a single one of those was stable — only
+    test versions. Now 100 are fetched (the most GitHub returns in one query),
+    and it stays **one** request: the hourly limit counts requests, not entries.
+  - Measured: 20 releases → 0 stable, 100 releases → 3.
+
+### Thanks
+
+- **Bomb20** (pr0citizen) — for "I still get 67 shown". It sounded like a
+  triviality and pointed at two bugs at once.
+- **der Autor** — for looking at the box that offered homework instead of a
+  button.
+
+
 ## v3.0.0-rc71 - 2026-08-27
 
 > **The restart after an update works** — the cause was entirely different from
