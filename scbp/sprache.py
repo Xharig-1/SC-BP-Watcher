@@ -411,6 +411,13 @@ TEXTE = {
     's_ub_bereit':     ('Fertig geladen — ein Neustart, dann läuft die neue Fassung.',
                           'Downloaded — one restart and the new version runs.'),
     's_ub_startet_neu': ('Startet neu …', 'Restarting …'),
+    # ⚠ Der Fall, den es vorher gar nicht gab: Der Start hat geklappt, die neue
+    # Fassung ist aber sofort wieder gestorben. Bis rc66 trat die alte trotzdem
+    # ab, und der Rechner stand ohne Watcher da — ohne ein Wort dazu.
+    's_ub_neustart_tot': ('Die neue Fassung ist nicht hochgekommen. Der Watcher '
+                         'bleibt offen — bitte starte ihn von Hand neu.',
+                         'The new version did not come up. The watcher stays '
+                         'open — please restart it by hand.'),
     's_ub_neustart_nein': ('Neustart ging nicht — bitte von Hand beenden und starten.',
                           'Restart failed — please close and start it yourself.'),
     's_ub_holen_zurueck': ('zurück auf %s', 'back to %s'),

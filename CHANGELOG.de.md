@@ -10,6 +10,43 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc67 - 2026-08-27
+
+> **Der Neustart nach dem Update funktioniert unter Linux** — und kann nicht mehr
+> stumm scheitern.
+
+### Behoben
+
+- **Nach dem Update ging der Watcher aus und kam nicht wieder.** Er lud die neue
+  Fassung, spielte sie ein, schloss sich — und blieb zu. Gemeldet von **Bomb20**
+  (pr0citizen) mit dem entscheidenden Satz „es geht dann aus aber startet nicht",
+  am selben Tag von **der Autor** auf seinem Rechner reproduziert.
+  - **Die Ursache:** Beim Start der neuen Fassung wurden nur `APPIMAGE`, `APPDIR`,
+    `OWD` und `ARGV0` aus der Umgebung entfernt — `LD_LIBRARY_PATH`, `PYTHONHOME`
+    und `PYTHONPATH` blieben stehen. Die zeigen im AppImage in den **entpackten
+    Mount der alten Fassung**. Zwei Sekunden später beendet sich die alte, ihr
+    Mount verschwindet, und die neue sucht ihre Bibliotheken in einem Verzeichnis,
+    das es nicht mehr gibt. Sie stirbt, bevor ein Fenster erscheint.
+  - Die passende Wäsche gab es längst (`saubere_umgebung`), nur führte der
+    Neustart eine eigene, unvollständige Fassung davon mit. Beide liegen jetzt in
+    `scbp/pfade.py` — **eine** Wäsche, benutzt von allen.
+- **Und er kann nicht mehr stumm scheitern.** Die alte Fassung tritt erst ab,
+  wenn die neue die ersten Sekunden überlebt hat. Stirbt sie, bleibt der Watcher
+  offen und sagt es: „Die neue Fassung ist nicht hochgekommen." Vorher schloss
+  sich die alte pflichtschuldig, während die neue schon tot war — und der Rechner
+  stand ohne Watcher da, ohne ein Wort dazu.
+  - Dahinter derselbe Merksatz wie beim Startknopf in rc65: **Ein Programm zu
+    starten heißt nicht, dass es läuft.** `Popen` meldet Erfolg, sobald der
+    Prozess angelegt ist.
+
+### Dank
+
+- **Bomb20** (pr0citizen) — fürs Dranbleiben. Seine nüchterne Beschreibung „es
+  geht dann aus aber startet nicht" hat den Fehler festgenagelt, nachdem er
+  zunächst für einen Bedienfehler gehalten wurde. Er lag richtig, wir nicht.
+- **der Autor** — für das Nachstellen auf dem eigenen Rechner, das den Verdacht
+  „liegt an seinem System" endgültig ausgeräumt hat.
+
 ## v3.0.0-rc66 - 2026-08-27
 
 > **Die Ausgabe-Dateien halten sich von allein aktuell** — und die Dateiauswahl
@@ -49,6 +86,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   - Für Ordner gab es diesen Weg längst; für Dateien nicht. Beides steht jetzt
     an einer Stelle (`scbp/dateiwahl.py`) statt an dreien.
 
+
+### Dank
+
+- **der Autor** — für die Beobachtungen beim Vorführen des Werkzeugs: dass die
+  Ausgabe-Dateien nicht mitgeschrieben werden, dass „Einzeln speichern" nur eine
+  Fassung kann und dass die Dateiauswahl unter Linux aussieht wie aus den
+  Neunzigern.
+
 ## v3.0.0-rc65 - 2026-08-27
 
 > **Der Startknopf rief unter Linux das falsche Programm auf.**
@@ -66,6 +111,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   - Kein Rückfall mehr auf den `lug-helper`: Er würde gefunden, der Knopf
     erschiene, und er täte wieder nichts. Wer über Lutris oder Heroic spielt,
     trägt seinen Startbefehl weiterhin in der Einstellung `spielstarter` ein.
+
+
+### Dank
+
+- **Bomb20** (pr0citizen) — für die Meldung, dass Star Citizen sich nicht aus dem
+  Werkzeug starten lässt, und für die Geduld mit zwei Diagnoseberichten an einem
+  Vormittag. Ohne den zweiten wäre nicht herausgekommen, dass der `lug-helper`
+  das Spiel überhaupt nicht starten kann.
 
 ## v3.0.0-rc64 - 2026-08-27
 

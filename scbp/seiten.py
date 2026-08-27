@@ -939,8 +939,8 @@ def saubere_umgebung():
     Weiterleitung bleibt, weil `_ordner_zeigen` und der Spielstart sie hier
     aufrufen.
     """
-    from . import dateiwahl
-    return dateiwahl.saubere_umgebung()
+    from . import pfade as pfade_modul
+    return pfade_modul.saubere_umgebung()
 
 
 def ordner_waehlen(titel, start=None):
@@ -1704,6 +1704,34 @@ def _holen_text(mit_vorab, eigene=''):
 _BEREIT = [None]
 
 
+def _nach_neustart_abtreten(fenster):
+    """Erst nachsehen, ob die neue Fassung lebt — dann erst selbst gehen.
+
+    ⚠ Vorher trat die alte Fassung **sofort** ab. War die neue schon tot (unter
+    Linux monatelang der Regelfall, siehe `aktualisierung.neue_fassung_laeuft`),
+    stand der Rechner ohne Watcher da, und niemand erfuhr den Grund.
+
+    Die Prüfung wartet ein paar Sekunden und gehört deshalb in einen eigenen
+    Faden. Gezeichnet wird nur im Tk-Faden.
+    """
+    import threading
+    from . import aktualisierung
+
+    def pruefen():
+        lebt = aktualisierung.neue_fassung_laeuft()
+        def melden():
+            if lebt:
+                _abtreten(fenster)
+            else:
+                fenster.sagen(t('s_ub_neustart_tot'))
+        try:
+            fenster.root.after(0, melden)
+        except Exception as ausnahme:
+            fehler.merken('seiten.nach_neustart', ausnahme)
+
+    threading.Thread(target=pruefen, daemon=True).start()
+
+
 def _abtreten(fenster, notausgang=2.0, gleich=400):
     """Den Prozess beenden — verlaesslich, auch wenn Tk schon haengt.
 
@@ -1771,7 +1799,7 @@ def _fassung_holen(fenster, mit_vorab):
         if not aktualisierung.neu_starten():
             fenster.sagen(t('s_ub_neustart_nein'))
             return
-        _abtreten(fenster)
+        _nach_neustart_abtreten(fenster)
         return
     art = aktualisierung.verpackung()
     if art == 'quellcode':

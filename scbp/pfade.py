@@ -640,6 +640,29 @@ def _launcher_aus_eintrag(winreg, eintrag):
 
 
 
+def saubere_umgebung():
+    """Umgebung für fremde Programme — ohne unsere eigenen Bibliothekspfade.
+
+    ⚠ Das ist im AppImage entscheidend. Dort zeigen `LD_LIBRARY_PATH`,
+    `PYTHONHOME` und `PYTHONPATH` in das entpackte Paket. Startet man daraus ein
+    Systemprogramm wie `zenity`, lädt es unsere mitgelieferten Bibliotheken statt
+    seiner eigenen und stirbt sofort — der Dialog erscheint nicht, und für den
+    Nutzer sieht es aus, als täte der Knopf nichts. AppImage legt die
+    ursprünglichen Werte unter `*_ORIG` ab; die gelten hier wieder.
+    """
+    umgebung = dict(os.environ)
+    for name in ('LD_LIBRARY_PATH', 'PYTHONHOME', 'PYTHONPATH',
+                 'PYTHONDONTWRITEBYTECODE', 'QT_PLUGIN_PATH', 'GTK_PATH',
+                 'GDK_PIXBUF_MODULE_FILE', 'GI_TYPELIB_PATH', 'XDG_DATA_DIRS',
+                 'PERLLIB', 'GSETTINGS_SCHEMA_DIR'):
+        urspruenglich = umgebung.pop(name + '_ORIG', None)
+        if urspruenglich:
+            umgebung[name] = urspruenglich
+        else:
+            umgebung.pop(name, None)
+    return umgebung
+
+
 def spielstarter():
     """Womit sich Star Citizen starten lässt — oder `None`.
 

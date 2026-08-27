@@ -239,18 +239,31 @@ class Versionsfenster:
         if not aktualisierung.neu_starten():
             self.meldung.configure(text=t('s_ub_neustart_nein'), fg=GELB)
             return
-        threading.Timer(2.0, lambda: os._exit(0)).start()
 
-        def abtreten():
+        # ⚠ **Erst nachsehen, ob die neue Fassung lebt.** Vorher wurde der
+        # Notausgang hier sofort scharf gestellt — war die neue Fassung schon
+        # tot (unter Linux monatelang der Regelfall), stand der Rechner ohne
+        # Watcher da, und niemand erfuhr den Grund. Siehe
+        # `aktualisierung.neue_fassung_laeuft`.
+        def pruefen():
+            lebt = aktualisierung.neue_fassung_laeuft()
+
+            def weiter():
+                if not lebt:
+                    self.meldung.configure(text=t('s_ub_neustart_tot'), fg=GELB)
+                    return
+                threading.Timer(2.0, lambda: os._exit(0)).start()
+                try:
+                    self.root.quit()
+                    self.root.destroy()
+                except Exception:
+                    pass
             try:
-                self.root.quit()
-                self.root.destroy()
+                self.root.after(0, weiter)
             except Exception:
                 pass
-        try:
-            self.root.after(400, abtreten)
-        except Exception:
-            pass
+
+        threading.Thread(target=pruefen, daemon=True).start()
 
     # ------------------------------------------------------------- Geschichte
     def _geschichte(self):
