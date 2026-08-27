@@ -2165,7 +2165,16 @@ def main():
         pruefe(bz34.ziel() == '',
                'im Repo steht KEINE Adresse — sie ist ein Geheimnis')
         pruefe(not bz34.moeglich(),
-               'ohne eingebaute Adresse gibt es den Knopf nicht')
+               'ohne Adresse meldet moeglich() sauber False')
+        # ⚠ Der Knopf wird trotzdem GEZEIGT — er sagt beim Druecken, was fehlt.
+        # Ihn auszublenden traf nur den Quellcode, also den Entwickler selbst:
+        # „nicht mal ICH finde den" (28.08.2026). Ein fehlender Knopf sieht aus
+        # wie ein Fehler.
+        quelle34 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                        encoding='utf-8').read()
+        stelle34 = quelle34[quelle34.index("s_di_absenden"):][:200]
+        pruefe('if ' not in stelle34.split(chr(10))[0],
+               'der Knopf haengt an keiner Bedingung')
         ok34, grund34 = be34.absenden('Probe', '3.0.0-test')
         pruefe(ok34 is False, 'ohne Ziel wird nichts gesendet')
         pruefe('http' not in grund34.lower(),

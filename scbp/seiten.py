@@ -3143,15 +3143,17 @@ def _diagnose(fenster, rahmen):
         fenster.sagen(t('s_di_ab_ok') if geklappt
                       else t('s_di_ab_weg') % grund)
 
-    from . import berichtziel
-    knoepfe = []
     # ⚠ Ganz vorn und in Rot: Wer hier landet, hat ein Problem und sucht den
-    # kürzesten Weg. Nur anbieten, wenn wirklich gesendet werden kann — ein
-    # Knopf, der nichts tut, ist schlimmer als keiner.
-    if berichtziel.moeglich():
-        knoepfe.append(_knopf(fenster, reihe, t('s_di_absenden'), absenden,
-                              gefahr=True))
-    _knopfreihe(reihe, knoepfe + [
+    # kürzesten Weg.
+    #
+    # ⚠ **Immer zeigen, auch ohne eingebautes Ziel.** Der erste Anlauf blendete
+    # ihn aus, wenn nicht gesendet werden kann — gedacht als „ein Knopf, der
+    # nichts tut, ist schlimmer als keiner". In der Praxis trifft das nur den
+    # Quellcode, also den Entwickler selbst. der Autor am 28.08.2026 vor der
+    # Diagnose-Seite: „nicht mal ICH finde den." Ein Knopf, der fehlt, sieht aus
+    # wie ein Fehler; einer, der beim Drücken sagt, was ihm fehlt, erklärt sich.
+    _knopfreihe(reihe, [
+        _knopf(fenster, reihe, t('s_di_absenden'), absenden, gefahr=True),
         _knopf(fenster, reihe, t('s_di_melden'), melden, stark=True),
         _knopf(fenster, reihe, t('s_di_kopieren'), kopieren),
         _knopf(fenster, reihe, t('s_di_speichern'), speichern),
