@@ -10,6 +10,51 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc63 - 2026-08-27
+
+> **"Check for updates" checks again** — and the notice before an update finally
+> shows up.
+
+### Fixed
+
+- **"Check for updates" answered with `name 'datei' is not defined`.** The
+  button did not hold the *look* routine but the *fetch* one — download,
+  install, step aside — using two variables that never existed in that
+  function. Whether a new version was out or not, the status line said it had
+  not worked. The button now reports what it finds: the version — or **"You
+  have the latest version."** That sentence existed all along; nothing ever
+  showed it. Reported by der Autor.
+
+- **The notice before an update never appeared, not once.** Since rc52 the
+  watcher is meant to announce that it will close, run the installer and needs
+  a double-click afterwards — a program that vanishes without a word looks like
+  a crash. The dialog sat in that same dead function. It now runs in the real
+  update, before installing, and the installer waits until it has been read.
+  Confirmed by der Autor while updating to rc62: no window appeared.
+
+- **The export folder never opened.** `os.startfile()` in the inventory window
+  used an `os` that was never imported there, and the error fell silently into
+  an `except Exception`. During the folder migration `t(...)` was used instead
+  of `sprache.t(...)`, so the success message went missing. Both found by the
+  new check below, not by hand.
+
+### Notes
+
+- **The self-test now looks for names that do not exist** (section 20, via
+  `pyflakes`). This class of bug otherwise surfaces only on a **click**: Python
+  resolves names at runtime, and when the callback ends in an `except`, nobody
+  sees it. The check found three cases straight away. It runs in the build
+  pipeline before every release; if `pyflakes` is missing on a dev machine it
+  is skipped rather than failing.
+
+### Changed
+
+- **The ⓘ at the right edge of the blueprint list is bigger** — it opens the
+  origin panel and was hard to recognise as a control at pure line size. New
+  size set `ANTIPPBAR`, one step above the other in-line marks: 16 px instead
+  of 14 at "normal", 22 instead of 18 at "very large". The status dots in the
+  overlay are unchanged — nobody clicks those. Suggested by der Autor.
+
 ## v3.0.0-rc62 - 2026-08-27
 
 > **The patch filter shows again what the patch brought.**

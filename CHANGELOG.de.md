@@ -10,6 +10,53 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc63 - 2026-08-27
+
+> **„Auf Aktualität prüfen" prüft wieder** — und der Hinweis vor dem Update
+> kommt endlich an.
+
+### Behoben
+
+- **„Auf Aktualität prüfen" antwortete mit `name 'datei' is not defined`.**
+  Im Knopf stand nicht das Nachsehen, sondern der **Holen**-Ablauf: herunter-
+  laden, einspielen, abtreten — mit zwei Variablen, die es in dieser Funktion
+  nie gab. Egal ob eine neue Fassung da war oder nicht, unten stand „Das hat
+  nicht geklappt". Jetzt meldet der Knopf wieder, was er findet: die gefundene
+  Fassung — oder **„Du hast die neueste Fassung."** Diesen Satz gab es die
+  ganze Zeit, ihn zeigte nur niemand. Gemeldet von der Autor.
+
+- **Der Hinweis vor dem Update kam bei keinem einzigen Update.** Seit rc52 soll
+  der Watcher ansagen, dass er sich gleich schließt, das Setup läuft und danach
+  ein Doppelklick nötig ist — ein Programm, das wortlos verschwindet, sieht aus
+  wie ein Absturz. Der Dialog saß aber in **derselben toten Funktion** und ist
+  deshalb nie erschienen. Er steht jetzt im echten Update, vor dem Einspielen,
+  und das Setup wartet, bis er gelesen ist. Bestätigt von der Autor beim Update
+  auf rc62: Es kam kein Fenster.
+
+- **Der Ablage-Ordner ging nach dem Export nie auf.** `os.startfile()` im
+  Bestandsfenster griff auf ein `os`, das dort nie importiert war; der Fehler
+  fiel still in ein `except Exception`. Beim Ordner-Umzug stand `t(...)` statt
+  `sprache.t(...)` — dort blieb die Erfolgsmeldung weg. Beide gefunden von der
+  neuen Prüfung unten, nicht von Hand.
+
+### Hinweise
+
+- **Der Selbsttest sucht jetzt Namen, die es nicht gibt** (Abschnitt 20, über
+  `pyflakes`). Genau diese Fehlerklasse fliegt sonst erst beim **Klicken** auf:
+  Python prüft Namen erst beim Ausführen, und wenn der Rückruf in einem
+  `except` endet, sieht es niemand. Die Prüfung fand auf Anhieb drei Fälle. Sie
+  läuft im Bau-Ablauf vor jedem Release mit; fehlt `pyflakes` auf einem
+  Entwicklungsrechner, wird sie übersprungen statt zu scheitern.
+
+### Geändert
+
+- **Das ⓘ am rechten Rand der Bauplan-Liste ist größer** — es öffnet den
+  Herkunftskasten und war in reiner Zeilengröße kaum als Schaltfläche zu
+  erkennen. Neuer Größensatz `ANTIPPBAR`, eine Stufe über den übrigen
+  Zeilenzeichen: 16 px statt 14 bei „normal", 22 statt 18 bei „sehr groß". Die
+  Statuspunkte im Overlay bleiben unverändert — die will niemand anklicken.
+  Angeregt von der Autor.
+
 ## v3.0.0-rc62 - 2026-08-27
 
 > **Der Patch-Filter zeigt wieder, was der Patch gebracht hat.**
