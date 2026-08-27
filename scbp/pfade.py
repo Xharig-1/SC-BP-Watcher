@@ -55,7 +55,6 @@ Rangfolge, wenn mehrere Angaben da sind:
   3. die Suche an den üblichen Stellen
 """
 import glob
-import shutil
 import json
 import os
 import re
@@ -112,7 +111,7 @@ def _dokumente():
         except Exception:
             pass
     else:
-        # Unter Linux sagt es die XDG-Angabe; sie ist übersetzt („Dokumente“).
+        # Unter Linux sagt es die XDG-Angabe; sie ist übersetzt („Dokumente").
         try:
             konfig = os.path.join(os.environ.get('XDG_CONFIG_HOME')
                                   or os.path.join(heim, '.config'),
@@ -648,10 +647,11 @@ def spielstarter():
 
     * **Windows** — der RSI Launcher unter `%LOCALAPPDATA%\\Programs`. Das ist
       derselbe Weg, den auch der SC-Deutsch-Launcher geht.
-    * **Linux** — der `lug-helper` der Star Citizen Linux Users Group. Er ist
-      dort der übliche Weg, bringt den passenden Wine-Unterbau mit und lässt
-      sich einfach aufrufen. Ein eigener Wine-Aufruf wäre hier falsch: Der
-      Helfer weiß, welches Präfix und welche Wine-Fassung gerade gelten.
+    * **Linux** — das Startskript `sc-launch.sh` im Wine-Präfix, das der
+      `lug-helper` der Star Citizen Linux Users Group beim Einrichten anlegt.
+      Es bringt Präfix, Wine-Fassung und Umgebung schon mit. Ein eigener
+      Wine-Aufruf wäre hier falsch. **Nicht** der `lug-helper` selbst: Der
+      verwaltet nur und kann das Spiel gar nicht starten (siehe unten).
 
     Ein eigener Weg geht über die Einstellung `spielstarter` — wer Lutris oder
     Heroic benutzt, trägt dort seinen Startbefehl ein.
@@ -714,18 +714,55 @@ def spielstarter():
                 return ort
         return None
 
-    # Linux: erst im Suchpfad, dann an den üblichen Ablagen.
-    name = 'lug-helper'
-    fertig = shutil.which(name)
-    if fertig:
-        return fertig
+    # ⚠ **Der `lug-helper` startet das Spiel nicht.** Hier stand er trotzdem —
+    # gefunden wurde er auch zuverlässig, nur ist er das falsche Programm. Sein
+    # `--help` kennt Präfix, Wine-Runner, DXVK und Launcher-Reparatur und
+    # **keine einzige Startoption**; ohne Argumente öffnet er sein
+    # Zenity-Verwaltungsmenü.
+    #
+    # Aufgefallen am 27.08.2026: Bomb20 meldete „das Starten von SC klappt
+    # nicht", der Autor sah dasselbe auf einem System, auf dem der Helper unter
+    # `/usr/bin/lug-helper` liegt — Knopf da, Meldung „Star Citizen wird
+    # gestartet …", und nichts geschah.
+    #
+    # Gestartet wird über das Skript, das der Helper anlegt: `sc-launch.sh`,
+    # direkt im Wine-Präfix. Und das Präfix steht immer über dem Spielordner:
+    #
+    #     ~/Games/star-citizen/                   ← Präfix, hier liegt das Skript
+    #     ~/Games/star-citizen/drive_c/Program Files/…/StarCitizen/LIVE
+    #
+    # Deshalb derselbe Gedanke wie im Windows-Zweig oben: **vom Spielordner aus
+    # suchen**, statt Orte zu raten. Über `drive_c` liegt das Präfix, egal wohin
+    # jemand installiert hat und wie er den Helper eingerichtet hat.
+    SKRIPT = 'sc-launch.sh'
+    orte = []
+    spiel = spiel_ordner()
+    if spiel:
+        pfad = os.path.abspath(spiel)
+        # Hochsteigen, bis `drive_c` erreicht ist — eine Ebene darüber liegt das
+        # Präfix. Die Schleife endet spätestens an der Wurzel.
+        while True:
+            eltern = os.path.dirname(pfad)
+            if eltern == pfad:
+                break
+            if os.path.basename(pfad).lower() == 'drive_c':
+                orte.append(os.path.join(eltern, SKRIPT))
+                break
+            pfad = eltern
+
+    # Rückfall: der Standardort des LUG Helper, falls der Spielordner (noch)
+    # nicht bekannt ist.
     heim = os.path.expanduser('~')
-    for ort in (os.path.join(heim, '.local', 'bin', name),
-                os.path.join('/usr', 'bin', name),
-                os.path.join('/usr', 'local', 'bin', name),
-                os.path.join(heim, 'Games', name)):
+    orte.append(os.path.join(heim, 'Games', 'star-citizen', SKRIPT))
+
+    for ort in orte:
         if os.path.isfile(ort) and os.access(ort, os.X_OK):
             return ort
+
+    # ⚠ Bewusst **kein** Rückfall auf `lug-helper`: Er würde gefunden, der Knopf
+    # erschiene — und täte wieder nichts. „Ein Knopf, der nichts tut, ist
+    # schlimmer als keiner" gilt auch hier. Wer über Lutris oder Heroic spielt,
+    # trägt seinen Startbefehl in der Einstellung `spielstarter` ein.
     return None
 
 
@@ -913,7 +950,7 @@ if __name__ == '__main__':
 # typografische und die französischen. Beim Vergleichen werden sie auf ein
 # einfaches `'` gezogen.
 ANFUEHRUNG = str.maketrans({
-    '"': "'", '„': "'", '“': "'", '”': "'",
+    '"': "'", '„': "'", '"': "'", '”': "'",
     '‘': "'", '’': "'", '«': "'", '»': "'",
 })
 

@@ -882,6 +882,48 @@ def main():
                 else:
                     os.environ[schluessel] = wert
 
+        # Und dasselbe unter Linux: Dort ist der Starter **nicht** der
+        # `lug-helper` (der verwaltet nur und kann gar nicht starten), sondern
+        # das `sc-launch.sh` im Wine-Präfix — eine Ebene über `drive_c`.
+        # Der Fehler dahinter kostete am 27.08.2026 zwei Melder und einen
+        # halben Vormittag: Der Knopf war da, meldete „wird gestartet …" und
+        # nichts geschah.
+        linux_basis = os.path.join(basis, 'linuxprobe', 'star-citizen')
+        linux_spiel = os.path.join(linux_basis, 'drive_c', 'Program Files',
+                                   'Roberts Space Industries', 'StarCitizen',
+                                   'LIVE')
+        os.makedirs(linux_spiel)
+        skript = os.path.join(linux_basis, 'sc-launch.sh')
+        open(skript, 'w').close()
+        os.chmod(skript, 0o755)
+        # ⚠ Auch `HOME` umbiegen — aus demselben Grund wie oben bei den
+        # Windows-Variablen: Der Rückfall sieht in `~/Games/star-citizen` nach,
+        # und auf einem Rechner mit echtem Spiel liegt dort ein echtes Skript.
+        # Die zweite Prüfung unten fände es und wäre wertlos.
+        alt_heim = os.environ.get('HOME')
+        os.environ['HOME'] = os.path.join(basis, 'linuxprobe', 'leeres-heim')
+        try:
+            pf_start.WINDOWS = False
+            pf_start.spiel_ordner = lambda: linux_spiel
+            pf_start.einstellung = lambda name: None
+            pruefe(pf_start.spielstarter() == skript,
+                   'unter Linux wird sc-launch.sh über drive_c gefunden')
+
+            # Ohne Startskript darf KEIN Pfad kommen — auch dann nicht, wenn auf
+            # dem Rechner ein `lug-helper` im Suchpfad liegt. Genau der wurde
+            # früher zurückgegeben, und der Knopf tat nichts.
+            os.remove(skript)
+            pruefe(pf_start.spielstarter() is None,
+                   'ohne sc-launch.sh gibt es unter Linux keinen Knopf')
+        finally:
+            pf_start.WINDOWS = alt_windows
+            pf_start.spiel_ordner = alt_ordner
+            pf_start.einstellung = alt_einst
+            if alt_heim is None:
+                os.environ.pop('HOME', None)
+            else:
+                os.environ['HOME'] = alt_heim
+
         # Jeder Ausgang beim Ablagesymbol muss im Startverlauf landen. Der
         # Fehler war zweimal nicht zu finden, weil weder ein Fehler noch eine
         # Spur im Bericht stand — geprüft wird hier deshalb, dass überhaupt

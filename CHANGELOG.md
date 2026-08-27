@@ -10,6 +10,23 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc65 - 2026-08-27
+
+> **The launch button called the wrong program on Linux.**
+
+### Fixed
+
+- **The "Launch Star Citizen" button started nothing on Linux.** It said
+  "Launching Star Citizen …" and then nothing happened — without any error. It
+  called `lug-helper`, which **cannot launch the game at all**: it manages the
+  Wine prefix, runners and DXVK, and has no launch option. The watcher now uses
+  the `sc-launch.sh` launch script the helper creates inside the prefix, and
+  finds it via the game folder (one level above `drive_c`) — no matter where
+  someone installed it. Reported by **Bomb20** (pr0citizen) and **der Autor**.
+  - No more fallback to `lug-helper`: it would be found, the button would
+    appear, and it would do nothing again. Anyone playing through Lutris or
+    Heroic still enters their launch command in the `spielstarter` setting.
+
 ## v3.0.0-rc64 - 2026-08-27
 
 > **The rebuild eats the message** — the same trap three times, in three
