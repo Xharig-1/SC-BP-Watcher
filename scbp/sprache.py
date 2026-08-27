@@ -673,6 +673,33 @@ TEXTE = {
     's_or_geoeffnet':  ('Ordner geöffnet', 'Folder opened'),
     's_or_nicht_auf':  ('Der Ordner ließ sich nicht öffnen — Näheres steht in der Diagnose.',
                           'The folder could not be opened — see Diagnostics for details.'),
+    # ⚠ Das Feld gab es als Einstellung `spielstarter` schon lange — aber
+    # nirgends in der Oberfläche, nur von Hand in der `einstellungen.json`. Für
+    # jemanden, der spielen und nicht schrauben will, heißt das: gibt es nicht.
+    # der Autor am 27.08.2026: „einige kennen sich nicht aus und wollen nur was
+    # funktionierendes."
+    's_or_start':      ('Startbefehl für Star Citizen  —  optional',
+                        'Launch command for Star Citizen  —  optional'),
+    's_or_start_h':    ('Leer lassen, wenn der Knopf „Star Citizen starten" bei dir '
+                        'funktioniert. Er findet das Startskript des LUG Helper von '
+                        'allein. Wer über Lutris, Heroic oder Flatpak spielt, trägt '
+                        'hier seinen eigenen Befehl ein — dann erscheint der Knopf '
+                        'auch bei ihm.',
+                        'Leave empty if the "Launch Star Citizen" button works for '
+                        'you. It finds the LUG Helper launch script by itself. If you '
+                        'play through Lutris, Heroic or Flatpak, enter your own '
+                        'command here — then the button appears for you too.'),
+    's_or_start_bsp':  ('Beispiele:  lutris rungame/star-citizen  ·  '
+                        'flatpak run org.starcitizen-lug.Helper  ·  '
+                        'oder der volle Pfad zu einem Startskript',
+                        'Examples:  lutris rungame/star-citizen  ·  '
+                        'flatpak run org.starcitizen-lug.Helper  ·  '
+                        'or the full path to a launch script'),
+    's_or_start_ok':   ('Startbefehl übernommen — der Knopf gilt ab sofort.',
+                        'Launch command saved — the button applies from now on.'),
+    's_or_start_weg':  ('Startbefehl entfernt — es gilt wieder der gefundene Weg.',
+                        'Launch command removed — the detected route applies again.'),
+    's_or_uebernehmen': ('Übernehmen', 'Apply'),
     's_or_leer':       ('leer — wird selbst gesucht',
                           'empty — found automatically'),
 
@@ -949,6 +976,16 @@ TEXTE = {
     'b_sicherungen':   ('Sicherungen', 'Kept logs'),
     'b_protokolle':    ('%s Protokolle', '%s logs'),
     'b_launcher':      ('Launcher', 'Launcher'),
+    # ⚠ Diese Zeile wäre am 27.08.2026 die halbe Diagnose gewesen: Bomb20
+    # meldete „Star Citizen startet nicht aus dem Werkzeug", und niemand konnte
+    # sehen, was das Werkzeug überhaupt gefunden hatte. Erst nach zwei Stunden
+    # kam heraus, dass es den `lug-helper` aufrief — ein Programm, das das Spiel
+    # gar nicht starten kann. Hätte hier gestanden „lug-helper (gefunden)",
+    # wäre es in einer Minute klar gewesen.
+    'b_starter':       ('Spielstarter', 'Game launcher'),
+    'b_starter_eigen': ('%s  (selbst eingetragen)', '%s  (set by hand)'),
+    'b_starter_kein':  ('keiner gefunden — der Startknopf erscheint nicht',
+                        'none found — the launch button does not appear'),
     'b_spielsprache':  ('Spielsprache', 'Game language'),
     'b_bestand':       ('Bestand', 'Inventory'),
     'b_n_bauplaene':   ('%s Baupläne', '%s blueprints'),

@@ -1574,6 +1574,52 @@ def main():
         wurzel.destroy()
 
         print()
+        print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')
+        # ⚠ Wer ueber Lutris, Heroic oder Flatpak spielt, bekam GAR KEINEN
+        # Startknopf. Der Ausweg (Einstellung `spielstarter`) existierte, stand
+        # aber nur in der einstellungen.json — fuer jemanden, der spielen und
+        # nicht schrauben will, heisst das: gibt es nicht.
+        from scbp import pfade as pf25
+        from scbp import bericht as be25
+
+        # Ein Befehl mit Argumenten muss zerlegt werden, eine echte Datei NICHT.
+        skript25 = os.path.join(basis, 'mein start skript.sh')
+        open(skript25, 'w').close()
+        pruefe(pf25._startbefehl(skript25) == [skript25],
+               'eine vorhandene Datei mit Leerzeichen bleibt ganz')
+        pruefe(pf25._startbefehl('lutris rungame/star-citizen')
+               == ['lutris', 'rungame/star-citizen'],
+               'ein Befehl mit Argumenten wird zerlegt')
+        pruefe(pf25._startbefehl('flatpak run org.starcitizen-lug.Helper')
+               == ['flatpak', 'run', 'org.starcitizen-lug.Helper'],
+               'auch der Flatpak-Aufruf')
+        # Unpaariges Anfuehrungszeichen darf nicht in eine Ausnahme laufen.
+        pruefe(pf25._startbefehl('kaputt "offen') == ['kaputt "offen'],
+               'ein unpaariges Anfuehrungszeichen wirft nicht')
+
+        # Der eingetragene Befehl schlaegt die Suche.
+        alt_einst25 = pf25.einstellung
+        try:
+            pf25.einstellung = lambda name: ('mein-eigener-start --jetzt'
+                                             if name == 'spielstarter' else None)
+            pruefe(pf25.spielstarter() == 'mein-eigener-start --jetzt',
+                   'der eingetragene Startbefehl schlaegt die Suche')
+        finally:
+            pf25.einstellung = alt_einst25
+
+        # ⚠ Und er muss im BERICHT stehen. Ohne diese Zeile ist "der Startknopf
+        # tut nichts" nicht zu beantworten, ohne den Nutzer auszufragen — genau
+        # das kostete am 27.08.2026 zwei Stunden.
+        pruefe(hasattr(be25, '_spielstarter'),
+               'der Bericht kennt eine Starter-Zeile')
+        quelle25 = open(os.path.join(WURZEL, 'scbp', 'bericht.py'),
+                        encoding='utf-8').read()
+        pruefe("zeile(t('b_starter')" in quelle25,
+               'und gibt sie auch aus')
+        pruefe('kuerzen(' in quelle25.split('def _spielstarter')[1][:900],
+               'gekuerzt — kein Benutzername im oeffentlichen Bericht')
+
+        print()
         print('24. Der Waechter gibt den Port wirklich frei')
         # ⚠ **Der Kern des Selbst-Neustarts.** Steht im Lausch-Faden ein
         # `accept()`, weckt ein `close()` aus einem anderen Faden es NICHT: Der
