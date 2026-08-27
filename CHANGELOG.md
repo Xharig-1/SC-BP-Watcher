@@ -10,6 +10,39 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc71 - 2026-08-27
+
+> **The restart after an update works** — the cause was entirely different from
+> what everyone assumed.
+
+### Fixed
+
+- **After an update the watcher shut down and never came back.** Reported by
+  **Bomb20** (pr0citizen) in the morning, reproduced by **der Autor** all through
+  the day. Three attempts (rc67, rc68, rc70) failed to solve it, because they
+  assumed the new version was crashing.
+  - **It was not a crash.** The new version starts, finds the single-instance
+    guard still occupied, considers itself the **second** instance and exits as
+    designed — with return code 0. A cleanly exited process looks exactly like a
+    crashed one afterwards, until someone reads the return code.
+  - **Why the port stayed occupied:** the guard is closed with `close()` before
+    the restart. But that does not wake the thread waiting in `accept()` — it
+    stays blocked, the descriptor stays valid, the port stays taken.
+    `shutdown()` aborts the waiting `accept()`; only then does `close()` actually
+    release the port.
+  - Proven, not assumed: the probe previously failed with `Address already in
+    use` and now goes through. Self-test section 24 keeps it that way.
+
+### Thanks
+
+- **der Autor** — for the patience across seven test versions in one morning, and
+  for the sentence that turned the search around: "I shut it down and started it
+  myself." And for the report with the one line that explained everything:
+  *return code 0 — no output.*
+- **Bomb20** (pr0citizen) — for the first report and for not letting go when it
+  looked like a user error. He was right, we were not.
+
+
 ## v3.0.0-rc70 - 2026-08-27
 
 > **If the restart fails, the report will now say why.**

@@ -10,6 +10,40 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc71 - 2026-08-27
+
+> **Der Neustart nach dem Update funktioniert** — die Ursache war eine ganz
+> andere, als alle dachten.
+
+### Behoben
+
+- **Nach dem Update ging der Watcher aus und kam nicht wieder.** Gemeldet von
+  **Bomb20** (pr0citizen) am Morgen, von **der Autor** den ganzen Vormittag über
+  reproduziert. Drei Anläufe (rc67, rc68, rc70) haben es nicht gelöst, weil sie
+  von einem Absturz der neuen Version ausgingen.
+  - **Es war kein Absturz.** Die neue Version startet, sieht den
+    Einzelinstanz-Wächter noch belegt, hält sich für die **zweite** Instanz und
+    beendet sich planmäßig — mit Rückgabewert 0. Ein sauber beendeter Prozess
+    sieht im Nachhinein genauso aus wie ein abgestürzter, bis jemand den
+    Rückgabewert liest.
+  - **Warum der Port belegt blieb:** Vor dem Neustart wird der Wächter mit
+    `close()` geschlossen. Das weckt aber den Faden nicht, der in `accept()`
+    wartet — der bleibt hängen, der Deskriptor bleibt gültig, der Port belegt.
+    `shutdown()` bricht das wartende `accept()` ab; erst danach gibt `close()`
+    den Port wirklich frei.
+  - Belegt statt vermutet: Die Probe scheiterte vorher mit `Address already in
+    use` und läuft jetzt durch. Selbsttest-Abschnitt 24 hält das fest.
+
+### Dank
+
+- **der Autor** — für die Geduld über sieben Testversionen an einem Vormittag und
+  für den Satz, der die Suche gedreht hat: „ich habe selber aus gemacht und
+  gestartet." Und für den Bericht mit der einen Zeile, die alles erklärte:
+  *Rückgabewert 0 — keine Ausgabe.*
+- **Bomb20** (pr0citizen) — für die erste Meldung und dafür, nicht lockergelassen
+  zu haben, als es nach einem Bedienfehler aussah. Er lag richtig, wir nicht.
+
+
 ## v3.0.0-rc70 - 2026-08-27
 
 > **Wenn der Neustart scheitert, steht künftig im Bericht, warum.**

@@ -241,6 +241,26 @@ def waechter_stoppen():
     _waechter[0] = None
     if horcher is None:
         return
+    # ⚠ **`close()` allein genügt nicht** — und daran ist der Selbst-Neustart
+    # unter Linux gescheitert, drei Anläufe lang.
+    #
+    # Im Lausch-Faden steht `accept()` und wartet. Ein `close()` aus einem
+    # anderen Faden weckt es nicht: Der Faden bleibt hängen, der Deskriptor
+    # bleibt gültig, **der Port bleibt belegt**. Die frisch gestartete Fassung
+    # kann sich dann nicht binden, hält sich für die zweite Instanz — und
+    # beendet sich planmäßig wieder.
+    #
+    # Für den Nutzer sah das aus wie „geht aus und kommt nicht wieder". Im
+    # Protokoll stand am 27.08.2026 endlich der Beweis: `neustart_tot,
+    # Rückgabewert 0 — keine Ausgabe`. Kein Absturz, sondern ein geordneter
+    # Abgang. Gemessen, nachdem zwei geratene Reparaturen es nicht gelöst hatten.
+    #
+    # `shutdown()` bricht das wartende `accept()` ab — erst danach gibt `close()`
+    # den Port wirklich frei.
+    try:
+        horcher.shutdown(socket.SHUT_RDWR)
+    except OSError:
+        pass                      # schon zu, oder nie verbunden — beides egal
     try:
         horcher.close()
     except OSError:
