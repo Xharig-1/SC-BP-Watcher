@@ -12,6 +12,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **The donation link was nowhere to be seen on GitHub.** The "Buy me a coffee"
+  button has been in the tool for a long time — but the project page itself had
+  nothing: no sponsor button, no mention in the readme. Anyone who had not
+  installed the tool yet could not find it at all. Both are there now. Found by
+  der Autor.
+
 - **New "Thanks & Licenses" tab** under *Info*. Until now the program showed
   **no licence information at all** — neither its own (GPL-3.0) nor that of the
   bundled symbols, and third-party projects were only mentioned in passing where

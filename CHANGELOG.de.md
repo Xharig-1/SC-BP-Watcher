@@ -12,6 +12,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Hinzugefügt
 
+- **Der Spenden-Link war auf GitHub nirgends zu sehen.** Der Knopf „Kaffee
+  spendieren" gibt es im Werkzeug seit Langem — auf der Projektseite selbst
+  fehlte er aber komplett: kein Sponsor-Knopf, keine Erwähnung in der Anleitung.
+  Wer das Werkzeug noch nicht installiert hatte, konnte ihn also gar nicht
+  finden. Jetzt gibt es beides. Gefunden von der Autor.
+
 - **Neuer Reiter „Danke & Lizenzen"** unter *Info*. Bis hierher stand im ganzen
   Programm **keine einzige Lizenzangabe** — weder die eigene (GPL-3.0) noch die
   der mitgelieferten Symbole, und fremde Projekte wurden nur nebenbei genannt,
