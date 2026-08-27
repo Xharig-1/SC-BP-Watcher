@@ -10,11 +10,10 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
-## v3.0.0-rc58 - 2026-08-27
+## v3.0.0-rc59 - 2026-08-27
 
-> **Wem was gehört — an einer Stelle.** Neuer Reiter „Danke & Lizenzen", der
-> die Lizenzen und die Beteiligten zusammenführt. Dazu Namen und Symbole, die
-> endlich zu dem passen, was sie tun.
+> **Die Anleitung stimmt wieder.** Alle Bildschirmfotos neu, je Sprache ein
+> eigener Satz, und alle Symbole darin stammen aus dem Satz des Programms.
 
 ### Hinzugefügt
 
@@ -38,12 +37,28 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   `⚡ 📋 🧭 ⭐ 🔔 …` haben mit dem Symbolsatz des Programms nichts zu tun und sehen
   auf jedem System anders aus. Alle sechzehn stammen jetzt aus demselben Satz wie
   die Oberfläche. Gemeldet von der Autor.
+
 - **Ein Bildschirmfoto zeigte den Heimatpfad des Autors.** `screenshot-pfade.png`
   lag seit v3.0.0-rc11 im Repo und führte dreimal `/home/<benutzer>/` vor —
   genau das, was der Fehlerbericht mit `pfade.kuerzen()` sonst herausnimmt.
   Entfernt; die Ordner-Seite bekommt kein Bild mehr, weil dort zwangsläufig
   Pfade stehen. An ihrer Stelle steht jetzt der Serverstatus, der nie eins
   hatte. Gefunden von der Autor.
+
+### Behoben
+
+- **Die Filterknöpfe auf „Was ist neu" blieben auf Englisch deutsch.** „Alles /
+  Neu / Verbessert / Behoben" standen fest im Code statt in `sprache.py` — direkt
+  neben einem sauber übersetzten Änderungstext. Aufgefallen auf einem
+  Bildschirmfoto der englischen Oberfläche. Gefunden von der Autor.
+
+## v3.0.0-rc58 - 2026-08-27
+
+> **Wem was gehört — an einer Stelle.** Neuer Reiter „Danke & Lizenzen", der
+> die Lizenzen und die Beteiligten zusammenführt. Dazu Namen und Symbole, die
+> endlich zu dem passen, was sie tun.
+
+### Hinzugefügt
 
 - **Der Reiter „Auftragstexte" heißt jetzt „Texte im Spiel".** Der alte Name
   sagte nicht, **wo** diese Texte auftauchen. „Ingame-Texte" stand kurz zur Wahl
@@ -133,11 +148,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   merken es klemmt etwas."
 
 ### Behoben
-
-- **Die Filterknöpfe auf „Was ist neu" blieben auf Englisch deutsch.** „Alles /
-  Neu / Verbessert / Behoben" standen fest im Code statt in `sprache.py` — direkt
-  neben einem sauber übersetzten Änderungstext. Aufgefallen auf einem
-  Bildschirmfoto der englischen Oberfläche. Gefunden von der Autor.
 
 - **Ein Hilfetext zeigte auf ein Zeichen, das es nicht mehr gab.** „Mit ☰
   öffnest du jederzeit die Bauplan-Liste" stand noch im Einrichtungs-Assistenten,

@@ -10,11 +10,10 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
-## v3.0.0-rc58 - 2026-08-27
+## v3.0.0-rc59 - 2026-08-27
 
-> **What belongs to whom — in one place.** A new "Thanks & Licenses" tab that
-> brings the licences and the people together. Plus names and symbols that
-> finally match what they do.
+> **The readme is accurate again.** All screenshots redone, a separate set
+> per language, and every symbol in them comes from the program's own set.
 
 ### Added
 
@@ -38,11 +37,27 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   `⚡ 📋 🧭 ⭐ 🔔 …` have nothing to do with the program's icon set and look
   different on every system. All sixteen now come from the same set as the
   interface. Reported by der Autor.
+
 - **A screenshot exposed the author's home path.** `screenshot-pfade.png` had
   been in the repo since v3.0.0-rc11, showing `/home/<user>/` three times — the
   very thing `pfade.kuerzen()` strips from error reports. Removed; the folder
   page gets no screenshot at all, since it necessarily shows paths. The server
   status tab took its place. Found by der Autor.
+
+### Fixed
+
+- **The filter buttons on "What's new" stayed German in English.** "Alles / Neu /
+  Verbessert / Behoben" were hard-coded instead of living in `sprache.py` — right
+  next to a properly translated changelog. Spotted on a screenshot of the English
+  interface. Found by der Autor.
+
+## v3.0.0-rc58 - 2026-08-27
+
+> **What belongs to whom — in one place.** A new "Thanks & Licenses" tab that
+> brings the licences and the people together. Plus names and symbols that
+> finally match what they do.
+
+### Added
 
 - **The "Mission text" tab is now "In-game text".** The old name did not say
   **where** those texts appear. Prompted by der Autor.
@@ -118,11 +133,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   that is where people go anyway when they notice something is stuck."
 
 ### Fixed
-
-- **The filter buttons on "What's new" stayed German in English.** "Alles / Neu /
-  Verbessert / Behoben" were hard-coded instead of living in `sprache.py` — right
-  next to a properly translated changelog. Spotted on a screenshot of the English
-  interface. Found by der Autor.
 
 - **A help text pointed at a glyph that no longer existed.** "Use ☰ to open the
   blueprint list at any time" was still in the setup assistant, even though `☰`
