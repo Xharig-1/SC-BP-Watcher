@@ -1142,7 +1142,25 @@ class Hauptfenster:
             size=13 + stufe)
 
     def schriftgroesse_setzen(self, stufe):
-        """Die ganze Oberfläche wächst oder schrumpft — sofort, ohne Neustart."""
+        """Die ganze Oberfläche wächst oder schrumpft — sofort, ohne Neustart.
+
+        ⚠ **Die Schriften umzustellen reicht nicht.** Ein benanntes Tk-Font
+        wirkt sofort auf jedes Widget, das es benutzt — aber nur auf den
+        *Text*. Alles, was seine Größe beim Bauen **einmal gemessen** hat,
+        bleibt stehen: die gezeichneten Rundknöpfe (`_wahl`, `rundknopf`,
+        `rundes_feld`) legen ihre Leinwand auf `schrift.measure(text)` fest.
+        Bei „sehr groß" ragte der Text deshalb aus dem Kasten heraus und war
+        abgeschnitten — gemeldet von der Autor am 27.08.2026 an der
+        Overlay-Wahl („immer sichtbar" / „nur bei einem Neuzugang").
+
+        Deshalb dasselbe wie beim Sprachwechsel: einmal neu aufbauen. Jede
+        Leinwand misst dann mit der neuen Schrift. Einzeln nachzuziehen wären
+        vier Bausteine an Dutzenden Stellen — eine Liste, die man nicht
+        pflegen kann.
+
+        ⚠ Die Rückmeldung kommt **nach** dem Neuaufbau. Vorher gesagt, wäre sie
+        sofort wieder weg: `neu_aufbauen()` zerstört auch die Fußzeile.
+        """
         n = STUFEN.get(stufe, 1)
         for schrift, grund in ((self.f_grund, 10), (self.f_fett, 10),
                                (self.f_klein, 9), (self.f_titel, 12),
@@ -1154,6 +1172,19 @@ class Hauptfenster:
                 self.beim_schriftwechsel(stufe)
             except Exception as ausnahme:
                 fehler.merken('hauptfenster.schriftwechsel', ausnahme)
+
+        # ⚠ Über `after`, nicht sofort: Wir stecken im Klick-Rückruf des
+        # Knopfes, der gleich zerstört wird. Tk meldete sonst
+        # „invalid command name“.
+        def nachziehen():
+            try:
+                self.neu_aufbauen()
+                self.sagen('%s: %s' % (t('hf_schrift'), t('hf_s_' + stufe)))
+            except Exception as ausnahme:
+                fehler.merken('hauptfenster.schriftgroesse_nachziehen',
+                              ausnahme)
+
+        self.root.after(0, nachziehen)
 
     # ------------------------------------------------------------ Titelleiste
     def _titelleiste(self):
@@ -1644,6 +1675,22 @@ class Hauptfenster:
         if offen:
             self._klapp_umschalten()
         self.oeffnen(merker or 'liste')
+
+        # ⚠ Die Mindestgroesse muss mitwachsen. Sie haengt an der Hoehe der
+        # Seitenleiste, und die haengt an der Schrift: Bei „sehr gross" braucht
+        # sie mehr Platz, als das Fenster hoch ist — dann fallen „Star Citizen
+        # starten", „Kaffee spendieren" und „Discord" unten heraus, weil sie von
+        # unten gepackt werden. Genau so gemeldet von der Autor am 27.08.2026:
+        # „wenn jemand so schlecht sehen sollte, was ja moeglich ist, dann muss
+        # die minimale groesse eben im verhaeltnis mitwachsen."
+        #
+        # Gerechnet hat das `_mindesthoehe_nachziehen()` schon immer richtig —
+        # es lief nur beim Start und beim Aufklappen, nie nach einem Schrift-
+        # oder Sprachwechsel. Hier ist der richtige Ort: Wer neu aufbaut, hat
+        # neue Masse. Ueber `after`, weil Tk die Leiste erst zeichnen muss —
+        # vorher meldet sie 1 Pixel Hoehe (die Funktion faengt das ab und
+        # versucht es erneut).
+        self.root.after(50, self._mindesthoehe_nachziehen)
 
     def _seite_fuellen(self, kennung, rahmen):
         """Hier hängen die Seiten ein — geliefert von `seiten.py`."""
