@@ -77,13 +77,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   Can be switched off under *In-game text → Details on the item*. To undo it,
   use „Remove again" — the original names come back to the character.
 
-### Thanks
-
-- **Xharig** — for two finds in one evening: that the switches on the same page
-  sat sometimes centred, sometimes right („symmetry is EXTREMELY important to me
-  in basically everything"), and for asking whether there is any route at all
-  from v2.0.0 to v3.0.0. There was — but it led astray.
-
 ## v3.0.0-rc75 - 2026-08-27
 
 > **The startup trace is back in the report.**
@@ -129,7 +122,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **Bomb20** (pr0) — for a report that turned out to be about something
   bigger than a single crash: the tool was blind at that spot. And for sending
   it even though it looked like a false alarm.
-- **Haldjas** (pr0) and **Xharig** — for the counter-test on Windows: the
+- **Haldjas** (pr0) — for the counter-test on Windows: the
   update from rc71 to rc73 and the interface since rc61, both without findings.
 
 ## v3.0.0-rc73 - 2026-08-27
@@ -188,8 +181,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 - **Bomb20** (pr0) — for "I still get 67 shown". It sounded like a
   triviality and pointed at two bugs at once.
-- **der Autor** — for looking at the box that offered homework instead of a
-  button.
 
 
 ## v3.0.0-rc71 - 2026-08-27
@@ -200,7 +191,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 ### Fixed
 
 - **After an update the watcher shut down and never came back.** Reported by
-  **Bomb20** (pr0) in the morning, reproduced by **der Autor** all through
+  **Bomb20** (pr0) in the morning, reproduced here all through
   the day. Three attempts (rc67, rc68, rc70) failed to solve it, because they
   assumed the new version was crashing.
   - **It was not a crash.** The new version starts, finds the single-instance
@@ -217,10 +208,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Thanks
 
-- **der Autor** — for the patience across seven test versions in one morning, and
-  for the sentence that turned the search around: "I shut it down and started it
-  myself." And for the report with the one line that explained everything:
-  *return code 0 — no output.*
 - **Bomb20** (pr0) — for the first report and for not letting go when it
   looked like a user error. He was right, we were not.
 
@@ -236,7 +223,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   press the button outside and drag into the overlay, and only the motion
   fires — leaving no starting point. Dragging did nothing once, and the error
   landed silently in the log. Reported by **Bomb20** (pr0, 25 Aug 2026 on
-  rc18) and **der Autor** (27 Aug 2026 on rc69) — never fixed in between, because
+  rc18) and again on 27 Aug 2026 on rc69 — never fixed in between, because
   it breaks nothing you can see.
 
 ### Changed
@@ -247,14 +234,10 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   it. It is now captured, and if the new version does not come up, its last words
   are attached to the error log and thus to the report.
   - This is not a fix but a measurement. After two attempts that did not solve
-    the restart for **der Autor**, there will be no third guess.
+    the restart, there will be no third guess.
 
 ### Thanks
 
-- **der Autor** — for reproducing it on his own machine and for making the
-  distinction clear: "I shut it down and started it myself." Without that
-  sentence, a successful manual start would have looked like a successful
-  restart.
 - **Bomb20** (pr0) — for the drag error that sat in reports for two days
   without anyone taking it seriously.
 
@@ -306,24 +289,20 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **The "Get the latest version" button now sits at the very top**, right below
   the version card. Previously it came after the button row and the daily
   toggle, which put it **below the edge** at the window's minimum size — someone
-  who cannot find it will not update. Reported by **der Autor**.
+  who cannot find it will not update.
   - Making the window taller would have been the wrong answer: on a 1366×768
     laptop it would no longer fit at all. The most important button belongs at
     the top, not the window in the sky.
 - **Both channel boxes are fully visible at minimum size too** — they hold the
   button that fetches the stable version specifically. The daily toggle moved
   below them; it is a side setting, the boxes are the point of the page.
-  Reported by **der Autor**.
 - **"Finished versions only" is now "Stable version".** "Finished" sounds like
-  something that is done — this tool is under continuous development. Suggested
-  by **der Autor**.
+  something that is done — this tool is under continuous development.
 - **"rcXX is already there" is now "rcXX is already installed"** — clearer, and
-  the English string already said so. Reported by **der Autor**.
+  the English string already said so.
 
 ### Thanks
 
-- **der Autor** — for looking at the tool through a user's eyes while
-  demonstrating it to someone. Every point in this version came from that.
 
 
 ## v3.0.0-rc67 - 2026-08-27
@@ -336,7 +315,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **After an update the watcher shut down and never came back.** It downloaded
   the new version, installed it, closed itself — and stayed closed. Reported by
   **Bomb20** (pr0) with the decisive sentence "it does shut down but
-  doesn't start", reproduced the same day by **der Autor** on his own machine.
+  doesn't start", reproduced the same day on a second machine.
   - **The cause:** when starting the new version, only `APPIMAGE`, `APPDIR`,
     `OWD` and `ARGV0` were removed from the environment — `LD_LIBRARY_PATH`,
     `PYTHONHOME` and `PYTHONPATH` stayed. Inside an AppImage those point into the
@@ -359,8 +338,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **Bomb20** (pr0) — for sticking with it. His matter-of-fact "it does
   shut down but doesn't start" pinned down the bug after it had first been
   dismissed as a user error. He was right, we were not.
-- **der Autor** — for reproducing it on his own machine, which finally ruled out
-  "it's something on his system".
 
 ## v3.0.0-rc66 - 2026-08-27
 
@@ -375,7 +352,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   they stayed frozen at the moment of that click. Writing is now tied to the
   inventory itself: every find in the game, every catch-up at startup, every
   confirmation from the launcher and every import carries the files along.
-  Reported by **der Autor**.
   - **Fixed file names in the folder.** With a date in the name, three new files
     would appear there every day and nobody would know which one is current. The
     save dialog still suggests a name with a date — saving by hand means
@@ -389,24 +365,20 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 - **"Save individually …" always saved the Basetool format.** The format was
   hard-coded; scmdb and the full backup were not reachable through the dialog at
-  all. Reported by **der Autor**.
+  all.
 - **The file chooser on Linux was the old Tk box** — a column list showing every
   hidden folder, no sorting, no preview. It now opens the desktop's own dialog
   (`kdialog` on KDE, otherwise `zenity`), everywhere a file or folder is chosen:
   import inventory, save inventory, game folder, launcher folder, own folder and
   the setup assistant. If neither is present, the Tk dialog remains as a
   fallback — **nothing depends on it.** Nothing changes on Windows and macOS,
-  where Tk already passes through the real system dialog. Reported by
-  **der Autor**.
+  where Tk already passes through the real system dialog.
   - Folders already had this path; files did not. Both now live in one place
     (`scbp/dateiwahl.py`) instead of three.
 
 
 ### Thanks
 
-- **der Autor** — for the observations while demonstrating the tool: that the
-  export files are not kept up to date, that "Save individually" only handled one
-  format, and that the file chooser on Linux looks like it came from the nineties.
 
 ## v3.0.0-rc65 - 2026-08-27
 
@@ -420,7 +392,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   Wine prefix, runners and DXVK, and has no launch option. The watcher now uses
   the `sc-launch.sh` launch script the helper creates inside the prefix, and
   finds it via the game folder (one level above `drive_c`) — no matter where
-  someone installed it. Reported by **Bomb20** (pr0) and **der Autor**.
+  someone installed it. Reported by **Bomb20** (pr0).
   - No more fallback to `lug-helper`: it would be found, the button would
     appear, and it would do nothing again. Anyone playing through Lutris or
     Heroic still enters their launch command in the `spielstarter` setting.
@@ -444,7 +416,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   answer appeared: the button stayed on "Looking for a new version …".
   `neu_aufbauen()` destroys **every** child of the window — including the footer
   the message lives in. It was set and torn down milliseconds later. It now
-  rebuilds first and reports afterwards. Reported by der Autor.
+  rebuilds first and reports afterwards.
 
 - **Same trap after updating on Linux.** "Ready — restart now" was said at
   `after(0)` and swept away at `after(50)`. Order swapped.
@@ -455,20 +427,19 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   window's minimum size depends on the sidebar height, which depends on the
   font. The program always calculated this correctly; the calculation simply
   never ran after a font or language change. It is now part of the rebuild.
-  Reported by der Autor.
 
 - **The two boxes under "What do you want to hear about?" were unequal.**
   `pack(expand=True)` distributes only the **surplus** evenly — whichever has
   more text stays wider. They now sit in a `grid` with `uniform`, the only
   guarantee in Tk that makes two columns truly equal; measured 545 px to
-  545 px, same height. Reported by der Autor.
+  545 px, same height.
 
 - **At "very large" the buttons were cut off.** A named Tk font applies to every
   text instantly — but the drawn round buttons fix their canvas to the measured
   text width **once**, at build time. Measured on the overlay choice: canvas
   177 px, text 206 px, **29 px short**. Changing the font size now rebuilds the
   interface — as the language switch has always done — so every canvas measures
-  anew. Reported by der Autor.
+  anew.
 
 ### Notes
 
@@ -489,14 +460,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   function. Whether a new version was out or not, the status line said it had
   not worked. The button now reports what it finds: the version — or **"You
   have the latest version."** That sentence existed all along; nothing ever
-  showed it. Reported by der Autor.
+  showed it.
 
 - **The notice before an update never appeared, not once.** Since rc52 the
   watcher is meant to announce that it will close, run the installer and needs
   a double-click afterwards — a program that vanishes without a word looks like
   a crash. The dialog sat in that same dead function. It now runs in the real
   update, before installing, and the installer waits until it has been read.
-  Confirmed by der Autor while updating to rc62: no window appeared.
 
 - **The export folder never opened.** `os.startfile()` in the inventory window
   used an `os` that was never imported there, and the error fell silently into
@@ -519,7 +489,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   origin panel and was hard to recognise as a control at pure line size. New
   size set `ANTIPPBAR`, one step above the other in-line marks: 16 px instead
   of 14 at "normal", 22 instead of 18 at "very large". The status dots in the
-  overlay are unchanged — nobody clicks those. Suggested by der Autor.
+  overlay are unchanged — nobody clicks those.
 
 ## v3.0.0-rc62 - 2026-08-27
 
@@ -532,7 +502,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   only happened on a rebuild, and a rebuild only happens on a new game version.
   So the dropdown showed "4.10.0 (21)" (it reads the history directly) while the
   list below said "Nothing found". The stamps are now filled in at startup, with
-  no rebuild and no network needed. Found by der Autor.
+  no rebuild and no network needed.
 - **The next patch would have been silent.** The comparison baseline
   (`bauplaene-gesehen.json`) also arrived only with rc55. Without it the rule
   "very first catalogue build — nothing is new" kicked in, and the next patch
@@ -557,7 +527,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   `[Repo] New release published: v3.0.0-rc60` it shows the changelog section for
   **this** build — the same text the tool shows under "What's new". Test builds
   in gold with a "less thoroughly tested" note, finished ones in Xharig green,
-  plus the program icon. Prompted by der Autor after comparing with the
+  plus the program icon. after comparing with the
   StarStrings channel. Without a stored key nothing happens and the build stays
   green — a chat message must never turn a finished release red.
 
@@ -573,15 +543,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   destroyed. Nothing was visible: the hook in `fehler.py` caught them, they only
   filled up the report and buried what actually mattered. The same trap sat in
   the button row and in the drawn-border entry field; all three now check whether
-  their widget still exists. Measured: 39 page switches, **0** errors. Found by
-  der Autor in the diagnostics report.
+  their widget still exists. Measured: 39 page switches, **0** errors.
 
 - **The cross that closes the source box was invisible.** In the blueprint list
   it left an empty gap: the `schliessen` symbol only existed at button size while
   it was used at row size. `zeichen.bild()` silently returns `None` for a missing
   file — deliberately, so a missing symbol never halts the program, which is
   exactly what hid the bug. `tools/oberflaeche_pruefen.py` now checks for it.
-  Reported by der Autor.
 
 ## v3.0.0-rc59 - 2026-08-27
 
@@ -593,13 +561,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **The coloured dots were still emoji in the running text.** The symbol key
   already showed the real images while the description below it kept using
   `🟢 🟡 🔵 ⭐` — two different renderings of the same symbol on one page.
-  Reported by der Autor.
 
 - **The English readme now shows the English interface.** Until now it presented
   German screenshots — with eleven images, and a tool whose Linux users mostly
   run the English client, that is not a detail. `tools/sprachen_pruefen.py` now
-  checks for it: it only counted sections and never looked at images. Reported by
-  der Autor.
+  checks for it: it only counted sections and never looked at images.
 
 - **Every screenshot in the readme is new.** The old ones were from v3.0.0-rc11
   and showed not just the replaced symbols but a build without the server status
@@ -609,20 +575,20 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **The feature table in the readme used emoji instead of the real symbols.**
   `⚡ 📋 🧭 ⭐ 🔔 …` have nothing to do with the program's icon set and look
   different on every system. All sixteen now come from the same set as the
-  interface. Reported by der Autor.
+  interface.
 
 - **A screenshot exposed the author's home path.** `screenshot-pfade.png` had
   been in the repo since v3.0.0-rc11, showing `/home/<user>/` three times — the
   very thing `pfade.kuerzen()` strips from error reports. Removed; the folder
   page gets no screenshot at all, since it necessarily shows paths. The server
-  status tab took its place. Found by der Autor.
+  status tab took its place.
 
 ### Fixed
 
 - **The filter buttons on "What's new" stayed German in English.** "Alles / Neu /
   Verbessert / Behoben" were hard-coded instead of living in `sprache.py` — right
   next to a properly translated changelog. Spotted on a screenshot of the English
-  interface. Found by der Autor.
+  interface.
 
 ## v3.0.0-rc58 - 2026-08-27
 
@@ -633,27 +599,25 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 ### Added
 
 - **The "Mission text" tab is now "In-game text".** The old name did not say
-  **where** those texts appear. Prompted by der Autor.
+  **where** those texts appear.
 - **The program icon now sits next to the version on "Update & About".** The page
   had no image at all after the author block moved to "Thanks & Licenses".
-  Reported by der Autor.
 
 - **The readme showed symbols the tool no longer has.** The button legend in
   both readmes listed `☰`, `ⓘ`, `⟳`, `⏻` and `🗑` — two of them are long gone,
   the others look different now. It now shows the **actual image files** from
   `assets/symbole/`, so it can no longer go stale: swapping a symbol updates the
-  readme picture by itself. Same for the message symbol key. Found by der Autor.
+  readme picture by itself. Same for the message symbol key.
 - **"Who built this" suddenly appeared twice.** The block naming the author,
   scmdb, the SC Deutsch Launcher and StarStrings sat on "Update & About" — and
   the new "Thanks & Licenses" page listed the same projects again. It now lives
   only on "Thanks & Licenses", with the author **at the top**: a page listing
-  other people's work has to name its own first. Reported by der Autor.
+  other people's work has to name its own first.
 
 - **The donation link was nowhere to be seen on GitHub.** The "Buy me a coffee"
   button has been in the tool for a long time — but the project page itself had
   nothing: no sponsor button, no mention in the readme. Anyone who had not
-  installed the tool yet could not find it at all. Both are there now. Found by
-  der Autor.
+  installed the tool yet could not find it at all. Both are there now.
 
 - **New "Thanks & Licenses" tab** under *Info*. Until now the program showed
   **no licence information at all** — neither its own (GPL-3.0) nor that of the
@@ -661,7 +625,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   they happened to be used. There is now one place stating what belongs to whom:
   the program itself, the Lucide symbols, the scmdb data, StarStrings and the SC
   Deutsch Launcher — each with its licence and a clickable link. Plus thanks to
-  the people whose feedback turned into something. Suggested by der Autor.
+  the people whose feedback turned into something.
 
 ## v3.0.0-rc57 - 2026-08-27
 
@@ -677,7 +641,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   only 50–70 % of its box, each one differently; `🗑` and `▶` are solid shapes
   while `⚙ ⟳ ✕` are thin strokes; and every operating system picks a different
   fallback font. Replaced with rendered images from the **Lucide** set — all
-  drawn on a 24×24 grid with the same stroke width. Suggested by der Autor.
+  drawn on a 24×24 grid with the same stroke width.
 - **The interface now looks identical on Windows, Linux and macOS.** It did not
   before: Windows used `Segoe UI Symbol`, other systems something else. Anyone
   developing on a Mac saw different glyphs than their users on Windows.
@@ -686,12 +650,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   font as coloured blocks that **ignored** the configured colour — in the very
   place you look at most often.
 - **Launching Star Citizen now shows a rocket instead of a play arrow.** A `▶`
-  means "play video" everywhere, not "start a program". Reported by der Autor.
+  means "play video" everywhere, not "start a program".
 - **Clearing messages now shows an eraser instead of a bin.** The button deletes
   nothing — it only tidies the display, the blueprints stay. A bin promises
-  destruction and puts people off clicking it. Prompted by der Autor.
+  destruction and puts people off clicking it.
 - **"Setup" is now "Run setup".** A verb says something is about to happen; the
-  noun alone sounded like a place to look things up. Suggested by der Autor.
+  noun alone sounded like a place to look things up.
 - The height of the notification bar now grows with the configured font size. It
   was fixed at 26 pixels, which made symbols stick out at "large".
 
@@ -702,8 +666,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   that really does close the program — two buttons that both looked like "off".
   The setting is unchanged under "General".
 - **The setup assistant button is gone from the notification bar.** It remains
-  available in the main window, top right. der Autor: "the settings are enough,
-  that is where people go anyway when they notice something is stuck."
+  available in the main window, top right — the settings are where everyone goes anyway once they notice something is off.
 
 ### Fixed
 
@@ -714,9 +677,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Thanks
 
-- **der Autor** — for prompting the whole change ("they should all be the same
-  size, but they are not, and the bell is even the largest") and for the notes
-  on the rocket, the eraser and "Run setup".
 
 ## v3.0.0 - 2026-08-29
 
@@ -786,8 +746,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   understand what a channel is and pick the right one of the two boxes — anyone
   choosing the wrong one was offered nothing at all. There is now a full-width
   button above them that immediately fetches whatever is available, including a
-  test build. It changes nothing about the setting below. Suggested by der Autor
-  after Morkhan got stuck at exactly this point.
+  test build. It changes nothing about the setting below.
 
 - **Star Citizen can be launched from the tool.** The „In-game details" page
   has a button that starts the game the way you already do: the RSI Launcher on
@@ -990,8 +949,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   why the icons could never be evened out via the font size — they came from
   different font files. Windows now explicitly asks for **Segoe UI Symbol**:
   all fourteen glyphs monochrome, in the configured text colour, with half the
-  spread. On Linux this was never a problem and nothing changes. Reported by
-  der Autor.
+  spread. On Linux this was never a problem and nothing changes.
 
 - **The overlay stayed German when you switched to English.** Changing the
   language gave you an English window and a German status bar:
@@ -1006,18 +964,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   into the line as finished sentences, frozen in the language of the moment;
   only a restart cleared them. Messages now carry their text key along and are
   rewritten on a language change — including the date, which reads differently
-  in English (2026-08-22 rather than 22.08.2026). Reported by der Autor.
+  in English (2026-08-22 rather than 22.08.2026).
 
 - **The hint on the ▶ launch button overwrote the status bar.** It was the only
   one of the ten icons without a tooltip; instead it wrote into the status bar
   and afterwards restored a value that was never kept up to date — so a
   blueprint message was gone after the mouse passed over the icon.
-  Reported by der Autor.
 
 - **The logo was missing from the finished build.** On „Update & About" the
   program loaded `assets/xharig.png`, but the build never packed that file — it
-  never showed when starting from source, where the file is present. Reported by
-  der Autor, who spotted it in a tester's screenshot.
+  never showed when starting from source, where the file is present.
 
 - **The „ⓘ" on the overlay opened a separate window with its own update logic** —
   and that one had no restart button. Anyone going that way downloaded the new
