@@ -26,6 +26,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Betroffen war ausgerechnet, wer schon länger spielt und seinen Stand
   mitbringt. Gefunden beim Nachgehen einer Meldung von **Morkhan**.
 
+  **Vorhandene Bestände ziehen beim ersten Start selbst um.** Die Schlüssel
+  werden einmalig neu gebildet, doppelte Einträge zusammengeführt — dabei
+  gewinnt der ältere Fund, denn wann ein Bauplan zum ersten Mal auftauchte, ist
+  die Angabe, die zählt. Nichts geht verloren, nichts muss von Hand gemacht
+  werden.
+
 - **Das Werkzeug sagte nicht, dass die Änderungen erst beim nächsten
   Spielstart wirken.** Star Citizen liest die Textdatei **einmal beim
   Hochfahren**. Wer das Spiel offen hatte, spielte die Angaben ein, las

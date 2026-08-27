@@ -2088,6 +2088,54 @@ def main():
                       'Ding (Alpha/1/A)'):
             pruefe(nfm33(roh33) == roh33.lower(),
                    'unangetastet: %s' % roh33)
+        # ⚠ Und der wichtigste Teil: Ein **schon gespeicherter** Bestand muss
+        # mitziehen. `namensform()` zu reparieren hilft nur neuen Eintraegen —
+        # Morkhans 320 Bauplaene lagen mit den alten Schluesseln auf der Platte.
+        import json as js33, tempfile as tf33, shutil as sh33
+        heim33 = tf33.mkdtemp(prefix='bestand33-')
+        alt_heim33 = os.environ.get('SC_BP_HOME')
+        os.environ['SC_BP_HOME'] = heim33
+        try:
+            import importlib as im33
+            from scbp import pfade as pf33
+            im33.reload(pf33)
+            from scbp import bestand as be33
+            im33.reload(be33)
+            with open(be33.pfad(), 'w', encoding='utf-8') as f33:
+                js33.dump({'version': 1, 'stand': '2026-08-01 12:00:00',
+                           'bauplaene': {
+                               'xl-1 (mil/2/a)': {'name': 'XL-1 (Mil/2/A)',
+                                                  'quelle': 'launcher',
+                                                  'zeit': '2026-08-01 10:00:00'},
+                               'guardian (ind/1/b)': {'name': 'Guardian (Ind/1/B)',
+                                                      'quelle': 'launcher',
+                                                      'zeit': '2026-08-05 09:00:00'},
+                               'guardian': {'name': 'Guardian', 'quelle': 'log',
+                                            'zeit': '2026-08-02 08:00:00'},
+                           }}, f33, ensure_ascii=False)
+            d33 = be33.laden()
+            pruefe('xl-1' in d33['bauplaene'],
+                   'ein gespeicherter Schluessel mit Kuerzel zieht um')
+            pruefe('xl-1 (mil/2/a)' not in d33['bauplaene'],
+                   'und der alte bleibt nicht daneben stehen')
+            pruefe(len([k for k in d33['bauplaene'] if k.startswith('guardian')]) == 1,
+                   'eine Dublette wird zu einem Eintrag zusammengefuehrt')
+            pruefe(d33['bauplaene']['guardian'].get('zeit') == '2026-08-02 08:00:00',
+                   'dabei gewinnt der aeltere Fund, nicht der zuletzt gelesene')
+            pruefe(d33.get('version') == 2, 'die Datei-Version wird hochgesetzt')
+            # ⚠ Nur EINMAL umziehen — sonst schreibt jeder Start die Datei neu.
+            auf_platte33 = js33.load(open(be33.pfad(), encoding='utf-8'))
+            pruefe(auf_platte33.get('version') == 2,
+                   'der Umzug wird auf die Platte geschrieben, nicht nur gedacht')
+        finally:
+            if alt_heim33 is None:
+                os.environ.pop('SC_BP_HOME', None)
+            else:
+                os.environ['SC_BP_HOME'] = alt_heim33
+            sh33.rmtree(heim33, ignore_errors=True)
+            im33.reload(pf33)
+            im33.reload(be33)
+
         # Und der Weg, um den es eigentlich geht: Ein Bestand aus der
         # Launcher-Datei muss die Liste abhaken koennen.
         from scbp import katalog as kat33

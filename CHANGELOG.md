@@ -26,6 +26,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   This hit precisely those who have been playing longer and bring their
   collection with them. Found while following up a report from **Morkhan**.
 
+  **Existing collections migrate themselves on first start.** The keys are
+  rebuilt once and duplicate entries merged — the older find wins, because when
+  a blueprint first turned up is the date that matters. Nothing is lost, nothing
+  has to be done by hand.
+
 - **The tool did not say that changes only take effect the next time the game
   starts.** Star Citizen reads the text file **once, while launching**. Anyone
   with the game running would install the details, read „in place (1608

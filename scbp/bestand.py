@@ -53,7 +53,7 @@ import time
 
 from . import fehler, pfade
 
-DATEI_VERSION = 1
+DATEI_VERSION = 2
 
 # Rangfolge der Quellen: Ein Eintrag wird nur „aufgewertet", nie herabgestuft.
 # Sonst überschriebe eine spätere vorläufige Log-Zeile eine bereits vom
@@ -78,6 +78,52 @@ def leer():
     return {'version': DATEI_VERSION, 'stand': _jetzt(), 'bauplaene': {}}
 
 
+def _schluessel_erneuern(daten):
+    """Gespeicherte Schlüssel noch einmal durch `namensform()` schicken.
+
+    ⚠ **Warum das nötig war.** Bis v3.0.0 schnitt nur das Log-Lesen den
+    Klassen-Zusatz ab. Namen aus der **Launcher-Datei** und aus **Importen**
+    landeten mitsamt Zusatz im Bestand — `xl-1 (mil/2/a)` statt `xl-1`. Die
+    Bauplan-Liste sucht nach `xl-1` und fand nichts: Der Bauplan galt als
+    fehlend, obwohl er dastand.
+
+    Seit v3.0.0 schneidet `namensform()` selbst ab. Das hilft aber nur neuen
+    Einträgen — die **gespeicherten** Schlüssel bleiben, wie sie sind. Deshalb
+    werden sie hier einmalig neu gebildet.
+
+    Gemessen an Morkhans Bericht (28.08.2026): **320 Baupläne** im Bestand,
+    Launcher wird gefunden — und im Spiel trotzdem alles leer.
+
+    Treffen zwei alte Schlüssel auf denselben neuen, gewinnt der **ältere
+    Fund**: Wann ein Bauplan zum ersten Mal auftauchte, ist die Angabe, die
+    zählt. Gibt es sie nicht, gewinnt der mit dem höheren Rang (Launcher
+    schlägt Log).
+    """
+    alt_bp = daten.get('bauplaene') or {}
+    neu_bp, geaendert = {}, False
+    for schluessel, eintrag in alt_bp.items():
+        eintrag = eintrag if isinstance(eintrag, dict) else {}
+        frisch = norm(eintrag.get('name') or schluessel)
+        if frisch != schluessel:
+            geaendert = True
+        da = neu_bp.get(frisch)
+        if da is None:
+            neu_bp[frisch] = eintrag
+            continue
+        # Dublette zusammenführen
+        alt_zeit = str(da.get('zeit') or '')
+        neu_zeit = str(eintrag.get('zeit') or '')
+        if neu_zeit and (not alt_zeit or neu_zeit < alt_zeit):
+            eintrag = dict(eintrag)
+            eintrag.setdefault('quelle', da.get('quelle'))
+            neu_bp[frisch] = eintrag
+        elif RANG.get(eintrag.get('quelle'), 0) > RANG.get(da.get('quelle'), 0):
+            da['quelle'] = eintrag.get('quelle')
+    if geaendert:
+        daten['bauplaene'] = neu_bp
+    return geaendert
+
+
 def laden():
     """Bestand von der Platte. Fehlt die Datei oder ist sie beschädigt, wird mit
     einem leeren Bestand weitergearbeitet — der Watcher soll nie am Start scheitern."""
@@ -88,6 +134,19 @@ def laden():
         return leer()
     if not isinstance(daten.get('bauplaene'), dict):
         return leer()
+    # ⚠ Erst umziehen, dann die Version hochsetzen — und nur dann schreiben,
+    # wenn sich wirklich etwas geändert hat. Ein Schreibfehler darf den Start
+    # nicht aufhalten: Der Bestand im Speicher stimmt dann trotzdem, nur der
+    # Umzug wiederholt sich beim nächsten Mal.
+    if daten.get('version', 1) < 2:
+        if _schluessel_erneuern(daten):
+            daten['version'] = DATEI_VERSION
+            try:
+                speichern(daten)
+            except Exception as ausnahme:
+                fehler.merken('bestand.schluessel_erneuern', ausnahme)
+        else:
+            daten['version'] = DATEI_VERSION
     daten.setdefault('version', DATEI_VERSION)
     return daten
 
