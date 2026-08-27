@@ -416,8 +416,8 @@ class Einstellungsfenster:
                 if not ok:
                     self._melden(t('inj_fehler', meldung), ROT)
                     return
+                # `g_language` setzt `spieltexte.holen()` selbst.
                 ziel = uebersetzung.ziel_ini(sprache_ordner)
-                uebersetzung.user_cfg_setzen(sprache_ordner)
                 uebersetzung.vermerken('original', 'Data.p4k')
             else:
                 ok, meldung = uebersetzung.holen(quelle, fortschritt=melde)

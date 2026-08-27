@@ -1807,6 +1807,37 @@ def main():
         pruefe('r_VSync = 0' in cfg_ss2,
                'und die Grafikeinstellung ebenso')
 
+        # ⚠ Der dritte Weg — und der eigentliche „ohne Launcher"-Fall: Wer
+        # **englisch original** spielt, will vielleicht nur die Angaben am
+        # Gegenstand und gar keine Übersetzung. Der hat **gar keine**
+        # `global.ini` auf der Platte, nur die `Data.p4k`. Ohne `g_language`
+        # liest Star Citizen eine dort abgelegte Datei nicht einmal an.
+        # der Autor: „sonst kann man das nie ohne eine übersetzung nutzen."
+        from scbp import spieltexte as st28
+        quelle_st = open(os.path.join(WURZEL, 'scbp', 'spieltexte.py'),
+                         encoding='utf-8').read()
+        pruefe('_sprache_eintragen(' in quelle_st,
+               'holen() traegt g_language selbst ein, nicht der Aufrufer')
+        pruefe(quelle_st.count('_sprache_eintragen(sprache, spielordner)') >= 2,
+               'auch wenn die Datei schon da war — sonst bleibt sie ungelesen')
+        # Kein Aufrufer darf sich mehr darauf verlassen, es selbst zu tun.
+        for datei_st in ('assistent.py', 'einstellungsfenster.py'):
+            inhalt_st = open(os.path.join(WURZEL, 'scbp', datei_st),
+                             encoding='utf-8').read()
+            block_st = inhalt_st[inhalt_st.index('spieltexte.holen('):][:900]
+            pruefe('user_cfg_setzen(' not in block_st,
+                   '%s verlaesst sich auf holen(), statt es zu wiederholen'
+                   % datei_st)
+        # Und der englische Zielordner entsteht genauso von selbst.
+        orig28 = os.path.join(basis, 'englischoriginal', 'LIVE')
+        os.makedirs(orig28)
+        ziel_or = ue28.ziel_ini('english', orig28)
+        os.makedirs(os.path.dirname(ziel_or), exist_ok=True)
+        st28._sprache_eintragen('english', orig28)
+        cfg_or = open(os.path.join(orig28, 'user.cfg'), encoding='utf-8').read()
+        pruefe('g_language = english' in cfg_or,
+               'englisch original: g_language wird ebenfalls gesetzt')
+
         print()
         print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')
         # ⚠ Wer ueber Lutris, Heroic oder Flatpak spielt, bekam GAR KEINEN
