@@ -71,18 +71,24 @@ jobs:
 
       - name: Berichtsziel einsetzen
         shell: bash
+        shell: bash
         run: |
-          printf '%s\n' \
-            '# -*- coding: utf-8 -*-' \
-            '"""Beim Bau eingesetzt — siehe die Fassung im Repo."""' \
-            "WEBHOOK = '${{ secrets.BERICHT_WEBHOOK }}'" \
-            '' \
-            'def ziel():' \
-            '    return (WEBHOOK or "").strip()' \
-            '' \
-            'def moeglich():' \
-            '    return ziel().startswith("https://")' \
-            > scbp/berichtziel.py
+          # ⚠ Nur die eine Zeile ersetzen, die Datei NICHT neu schreiben.
+          # Sonst fehlt in der gebauten Fassung alles andere — etwa die
+          # Umgebungsvariable `SC_BP_BERICHT_ZIEL`, mit der sich der Weg aus
+          # dem Quellcode heraus prüfen lässt. Zwei Fassungen derselben Datei,
+          # die auseinanderlaufen, sind genau die Sorte Fehler, die niemand
+          # sucht.
+          python - <<'PYEOF'
+          import io
+          p = 'scbp/berichtziel.py'
+          t = io.open(p, encoding='utf-8').read()
+          alt = "WEBHOOK = ''"
+          neu = "WEBHOOK = '${{ secrets.BERICHT_WEBHOOK }}'"
+          assert alt in t, 'Platzhalter nicht gefunden'
+          io.open(p, 'w', encoding='utf-8').write(t.replace(alt, neu, 1))
+          print('Ziel eingesetzt:', 'ja' if len(neu) > len(alt) else 'leer')
+          PYEOF
       - name: PyInstaller
         run: pip install --upgrade pyinstaller
 
@@ -166,18 +172,24 @@ jobs:
         run: xvfb-run -a python3 tools/selbsttest.py
 
       - name: Berichtsziel einsetzen
+        shell: bash
         run: |
-          printf '%s\n' \
-            '# -*- coding: utf-8 -*-' \
-            '"""Beim Bau eingesetzt — siehe die Fassung im Repo."""' \
-            "WEBHOOK = '${{ secrets.BERICHT_WEBHOOK }}'" \
-            '' \
-            'def ziel():' \
-            '    return (WEBHOOK or "").strip()' \
-            '' \
-            'def moeglich():' \
-            '    return ziel().startswith("https://")' \
-            > scbp/berichtziel.py
+          # ⚠ Nur die eine Zeile ersetzen, die Datei NICHT neu schreiben.
+          # Sonst fehlt in der gebauten Fassung alles andere — etwa die
+          # Umgebungsvariable `SC_BP_BERICHT_ZIEL`, mit der sich der Weg aus
+          # dem Quellcode heraus prüfen lässt. Zwei Fassungen derselben Datei,
+          # die auseinanderlaufen, sind genau die Sorte Fehler, die niemand
+          # sucht.
+          python - <<'PYEOF'
+          import io
+          p = 'scbp/berichtziel.py'
+          t = io.open(p, encoding='utf-8').read()
+          alt = "WEBHOOK = ''"
+          neu = "WEBHOOK = '${{ secrets.BERICHT_WEBHOOK }}'"
+          assert alt in t, 'Platzhalter nicht gefunden'
+          io.open(p, 'w', encoding='utf-8').write(t.replace(alt, neu, 1))
+          print('Ziel eingesetzt:', 'ja' if len(neu) > len(alt) else 'leer')
+          PYEOF
       - name: Binaerdatei bauen
         run: >
           python3 -m PyInstaller --noconfirm --onefile --windowed

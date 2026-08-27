@@ -45,8 +45,19 @@ WEBHOOK = ''
 
 
 def ziel():
-    """Die Adresse — oder `''`, wenn keine eingebaut wurde."""
-    return (WEBHOOK or '').strip()
+    """Die Adresse — oder `''`, wenn keine vorliegt.
+
+    ⚠ **`SC_BP_BERICHT_ZIEL` schlägt die eingebaute Adresse.** Damit lässt sich
+    der Weg aus dem Quellcode heraus ausprobieren, ohne erst eine Fassung zu
+    bauen — und ohne die Adresse irgendwo hinzuschreiben, wo sie liegen bleibt:
+
+        SC_BP_BERICHT_ZIEL="https://…" bash "SC-BP-Watcher starten.sh"
+
+    Gedacht ist das zum Prüfen. Für Nutzer bleibt es bei dem, was der Bau
+    einsetzt; wer die Variable nicht kennt, merkt von ihr nichts.
+    """
+    import os
+    return (os.environ.get('SC_BP_BERICHT_ZIEL') or WEBHOOK or '').strip()
 
 
 def moeglich():
