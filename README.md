@@ -173,13 +173,12 @@ Nothing else. No Python, no account — and whether you install is your call (se
 
    | System | File | What happens |
    |---|---|---|
-   | **Windows, the easy way** | `SC-BP-Watcher-Setup.exe` | Installs with a start menu entry, optional desktop icon and autostart — and uninstalls cleanly |
-   | **Windows, nothing installed** | `SC-BP-Watcher.exe` | A single file. Nothing is installed, nothing is left behind |
+   | **Windows** | `SC-BP-Watcher-Setup.exe` | Installs with a start menu entry, optional desktop icon and autostart — and uninstalls cleanly |
    | **Linux** | `SC-BP-Watcher-x86_64.AppImage` | A single file. The wizard offers an application menu entry if you want one |
 
 2. Run it. Done.
 
-**You do not have to install anything.** The installer is just the more convenient route on Windows; the plain `.exe` and the AppImage do the same and can simply be deleted again. No Python, no extra packages. On Linux, make the AppImage executable once (right click → Properties → *Executable as program*, or `chmod +x SC-BP-Watcher-x86_64.AppImage`).
+No Python, no extra packages — the installer brings everything with it and can be removed again through *Apps & Features*. On Linux, make the AppImage executable once (right click → Properties → *Executable as program*, or `chmod +x SC-BP-Watcher-x86_64.AppImage`).
 
 On first start a **wizard** walks you through setup: language, finding Star Citizen, collecting your existing blueprints. It takes a minute, and then your inventory is there.
 

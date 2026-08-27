@@ -1896,58 +1896,52 @@ def main():
                % len(falsch29))
 
         print()
-        print('30. Update von v2.0.0 auf v3.0.0 — die Reihenfolge der Anhaenge')
-        # ⚠ Der Fund vom 27.08.2026, auf der Autors Frage hin: „von 2.0.0 auf
-        # 3.0.0 kein update weg vorhanden?"
+        print('30. Nur noch der Installer — und v2.0.0 kommt trotzdem mit')
+        # Entscheidung der Autor am 27.08.2026: „ich will die exe ohne install
+        # loswerden … sie belastet mich nur und war damals deine Entscheidung,
+        # als wir sagten, wir machen es so, um Vertrauen aufzubauen. ABER das
+        # haben wir doch schon, nun wollen wir es funktionierend. Und einfach."
         #
-        # GitHub liefert die Anhaenge einer Freigabe **alphabetisch** (gemessen:
-        # alle drei zur selben Sekunde hochgeladen, Reihenfolge im Workflow ist
-        # eine andere, die API sortiert trotzdem nach Namen). Und **v2.0.0**
-        # greift beim Update die ERSTE Datei, die auf `.exe` endet:
+        # Zwei Auslieferungswege heissen zwei Fehlerquellen und doppelte
+        # Unterstuetzung. Ab v3.0.0 gibt es unter Windows nur den Installer.
         #
-        #     for datei in freigabe['dateien']:
-        #         if name.endswith(endung): return datei
-        #
-        # `-` ist 0x2D, `.` ist 0x2E, `_` ist 0x5F. Mit dem alten Namen
-        # `SC-BP-Watcher-Setup.exe` stand der Installer VOR dem Programm — die
-        # alte Fassung haette ihn roh ueber die laufende `.exe` geschoben, ohne
-        # ihn auszufuehren. Danach oeffnet sich beim Start ein
-        # Installationsfenster statt des Watchers.
+        # ⚠ Der Haken, den das aufwirft: **v2.0.0 gab es NUR als nackte .exe.**
+        # Ihre Update-Logik nimmt die erste Datei auf `.exe` — jetzt also den
+        # Installer. Das ging frueher schief, weil die alte `einspielen()` den
+        # Fund roh ueber das laufende Programm schob. ABER ihr Hilfsskript
+        # startet die getauschte Datei anschliessend (`start "" "<ziel>"`) —
+        # der Installer laeuft also und richtet alles ein. Was frueher der
+        # Fehler war, ist jetzt der Weg hinaus.
         from scbp import aktualisierung as ak30
-        anhaenge30 = sorted(['SC-BP-Watcher_Setup.exe',
-                             'SC-BP-Watcher-x86_64.AppImage',
-                             'SC-BP-Watcher.exe'])
-        erste_exe30 = next(n for n in anhaenge30 if n.lower().endswith('.exe'))
-        pruefe(erste_exe30 == 'SC-BP-Watcher.exe',
-               'v2.0.0 greift das Programm, nicht den Installer (%s)' % erste_exe30)
-        pruefe(anhaenge30.index('SC-BP-Watcher.exe')
-               < anhaenge30.index('SC-BP-Watcher_Setup.exe'),
-               'der Installer steht alphabetisch HINTER dem Programm')
-        # Und die aktuelle Fassung findet umgekehrt weiterhin den Installer.
-        pruefe(any(n.lower().endswith(ak30.WINDOWS_INSTALLER)
-                   for n in anhaenge30),
-               'ab rc39 wird der Installer weiter erkannt')
-        pruefe('-setup.exe' in ak30.WINDOWS_INSTALLER,
-               'der alte Name bleibt in der Liste — sonst brechen rc39 bis rc75')
+        yml30 = open(os.path.join(WURZEL, '.github', 'workflows',
+                                  'release.yml'), encoding='utf-8').read()
+        anhang30 = yml30[yml30.index('files: |'):][:400]
+        pruefe('SC-BP-Watcher-Setup.exe' in anhang30,
+               'der Installer haengt am Release')
+        pruefe('windows/SC-BP-Watcher.exe' not in anhang30,
+               'die nackte .exe haengt NICHT mehr daran')
+        pruefe('AppImage' in anhang30,
+               'Linux bekommt weiter sein AppImage')
         # Was gebaut wird, muss zu dem passen, was gesucht wird.
         iss30 = open(os.path.join(WURZEL, 'packaging', 'installer.iss'),
                      encoding='utf-8').read()
-        pruefe('OutputBaseFilename=SC-BP-Watcher_Setup' in iss30,
-               'der Installer wird auch wirklich so gebaut')
-        yml30 = open(os.path.join(WURZEL, '.github', 'workflows',
-                                  'release.yml'), encoding='utf-8').read()
-        pruefe('SC-BP-Watcher-Setup.exe' not in yml30.replace('#', ''),
-               'im Bau-Ablauf steht nirgends mehr der alte Name')
-
-        # ⚠ Und der Schritt danach: Wer von v2.0.0 kommt, laeuft anschliessend
-        # „portabel" — v2.0.0 gab es nur als nackte .exe. Ohne `/DIR` legt der
-        # Installer beim naechsten Update eine ZWEITE Fassung unter
-        # %LOCALAPPDATA%\Programs an, und die alte Datei bleibt liegen. Wer sie
-        # per Verknuepfung startet, benutzt fuer immer die alte Version.
+        pruefe('OutputBaseFilename=SC-BP-Watcher-Setup' in iss30,
+               'der Installer heisst so, wie rc39-rc75 ihn suchen')
+        pruefe(ak30.WINDOWS_INSTALLER[0] == '-setup.exe',
+               'und die Suche faengt genau damit an')
+        # Der Weg von v2.0.0: erste Datei auf .exe — das MUSS der Installer sein.
+        anhaenge30 = sorted(['SC-BP-Watcher-Setup.exe',
+                             'SC-BP-Watcher-x86_64.AppImage'])
+        erste_exe30 = next((n for n in anhaenge30
+                            if n.lower().endswith('.exe')), None)
+        pruefe(erste_exe30 == 'SC-BP-Watcher-Setup.exe',
+               'v2.0.0 greift den Installer — und startet ihn (%s)' % erste_exe30)
+        # ⚠ Und der Installer muss dorthin, wo das Programm liegt: sonst
+        # entsteht eine zweite Fassung neben der alten Datei.
         ak30q = open(os.path.join(WURZEL, 'scbp', 'aktualisierung.py'),
                      encoding='utf-8').read()
         start30 = ak30q[ak30q.index("schalter = '/SILENT"):][:1400]
-        pruefe("/DIR=" in start30,
+        pruefe('/DIR=' in start30,
                'der Installer bekommt /DIR — ersetzen statt danebenlegen')
         pruefe('sys.executable' in start30,
                'und zwar den Ordner des laufenden Programms')

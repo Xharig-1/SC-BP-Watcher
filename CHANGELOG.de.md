@@ -12,14 +12,15 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
-- **Wer noch v2.0.0 hat, kann jetzt direkt auf v3.0.0 aktualisieren.** Der
-  Installer heißt ab sofort `SC-BP-Watcher_Setup.exe` statt
-  `SC-BP-Watcher-Setup.exe` — mit Unterstrich. Grund: GitHub sortiert die
-  Dateien einer Freigabe alphabetisch, und v2.0.0 greift beim Update die
-  **erste** Datei auf `.exe`. Mit dem Bindestrich stand das der Installer,
-  und die alte Fassung hätte ihn über das laufende Programm geschoben, ohne
-  ihn auszuführen: Beim nächsten Start wäre ein Installationsfenster
-  aufgegangen statt des Watchers.
+- **Unter Windows gibt es nur noch den Installer.** Die einzelne
+  `SC-BP-Watcher.exe` ohne Installation entfällt. Sie stammte aus der
+  Anfangszeit, als es darum ging, Vertrauen in ein unsigniertes Programm
+  aufzubauen — inzwischen bedeuten zwei Wege nur zwei Fehlerquellen und
+  doppelte Unterstützung. Unter Linux bleibt alles wie es ist.
+- **Wer noch v2.0.0 hat, kommt trotzdem mit.** Deren Update-Weg greift die
+  erste Datei auf `.exe` — das ist jetzt der Installer — und startet sie
+  anschließend. Er läuft damit von selbst und richtet alles ordentlich ein.
+  Der eigene Bauplan-Bestand zieht beim ersten Start automatisch mit um.
 - **Ein Update installiert dorthin, wo das Programm liegt** — statt eine zweite
   Fassung daneben anzulegen. v2.0.0 gab es nur als nackte `.exe`, alle ihre
   Nutzer laufen also „portabel", ohne es gewollt zu haben. Ohne diesen Zusatz

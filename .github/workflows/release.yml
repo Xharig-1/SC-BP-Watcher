@@ -89,7 +89,7 @@ jobs:
           name: windows
           path: |
             dist/SC-BP-Watcher.exe
-            dist/SC-BP-Watcher_Setup.exe
+            dist/SC-BP-Watcher-Setup.exe
 
   # -------------------------------------------------------------------- Linux
   linux:
@@ -195,9 +195,22 @@ jobs:
         with:
           prerelease: ${{ steps.art.outputs.vorab }}
           body_path: release-text.md
+          # ⚠ Die nackte `SC-BP-Watcher.exe` wird NICHT mehr angehängt
+          # (Entscheidung der Autor, 27.08.2026: „ich will die exe ohne install
+          # loswerden … nun wollen wir es funktionierend und einfach").
+          #
+          # Sie war seinerzeit dazu da, Vertrauen aufzubauen — ein unsigniertes
+          # Programm ohne Installer wirkt harmloser. Das Argument ist
+          # verbraucht, und zwei Auslieferungswege heißen zwei Fehlerquellen
+          # und doppelte Unterstützung.
+          #
+          # Der Weg für **v2.0.0** bleibt trotzdem offen: Deren Update-Logik
+          # greift die erste Datei auf `.exe` — das ist jetzt der Installer —
+          # und ihr Hilfsskript **startet** die getauschte Datei
+          # (`start "" "<ziel>"`). Der Installer läuft also und installiert
+          # sauber, statt als totes Programm liegenzubleiben.
           files: |
-            dateien/windows/SC-BP-Watcher_Setup.exe
-            dateien/windows/SC-BP-Watcher.exe
+            dateien/windows/SC-BP-Watcher-Setup.exe
             dateien/linux/SC-BP-Watcher-x86_64.AppImage
 
       # Meldung im eigenen Discord — als lesbare Karte statt als nackter Link.

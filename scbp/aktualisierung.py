@@ -470,35 +470,45 @@ def verpackung():
 
 # Welcher Anhang unter Windows geholt wird — und warum es der Installer ist.
 #
-# An jeder Freigabe hängen drei Dateien:
+# Seit v3.0.0 hängen nur noch **zwei** Dateien an einer Freigabe:
 #
+#     SC-BP-Watcher-Setup.exe          der Installer  ← der einzige Windows-Weg
 #     SC-BP-Watcher-x86_64.AppImage    Linux
-#     SC-BP-Watcher.exe                das nackte Programm
-#     SC-BP-Watcher_Setup.exe          der Installer
+#
+# ⚠ Die nackte `SC-BP-Watcher.exe` ist bewusst weg (Entscheidung der Autor,
+# 27.08.2026: „ich will die exe ohne install loswerden … sie belastet mich
+# nur"). Sie war eine Maßnahme aus der Anfangszeit — ein unsigniertes Programm
+# ohne Installer wirkt harmloser, und es ging darum, Vertrauen aufzubauen. Das
+# ist erreicht; zwei Auslieferungswege heißen ab jetzt nur noch zwei
+# Fehlerquellen und doppelte Unterstützung. „Nun wollen wir es funktionierend
+# und einfach."
+#
+# **Und v2.0.0, die es nur als nackte .exe gab?** Deren Update-Logik nimmt die
+# erste Datei auf `.exe` — jetzt also den Installer — und ihr Hilfsskript
+# **startet** die getauschte Datei anschließend (`start "" "<ziel>"`). Der
+# Installer läuft damit von selbst und richtet alles ordentlich ein. Was früher
+# der Fehler war (der Installer landete unter dem Namen des Programms), ist
+# damit genau der Weg hinaus.
 #
 # ⚠ Bis rc39 wurde hier nach der **ersten** Datei auf `.exe` gesucht. GitHub
 # liefert sie alphabetisch, ein `-` (0x2D) steht vor einem `.` (0x2E), also kam
 # `-Setup.exe` zuerst — und die alte `einspielen()` schob diesen Fund roh über
-# die laufende `SC-BP-Watcher.exe`, ohne ihn je auszuführen. Nach dem Update lag
-# der Installer unter dem Namen des Programms. Am 26.08.2026 im Test bestätigt:
-# geladen wurden 14.812.324 Bytes statt 13.015.189.
+# die laufende `SC-BP-Watcher.exe`, ohne ihn je auszuführen. Am 26.08.2026 im
+# Test bestätigt: geladen wurden 14.812.324 Bytes statt 13.015.189.
 #
-# Seitdem ist es **Absicht**, den Installer zu holen — er wird jetzt gestartet
-# statt kopiert. Das erspart den ganzen Eigenbau ringsherum: Inno beendet das
-# laufende Programm selbst (`CloseApplications=force`), ersetzt die Datei,
-# pflegt den Eintrag in „Apps & Features" und startet den Watcher danach wieder.
-# Denselben Weg geht der SC-Deutsch-Launcher.
+# Seitdem ist es **Absicht**, den Installer zu holen — er wird gestartet statt
+# kopiert. Inno beendet das laufende Programm selbst
+# (`CloseApplications=force`), ersetzt die Datei, pflegt den Eintrag in
+# „Apps & Features" und startet den Watcher danach wieder. Denselben Weg geht
+# der SC-Deutsch-Launcher.
 #
 # Unter Linux bleibt es beim Tausch des AppImage — dort gibt es keinen
 # Installer, und ein laufendes AppImage darf ersetzt werden.
-# ⚠ Der Unterstrich ist Absicht (seit v3.0.0). GitHub sortiert die Anhänge
-# alphabetisch, und `_` (0x5F) steht hinter `.` (0x2E) — dadurch kommt der
-# Installer in der Liste NACH `SC-BP-Watcher.exe`. Das ist die Brücke für
-# **v2.0.0**: Dessen Update-Logik greift die erste Datei auf `.exe`, und mit
-# dem alten Namen `-Setup.exe` wäre das der Installer gewesen — roh über das
-# laufende Programm geschoben, ohne ihn je auszuführen. Der Bindestrich bleibt
-# in der Liste, damit die Testfassungen rc39–rc75 weiter erkannt werden.
-WINDOWS_INSTALLER = ('_setup.exe', '-setup.exe', '-installer.exe')
+#
+# ⚠ `-setup.exe` steht vorn und bleibt: Genau danach suchen die Testfassungen
+# rc39–rc75. Wird der Installer je umbenannt, bekommen sie nie wieder ein
+# Update angeboten.
+WINDOWS_INSTALLER = ('-setup.exe', '-installer.exe', '_setup.exe')
 
 
 def passende_datei(freigabe, art=None):
