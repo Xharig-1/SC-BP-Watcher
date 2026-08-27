@@ -10,6 +10,21 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Fixed
+
+- **The patch filter found nothing and "new in game" stayed empty.** Anyone who
+  used the Watcher before rc55 has a catalogue without origin stamps — stamping
+  only happened on a rebuild, and a rebuild only happens on a new game version.
+  So the dropdown showed "4.10.0 (21)" (it reads the history directly) while the
+  list below said "Nothing found". The stamps are now filled in at startup, with
+  no rebuild and no network needed. Found by der Autor.
+- **The next patch would have been silent.** The comparison baseline
+  (`bauplaene-gesehen.json`) also arrived only with rc55. Without it the rule
+  "very first catalogue build — nothing is new" kicked in, and the next patch
+  would have reported **zero** additions. If the file is missing, the existing
+  catalogue is now used as the baseline: whatever is in it was in the game
+  before.
+
 ## v3.0.0-rc61 - 2026-08-27
 
 > **The Discord announcement now says what it is about.**

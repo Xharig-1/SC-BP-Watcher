@@ -10,6 +10,21 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Behoben
+
+- **Der Patch-Filter fand nichts, „neu im Spiel" blieb leer.** Wer den Watcher
+  schon vor rc55 benutzt hat, sitzt auf einem Katalog ohne Herkunftsstempel —
+  gestempelt wurde bisher nur beim Neubau, und neu gebaut wird nur bei einer
+  neuen Spielversion. Das Auswahlfeld zeigte deshalb „4.10.0 (21)" (es liest die
+  Historie direkt), die Liste darunter aber „Nichts gefunden". Die Stempel werden
+  jetzt beim Start nachgetragen, ohne Neubau und ohne Netz. Gefunden von
+  der Autor.
+- **Der nächste Patch wäre stumm geblieben.** Die Vergleichsgrundlage
+  (`bauplaene-gesehen.json`) kam ebenfalls erst mit rc55. Fehlte sie, griff die
+  Regel „erster Katalogbau überhaupt — nichts ist neu", und der nächste Patch
+  hätte **keinen einzigen** Zugang gemeldet. Fehlt die Datei, gilt jetzt der
+  vorhandene Katalog als Grundlage: Was darin steht, war vorher im Spiel.
+
 ## v3.0.0-rc61 - 2026-08-27
 
 > **Die Meldung im Discord sagt jetzt, worum es geht.**

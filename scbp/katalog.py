@@ -508,7 +508,16 @@ def erzeugen(version=None, fortschritt=None, aus_datei=None):
     # ⚠ Ist noch nichts gesehen worden (erster Katalogbau überhaupt), wird
     # NICHTS als Zugang gewertet — sonst stünden alle 730 Baupläne als „neu" da.
     # Nur die Vergleichsgrundlage wird gesetzt.
+    #
+    # ⚠ Wer den Watcher schon vor v3.0.0-rc55 benutzt hat, hat einen Katalog,
+    # aber noch keine Vergleichsgrundlage — die Datei kam erst mit der
+    # Patch-Historie dazu. Ohne diesen Nachzug griffe bei ihm die Regel oben
+    # fälschlich, und der **nächste** Patch bliebe stumm: alles gälte als
+    # „schon immer da". Der alte Katalog ist die richtige Grundlage — was darin
+    # steht, war vor diesem Lauf im Spiel.
     bekannt = patchhistorie.gesehen()
+    if not bekannt:
+        bekannt = set(laden().get('bauplaene') or {})
     if bekannt:
         zugang = [e['n'] for k, e in bauplaene.items() if k not in bekannt]
         if zugang:
@@ -547,6 +556,46 @@ def laden():
     return {'version': '', 'geholt': '', 'bauplaene': {}, 'missionen': {}}
 
 
+def stempel_nachziehen():
+    """Fehlende `seit`-Stempel im vorhandenen Katalog nachtragen.
+
+    ⚠ **Warum das nötig ist.** Gestempelt wurde bisher nur beim Neubau des
+    Katalogs — und neu gebaut wird nur, wenn eine neue Spielversion kommt. Wer
+    seinen Katalog vor v3.0.0-rc55 geholt hat, sitzt deshalb auf 738 Einträgen
+    ohne Herkunft, und daran ändert sich bis zum nächsten Patch nichts: Das
+    Auswahlfeld zeigte „4.10.0 (21)" — es liest die Historie direkt —, die
+    Liste blieb aber leer, weil der Filter gegen den Stempel im Katalog prüft.
+    Dasselbe traf „neu im Spiel".
+
+    Der Abgleich kostet nichts und braucht kein Netz: Die Historie liegt beim
+    Programm, der Katalog auf der Platte. Geschrieben wird nur, wenn sich
+    wirklich etwas ändert.
+
+    Gibt die Zahl der nachgetragenen Stempel zurück."""
+    try:
+        d = laden()
+        bauplaene = d.get('bauplaene') or {}
+        if not bauplaene:
+            return 0
+        herkunft = patchhistorie.version_je_bauplan()
+        geaendert = 0
+        for k, eintrag in bauplaene.items():
+            seit = herkunft.get(k)
+            if seit and eintrag.get('seit') != seit:
+                eintrag['seit'] = seit
+                geaendert += 1
+        if not geaendert:
+            return 0
+        ziel = pfade.app_datei(CACHE)
+        temp = ziel + '.tmp'
+        with open(temp, 'w', encoding='utf-8') as f:
+            json.dump(d, f, ensure_ascii=False)
+        os.replace(temp, ziel)
+        return geaendert
+    except Exception:
+        return 0
+
+
 def aktualisieren(fortschritt=None):
     """Erneuert den Katalog, falls eine neue Spielversion vorliegt.
 
@@ -555,6 +604,11 @@ def aktualisieren(fortschritt=None):
     (dann fehlt nur die Liste, nicht die Erkennung)."""
     if AUS:
         return False, 0, ''
+    # ⚠ Vor dem Netz-Zugriff, nicht danach: Bringt eine neue Programmfassung
+    # Historie mit, die der Katalog auf der Platte noch nicht kennt, muss der
+    # Stempel auch dann nachkommen, wenn gar keine neue Spielversion ansteht —
+    # und auch dann, wenn gerade kein Netz da ist.
+    stempel_nachziehen()
     try:
         version = aktuelle_version()
         if not version or version == laden().get('version'):
