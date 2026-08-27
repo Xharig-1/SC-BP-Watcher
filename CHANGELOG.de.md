@@ -10,9 +10,9 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
-## v3.0.0-rc78 - 2026-08-28
+## v3.0.0-rc79 - 2026-08-28
 
-> **Klicks ins Spiel durchreichen ist keine Einbahnstraße mehr.**
+> **Drei Funde aus Morkhans Fragen — einer davon hätte still Baupläne verschluckt.**
 
 ### Behoben
 
@@ -47,6 +47,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   ⚠️ Warum es nicht sauberer geht: Alle Preisstufen einer Mission teilen sich
   **einen** Beschreibungstext im Spiel. Für die kleine Variante zeigt Star
   Citizen denselben Text wie für die große — unterscheiden lässt sich das nicht.
+
+## v3.0.0-rc78 - 2026-08-28
+
+> **Klicks ins Spiel durchreichen ist keine Einbahnstraße mehr.**
+
+### Hinzugefügt
 
 - **Ein Schloss am Overlay holt dich zurück, wenn Klicks ins Spiel
   durchgereicht werden.** Bisher war das eine Einbahnstraße: Wer die

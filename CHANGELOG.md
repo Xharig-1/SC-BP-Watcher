@@ -10,9 +10,9 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
-## v3.0.0-rc78 - 2026-08-28
+## v3.0.0-rc79 - 2026-08-28
 
-> **Passing clicks through to the game is no longer a one-way street.**
+> **Three finds from Morkhan's questions — one would have silently swallowed blueprints.**
 
 ### Fixed
 
@@ -47,6 +47,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   ⚠️ Why it cannot be cleaner: all payout tiers of a mission share **one**
   description text in the game. Star Citizen shows the small variant the same
   text as the large one — there is no way to tell them apart.
+
+## v3.0.0-rc78 - 2026-08-28
+
+> **Passing clicks through to the game is no longer a one-way street.**
+
+### Added
 
 - **A lock on the overlay brings you back when clicks pass through to the
   game.** Until now this was a one-way street: turning the setting on made the
