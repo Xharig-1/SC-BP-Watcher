@@ -10,6 +10,24 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc65 - 2026-08-27
+
+> **Der Startknopf rief unter Linux das falsche Programm auf.**
+
+### Behoben
+
+- **Der Knopf „Star Citizen starten" startete unter Linux nichts.** Er meldete
+  „Star Citizen wird gestartet …" und danach geschah nichts — ohne jede
+  Fehlermeldung. Aufgerufen wurde der `lug-helper`, und der **kann das Spiel gar
+  nicht starten**: Er verwaltet Wine-Präfix, Runner und DXVK; eine Startoption
+  hat er nicht. Der Watcher nimmt jetzt das Startskript `sc-launch.sh`, das der
+  Helper beim Einrichten im Präfix anlegt, und findet es über den Spielordner
+  (eine Ebene über `drive_c`) — unabhängig davon, wohin jemand installiert hat.
+  Gemeldet von **Bomb20** (pr0citizen) und **der Autor**.
+  - Kein Rückfall mehr auf den `lug-helper`: Er würde gefunden, der Knopf
+    erschiene, und er täte wieder nichts. Wer über Lutris oder Heroic spielt,
+    trägt seinen Startbefehl weiterhin in der Einstellung `spielstarter` ein.
+
 ## v3.0.0-rc64 - 2026-08-27
 
 > **Der Neuaufbau frisst die Meldung** — dreimal dieselbe Falle, an drei
