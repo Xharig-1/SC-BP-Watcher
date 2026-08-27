@@ -302,6 +302,60 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
     return '\n'.join(zeilen)
 
 
+def absenden(text, version=''):
+    """Den Bericht an den eingebauten Kanal schicken. (Erfolg, Meldung).
+
+    ⚠ **Der einzige Weg, der bei Nicht-Bastlern ankommt.** Kopieren und in
+    Discord einfügen scheitert dreifach: Der Bericht steckt unter
+    „Fortgeschritten", er ist zu lang für eine Nachricht, und man muss wissen,
+    wohin damit. der Autor am 28.08.2026: „ich will nicht jedem eine Stunde
+    erklären, wie ich zu dem Bericht komme."
+
+    Verschickt wird **nur auf Knopfdruck** und erst, nachdem der Nutzer den
+    vollen Wortlaut gesehen hat. Der Text ist derselbe, der auf der Seite steht
+    — durch `pfade.kuerzen()` von Namen und Pfaden befreit.
+
+    Als **Datei**, nicht als Nachricht: Discord nimmt höchstens 2000 Zeichen je
+    Nachricht, ein Bericht ist regelmäßig länger. Eine angehängte `.txt` ist
+    zudem das, was man lesen und aufheben kann.
+    """
+    from . import berichtziel
+    ziel = berichtziel.ziel()
+    if not berichtziel.moeglich():
+        return False, t('m_bericht_kein_ziel')
+
+    import urllib.request
+    import uuid
+    grenze = uuid.uuid4().hex
+    name = 'bericht-%s.txt' % datetime.now().strftime('%Y-%m-%d-%H%M')
+    kopf = ('**Fehlerbericht** · %s' % (version or '?'))[:1900]
+
+    teile = []
+    for feld, wert in (('content', kopf),):
+        teile.append('--%s\r\nContent-Disposition: form-data; name="%s"\r\n\r\n%s\r\n'
+                     % (grenze, feld, wert))
+    teile.append('--%s\r\nContent-Disposition: form-data; name="files[0]"; '
+                 'filename="%s"\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n%s\r\n'
+                 % (grenze, name, text))
+    teile.append('--%s--\r\n' % grenze)
+    leib = ''.join(teile).encode('utf-8')
+
+    try:
+        anfrage = urllib.request.Request(
+            ziel, data=leib, method='POST',
+            headers={'Content-Type': 'multipart/form-data; boundary=%s' % grenze,
+                     'User-Agent': 'SC-BP-Watcher'})
+        with urllib.request.urlopen(anfrage, timeout=30) as antwort:
+            if 200 <= antwort.status < 300:
+                return True, ''
+            return False, 'HTTP %s' % antwort.status
+    except Exception as ausnahme:
+        fehler.merken('bericht.absenden', ausnahme)
+        # ⚠ Den Grund NICHT durchreichen: In der Fehlermeldung einer
+        # fehlgeschlagenen Anfrage steht die Adresse, und die ist geheim.
+        return False, t('m_bericht_weg')
+
+
 def in_die_ablage(text, wurzel=None):
     """Den Bericht in die Zwischenablage legen. True, wenn es geklappt hat."""
     try:

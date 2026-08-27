@@ -10,6 +10,21 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Added
+
+- **A red „Send error report" button.** If something is stuck, you press it —
+  and the report is with the developer. No copying, no hunting for the right
+  channel, no „message too long".
+
+  It used to take nine steps: expand, copy, find Discord, paste, discover it is
+  too long, save as a file, find that file again, upload, send. Now it takes
+  one.
+
+  **You see exactly what goes out beforehand** — the same text shown on the
+  page, in a window to read through, and only then are you asked. Names, paths
+  and credentials have already been stripped. Nothing happens without your
+  yes.
+
 ## v3.0.0-rc80 - 2026-08-28
 
 > **Blueprints from the launcher get ticked off again — existing collections migrate themselves.**

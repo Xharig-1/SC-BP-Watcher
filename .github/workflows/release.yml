@@ -38,6 +38,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Die Adresse, an die ein Fehlerbericht auf Knopfdruck geht. Sie steht
+      # NICHT im Quelltext — wer sie hat, kann in den Kanal schreiben. Hier
+      # wird sie aus dem Secret in die Datei geschrieben, die dann mitgebaut
+      # wird. Fehlt das Secret, bleibt sie leer und der Knopf erscheint gar
+      # nicht erst (`berichtziel.moeglich()`).
+      - name: Berichtsziel einsetzen
+        shell: bash
+        run: |
+          printf '%s\n' \
+            '# -*- coding: utf-8 -*-' \
+            '"""Beim Bau eingesetzt — siehe die Fassung im Repo."""' \
+            "WEBHOOK = '${{ secrets.BERICHT_WEBHOOK }}'" \
+            '' \
+            'def ziel():' \
+            '    return (WEBHOOK or "").strip()' \
+            '' \
+            'def moeglich():' \
+            '    return ziel().startswith("https://")' \
+            > scbp/berichtziel.py
+
       - uses: actions/setup-python@v5
         with:
           # ⚠ 3.14 ist Absicht, keine Modepflege: Erst ab dieser Fassung
@@ -136,6 +156,21 @@ jobs:
           python3 -c "import compression.zstd; print('zstd in der Standardbibliothek: ok')"
 
       - uses: actions/checkout@v4
+
+      # Dasselbe wie im Windows-Job — siehe die Begruendung dort.
+      - name: Berichtsziel einsetzen
+        run: |
+          printf '%s\n' \
+            '# -*- coding: utf-8 -*-' \
+            '"""Beim Bau eingesetzt — siehe die Fassung im Repo."""' \
+            "WEBHOOK = '${{ secrets.BERICHT_WEBHOOK }}'" \
+            '' \
+            'def ziel():' \
+            '    return (WEBHOOK or "").strip()' \
+            '' \
+            'def moeglich():' \
+            '    return ziel().startswith("https://")' \
+            > scbp/berichtziel.py
 
       - name: Selbsttest
         # xvfb-run stellt einen Bildschirm bereit, den es auf einem Bau-Rechner

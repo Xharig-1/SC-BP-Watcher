@@ -2146,6 +2146,42 @@ def main():
                'und zwar fuer jeden Namen, nicht nur zufaellig einen')
 
         print()
+        print('34. Fehlerbericht absenden — ein Knopf statt einer Erklaerstunde')
+        # ⚠ der Autor am 28.08.2026: „ich will nicht jedem eine Stunde erklaeren,
+        # wie ich zu dem Bericht komme, das ist nervenaufreibend." Und sein
+        # Bruder, um den es ging: „weil ich kein nerd bin … ich installiere und
+        # es funktioniert, wenn nicht, unbrauchbar."
+        #
+        # Kopieren und in Discord einfuegen scheitert dreifach: Der Bericht
+        # steckt unter „Fortgeschritten", er ist zu lang fuer eine Nachricht,
+        # und man muss wissen, wohin damit.
+        from scbp import berichtziel as bz34, bericht as be34
+        pruefe(bz34.ziel() == '',
+               'im Repo steht KEINE Adresse — sie ist ein Geheimnis')
+        pruefe(not bz34.moeglich(),
+               'ohne eingebaute Adresse gibt es den Knopf nicht')
+        ok34, grund34 = be34.absenden('Probe', '3.0.0-test')
+        pruefe(ok34 is False, 'ohne Ziel wird nichts gesendet')
+        pruefe('http' not in grund34.lower(),
+               'und die Meldung verraet die Adresse nicht')
+        # ⚠ Der Bau MUSS die Datei ersetzen — sonst hat niemand den Knopf.
+        yml34 = open(os.path.join(WURZEL, '.github', 'workflows',
+                                  'release.yml'), encoding='utf-8').read()
+        pruefe(yml34.count('scbp/berichtziel.py') >= 2,
+               'Windows UND Linux setzen das Ziel beim Bau ein')
+        pruefe('BERICHT_WEBHOOK' in yml34,
+               'und zwar aus dem Secret, nicht aus dem Quelltext')
+        # Die Adresse darf nirgends im Repo stehen.
+        for _wo34, _unter34, _dateien34 in os.walk(os.path.join(WURZEL, 'scbp')):
+            for _d34 in _dateien34:
+                if not _d34.endswith('.py'):
+                    continue
+                _inh34 = open(os.path.join(_wo34, _d34),
+                              encoding='utf-8', errors='ignore').read()
+                pruefe('discord.com/api/webhooks' not in _inh34,
+                       'keine Webhook-Adresse in scbp/%s' % _d34)
+
+        print()
         print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')
         # ⚠ Wer ueber Lutris, Heroic oder Flatpak spielt, bekam GAR KEINEN
         # Startknopf. Der Ausweg (Einstellung `spielstarter`) existierte, stand

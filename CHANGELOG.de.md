@@ -10,6 +10,21 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Hinzugefügt
+
+- **Ein roter Knopf „Fehlerbericht absenden".** Klemmt etwas, drückst du ihn —
+  und der Bericht ist beim Entwickler. Kein Kopieren, kein Suchen nach dem
+  richtigen Kanal, kein „die Nachricht ist zu lang".
+
+  Vorher waren es neun Schritte: aufklappen, kopieren, Discord finden,
+  einfügen, feststellen dass es zu lang ist, als Datei speichern, die Datei
+  wiederfinden, hochladen, abschicken. Jetzt einer.
+
+  **Du siehst vorher genau, was rausgeht** — derselbe Text, der auf der Seite
+  steht, in einem Fenster zum Nachlesen, und erst dann wird gefragt. Namen,
+  Pfade und Zugangsdaten sind ohnehin schon herausgenommen. Ohne dein Ja
+  passiert nichts.
+
 ## v3.0.0-rc80 - 2026-08-28
 
 > **Baupläne aus dem Launcher werden wieder abgehakt — vorhandene Bestände ziehen selbst um.**

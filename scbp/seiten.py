@@ -3122,7 +3122,36 @@ def _diagnose(fenster, rahmen):
         fenster.sagen(t('s_di_gespeichert') % os.path.basename(ziel_datei)
                       if ziel_datei else t('s_di_speich_weg'))
 
-    _knopfreihe(reihe, [
+    def absenden():
+        """Auf Knopfdruck an den Entwickler — mit vorheriger Rückfrage.
+
+        ⚠ Der Weg für alle, die nicht basteln wollen. Kopieren und in Discord
+        einfügen scheitert daran, dass der Bericht zu lang ist und man wissen
+        muss, wohin damit. der Autor am 28.08.2026: „ich will nicht jedem eine
+        Stunde erklären, wie ich zu dem Bericht komme."
+
+        Gefragt wird trotzdem: Etwas ins Netz zu schicken, ohne dass jemand
+        zugestimmt hat, macht dieses Werkzeug nicht.
+        """
+        from tkinter import messagebox
+        if not messagebox.askyesno(t('s_di_ab_frage_t'), t('s_di_ab_frage'),
+                                   parent=fenster.root):
+            return
+        fenster.sagen(t('s_di_ab_laeuft'))
+        fenster.root.update_idletasks()
+        geklappt, grund = bericht.absenden(text, fenster.version)
+        fenster.sagen(t('s_di_ab_ok') if geklappt
+                      else t('s_di_ab_weg') % grund)
+
+    from . import berichtziel
+    knoepfe = []
+    # ⚠ Ganz vorn und in Rot: Wer hier landet, hat ein Problem und sucht den
+    # kürzesten Weg. Nur anbieten, wenn wirklich gesendet werden kann — ein
+    # Knopf, der nichts tut, ist schlimmer als keiner.
+    if berichtziel.moeglich():
+        knoepfe.append(_knopf(fenster, reihe, t('s_di_absenden'), absenden,
+                              gefahr=True))
+    _knopfreihe(reihe, knoepfe + [
         _knopf(fenster, reihe, t('s_di_melden'), melden, stark=True),
         _knopf(fenster, reihe, t('s_di_kopieren'), kopieren),
         _knopf(fenster, reihe, t('s_di_speichern'), speichern),
