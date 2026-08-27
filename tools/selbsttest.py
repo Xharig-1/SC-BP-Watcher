@@ -1574,6 +1574,60 @@ def main():
         wurzel.destroy()
 
         print()
+        print('24. Der Waechter gibt den Port wirklich frei')
+        # ⚠ **Der Kern des Selbst-Neustarts.** Steht im Lausch-Faden ein
+        # `accept()`, weckt ein `close()` aus einem anderen Faden es NICHT: Der
+        # Deskriptor bleibt gueltig, der Port belegt. Die frisch gestartete
+        # Fassung kann sich dann nicht binden, haelt sich fuer die zweite
+        # Instanz und beendet sich planmaessig — fuer den Nutzer sieht das aus
+        # wie "geht aus und kommt nicht wieder".
+        #
+        # Drei Anlaeufe (rc67, rc68, rc70) haben das nicht geloest, weil geraten
+        # statt gemessen wurde. Der Beweis kam aus der Autors Bericht vom
+        # 27.08.2026: "neustart_tot, Rueckgabewert 0 — keine Ausgabe". Kein
+        # Absturz, sondern ein geordneter Abgang.
+        import socket as so24
+        from scbp import overlay as ov24
+        alt_port24 = ov24.WAECHTER_PORT
+        ov24.WAECHTER_PORT = 47990
+        try:
+            gestartet24 = ov24.waechter_starten(lambda: None)
+            pruefe(gestartet24, 'der Waechter laesst sich starten')
+            time.sleep(0.2)
+            ov24.waechter_stoppen()
+            time.sleep(0.3)
+            probe24 = so24.socket(so24.AF_INET, so24.SOCK_STREAM)
+            probe24.setsockopt(so24.SOL_SOCKET, so24.SO_REUSEADDR, 1)
+            frei24 = True
+            grund24 = ''
+            try:
+                probe24.bind(('127.0.0.1', ov24.WAECHTER_PORT))
+                probe24.listen(4)
+            except OSError as ausnahme24:
+                frei24 = False
+                grund24 = str(ausnahme24)
+            finally:
+                probe24.close()
+            pruefe(frei24,
+                   'nach dem Stoppen laesst sich der Port neu binden%s'
+                   % (' (%s)' % grund24 if grund24 else ''))
+
+            # Und der Weg dorthin: ohne `shutdown()` bleibt der Faden haengen.
+            quelle24 = open(os.path.join(WURZEL, 'scbp', 'overlay.py'),
+                            encoding='utf-8').read()
+            # ⚠ Bis zur naechsten Funktion schneiden, nicht auf Zeichenzahl —
+            # ein langer Kommentar schob den Aufruf sonst aus dem Fenster.
+            block24 = quelle24.split('def waechter_stoppen')[1].split('\ndef ')[0]
+            pruefe('shutdown(' in block24,
+                   'waechter_stoppen bricht das wartende accept() ab')
+        finally:
+            ov24.WAECHTER_PORT = alt_port24
+            try:
+                ov24.waechter_stoppen()
+            except Exception:
+                pass
+
+        print()
         print('23. Bei der Mindestgroesse ist alles Wichtige sichtbar')
         # ⚠ Die Seite „Update & Ueber" ist die einzige, auf der ein nicht
         # gefundener Knopf richtig weh tut: Wer den Update-Knopf nicht sieht,
