@@ -1283,6 +1283,17 @@ class Hauptfenster:
         # Fehler zuerst bei sich. Ein eigener Reiter beantwortet das, statt die
         # Auskunft unten an eine andere Seite zu hängen, wo niemand sie sucht.
         self._reiter('serverstatus', 'serverstatus', t('hf_serverstatus'))
+        # ⚠ **Diagnose gehört hierher, nicht unter „Fortgeschritten".** Wer die
+        # Seite braucht, hat ein Problem — und sucht sie dann in einem Menü, das
+        # zugeklappt ist und „Fortgeschritten" heißt, also nach „nichts für
+        # mich" aussieht. der Autor am 28.08.2026, nachdem sein Bruder den
+        # Bericht nicht fand: „ich will nicht jedem eine Stunde erklären, wie
+        # ich zu dem Bericht komme."
+        #
+        # Seit dem roten Knopf „Fehlerbericht absenden" ist die Seite außerdem
+        # der Weg, auf dem Meldungen überhaupt ankommen. Ein Weg, den man
+        # erklären muss, wird nicht benutzt.
+        self._reiter('diagnose', 'diagnose', t('hf_diagnose'))
         # ⚠ Eigener Reiter, kein Abschnitt auf „Update & Über": Die Seite dort
         # ist mit Version, Katalogzahlen, Update-Kanal und Holen-Knopf schon
         # voll, und wem was gehört, hat mit Updates nichts zu tun.
@@ -1592,7 +1603,6 @@ class Hauptfenster:
                 # den fast niemand braucht, steht oben nur im Weg.
                 self._reiter('ordner', 'ordner', t('hf_ordner'), self.klappinhalt)
                 self._reiter('erkennung', 'erkennung', t('hf_erkennung'), self.klappinhalt)
-                self._reiter('diagnose', 'diagnose', t('hf_diagnose'), self.klappinhalt)
             self.klappknopf.configure(text=t('hf_fortgeschritten'))
         else:
             self.klappinhalt.pack_forget()

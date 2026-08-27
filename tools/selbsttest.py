@@ -698,9 +698,15 @@ def main():
                        'die geöffnete Seite bleibt geöffnet')
                 # Feste Zahl mit Absicht: Der Test soll auffallen, wenn beim
                 # Sprachwechsel ein Reiter verschwindet. Kommt einer dazu,
-                # wird sie hier mitgezogen. 10 = die Hauptleiste ohne die drei
+                # wird sie hier mitgezogen. 11 = die Hauptleiste ohne die zwei
                 # unter „Für Fortgeschrittene".
-                pruefe(len(hf.knoepfe) == 10, 'alle Reiter sind wieder da')
+                #
+                # ⚠ Am 28.08.2026 von 10 auf 11: **Diagnose ist nach oben
+                # gewandert.** Wer die Seite braucht, hat ein Problem — und
+                # sucht sie nicht in einem zugeklappten Menü namens
+                # „Fortgeschritten". Seit dem Knopf „Fehlerbericht absenden"
+                # ist sie zudem der Weg, auf dem Meldungen ankommen.
+                pruefe(len(hf.knoepfe) == 11, 'alle Reiter sind wieder da')
 
                 # Die Wahl muss festgehalten werden — ohne Speichern-Knopf gibt
                 # es keinen zweiten Versuch. Vorher stand die Markierung
