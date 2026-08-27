@@ -10,6 +10,10 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc80 - 2026-08-28
+
+> **Blueprints from the launcher get ticked off again — existing collections migrate themselves.**
+
 ### Fixed
 
 - **Blueprints from the launcher or a backup were not ticked off.** Anyone

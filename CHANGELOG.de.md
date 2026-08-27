@@ -10,6 +10,10 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc80 - 2026-08-28
+
+> **Baupläne aus dem Launcher werden wieder abgehakt — vorhandene Bestände ziehen selbst um.**
+
 ### Behoben
 
 - **Baupläne aus dem Launcher oder einer Sicherung wurden nicht abgehakt.** Wer
