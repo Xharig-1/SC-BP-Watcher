@@ -10,6 +10,35 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc73 - 2026-08-27
+
+> **Die Danke-Seite sagt jetzt, was heute wirklich passiert ist.**
+
+### Geändert
+
+- **Die Seite „Danke & Lizenzen" im Programm nennt Bomb20s heutige Funde.** Sie
+  stand noch auf seinem Beitrag vom 25.08., während er an diesem Vormittag drei
+  Fehler freigelegt hat, die am Ausliefertag **jeden** Nutzer getroffen hätten:
+  der Startknopf für Star Citizen, der abgebrochene Download und der Neustart,
+  der nie kam.
+  - Der Dank stand ordentlich in beiden CHANGELOGs — nur sieht die im Programm
+    niemand. **Wer im Programm nicht auftaucht, dem wurde nicht gedankt.** Die
+    Release-Checkliste führt diese dritte Stelle jetzt ausdrücklich auf.
+
+### Bestätigt
+
+- **Der Neustart nach dem Update funktioniert** — nachgewiesen auf einem zweiten
+  Rechner (CachyOS), von rc71 auf rc72, ohne einen einzigen Eintrag im
+  Fehlerprotokoll. Damit hängt es an keiner Eigenheit einer einzelnen
+  Installation.
+
+### Dank
+
+- **Bomb20** (pr0citizen) — für einen Vormittag, an dem er dreimal einen Bericht
+  geschickt hat, obwohl er eigentlich arbeiten musste, und für die Geduld, als
+  seine Meldungen zunächst nach Bedienfehler aussahen. Sie waren es nie.
+
+
 ## v3.0.0-rc72 - 2026-08-27
 
 > **Die Update-Seite sagt jetzt die Wahrheit** — sie sieht von allein nach, und
