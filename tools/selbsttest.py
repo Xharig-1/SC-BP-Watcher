@@ -1776,6 +1776,37 @@ def main():
         pruefe(ue28.QUELLEN['deutsch']['ton'] == 'english',
                'die deutsche Quelle bringt den englischen Ton mit')
 
+        # StarStrings (MrKraken) ist derselbe Fall — nur mit englischem
+        # Zielordner. der Autor: „ist ja wie die deutsche im grunde."
+        ss28 = os.path.join(basis, 'starstringsprobe', 'LIVE')
+        os.makedirs(ss28)
+        ziel_ss = ue28.ziel_ini(ue28.QUELLEN['starstrings']['sprache'], ss28)
+        pruefe(ziel_ss.endswith(os.path.join('data', 'Localization',
+                                             'english', 'global.ini')),
+               'StarStrings landet im englischen Ordner, ebenfalls selbst angelegt')
+        ue28.user_cfg_setzen(ue28.QUELLEN['starstrings']['sprache'],
+                             ue28.QUELLEN['starstrings']['ton'], ss28)
+        cfg_ss = open(os.path.join(ss28, 'user.cfg'), encoding='utf-8').read()
+        pruefe('g_language = english' in cfg_ss,
+               'auch StarStrings traegt seine Sprache in die user.cfg ein')
+
+        # ⚠ Der Wechsel deutsch → StarStrings: Die Tonzeile stammt aus der
+        # deutschen Einrichtung und muss stehen bleiben. `ton` ist bei
+        # StarStrings None — eine Fassung, die dabei alles anfasst, wuerde sie
+        # verlieren, und der Spieler saesse ohne Ton da.
+        with open(os.path.join(ss28, 'user.cfg'), 'w', encoding='utf-8') as f_ss:
+            f_ss.write('g_language = german_(germany)\n'
+                       'g_languageAudio = english\n'
+                       'r_VSync = 0\n')
+        ue28.user_cfg_setzen('english', None, ss28)
+        cfg_ss2 = open(os.path.join(ss28, 'user.cfg'), encoding='utf-8').read()
+        pruefe('g_language = english' in cfg_ss2,
+               'beim Wechsel wird die Textsprache umgestellt')
+        pruefe('g_languageAudio = english' in cfg_ss2,
+               'die Tonzeile ueberlebt den Wechsel (ton=None fasst sie nicht an)')
+        pruefe('r_VSync = 0' in cfg_ss2,
+               'und die Grafikeinstellung ebenso')
+
         print()
         print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')
         # ⚠ Wer ueber Lutris, Heroic oder Flatpak spielt, bekam GAR KEINEN
