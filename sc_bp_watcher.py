@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc91'
+__version__ = '3.0.0-rc92'
 
 
 def _mitgeliefert(name):
@@ -2141,7 +2141,7 @@ class Overlay:
     # um es mit der Maus zu treffen.
     SCHLOSS_KANTE = 26
 
-    def _schloss_anwenden(self, an):
+    def _schloss_anwenden(self, an, versuch=0):
         """Das Schloss zeigen oder wegnehmen — gerufen aus `overlay.py`.
 
         ⚠ Der einzige Weg zurück. Werden Klicks durchgereicht, ist am Overlay
@@ -2180,6 +2180,27 @@ class Overlay:
                 x, y = knopf.winfo_rootx(), knopf.winfo_rooty()
                 breite = max(knopf.winfo_width(), 8)
                 hoehe = max(knopf.winfo_height(), 8)
+            elif knopf is not None and versuch < 10:
+                # ⚠ **Beim Start ist der Knopf noch nicht gezeichnet — dann wird
+                # gewartet, nicht geraten.** Gemeldet von Haldjas (pr0) am
+                # 28.08.2026 zu rc91: „Starte Watcher — Schloss ist an 2
+                # Positionen … position bleibt so bis man den watcher neu
+                # startet."
+                #
+                # `verhalten_anwenden()` läuft unmittelbar vor `mainloop()`. Die
+                # Leiste steht da im Baum, aber Tk hat noch nichts gemalt: Weder
+                # `winfo_ismapped()` noch die Maße stimmen (ein ungezeichnetes
+                # Widget meldet Breite **1** — dieselbe Tk-Falle wie beim
+                # Rundrahmen). Das Schloss landete deshalb bei **jedem** Start
+                # neben dem Overlay statt darauf, und daneben stand das Schloss
+                # der Leiste: zwei Schlösser, eines davon am falschen Platz.
+                #
+                # Ein kurz aufblitzendes falsches Schloss wäre nur die halbe
+                # Reparatur — also gar nicht erst bauen, sondern nachfassen, bis
+                # die Leiste steht. Begrenzt, sonst liefe es ewig weiter, solange
+                # das Overlay eingeklappt oder im Pop-up-Betrieb versteckt ist.
+                self.root.after(300, lambda: self._nachfassen(versuch + 1))
+                return
             else:
                 # Eingeklappt oder im Pop-up-Betrieb versteckt: Dann gibt es das
                 # Schloss in der Leiste gerade nicht, und der alte Platz in der
@@ -2215,6 +2236,18 @@ class Overlay:
             pass
         except Exception as ausnahme:
             fehler.merken('overlay.schloss', ausnahme)
+
+    def _nachfassen(self, versuch):
+        """Die Lage des Schlosses noch einmal setzen, sobald die Leiste steht.
+
+        ⚠ Nur, solange das Durchreichen überhaupt noch an ist: Wird in der
+        Zwischenzeit entsperrt, dürfte ein Nachzügler das Schloss nicht wieder
+        aufbauen."""
+        try:
+            if pfade.einstellung_wahrheit('durchklickbar', False):
+                self._schloss_anwenden(True, versuch)
+        except Exception:
+            pass
 
     def _leistenschloss(self, zu):
         """Das Schloss in der Leiste auf den wahren Zustand stellen."""

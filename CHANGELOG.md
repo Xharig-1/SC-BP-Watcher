@@ -10,6 +10,26 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc92 - 2026-08-28
+
+### Fixed
+
+- **After a restart the lock sat beside the overlay instead of on it.** Anyone
+  who had click-through saved as on saw **two** locks after every start: one in
+  the wrong place next to the window, one in the title bar. Only the first
+  toggle moved it into place — and the next start began the same thing again.
+
+  The cause is an old `tkinter` trap: the state is applied immediately before
+  the window loop starts. The bar is already in the tree by then, but Tk has
+  drawn nothing yet — neither „is visible" nor the measurements are true at that
+  moment. So the lock went to a guessed position.
+
+  It now **waits instead of guessing**: while the bar is not yet drawn, no lock
+  is built at all; it retries until the bar is there. A briefly flashing lock in
+  the wrong place would only have been half a fix.
+
+  Reported by **Haldjas (pr0)** on 2026-08-28, with the full steps to reproduce.
+
 ## v3.0.0-rc91 - 2026-08-28
 
 ### Improved
@@ -27,8 +47,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   through applies to the whole window — a button in the bar would be just as
   unreachable as the rest. If the bar is collapsed or the overlay hidden in
   pop-up mode, the lock falls back to its old place in the corner.
-
-  Suggested by **der Autor** on 2026-08-28.
 
 ## v3.0.0-rc90 - 2026-08-28
 
@@ -70,8 +88,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   now catches the stamp up itself, **before** it reads the catalogue. This hits
   every user on the first start after a build with new history.
 
-  Found by **der Autor** on 2026-08-28 on Windows, right after rc88.
-
 ## v3.0.0-rc88 - 2026-08-28
 
 ### Fixed
@@ -89,8 +105,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   Both lists are now **merged** rather than replaced, and the earlier date
   wins. The same applied to two local findings in a row: the second erased the
   first. That is fixed as well.
-
-  Found by **der Autor** on 2026-08-28 on Windows.
 
 ### Improved
 
@@ -118,15 +132,14 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   Affects: switching the text source · sending a problem report · resetting the
   inventory.
 
-  Prompted by **der Autor** on 2026-08-28.
+  The requirement behind it: the dialog should carry the program's own design —
+  and be wide rather than tall.
 
 
 - **The "In-game text" page now follows the order you read it in.** The text
   source first — where the base text comes from — then what gets written into
   it: blueprint details first, then the details on the item itself. Previously
   the write switch sat above the source it depends on.
-
-  Suggested by **der Autor** on 2026-08-28.
 
 ### Fixed
 
@@ -142,8 +155,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   The program now supplies the words itself, and updates them on a language
   switch instead of setting them once at startup.
 
-  Found by **der Autor** on 2026-08-28 on Linux.
-
 ## v3.0.0-rc86 - 2026-08-28
 
 ### Fixed
@@ -157,8 +168,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   already stripped it, the settings rows did not — the same job in two places,
   one of them forgotten. Both now go through the same function.
 
-  Found by **der Autor** on 2026-08-28 in a screenshot of rc85. The self-test
-  had missed it: it looked for German text in the English interface, not for
+  Spotted in a screenshot of rc85. The self-test had missed it: it looked for German text in the English interface, not for
   markup. **It now checks for this too** — and the check was verified by
   putting the bug back in.
 
@@ -185,9 +195,8 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   numbers, the Tk in the Linux AppImage as Tcl objects. The bug could not occur
   on Windows.
 
-  Found by **der Autor** on 2026-08-28 during the first Linux test round after
-  updating to rc84 — first by the cut-off text, then confirmed in the app's own
-  problem report: **50 out of 50** recorded errors came from this single line.
+  Spotted during the first Linux test round after updating to rc84 — first by
+  the cut-off text, then confirmed in the problem report: **50 out of 50** recorded errors came from this single line.
 
   Measurements are now read with Tk's own converter, which understands all three
   forms. The same trap was present at two further points in the wrapping code
@@ -202,8 +211,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   case. But turning autostart on **inside the program** writes the same value —
   and the uninstaller knew nothing about it.
 
-  Found by **der Autor** on 2026-08-28 while cleaning up after a test run. It is
-  the same autostart that made the update fail earlier that morning (code 5) —
+  Spotted while cleaning up after a test run. It is the same autostart that made the update fail earlier that morning (code 5) —
   it was only half handled at both ends.
 
   The uninstaller now always removes the value, no matter who set it. Only that
@@ -214,8 +222,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 ### Fixed
 
 - **Updating failed when autostart cut in halfway through.**
-  Reported and measured by **der Autor** on 2026-08-28, updating rc75 → rc83:
-  the installer got halfway and then stopped with
+  Measured while updating rc75 → rc83: the installer got halfway and then stopped with
 
       An error occurred while trying to replace the existing file:
       DeleteFile failed; code 5. Access is denied.
@@ -254,10 +261,10 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   The status box above made it worse: it promised "changes take effect the next
   time you start the game" — precisely what was not true.
 
-  Found by **der Autor** on 2026-08-28 while testing: switch off, status line
-  reported "off", and **1,217** details were still sitting in the text file. He
-  then fell for the same thing on the second switch, even though the note was
-  right next to it — "I read the bold part but not the smaller one". That
+  Measured while testing: switch off, status line reported "off", and **1,217**
+  details were still sitting in the text file. The same trap caught a second
+  switch, even though the note sat right next to it — the bold part gets read,
+  the smaller one does not. That
   settled it: a note in the small print is not a fix.
 
   Flipping a switch now takes effect immediately — off means gone, on means
@@ -268,8 +275,8 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 - **"Launch Star Citizen" no longer appears twice.** The "In-game text" page had
   its own section for it — even though the button sits permanently in the
-  bottom left of the sidebar, reachable from every page. Spotted by **der Autor**
-  on 2026-08-28. The section is gone; the sidebar button is unchanged.
+  bottom left of the sidebar, reachable from every page. The section is gone;
+  the sidebar button is unchanged.
 
 ## v3.0.0-rc83 - 2026-08-28
 
