@@ -10,6 +10,8 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc83 - 2026-08-28
+
 ### Fixed
 
 - **The report now says whether the blueprint notes are in the game.**
