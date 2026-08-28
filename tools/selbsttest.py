@@ -3313,6 +3313,60 @@ def main():
            'derselbe erwartete Fehler wird nur einmal gemerkt')
 
     print()
+    print('49. Jeder Sprachschluessel, der gerufen wird, gibt es auch')
+    # ⚠ Gemeldet von der Autor am 28.08.2026: Am Raketen-Symbol stand als Hinweis
+    # woertlich `s_sp_start` — der Schluesselname statt des Textes.
+    #
+    # `t()` gibt den Schluessel zurueck, wenn die Tabelle ihn nicht kennt. Das
+    # ist als Notnagel richtig (besser als ein Absturz), macht den Fehler aber
+    # unsichtbar, bis ihn jemand im laufenden Programm sieht. Der Selbsttest
+    # pruefte bis dahin nur, ob deutscher Text in der englischen Oberflaeche
+    # steht — ein FEHLENDER Schluessel ist etwas anderes.
+    #
+    # Die Pruefung fand auf einen Schlag drei: `s_sp_start`, `m_keine_fassung`
+    # und `aktuelle_fassung`. Von Hand ist das bei ueber 600 Eintraegen nicht zu
+    # halten.
+    import ast as _ast49
+    from scbp import sprache as _sp49
+
+    _RUFER49 = ('t', 'Satz', 'text')
+    _fehlend49 = []
+    for _ordner49, _unter49, _dateien49 in os.walk(WURZEL):
+        if any(_teil in _ordner49 for _teil in
+               ('.git', 'build', 'dist', '__pycache__', 'tools')):
+            continue
+        for _name49 in _dateien49:
+            if not _name49.endswith('.py'):
+                continue
+            _pfad49 = os.path.join(_ordner49, _name49)
+            try:
+                _baum49 = _ast49.parse(open(_pfad49, encoding='utf-8').read())
+            except Exception:
+                continue
+            for _kn49 in _ast49.walk(_baum49):
+                if not isinstance(_kn49, _ast49.Call) or not _kn49.args:
+                    continue
+                _f49 = _kn49.func
+                _ruf49 = (_f49.attr if isinstance(_f49, _ast49.Attribute)
+                          else (_f49.id if isinstance(_f49, _ast49.Name) else None))
+                if _ruf49 not in _RUFER49:
+                    continue
+                _erst49 = _kn49.args[0]
+                if not isinstance(_erst49, _ast49.Constant):
+                    continue
+                if not isinstance(_erst49.value, str) or not _erst49.value:
+                    continue
+                if _erst49.value not in _sp49.TEXTE:
+                    _fehlend49.append('%s:%d  %s(%r)' % (
+                        os.path.relpath(_pfad49, WURZEL), _kn49.lineno,
+                        _ruf49, _erst49.value))
+    for _z49 in sorted(set(_fehlend49)):
+        print('         ' + _z49)
+    pruefe(not _fehlend49,
+           'kein Aufruf zeigt den Schluesselnamen statt des Textes (%d)'
+           % len(set(_fehlend49)))
+
+    print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
         for f in fehler:

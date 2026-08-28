@@ -995,6 +995,21 @@ TEXTE = {
     's_ub_sucht':      ('Suche nach einer neuen Version …',
                           'Looking for a new version …'),
     's_ub_einrichtung': ('Einrichtung wiederholen', 'Run setup again'),
+    # ⚠ **Drei Schlüssel, die es nie gab.** Wer `t()` mit einem Schlüssel ruft,
+    # den diese Tabelle nicht kennt, bekommt den **Schlüsselnamen** zurück — und
+    # der steht dann in der Oberfläche. Am 28.08.2026 zeigte der Hinweis an der
+    # Rakete wörtlich `s_sp_start`; die anderen beiden wären bei der nächsten
+    # fehlgeschlagenen Übersetzung und im Versionsfenster aufgetaucht.
+    #
+    # Gefunden hat sie kein Mensch, sondern eine Prüfung: Sie sammelt jeden
+    # `t()`/`Satz()`-Aufruf mit festem Schlüssel aus dem ganzen Programm und
+    # gleicht ihn hier ab (Selbsttest, Abschnitt 49). Von Hand ist das nicht zu
+    # halten — es sind über 600 Einträge.
+    's_sp_start':      ('Star Citizen starten', 'Launch Star Citizen'),
+    'm_keine_fassung': ('Keine Fassung zum Herunterladen gefunden.',
+                        'No version found to download.'),
+    'aktuelle_fassung': ('Du hast die neueste Fassung.',
+                         'You have the latest version.'),
     's_ub_taeglich':   ('Nach neuen Versionen sehen',
                           'Check daily for new versions'),
     's_ub_taeglich_h': ('Einmal pro Stunde, ausschließlich bei GitHub. Ist etwas da, färbt sich die Glocke in der Titelleiste grün.',

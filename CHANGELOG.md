@@ -10,6 +10,34 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.3 - 2026-08-28
+
+### Fixed
+
+- **Three places showed the key name instead of the text.** Most visibly on the
+  rocket icon: its tooltip literally read `s_sp_start`. It now says what was
+  meant — "Launch Star Citizen".
+
+  The other two would have surfaced on the next failed download and in the
+  version window.
+
+  The cause is a fallback that hides too well: if the language table does not
+  know a key, it returns **the key**. That beats crashing — but the fault stays
+  invisible until someone sees it in the running program.
+
+  The self-test now checks this: it collects **every** call with a fixed key
+  across the program and matches it against the table. With over 600 entries
+  that cannot be done by hand — and it was this check, not a person, that found
+  all three.
+
+  Reported by **der Autor** on 2026-08-28.
+
+### Changed
+
+- **It said "check daily for new versions", but checked hourly.** The interval
+  has always been one hour; the text beside it said otherwise. It only came up
+  once the check actually started repeating.
+
 ## v3.0.2 - 2026-08-28
 
 ### Fixed

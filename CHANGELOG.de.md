@@ -10,6 +10,36 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.3 - 2026-08-28
+
+### Behoben
+
+- **An drei Stellen stand der Schlüsselname statt des Textes.** Am auffälligsten
+  am Raketen-Symbol: Der Hinweis dort lautete wörtlich `s_sp_start`. Jetzt steht
+  da, was gemeint war — „Star Citizen starten".
+
+  Die beiden anderen wären beim nächsten fehlgeschlagenen Herunterladen und im
+  Versionsfenster aufgetaucht.
+
+  Der Grund ist ein Notnagel, der zu gut versteckt: Kennt die Sprachtabelle
+  einen Schlüssel nicht, gibt sie **den Schlüssel zurück**. Das ist besser als
+  ein Absturz — aber der Fehler bleibt unsichtbar, bis ihn jemand im laufenden
+  Programm sieht.
+
+  Der Selbsttest prüft das jetzt: Er sammelt **jeden** Aufruf mit festem
+  Schlüssel aus dem ganzen Programm und gleicht ihn gegen die Tabelle ab. Bei
+  über 600 Einträgen ist das von Hand nicht zu halten — gefunden hat die drei
+  auch kein Mensch, sondern diese Prüfung.
+
+  Gemeldet von **der Autor** am 28.08.2026.
+
+### Geändert
+
+- **„Täglich nach neuen Versionen sehen" hieß es, stündlich war es.** Der
+  Abstand steht seit jeher bei einer Stunde; der Text daneben sagte etwas
+  anderes. Aufgefallen ist es erst, seit die Prüfung tatsächlich wiederholt
+  läuft.
+
 ## v3.0.2 - 2026-08-28
 
 ### Behoben
