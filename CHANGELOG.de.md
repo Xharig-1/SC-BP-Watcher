@@ -10,6 +10,54 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.1 - 2026-08-28
+
+### Behoben
+
+> [!important]
+> **War der Watcher zu, während Star Citizen weiterlief, gingen die Baupläne
+> dieser Sitzung verloren** — und zwar dauerhaft. Wer das kennt: einmal auf den
+> neuen Knopf **Protokolle erneut einlesen** drücken, dann sind sie da.
+
+- **Die laufende `Game.log` wurde beim Start nur beim allerersten Mal gelesen.**
+  Danach galt sie als erledigt: Das Mitlesen setzte beim gemerkten Stand an, und
+  alles davor war unerreichbar. In den Sicherungsordner wandert die Datei erst
+  beim nächsten Spielstart — bis dahin fehlte der Bauplan, ohne dass irgendwo
+  etwas darauf hindeutete.
+
+  Nachgemessen: Der Bauplan stand bei Byte 11.987.664, der Lesestand bei
+  12.759.872. Er wäre nie gefunden worden.
+
+  Die laufende Datei wird jetzt bei jedem Start ganz gelesen. Das kostet den
+  Bruchteil einer Sekunde — die Nachlese geht ohnehin über alle Sicherungen —
+  und doppelte Einträge kann es nicht geben, der Bestand prüft jeden Namen.
+
+  Gemeldet von **der Autor**, wenige Stunden nach v3.0.0.
+
+- **Nach einem Spielneustart sprang der Lesestand ans Dateiende statt an den
+  Anfang.** Legt Star Citizen eine frische `Game.log` an, ist sie kürzer als der
+  gemerkte Stand. Der Kommentar an der Stelle sagt richtig „dann lief eine neue
+  Spielsitzung" — der Code setzte aber auf das **Ende** der neuen Datei, statt
+  von vorn zu lesen. Alles, was die frische Sitzung schon gemeldet hatte, war
+  damit übersprungen.
+
+### Neu
+
+- **Ein Knopf „Protokolle erneut einlesen"** — in der Titelleiste des Overlays
+  und in den Einstellungen unter *Bestand*. Er sieht jede aufgehobene Sitzung
+  noch einmal durch, auch die schon gelesenen, und trägt nach was fehlt.
+
+  Hilft nicht nur im Fall oben, sondern auch dann, wenn beim ersten Lauf die
+  Spielsprache noch nicht erkannt war: Dann wurden die Protokolle mit der
+  falschen Formulierung durchsucht und trotzdem als gelesen abgehakt.
+
+### Geändert
+
+- **Zwei Texte, die nicht mehr stimmten.** Der Hinweis am Schloss beschrieb es
+  „oben rechts am Overlay" — dort steht es seit v3.0.0 nicht mehr. Und die
+  Erklärung in den Einstellungen schickte zum Zurückholen noch zu einem zweiten
+  Programmstart, obwohl das Schloss genau dafür da ist.
+
 ## v3.0.0 - 2026-08-28
 
 > [!important]

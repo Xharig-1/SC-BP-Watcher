@@ -206,7 +206,24 @@ def nachlesen(stand=None, muster=None, nur_neue=True, auch_laufende=True):
     # Lesestand auf dem Dateiende, das Mitlesen setzt dort nahtlos an.
     if auch_laufende:
         aktiv = pfade.game_log()
-        if aktiv and stand.aktiv_holen(aktiv) is None:
+        # ⚠ **Immer lesen, nicht nur beim allerersten Mal.** Hier stand
+        # `if aktiv and stand.aktiv_holen(aktiv) is None:` — die laufende Datei
+        # wurde also übersprungen, sobald sie einmal gelesen war. Das trifft
+        # genau den Fall, den jeder für abgedeckt hält:
+        #
+        #   Watcher zu, Star Citizen läuft weiter, Baupläne kommen, Watcher
+        #   später wieder auf.
+        #
+        # Dann steht der Lesestand irgendwo mitten in der Datei, das Mitlesen
+        # setzt **dort** an, und alles davor ist für immer weg — es landet auch
+        # nicht in `logbackups/`, denn dorthin wandert die Datei erst beim
+        # nächsten Spielstart. Gemessen am 28.08.2026: Bauplan bei Byte
+        # 11.987.664, Lesestand 12.759.872. Er wäre nie gefunden worden.
+        #
+        # Die Datei ganz zu lesen kostet bei 12 MB den Bruchteil einer Sekunde —
+        # die Nachlese geht ohnehin über 149 Sicherungen. Doppelte fängt der
+        # Bestand ab, der prüft jeden Namen.
+        if aktiv:
             for name, zusatz in _lies_datei(aktiv, muster):
                 schluessel = name.lower().strip()
                 if schluessel in gesehen:
@@ -224,6 +241,23 @@ def nachlesen(stand=None, muster=None, nur_neue=True, auch_laufende=True):
     stand.aufraeumen(alle)
     stand.speichern()
     return treffer, bericht
+
+
+def alles_neu(muster=None):
+    """Alle Protokolle noch einmal einlesen, auch die schon bekannten.
+
+    Für den Fall, dass etwas fehlt: Der Lesestand wird ignoriert, jede Datei in
+    `logbackups/` und die laufende `Game.log` werden vollständig durchgesehen.
+    Danach steht der Stand wieder sauber am Dateiende.
+
+    Gebraucht wird das, wenn der Lesestand weiter ist als der Bestand — etwa
+    weil beim ersten Lauf die Spielsprache noch nicht erkannt war und die
+    Protokolle mit der falschen Formulierung durchsucht wurden, oder nach einem
+    Zurücksetzen des Bestands.
+
+    Rückgabe wie `nachlesen()`: (Namen, Bericht)."""
+    return nachlesen(stand=Lesestand(), muster=muster,
+                     nur_neue=False, auch_laufende=True)
 
 
 def _lies_datei(datei, muster):
@@ -309,10 +343,36 @@ class LogTail:
                 groesse = os.path.getsize(p)
             except OSError:
                 groesse = 0
-            # Gemerkter Stand nur, wenn er noch in die Datei passt — ist sie
-            # kürzer, lief inzwischen eine neue Spielsitzung.
-            self.offset = gemerkt if (gemerkt is not None
-                                      and gemerkt <= groesse) else groesse
+            # ⚠ **Drei Fälle, und der mittlere hat Baupläne verschluckt.**
+            #
+            #   gemerkt is None      Die Datei wurde noch nie gelesen. Dann hat
+            #                        `nachlesen()` sie eben von vorn durch und
+            #                        den Stand ans Ende gesetzt — hier gilt das
+            #                        Ende, sonst käme alles ein zweites Mal.
+            #
+            #   gemerkt > groesse    Die Datei ist **kürzer** als der Stand:
+            #                        Star Citizen hat beim Neustart eine frische
+            #                        Game.log angelegt. Alles darin ist neu →
+            #                        **von vorn**.
+            #
+            #   sonst                Weiterlesen, wo aufgehört wurde.
+            #
+            # Bis v3.0.0 stand im zweiten Fall `groesse` statt `0`, also das
+            # **Ende** der neuen Datei. Damit übersprang der Watcher jeden
+            # Bauplan, den die frische Sitzung schon gemeldet hatte, und merkte
+            # es nie: `new_names()` hat zwar dieselbe Regel richtig
+            # (`if size < self.offset: self.offset = 0`), kommt aber nicht dazu
+            # — der Stand steht dann längst auf dem Dateiende und
+            # `size == self.offset` steigt sofort aus.
+            #
+            # Gemessen am 28.08.2026: Stand 12.759.872, Datei 12.758.651 Bytes.
+            # Zwei Baupläne standen in der Log, einer fehlte im Bestand.
+            if gemerkt is None:
+                self.offset = groesse
+            elif gemerkt > groesse:
+                self.offset = 0
+            else:
+                self.offset = gemerkt
         elif not p:
             self.path = None
         return self.path

@@ -10,6 +10,53 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.1 - 2026-08-28
+
+### Fixed
+
+> [!important]
+> **If the watcher was closed while Star Citizen kept running, that session's
+> blueprints were lost** — permanently. If that sounds familiar: press the new
+> **Read the logs again** button once and they are back.
+
+- **The running `Game.log` was only read on the very first start.** After that
+  it counted as done: live reading resumed at the remembered position, and
+  everything before it was unreachable. The file only moves to the backup folder
+  on the next game start — until then the blueprint was missing with nothing to
+  hint at it.
+
+  Measured: the blueprint sat at byte 11,987,664, the read position at
+  12,759,872. It would never have been found.
+
+  The running file is now read in full on every start. That costs a fraction of
+  a second — the catch-up goes through every stored log anyway — and duplicates
+  cannot happen, the inventory checks every name.
+
+  Reported by **der Autor**, hours after v3.0.0.
+
+- **After a game restart the read position jumped to the end of the file instead
+  of the start.** When Star Citizen creates a fresh `Game.log`, it is shorter
+  than the remembered position. The comment there correctly says "a new game
+  session has run" — but the code set the position to the **end** of the new
+  file instead of reading from the beginning. Everything the fresh session had
+  already reported was skipped.
+
+### Added
+
+- **A "Read the logs again" button** — in the overlay's title bar and in the
+  settings under *Inventory*. It goes through every stored session again,
+  including the ones already read, and fills in what is missing.
+
+  It also helps when the game language was not yet detected on the first run:
+  the logs were then searched with the wrong wording and still marked as read.
+
+### Changed
+
+- **Two texts that were no longer true.** The lock's hint described it as
+  sitting "at the top right of the overlay" — it hasn't since v3.0.0. And the
+  settings text still pointed to a second program start as the way back, even
+  though the lock exists for exactly that.
+
 ## v3.0.0 - 2026-08-28
 
 > [!important]

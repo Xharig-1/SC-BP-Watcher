@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0'
+__version__ = '3.0.1'
 
 
 def _mitgeliefert(name):
@@ -671,6 +671,7 @@ class Watcher(threading.Thread):
         self.stand = logquelle.Lesestand()
         self.tail = logquelle.LogTail(self.stand)
         self.bestand = bestand_datei.laden()   # der eigene, dauerhafte Bestand
+        self._neu_einlesen = False            # Auftrag von außen, siehe unten
         self.running = True
         self.cat_next = 0.0     # nächster Katalog-Check (Zeitstempel)
         self.cat_mtime = None   # letzter gesehener Änderungszeitpunkt der Katalogdatei
@@ -893,6 +894,40 @@ class Watcher(threading.Thread):
             pass            # ohne Erkennung gilt die mitgelieferte Tabelle
 
     # ---- Nachlese: was wurde ohne laufenden Watcher freigeschaltet? ----
+    def neu_einlesen_anstossen(self):
+        """Von außen gerufen: beim nächsten Takt alles noch einmal durchsehen.
+
+        Nur ein Merker — die Arbeit gehört in den eigenen Faden, sonst fassen
+        zwei Stellen denselben Bestand an."""
+        self._neu_einlesen = True
+
+    def _alles_neu_einlesen(self):
+        """Alle Protokolle noch einmal durchsehen, auch die schon bekannten.
+
+        ⚠ Warum es das gibt: Der Lesestand kann weiter sein als der Bestand.
+        Etwa wenn der Watcher zu war, während Star Citizen weiterlief — dann
+        stehen die Baupläne dieser Sitzung in einer Datei, die er für erledigt
+        hält. Oder wenn beim ersten Lauf die Spielsprache noch nicht erkannt war
+        und die Protokolle mit der falschen Formulierung durchsucht wurden.
+
+        Gemeldet wird immer, auch die Null: Wer einen Knopf drückt, will wissen,
+        dass etwas passiert ist."""
+        try:
+            funde, bericht = logquelle.alles_neu(phrasen.muster())
+        except Exception as ausnahme:
+            fehler.merken('watcher.neu_einlesen', ausnahme)
+            self.q.put(('status', sprache.Satz('neu_gelesen_fehler')))
+            return
+        neu = 0
+        for name, _zusatz in funde:
+            if bestand_datei.hinzufuegen(self.bestand, name, 'nachlese'):
+                neu += 1
+        if neu:
+            bestand_datei.speichern(self.bestand)
+            self.seen = set(bestand_datei.schluessel(self.bestand))
+        self.q.put(('status', sprache.Satz('neu_gelesen',
+                                           bericht.get('dateien', 0), neu)))
+
     def _nachlese(self):
         """Beim Start die aufgehobenen Logs durchsehen und in den Bestand nehmen.
 
@@ -1012,10 +1047,16 @@ class Watcher(threading.Thread):
         # 5) Alles, was schon im Bestand steht, gilt als bekannt — es wird nicht
         #    als „neu" gemeldet.
         self.seen = set(bestand_datei.schluessel(self.bestand))
+        overlay.NEULESEN_RUECKRUF[0] = self.neu_einlesen_anstossen
         self.tail.new_names()          # Lesestand der Game.log setzen/fortführen
         self.q.put(('status', self._statuszeile()))
         while self.running:
             time.sleep(POLL_SEC)
+
+            # -1) Hat jemand um ein erneutes Einlesen gebeten?
+            if self._neu_einlesen:
+                self._neu_einlesen = False
+                self._alles_neu_einlesen()
 
             # 0) Werte-Daten und Bauplan-Katalog frisch halten
             #    (selten, nur bei neuer Spielversion)
@@ -1280,6 +1321,18 @@ class Overlay:
             self.schloss_lbl.pack(side='right', padx=(0, 6))
             hinweis.anhaengen(self.schloss_lbl,
                               lambda: sprache.t('hinweis_schloss_zu'))
+
+        # ⚠ **Protokolle erneut einlesen** — der Knopf gehört hierher und nicht
+        # nur in die Einstellungen. Der Fall, für den es ihn gibt, tritt genau
+        # dann ein, wenn niemand im Einstellungsfenster ist: Watcher zu, Star
+        # Citizen läuft weiter, Baupläne kommen. Wer danach merkt, dass einer
+        # fehlt, soll ihn dort finden, wo er ohnehin hinsieht.
+        self.neulesen_lbl = zeichen.knopf(bar, 'neustart',
+                                          self._logs_neu_einlesen,
+                                          schrift=self.f_title)
+        self.neulesen_lbl.pack(side='right', padx=(0, 6))
+        hinweis.anhaengen(self.neulesen_lbl,
+                          lambda: sprache.t('hinweis_neulesen'))
 
         # Zwei Ansichten, ein Programm: die schmale Melde-Leiste bleibt, das
         # Verwaltungsfenster kommt auf Klick dazu.
@@ -2365,6 +2418,16 @@ class Overlay:
         self._durchklick_war_an = True   # damit `durchklick_anwenden` es aufhebt
         self.durchklick_anwenden()
         self._status_setzen(sprache.Satz('ov_schloss_offen'))
+
+    def _logs_neu_einlesen(self):
+        """Klick auf den Knopf in der Leiste: alle Protokolle noch einmal lesen.
+
+        Die Arbeit macht der Watcher-Faden, hier wird nur gebeten. Läuft keiner,
+        wird das gesagt, statt so zu tun als sei etwas passiert."""
+        if overlay.neu_einlesen_anstossen():
+            self._status_setzen(sprache.Satz('s_be_neu_los'))
+        else:
+            self._status_setzen(sprache.Satz('s_be_neu_kein'))
 
     def _schloss_zusperren(self):
         """Klick auf das offene Schloss in der Leiste: Klicks ab jetzt ins Spiel.
