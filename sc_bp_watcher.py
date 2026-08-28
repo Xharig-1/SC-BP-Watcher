@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc97'
+__version__ = '3.0.0-rc98'
 
 
 def _mitgeliefert(name):
@@ -2231,6 +2231,17 @@ class Overlay:
             self._schloss.overrideredirect(True)
             self._schloss.attributes('-topmost', True)
             self._schloss.configure(bg=BAR, cursor='hand2')
+            # ⚠ **Dieselbe Deckkraft wie das Overlay.** Ein Toplevel erbt sie
+            # nicht: `DECKKRAFT` wird auf `self.root` gesetzt, das Schloss lag
+            # daneben und war voll deckend. Bei 93 % schien der Knopf in der
+            # Leiste zu 93 % durch, das Schloss darüber zu 100 % — zwei
+            # Schlösser mit verschiedener Sättigung übereinander, und schon der
+            # kleinste Versatz sah aus wie zwei getrennte Symbole. Es soll
+            # aussehen wie **ein** Schloss, das die Farbe wechselt.
+            try:
+                self._schloss.attributes('-alpha', DECKKRAFT / 100.0)
+            except tk.TclError:
+                pass
             # Dasselbe Bauteil wie in der Leiste — nur grün und geschlossen.
             marke = zeichen.knopf(self._schloss, 'schloss_zu',
                                   self._schloss_loesen, farbe=zeichen.GRUEN,
