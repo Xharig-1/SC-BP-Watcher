@@ -10,6 +10,27 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Behoben
+
+- **Das Auswahlfeld versprach mehr, als die Liste zeigte.** Nach dem Fix an
+  der Patch-Historie stand im Feld „4.10.0 (24)" — darunter drei Zeilen.
+
+  Zwei Ursachen, beide dieselbe Art Fehler:
+
+  **Zwei Quellen für dieselbe Frage.** Das Feld zählte die Historie, der Filter
+  prüft den Stempel `seit` im Katalog. Die Zahl in Klammern ist aber eine
+  Zusage, wie viele Zeilen kommen. Gezählt wird jetzt der Katalog — was nicht
+  gestempelt ist, kann die Liste ohnehin nicht zeigen.
+
+  **Und der Stempel kam zu spät.** Nachgezogen wurde er nur im Netz-Takt, der
+  irgendwann nach dem Start in einem eigenen Faden läuft. Gemessen am
+  28.08.2026: Fenster um 10:44:02 gebaut, Katalog um 10:44:03 fertig gestempelt
+  — eine Sekunde zu spät, und die Liste blieb bis zum nächsten Öffnen falsch.
+  Das Fenster stempelt jetzt selbst nach, **bevor** es den Katalog liest. Das
+  trifft jeden Nutzer beim ersten Start nach einer Fassung mit neuer Historie.
+
+  Gefunden von **der Autor** am 28.08.2026 unter Windows, direkt nach rc88.
+
 ## v3.0.0-rc88 - 2026-08-28
 
 ### Behoben

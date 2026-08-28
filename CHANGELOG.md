@@ -10,6 +10,27 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Fixed
+
+- **The dropdown promised more than the list showed.** After the patch-history
+  fix it read „4.10.0 (24)" — with three rows below it.
+
+  Two causes, both the same kind of mistake:
+
+  **Two sources for one question.** The dropdown counted the history, the
+  filter checks the `seit` stamp in the catalogue. But the number in brackets
+  is a promise about how many rows will appear. It now counts the catalogue —
+  what is not stamped cannot be shown anyway.
+
+  **And the stamp arrived too late.** It was only caught up during the network
+  tick, which runs at some point after startup in its own thread. Measured on
+  2026-08-28: window built at 10:44:02, catalogue stamped at 10:44:03 — one
+  second too late, and the list stayed wrong until the next opening. The window
+  now catches the stamp up itself, **before** it reads the catalogue. This hits
+  every user on the first start after a build with new history.
+
+  Found by **der Autor** on 2026-08-28 on Windows, right after rc88.
+
 ## v3.0.0-rc88 - 2026-08-28
 
 ### Fixed

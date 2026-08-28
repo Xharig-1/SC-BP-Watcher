@@ -742,9 +742,26 @@ def patches(daten=None):
     taucht seine Version hier von allein auf — es gibt keine gepflegte Liste,
     die man vergessen könnte.
 
+    ⚠ **Gezählt wird der Katalog, nicht die Historie.** Hier stand ein
+    `return patchhistorie.patches()`, und damit versprach das Auswahlfeld etwas,
+    das die Liste darunter nicht einlösen konnte: Am 28.08.2026 stand im Feld
+    „4.10.0 (24)" und darunter drei Zeilen. Das Feld las die Historie, der
+    Filter prüft den Stempel im Katalog — zwei Quellen für dieselbe Frage, und
+    die Zahl in Klammern ist genau die Zusage, wie viele Zeilen kommen.
+
+    Dass die Historie mehr weiß, hilft dabei nicht: Was nicht gestempelt ist,
+    kann die Liste nicht zeigen. Dafür sorgt `stempel_nachziehen()`, und zwar
+    bevor das Fenster den Katalog liest.
+
     Vor dem zweiten Katalogbau ist die Liste leer: Ohne Vorgänger wird nichts
     gestempelt, und ein Feld mit einem einzigen Eintrag hilft niemandem."""
-    return patchhistorie.patches()
+    zaehler = {}
+    for e in ((daten or laden()).get('bauplaene') or {}).values():
+        seit = e.get('seit')
+        if seit:
+            zaehler[seit] = zaehler.get(seit, 0) + 1
+    return [(v, version_kurz(v), zaehler[v])
+            for v in sorted(zaehler, key=patchhistorie.rang, reverse=True)]
 
 
 def neue(daten=None):
