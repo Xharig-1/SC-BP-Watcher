@@ -3141,6 +3141,18 @@ def main():
         #   eingeklappt oder im Pop-up-Betrieb versteckt ist.
         pruefe('versuch < 10' in _rumpf44,
                'und begrenzt, damit es nicht ewig weiterlaeuft')
+        # Und NUR, solange die Leiste ueberhaupt noch kommt. Gemeldet von
+        # Haldjas (pr0) zu rc95: Beim Zublenden lief das Nachfassen blind mit
+        # und verzoegerte den Ruecksprung um genau 10 x 300 ms = 3 Sekunden.
+        # Gemessen trennt root.winfo_ismapped() die Faelle:
+        #     Start, nach update_idletasks   root=1  knopf=0  -> wird gemalt
+        #     nach withdraw()                root=0  knopf=0  -> soll weg sein
+        pruefe('_wird_noch_gezeichnet()' in _rumpf44,
+               'und nur, solange die Leiste ueberhaupt noch kommt')
+        _wnz = _q44[_q44.index('def _wird_noch_gezeichnet'):]
+        _wnz = _wnz[:_wnz.index('    def ', 10)]
+        pruefe('self.root.winfo_ismapped()' in _wnz,
+               'unterschieden am Fenster selbst, nicht am Knopf')
     finally:
         if _alt_home44 is None:
             os.environ.pop('SC_BP_HOME', None)

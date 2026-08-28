@@ -10,6 +10,32 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc96 - 2026-08-28
+
+### Fixed
+
+- **On hiding, the lock took three seconds to return to its place.** When the
+  overlay hides itself in pop-up mode, the lock belongs back at the handle
+  strip — instead it stayed where the bar had just been.
+
+  It was **exactly** the ten 300 ms retries from rc92. Those are meant for
+  startup, where the bar is about to appear: while it is still being drawn, the
+  lock waits instead of jumping to a guessed spot. But that waiting also ran
+  when the overlay had **deliberately** gone away — waiting for something that
+  is not coming.
+
+  Both cases look the same at the button, but not at the window. Measured:
+
+  | Case | Window | Button |
+  |---|---|---|
+  | startup, still being drawn | 1 | 0 |
+  | deliberately hidden | 0 | 0 |
+
+  The window is now asked. If it is gone, the lock moves at once.
+
+  Reported by **Haldjas (pr0)** on 2026-08-28, including the exact separation
+  from the six seconds the overlay itself stays up.
+
 ## v3.0.0-rc95 - 2026-08-28
 
 ### Changed
