@@ -10,6 +10,70 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc84 - 2026-08-28
+
+### Behoben
+
+- **Das Update scheiterte, wenn der Autostart mitten hineinfuhr.**
+  Gemeldet und gemessen von **der Autor** am 28.08.2026 beim Update rc75 → rc83:
+  Der Installer lief bis zur Hälfte und brach dann ab mit
+
+      Fehler beim Ersetzen einer vorhandenen Datei:
+      DeleteFile schlug fehl; Code 5. Zugriff verweigert.
+
+  Der Windows-Restart-Manager war **nicht** schuld — er hatte sauber gearbeitet.
+  Das Setup-Protokoll zeigt die ganze Kette:
+
+      05:43:47  Shutting down applications using our files. (forced)
+      05:43:55  << der Watcher läuft wieder — Elternprozess explorer.exe >>
+      05:44:17  DeleteFile: The existing file appears to be in use (5).
+
+  Acht Sekunden nach dem Schließen hat der **Autostart** das Programm wieder
+  hochgefahren. Windows arbeitet die Autostart-Einträge verzögert nach dem Start
+  von `explorer.exe` ab; war die Bedienoberfläche kurz vorher neu gestartet
+  (Absturz, frische Anmeldung), fällt diese Verzögerung genau in die laufende
+  Installation. Bewiesen ist es über den **Elternprozess**: `explorer.exe` —
+  hätte sich der Watcher selbst neu gestartet, stünde dort etwas anderes.
+
+  Das Löschen des laufenden Programms ist damit chancenlos: Der Installer
+  schließt **einmal**, und was danach hochkommt, sieht er nicht mehr. Von sich
+  aus wiederholt er nur viermal im Sekundenabstand.
+
+  Der Installer fasst jetzt direkt vor dem Kopieren nach und beendet ein wieder
+  hochgefahrenes Programm — dreimal mit kurzem Abstand, damit auch ein Autostart
+  erwischt wird, der genau in diesem Moment feuert. Nur beim **Update**; wer neu
+  installiert, wartet keine Sekunde länger.
+
+### Geändert
+
+- **Ein Schalter, der „aus“ sagt, macht jetzt auch aus.** Beide Schalter auf
+  der Seite „Texte im Spiel“ setzten bisher nur die Einstellung — die Textdatei
+  blieb unangetastet, bis jemand unten unter „Von Hand“ auf „Jetzt eintragen“
+  drückte. Wer die Angaben abschaltete, das Spiel neu startete und alles
+  unverändert vorfand, hielt das Werkzeug für kaputt.
+
+  Verschlimmert wurde es durch den Kasten darüber: Der versprach „Änderungen
+  wirken beim nächsten Spielstart“ — also genau das, was nicht stimmte.
+
+  Gefunden von **der Autor** am 28.08.2026 im eigenen Test: Schalter aus,
+  Statuszeile meldete „aus“, und in der Textdatei standen unverändert **1.217**
+  Angaben. Beim zweiten Schalter fiel er auf dieselbe Sache herein, obwohl der
+  Hinweis dort danebenstand — „ich hab das fette gelesen aber nicht das
+  kleinere“. Damit war die Frage entschieden: Ein Hinweis im Kleingedruckten
+  ist keine Lösung.
+
+  Jetzt wirkt das Umlegen sofort — aus heißt weg, an heißt da. Das ist
+  verlustfrei: Der ursprüngliche Wortlaut des Spiels ist gemerkt und wird beim
+  Entfernen buchstabengenau wiederhergestellt. Bleibt doch etwas stehen, sagt
+  der Kasten das jetzt auch, statt „es wird nichts geschrieben“ zu melden.
+
+
+- **„Star Citizen starten" steht nicht mehr doppelt.** Auf der Seite „Texte im
+  Spiel" gab es einen eigenen Abschnitt dafür — obwohl der Knopf ohnehin
+  dauerhaft unten links in der Leiste steht, auf jeder Seite erreichbar.
+  Aufgefallen **der Autor** am 28.08.2026. Der Abschnitt ist weg, der Knopf in
+  der Leiste bleibt unverändert.
+
 ## v3.0.0-rc83 - 2026-08-28
 
 ### Behoben

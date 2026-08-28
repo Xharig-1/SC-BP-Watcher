@@ -2736,6 +2736,106 @@ def main():
 
 
     print()
+    print('40. Der Installer haelt das Programm auch UNTEN, nicht nur zu')
+    # ⚠ Gemessen am 28.08.2026 (der Autor, Update rc75 -> rc83). Im
+    # Setup-Protokoll steht die ganze Kette:
+    #
+    #     05:43:47  Shutting down applications using our files. (forced)
+    #     05:43:55  << Watcher laeuft wieder, Elternprozess explorer.exe >>
+    #     05:44:17  DeleteFile: The existing file appears to be in use (5).
+    #
+    # `CloseApplications=force` hat sauber geschlossen. Acht Sekunden spaeter
+    # hat der **Autostart** das Programm wieder hochgefahren, und das Kopieren
+    # lief gegen Code 5. Bewiesen ueber den Elternprozess: `explorer.exe`
+    # arbeitet die Run-Werte verzoegert nach seinem eigenen Start ab.
+    #
+    # `CloseApplications` kann das prinzipiell nicht loesen — es schliesst
+    # einmal. Deshalb faehrt `PrepareToInstall` direkt vor dem Kopieren nach.
+    # Ohne diese Pruefung faellt der Fix bei der naechsten Ueberarbeitung
+    # unbemerkt heraus, und der Fehler kommt bei Nutzern wieder — dort, wo
+    # ihn niemand messen kann.
+    iss40 = open(os.path.join(WURZEL, 'packaging', 'installer.iss'),
+                 encoding='utf-8').read()
+    pruefe('[Code]' in iss40 and 'PrepareToInstall' in iss40,
+           'PrepareToInstall faehrt vor dem Kopieren nach')
+    pruefe('taskkill' in iss40,
+           'und beendet dabei einen wieder hochgefahrenen Watcher')
+    pruefe('FileExists' in iss40,
+           'nur beim Update — Erstinstallationen warten nicht')
+    # Die zwei Direktiven, an denen der Weg schon zweimal gescheitert ist.
+    aktiv40 = [z.strip() for z in iss40.splitlines()
+               if z.strip() and not z.strip().startswith(';')]
+    pruefe(not any(z.startswith('AppMutex=') for z in aktiv40),
+           'AppMutex steht NICHT drin (blockierte den Weg am 26.08.2026)')
+    pruefe('RestartApplications=no' in aktiv40,
+           'RestartApplications=no — der RM faehrt nichts von selbst hoch')
+    # ⚠ Und die Erklaerung im Code muss dazu passen. Sie tat es bis zum
+    # 28.08.2026 nicht und schickte die Fehlersuche in die falsche Richtung.
+    ak40 = open(os.path.join(WURZEL, 'scbp', 'aktualisierung.py'),
+                encoding='utf-8').read()
+    kopf40 = ak40[ak40.index('Der Eigenbau ist deshalb weg'):][:3000]
+    # ⚠ Auf Wortabwesenheit zu pruefen waere falsch: Der Kommentar ZITIERT die
+    # beiden alten Falschaussagen, um sie zu widerlegen. Geprueft wird deshalb,
+    # ob er den echten Stand nennt — daran haengt, ob der naechste Leser richtig
+    # informiert wird.
+    pruefe('RestartApplications=no' in kopf40,
+           'der Code nennt den echten Stand: RestartApplications=no')
+    pruefe('PrepareToInstall' in kopf40,
+           'und verweist auf das Nachfassen im Installer')
+
+    print()
+    print('41. Ein Schalter, der aus sagt, macht auch aus')
+    # ⚠ Gemessen am 28.08.2026 (der Autor): „Angaben am Gegenstand“ abgeschaltet,
+    # Statuszeile meldete „aus“ — und die `global.ini` blieb unangetastet. 1.217
+    # Angaben standen weiter drin, das Spiel zeigte sie unverändert.
+    #
+    # Schlimmer noch der Kasten darüber: „Änderungen wirken beim nächsten
+    # Spielstart“ — wer danach neu startete und alles unverändert vorfand, hielt
+    # das Werkzeug für kaputt. der Autor: „ein user erwartet das was er liest und
+    # sieht, ist es aus angaben weg also muss das auch so sein.“
+    #
+    # Der Schalter stößt das Neuschreiben jetzt selbst an. Diese Prüfung hält das
+    # fest — fällt es heraus, ist der Fehler zurück, und zwar unsichtbar.
+    se41 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                encoding='utf-8').read()
+    i41 = se41.index('def angaben_um():')
+    rumpf41 = se41[i41:se41.index('return neu_wert', i41)]
+    pruefe('_inj_erneuern' in rumpf41,
+           'Umlegen schreibt die Textdatei neu')
+    pruefe('lage_zeigen' in rumpf41,
+           'und der Zustandskasten wird danach aufgefrischt')
+    # ⚠ Zwei Riegel, sonst stößt ein Formatschalter eine Einfügung an, die
+    # niemand wollte — der obere Schalter lässt Vorhandenes mit Absicht stehen.
+    pruefe("inj_an" in rumpf41,
+           'aber nur, wenn das Schreiben überhaupt eingeschaltet ist')
+    pruefe("drin" in rumpf41,
+           'und nur, wenn schon etwas in der Datei steht')
+
+    # ⚠ Derselbe Anspruch für den Hauptschalter — der Autor fiel im eigenen Test
+    # darauf herein und hat damit den Punkt bewiesen: „ich hab das fette gelesen
+    # aber nicht das kleinere“. Der Hinweis stand im Kleingedruckten, und genau
+    # das liest niemand. Aus heißt jetzt weg, an heißt da.
+    i41b = se41.index('def inj_an_um():')
+    rumpf41b = se41[i41b:se41.index('return neu_wert', i41b)]
+    pruefe('_inj_entfernen' in rumpf41b,
+           'Ausschalten nimmt vorhandene Angaben heraus')
+    pruefe('_inj_erneuern' in rumpf41b,
+           'und Einschalten trägt sie wieder ein')
+    # ⚠ Der Hilfetext MUSS mitziehen, sonst behauptet er das Gegenteil des
+    # Verhaltens — schlimmer als gar kein Hinweis.
+    from scbp import sprache as sp41
+    hilfe41 = sp41.TEXTE['s_sp_an_h']
+    pruefe('entfernt vorhandene Angaben nicht' not in hilfe41[0],
+           'der Hilfetext behauptet nicht mehr das Gegenteil (de)')
+    pruefe('does not remove' not in hilfe41[1],
+           'dasselbe auf Englisch')
+    # ⚠ Und der Kasten muss den Rest zugeben, statt „nichts geschrieben“ zu sagen.
+    pruefe('s_sp_aus_rest' in sp41.TEXTE and 's_sp_aus_rest_h' in sp41.TEXTE,
+           'der Kasten kann sagen, dass noch Angaben im Spiel stehen')
+    pruefe('s_sp_aus_rest' in se41,
+           'und benutzt das auch')
+
+    print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
         for f in fehler:

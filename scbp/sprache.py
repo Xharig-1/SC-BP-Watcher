@@ -437,14 +437,6 @@ TEXTE = {
                           'Hard crash during the previous run — the program was killed mid-instruction'),
     'b_fehler_alt':    ('(aus einer älteren Version — vermutlich längst behoben)',
                           '(from an older version — most likely fixed since)'),
-    's_sp_start':      ('Star Citizen starten', 'Launch Star Citizen'),
-    's_sp_start_h':    ('Startet das Spiel über den Weg, den du ohnehin '
-                        'benutzt — den RSI Launcher unter Windows, den '
-                        'lug-helper unter Linux. Wird keiner gefunden, steht '
-                        'hier nichts.',
-                        'Starts the game the way you already do — the RSI '
-                        'Launcher on Windows, lug-helper on Linux. If neither '
-                        'is found, nothing appears here.'),
     's_sp_start_knopf': ('Star Citizen starten', 'Launch Star Citizen'),
     's_sp_start_lauft': ('Star Citizen wird gestartet …', 'Starting Star Citizen …'),
     's_sp_kein_starter': ('kein Starter gefunden', 'no launcher found'),
@@ -536,11 +528,15 @@ TEXTE = {
     's_sp_q_or':       ('Original (aus dem Spiel)', 'Original (from the game)'),
     's_sp_an':         ('Angaben in die Auftragstexte schreiben',
                           'Write the details into the mission text'),
-    's_sp_an_h':       ('Aus lassen, wenn du gerade auf PTU spielst oder die Textdatei in Ruhe lassen willst. Ausschalten entfernt vorhandene Angaben nicht — dafür gibt es unten „Wieder entfernen".',
-                          'Leave off while you play on PTU, or when you want the text file left alone. Turning it off does not remove details that are already there — use ‚Remove again‘ below for that.'),
+    's_sp_an_h':       ('Aus lassen, wenn du gerade auf PTU spielst oder die Textdatei in Ruhe lassen willst. Ausschalten nimmt vorhandene Angaben gleich wieder heraus, Einschalten trägt sie neu ein — der Wortlaut des Spiels wird dabei buchstabengenau wiederhergestellt.',
+                          'Leave it off while you play on PTU, or when you want the text file left alone. Switching it off removes details that are already there; switching it on writes them again — the game’s original wording is restored exactly.'),
     's_sp_an_sagen':   ('Angaben schreiben: %s', 'Writing details: %s'),
     's_sp_aus_hinweis': ('Ausgeschaltet — es wird nichts geschrieben.',
                           'Switched off — nothing is being written.'),
+    's_sp_aus_rest':   ('Ausgeschaltet — es stehen aber noch Angaben im Spiel.',
+                          'Switched off — but details are still in the game.'),
+    's_sp_aus_rest_h': ('Sie ließen sich nicht herausnehmen. „Wieder entfernen“ unter „Von Hand“ nimmt sie heraus.',
+                          'They could not be removed. Use ‚Remove again‘ under ‚By hand‘.'),
     's_sp_auto':       ('Selbst aktuell halten', 'Keep up to date'),
     's_sp_auto_h':     ('Prüft beim Start und alle sechs Stunden. Ohne das sind die Angaben nach jedem Spiel-Patch still verschwunden — jedes Update schreibt die Textdatei neu.',
                           'Checks on start and every six hours. Without it the details are silently gone after every game patch — each update rewrites the text file.'),
