@@ -10,6 +10,24 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Behoben
+
+- **Auf „Texte im Spiel" standen Sternchen im Klartext.** In der Erklärung
+  zur Textquelle war »danach ist das `**ganze Spiel**` in dieser Sprache« zu
+  lesen — mit den Sternchen.
+
+  Die Auszeichnung `**fett**` in der Sprachdatei ist für den gedacht, der die
+  Datei liest; ein Tk-Label kann kein Mischformat und zeigt sie deshalb
+  einfach mit an. Die Danke-Seite nahm sie schon heraus, die
+  Einstellungszeilen nicht — dieselbe Aufgabe an zwei Stellen, eine davon
+  vergessen. Beide gehen jetzt durch dieselbe Funktion.
+
+  Gefunden von **der Autor** am 28.08.2026 auf einem Bildschirmfoto von rc85.
+  Der Selbsttest hatte es nicht gesehen: Er suchte nach deutschem Text in der
+  englischen Oberfläche, nicht nach Auszeichnung. **Er prüft es jetzt mit** —
+  und die Prüfung wurde gegengeprobt, indem der Fehler noch einmal eingebaut
+  wurde.
+
 ## v3.0.0-rc85 - 2026-08-28
 
 ### Behoben
