@@ -1111,6 +1111,8 @@ TEXTE = {
     'b_inj_keine':     ('keine gefunden', 'none found'),
     'b_fehler':        ('Letzte Fehler (%s von %s aufgehoben)',
                           'Recent errors (%s of %s kept)'),
+    'b_fehler_mehrfach': ('  (%d× dasselbe, bis %s)',
+                          '  (%d× the same, until %s)'),
     'b_fehler_keine':  ('Letzte Fehler        keine aufgezeichnet',
                           'Recent errors       none recorded'),
     'b_fuss':          ('Pfade gekürzt (<heim>, <benutzer>) · keine Namen, keine Zugangsdaten',
