@@ -10,6 +10,19 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc98 - 2026-08-28
+
+### Fixed
+
+- **The lock was more opaque than the overlay beneath it.** With transparency
+  turned down, passing clicks through showed two locks of different saturation
+  on top of each other — the one in the bar showed through, the one above it did
+  not.
+
+  A separate window does **not** inherit the main window's transparency; it has
+  to be given its own. Both now carry the same value, and it looks like one lock
+  changing colour — as intended.
+
 ## v3.0.0-rc97 - 2026-08-28
 
 ### Fixed

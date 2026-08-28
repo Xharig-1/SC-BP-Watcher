@@ -10,6 +10,19 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc98 - 2026-08-28
+
+### Behoben
+
+- **Das Schloss war deckender als das Overlay darunter.** Wer die
+  Durchsichtigkeit heruntergestellt hat, sah beim Durchreichen zwei Schlösser
+  mit verschiedener Sättigung übereinander — das in der Leiste schien durch, das
+  darüber nicht.
+
+  Ein eigenes Fenster erbt die Durchsichtigkeit des Hauptfensters **nicht**; sie
+  muss ihm eigens gegeben werden. Jetzt tragen beide denselben Wert, und es
+  sieht aus wie ein Schloss, das die Farbe wechselt — so wie es gedacht ist.
+
 ## v3.0.0-rc97 - 2026-08-28
 
 ### Behoben

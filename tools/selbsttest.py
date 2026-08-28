@@ -3067,6 +3067,11 @@ def main():
         #
         #   `_anfasser_zeigen()` loest denselben Fall seit jeher richtig: aus
         #   `self._letzte_lage`. Das Schloss geht jetzt denselben Weg.
+        # ⚠ Ein Toplevel erbt die Deckkraft des Hauptfensters NICHT. Ohne diese
+        #   Zeile lag ein voll deckendes Schloss ueber einem zu 93 % durch-
+        #   scheinenden Knopf — zwei Symbole mit verschiedener Saettigung.
+        pruefe('DECKKRAFT' in _rumpf44,
+               'das Schloss traegt dieselbe Deckkraft wie das Overlay')
         pruefe('self._letzte_lage' in _rumpf44,
                'im Pop-up-Betrieb gilt die gemerkte Lage, nicht das '
                'versteckte Fenster')
