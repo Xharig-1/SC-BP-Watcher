@@ -122,6 +122,9 @@ DisableProgramGroupPage=yes
 DisableDirPage=auto
 
 OutputDir=..\dist
+; ⚠ Der Name bleibt so — die Testfassungen rc39 bis rc75 suchen beim Update
+; gezielt nach einer Datei auf `-setup.exe`. Wird hier umbenannt, finden sie
+; gar nichts mehr und bekommen nie wieder ein Update angeboten.
 OutputBaseFilename=SC-BP-Watcher-Setup
 SetupIconFile=..\icon.ico
 UninstallDisplayIcon={app}\SC-BP-Watcher.exe

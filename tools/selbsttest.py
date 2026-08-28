@@ -34,6 +34,7 @@ hier als Fälle drin, damit ein Umbau sie nicht unbemerkt wieder einreißt.
 import importlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -83,6 +84,11 @@ ERWARTET = {
 }
 
 fehler = []
+# ⚠ Die Bilanz am Ende sagte immer „N von N fehlgeschlagen", weil sie die
+# Gesamtzahl aus der Fehlerzahl selbst errechnete (`len(fehler) + 0`). Ein
+# einzelner Fehler unter zweihundert Prüfungen las sich damit als „1 von 1" —
+# also als hätte gar nichts geklappt. Deshalb wird jetzt wirklich gezählt.
+geprueft = [0]
 
 
 def hat_anzeige():
@@ -107,9 +113,78 @@ def uebersprungen(was, grund='kein Bildschirm vorhanden'):
 
 
 def pruefe(bedingung, was):
+    geprueft[0] += 1
     print(('  [ok]   ' if bedingung else '  [FEHL] ') + was)
     if not bedingung:
         fehler.append(was)
+
+
+# ---------------------------------------------------------------------------
+# ⚠ Am 28.08.2026 stand in `release.yml` zweimal `shell: bash` untereinander.
+# YAML verbietet denselben Schlüssel zweimal in einer Map — GitHub lehnte die
+# **ganze Datei** ab. Folge: Jeder Bau brach nach 0 Sekunden ab („workflow file
+# issue"), über eine Stunde lang unbemerkt, weil niemand hinsah. Die Commits
+# von 00:03 bis 00:57 wurden nie gebaut.
+#
+# Genau die Sorte Fehler, die der Selbsttest sonst sichtbar macht — nur prüfte
+# er die Workflow-Dateien nicht.
+#
+# ⚠ Und PyYAML hilft hier NICHT: `safe_load` meldet doppelte Schlüssel nicht,
+# es nimmt still den letzten Wert. Gemessen, nicht vermutet. Also von Hand über
+# die Zeilen — was zugleich heißt: keine Fremdbibliothek, die fehlen kann.
+_YAML_SCHLUESSEL = re.compile(r'^(\s*)(-\s+)?([A-Za-z_][\w.\- ]*):(\s|$)')
+_YAML_BLOCK = re.compile(
+    r'^(\s*)(?:-\s+)?[A-Za-z_][\w.\- ]*:\s*[|>][-+]?\d*\s*(?:#.*)?$')
+
+
+def doppelte_schluessel(text):
+    """Schlüssel, die in derselben Map zweimal stehen. [(zeile, name, erste), …]
+
+    Zwei Fallen, an denen eine naive Zeilensuche scheitert:
+
+    1. **Listeneinträge sind eigene Maps.** In `steps:` darf `name` bei jedem
+       Schritt wieder stehen — ein `- ` beginnt eine neue Map, der Zähler wird
+       zurückgesetzt.
+    2. **Textblöcke enthalten alles Mögliche.** Hinter `run: |` stehen bei uns
+       Shell- und Python-Zeilen, Heredocs inklusive; `on: 1` darin ist Text,
+       kein Schlüssel. Alles, was tiefer eingerückt ist als der Blockschlüssel,
+       wird deshalb übersprungen.
+    """
+    funde = []
+    stapel = []          # [(einrueckung, {schluessel: zeile}), …]
+    block_ein = None     # in einem |- oder >-Textblock: dessen Einrückung
+    for nr, zeile in enumerate(text.splitlines(), 1):
+        if block_ein is not None:
+            if not zeile.strip():
+                continue
+            if len(zeile) - len(zeile.lstrip()) > block_ein:
+                continue                      # gehört noch zum Textblock
+            block_ein = None
+        roh = zeile.rstrip()
+        if not roh.strip() or roh.lstrip().startswith('#'):
+            continue
+        treffer = _YAML_SCHLUESSEL.match(roh)
+        if not treffer:
+            continue
+        vor, strich, name = treffer.group(1), treffer.group(2), treffer.group(3)
+        tiefe = len(vor) + (len(strich) if strich else 0)
+        while stapel and stapel[-1][0] > tiefe:
+            stapel.pop()
+        if strich:
+            # Neuer Listeneintrag = neue Map; was davor stand, zählt nicht mehr.
+            while stapel and stapel[-1][0] >= tiefe:
+                stapel.pop()
+            stapel.append((tiefe, {}))
+        elif not stapel or stapel[-1][0] < tiefe:
+            stapel.append((tiefe, {}))
+        map_ = stapel[-1][1]
+        if name in map_:
+            funde.append((nr, name, map_[name]))
+        else:
+            map_[name] = nr
+        if _YAML_BLOCK.match(roh):
+            block_ein = tiefe
+    return funde
 
 
 def baue(basis):
@@ -698,9 +773,15 @@ def main():
                        'die geöffnete Seite bleibt geöffnet')
                 # Feste Zahl mit Absicht: Der Test soll auffallen, wenn beim
                 # Sprachwechsel ein Reiter verschwindet. Kommt einer dazu,
-                # wird sie hier mitgezogen. 10 = die Hauptleiste ohne die drei
+                # wird sie hier mitgezogen. 11 = die Hauptleiste ohne die zwei
                 # unter „Für Fortgeschrittene".
-                pruefe(len(hf.knoepfe) == 10, 'alle Reiter sind wieder da')
+                #
+                # ⚠ Am 28.08.2026 von 10 auf 11: **Diagnose ist nach oben
+                # gewandert.** Wer die Seite braucht, hat ein Problem — und
+                # sucht sie nicht in einem zugeklappten Menü namens
+                # „Fortgeschritten". Seit dem Knopf „Fehlerbericht absenden"
+                # ist sie zudem der Weg, auf dem Meldungen ankommen.
+                pruefe(len(hf.knoepfe) == 11, 'alle Reiter sind wieder da')
 
                 # Die Wahl muss festgehalten werden — ohne Speichern-Knopf gibt
                 # es keinen zweiten Versuch. Vorher stand die Markierung
@@ -1159,6 +1240,10 @@ def main():
             # Kommentare in der einstellungen.json und eine Entwickler-Hilfe
             # zum fehlenden Entpacker — beides kein Oberflächentext.
             'scbp/pfade.py', 'scbp/spieltexte.py', 'scbp/phrasen.py',
+            # Feldnamen der `global.ini` („Gütegrad:", „Verfolgungssignal:") —
+            # damit wird in der Spieldatei GESUCHT, angezeigt wird nichts
+            # davon. Gleiche Lage wie bei `phrasen.py` eine Zeile höher.
+            'scbp/angaben.py',
             # Erklärender Kopf in der patch-historie.json. Steht in der Datei,
             # damit man sie im Repo ohne Quelltext versteht — nie im Fenster.
             'scbp/patchhistorie.py',
@@ -1542,7 +1627,15 @@ def main():
         # ⚠ `_wurzel()` liefert ein verstecktes Fenster — ein verstecktes Fenster
         # rechnet Tk nicht aus, beide Kaesten meldeten 1 Pixel. Dann waeren sie
         # „gleich gross" und die Pruefung ginge immer durch. Also kurz zeigen.
-        wurzel.geometry('1100x760')
+        # ⚠ **Weit ausserhalb des Bildschirms** zeigen, nicht mittendrin.
+        # Tk rechnet ein verstecktes Fenster nicht aus, gezeigt werden muss es
+        # also — aber es muss niemand sehen. Der Selbsttest laeuft nach jeder
+        # Aenderung, und jedes Mal sprang hier ein 1100x760-Fenster ueber den
+        # Bildschirm und riss den Fokus mit. Gemeldet am 28.08.2026: „du hast
+        # mich staendig aus dem rausgezogen was ich mache, den ganzen Abend
+        # schon." Negative Koordinaten loesen das auf beiden Systemen.
+        wurzel.geometry('1100x760+-4000+-4000')
+        wurzel.attributes('-alpha', 0.0)
         wurzel.deiconify()
         _rahmen21 = tk21.Frame(wurzel)
         _rahmen21.pack(fill='both', expand=True)
@@ -1641,12 +1734,630 @@ def main():
                'die Diagnose-Seite selbst steht nicht als letzte Zeile drin')
         quelle26b = open(os.path.join(WURZEL, 'scbp', 'hauptfenster.py'),
                          encoding='utf-8').read()
-        pruefe(quelle26b.count("fehler.spur('Seite ") == 2,
-               'jeder Seitenwechsel schreibt zwei Zeilen (bauen/steht)')
+        # ⚠ Drei Stellen seit dem 28.08.2026: „bauen beginnt" beim ersten
+        # Aufbauen, „zeigen" beim erneuten Einblenden, „steht" am Ende. Vorher
+        # gab es die mittlere nicht — ging beim zweiten Besuch etwas schief,
+        # fehlte die Zeile GANZ statt zur Haelfte, und der Bericht verspricht,
+        # dass die letzte Zeile ohne „steht" die ist, an der es hing.
+        pruefe(quelle26b.count("fehler.spur('Seite ") == 3,
+               'jeder Seitenwechsel schreibt zwei Zeilen (bauen bzw. zeigen, dann steht)')
+        pruefe("Seite %s: zeigen" in quelle26b,
+               'auch der zweite Besuch hinterlaesst eine Spur')
         quelle26c = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
                          encoding='utf-8').read()
         pruefe('fehler.absturzfaenger()' in quelle26c,
                'der Faenger wird beim Start gesetzt')
+
+        print()
+        print('27. Angaben am Gegenstand: Kuerzel aus der Beschreibung')
+        # ⚠ Die Fallen hier sind Datenfallen, keine Programmierfehler — sie
+        # fallen nur auf, wenn man die echte `global.ini` daneben legt. Beim Bau
+        # (27.08.2026) stand sechsmal `Individuell angefertigt` und dreimal
+        # `N/A` im Feld Guetegrad; wer den ersten Buchstaben nimmt, schreibt
+        # `(Ind/4/I)` in einen Spielnamen. So etwas sieht man erst im Spiel.
+        from scbp import angaben as an27
+
+        def besch27(**felder):
+            """Eine Beschreibungszeile bauen — `\\n` ist die ZEICHENFOLGE."""
+            return '\\n'.join('%s: %s' % (k, v) for k, v in felder.items())
+
+        pruefe(an27.aus_beschreibung(
+                   besch27(**{'Größe': 'S1', 'Gütegrad': 'A',
+                              'Klasse': 'Military (Militär)'})) == '(Mil/1/A)',
+               'Komponente wird zu Klasse/Groesse/Guete')
+        pruefe(an27.aus_beschreibung(
+                   besch27(**{'Größe': 'S2', 'Verfolgungssignal': 'Infrarot'}))
+               == '(IR2)',
+               'Rakete bekommt den Suchkopf, keine Fraktion')
+        pruefe(an27.aus_beschreibung(
+                   besch27(**{'Klasse': 'Ballistisch'})) == '(Bal)',
+               'Waffe: die Klasse allein genuegt (FPS-Waffen haben keine Groesse)')
+        pruefe(an27.aus_beschreibung(besch27(**{'Größe': 'S3'})) is None,
+               'Groesse allein gibt KEINEN Zusatz (waere Laerm im Namen)')
+        pruefe(an27.aus_beschreibung(
+                   besch27(**{'Größe': 'S4', 'Gütegrad': 'Individuell angefertigt',
+                              'Klasse': 'Industrial (Industrie)'})) == '(Ind/4/–)',
+               'ein Guetegrad, den es nicht gibt, wird zum Strich')
+        pruefe(an27.aus_beschreibung(
+                   besch27(**{'Größe': 'S1', 'Gütegrad': 'N/A',
+                              'Klasse': 'Zivil'})) == '(Civ/1/–)',
+               '`N/A` ebenso — und die Kurzform `Zivil` wird erkannt')
+        pruefe(an27.aus_beschreibung(
+                   besch27(**{'Größe': 'S2 (Nur Fahrzeuge)',
+                              'Klasse': 'Military', 'Gütegrad': 'B'}))
+               == '(Mil/–/B)',
+               'eine Groesse mit Zusatztext gehoert nicht ins Kuerzel')
+        # Die Uebersetzung ist uneinheitlich: dieselbe Klasse in drei Formen.
+        pruefe(len({an27.aus_beschreibung(
+                        besch27(**{'Größe': 'S1', 'Gütegrad': 'C', 'Klasse': k}))
+                    for k in ('Civilian (Zivil)', 'Zivil', 'Civilian')}) == 1,
+               'alle drei Schreibweisen derselben Klasse ergeben dasselbe')
+        pruefe(an27.zusatz_entfernen('Spark I-G Missile (CS1)')
+               == 'Spark I-G Missile',
+               'ein Zusatz des SC Deutsch Launchers wird abgeschnitten')
+        pruefe(an27.zusatz_entfernen('Inspire Advanced (Ind/2/C)')
+               == 'Inspire Advanced',
+               'und der eigene ebenso — sonst stapeln sie sich')
+        pruefe(an27.zusatz_entfernen('Omnisky III Cannon')
+               == 'Omnisky III Cannon',
+               'ein Name ohne Zusatz bleibt unangetastet')
+        # Der ganze Weg: Tabelle aus Rohzeilen, ueber den gemeinsamen Stamm.
+        zeilen27 = ['item_DescXY_Test=' + besch27(**{'Größe': 'S3',
+                                                     'Gütegrad': 'B',
+                                                     'Klasse': 'Stealth (Tarnung)'}),
+                    'item_NameXY_Test=Testkuehler',
+                    'item_NameOhne_Beschreibung=Einsam']
+        tab27 = an27.tabelle_bauen(zeilen27)
+        pruefe(tab27.get('item_NameXY_Test') == '(Sth/3/B)',
+               'Beschreibung und Name finden ueber den Schluesselstamm zusammen')
+        pruefe('item_NameOhne_Beschreibung' not in tab27,
+               'ein Name ohne Beschreibung kommt nicht in die Tabelle')
+
+        print()
+        print('28. Ohne Launcher: Ordner und user.cfg entstehen selbst')
+        # ⚠ der Autor am 27.08.2026: „das hat bei mir und meinem bruder nur
+        # geklappt WEIL wir vorher den launcher hatten von sc deutsch." Genau
+        # das ist der ungetestete Fall — wer den SC Deutsch Launcher nie hatte,
+        # hat **keinen** Ordner `data/Localization/<sprache>/`, und ohne den
+        # landet die Datei irgendwo, wo Star Citizen sie nicht sucht.
+        #
+        # Dazu die Tonspur: Star Citizen hat **keine deutsche Sprachausgabe**.
+        # Ohne `g_languageAudio = english` neben der deutschen Textsprache
+        # fehlt der Ton. Der Launcher setzt beides, also müssen wir es auch.
+        from scbp import uebersetzung as ue28
+        frisch28 = os.path.join(basis, 'frischeinstallation', 'LIVE')
+        os.makedirs(frisch28)
+        open(os.path.join(frisch28, 'Data.p4k'), 'w').close()
+
+        ziel28 = ue28.ziel_ini('german_(germany)', frisch28)
+        pruefe(ziel28.endswith(os.path.join('data', 'Localization',
+                                            'german_(germany)', 'global.ini')),
+               'der Zielpfad steht dort, wo Star Citizen sucht')
+        os.makedirs(os.path.dirname(ziel28), exist_ok=True)
+        pruefe(os.path.isdir(os.path.dirname(ziel28)),
+               'die ganze Ordnerkette entsteht ohne Launcher')
+
+        ue28.user_cfg_setzen('german_(germany)', 'english', frisch28)
+        cfg28 = open(os.path.join(frisch28, 'user.cfg'), encoding='utf-8').read()
+        pruefe('g_language = german_(germany)' in cfg28,
+               'g_language wird gesetzt — sonst liest das Spiel die Datei nicht')
+        pruefe('g_languageAudio = english' in cfg28,
+               'g_languageAudio = english MUSS mit rein (SC hat keinen deutschen Ton)')
+
+        # Eine vorhandene user.cfg voller Grafikeinstellungen darf das nicht
+        # verlieren — dort steht die Arbeit des Spielers drin.
+        cfgpfad28 = os.path.join(frisch28, 'user.cfg')
+        with open(cfgpfad28, 'w', encoding='utf-8') as f28:
+            f28.write('r_DisplayInfo = 3\nsys_maxfps = 0\n'
+                      'g_language = english\n')
+        ue28.user_cfg_setzen('german_(germany)', 'english', frisch28)
+        cfg28b = open(cfgpfad28, encoding='utf-8').read()
+        pruefe('r_DisplayInfo = 3' in cfg28b and 'sys_maxfps = 0' in cfg28b,
+               'vorhandene Grafikeinstellungen bleiben unangetastet')
+        pruefe('g_language = english' not in cfg28b,
+               'eine alte Sprachzeile wird ersetzt, nicht verdoppelt')
+        pruefe(cfg28b.count('g_language =') == 1,
+               'g_language steht genau einmal da')
+
+        # Der Weg ueber die EINSTELLUNGEN (Assistent abgebrochen) muss dasselbe
+        # tun wie der Assistent. Beide laufen ueber `uebersetzung.holen()`.
+        quelle28 = open(os.path.join(WURZEL, 'scbp', 'uebersetzung.py'),
+                        encoding='utf-8').read()
+        holen28 = quelle28[quelle28.index('def holen('):]
+        holen28 = holen28[:holen28.index('\ndef ', 1)] if '\ndef ' in holen28[1:] else holen28
+        pruefe('os.makedirs(' in holen28,
+               'holen() legt die Ordnerkette selbst an')
+        pruefe('user_cfg_setzen(' in holen28,
+               'holen() setzt die user.cfg — auch wenn der Assistent uebersprungen wurde')
+        pruefe(ue28.QUELLEN['deutsch']['ton'] == 'english',
+               'die deutsche Quelle bringt den englischen Ton mit')
+
+        # StarStrings (MrKraken) ist derselbe Fall — nur mit englischem
+        # Zielordner. der Autor: „ist ja wie die deutsche im grunde."
+        ss28 = os.path.join(basis, 'starstringsprobe', 'LIVE')
+        os.makedirs(ss28)
+        ziel_ss = ue28.ziel_ini(ue28.QUELLEN['starstrings']['sprache'], ss28)
+        pruefe(ziel_ss.endswith(os.path.join('data', 'Localization',
+                                             'english', 'global.ini')),
+               'StarStrings landet im englischen Ordner, ebenfalls selbst angelegt')
+        ue28.user_cfg_setzen(ue28.QUELLEN['starstrings']['sprache'],
+                             ue28.QUELLEN['starstrings']['ton'], ss28)
+        cfg_ss = open(os.path.join(ss28, 'user.cfg'), encoding='utf-8').read()
+        pruefe('g_language = english' in cfg_ss,
+               'auch StarStrings traegt seine Sprache in die user.cfg ein')
+
+        # ⚠ Der Wechsel deutsch → StarStrings: Die Tonzeile stammt aus der
+        # deutschen Einrichtung und muss stehen bleiben. `ton` ist bei
+        # StarStrings None — eine Fassung, die dabei alles anfasst, wuerde sie
+        # verlieren, und der Spieler saesse ohne Ton da.
+        with open(os.path.join(ss28, 'user.cfg'), 'w', encoding='utf-8') as f_ss:
+            f_ss.write('g_language = german_(germany)\n'
+                       'g_languageAudio = english\n'
+                       'r_VSync = 0\n')
+        ue28.user_cfg_setzen('english', None, ss28)
+        cfg_ss2 = open(os.path.join(ss28, 'user.cfg'), encoding='utf-8').read()
+        pruefe('g_language = english' in cfg_ss2,
+               'beim Wechsel wird die Textsprache umgestellt')
+        pruefe('g_languageAudio = english' in cfg_ss2,
+               'die Tonzeile ueberlebt den Wechsel (ton=None fasst sie nicht an)')
+        pruefe('r_VSync = 0' in cfg_ss2,
+               'und die Grafikeinstellung ebenso')
+
+        # ⚠ Der dritte Weg — und der eigentliche „ohne Launcher"-Fall: Wer
+        # **englisch original** spielt, will vielleicht nur die Angaben am
+        # Gegenstand und gar keine Übersetzung. Der hat **gar keine**
+        # `global.ini` auf der Platte, nur die `Data.p4k`. Ohne `g_language`
+        # liest Star Citizen eine dort abgelegte Datei nicht einmal an.
+        # der Autor: „sonst kann man das nie ohne eine übersetzung nutzen."
+        from scbp import spieltexte as st28
+        quelle_st = open(os.path.join(WURZEL, 'scbp', 'spieltexte.py'),
+                         encoding='utf-8').read()
+        pruefe('_sprache_eintragen(' in quelle_st,
+               'holen() traegt g_language selbst ein, nicht der Aufrufer')
+        pruefe(quelle_st.count('_sprache_eintragen(sprache, spielordner)') >= 2,
+               'auch wenn die Datei schon da war — sonst bleibt sie ungelesen')
+        # Kein Aufrufer darf sich mehr darauf verlassen, es selbst zu tun.
+        for datei_st in ('assistent.py', 'einstellungsfenster.py'):
+            inhalt_st = open(os.path.join(WURZEL, 'scbp', datei_st),
+                             encoding='utf-8').read()
+            block_st = inhalt_st[inhalt_st.index('spieltexte.holen('):][:900]
+            pruefe('user_cfg_setzen(' not in block_st,
+                   '%s verlaesst sich auf holen(), statt es zu wiederholen'
+                   % datei_st)
+        # Und der englische Zielordner entsteht genauso von selbst.
+        orig28 = os.path.join(basis, 'englischoriginal', 'LIVE')
+        os.makedirs(orig28)
+        ziel_or = ue28.ziel_ini('english', orig28)
+        os.makedirs(os.path.dirname(ziel_or), exist_ok=True)
+        st28._sprache_eintragen('english', orig28)
+        cfg_or = open(os.path.join(orig28, 'user.cfg'), encoding='utf-8').read()
+        pruefe('g_language = english' in cfg_or,
+               'englisch original: g_language wird ebenfalls gesetzt')
+
+        print()
+        print('29. Bedienelemente stehen einheitlich — Symmetrie')
+        # ⚠ der Autor am 27.08.2026: „im gleichen tab sind die einstellings
+        # schalter mal mittig mal rechts, das muss einheitlich sein, im gesamten
+        # projekt gilt das natuerlich." Und: „Symetrie ist fuer mich EXTREM
+        # wichtig bei eigentlich allem."
+        #
+        # Woher der Unterschied kam: `_feld(..., breit=True)` legt das
+        # Bedienelement UNTER die Beschreibung, ueber die volle Breite — ein
+        # `.pack()` ohne Anker sitzt darin **mittig**. Ohne `breit` steht es
+        # rechts neben dem Text. Auf der Seite „Texte im Spiel" standen dadurch
+        # drei Schiebeschalter untereinander: mittig, rechts, mittig.
+        #
+        # `breit=True` ist fuer BREITE Bedienelemente da (Knopfreihen, die auf
+        # Englisch sonst abgeschnitten werden). Ein Schiebeschalter ist schmal
+        # und gehoert nach rechts — wie in jeder Einstellungsliste.
+        import re as _re29
+        quelle29 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                        encoding='utf-8').read().split('\n')
+
+        def _aufruf29(zeilen, start):
+            """Der VOLLSTAENDIGE `_feld(...)`-Aufruf ab `start`.
+
+            ⚠ Nicht bei der ersten `)` abschneiden — die schliesst `t('...')`,
+            und `breit=True` steht dahinter. Genau daran ist die erste Fassung
+            dieser Pruefung gescheitert: Sie meldete brav 0 Ausreisser, auch
+            als absichtlich einer eingebaut wurde. Deshalb zaehlen."""
+            text, tiefe = '', 0
+            for _z in zeilen[start:start + 4]:
+                for _c in _z:
+                    text += _c
+                    if _c == '(':
+                        tiefe += 1
+                    elif _c == ')':
+                        tiefe -= 1
+                        if tiefe == 0:
+                            return text
+                text += ' '
+            return text
+
+        offen29, falsch29 = None, []
+        for _i29, _z29 in enumerate(quelle29):
+            _m29 = _re29.search(r"_feld\(fenster, \w+, t\('([^']+)'\)", _z29)
+            if _m29:
+                _ab29 = _z29.index('_feld(') + 5
+                _voll29 = _aufruf29([_z29[_ab29:]] + quelle29[_i29 + 1:], 0)
+                offen29 = (_m29.group(1), 'breit=True' in _voll29, _i29 + 1)
+            elif 'schiebeschalter(' in _z29 and offen29:
+                if offen29[1]:
+                    falsch29.append('%s (Zeile %d)' % (offen29[0], offen29[2]))
+                offen29 = None
+        for _f29 in falsch29:
+            print('       mittig statt rechts: ' + _f29)
+        pruefe(not falsch29,
+               'jeder Schiebeschalter steht rechts, keiner mittig (%d Ausreisser)'
+               % len(falsch29))
+
+        print()
+        print('30. Nur noch der Installer — und v2.0.0 kommt trotzdem mit')
+        # Entscheidung der Autor am 27.08.2026: „ich will die exe ohne install
+        # loswerden … sie belastet mich nur und war damals deine Entscheidung,
+        # als wir sagten, wir machen es so, um Vertrauen aufzubauen. ABER das
+        # haben wir doch schon, nun wollen wir es funktionierend. Und einfach."
+        #
+        # Zwei Auslieferungswege heissen zwei Fehlerquellen und doppelte
+        # Unterstuetzung. Ab v3.0.0 gibt es unter Windows nur den Installer.
+        #
+        # ⚠ Der Haken, den das aufwirft: **v2.0.0 gab es NUR als nackte .exe.**
+        # Ihre Update-Logik nimmt die erste Datei auf `.exe` — jetzt also den
+        # Installer. Das ging frueher schief, weil die alte `einspielen()` den
+        # Fund roh ueber das laufende Programm schob. ABER ihr Hilfsskript
+        # startet die getauschte Datei anschliessend (`start "" "<ziel>"`) —
+        # der Installer laeuft also und richtet alles ein. Was frueher der
+        # Fehler war, ist jetzt der Weg hinaus.
+        from scbp import aktualisierung as ak30
+        yml30 = open(os.path.join(WURZEL, '.github', 'workflows',
+                                  'release.yml'), encoding='utf-8').read()
+        anhang30 = yml30[yml30.index('files: |'):][:400]
+        pruefe('SC-BP-Watcher-Setup.exe' in anhang30,
+               'der Installer haengt am Release')
+        pruefe('windows/SC-BP-Watcher.exe' not in anhang30,
+               'die nackte .exe haengt NICHT mehr daran')
+        pruefe('AppImage' in anhang30,
+               'Linux bekommt weiter sein AppImage')
+        # Was gebaut wird, muss zu dem passen, was gesucht wird.
+        iss30 = open(os.path.join(WURZEL, 'packaging', 'installer.iss'),
+                     encoding='utf-8').read()
+        pruefe('OutputBaseFilename=SC-BP-Watcher-Setup' in iss30,
+               'der Installer heisst so, wie rc39-rc75 ihn suchen')
+        pruefe(ak30.WINDOWS_INSTALLER[0] == '-setup.exe',
+               'und die Suche faengt genau damit an')
+        # Der Weg von v2.0.0: erste Datei auf .exe — das MUSS der Installer sein.
+        anhaenge30 = sorted(['SC-BP-Watcher-Setup.exe',
+                             'SC-BP-Watcher-x86_64.AppImage'])
+        erste_exe30 = next((n for n in anhaenge30
+                            if n.lower().endswith('.exe')), None)
+        pruefe(erste_exe30 == 'SC-BP-Watcher-Setup.exe',
+               'v2.0.0 greift den Installer — und startet ihn (%s)' % erste_exe30)
+        # ⚠ Und der Installer muss dorthin, wo das Programm liegt: sonst
+        # entsteht eine zweite Fassung neben der alten Datei.
+        ak30q = open(os.path.join(WURZEL, 'scbp', 'aktualisierung.py'),
+                     encoding='utf-8').read()
+        start30 = ak30q[ak30q.index("schalter = '/SILENT"):][:1400]
+        pruefe('/DIR=' in start30,
+               'der Installer bekommt /DIR — ersetzen statt danebenlegen')
+        pruefe('sys.executable' in start30,
+               'und zwar den Ordner des laufenden Programms')
+
+        print()
+        print('31. Das Schloss holt einen aus dem Durchreichen zurueck')
+        # ⚠ der Autor am 27.08.2026: „der zweite Programmstart ist die denkbar
+        # duemmste Loesung, weil man dann raustabben muss aus dem Spiel."
+        #
+        # Und er hat recht: Wer Klicks durchreichen laesst, will im Spiel
+        # bleiben. Bis dahin fuehrte der einzige Rueckweg genau dort hinaus.
+        # Ryze loest es beim TeamSpeak-Plugin mit einem Schloss, das anklickbar
+        # bleibt — dasselbe macht jetzt ein eigenes kleines Fenster, das nie
+        # durchlaessig gemacht wird.
+        from scbp import overlay as ov31
+        pruefe(hasattr(ov31, 'SCHLOSS_RUECKRUF'),
+               'overlay kennt den Rueckruf fuers Schloss')
+        # Der Rueckruf MUSS beim Umschalten kommen — sonst bliebe das Schloss
+        # stehen, obwohl niemand mehr durchklickt (oder umgekehrt).
+        gerufen31 = []
+        alt31 = ov31.SCHLOSS_RUECKRUF[0]
+        ov31.SCHLOSS_RUECKRUF[0] = lambda an: gerufen31.append(an)
+        try:
+            ov31.durchklickbar_setzen(None, False)
+        except Exception:
+            pass
+        ov31.SCHLOSS_RUECKRUF[0] = alt31
+        pruefe(len(gerufen31) == 1,
+               'jedes Umschalten meldet sich beim Schloss (%d Rufe)' % len(gerufen31))
+        # ⚠ Scheitert das Durchreichen, darf KEIN Schloss stehen — es waere ein
+        # Schloss an einer Tuer, die offen ist.
+        pruefe(gerufen31 == [False],
+               'ohne wirksames Durchreichen kommt auch kein Schloss')
+        # Ein Rueckruf, der wirft, darf das Schalten nicht kippen.
+        ov31.SCHLOSS_RUECKRUF[0] = lambda an: 1 / 0
+        try:
+            ov31.durchklickbar_setzen(None, False)
+            heil31 = True
+        except ZeroDivisionError:
+            heil31 = False
+        ov31.SCHLOSS_RUECKRUF[0] = alt31
+        pruefe(heil31, 'ein Fehler im Schloss reisst das Umschalten nicht mit')
+        # Die Symbole muessen da sein — sonst ist das Schloss unsichtbar, und
+        # genau das ist heute schon einmal passiert (das X im Herkunftskasten).
+        for name31 in ('schloss_zu', 'schloss_auf'):
+            pfad31 = os.path.join(WURZEL, 'assets', 'symbole', '18',
+                                  name31 + '-gruen.png')
+            pruefe(os.path.isfile(pfad31), 'Symbol %s liegt in 18 px vor' % name31)
+        from scbp import sprache as sp31
+        for schl31 in ('hinweis_schloss', 'ov_schloss_offen'):
+            pruefe(bool(sp31.t(schl31)) and schl31 not in sp31.t(schl31),
+                   'Text %s ist gesetzt, nicht der Schluesselname' % schl31)
+
+        print()
+        print('32. Die Log-Erkennung kennt UNSERE eigenen Zusaetze')
+        # ⚠ Der gefaehrlichste Fehler dieser Nacht, gefunden am 28.08.2026 beim
+        # Nachgehen einer Frage von Morkhan.
+        #
+        # Seit rc76 schreibt das Werkzeug die Angaben selbst an die
+        # Gegenstandsnamen (`scbp/angaben.py`). Das Spiel schreibt den Namen
+        # anschliessend **mitsamt Zusatz** in die Game.log:
+        #
+        #     Bauplan erhalten: Spectre (Sth/1/A)
+        #
+        # `SUFFIX_RE` kannte aber nur `Civ|Mil|Ind|Sth|Cmp` mit Grad `A-D` —
+        # also genau die Form, die der SC Deutsch Launcher erzeugte. Alles, was
+        # wir zusaetzlich schreiben, blieb am Namen kleben: Der Bauplan landet
+        # unter falschem Namen im Bestand und wird **nie abgehakt**.
+        #
+        # Betroffen waeren 344 Waffen und 62 Raketen gewesen — und niemand
+        # haette es gemerkt, weil das Werkzeug ja etwas anzeigt.
+        from scbp.logquelle import teile_namen as tn32
+        faelle32 = [
+            ('Spectre (Sth/1/A)',            'Spectre'),
+            ('7CA \'Nargun\' (Civ/3/A)',      "7CA 'Nargun'"),
+            ('Omnisky III Cannon (Las/2/A)', 'Omnisky III Cannon'),
+            ('Inspire Advanced (Ind/2/C)',   'Inspire Advanced'),
+            ('P4-AR Rifle (Bal)',            'P4-AR Rifle'),
+            ('Arrowhead Sniper Rifle (Las)', 'Arrowhead Sniper Rifle'),
+            ("'Arrow' I Missile (IR1)",      "'Arrow' I Missile"),
+            ('Argos IX Torpedo (CS9)',       'Argos IX Torpedo'),
+            ('Pioneer I-G Missile (EM1)',    'Pioneer I-G Missile'),
+            ('Glacis (Ind/4/\u2013)',          'Glacis'),
+            ('V60-26 (Mil/\u2013/B)',          'V60-26'),
+        ]
+        for roh32, erwartet32 in faelle32:
+            pruefe(tn32(roh32)[0] == erwartet32,
+                   'abgeschnitten: %s' % roh32)
+        # ⚠ Und die Gegenrichtung: Echte Namensklammern duerfen NICHT fallen.
+        # Sonst hiesse „Singe Cannon (S2)" plötzlich nur noch „Singe Cannon",
+        # und zwei verschiedene Waffen waeren derselbe Eintrag.
+        for roh32 in ('Singe Cannon (S2)', 'Irgendwas (30 cap)',
+                      'Ding (Alpha/1/A)', 'Sache (Mil/1/Z)'):
+            pruefe(tn32(roh32)[0] == roh32,
+                   'unangetastet: %s' % roh32)
+        # Die Kuerzel-Liste MUSS zu angaben.py passen — sonst reisst genau
+        # diese Luecke beim naechsten neuen Kuerzel wieder auf.
+        from scbp import angaben as an32, logquelle as lq32
+        for _teile32, kurz32 in an32.KLASSEN:
+            pruefe(kurz32.lower() in lq32._KUERZEL.lower(),
+                   'logquelle kennt das Kuerzel %s aus angaben.py' % kurz32)
+
+        print()
+        print('33. Bestand und Liste finden zueinander, egal woher der Name kam')
+        # ⚠ Der Fehler, der Morkhans leere Kaestchen erklaert (28.08.2026).
+        #
+        # `pfade.namensform()` nennt sich selbst „die EINZIGE Stelle" fuer
+        # Vergleichsschluessel — schnitt den Klassen-Zusatz aber nicht ab. Das
+        # tat nur `logquelle.teile_namen()`. Also:
+        #
+        #     aus der Game.log:        'xl-1'            ✅ geschnitten
+        #     aus der Launcher-Datei:  'xl-1 (mil/2/a)'  ❌ ungeschnitten
+        #     aus einem Import:        'xl-1 (mil/2/a)'  ❌ ungeschnitten
+        #
+        # Zwei Schluessel, die nie zueinander finden: Der Bauplan galt als
+        # fehlend, obwohl er im Bestand stand. Betroffen war jeder, der seinen
+        # Stand aus dem SC Deutsch Launcher oder einer Sicherung mitbrachte —
+        # also genau die Leute, die schon laenger spielen.
+        from scbp.pfade import namensform as nfm33
+        gleich33 = [
+            ('XL-1 (Mil/2/A)',            'XL-1'),
+            ('7CA \'Nargun\' (Civ/3/A)',   "7CA 'Nargun'"),
+            ('7MA "Lorica" (Civ/3/B)',    "7MA 'Lorica'"),
+            ('P4-AR Rifle (Bal)',         'P4-AR Rifle'),
+            ("'Arrow' I Missile (IR1)",   "'Arrow' I Missile"),
+            ('Argos IX Torpedo (CS9)',    'Argos IX Torpedo'),
+            ('Glacis (Ind/4/\u2013)',       'Glacis'),
+            ('V60-26 (Mil/\u2013/B)',       'V60-26'),
+        ]
+        for mit33, ohne33 in gleich33:
+            pruefe(nfm33(mit33) == nfm33(ohne33),
+                   'mit und ohne Kuerzel derselbe Schluessel: %s' % mit33)
+        # ⚠ Gegenrichtung: Echte Namensklammern MUESSEN bleiben, sonst waeren
+        # zwei verschiedene Waffen plötzlich derselbe Eintrag.
+        for roh33 in ('Singe Cannon (S2)', 'Irgendwas (30 cap)',
+                      'Ding (Alpha/1/A)'):
+            pruefe(nfm33(roh33) == roh33.lower(),
+                   'unangetastet: %s' % roh33)
+        # ⚠ Und der wichtigste Teil: Ein **schon gespeicherter** Bestand muss
+        # mitziehen. `namensform()` zu reparieren hilft nur neuen Eintraegen —
+        # Morkhans 320 Bauplaene lagen mit den alten Schluesseln auf der Platte.
+        import json as js33, tempfile as tf33, shutil as sh33
+        heim33 = tf33.mkdtemp(prefix='bestand33-')
+        alt_heim33 = os.environ.get('SC_BP_HOME')
+        os.environ['SC_BP_HOME'] = heim33
+        try:
+            import importlib as im33
+            from scbp import pfade as pf33
+            im33.reload(pf33)
+            from scbp import bestand as be33
+            im33.reload(be33)
+            with open(be33.pfad(), 'w', encoding='utf-8') as f33:
+                js33.dump({'version': 1, 'stand': '2026-08-01 12:00:00',
+                           'bauplaene': {
+                               'xl-1 (mil/2/a)': {'name': 'XL-1 (Mil/2/A)',
+                                                  'quelle': 'launcher',
+                                                  'zeit': '2026-08-01 10:00:00'},
+                               'guardian (ind/1/b)': {'name': 'Guardian (Ind/1/B)',
+                                                      'quelle': 'launcher',
+                                                      'zeit': '2026-08-05 09:00:00'},
+                               'guardian': {'name': 'Guardian', 'quelle': 'log',
+                                            'zeit': '2026-08-02 08:00:00'},
+                           }}, f33, ensure_ascii=False)
+            d33 = be33.laden()
+            pruefe('xl-1' in d33['bauplaene'],
+                   'ein gespeicherter Schluessel mit Kuerzel zieht um')
+            pruefe('xl-1 (mil/2/a)' not in d33['bauplaene'],
+                   'und der alte bleibt nicht daneben stehen')
+            pruefe(len([k for k in d33['bauplaene'] if k.startswith('guardian')]) == 1,
+                   'eine Dublette wird zu einem Eintrag zusammengefuehrt')
+            pruefe(d33['bauplaene']['guardian'].get('zeit') == '2026-08-02 08:00:00',
+                   'dabei gewinnt der aeltere Fund, nicht der zuletzt gelesene')
+            pruefe(d33.get('version') == 2, 'die Datei-Version wird hochgesetzt')
+            # ⚠ Nur EINMAL umziehen — sonst schreibt jeder Start die Datei neu.
+            auf_platte33 = js33.load(open(be33.pfad(), encoding='utf-8'))
+            pruefe(auf_platte33.get('version') == 2,
+                   'der Umzug wird auf die Platte geschrieben, nicht nur gedacht')
+        finally:
+            if alt_heim33 is None:
+                os.environ.pop('SC_BP_HOME', None)
+            else:
+                os.environ['SC_BP_HOME'] = alt_heim33
+            sh33.rmtree(heim33, ignore_errors=True)
+            im33.reload(pf33)
+            im33.reload(be33)
+
+        # Und der Weg, um den es eigentlich geht: Ein Bestand aus der
+        # Launcher-Datei muss die Liste abhaken koennen.
+        from scbp import katalog as kat33
+        habe33 = {nfm33('XL-1 (Mil/2/A)'), nfm33('Siren (Mil/1/B)')}
+        pruefe(kat33._norm('XL-1') in habe33,
+               'ein Launcher-Bestand hakt die Bauplan-Liste ab')
+        pruefe(kat33._norm('Siren') in habe33,
+               'und zwar fuer jeden Namen, nicht nur zufaellig einen')
+
+        print()
+        print('34. Fehlerbericht absenden — ein Knopf statt einer Erklaerstunde')
+        # ⚠ der Autor am 28.08.2026: „ich will nicht jedem eine Stunde erklaeren,
+        # wie ich zu dem Bericht komme, das ist nervenaufreibend." Und sein
+        # Bruder, um den es ging: „weil ich kein nerd bin … ich installiere und
+        # es funktioniert, wenn nicht, unbrauchbar."
+        #
+        # Kopieren und in Discord einfuegen scheitert dreifach: Der Bericht
+        # steckt unter „Fortgeschritten", er ist zu lang fuer eine Nachricht,
+        # und man muss wissen, wohin damit.
+        from scbp import berichtziel as bz34, bericht as be34
+        pruefe(bz34.ziel() == '',
+               'im Repo steht KEINE Adresse — sie ist ein Geheimnis')
+        pruefe(not bz34.moeglich(),
+               'ohne Adresse meldet moeglich() sauber False')
+        # ⚠ Der Knopf wird trotzdem GEZEIGT — er sagt beim Druecken, was fehlt.
+        # Ihn auszublenden traf nur den Quellcode, also den Entwickler selbst:
+        # „nicht mal ICH finde den" (28.08.2026). Ein fehlender Knopf sieht aus
+        # wie ein Fehler.
+        quelle34 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                        encoding='utf-8').read()
+        stelle34 = quelle34[quelle34.index("s_di_absenden"):][:200]
+        pruefe('if ' not in stelle34.split(chr(10))[0],
+               'der Knopf haengt an keiner Bedingung')
+        ok34, grund34 = be34.absenden('Probe', '3.0.0-test')
+        pruefe(ok34 is False, 'ohne Ziel wird nichts gesendet')
+        pruefe('http' not in grund34.lower(),
+               'und die Meldung verraet die Adresse nicht')
+        # ⚠ Der Bau MUSS die Datei ersetzen — sonst hat niemand den Knopf.
+        yml34 = open(os.path.join(WURZEL, '.github', 'workflows',
+                                  'release.yml'), encoding='utf-8').read()
+        pruefe(yml34.count('scbp/berichtziel.py') >= 2,
+               'Windows UND Linux setzen das Ziel beim Bau ein')
+        pruefe('BERICHT_WEBHOOK' in yml34,
+               'und zwar aus dem Secret, nicht aus dem Quelltext')
+        # Die Adresse darf nirgends im Repo stehen.
+        for _wo34, _unter34, _dateien34 in os.walk(os.path.join(WURZEL, 'scbp')):
+            for _d34 in _dateien34:
+                if not _d34.endswith('.py'):
+                    continue
+                _inh34 = open(os.path.join(_wo34, _d34),
+                              encoding='utf-8', errors='ignore').read()
+                pruefe('discord.com/api/webhooks' not in _inh34,
+                       'keine Webhook-Adresse in scbp/%s' % _d34)
+
+        print()
+        print('35. Ein Textfeld rollt sich selbst, nicht die Seite dahinter')
+        # ⚠ Von zwei Leuten unabhaengig gemeldet (28.08.2026): Im Bericht auf
+        # der Diagnose-Seite liess sich erst rollen, NACHDEM man die ganze
+        # Seite nach unten geschoben hatte. Das Rad ging an die Rollflaeche
+        # dahinter, weil ein `tk.Text` keine registrierte Flaeche ist.
+        from scbp import hauptfenster as hf35
+        import tkinter as tk35
+        w35 = tk35.Tk()
+        # ⚠ Zeigen, sonst rechnet Tk das Layout nicht — `yview()` liefert dann
+        # (0.0, 0.0), und jedes Feld saehe nach Ueberlauf aus. Weit ausserhalb
+        # des Bildschirms und durchsichtig, damit niemand es sieht (siehe 23).
+        w35.geometry('300x200+-4000+-4000')
+        w35.attributes('-alpha', 0.0)
+        w35.deiconify()
+        try:
+            rahmen35 = tk35.Frame(w35)
+            rahmen35.pack(fill='both', expand=True)
+            feld35 = tk35.Text(rahmen35, height=3)
+            feld35.pack()
+            # Kurzer Inhalt: passt hinein, also soll die SEITE rollen.
+            feld35.insert('1.0', 'kurz')
+            # ⚠ `update()`, nicht nur `update_idletasks()`. Unter Windows
+            # rechnet Tk das Layout eines Fensters ausserhalb des Bildschirms
+            # sonst nicht zu Ende: `yview()` gibt dann (0.0, 0.0), das sieht
+            # wie Ueberlauf aus, und die Pruefung schlug im Bau fehl, obwohl
+            # sie hier gruen war (28.08.2026).
+            w35.update()
+            oben35, unten35 = feld35.yview()
+            if (unten35 - oben35) <= 0.0:
+                # Tk hat trotzdem nicht gerechnet — dann ist hier nichts zu
+                # pruefen. Lieber offen ueberspringen als falschen Alarm geben.
+                print('  [--]   Tk rechnet dieses Fenster nicht durch — '
+                      'Rollpruefung uebersprungen')
+            else:
+                pruefe(hf35._eigenes_rollen(feld35, rahmen35) is None,
+                       'ein Feld ohne Ueberlauf gibt das Rad an die Seite weiter')
+            # Langer Inhalt: laeuft ueber, also gehoert ihm das Rad.
+            feld35.insert('end', '\n'.join('Zeile %d' % i for i in range(60)))
+            w35.update()
+            pruefe(hf35._eigenes_rollen(feld35, rahmen35) is feld35,
+                   'ein ueberlaufendes Feld rollt sich selbst')
+            # Und Widgets ohne Textfeld dazwischen aendern nichts.
+            marke35 = tk35.Label(rahmen35, text='x')
+            pruefe(hf35._eigenes_rollen(marke35, rahmen35) is None,
+                   'eine Beschriftung faengt das Rad nicht ab')
+        finally:
+            w35.destroy()
+
+        print()
+        print('36. Der Reiter „Fehler melden“ faellt auf, ohne zu luegen')
+        # ⚠ Zwei Stufen, damit Rot etwas bedeutet (Entscheidung 28.08.2026):
+        #   * Das Wort ist IMMER rot — wer ein Problem hat, soll den Reiter
+        #     finden, ohne ein Menue zu durchsuchen.
+        #   * Das Symbol wird NUR rot, wenn wirklich Fehler mitgeschrieben
+        #     wurden. Sonst stuende der Reiter dauerhaft auf Alarm, obwohl
+        #     alles laeuft — und niemand naehme ihn noch ernst.
+        quelle36 = open(os.path.join(WURZEL, 'scbp', 'hauptfenster.py'),
+                        encoding='utf-8').read()
+        stelle36 = quelle36[quelle36.index('def _reiter_faerben'):][:2200]
+        pruefe("rot = (kennung == 'diagnose')" in stelle36,
+               'der Reiter diagnose wird gesondert behandelt')
+        pruefe('_fehler_liegen_an()' in stelle36,
+               'das Symbol haengt an tatsaechlichen Fehlern, nicht am Reiter')
+        pruefe('fg=ROT if rot' in stelle36,
+               'das Wort ist unabhaengig davon rot')
+        # Die Farbe muss es als Bild wirklich geben, sonst bleibt es unsichtbar
+        # — genau so ist heute Nacht schon einmal ein X verschwunden.
+        from scbp import zeichen as zi36
+        pruefe(zi36.ROT == 'rot', 'zeichen kennt die Farbe rot')
+        for n36 in ('diagnose',):
+            pfad36 = os.path.join(WURZEL, 'assets', 'symbole', '22',
+                                  n36 + '-rot.png')
+            pruefe(os.path.isfile(pfad36),
+                   'das Symbol %s liegt in Rot vor' % n36)
+        # Und der Reiter heisst, was er tut.
+        from scbp import sprache as sp36
+        sp36.setzen('de')
+        pruefe(sp36.t('hf_diagnose') == 'Fehler melden',
+               'der Reiter heisst „Fehler melden“, nicht „Diagnose“')
 
         print()
         print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')
@@ -1891,8 +2602,142 @@ def main():
         shutil.rmtree(basis, ignore_errors=True)
 
     print()
+    print('37. Ein Auftrag mit mehreren Preisstufen verliert keine Bauplaene')
+    # ⚠ Der Fehler vom 28.08.2026, gemeldet von Morkhan. `_missionen()` legte
+    # die Auftraege unter ihrem Textschluessel ab — und Vertraege, die sich
+    # einen teilen (123 von 353), ueberschrieben sich gegenseitig. Der zuletzt
+    # gelesene gewann, 797 Bauplan-Eintraege sah nie jemand.
+    #
+    # Geprueft wird an einem winzigen Dump mit genau dieser Falle: zwei
+    # Stufen, ein Schluessel, verschiedene Toepfe. Kommt nur eine Seite an,
+    # ist der alte Fehler zurueck.
+    from scbp import katalog as k37
+    dump37 = {
+        'blueprintPools': {
+            'p-klein': {'blueprints': [{'name': 'Kleiner Plan'}]},
+            'p-gross': {'blueprints': [{'name': 'Grosser Plan'}]},
+        },
+        'factionRewardsPools': [],
+        'contracts': [
+            {'titleLocKey': 'geteilt_title', 'descriptionLocKey': 'geteilt_desc',
+             'rewardUEC': 50000, 'blueprintRewards': [{'blueprintPool': 'p-klein',
+                                                       'chance': 1}],
+             'minStanding': {'name': 'Neuling', 'minReputation': 800}},
+            {'titleLocKey': 'geteilt_title', 'descriptionLocKey': 'geteilt_desc',
+             'rewardUEC': 260000, 'blueprintRewards': [{'blueprintPool': 'p-gross',
+                                                        'chance': 1}],
+             'minStanding': {'name': 'Meister', 'minReputation': 38000}},
+            # Dritte Stufe, die gar nichts ausschuettet — der Fall, wegen dem
+            # jemand fuer eine Liste hinfliegt, die seine Stufe nie hergibt.
+            {'titleLocKey': 'geteilt_title', 'descriptionLocKey': 'geteilt_desc',
+             'rewardUEC': 20000, 'blueprintRewards': [],
+             'minStanding': {'name': 'Anwaerter', 'minReputation': 1}},
+        ],
+    }
+    m37 = k37._missionen(dump37)
+    e37 = m37.get('geteilt_title') or {}
+    pruefe(sorted(e37.get('bp') or []) == ['Grosser Plan', 'Kleiner Plan'],
+           'beide Stufen kommen an, keine ueberschreibt die andere')
+    pruefe(e37.get('leer') == 1 and e37.get('stufen') == 3,
+           'die Stufe ohne Bauplaene wird vermerkt (1 von 3)')
+    pruefe((e37.get('ab') or {}).get('Grosser Plan', {}).get('rep') == 38000,
+           'der hoehere Plan traegt seinen eigenen Rang')
+    pruefe((e37.get('ab') or {}).get('Kleiner Plan', {}).get('rep') == 800,
+           'und der kleine seinen')
+    # Gegenprobe: Brauchen alle Plaene denselben Rang, faellt die Angabe weg —
+    # sonst stuende zwoelfmal dieselbe Zeile untereinander.
+    gleich37 = json.loads(json.dumps(dump37))
+    gleich37['contracts'][1]['minStanding'] = {'name': 'Neuling',
+                                               'minReputation': 800}
+    pruefe(not (k37._missionen(gleich37).get('geteilt_title') or {}).get('ab'),
+           'bei gleichem Rang steht die Angabe NICHT an jedem Plan')
+    # Und der Katalog auf der Platte muss den Umbau ueberhaupt mitbekommen.
+    pruefe(k37.FORMAT >= 2,
+           'der Katalog hat eine Aufbau-Nummer (sonst greift der Umbau nie)')
+
+    # ------------------------------------------------------------------
+    # Die Bau-Anleitungen selbst. Ein Tippfehler darin kostet keinen Fehler
+    # im Programm, sondern **jeden Bau** — und zwar stumm: GitHub meldet nur
+    # „workflow file issue", nichts davon steht im Fehlerbericht eines
+    # Nutzers. Am 28.08.2026 lief das über eine Stunde so.
+    print()
+    print('38. Die Bau-Anleitungen sind gueltiges YAML')
+    _wf = os.path.join(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))), '.github', 'workflows')
+    _dateien = sorted(f for f in (os.listdir(_wf) if os.path.isdir(_wf) else [])
+                      if f.endswith(('.yml', '.yaml')))
+    pruefe(bool(_dateien), 'es gibt ueberhaupt Bau-Anleitungen zu pruefen')
+    for _name in _dateien:
+        with open(os.path.join(_wf, _name), encoding='utf-8') as _f:
+            _funde = doppelte_schluessel(_f.read())
+        pruefe(not _funde, '%s hat keinen doppelten Schluessel%s'
+               % (_name, '' if not _funde else
+                  ' (Zeile %d: „%s“ stand schon in Zeile %d)'
+                  % (_funde[0][0], _funde[0][1], _funde[0][2])))
+
+    # Gegenprobe — eine Prüfung, die nie anschlägt, prüft nichts. Das hier ist
+    # der echte Fehler vom 28.08.2026, Zeichen für Zeichen.
+    _kaputt = ('jobs:\n  bau:\n    steps:\n'
+               '      - name: Berichtsziel einsetzen\n'
+               '        shell: bash\n        shell: bash\n'
+               '        run: echo hi\n')
+    pruefe([f[1] for f in doppelte_schluessel(_kaputt)] == ['shell'],
+           'und der Fehler von damals wird auch wirklich gefunden')
+    # Und die Gegenrichtung: Was erlaubt ist, darf nicht gemeldet werden —
+    # sonst schaltet man die Prüfung nach dem dritten Fehlalarm ab.
+    _erlaubt = ('jobs:\n  bau:\n    steps:\n'
+                '      - name: A\n        run: |\n'
+                '          cat <<X\n          on: 1\n          on: 2\n          X\n'
+                '      - name: B\n        run: echo b\n')
+    pruefe(not doppelte_schluessel(_erlaubt),
+           'gleiche Namen in getrennten Schritten sind KEIN Fehler')
+
+
+    # ------------------------------------------------------------------
+    # ⚠ Der häufigste Support-Fall: „ich sehe deine Angaben im Spiel nicht
+    # mehr". Ein Übersetzungs-Update oder ein Spiel-Patch schreibt die
+    # `global.ini` neu und wirft die Angaben dabei stillschweigend hinaus.
+    # Am 28.08.2026 stand in Morkhans Bericht nur `inj_quelle=deutsch` — ob
+    # etwas eingetragen war, musste erschlossen werden statt abgelesen.
+    print()
+    print('39. Der Bericht sagt, ob die Angaben im Spiel stehen')
+    from scbp import bericht as ber39, injektion as inj39
+    # ⚠ Eigener Ordner statt `basis`: Der ist an dieser Stelle bereits
+    # aufgeräumt, und ein Schreibversuch darin bricht den ganzen Lauf ab.
+    _ordner39 = tempfile.mkdtemp(prefix='sc-bp-inj39-')
+    _ini39 = os.path.join(_ordner39, 'global39.ini')
+    _echt39 = inj39.ini_datei
+    try:
+        # Datei da, Angaben vom Launcher hinausgeworfen — Morkhans Lage.
+        with open(_ini39, 'w', encoding='utf-8') as f:
+            f.write('mission_a_desc=Deliver cargo.\n')
+        inj39.ini_datei = lambda: (_ini39, 'german_(germany)', 'deutsch')
+        _l39 = ber39._injektionslage()
+        pruefe('NICHT' in _l39 or 'NOT' in _l39,
+               'ohne Angaben in der Datei sagt der Bericht das auch')
+
+        # Dieselbe Datei, Angaben drin.
+        with open(_ini39, 'a', encoding='utf-8') as f:
+            f.write('mission_b_title=Bounty <EM4>[BP]</EM4>\n')
+        _l39b = ber39._injektionslage()
+        pruefe('NICHT' not in _l39b and 'NOT' not in _l39b,
+               'und mit Angaben meldet er sie als eingetragen')
+
+        # ⚠ Gar keine Datei ist NICHT dasselbe wie „nicht eingetragen": Unter
+        # Linux ohne Übersetzung ist das der Normalzustand, und eine Warnung
+        # davor wäre eine Warnung vor nichts.
+        inj39.ini_datei = lambda: (None, 'english', None)
+        _l39c = ber39._injektionslage()
+        pruefe('NICHT' not in _l39c and 'NOT' not in _l39c,
+               'ohne Textdatei warnt er NICHT vor dem Normalzustand')
+    finally:
+        inj39.ini_datei = _echt39
+        shutil.rmtree(_ordner39, ignore_errors=True)
+
+
+    print()
     if fehler:
-        print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), len(fehler) + 0))
+        print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
         for f in fehler:
             print('  ·', f)
         return 1

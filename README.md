@@ -8,7 +8,8 @@
 
 <sub>Windows · Linux · no account, no cloud — installer or a single file</sub>
 
-[![Version](https://img.shields.io/github/v/release/Xharig-1/SC-BP-Watcher?label=Version&color=5fa522)](../../releases)
+[![Version](https://img.shields.io/github/v/release/Xharig-1/SC-BP-Watcher?include_prereleases&label=Version&color=5fa522)](../../releases)
+[![Downloads](https://img.shields.io/github/downloads/Xharig-1/SC-BP-Watcher/total?label=Downloads&color=5fa522)](../../releases)
 [![License](https://img.shields.io/badge/License-GPL--3.0-5fa522)](LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-join-5fa522?logo=discord&logoColor=white)](https://discord.gg/g2E7e6XxZC)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-buy%20me%20a%20coffee-5fa522?logo=kofi&logoColor=white)](https://ko-fi.com/xharig)
@@ -173,13 +174,21 @@ Nothing else. No Python, no account — and whether you install is your call (se
 
    | System | File | What happens |
    |---|---|---|
-   | **Windows, the easy way** | `SC-BP-Watcher-Setup.exe` | Installs with a start menu entry, optional desktop icon and autostart — and uninstalls cleanly |
-   | **Windows, nothing installed** | `SC-BP-Watcher.exe` | A single file. Nothing is installed, nothing is left behind |
+   | **Windows** | `SC-BP-Watcher-Setup.exe` | Installs with a start menu entry, optional desktop icon and autostart — and uninstalls cleanly |
    | **Linux** | `SC-BP-Watcher-x86_64.AppImage` | A single file. The wizard offers an application menu entry if you want one |
 
 2. Run it. Done.
 
-**You do not have to install anything.** The installer is just the more convenient route on Windows; the plain `.exe` and the AppImage do the same and can simply be deleted again. No Python, no extra packages. On Linux, make the AppImage executable once (right click → Properties → *Executable as program*, or `chmod +x SC-BP-Watcher-x86_64.AppImage`).
+No Python, no extra packages — the installer brings everything with it and can be removed again through *Apps & Features*.
+
+> **Why the standalone `.exe` is gone** (as of v3.0.0): it existed for a long
+> time as a second route, for anyone who did not want to install anything. That
+> came at a price you only noticed later — an update put the new version
+> **beside** the old file instead of replacing it. Anyone clicking their usual
+> shortcut afterwards kept using the old version for months without noticing.
+> With the installer that cannot happen: a start-menu entry, updates that
+> genuinely replace, autostart as a checkbox, and a clean uninstall. On Linux
+> the AppImage stays as it is. On Linux, make the AppImage executable once (right click → Properties → *Executable as program*, or `chmod +x SC-BP-Watcher-x86_64.AppImage`).
 
 On first start a **wizard** walks you through setup: language, finding Star Citizen, collecting your existing blueprints. It takes a minute, and then your inventory is there.
 

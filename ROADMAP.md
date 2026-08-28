@@ -31,12 +31,14 @@ Four things are deliberate and will stay that way:
 | ✅ | Windows and Linux, with autostart on both |
 | ✅ | Export your inventory — for the KRT Profit Basetool, for scmdb.net and as a full backup |
 | ✅ | Collapse the overlay, for anyone on a single screen |
+| ✅ | **Tray icon**: next to the clock on Windows, in the application menu on Linux — the way back to the list and the settings while the overlay stays out of sight |
+| ✅ | **Item details in game** — class, size and grade at the tractor beam, seeker type for missiles |
 
 ## What is being worked on
 
 No schedule and no fixed order — the state of things is in [`CHANGELOG.md`](CHANGELOG.md), and the **ⓘ "What's new"** window inside the tool shows what each build brought.
 
-Currently in the works: more convenience during setup and a tray icon.
+What comes next follows from what people report. The tool is in daily use, and most changes started as someone's message.
 
 ## Relationship to the SC Deutsch Launcher
 

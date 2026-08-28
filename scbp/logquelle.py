@@ -47,9 +47,29 @@ from .sprache import t, Satz, Zeitpunkt
 
 # Schiffskomponenten stehen im Log MIT Zusatz „(Klasse/Size/Grade)", z. B.
 # „7CA 'Nargun' (Civ/3/A)" — der Launcher-Schlüssel ist aber „7CA 'Nargun'".
-# Bewusst eng gefasst (nur die bekannten Klassen-Kürzel), damit echte
-# Namens-Klammern wie „(30 cap)" oder „Singe Cannon (S2)" unangetastet bleiben.
-SUFFIX_RE = re.compile(r'\s*\((Civ|Mil|Ind|Sth|Cmp)/(\d+)/([A-D])\)\s*$', re.I)
+# Bewusst eng gefasst (nur die bekannten Kürzel), damit echte Namens-Klammern
+# wie „(30 cap)" oder „Singe Cannon (S2)" unangetastet bleiben.
+#
+# ⚠ **Die Liste muss zu `scbp/angaben.py` passen.** Seit v3.0.0 schreibt das
+# Werkzeug diese Zusätze selbst an die Gegenstandsnamen (Angaben am
+# Traktorstrahl) — und das Spiel schreibt den Namen anschließend **mitsamt
+# Zusatz** in die Game.log. Wird hier einer nicht erkannt, landet der Bauplan
+# unter falschem Namen im Bestand und wird **nie abgehakt**.
+#
+# Dazu kommen zwei Formen, die es beim Launcher nicht gab:
+#   * **Striche** für Unbekanntes — `Glacis (Ind/4/–)`, `V60-26 (Mil/–/B)`
+#   * **Waffen ohne Größe** — `P4-AR "Warhawk" Rifle (Bal)`; FPS-Waffen haben
+#     in Star Citizen weder Größe noch Gütegrad
+#   * **Raketen** — `'Arrow' I Missile (IR1)`, Suchkopf statt Fraktion
+_KUERZEL = ('Civ|Mil|Ind|Sth|Cmp'          # Fraktion, auch CIGs eigene Schreibweise
+            '|Las|Ele|Pla|Dis|Mic|Bal'     # Waffenwirkung
+            '|Nah|Min|Slv|Med|Tool|Trc')   # Nahkampf, Bergbau, Bergung, Medizin
+_STRICH = '\u2013|-'                        # Gedankenstrich oder Bindestrich
+SUFFIX_RE = re.compile(
+    r'\s*\((?:(%s)/(\d+|%s)/([A-D]|%s)'      # (Mil/1/A), auch mit Strichen
+    r'|(%s)'                                 # (Bal) — Waffe ohne Größe/Grad
+    r'|(IR|EM|CS)(\d{1,2}))\)\s*$'           # (IR1) — Rakete
+    % (_KUERZEL, _STRICH, _STRICH, _KUERZEL), re.I)
 
 # Wie viel einer Sicherung am Stück gelesen wird. Die Dateien werden mehrere
 # hundert Megabyte groß; sie komplett in den Speicher zu holen wäre unnötig.
@@ -63,8 +83,12 @@ def teile_namen(roh):
     m = SUFFIX_RE.search(roh)
     if not m:
         return roh.strip(), None
-    return roh[:m.start()].strip(), (m.group(1).title(), m.group(2),
-                                     m.group(3).upper())
+    name = roh[:m.start()].strip()
+    if m.group(1):                       # (Mil/1/A) — die vollständige Form
+        return name, (m.group(1).title(), m.group(2), m.group(3).upper())
+    if m.group(4):                       # (Bal) — nur die Klasse
+        return name, (m.group(4).title(), None, None)
+    return name, (m.group(5).upper(), m.group(6), None)   # (IR1) — Rakete
 
 
 def _namen_aus_text(text, muster):

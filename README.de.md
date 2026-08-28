@@ -8,7 +8,8 @@
 
 <sub>Windows · Linux · ohne Konto, ohne Cloud — mit Installer oder als einzelne Datei</sub>
 
-[![Version](https://img.shields.io/github/v/release/Xharig-1/SC-BP-Watcher?label=Version&color=5fa522)](../../releases)
+[![Version](https://img.shields.io/github/v/release/Xharig-1/SC-BP-Watcher?include_prereleases&label=Version&color=5fa522)](../../releases)
+[![Heruntergeladen](https://img.shields.io/github/downloads/Xharig-1/SC-BP-Watcher/total?label=Heruntergeladen&color=5fa522)](../../releases)
 [![Lizenz](https://img.shields.io/badge/Lizenz-GPL--3.0-5fa522)](LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-beitreten-5fa522?logo=discord&logoColor=white)](https://discord.gg/g2E7e6XxZC)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Kaffee%20spendieren-5fa522?logo=kofi&logoColor=white)](https://ko-fi.com/xharig)
@@ -174,13 +175,21 @@ Sonst nichts. Kein Python, kein Konto — und ob du installieren willst, entsche
 
    | System | Datei | Was passiert |
    |---|---|---|
-   | **Windows, bequem** | `SC-BP-Watcher-Setup.exe` | Installiert mit Startmenü-Eintrag, optionalem Desktop-Symbol und Autostart — und lässt sich ordentlich wieder deinstallieren |
-   | **Windows, ohne alles** | `SC-BP-Watcher.exe` | Eine einzelne Datei. Nichts wird installiert, nichts bleibt zurück |
+   | **Windows** | `SC-BP-Watcher-Setup.exe` | Installiert mit Startmenü-Eintrag, optionalem Desktop-Symbol und Autostart — und lässt sich ordentlich wieder deinstallieren |
    | **Linux** | `SC-BP-Watcher-x86_64.AppImage` | Eine einzelne Datei. Einen Startmenü-Eintrag bietet der Assistent auf Wunsch an |
 
 2. Starten. Fertig.
 
-**Installieren musst du nicht.** Der Installer ist nur der bequemere Weg unter Windows; die blanke `.exe` und das AppImage tun dasselbe und lassen sich einfach wieder löschen. Kein Python, keine Zusatzpakete. Unter Linux muss das AppImage einmalig ausführbar gemacht werden (Rechtsklick → Eigenschaften → *Als Programm ausführbar*, oder `chmod +x SC-BP-Watcher-x86_64.AppImage`).
+Kein Python, keine Zusatzpakete — der Installer bringt alles mit und lässt sich über *Apps & Features* wieder entfernen.
+
+> **Warum es die einzelne `.exe` nicht mehr gibt** (seit v3.0.0): Es gab sie
+> lange als zweiten Weg, für alle, die nichts installieren wollten. Das hatte
+> aber einen Preis, den man erst später merkte — ein Update legte die neue
+> Fassung **neben** die alte Datei, statt sie zu ersetzen. Wer danach seine
+> gewohnte Verknüpfung anklickte, benutzte monatelang unbemerkt die alte
+> Version. Mit dem Installer kann das nicht passieren: Startmenü-Eintrag,
+> Updates ersetzen wirklich, Autostart ist ein Häkchen, und deinstallieren
+> lässt es sich ordentlich. Unter Linux bleibt alles beim AppImage. Unter Linux muss das AppImage einmalig ausführbar gemacht werden (Rechtsklick → Eigenschaften → *Als Programm ausführbar*, oder `chmod +x SC-BP-Watcher-x86_64.AppImage`).
 
 Beim ersten Start führt dich ein **Assistent** durch die Einrichtung: Sprache, Star Citizen finden, bisherige Baupläne holen. Das dauert eine Minute, danach steht dein Bestand.
 

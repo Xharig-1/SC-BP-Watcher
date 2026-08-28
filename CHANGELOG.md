@@ -10,6 +10,323 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc83 - 2026-08-28
+
+### Fixed
+
+- **The report now says whether the blueprint notes are in the game.**
+  The most common support case is "I can't see your notes in the game any
+  more". Behind it is almost always the same thing: a translation update or a
+  game patch rewrote the game's text file and silently threw the notes out.
+  The tool has no way of noticing.
+
+  Until now the report only said which text source was selected — whether
+  anything was actually in place could not be read from it, only guessed. That
+  is exactly what happened with **Morkhan** on 28 Aug 2026.
+
+  Two lines are new: whether the notes are in place, whether writing them is
+  switched on at all, whether they are refreshed automatically — and which text
+  file is meant. Anyone playing on Linux without a translation gets **no**
+  warning: there is no such file there, and that is the normal state, not a
+  fault.
+
+- **Text was cut off instead of wrapped — everywhere it got tight.**
+  It showed up in one place: the English warning line on the Game page ("Every
+  translation update and every game patch wipes the details.") stuck out by
+  5 pixels and was silently clipped.
+
+  The cause was not the text but a sum with a missing term. The wrap limit
+  bounds the **text** only; what a label ends up occupying is text plus border
+  plus padding. With the limit set to the full available width, the label
+  needed a few pixels more than it was given — and Tk clips an oversized child
+  at its parent without an error or any other sign.
+
+  The border is now read from the widget itself rather than guessed, and
+  subtracted. This applies to **every** place that wraps automatically,
+  including those that just barely fit today and would have tipped over with
+  the next longer string. Measured afterwards: nothing is clipped any more,
+  across 11 pages × 2 languages × 2 window sizes.
+
+## v3.0.0-rc82 - 2026-08-28
+
+### Fixed
+
+- **A contract with several payout tiers lost nearly all its blueprints.**
+  Contracts sharing a text key overwrote each other while the catalogue was
+  built — the last one read won, the rest were dropped. Measured against game
+  build 4.10.0: **123 of 353** contract keys are shared, **319** contracts were
+  dropped, and **797 blueprint entries** were never shown to anyone. The bounty
+  contract listed 8 blueprints instead of 25.
+
+  Found by **Morkhan**, who kept pushing: "I still don't get shown which
+  blueprints I can get from the beginner contract, only the ones from the
+  highest tier." It wasn't the highest tier — it was the last one read. All
+  tiers are now merged.
+
+- **A catalogue already on disk would never have picked up this rebuild.** It
+  was only refreshed when Star Citizen shipped a new version. It now carries
+  its own build number — if its structure changes, it is rebuilt, patch or no
+  patch.
+
+### Changed
+
+- **The heading now reads "POSSIBLE BLUEPRINTS FOR THIS MISSION TYPE".** It
+  previously said "BLUEPRINTS FROM THIS CONTRACT" — promising more than the data
+  can deliver. Read literally, you accept the contract and get nothing. Morkhan
+  on 28 Aug 2026: "it's confusing no matter how you turn it." He was right, and
+  the confusion sat in the heading, not in the list.
+
+  The SC Deutsch Launcher words it the same way for the same reason — 367 times
+  in its data file.
+
+
+- **The `[BP 3/12]` count in the title is gone; it now reads just `[BP]`.** The
+  number looked useful but was not true: a contract's list merges all payout
+  tiers, and which of them your own tier grants cannot be resolved — 123 of 353
+  contracts share their text key across tiers. "3 of 12" really meant "3 of 12
+  that someone, somewhere, can get". The same number is gone from the list
+  heading too.
+
+  What remains is the honest part: **ticked means you have it** — regardless of
+  whether this tier grants it, or where it came from.
+
+- **Where tiers differ, the required rank is shown behind the blueprint.** For
+  example "needs Head Contractor (38,000 XP)" next to plans only available far
+  up, while others from the same contract drop from 800 XP. Shown only where it
+  actually tells blueprints apart — if they all need the same rank, it is
+  already stated above under "Min. reputation".
+
+- **Contracts with tiers that grant nothing now say so.** "Note: 1 of the 3
+  tiers of this contract give no blueprints at all."
+
+
+### Changed
+
+- **The „Diagnostics" tab is now called „Report a problem" and carries red.**
+  Nobody looks under „Diagnostics" when something is stuck — least of all
+  inside a collapsed menu, where it used to sit.
+
+  The red works in two stages so that it means something: **the word is always
+  red**, so the tab can be found. **The icon only turns red when errors have
+  actually been recorded** — otherwise the watcher would sit on permanent alert
+  while everything is fine, and nobody would take the colour seriously.
+
+### Fixed
+
+- **Revisiting a page left no trace in the report.** It was only written while a
+  page was first built; if something went wrong on a later visit, the line was
+  missing entirely rather than half — and the report promises that the last line
+  without „ready" is where it stopped. It now says „showing", so you can tell
+  „died while building" from „died while showing".
+- **The error report only scrolled once the page was at the bottom.** The mouse
+  wheel went to the page behind instead of the text field under the pointer, so
+  you had to push the whole diagnostics page down before anything moved inside
+  the report. Now whatever sits under the pointer scrolls, the way browsers do
+  it. Reported by **Morkhan**.
+- **The send button is red all the time**, not only on hover — a warning button
+  you only see once the mouse is on it warns nobody.
+- **The second reporting route is now called „GitHub issue"** instead of
+  „Report a problem". Two buttons promised the same thing, while one opens the
+  browser and needs a GitHub account.
+
+## v3.0.0-rc81 - 2026-08-28
+
+> **One button instead of nine steps: send the error report.**
+
+### Added
+
+- **The diagnostics page now sits in the main sidebar**, right below
+  „Server status“ — no longer inside the collapsed „Advanced“ menu. Anyone
+  who needs it has a problem, and will not look for it under a heading that
+  reads „not for me“.
+- **A red „Send error report" button.** If something is stuck, you press it —
+  and the report is with the developer. No copying, no hunting for the right
+  channel, no „message too long".
+
+  It used to take nine steps: expand, copy, find Discord, paste, discover it is
+  too long, save as a file, find that file again, upload, send. Now it takes
+  one.
+
+  **You see exactly what goes out beforehand** — the same text shown on the
+  page, in a window to read through, and only then are you asked. Names, paths
+  and credentials have already been stripped. Nothing happens without your
+  yes.
+
+## v3.0.0-rc80 - 2026-08-28
+
+> **Blueprints from the launcher get ticked off again — existing collections migrate themselves.**
+
+### Fixed
+
+- **Blueprints from the launcher or a backup were not ticked off.** Anyone
+  bringing their collection over from the SC Deutsch Launcher, the KRT Profit
+  Basetool, scmdb.net or their own backup saw empty boxes in the list — even
+  though the blueprints were in the collection.
+
+  The reason: names from those sources often carry the class suffix
+  (`XL-1 (Mil/2/A)`), but it was only stripped when reading the game logs. So
+  `xl-1 (mil/2/a)` and `xl-1` stood there as two separate entries and never
+  found each other. That now happens centrally, no matter where a name comes
+  from.
+
+  This hit precisely those who have been playing longer and bring their
+  collection with them. Found while following up a report from **Morkhan**.
+
+  **Existing collections migrate themselves on first start.** The keys are
+  rebuilt once and duplicate entries merged — the older find wins, because when
+  a blueprint first turned up is the date that matters. Nothing is lost, nothing
+  has to be done by hand.
+
+- **The tool did not say that changes only take effect the next time the game
+  starts.** Star Citizen reads the text file **once, while launching**. Anyone
+  with the game running would install the details, read „in place (1608
+  spots)" — and see nothing in game. The obvious conclusion: broken. The note
+  now sits in the success message itself and in the status box under *In-game
+  text*.
+
+## v3.0.0-rc79 - 2026-08-28
+
+> **Three finds from Morkhan's questions — one would have silently swallowed blueprints.**
+
+### Fixed
+
+- **Blueprints whose name carries a suffix stopped being ticked off.** Now that
+  item details are written in, the game puts the name **including the suffix**
+  into its log — `Blueprint received: Spectre (Sth/1/A)`. Only the five faction
+  suffixes were stripped; everything new stayed stuck to the name, and the
+  blueprint went into the collection under the wrong one. **344 weapons and 62
+  missiles** would have been affected — and nobody would have noticed, because
+  something was still being displayed. Found while following up a question from
+  **Morkhan**.
+
+- **A mission promised „12 blueprints" in its title and showed none below.**
+  A mission has **more descriptions** in game than the catalogue knows —
+  different destinations and cargo for the same mission. Measured:
+  `Covalex_HaulCargo_SingleToMulti` lists three descriptions in the catalogue,
+  the game's text file holds **eight**. Anyone hitting one of the other five saw
+  the counter and nothing underneath. The route via the SCDL team's contract
+  data had long solved this; our own route via the blueprint catalogue had not.
+  Reported by **Morkhan**.
+
+### Added
+
+- **An exclamation mark in the contract title when blueprints come with
+  conditions.** `[BP 0/19!]` instead of `[BP 0/19]`. In **332 of 818 contracts**
+  (41 %) blueprints only drop at certain payout tiers or from a given rank —
+  „only for the 256,500 / 264,000 aUEC mission", „only from Master rank". That
+  was in the description text, but the contract list only showed the counter,
+  and that is what you decide on. Reported by **Morkhan**, who flew a hauling
+  mission repeatedly in which none could ever drop.
+
+  ⚠️ Why it cannot be cleaner: all payout tiers of a mission share **one**
+  description text in the game. Star Citizen shows the small variant the same
+  text as the large one — there is no way to tell them apart.
+
+## v3.0.0-rc78 - 2026-08-28
+
+> **Passing clicks through to the game is no longer a one-way street.**
+
+### Added
+
+- **A lock on the overlay brings you back when clicks pass through to the
+  game.** Until now this was a one-way street: turning the setting on made the
+  overlay unreachable — no button, no bar, and certainly not the settings
+  themselves. The only way back was starting the program a second time. Which
+  means leaving the game — exactly what the setting is meant to avoid.
+
+  There is now a small lock at the top right of the overlay, the one thing that
+  stays clickable. One click and the overlay catches clicks again. It only
+  appears when clicks really do pass through, and disappears by itself — also
+  when you switch it over in the settings.
+
+## v3.0.0-rc77 - 2026-08-27
+
+> **„Original texts from the game" now works without a helper program.**
+
+### Fixed
+
+- **Choosing the „Original" text source often ran into a wall.** That source
+  takes the English `global.ini` straight from your own `Data.p4k` — no
+  download, no third-party translation. CIG compresses that file with **zstd**,
+  though, and the bundled Python could not handle it. What was left was a
+  message asking you to install 7-Zip — quite something for a tool you just
+  download and run.
+
+  The program now brings the decompressor along itself. This mainly affected
+  anyone **playing in English who only wants the item details**, without a
+  translation: for them this route was the only one.
+
+  If you installed 7-Zip solely for this — you no longer need it.
+
+## v3.0.0-rc76 - 2026-08-27
+
+> **The tractor beam now tells you what you are looking at — and on Windows
+> there is only one route left.**
+
+> [!important]
+> **Windows: the installer is the only download now.** The standalone
+> `SC-BP-Watcher.exe` is no longer attached to releases as of this version.
+>
+> The reason concerns you, not us: an update used to place the new version
+> **beside** the old file instead of replacing it. Anyone clicking their usual
+> shortcut afterwards kept using the old version for months without noticing.
+> With the installer that cannot happen.
+>
+> **If you have been using the standalone file:** download
+> `SC-BP-Watcher-Setup.exe` once and install over it — your blueprint
+> collection stays, it lives elsewhere anyway. You can delete the old file
+> afterwards. Nothing changes on Linux.
+
+### Fixed
+
+- **On Windows there is only one download now: the installer.** The standalone
+  `SC-BP-Watcher.exe` is gone.
+
+  **What you get out of it:** no more wondering which of the two files is the
+  right one. The watcher ends up in your start menu instead of sitting
+  somewhere in your downloads folder. Updates genuinely replace the program
+  rather than putting a second copy next to it — the most common reason someone
+  keeps using an old version for months without noticing. Autostart is a
+  checkbox during setup, and *Apps & Features* removes everything cleanly.
+
+  The standalone file dates from the early days: an unsigned program without an
+  installer looks less alarming, and the point back then was to earn trust at
+  all. That is done — and two routes side by side mean twice as many places
+  where something can go wrong. Better one route that works.
+
+  Nothing changes on Linux: the AppImage stays.
+- **Anyone still on v2.0.0 comes along anyway.** Their update path picks the
+  first file ending in `.exe` — which is now the installer — and starts it
+  afterwards. So it runs by itself and sets everything up properly. The
+  blueprint collection moves across automatically on first start.
+- **An update now installs where the program already is** — instead of putting a
+  second copy beside it. v2.0.0 shipped only as a bare `.exe`, so all of its
+  users run „portable" without ever choosing to. Without this, the installer
+  would have gone to `%LOCALAPPDATA%\Programs` on the update after next and left
+  the old file behind — anyone starting it from a shortcut would have kept
+  using the old version forever.
+
+### Added
+
+- **Details on the item — class, size and grade now sit next to the name.**
+  Aiming at something with the tractor beam used to show just „Glacier". It now
+  reads **„Glacier (Mil/1/A)"** — military, size 1, grade A. Missiles are judged
+  by something else, so they carry their seeker instead: **„'Arrow' I Missile
+  (IR1)"** for infrared, `EM` for electromagnetic, `CS` for cross-section.
+  Nobody expands a description mid-fight.
+
+  **856 items** get such a note: 450 with class, size and grade, 344 weapons
+  with their class (ballistic, laser, plasma …) and 62 missiles.
+
+  The details come from the game's **own** text file — they have always been
+  there, just inside the description you have to open first. The tool merely
+  moves them to where you can actually see them.
+
+  Suggested by **Morkhan**.
+
+  Can be switched off under *In-game text → Details on the item*. To undo it,
+  use „Remove again" — the original names come back to the character.
+
 ## v3.0.0-rc75 - 2026-08-27
 
 > **The startup trace is back in the report.**
@@ -55,7 +372,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **Bomb20** (pr0) — for a report that turned out to be about something
   bigger than a single crash: the tool was blind at that spot. And for sending
   it even though it looked like a false alarm.
-- **Haldjas** (pr0) and **Xharig** — for the counter-test on Windows: the
+- **Haldjas** (pr0) — for the counter-test on Windows: the
   update from rc71 to rc73 and the interface since rc61, both without findings.
 
 ## v3.0.0-rc73 - 2026-08-27
@@ -114,8 +431,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 - **Bomb20** (pr0) — for "I still get 67 shown". It sounded like a
   triviality and pointed at two bugs at once.
-- **der Autor** — for looking at the box that offered homework instead of a
-  button.
 
 
 ## v3.0.0-rc71 - 2026-08-27
@@ -126,7 +441,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 ### Fixed
 
 - **After an update the watcher shut down and never came back.** Reported by
-  **Bomb20** (pr0) in the morning, reproduced by **der Autor** all through
+  **Bomb20** (pr0) in the morning, reproduced here all through
   the day. Three attempts (rc67, rc68, rc70) failed to solve it, because they
   assumed the new version was crashing.
   - **It was not a crash.** The new version starts, finds the single-instance
@@ -143,10 +458,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Thanks
 
-- **der Autor** — for the patience across seven test versions in one morning, and
-  for the sentence that turned the search around: "I shut it down and started it
-  myself." And for the report with the one line that explained everything:
-  *return code 0 — no output.*
 - **Bomb20** (pr0) — for the first report and for not letting go when it
   looked like a user error. He was right, we were not.
 
@@ -162,7 +473,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   press the button outside and drag into the overlay, and only the motion
   fires — leaving no starting point. Dragging did nothing once, and the error
   landed silently in the log. Reported by **Bomb20** (pr0, 25 Aug 2026 on
-  rc18) and **der Autor** (27 Aug 2026 on rc69) — never fixed in between, because
+  rc18) and again on 27 Aug 2026 on rc69 — never fixed in between, because
   it breaks nothing you can see.
 
 ### Changed
@@ -173,14 +484,10 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   it. It is now captured, and if the new version does not come up, its last words
   are attached to the error log and thus to the report.
   - This is not a fix but a measurement. After two attempts that did not solve
-    the restart for **der Autor**, there will be no third guess.
+    the restart, there will be no third guess.
 
 ### Thanks
 
-- **der Autor** — for reproducing it on his own machine and for making the
-  distinction clear: "I shut it down and started it myself." Without that
-  sentence, a successful manual start would have looked like a successful
-  restart.
 - **Bomb20** (pr0) — for the drag error that sat in reports for two days
   without anyone taking it seriously.
 
@@ -232,24 +539,20 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **The "Get the latest version" button now sits at the very top**, right below
   the version card. Previously it came after the button row and the daily
   toggle, which put it **below the edge** at the window's minimum size — someone
-  who cannot find it will not update. Reported by **der Autor**.
+  who cannot find it will not update.
   - Making the window taller would have been the wrong answer: on a 1366×768
     laptop it would no longer fit at all. The most important button belongs at
     the top, not the window in the sky.
 - **Both channel boxes are fully visible at minimum size too** — they hold the
   button that fetches the stable version specifically. The daily toggle moved
   below them; it is a side setting, the boxes are the point of the page.
-  Reported by **der Autor**.
 - **"Finished versions only" is now "Stable version".** "Finished" sounds like
-  something that is done — this tool is under continuous development. Suggested
-  by **der Autor**.
+  something that is done — this tool is under continuous development.
 - **"rcXX is already there" is now "rcXX is already installed"** — clearer, and
-  the English string already said so. Reported by **der Autor**.
+  the English string already said so.
 
 ### Thanks
 
-- **der Autor** — for looking at the tool through a user's eyes while
-  demonstrating it to someone. Every point in this version came from that.
 
 
 ## v3.0.0-rc67 - 2026-08-27
@@ -262,7 +565,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **After an update the watcher shut down and never came back.** It downloaded
   the new version, installed it, closed itself — and stayed closed. Reported by
   **Bomb20** (pr0) with the decisive sentence "it does shut down but
-  doesn't start", reproduced the same day by **der Autor** on his own machine.
+  doesn't start", reproduced the same day on a second machine.
   - **The cause:** when starting the new version, only `APPIMAGE`, `APPDIR`,
     `OWD` and `ARGV0` were removed from the environment — `LD_LIBRARY_PATH`,
     `PYTHONHOME` and `PYTHONPATH` stayed. Inside an AppImage those point into the
@@ -285,8 +588,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **Bomb20** (pr0) — for sticking with it. His matter-of-fact "it does
   shut down but doesn't start" pinned down the bug after it had first been
   dismissed as a user error. He was right, we were not.
-- **der Autor** — for reproducing it on his own machine, which finally ruled out
-  "it's something on his system".
 
 ## v3.0.0-rc66 - 2026-08-27
 
@@ -301,7 +602,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   they stayed frozen at the moment of that click. Writing is now tied to the
   inventory itself: every find in the game, every catch-up at startup, every
   confirmation from the launcher and every import carries the files along.
-  Reported by **der Autor**.
   - **Fixed file names in the folder.** With a date in the name, three new files
     would appear there every day and nobody would know which one is current. The
     save dialog still suggests a name with a date — saving by hand means
@@ -315,24 +615,20 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 - **"Save individually …" always saved the Basetool format.** The format was
   hard-coded; scmdb and the full backup were not reachable through the dialog at
-  all. Reported by **der Autor**.
+  all.
 - **The file chooser on Linux was the old Tk box** — a column list showing every
   hidden folder, no sorting, no preview. It now opens the desktop's own dialog
   (`kdialog` on KDE, otherwise `zenity`), everywhere a file or folder is chosen:
   import inventory, save inventory, game folder, launcher folder, own folder and
   the setup assistant. If neither is present, the Tk dialog remains as a
   fallback — **nothing depends on it.** Nothing changes on Windows and macOS,
-  where Tk already passes through the real system dialog. Reported by
-  **der Autor**.
+  where Tk already passes through the real system dialog.
   - Folders already had this path; files did not. Both now live in one place
     (`scbp/dateiwahl.py`) instead of three.
 
 
 ### Thanks
 
-- **der Autor** — for the observations while demonstrating the tool: that the
-  export files are not kept up to date, that "Save individually" only handled one
-  format, and that the file chooser on Linux looks like it came from the nineties.
 
 ## v3.0.0-rc65 - 2026-08-27
 
@@ -346,7 +642,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   Wine prefix, runners and DXVK, and has no launch option. The watcher now uses
   the `sc-launch.sh` launch script the helper creates inside the prefix, and
   finds it via the game folder (one level above `drive_c`) — no matter where
-  someone installed it. Reported by **Bomb20** (pr0) and **der Autor**.
+  someone installed it. Reported by **Bomb20** (pr0).
   - No more fallback to `lug-helper`: it would be found, the button would
     appear, and it would do nothing again. Anyone playing through Lutris or
     Heroic still enters their launch command in the `spielstarter` setting.
@@ -370,7 +666,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   answer appeared: the button stayed on "Looking for a new version …".
   `neu_aufbauen()` destroys **every** child of the window — including the footer
   the message lives in. It was set and torn down milliseconds later. It now
-  rebuilds first and reports afterwards. Reported by der Autor.
+  rebuilds first and reports afterwards.
 
 - **Same trap after updating on Linux.** "Ready — restart now" was said at
   `after(0)` and swept away at `after(50)`. Order swapped.
@@ -381,20 +677,19 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   window's minimum size depends on the sidebar height, which depends on the
   font. The program always calculated this correctly; the calculation simply
   never ran after a font or language change. It is now part of the rebuild.
-  Reported by der Autor.
 
 - **The two boxes under "What do you want to hear about?" were unequal.**
   `pack(expand=True)` distributes only the **surplus** evenly — whichever has
   more text stays wider. They now sit in a `grid` with `uniform`, the only
   guarantee in Tk that makes two columns truly equal; measured 545 px to
-  545 px, same height. Reported by der Autor.
+  545 px, same height.
 
 - **At "very large" the buttons were cut off.** A named Tk font applies to every
   text instantly — but the drawn round buttons fix their canvas to the measured
   text width **once**, at build time. Measured on the overlay choice: canvas
   177 px, text 206 px, **29 px short**. Changing the font size now rebuilds the
   interface — as the language switch has always done — so every canvas measures
-  anew. Reported by der Autor.
+  anew.
 
 ### Notes
 
@@ -415,14 +710,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   function. Whether a new version was out or not, the status line said it had
   not worked. The button now reports what it finds: the version — or **"You
   have the latest version."** That sentence existed all along; nothing ever
-  showed it. Reported by der Autor.
+  showed it.
 
 - **The notice before an update never appeared, not once.** Since rc52 the
   watcher is meant to announce that it will close, run the installer and needs
   a double-click afterwards — a program that vanishes without a word looks like
   a crash. The dialog sat in that same dead function. It now runs in the real
   update, before installing, and the installer waits until it has been read.
-  Confirmed by der Autor while updating to rc62: no window appeared.
 
 - **The export folder never opened.** `os.startfile()` in the inventory window
   used an `os` that was never imported there, and the error fell silently into
@@ -445,7 +739,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   origin panel and was hard to recognise as a control at pure line size. New
   size set `ANTIPPBAR`, one step above the other in-line marks: 16 px instead
   of 14 at "normal", 22 instead of 18 at "very large". The status dots in the
-  overlay are unchanged — nobody clicks those. Suggested by der Autor.
+  overlay are unchanged — nobody clicks those.
 
 ## v3.0.0-rc62 - 2026-08-27
 
@@ -458,7 +752,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   only happened on a rebuild, and a rebuild only happens on a new game version.
   So the dropdown showed "4.10.0 (21)" (it reads the history directly) while the
   list below said "Nothing found". The stamps are now filled in at startup, with
-  no rebuild and no network needed. Found by der Autor.
+  no rebuild and no network needed.
 - **The next patch would have been silent.** The comparison baseline
   (`bauplaene-gesehen.json`) also arrived only with rc55. Without it the rule
   "very first catalogue build — nothing is new" kicked in, and the next patch
@@ -483,7 +777,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   `[Repo] New release published: v3.0.0-rc60` it shows the changelog section for
   **this** build — the same text the tool shows under "What's new". Test builds
   in gold with a "less thoroughly tested" note, finished ones in Xharig green,
-  plus the program icon. Prompted by der Autor after comparing with the
+  plus the program icon. after comparing with the
   StarStrings channel. Without a stored key nothing happens and the build stays
   green — a chat message must never turn a finished release red.
 
@@ -499,15 +793,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   destroyed. Nothing was visible: the hook in `fehler.py` caught them, they only
   filled up the report and buried what actually mattered. The same trap sat in
   the button row and in the drawn-border entry field; all three now check whether
-  their widget still exists. Measured: 39 page switches, **0** errors. Found by
-  der Autor in the diagnostics report.
+  their widget still exists. Measured: 39 page switches, **0** errors.
 
 - **The cross that closes the source box was invisible.** In the blueprint list
   it left an empty gap: the `schliessen` symbol only existed at button size while
   it was used at row size. `zeichen.bild()` silently returns `None` for a missing
   file — deliberately, so a missing symbol never halts the program, which is
   exactly what hid the bug. `tools/oberflaeche_pruefen.py` now checks for it.
-  Reported by der Autor.
 
 ## v3.0.0-rc59 - 2026-08-27
 
@@ -519,13 +811,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **The coloured dots were still emoji in the running text.** The symbol key
   already showed the real images while the description below it kept using
   `🟢 🟡 🔵 ⭐` — two different renderings of the same symbol on one page.
-  Reported by der Autor.
 
 - **The English readme now shows the English interface.** Until now it presented
   German screenshots — with eleven images, and a tool whose Linux users mostly
   run the English client, that is not a detail. `tools/sprachen_pruefen.py` now
-  checks for it: it only counted sections and never looked at images. Reported by
-  der Autor.
+  checks for it: it only counted sections and never looked at images.
 
 - **Every screenshot in the readme is new.** The old ones were from v3.0.0-rc11
   and showed not just the replaced symbols but a build without the server status
@@ -535,20 +825,20 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **The feature table in the readme used emoji instead of the real symbols.**
   `⚡ 📋 🧭 ⭐ 🔔 …` have nothing to do with the program's icon set and look
   different on every system. All sixteen now come from the same set as the
-  interface. Reported by der Autor.
+  interface.
 
 - **A screenshot exposed the author's home path.** `screenshot-pfade.png` had
   been in the repo since v3.0.0-rc11, showing `/home/<user>/` three times — the
   very thing `pfade.kuerzen()` strips from error reports. Removed; the folder
   page gets no screenshot at all, since it necessarily shows paths. The server
-  status tab took its place. Found by der Autor.
+  status tab took its place.
 
 ### Fixed
 
 - **The filter buttons on "What's new" stayed German in English.** "Alles / Neu /
   Verbessert / Behoben" were hard-coded instead of living in `sprache.py` — right
   next to a properly translated changelog. Spotted on a screenshot of the English
-  interface. Found by der Autor.
+  interface.
 
 ## v3.0.0-rc58 - 2026-08-27
 
@@ -559,27 +849,25 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 ### Added
 
 - **The "Mission text" tab is now "In-game text".** The old name did not say
-  **where** those texts appear. Prompted by der Autor.
+  **where** those texts appear.
 - **The program icon now sits next to the version on "Update & About".** The page
   had no image at all after the author block moved to "Thanks & Licenses".
-  Reported by der Autor.
 
 - **The readme showed symbols the tool no longer has.** The button legend in
   both readmes listed `☰`, `ⓘ`, `⟳`, `⏻` and `🗑` — two of them are long gone,
   the others look different now. It now shows the **actual image files** from
   `assets/symbole/`, so it can no longer go stale: swapping a symbol updates the
-  readme picture by itself. Same for the message symbol key. Found by der Autor.
+  readme picture by itself. Same for the message symbol key.
 - **"Who built this" suddenly appeared twice.** The block naming the author,
   scmdb, the SC Deutsch Launcher and StarStrings sat on "Update & About" — and
   the new "Thanks & Licenses" page listed the same projects again. It now lives
   only on "Thanks & Licenses", with the author **at the top**: a page listing
-  other people's work has to name its own first. Reported by der Autor.
+  other people's work has to name its own first.
 
 - **The donation link was nowhere to be seen on GitHub.** The "Buy me a coffee"
   button has been in the tool for a long time — but the project page itself had
   nothing: no sponsor button, no mention in the readme. Anyone who had not
-  installed the tool yet could not find it at all. Both are there now. Found by
-  der Autor.
+  installed the tool yet could not find it at all. Both are there now.
 
 - **New "Thanks & Licenses" tab** under *Info*. Until now the program showed
   **no licence information at all** — neither its own (GPL-3.0) nor that of the
@@ -587,7 +875,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   they happened to be used. There is now one place stating what belongs to whom:
   the program itself, the Lucide symbols, the scmdb data, StarStrings and the SC
   Deutsch Launcher — each with its licence and a clickable link. Plus thanks to
-  the people whose feedback turned into something. Suggested by der Autor.
+  the people whose feedback turned into something.
 
 ## v3.0.0-rc57 - 2026-08-27
 
@@ -603,7 +891,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   only 50–70 % of its box, each one differently; `🗑` and `▶` are solid shapes
   while `⚙ ⟳ ✕` are thin strokes; and every operating system picks a different
   fallback font. Replaced with rendered images from the **Lucide** set — all
-  drawn on a 24×24 grid with the same stroke width. Suggested by der Autor.
+  drawn on a 24×24 grid with the same stroke width.
 - **The interface now looks identical on Windows, Linux and macOS.** It did not
   before: Windows used `Segoe UI Symbol`, other systems something else. Anyone
   developing on a Mac saw different glyphs than their users on Windows.
@@ -612,12 +900,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   font as coloured blocks that **ignored** the configured colour — in the very
   place you look at most often.
 - **Launching Star Citizen now shows a rocket instead of a play arrow.** A `▶`
-  means "play video" everywhere, not "start a program". Reported by der Autor.
+  means "play video" everywhere, not "start a program".
 - **Clearing messages now shows an eraser instead of a bin.** The button deletes
   nothing — it only tidies the display, the blueprints stay. A bin promises
-  destruction and puts people off clicking it. Prompted by der Autor.
+  destruction and puts people off clicking it.
 - **"Setup" is now "Run setup".** A verb says something is about to happen; the
-  noun alone sounded like a place to look things up. Suggested by der Autor.
+  noun alone sounded like a place to look things up.
 - The height of the notification bar now grows with the configured font size. It
   was fixed at 26 pixels, which made symbols stick out at "large".
 
@@ -628,8 +916,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   that really does close the program — two buttons that both looked like "off".
   The setting is unchanged under "General".
 - **The setup assistant button is gone from the notification bar.** It remains
-  available in the main window, top right. der Autor: "the settings are enough,
-  that is where people go anyway when they notice something is stuck."
+  available in the main window, top right — the settings are where everyone goes anyway once they notice something is off.
 
 ### Fixed
 
@@ -640,9 +927,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Thanks
 
-- **der Autor** — for prompting the whole change ("they should all be the same
-  size, but they are not, and the bell is even the largest") and for the notes
-  on the rocket, the eraser and "Run setup".
 
 ## v3.0.0 - 2026-08-29
 
@@ -712,8 +996,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   understand what a channel is and pick the right one of the two boxes — anyone
   choosing the wrong one was offered nothing at all. There is now a full-width
   button above them that immediately fetches whatever is available, including a
-  test build. It changes nothing about the setting below. Suggested by der Autor
-  after Morkhan got stuck at exactly this point.
+  test build. It changes nothing about the setting below.
 
 - **Star Citizen can be launched from the tool.** The „In-game details" page
   has a button that starts the game the way you already do: the RSI Launcher on
@@ -916,8 +1199,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   why the icons could never be evened out via the font size — they came from
   different font files. Windows now explicitly asks for **Segoe UI Symbol**:
   all fourteen glyphs monochrome, in the configured text colour, with half the
-  spread. On Linux this was never a problem and nothing changes. Reported by
-  der Autor.
+  spread. On Linux this was never a problem and nothing changes.
 
 - **The overlay stayed German when you switched to English.** Changing the
   language gave you an English window and a German status bar:
@@ -932,18 +1214,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   into the line as finished sentences, frozen in the language of the moment;
   only a restart cleared them. Messages now carry their text key along and are
   rewritten on a language change — including the date, which reads differently
-  in English (2026-08-22 rather than 22.08.2026). Reported by der Autor.
+  in English (2026-08-22 rather than 22.08.2026).
 
 - **The hint on the ▶ launch button overwrote the status bar.** It was the only
   one of the ten icons without a tooltip; instead it wrote into the status bar
   and afterwards restored a value that was never kept up to date — so a
   blueprint message was gone after the mouse passed over the icon.
-  Reported by der Autor.
 
 - **The logo was missing from the finished build.** On „Update & About" the
   program loaded `assets/xharig.png`, but the build never packed that file — it
-  never showed when starting from source, where the file is present. Reported by
-  der Autor, who spotted it in a tester's screenshot.
+  never showed when starting from source, where the file is present.
 
 - **The „ⓘ" on the overlay opened a separate window with its own update logic** —
   and that one had no restart button. Anyone going that way downloaded the new

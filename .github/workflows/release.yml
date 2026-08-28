@@ -38,9 +38,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Die Adresse, an die ein Fehlerbericht auf Knopfdruck geht. Sie steht
+      # NICHT im Quelltext — wer sie hat, kann in den Kanal schreiben. Hier
+      # wird sie aus dem Secret in die Datei geschrieben, die dann mitgebaut
+      # wird. Fehlt das Secret, bleibt sie leer und der Knopf erscheint gar
+      # nicht erst (`berichtziel.moeglich()`).
+
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          # ⚠ 3.14 ist Absicht, keine Modepflege: Erst ab dieser Fassung
+          # bringt Python `compression.zstd` in der Standardbibliothek mit —
+          # und genau das braucht `scbp/spieltexte.py`, um die englische
+          # `global.ini` aus CIGs `Data.p4k` zu holen (CIG komprimiert mit
+          # zstd). Mit 3.12 blieb dem Nutzer nur „installier dir 7-Zip", und
+          # damit stand jeder vor einer Wand, der englisch spielt und bloss die
+          # Angaben am Gegenstand haben will.
+          python-version: '3.14'
 
       - name: Version gegen den Tag pruefen
         if: inputs.tag != '' || github.ref_type == 'tag'
@@ -55,6 +68,26 @@ jobs:
 
       - name: Selbsttest
         run: python tools/selbsttest.py
+
+      - name: Berichtsziel einsetzen
+        shell: bash
+        run: |
+          # ⚠ Nur die eine Zeile ersetzen, die Datei NICHT neu schreiben.
+          # Sonst fehlt in der gebauten Fassung alles andere — etwa die
+          # Umgebungsvariable `SC_BP_BERICHT_ZIEL`, mit der sich der Weg aus
+          # dem Quellcode heraus prüfen lässt. Zwei Fassungen derselben Datei,
+          # die auseinanderlaufen, sind genau die Sorte Fehler, die niemand
+          # sucht.
+          python - <<'PYEOF'
+          import io
+          p = 'scbp/berichtziel.py'
+          t = io.open(p, encoding='utf-8').read()
+          alt = "WEBHOOK = ''"
+          neu = "WEBHOOK = '${{ secrets.BERICHT_WEBHOOK }}'"
+          assert alt in t, 'Platzhalter nicht gefunden'
+          io.open(p, 'w', encoding='utf-8').write(t.replace(alt, neu, 1))
+          print('Ziel eingesetzt:', 'ja' if len(neu) > len(alt) else 'leer')
+          PYEOF
 
       - name: PyInstaller
         run: pip install --upgrade pyinstaller
@@ -112,17 +145,51 @@ jobs:
           # einpackt (libpython3.x.so). Im schlanken Container fehlt sie sonst.
           # xvfb liefert den Bildschirm fuer den Selbsttest.
           apt-get install -y -qq --no-install-recommends \
-            python3 python3-dev python3-pip python3-tk \
+            software-properties-common gpg-agent \
             binutils file wget ca-certificates git xvfb
+          # ⚠ Python 3.14 statt der 3.10 aus Ubuntu 22.04 — wegen
+          # `compression.zstd` (siehe Windows-Job). Der **Container** bleibt
+          # bewusst 22.04: Sein altes glibc ist der Grund, warum das AppImage
+          # auch auf betagteren Systemen startet. Nur das Python ist neuer.
+          add-apt-repository -y ppa:deadsnakes/ppa
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends \
+            python3.14 python3.14-dev python3.14-tk python3.14-venv
+          update-alternatives --install /usr/bin/python3 python3 \
+            /usr/bin/python3.14 1
+          wget -qO- https://bootstrap.pypa.io/get-pip.py | python3.14
           python3 -m pip install --quiet --upgrade pip pyinstaller pyflakes
+          python3 -c "import compression.zstd; print('zstd in der Standardbibliothek: ok')"
 
       - uses: actions/checkout@v4
+
+      # Dasselbe wie im Windows-Job — siehe die Begruendung dort.
 
       - name: Selbsttest
         # xvfb-run stellt einen Bildschirm bereit, den es auf einem Bau-Rechner
         # sonst nicht gibt. Ohne ihn wuerden die Fenster-Pruefungen still
         # uebersprungen — geprueft werden soll aber alles.
         run: xvfb-run -a python3 tools/selbsttest.py
+
+      - name: Berichtsziel einsetzen
+        shell: bash
+        run: |
+          # ⚠ Nur die eine Zeile ersetzen, die Datei NICHT neu schreiben.
+          # Sonst fehlt in der gebauten Fassung alles andere — etwa die
+          # Umgebungsvariable `SC_BP_BERICHT_ZIEL`, mit der sich der Weg aus
+          # dem Quellcode heraus prüfen lässt. Zwei Fassungen derselben Datei,
+          # die auseinanderlaufen, sind genau die Sorte Fehler, die niemand
+          # sucht.
+          python3 - <<'PYEOF'
+          import io
+          p = 'scbp/berichtziel.py'
+          t = io.open(p, encoding='utf-8').read()
+          alt = "WEBHOOK = ''"
+          neu = "WEBHOOK = '${{ secrets.BERICHT_WEBHOOK }}'"
+          assert alt in t, 'Platzhalter nicht gefunden'
+          io.open(p, 'w', encoding='utf-8').write(t.replace(alt, neu, 1))
+          print('Ziel eingesetzt:', 'ja' if len(neu) > len(alt) else 'leer')
+          PYEOF
 
       - name: Binaerdatei bauen
         run: >
@@ -195,9 +262,22 @@ jobs:
         with:
           prerelease: ${{ steps.art.outputs.vorab }}
           body_path: release-text.md
+          # ⚠ Die nackte `SC-BP-Watcher.exe` wird NICHT mehr angehängt
+          # (Entscheidung der Autor, 27.08.2026: „ich will die exe ohne install
+          # loswerden … nun wollen wir es funktionierend und einfach").
+          #
+          # Sie war seinerzeit dazu da, Vertrauen aufzubauen — ein unsigniertes
+          # Programm ohne Installer wirkt harmloser. Das Argument ist
+          # verbraucht, und zwei Auslieferungswege heißen zwei Fehlerquellen
+          # und doppelte Unterstützung.
+          #
+          # Der Weg für **v2.0.0** bleibt trotzdem offen: Deren Update-Logik
+          # greift die erste Datei auf `.exe` — das ist jetzt der Installer —
+          # und ihr Hilfsskript **startet** die getauschte Datei
+          # (`start "" "<ziel>"`). Der Installer läuft also und installiert
+          # sauber, statt als totes Programm liegenzubleiben.
           files: |
             dateien/windows/SC-BP-Watcher-Setup.exe
-            dateien/windows/SC-BP-Watcher.exe
             dateien/linux/SC-BP-Watcher-x86_64.AppImage
 
       # Meldung im eigenen Discord — als lesbare Karte statt als nackter Link.

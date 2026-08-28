@@ -176,13 +176,37 @@ def entpacke_zstd(roh, erwartet):
         '  * pip install zstandard\n'
         '  * 7-Zip ab Version 22 installieren (Pfad notfalls über SEVENZIP setzen)')
 
-def holen(sprache='english', spielordner=None, fortschritt=None):
+def _sprache_eintragen(sprache, spielordner):
+    """`g_language` setzen — Fehlschlag ist kein Grund, den Rest wegzuwerfen."""
+    try:
+        from . import uebersetzung
+        uebersetzung.user_cfg_setzen(sprache, None, spielordner)
+    except Exception as ausnahme:
+        from . import fehler
+        fehler.merken('spieltexte._sprache_eintragen', ausnahme)
+
+
+def holen(sprache='english', spielordner=None, fortschritt=None,
+          sprache_eintragen=True):
     """Die `global.ini` einer Sprache aus dem Archiv holen. (Erfolg, Meldung).
 
     Geschrieben wird direkt an den Ort, an dem das Spiel sie erwartet. Eine
     **vorhandene Datei wird nicht angetastet** — dort könnte die Übersetzung
     eines anderen Projekts liegen, und die zu überschreiben, weil jemand auf
-    „Originaltexte" geklickt hat, wäre ein handfester Verlust."""
+    „Originaltexte" geklickt hat, wäre ein handfester Verlust.
+
+    ⚠ **Die Datei allein reicht nicht.** Ohne `g_language` in der `user.cfg`
+    liest Star Citizen sie gar nicht erst, sondern bleibt bei den Texten aus
+    dem Archiv — und dann steht am Traktorstrahl weiter nur der nackte Name.
+    Wer englisch spielt, hat diesen Ordner nämlich **gar nicht**; er entsteht
+    erst hier. Genau deshalb steht der Eintrag jetzt in dieser Funktion und
+    nicht bei den Aufrufern: Dort stand er zweimal, in `assistent.py` und in
+    `einstellungsfenster.py`, und ein dritter Weg hätte ihn vergessen.
+    (Hinweis von der Autor, 27.08.2026: „auch da ist dann die user cfg wieder
+    mit wichtig, sonst kann man das nie ohne eine übersetzung nutzen.")
+
+    `sprache_eintragen=False` lässt die `user.cfg` in Ruhe — für Werkzeuge,
+    die nur an die Datei wollen, ohne die Installation umzustellen."""
     def melde(text):
         if fortschritt:
             fortschritt(text)
@@ -199,6 +223,11 @@ def holen(sprache='english', spielordner=None, fortschritt=None):
     if not ziel:
         return False, 'Zielordner unbekannt'
     if os.path.isfile(ziel):
+        # ⚠ Auch hier eintragen: Die Datei liegt richtig, wird aber ohne den
+        # Eintrag nicht gelesen. Wer sie von Hand hingelegt hat, säße sonst vor
+        # einem Ergebnis, das es gar nicht gibt.
+        if sprache_eintragen:
+            _sprache_eintragen(sprache, spielordner)
         return True, 'vorhandene Datei behalten'
 
     melde(t('z_originaltexte'))
@@ -223,6 +252,8 @@ def holen(sprache='english', spielordner=None, fortschritt=None):
         with open(ziel + '.tmp', 'wb') as f:
             f.write(daten)
         os.replace(ziel + '.tmp', ziel)
+        if sprache_eintragen:
+            _sprache_eintragen(sprache, spielordner)
         return True, '%.1f MB' % (len(daten) / 1048576.0)
     except Exception as e:
         return False, str(e)

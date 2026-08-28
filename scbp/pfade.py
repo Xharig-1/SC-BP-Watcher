@@ -1004,6 +1004,32 @@ ANFUEHRUNG = str.maketrans({
 })
 
 
+# Der Klassen-Zusatz am Namensende — `7CA 'Nargun' (Civ/3/A)`, `XL-1 (Mil/2/A)`,
+# `P4-AR Rifle (Bal)`, `'Arrow' I Missile (IR1)`.
+#
+# ⚠ **Warum das hierher gehört und nicht nur ins Log-Lesen.** Bis zum 28.08.2026
+# schnitt nur `logquelle.teile_namen()` den Zusatz ab. Namen aus der
+# **Launcher-Datei** und aus **Importen** (Basetool, scmdb, eigene Sicherung)
+# gingen ungeschnitten in den Bestand — und `XL-1 (Mil/2/A)` findet `XL-1` nie.
+# Der Bauplan galt als fehlend, obwohl er dastand.
+#
+# Aufgefallen an Morkhan: Er hatte die Baupläne gemeinsam mit der Autor gefarmt,
+# hatte den SC Deutsch Launcher mit gepflegter Datei — und im Spiel standen die
+# Kästchen trotzdem leer. der Autor: „vergleich doch mal die Logik, was habe ich,
+# mit meiner BP-Liste, und hör auf zu raten."
+#
+# Bewusst eng: Nur die bekannten Kürzel, damit echte Namensklammern wie
+# `Singe Cannon (S2)` oder `(30 cap)` stehen bleiben. Die Liste muss zu
+# `scbp/angaben.py` passen — Selbsttest 32 wacht darüber.
+_KLASSEN_KURZ = ('civ|mil|ind|sth|cmp'
+                 '|las|ele|pla|dis|mic|bal'
+                 '|nah|min|slv|med|tool|trc')
+KUERZEL_RE = re.compile(
+    r'\s*\((?:(?:%s)/(?:\d{1,2}|\u2013|-)/(?:[a-d]|\u2013|-)'
+    r'|(?:%s)'
+    r'|(?:ir|em|cs)\d{1,2})\)\s*$' % (_KLASSEN_KURZ, _KLASSEN_KURZ))
+
+
 def namensform(s):
     """Ein Bauplan-Name als Vergleichsschlüssel — die EINZIGE Stelle dafür.
 
@@ -1022,8 +1048,7 @@ def namensform(s):
       und der Bauplan gilt als „fehlt", obwohl er im Bestand steht. Gefunden
       an einem echten Bestand mit 392 Bauplänen — genau einer fiel durch.
     """
-    return (str(s).lower()
+    return KUERZEL_RE.sub('', str(s).lower()
 .replace('\xa0', ' ')
 .replace('\ufffd', ' ')
-.translate(ANFUEHRUNG)
-.strip())
+.translate(ANFUEHRUNG)).strip()

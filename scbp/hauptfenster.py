@@ -60,6 +60,9 @@ SUB     = '#8b98a5'
 ACCENT  = '#9ce430'
 LINIE   = '#232c3d'
 GOLD    = '#e8c353'
+# Rot ist hier kein Zustand, sondern ein Wegweiser: Der Reiter „Fehler
+# melden“ traegt es, damit ihn niemand suchen muss.
+ROT     = '#e05252'
 
 # Mindestgröße: Darunter bricht die Bedienung, und keine Layout-Regel hilft mehr.
 # Kleinste Größe, auf die sich das Fenster ziehen lässt — zugleich die Startgröße.
@@ -398,6 +401,26 @@ def rundbalken(eltern, hoehe, anteil, grund, leer, voll, breite=None):
     return c
 
 
+def _eigenes_rollen(vom, bis):
+    """Ein Textfeld zwischen `vom` und `bis`, das selbst rollen kann — oder None.
+
+    Geprüft wird, ob überhaupt etwas zu rollen **ist**: Ein Feld, dessen Inhalt
+    hineinpasst, meldet `(0.0, 1.0)`. Dort soll weiter die Seite rollen, sonst
+    bliebe der Zeiger über einem kurzen Feld hängen und nichts bewegte sich.
+    """
+    knoten = vom
+    while knoten is not None and knoten is not bis:
+        if isinstance(knoten, tk.Text):
+            try:
+                oben, unten = knoten.yview()
+                if (unten - oben) < 0.999:
+                    return knoten
+            except tk.TclError:
+                pass
+        knoten = getattr(knoten, 'master', None)
+    return None
+
+
 def rad_anschliessen(leinwand):
     """Das Mausrad an eine Rollfläche hängen — für das ganze Fenster.
 
@@ -462,11 +485,28 @@ def rad_anschliessen(leinwand):
             return -ganze                        # nach oben = negativ
 
         def flaeche_unter(e):
-            """Die registrierte Rollfläche unter dem Mauszeiger — oder nichts."""
+            """Was unter dem Mauszeiger gerollt werden soll — oder nichts.
+
+            ⚠ **Ein Textfeld rollt sich selbst.** Vorher zählten nur die
+            registrierten Rollflächen; ein `tk.Text` ist keine, also ging das
+            Rad an die Seite dahinter. Auf der Diagnose-Seite hieß das: Erst
+            die ganze Seite nach unten schieben, und **dann** erst ließ sich im
+            Bericht rollen. der Autor am 28.08.2026, nachdem sein Bruder
+            dasselbe gemeldet hatte: „in dem Fehlerbericht-Fenster kann man
+            erst scrollen, nachdem die Diagnose-Seite nach unten gescrollt
+            ist."
+
+            Wie im Browser: Was unter dem Zeiger liegt und rollen kann, rollt
+            — die Seite bewegt man daneben.
+            """
             unter = wurzel.winfo_containing(e.x_root, e.y_root)
+            erstes = unter
             while unter is not None:
                 if unter in wurzel.rollflaechen:
-                    return unter
+                    # Liegt auf dem Weg dorthin ein Textfeld, das ueberlaeuft,
+                    # gehoert ihm das Rad.
+                    eigenes = _eigenes_rollen(erstes, unter)
+                    return eigenes if eigenes is not None else unter
                 unter = getattr(unter, 'master', None)
             return None
 
@@ -1283,6 +1323,17 @@ class Hauptfenster:
         # Fehler zuerst bei sich. Ein eigener Reiter beantwortet das, statt die
         # Auskunft unten an eine andere Seite zu hängen, wo niemand sie sucht.
         self._reiter('serverstatus', 'serverstatus', t('hf_serverstatus'))
+        # ⚠ **Diagnose gehört hierher, nicht unter „Fortgeschritten".** Wer die
+        # Seite braucht, hat ein Problem — und sucht sie dann in einem Menü, das
+        # zugeklappt ist und „Fortgeschritten" heißt, also nach „nichts für
+        # mich" aussieht. der Autor am 28.08.2026, nachdem sein Bruder den
+        # Bericht nicht fand: „ich will nicht jedem eine Stunde erklären, wie
+        # ich zu dem Bericht komme."
+        #
+        # Seit dem roten Knopf „Fehlerbericht absenden" ist die Seite außerdem
+        # der Weg, auf dem Meldungen überhaupt ankommen. Ein Weg, den man
+        # erklären muss, wird nicht benutzt.
+        self._reiter('diagnose', 'diagnose', t('hf_diagnose'))
         # ⚠ Eigener Reiter, kein Abschnitt auf „Update & Über": Die Seite dort
         # ist mit Version, Katalogzahlen, Update-Kanal und Holen-Knopf schon
         # voll, und wem was gehört, hat mit Updates nichts zu tun.
@@ -1592,7 +1643,6 @@ class Hauptfenster:
                 # den fast niemand braucht, steht oben nur im Weg.
                 self._reiter('ordner', 'ordner', t('hf_ordner'), self.klappinhalt)
                 self._reiter('erkennung', 'erkennung', t('hf_erkennung'), self.klappinhalt)
-                self._reiter('diagnose', 'diagnose', t('hf_diagnose'), self.klappinhalt)
             self.klappknopf.configure(text=t('hf_fortgeschritten'))
         else:
             self.klappinhalt.pack_forget()
@@ -1607,7 +1657,19 @@ class Hauptfenster:
         """Eine Seite zeigen — und beim ersten Mal ihren Inhalt bauen."""
         if kennung not in self.seiten:
             self.seiten[kennung] = tk.Frame(self.inhalt, bg=BG)
-        if kennung not in self.gezeichnet:
+        # ⚠ Beim **zweiten** Besuch wurde bisher nur „steht" geschrieben, weil
+        # die Seite schon gebaut war. Knallte es dabei, fehlte die Zeile ganz
+        # statt nur zur Hälfte — und die Überschrift des Berichts verspricht
+        # „die letzte Zeile ohne ‚steht' ist die, an der es hing". Das stimmte
+        # dann nicht mehr. Aufgefallen im rc75-Bericht, notiert für dieses
+        # Release.
+        #
+        # Deshalb auch hier eine Zeile, aber eine eigene: „zeigen" statt
+        # „bauen beginnt". Wer den Bericht liest, sieht damit den Unterschied
+        # zwischen „beim Aufbauen gestorben" und „beim Einblenden gestorben".
+        if kennung in self.gezeichnet:
+            fehler.spur('Seite %s: zeigen' % kennung)
+        else:
             self.gezeichnet.add(kennung)
             # ⚠ Die Spur führt jetzt auch über die Bedienung, nicht nur über den
             # Start. Grund: Bomb20 meldete am 27.08.2026 einen reproduzierbaren
@@ -1647,6 +1709,19 @@ class Hauptfenster:
                 zeile, strich, z, b, _ = eintrag
                 self.knoepfe[kennung] = (zeile, strich, z, b, None)
 
+    def _fehler_liegen_an(self):
+        """Wurde seit dem Start etwas mitgeschrieben? Faerbt das Reiter-Symbol.
+
+        Gefragt wird bei jedem Neuzeichnen der Leiste — also bei jedem
+        Seitenwechsel. Das genuegt: Wer gerade auf einen Fehler laeuft, klickt
+        ohnehin weiter, und dann steht die Farbe.
+        """
+        try:
+            from . import fehler as fehler_modul
+            return fehler_modul.anzahl() > 0
+        except Exception:
+            return False
+
     def _reiter_faerben(self):
         for kennung, (zeile, strich, z, b, marke) in self.knoepfe.items():
             an = (kennung == self.aktuell)
@@ -1657,8 +1732,24 @@ class Hauptfenster:
                 marke.hintergrund(grund)
             # ⚠ Ein Bild nimmt kein `fg` an — die passend eingefärbte Version
             # muss eingehängt werden.
-            z.faerben(zeichen.HELL if an else zeichen.GRAU)
-            b.configure(fg=FG if an else SUB, font=self.f_fett if an else self.f_grund)
+            # ⚠ „Fehler melden“ traegt Rot — aber in zwei Stufen, damit die
+            # Farbe etwas bedeutet und nicht nur schmueckt:
+            #
+            #   * **Das Wort ist immer rot.** Wer ein Problem hat, soll den
+            #     Reiter finden, ohne ein Menue zu durchsuchen. der Autor am
+            #     28.08.2026: „damit wirklich niemand uebersieht“.
+            #   * **Das Symbol wird nur rot, wenn wirklich etwas passiert ist**
+            #     — wenn also Fehler mitgeschrieben wurden. Sonst stuende der
+            #     Reiter dauerhaft auf Alarm, obwohl alles laeuft, und niemand
+            #     naehme ihn noch ernst.
+            #
+            # Der Strich darunter bleibt gruen, wenn die Seite offen ist —
+            # sonst saehe die gewaehlte Seite aus wie eine Warnung.
+            rot = (kennung == 'diagnose')
+            z.faerben(zeichen.ROT if (rot and self._fehler_liegen_an())
+                      else (zeichen.HELL if an else zeichen.GRAU))
+            b.configure(fg=ROT if rot else (FG if an else SUB),
+                        font=self.f_fett if (an or rot) else self.f_grund)
             strich.configure(bg=ACCENT if an else FLAECHE)
 
     def neu_aufbauen(self):

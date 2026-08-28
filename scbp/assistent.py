@@ -338,8 +338,9 @@ class Assistent:
                     self.inj_meldung.configure(text=t('inj_fehler', meldung),
                                                fg=GELB)
                     return
+                # `g_language` setzt `spieltexte.holen()` selbst — dort
+                # gehört es hin, damit kein Weg es vergessen kann.
                 ziel = uebersetzung.ziel_ini(sprache_ordner)
-                uebersetzung.user_cfg_setzen(sprache_ordner)
                 uebersetzung.vermerken('original', 'Data.p4k')
             else:
                 ok, meldung = uebersetzung.holen(

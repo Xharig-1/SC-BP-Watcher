@@ -173,11 +173,31 @@ def durchklickbar_moeglich():
     return True
 
 
+# Wer immer das Durchreichen umschaltet — das Schloss am Overlay muss mitziehen.
+# Die Anwendung trägt hier ihre eigene Funktion ein; ohne Eintrag passiert
+# nichts, damit `overlay.py` ohne Oberfläche prüfbar bleibt.
+#
+# ⚠ Warum es das Schloss überhaupt gibt: Wer Klicks durchreichen lässt, kommt an
+# das Overlay nicht mehr heran — auch nicht an den Schalter, mit dem er es
+# wieder abstellt. Der Rückweg war bis dahin, **das Programm ein zweites Mal zu
+# starten**, und dafür muss man aus dem Spiel heraus. der Autor am 27.08.2026:
+# „der zweite Programmstart ist die denkbar dümmste Lösung, weil man dann
+# raustabben muss aus dem Spiel." Ryze löst es beim TeamSpeak-Plugin mit einem
+# Schloss, das anklickbar bleibt — denselben Weg gehen wir.
+SCHLOSS_RUECKRUF = [None]
+
+
 def durchklickbar_setzen(fenster, an):
     """Klicks durchreichen (oder wieder abfangen). Gibt zurück, ob es geklappt hat."""
-    if WINDOWS:
-        return _windows_durchklickbar(fenster, an)
-    return _x11_durchklickbar(fenster, an)
+    geklappt = (_windows_durchklickbar(fenster, an) if WINDOWS
+                else _x11_durchklickbar(fenster, an))
+    ruf = SCHLOSS_RUECKRUF[0]
+    if ruf is not None:
+        try:
+            ruf(an and geklappt)
+        except Exception:
+            pass                          # das Schloss darf das Schalten nie kippen
+    return geklappt
 
 
 # ------------------------------------------------ Zweiter Start holt das Fenster

@@ -506,8 +506,8 @@ TEXTE = {
     's_sp_lead':       ('Der Watcher schreibt in die Auftragstexte des Spiels, welche Baupläne ein Auftrag ausschüttet — mit Haken für das, was du schon hast. Hier wählst du auch, aus welcher Quelle diese Texte kommen.',
                           'The watcher writes into the game\'s mission text which blueprints a mission hands out — with a tick for the ones you already have. This is also where you pick which source those texts come from.'),
     's_sp_quelle_ist': ('Quelle: %s', 'Source: %s'),
-    's_sp_steht':      ('Die Bauplan-Angaben stehen in den Auftragstexten.',
-                          'The blueprint details are in the mission text.'),
+    's_sp_steht':      ('Die Bauplan-Angaben stehen in den Auftragstexten. Änderungen wirken beim nächsten Spielstart — Star Citizen liest die Textdatei nur beim Hochfahren.',
+                          'The blueprint details are in the mission text. Changes take effect the next time the game starts — Star Citizen reads the text file only while launching.'),
     's_sp_hole':       ('Hole und setze ein: %s — das dauert einen Moment …',
                           'Fetching and installing: %s — this takes a moment …'),
     's_sp_nichts':     ('Noch keine Bauplan-Angaben in den Auftragstexten.',
@@ -545,6 +545,14 @@ TEXTE = {
     's_sp_auto_h':     ('Prüft beim Start und alle sechs Stunden. Ohne das sind die Angaben nach jedem Spiel-Patch still verschwunden — jedes Update schreibt die Textdatei neu.',
                           'Checks on start and every six hours. Without it the details are silently gone after every game patch — each update rewrites the text file.'),
     's_sp_auto_sagen': ('Selbst aktuell halten: %s', 'Keep up to date: %s'),
+    'hinweis_schloss': ('Klicks gehen gerade ins Spiel. Hier klicken, um das Overlay wieder bedienbar zu machen.',
+                        'Clicks are going through to the game. Click here to make the overlay usable again.'),
+    'ov_schloss_offen': ('Das Overlay fängt wieder Klicks ab.',
+                         'The overlay catches clicks again.'),
+    's_sp_angaben':    ('Angaben am Gegenstand', 'Details on the item'),
+    's_sp_angaben_h':  ('Schreibt Klasse, Größe und Gütegrad hinter den Namen — bei Raketen stattdessen den Suchkopf (IR, EM, CS). Damit steht am Traktorstrahl „Glacier (Mil/1/A)" statt nur „Glacier", ohne dass man die Beschreibung aufklappen muss. Die Angaben stammen aus der Textdatei des Spiels selbst.',
+                          'Adds class, size and grade after the name — for missiles the seeker type instead (IR, EM, CS). The tractor beam then shows „Glacier (Mil/1/A)" rather than just „Glacier", with no need to expand the description. The details come from the game\'s own text file.'),
+    's_sp_angaben_sagen': ('Angaben am Gegenstand: %s', 'Details on the item: %s'),
     's_sp_hand':       ('Von Hand', 'By hand'),
     's_sp_hand_h':     ('Alles Eingefügte steht zwischen Marken und lässt sich auf den Buchstaben genau wieder entfernen.',
                           'Everything inserted sits between markers and can be removed again to the letter.'),
@@ -632,9 +640,24 @@ TEXTE = {
     's_er_alt_knopf':  ('Von vorn lesen', 'Read from the start'),
 
     # -- Seite „Diagnose" --
-    's_di_lead':       ('Wenn etwas klemmt: Dieser Block sagt in einem Rutsch, woran es liegen könnte. Kopieren, in ein Issue einfügen, fertig.',
-                          'When something is stuck: this block says in one go what it might be. Copy it, paste it into an issue, done.'),
-    's_di_melden':     ('Fehler melden …', 'Report a problem …'),
+    's_di_lead':       ('Wenn etwas klemmt: Dieser Block sagt in einem Rutsch, woran es liegen könnte. Der rote Knopf schickt ihn dem Entwickler — mehr musst du nicht tun.',
+                          'When something is stuck: this block says in one go what it might be. The red button sends it to the developer — that is all you need to do.'),
+    # ⚠ „Auf GitHub" gehört in den Namen. Vorher hieß der Knopf „Fehler
+    # melden …" und stand neben „Fehlerbericht absenden" — zwei Namen, die
+    # dasselbe versprechen, während der eine den Browser aufmacht und ein
+    # GitHub-Konto verlangt. der Autor am 28.08.2026: „woher weiß ein User, was
+    # Fehler melden macht?"
+    's_di_melden':     ('GitHub Issue …', 'GitHub issue …'),
+    's_di_absenden':   ('Fehlerbericht absenden', 'Send error report'),
+    's_di_ab_frage_t': ('Fehlerbericht absenden?', 'Send error report?'),
+    's_di_ab_frage':   ('Der Bericht oben geht als Datei an den Entwickler — genau der Text, den du siehst, nichts weiter.\n\nEr enthält keine Namen, keine Pfade und keine Zugangsdaten; die sind bereits herausgenommen.\n\nAbsenden?',
+                        'The report above goes to the developer as a file — exactly the text you see, nothing else.\n\nIt contains no names, no paths and no credentials; those have already been removed.\n\nSend it?'),
+    's_di_ab_laeuft':  ('Wird gesendet …', 'Sending …'),
+    's_di_ab_ok':      ('Bericht ist angekommen. Danke!', 'Report received. Thank you!'),
+    's_di_ab_weg':     ('Senden ging nicht: %s', 'Sending did not work: %s'),
+    'm_bericht_kein_ziel': ('In dieser Fassung ist kein Ziel eingebaut.',
+                            'No destination is built into this version.'),
+    'm_bericht_weg':   ('keine Verbindung', 'no connection'),
     's_di_kopieren':   ('Angaben kopieren', 'Copy details'),
     's_di_speichern':  ('Als Datei speichern …', 'Save as a file …'),
     's_di_ordner':     ('Eigenen Ordner öffnen', 'Open own folder'),
@@ -863,16 +886,33 @@ TEXTE = {
                          'des Werkzeugs — einfach so.',
                          'And on top of that a month of Discord Nitro for the '
                          "tool's server — just like that."),
-    's_dk_morkhan_idee': ('**Star Citizen lässt sich aus dem Werkzeug heraus '
-                          'starten.** Sein Vorschlag — über den Weg, den man ohnehin '
-                          'benutzt.',
-                          '**Launching Star Citizen from the tool.** His suggestion — '
-                          'using the launcher you already use anyway.'),
-    's_dk_morkhan_bugs': ('Dazu: das Update über das Infofenster, das nie ankam '
+    's_dk_morkhan_idee': ('**Die Angaben am Gegenstand im Spiel** — dass am '
+                          'Traktorstrahl nicht nur der Name steht, sondern auch '
+                          'Klasse, Größe und Gütegrad. Dazu: **Star Citizen lässt '
+                          'sich aus dem Werkzeug heraus starten**, über den Weg, den '
+                          'man ohnehin benutzt.',
+                          '**Item details in game** — that the tractor beam shows '
+                          'more than just the name: class, size and grade. Plus: '
+                          '**launching Star Citizen from the tool**, using the '
+                          'launcher you already use anyway.'),
+    's_dk_morkhan_bugs': ('Dazu die beiden Funde vom 28.08.: dass eine Mission '
+                          '„12 Baupläne" im Titel versprach und darunter keine '
+                          'zeigte (eine Mission hat im Spiel mehr '
+                          'Beschreibungen, als der Katalog kennt) · und die '
+                          'Frage, warum überhaupt Baupläne angezeigt werden, '
+                          'wo keine fallen können — daraus wurde das Rufzeichen '
+                          'im Titel. Sein hartnäckigster Fund: dass ein Auftrag mit mehreren Preisstufen nur die Baupläne EINER Stufe zeigte — daran hingen 797 Baupläne, die niemand je zu sehen bekam. Und weil er meldete, er sehe die Angaben im Spiel nicht mehr, sagt der Bericht jetzt selbst, ob sie überhaupt eingetragen sind — vorher ließ sich das nur erraten. Außerdem: das Update über das Infofenster, das nie ankam '
                           '(dreimal vergeblich geladen) · die gestreckten Knöpfe, die '
                           'nur die halbe Breite füllten · und die verwirrenden '
                           'Update-Kanäle, aus denen der Knopf „Jetzt die neueste '
                           'Version holen" wurde.',
+                          'Plus his two finds on 28 Aug: a mission promising '
+                          '„12 blueprints" in its title and showing none below '
+                          '(a mission has more descriptions in game than the '
+                          'catalogue knows) · and the question why blueprints '
+                          'are shown at all where none can drop — which became '
+                          'the exclamation mark in the title. '
+                          'His most persistent find: a contract with several payout tiers only showed the blueprints of ONE tier — 797 blueprints hung on that, and nobody ever saw them. And because he reported that he could no longer see the notes in game, the report now says for itself whether they are in place at all — before, that could only be guessed. '
                           'Also: the update from the info window that never arrived '
                           '(downloaded three times in vain) · the stretched buttons '
                           'that filled only half the width · and the confusing update '
@@ -1013,6 +1053,19 @@ TEXTE = {
     'b_standard':      ('alle auf Standard', 'all at default'),
     'b_nicht_gefunden': ('nicht gefunden', 'not found'),
     'b_nicht_da':      ('nicht vorhanden', 'not present'),
+    # ⚠ Die wichtigste Zeile für den häufigsten Support-Fall: „ich sehe deine
+    # Angaben im Spiel nicht mehr". Ursache ist fast immer, dass ein
+    # Übersetzungs-Update oder ein Spiel-Patch die `global.ini` neu geschrieben
+    # und die Angaben dabei stillschweigend entfernt hat. Ohne diese Zeile war
+    # das aus dem Bericht nicht abzulesen, sondern nur zu erraten.
+    'b_inj':           ('Angaben im Spiel', 'Notes in game'),
+    'b_inj_drin':      ('eingetragen', 'in place'),
+    'b_inj_weg':       ('NICHT eingetragen', 'NOT in place'),
+    'b_inj_aus':       ('Einspielen ist ausgeschaltet', 'writing them is switched off'),
+    'b_inj_auto':      ('Auffrischen automatisch', 'refreshes automatically'),
+    'b_inj_hand':      ('Auffrischen von Hand', 'refresh by hand'),
+    'b_inj_datei':     ('Textdatei', 'Text file'),
+    'b_inj_keine':     ('keine gefunden', 'none found'),
     'b_fehler':        ('Letzte Fehler (%s von %s aufgehoben)',
                           'Recent errors (%s of %s kept)'),
     'b_fehler_keine':  ('Letzte Fehler        keine aufgezeichnet',
@@ -1205,7 +1258,7 @@ TEXTE = {
                           'broken while this says "operational", both can be '
                           'true.'),
     'hf_erkennung':      ('Erkennung', 'Detection'),
-    'hf_diagnose':       ('Diagnose', 'Diagnostics'),
+    'hf_diagnose':     ('Fehler melden', 'Report a problem'),
     'hf_neu':            ('neu', 'new'),
     'hf_sofort':         ('Änderungen werden sofort gespeichert',
                           'Changes are saved right away'),
@@ -1283,8 +1336,13 @@ TEXTE = {
                           'bundled with this tool.'),
     'inj_laeuft':        ('wird eingerichtet …', 'setting up …'),
     'inj_fehler':        ('Hat nicht geklappt: %s', 'Did not work: %s'),
-    'inj_aktiv':         ('Bauplan-Angaben sind eingetragen (%d Stellen)',
-                          'Blueprint notes are in place (%d spots)'),
+    # ⚠ „Wirkt beim nächsten Spielstart" gehört an diese Stelle. Star Citizen
+    # liest die Textdatei **einmal beim Hochfahren** — wer das Spiel offen hat,
+    # sieht nach dem Einspielen nichts und hält es für kaputt. Morkhan am
+    # 28.08.2026 genau so: „das is immer noch [da]" — er hatte das Spiel nie
+    # neu gestartet.
+    'inj_aktiv':         ('Bauplan-Angaben sind eingetragen (%d Stellen) — wirkt beim nächsten Spielstart',
+                          'Blueprint notes are in place (%d spots) — takes effect the next time the game starts'),
     'inj_steht':         ('Bauplan-Angaben sind eingetragen',
                           'Blueprint notes are in place'),
     'inj_steht_nicht':   ('Bauplan-Angaben sind nicht eingetragen',

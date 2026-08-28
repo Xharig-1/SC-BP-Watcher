@@ -58,7 +58,12 @@ from . import pfade
 
 REPO = 'Xharig-1/SC-BP-Watcher'
 API = 'https://api.github.com/repos/%s/releases' % REPO
-SEITE = 'https://github.com/%s/releases/latest' % REPO
+# ⚠ **Kein `/releases/latest` mehr (28.08.2026).** Der Link führte auf
+# **v2.0.0**: GitHub blendet dort Vorabversionen aus, und alle rc-Fassungen
+# sind welche. Wer ihn weitergab, schickte Leute auf einen Stand von vor
+# Monaten — und bekam prompt Fehler gemeldet, die längst behoben waren.
+# Die Übersicht zeigt alles, auch die Vorabversionen.
+SEITE = 'https://github.com/%s/releases' % REPO
 KENNUNG = 'SC-BP-Watcher (+https://github.com/%s)' % REPO
 CACHE = 'versionen.json'
 # Wie lange ein Blick auf GitHub gilt. Früher standen hier 24 Stunden — „einmal
@@ -470,28 +475,45 @@ def verpackung():
 
 # Welcher Anhang unter Windows geholt wird — und warum es der Installer ist.
 #
-# An jeder Freigabe hängen drei Dateien:
+# Seit v3.0.0 hängen nur noch **zwei** Dateien an einer Freigabe:
 #
-#     SC-BP-Watcher-Setup.exe          der Installer
+#     SC-BP-Watcher-Setup.exe          der Installer  ← der einzige Windows-Weg
 #     SC-BP-Watcher-x86_64.AppImage    Linux
-#     SC-BP-Watcher.exe                das nackte Programm
+#
+# ⚠ Die nackte `SC-BP-Watcher.exe` ist bewusst weg (Entscheidung der Autor,
+# 27.08.2026: „ich will die exe ohne install loswerden … sie belastet mich
+# nur"). Sie war eine Maßnahme aus der Anfangszeit — ein unsigniertes Programm
+# ohne Installer wirkt harmloser, und es ging darum, Vertrauen aufzubauen. Das
+# ist erreicht; zwei Auslieferungswege heißen ab jetzt nur noch zwei
+# Fehlerquellen und doppelte Unterstützung. „Nun wollen wir es funktionierend
+# und einfach."
+#
+# **Und v2.0.0, die es nur als nackte .exe gab?** Deren Update-Logik nimmt die
+# erste Datei auf `.exe` — jetzt also den Installer — und ihr Hilfsskript
+# **startet** die getauschte Datei anschließend (`start "" "<ziel>"`). Der
+# Installer läuft damit von selbst und richtet alles ordentlich ein. Was früher
+# der Fehler war (der Installer landete unter dem Namen des Programms), ist
+# damit genau der Weg hinaus.
 #
 # ⚠ Bis rc39 wurde hier nach der **ersten** Datei auf `.exe` gesucht. GitHub
 # liefert sie alphabetisch, ein `-` (0x2D) steht vor einem `.` (0x2E), also kam
 # `-Setup.exe` zuerst — und die alte `einspielen()` schob diesen Fund roh über
-# die laufende `SC-BP-Watcher.exe`, ohne ihn je auszuführen. Nach dem Update lag
-# der Installer unter dem Namen des Programms. Am 26.08.2026 im Test bestätigt:
-# geladen wurden 14.812.324 Bytes statt 13.015.189.
+# die laufende `SC-BP-Watcher.exe`, ohne ihn je auszuführen. Am 26.08.2026 im
+# Test bestätigt: geladen wurden 14.812.324 Bytes statt 13.015.189.
 #
-# Seitdem ist es **Absicht**, den Installer zu holen — er wird jetzt gestartet
-# statt kopiert. Das erspart den ganzen Eigenbau ringsherum: Inno beendet das
-# laufende Programm selbst (`CloseApplications=force`), ersetzt die Datei,
-# pflegt den Eintrag in „Apps & Features" und startet den Watcher danach wieder.
-# Denselben Weg geht der SC-Deutsch-Launcher.
+# Seitdem ist es **Absicht**, den Installer zu holen — er wird gestartet statt
+# kopiert. Inno beendet das laufende Programm selbst
+# (`CloseApplications=force`), ersetzt die Datei, pflegt den Eintrag in
+# „Apps & Features" und startet den Watcher danach wieder. Denselben Weg geht
+# der SC-Deutsch-Launcher.
 #
 # Unter Linux bleibt es beim Tausch des AppImage — dort gibt es keinen
 # Installer, und ein laufendes AppImage darf ersetzt werden.
-WINDOWS_INSTALLER = ('-setup.exe', '-installer.exe')
+#
+# ⚠ `-setup.exe` steht vorn und bleibt: Genau danach suchen die Testfassungen
+# rc39–rc75. Wird der Installer je umbenannt, bekommen sie nie wieder ein
+# Update angeboten.
+WINDOWS_INSTALLER = ('-setup.exe', '-installer.exe', '_setup.exe')
 
 
 def passende_datei(freigabe, art=None):
@@ -775,6 +797,25 @@ def einspielen(neue_datei):
         # eigenes. Ohne das scheitert jeder Benutzername mit Leerzeichen —
         # geprüft mit `C:\Users\Max Mustermann\...`.
         schalter = '/SILENT /NORESTART /CLOSEAPPLICATIONS'
+        # ⚠ Dorthin installieren, wo das laufende Programm liegt — sonst gibt es
+        # zwei Kopien.
+        #
+        # v2.0.0 wurde **nur** als nackte `SC-BP-Watcher.exe` ausgeliefert; alle
+        # ihre Nutzer laufen zwangsläufig „portabel", ohne es gewollt zu haben.
+        # der Autor am 27.08.2026: „niemand nutzt sowas portabel … niemand
+        # schiebt es auf nen Stick, um an nem anderen PC SC zu spielen."
+        #
+        # Ohne `/DIR` nimmt Inno seinen Standardordner
+        # (`%LOCALAPPDATA%\Programs\…`) — die alte Datei bliebe daneben liegen,
+        # und wer sie per Verknüpfung startet, benutzt für immer die alte
+        # Fassung. Mit `/DIR` wird ersetzt statt danebengelegt.
+        #
+        # Läuft das Programm bereits installiert, zeigt `sys.executable` auf den
+        # Installationsordner — dann ist es derselbe Wert, den Inno ohnehin
+        # gewählt hätte. Ein Fall, zwei Wege, dieselbe Zeile.
+        eigener_ordner = os.path.dirname(os.path.abspath(sys.executable))
+        if eigener_ordner:
+            schalter += ' /DIR="%s"' % eigener_ordner
         if protokoll_datei:
             schalter += ' /LOG="%s"' % protokoll_datei
         befehl = 'cmd /c ""%s" %s"' % (neue_datei, schalter)

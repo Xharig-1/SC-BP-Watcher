@@ -10,6 +10,334 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc83 - 2026-08-28
+
+### Behoben
+
+- **Der Bericht sagt jetzt, ob die Bauplan-Angaben im Spiel stehen.**
+  Der häufigste Support-Fall lautet „ich sehe deine Angaben im Spiel nicht
+  mehr". Dahinter steckt fast immer dasselbe: Ein Übersetzungs-Update oder ein
+  Spiel-Patch hat die Textdatei des Spiels neu geschrieben und die Angaben
+  dabei stillschweigend hinausgeworfen. Das Werkzeug merkt davon nichts.
+
+  Im Bericht stand bisher nur, welche Textquelle eingestellt ist — ob
+  tatsächlich etwas eingetragen war, ließ sich daraus nicht ablesen, sondern
+  nur erraten. Genau so am 28.08.2026 bei **Morkhan** geschehen.
+
+  Neu sind zwei Zeilen: ob die Angaben eingetragen sind, ob das Einspielen
+  überhaupt eingeschaltet ist, ob automatisch aufgefrischt wird — und welche
+  Textdatei gemeint ist. Wer unter Linux ohne Übersetzung spielt, bekommt
+  dabei **keine** Warnung: Dort gibt es keine solche Datei, und das ist der
+  Normalzustand, kein Fehler.
+
+- **Abgeschnittener Text statt Umbruch — überall dort, wo es knapp wurde.**
+  Aufgefallen ist es an einer einzigen Stelle: Die englische Warnzeile auf der
+  Spiel-Seite („Every translation update and every game patch wipes the
+  details.") ragte um 5 Pixel heraus und wurde stillschweigend abgeschnitten.
+
+  Die Ursache lag nicht am Text, sondern an einer Rechnung, der ein Posten
+  fehlte. Die Umbruchgrenze begrenzt nur den **Text**; was eine Beschriftung am
+  Ende belegt, ist Text plus Rand plus Innenabstand. Stand die Grenze auf der
+  vollen verfügbaren Breite, brauchte die Beschriftung ein paar Pixel mehr, als
+  sie bekam — und Tk schneidet ein zu breites Element stumm am Rahmen ab, ohne
+  Fehler, ohne Hinweis.
+
+  Der Rand wird jetzt beim Element selbst erfragt statt geschätzt und
+  abgezogen. Das wirkt an **jeder** Stelle mit selbsttätigem Umbruch, auch an
+  denen, die heute knapp durchgingen und beim nächsten längeren Text gekippt
+  wären. Nachgemessen: nichts wird mehr abgeschnitten, über 11 Seiten × 2
+  Sprachen × 2 Fenstergrößen.
+
+## v3.0.0-rc82 - 2026-08-28
+
+### Behoben
+
+- **Ein Auftrag mit mehreren Preisstufen verlor fast alle seine Baupläne.**
+  Verträge, die sich einen Textschlüssel teilen, haben sich beim Aufbauen des
+  Katalogs gegenseitig überschrieben — der zuletzt eingelesene gewann, alle
+  anderen fielen weg. Gemessen am Spielstand 4.10.0: **123 von 353**
+  Auftrags-Schlüsseln sind mehrfach belegt, **319** Verträge fielen weg, und
+  **797 Bauplan-Einträge** hat dadurch nie jemand zu Gesicht bekommen. Beim
+  Kopfgeld-Auftrag standen 8 Baupläne statt 25.
+
+  Gefunden von **Morkhan**, der nicht lockergelassen hat: „ich bekomme nicht
+  angezeigt, welche Baupläne ich beim Neulingsauftrag bekommen kann, sondern
+  NUR die auf der höchsten Stufe." Es war nicht die höchste Stufe — es war die
+  zuletzt gelesene. Jetzt werden alle Stufen zusammengeführt.
+
+- **Ein Katalog, der schon auf der Platte lag, hätte den Umbau nie
+  mitbekommen.** Er wurde bisher nur erneuert, wenn Star Citizen eine neue
+  Version bringt. Er trägt jetzt eine eigene Aufbau-Nummer — ändert sich sein
+  Inneres, wird er neu gebaut, auch ohne Patch.
+
+### Geändert
+
+- **Die Überschrift heißt jetzt „MÖGLICHE BAUPLÄNE FÜR DIESEN MISSIONSTYP".**
+  Vorher stand dort „BAUPLÄNE AUS DIESEM AUFTRAG" — und das versprach mehr, als
+  die Daten hergeben. Wer das wörtlich liest, nimmt den Auftrag an und bekommt
+  nichts. Morkhan am 28.08.2026: „is trotzdem verwirrend, egal wie man's dreht."
+  Er hatte recht, und die Verwirrung saß in der Überschrift, nicht in der Liste.
+
+  Der SC Deutsch Launcher formuliert es aus demselben Grund so — 367 mal in
+  seiner Datendatei.
+
+
+- **Die Zählung `[BP 3/12]` im Titel ist weg, es steht nur noch `[BP]`.** Die
+  Zahl sah nützlich aus, war aber nicht wahr: Die Liste eines Auftrags führt
+  alle Preisstufen zusammen, und welche davon die eigene Stufe hergibt, lässt
+  sich nicht auflösen — 123 von 353 Aufträgen teilen sich den Textschlüssel
+  über ihre Stufen hinweg. „3 von 12" hieß in Wahrheit „3 von 12, die
+  irgendjemand irgendwo bekommen kann". Dieselbe Zahl ist auch aus der
+  Listen-Überschrift verschwunden.
+
+  Was bleibt, ist das Ehrliche: **Angehakt heißt „hab ich"** — unabhängig
+  davon, ob diese Stufe den Bauplan hergibt oder woher er kam.
+
+- **Wo sich die Stufen unterscheiden, steht der nötige Rang hinter dem
+  Bauplan.** Zum Beispiel „erst ab Head Contractor (38.000 XP)" neben Plänen,
+  die es erst weit oben gibt, während andere desselben Auftrags schon ab 800
+  XP fallen. Steht nur dort, wo es die Baupläne wirklich unterscheidet —
+  brauchen alle denselben Rang, steht er ohnehin oben unter „Min. Reputation".
+
+- **Aufträge, bei denen einzelne Stufen leer ausgehen, sagen das jetzt.**
+  „Achtung: 1 der 3 Stufen dieses Auftrags geben gar keine Baupläne."
+
+
+### Geändert
+
+- **Der Reiter „Diagnose" heißt jetzt „Fehler melden" und trägt Rot.** Niemand
+  sucht unter „Diagnose", wenn etwas klemmt — und schon gar nicht in einem
+  zugeklappten Menü, wo er vorher steckte.
+
+  Das Rot arbeitet in zwei Stufen, damit es etwas bedeutet: **Das Wort ist
+  immer rot**, damit man den Reiter findet. **Das Symbol wird nur rot, wenn
+  wirklich Fehler mitgeschrieben wurden** — sonst stünde der Watcher dauerhaft
+  auf Alarm, obwohl alles läuft, und niemand nähme die Farbe noch ernst.
+
+### Behoben
+
+- **Beim zweiten Besuch einer Seite fehlte die Spur im Bericht.** Sie wurde nur
+  beim ersten Aufbauen geschrieben; ging beim erneuten Einblenden etwas schief,
+  fehlte die Zeile ganz statt zur Hälfte — und der Bericht verspricht, dass die
+  letzte Zeile ohne „steht" die ist, an der es hing. Jetzt steht dort „zeigen",
+  und man sieht den Unterschied zwischen „beim Aufbauen gestorben" und „beim
+  Einblenden gestorben".
+- **Im Fehlerbericht ließ sich erst rollen, wenn die Seite ganz unten war.**
+  Das Mausrad ging an die Seite dahinter statt an das Textfeld unter dem
+  Zeiger — man musste also erst die ganze Diagnose-Seite nach unten schieben,
+  bevor sich im Bericht etwas bewegte. Jetzt rollt, was unter dem Zeiger liegt,
+  wie man es aus dem Browser kennt. Gemeldet von **Morkhan**.
+- **Der Knopf zum Absenden ist dauerhaft rot**, nicht erst beim Überfahren —
+  ein Warnknopf, den man erst sieht, wenn die Maus darauf steht, warnt
+  niemanden.
+- **Der zweite Meldeweg heißt jetzt „GitHub Issue"** statt „Fehler melden".
+  Zwei Knöpfe, die dasselbe versprachen, während der eine den Browser öffnet
+  und ein GitHub-Konto verlangt.
+
+## v3.0.0-rc81 - 2026-08-28
+
+> **Ein Knopf statt neun Schritten: Fehlerbericht absenden.**
+
+### Hinzugefügt
+
+- **Die Diagnose-Seite steht jetzt in der Hauptleiste**, direkt unter
+  „Serverstatus“ — nicht mehr im zugeklappten Menü „Für Fortgeschrittene“.
+  Wer sie braucht, hat ein Problem und sucht sie nicht dort, wo „nichts für
+  mich“ draufsteht.
+- **Ein roter Knopf „Fehlerbericht absenden".** Klemmt etwas, drückst du ihn —
+  und der Bericht ist beim Entwickler. Kein Kopieren, kein Suchen nach dem
+  richtigen Kanal, kein „die Nachricht ist zu lang".
+
+  Vorher waren es neun Schritte: aufklappen, kopieren, Discord finden,
+  einfügen, feststellen dass es zu lang ist, als Datei speichern, die Datei
+  wiederfinden, hochladen, abschicken. Jetzt einer.
+
+  **Du siehst vorher genau, was rausgeht** — derselbe Text, der auf der Seite
+  steht, in einem Fenster zum Nachlesen, und erst dann wird gefragt. Namen,
+  Pfade und Zugangsdaten sind ohnehin schon herausgenommen. Ohne dein Ja
+  passiert nichts.
+
+## v3.0.0-rc80 - 2026-08-28
+
+> **Baupläne aus dem Launcher werden wieder abgehakt — vorhandene Bestände ziehen selbst um.**
+
+### Behoben
+
+- **Baupläne aus dem Launcher oder einer Sicherung wurden nicht abgehakt.** Wer
+  seinen Stand aus dem SC Deutsch Launcher, dem KRT Profit Basetool, von
+  scmdb.net oder aus einer eigenen Sicherung mitbrachte, sah in der Liste leere
+  Kästchen — obwohl die Baupläne im Bestand standen.
+
+  Der Grund: Namen dieser Quellen tragen oft den Klassen-Zusatz
+  (`XL-1 (Mil/2/A)`), abgeschnitten wurde er aber nur beim Lesen der
+  Spielprotokolle. Damit standen `xl-1 (mil/2/a)` und `xl-1` als zwei
+  verschiedene Einträge da und fanden nie zueinander. Das passiert jetzt an der
+  zentralen Stelle — gleich, woher ein Name kommt.
+
+  Betroffen war ausgerechnet, wer schon länger spielt und seinen Stand
+  mitbringt. Gefunden beim Nachgehen einer Meldung von **Morkhan**.
+
+  **Vorhandene Bestände ziehen beim ersten Start selbst um.** Die Schlüssel
+  werden einmalig neu gebildet, doppelte Einträge zusammengeführt — dabei
+  gewinnt der ältere Fund, denn wann ein Bauplan zum ersten Mal auftauchte, ist
+  die Angabe, die zählt. Nichts geht verloren, nichts muss von Hand gemacht
+  werden.
+
+- **Das Werkzeug sagte nicht, dass die Änderungen erst beim nächsten
+  Spielstart wirken.** Star Citizen liest die Textdatei **einmal beim
+  Hochfahren**. Wer das Spiel offen hatte, spielte die Angaben ein, las
+  „eingetragen (1608 Stellen)" — und sah im Spiel nichts. Naheliegender
+  Schluss: kaputt. Der Hinweis steht jetzt direkt in der Erfolgsmeldung und im
+  Zustandskasten unter *Texte im Spiel*.
+
+## v3.0.0-rc79 - 2026-08-28
+
+> **Drei Funde aus Morkhans Fragen — einer davon hätte still Baupläne verschluckt.**
+
+### Behoben
+
+- **Baupläne, deren Name ein Kürzel trägt, wurden nicht mehr abgehakt.** Seit
+  die Angaben am Gegenstand eingetragen werden, schreibt das Spiel den Namen
+  **mitsamt Kürzel** in seine Logdatei — `Bauplan erhalten: Spectre (Sth/1/A)`.
+  Abgeschnitten wurden bisher nur die fünf Fraktions-Kürzel; alles Neue blieb
+  am Namen kleben, und der Bauplan landete unter falschem Namen im Bestand.
+  Betroffen wären **344 Waffen und 62 Raketen** gewesen — und niemand hätte es
+  bemerkt, weil ja etwas angezeigt wurde. Gefunden beim Nachgehen einer Frage
+  von **Morkhan**.
+
+- **Eine Mission versprach „12 Baupläne" im Titel und zeigte darunter
+  keine.** Eine Mission hat im Spiel **mehr Beschreibungen**, als der Katalog
+  kennt — verschiedene Zielorte und Waren derselben Mission. Gemessen:
+  `Covalex_HaulCargo_SingleToMulti` führt drei Beschreibungen im Katalog, in
+  der Textdatei des Spiels stehen **acht**. Wer eine der übrigen fünf erwischte,
+  sah den Zähler und darunter nichts. Der Weg über die Vertragsdaten des
+  SCDL-Teams löste das längst, der eigene Weg über den Bauplan-Katalog nicht.
+  Gemeldet von **Morkhan**.
+
+### Hinzugefügt
+
+- **Ein Rufzeichen im Auftragstitel, wenn die Baupläne an Bedingungen hängen.**
+  `[BP 0/19!]` statt `[BP 0/19]`. Bei **332 von 818 Aufträgen** (41 %) fallen
+  Baupläne nur in bestimmten Preisstufen oder ab einem Rang — „nur für
+  256.500 / 264.000 aUEC", „nur ab Meister-Rang". Das stand zwar im
+  Beschreibungstext, aber in der Auftragsliste sah man nur den Zähler, und
+  genau danach entscheidet man, ob man annimmt. Gemeldet von **Morkhan**, der
+  eine Transportmission mehrfach flog, in der nie einer fallen konnte.
+
+  ⚠️ Warum es nicht sauberer geht: Alle Preisstufen einer Mission teilen sich
+  **einen** Beschreibungstext im Spiel. Für die kleine Variante zeigt Star
+  Citizen denselben Text wie für die große — unterscheiden lässt sich das nicht.
+
+## v3.0.0-rc78 - 2026-08-28
+
+> **Klicks ins Spiel durchreichen ist keine Einbahnstraße mehr.**
+
+### Hinzugefügt
+
+- **Ein Schloss am Overlay holt dich zurück, wenn Klicks ins Spiel
+  durchgereicht werden.** Bisher war das eine Einbahnstraße: Wer die
+  Einstellung einschaltete, kam an das Overlay nicht mehr heran — kein Knopf,
+  keine Leiste, und die Einstellungen selbst schon gar nicht. Der einzige
+  Rückweg war, das Programm ein zweites Mal zu starten. Dafür muss man aus dem
+  Spiel heraus — also genau das tun, was die Einstellung vermeiden soll.
+
+  Jetzt liegt oben rechts am Overlay ein kleines Schloss, das als Einziges
+  klickbar bleibt. Ein Klick, und das Overlay fängt wieder Klicks ab. Es
+  erscheint nur, wenn wirklich durchgereicht wird, und verschwindet von selbst
+  — auch wenn du drüben in den Einstellungen umschaltest.
+
+## v3.0.0-rc77 - 2026-08-27
+
+> **„Originaltexte aus dem Spiel" funktioniert jetzt ohne Zusatzprogramm.**
+
+### Behoben
+
+- **Wer die Textquelle „Original" wählte, lief oft gegen eine Wand.** Diese
+  Quelle holt die englische `global.ini` aus deiner eigenen `Data.p4k` — ohne
+  Download, ohne fremde Übersetzung. CIG komprimiert diese Datei allerdings mit
+  **zstd**, und das gebündelte Python konnte das nicht. Übrig blieb die
+  Meldung, man möge sich 7-Zip installieren — für ein Werkzeug, das man
+  herunterlädt und startet, eine Zumutung.
+
+  Das Programm bringt den Entpacker jetzt selbst mit. Betroffen war vor allem,
+  wer **englisch spielt und nur die Angaben am Gegenstand** möchte, ohne
+  Übersetzung: Für den war dieser Weg der einzige.
+
+  Falls du bisher 7-Zip nur deswegen installiert hast — du brauchst es nicht
+  mehr.
+
+## v3.0.0-rc76 - 2026-08-27
+
+> **Am Traktorstrahl steht jetzt, womit man es zu tun hat — und unter Windows
+> gibt es nur noch einen Weg.**
+
+> [!important]
+> **Windows: Es gibt nur noch den Installer.** Die einzelne
+> `SC-BP-Watcher.exe` hängt ab dieser Fassung nicht mehr am Release.
+>
+> Der Grund betrifft dich, nicht uns: Ein Update legte die neue Fassung
+> **neben** die alte Datei, statt sie zu ersetzen. Wer danach seine gewohnte
+> Verknüpfung anklickte, benutzte monatelang unbemerkt die alte Version. Mit
+> dem Installer kann das nicht passieren.
+>
+> **Wenn du bisher die einzelne Datei benutzt hast:** Lade einmal
+> `SC-BP-Watcher-Setup.exe`, installiere darüber — dein Bauplan-Bestand bleibt,
+> er liegt ohnehin woanders. Die alte Datei kannst du danach löschen.
+> Unter Linux ändert sich nichts.
+
+### Behoben
+
+- **Unter Windows gibt es nur noch einen Download: den Installer.** Die
+  einzelne `SC-BP-Watcher.exe` entfällt.
+
+  **Was du davon hast:** Du musst nicht mehr überlegen, welche der beiden
+  Dateien die richtige ist. Der Watcher steht danach im Startmenü, statt
+  irgendwo im Download-Ordner zu liegen. Updates ersetzen wirklich das
+  Programm, statt eine zweite Fassung danebenzulegen — der häufigste Grund
+  dafür, dass jemand monatelang unbemerkt eine alte Version benutzt. Autostart
+  ist ein Häkchen bei der Installation, und über *Apps & Features* wird alles
+  wieder sauber los.
+
+  Die einzelne Datei stammte aus der Anfangszeit: Ein unsigniertes Programm
+  ohne Installer wirkt harmloser, und es ging darum, überhaupt erst Vertrauen
+  zu gewinnen. Das ist erreicht — und zwei Wege nebeneinander heißen doppelt so
+  viele Stellen, an denen etwas klemmen kann. Lieber ein Weg, der zuverlässig
+  funktioniert.
+
+  Unter Linux ändert sich nichts: dort bleibt es beim AppImage.
+- **Wer noch v2.0.0 hat, kommt trotzdem mit.** Deren Update-Weg greift die
+  erste Datei auf `.exe` — das ist jetzt der Installer — und startet sie
+  anschließend. Er läuft damit von selbst und richtet alles ordentlich ein.
+  Der eigene Bauplan-Bestand zieht beim ersten Start automatisch mit um.
+- **Ein Update installiert dorthin, wo das Programm liegt** — statt eine zweite
+  Fassung daneben anzulegen. v2.0.0 gab es nur als nackte `.exe`, alle ihre
+  Nutzer laufen also „portabel", ohne es gewollt zu haben. Ohne diesen Zusatz
+  hätte der Installer beim übernächsten Update unter
+  `%LOCALAPPDATA%\Programs` installiert und die alte Datei liegen lassen — wer
+  sie per Verknüpfung startet, benutzte für immer die alte Fassung.
+
+### Hinzugefügt
+
+- **Angaben am Gegenstand — Klasse, Größe und Gütegrad stehen jetzt am Namen.**
+  Wer im Spiel etwas mit dem Traktorstrahl anvisiert, sah bisher nur
+  „Glacier". Jetzt steht dort **„Glacier (Mil/1/A)"** — militärisch, Größe 1,
+  Gütegrad A. Bei Raketen zählt etwas anderes, deshalb steht dort der Suchkopf:
+  **„'Arrow' I Missile (IR1)"** für Infrarot, `EM` für elektromagnetisch, `CS`
+  für Querschnitt. Im Gefecht klappt niemand eine Beschreibung auf.
+
+  **856 Gegenstände** bekommen so eine Angabe: 450 mit Klasse, Größe und Güte,
+  344 Waffen mit ihrer Klasse (ballistisch, Laser, Plasma …) und 62 Raketen.
+
+  Die Angaben stammen aus der Textdatei des Spiels **selbst** — sie stehen dort
+  längst, nur in der Beschreibung, die man erst aufklappen muss. Das Werkzeug
+  schreibt sie dorthin um, wo man sie im Gefecht auch sieht.
+
+  Vorgeschlagen von **Morkhan**.
+
+  Abschaltbar unter *Texte im Spiel → Angaben am Gegenstand*. Wer sie wieder
+  loswerden will, nimmt „Wieder entfernen" — die ursprünglichen Namen kommen
+  auf das Zeichen genau zurück.
+
 ## v3.0.0-rc75 - 2026-08-27
 
 > **Der Startverlauf steht wieder im Bericht.**
@@ -59,7 +387,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Größeres entpuppte als ein einzelner Absturz: Das Werkzeug war an dieser
   Stelle blind. Und dafür, dass er sie geschickt hat, obwohl sie nach einem
   Fehlalarm aussah.
-- **Haldjas** (pr0) und **Xharig** — für den Gegentest unter Windows: Update
+- **Haldjas** (pr0) — für den Gegentest unter Windows: Update
   von rc71 auf rc73 und die Oberfläche seit rc61, beides ohne Befund.
 
 ## v3.0.0-rc73 - 2026-08-27
@@ -120,8 +448,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 - **Bomb20** (pr0) — für „ich krieg noch 67 angezeigt". Das klang nach
   einer Kleinigkeit und war der Hinweis auf zwei Fehler auf einmal.
-- **der Autor** — für den Blick auf den Kasten, in dem eine Hausaufgabe statt
-  eines Knopfes stand.
 
 
 ## v3.0.0-rc71 - 2026-08-27
@@ -132,7 +458,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 ### Behoben
 
 - **Nach dem Update ging der Watcher aus und kam nicht wieder.** Gemeldet von
-  **Bomb20** (pr0) am Morgen, von **der Autor** den ganzen Vormittag über
+  **Bomb20** (pr0) am Morgen, hier den ganzen Vormittag über
   reproduziert. Drei Anläufe (rc67, rc68, rc70) haben es nicht gelöst, weil sie
   von einem Absturz der neuen Version ausgingen.
   - **Es war kein Absturz.** Die neue Version startet, sieht den
@@ -150,10 +476,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Dank
 
-- **der Autor** — für die Geduld über sieben Testversionen an einem Vormittag und
-  für den Satz, der die Suche gedreht hat: „ich habe selber aus gemacht und
-  gestartet." Und für den Bericht mit der einen Zeile, die alles erklärte:
-  *Rückgabewert 0 — keine Ausgabe.*
 - **Bomb20** (pr0) — für die erste Meldung und dafür, nicht lockergelassen
   zu haben, als es nach einem Bedienfehler aussah. Er lag richtig, wir nicht.
 
@@ -169,7 +491,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Wer den Knopf außerhalb drückt und ins Overlay zieht, löst nur die Bewegung
   aus — und den Startpunkt gab es dann nicht. Das Ziehen tat einmal nichts, der
   Fehler landete lautlos im Protokoll. Gemeldet von **Bomb20** (pr0, am
-  25.08.2026 auf rc18) und **der Autor** (27.08.2026 auf rc69) — dazwischen nie
+  25.08.2026 auf rc18) und erneut am 27.08.2026 auf rc69 — dazwischen nie
   behoben, weil er nichts kaputt macht, was man sieht.
 
 ### Geändert
@@ -181,15 +503,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   kommt die neue Version nicht hoch, hängt ihr letztes Wort im Fehlerprotokoll
   und damit im Bericht.
   - Das ist keine Reparatur, sondern eine Messung. Nach zwei Anläufen, die den
-    Neustart bei **der Autor** nicht gelöst haben, wird nicht ein drittes Mal
+    Neustart nicht gelöst haben, wird nicht ein drittes Mal
     geraten.
 
 ### Dank
 
-- **der Autor** — fürs Nachstellen auf dem eigenen Rechner und dafür, den
-  Unterschied klarzumachen: „ich habe selber aus gemacht und gestartet." Ohne
-  diesen Satz hätte ein geglückter Handstart wie ein geglückter Neustart
-  ausgesehen.
 - **Bomb20** (pr0) — für den Ziehen-Fehler, der zwei Tage lang in
   Berichten stand, ohne dass ihn jemand ernst genommen hat.
 
@@ -241,30 +559,25 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Der Knopf „Jetzt die neueste Version holen" steht ganz oben**, direkt unter
   der Versionskarte. Vorher kam er erst nach der Knopfreihe und dem
   Tagesschalter und lag bei der Mindestgröße des Fensters **unterhalb der
-  Kante** — wer ihn nicht findet, updatet nicht. Gemeldet von **der Autor**.
+  Kante** — wer ihn nicht findet, updatet nicht.
   - Das Fenster größer zu machen wäre die falsche Antwort gewesen: Auf einem
     1366×768-Laptop passt es dann gar nicht mehr. Der wichtigste Knopf gehört
     nach oben, nicht das Fenster in die Höhe.
 - **Auch die beiden Kanal-Kästen sind bei der Mindestgröße vollständig
   sichtbar** — in ihnen sitzt der Knopf, mit dem man gezielt die stabile Version
   holt. Der Tagesschalter steht dafür jetzt darunter; er ist eine
-  Nebeneinstellung, die Kästen sind der Zweck der Seite. Gemeldet von
-  **der Autor**.
+  Nebeneinstellung, die Kästen sind der Zweck der Seite.
 - **„Nur fertige Fassungen" heißt jetzt „Stabile Version".** „Fertig" klingt nach
-  abgeschlossen — das Werkzeug wird laufend weiterentwickelt. Vorgeschlagen von
-  **der Autor**.
+  abgeschlossen — das Werkzeug wird laufend weiterentwickelt.
 - **„Fassung" heißt überall „Version".** Ein sperriges Wort, das sonst niemand
   benutzt; in der Oberfläche, in der Anleitung und in den Kommentaren steht jetzt
   durchgehend „Version". Einzige Ausnahme ist die **Sprachfassung** — damit ist
-  die Übersetzung gemeint, nicht die Programmversion. Vorgeschlagen von
-  **der Autor**.
+  die Übersetzung gemeint, nicht die Programmversion.
 - **„rcXX ist schon da" heißt jetzt „rcXX ist schon installiert"** — klarer, und
-  im Englischen stand es längst so. Gemeldet von **der Autor**.
+  im Englischen stand es längst so.
 
 ### Dank
 
-- **der Autor** — fürs Hinsehen mit den Augen eines Nutzers, während er das
-  Werkzeug jemandem vorführte. Alle fünf Punkte dieser Version stammen daher.
 
 
 ## v3.0.0-rc67 - 2026-08-27
@@ -277,7 +590,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Nach dem Update ging der Watcher aus und kam nicht wieder.** Er lud die neue
   Version, spielte sie ein, schloss sich — und blieb zu. Gemeldet von **Bomb20**
   (pr0) mit dem entscheidenden Satz „es geht dann aus aber startet nicht",
-  am selben Tag von **der Autor** auf seinem Rechner reproduziert.
+  am selben Tag auf einem zweiten Rechner reproduziert.
   - **Die Ursache:** Beim Start der neuen Version wurden nur `APPIMAGE`, `APPDIR`,
     `OWD` und `ARGV0` aus der Umgebung entfernt — `LD_LIBRARY_PATH`, `PYTHONHOME`
     und `PYTHONPATH` blieben stehen. Die zeigen im AppImage in den **entpackten
@@ -301,8 +614,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Bomb20** (pr0) — fürs Dranbleiben. Seine nüchterne Beschreibung „es
   geht dann aus aber startet nicht" hat den Fehler festgenagelt, nachdem er
   zunächst für einen Bedienfehler gehalten wurde. Er lag richtig, wir nicht.
-- **der Autor** — für das Nachstellen auf dem eigenen Rechner, das den Verdacht
-  „liegt an seinem System" endgültig ausgeräumt hat.
 
 ## v3.0.0-rc66 - 2026-08-27
 
@@ -316,8 +627,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   auf Knopfdruck — wer einmal geklickt hatte, hielt sie für aktuell, dabei
   standen sie für immer auf dem Stand jenes Klicks. Jetzt hängt das Schreiben am
   Bestand selbst: Jeder Fund im Spiel, jede Nachlese beim Start, jede Bestätigung
-  durch den Launcher und jeder Import ziehen die Dateien mit. Gemeldet von
-  **der Autor**.
+  durch den Launcher und jeder Import ziehen die Dateien mit.
   - **Feste Dateinamen in der Ablage.** Mit Datum im Namen wären dort täglich
     drei neue Dateien entstanden, und niemand wüsste, welche die aktuelle ist.
     Der Speichern-Dialog schlägt weiterhin einen Namen mit Datum vor — wer von
@@ -331,7 +641,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 - **„Einzeln speichern …" speicherte immer die Basetool-Version.** Die Version
   war im Code fest verdrahtet; scmdb und die Vollsicherung waren über den Dialog
-  überhaupt nicht erreichbar. Gemeldet von **der Autor**.
+  überhaupt nicht erreichbar.
 - **Die Dateiauswahl unter Linux war der alte Tk-Kasten** — eine Spaltenliste mit
   jedem versteckten Ordner, kein Sortieren, keine Vorschau. Jetzt öffnet sich der
   Dialog des Schreibtischs (`kdialog` unter KDE, sonst `zenity`), überall dort,
@@ -339,17 +649,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   speichern, Spielordner, Launcher-Ordner, eigener Ordner und der
   Einrichtungs-Assistent. Fehlt beides, bleibt der Tk-Dialog als Rückfall —
   **nichts hängt davon ab.** Unter Windows und macOS ändert sich nichts, dort
-  reicht Tk schon den echten Systemdialog durch. Gemeldet von **der Autor**.
+  reicht Tk schon den echten Systemdialog durch.
   - Für Ordner gab es diesen Weg längst; für Dateien nicht. Beides steht jetzt
     an einer Stelle (`scbp/dateiwahl.py`) statt an dreien.
 
 
 ### Dank
 
-- **der Autor** — für die Beobachtungen beim Vorführen des Werkzeugs: dass die
-  Ausgabe-Dateien nicht mitgeschrieben werden, dass „Einzeln speichern" nur eine
-  Version kann und dass die Dateiauswahl unter Linux aussieht wie aus den
-  Neunzigern.
 
 ## v3.0.0-rc65 - 2026-08-27
 
@@ -364,7 +670,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   hat er nicht. Der Watcher nimmt jetzt das Startskript `sc-launch.sh`, das der
   Helper beim Einrichten im Präfix anlegt, und findet es über den Spielordner
   (eine Ebene über `drive_c`) — unabhängig davon, wohin jemand installiert hat.
-  Gemeldet von **Bomb20** (pr0) und **der Autor**.
+  Gemeldet von **Bomb20** (pr0).
   - Kein Rückfall mehr auf den `lug-helper`: Er würde gefunden, der Knopf
     erschiene, und er täte wieder nichts. Wer über Lutris oder Heroic spielt,
     trägt seinen Startbefehl weiterhin in der Einstellung `spielstarter` ein.
@@ -389,7 +695,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   einer neuen Version …" stehen. `neu_aufbauen()` zerstört **alle** Kinder des
   Fensters — auch die Fußzeile, in der die Meldung steht. Sie wurde gesetzt und
   Millisekunden später mitzerstört. Jetzt wird erst aufgebaut, dann gemeldet.
-  Gemeldet von der Autor.
 
 - **Dieselbe Falle nach dem Update unter Linux.** „Fertig — jetzt neu starten"
   wurde bei `after(0)` gesagt und bei `after(50)` weggeräumt. Reihenfolge
@@ -401,24 +706,22 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   fällt heraus. Die Mindestgröße des Fensters hängt an der Höhe der
   Seitenleiste, und die hängt an der Schrift. Gerechnet hat das Programm das
   immer richtig, nur lief die Rechnung nie nach einem Schrift- oder
-  Sprachwechsel — jetzt gehört sie zum Neuaufbau. Gemeldet von der Autor: „wenn
-  jemand so schlecht sehen sollte, was ja möglich ist, dann muss die minimale
-  Größe eben im Verhältnis mitwachsen."
+  Sprachwechsel — jetzt gehört sie zum Neuaufbau. Der Gedanke dahinter: Wer
+  schlecht sieht und die Schrift größer stellt, braucht auch ein Fenster, das
+  im Verhältnis mitwächst.
 
 - **Die beiden Kästen unter „Wovon willst du Bescheid bekommen?" waren
   ungleich groß.** `pack(expand=True)` verteilt nur den **Überschuss**
   gleichmäßig — wer mehr Text hat, bleibt breiter. Sie liegen jetzt in einem
   `grid` mit `uniform`, der einzigen Zusage in Tk, die zwei Spalten wirklich
-  gleich breit macht; gemessen 545 px zu 545 px, gleiche Höhe. Gemeldet von
-  der Autor.
+  gleich breit macht; gemessen 545 px zu 545 px, gleiche Höhe.
 
 - **Bei „sehr groß" waren die Knöpfe abgeschnitten.** Ein benanntes Tk-Font
   wirkt sofort auf jeden Text — aber die gezeichneten Rundknöpfe legen ihre
   Leinwand beim Bauen **einmal** auf die gemessene Textbreite fest. Nachgemessen
   an der Overlay-Wahl: Kasten 177 px, Text 206 px, **29 px fehlten**. Das
   Umstellen der Schriftgröße baut die Oberfläche jetzt neu auf — wie der
-  Sprachwechsel es längst tut —, damit jede Leinwand neu misst. Gemeldet von
-  der Autor.
+  Sprachwechsel es längst tut —, damit jede Leinwand neu misst.
 
 ### Hinweise
 
@@ -439,14 +742,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   nie gab. Egal ob eine neue Version da war oder nicht, unten stand „Das hat
   nicht geklappt". Jetzt meldet der Knopf wieder, was er findet: die gefundene
   Version — oder **„Du hast die neueste Version."** Diesen Satz gab es die
-  ganze Zeit, ihn zeigte nur niemand. Gemeldet von der Autor.
+  ganze Zeit, ihn zeigte nur niemand.
 
 - **Der Hinweis vor dem Update kam bei keinem einzigen Update.** Seit rc52 soll
   der Watcher ansagen, dass er sich gleich schließt, das Setup läuft und danach
   ein Doppelklick nötig ist — ein Programm, das wortlos verschwindet, sieht aus
   wie ein Absturz. Der Dialog saß aber in **derselben toten Funktion** und ist
   deshalb nie erschienen. Er steht jetzt im echten Update, vor dem Einspielen,
-  und das Setup wartet, bis er gelesen ist. Bestätigt von der Autor beim Update
+  und das Setup wartet, bis er gelesen ist. Bestätigt beim Update
   auf rc62: Es kam kein Fenster.
 
 - **Der Ablage-Ordner ging nach dem Export nie auf.** `os.startfile()` im
@@ -471,7 +774,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   erkennen. Neuer Größensatz `ANTIPPBAR`, eine Stufe über den übrigen
   Zeilenzeichen: 16 px statt 14 bei „normal", 22 statt 18 bei „sehr groß". Die
   Statuspunkte im Overlay bleiben unverändert — die will niemand anklicken.
-  Angeregt von der Autor.
 
 ## v3.0.0-rc62 - 2026-08-27
 
@@ -484,8 +786,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   gestempelt wurde bisher nur beim Neubau, und neu gebaut wird nur bei einer
   neuen Spielversion. Das Auswahlfeld zeigte deshalb „4.10.0 (21)" (es liest die
   Historie direkt), die Liste darunter aber „Nichts gefunden". Die Stempel werden
-  jetzt beim Start nachgetragen, ohne Neubau und ohne Netz. Gefunden von
-  der Autor.
+  jetzt beim Start nachgetragen, ohne Neubau und ohne Netz.
 - **Der nächste Patch wäre stumm geblieben.** Die Vergleichsgrundlage
   (`bauplaene-gesehen.json`) kam ebenfalls erst mit rc55. Fehlte sie, griff die
   Regel „erster Katalogbau überhaupt — nichts ist neu", und der nächste Patch
@@ -509,8 +810,8 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   `[Repo] New release published: v3.0.0-rc60` steht dort der Changelog-Abschnitt
   **dieser** Version — derselbe Text wie im Werkzeug unter „Was ist neu".
   Testfassungen in Gold mit dem Hinweis „weniger lange erprobt", fertige in
-  Xharig-Grün, dazu das Programmsymbol. Angeregt von der Autor nach dem Vergleich
-  mit dem StarStrings-Kanal. Ohne hinterlegten Schlüssel passiert nichts und der
+  Xharig-Grün, dazu das Programmsymbol — nach dem Vergleich mit dem
+  StarStrings-Kanal. Ohne hinterlegten Schlüssel passiert nichts und der
   Bau bleibt grün — eine Chat-Meldung darf keine fertige Veröffentlichung rot
   färben.
 
@@ -528,14 +829,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   wichtig gewesen wäre. Dieselbe Falle steckte in der Knopfreihe und im
   Eingabefeld mit gezeichnetem Rahmen; alle drei prüfen jetzt vorher, ob es ihr
   Widget noch gibt. Nachgemessen: 39 Seitenwechsel, **0** Fehler.
-  Gefunden von der Autor im Diagnosebericht.
 
 - **Das Kreuz zum Schließen des Herkunftskastens war unsichtbar.** In der
   Bauplan-Liste blieb dort eine leere Lücke: Das Symbol `schliessen` gab es nur
   in Knopfgröße, gebraucht wurde es in Zeilengröße. `zeichen.bild()` gibt bei
   einer fehlenden Datei still `None` zurück — mit Absicht, damit ein fehlendes
   Symbol das Programm nicht anhält, wodurch der Fehler aber unsichtbar blieb.
-  `tools/oberflaeche_pruefen.py` prüft das ab sofort mit. Gemeldet von der Autor.
+  `tools/oberflaeche_pruefen.py` prüft das ab sofort mit.
 
 ## v3.0.0-rc59 - 2026-08-27
 
@@ -547,13 +847,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Die farbigen Punkte standen im Fließtext noch als Emoji.** Die
   Zeichen-Erklärung zeigte längst die echten Bilder, die Beschreibung darunter
   aber weiter `🟢 🟡 🔵 ⭐` — zwei verschiedene Darstellungen desselben Zeichens
-  auf einer Seite. Gemeldet von der Autor.
+  auf einer Seite.
 
 - **Auch die englische Anleitung zeigt jetzt die englische Oberfläche.** Sie
   führte bis hierher deutsche Bildschirmfotos vor — bei elf Bildern und einem
   Werkzeug, dessen Nutzer unter Linux überwiegend den englischen Client fahren,
   keine Kleinigkeit. `tools/sprachen_pruefen.py` achtet ab sofort darauf: Er
-  zählte nur Abschnitte und hat Bilder nie angesehen. Gemeldet von der Autor.
+  zählte nur Abschnitte und hat Bilder nie angesehen.
 
 - **Alle Bilder in der Anleitung sind neu.** Die alten stammten aus
   v3.0.0-rc11 und zeigten nicht nur die abgelösten Symbole, sondern auch einen
@@ -563,21 +863,21 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Die Merkmalstabelle in der Anleitung zeigte Emoji statt der echten Symbole.**
   `⚡ 📋 🧭 ⭐ 🔔 …` haben mit dem Symbolsatz des Programms nichts zu tun und sehen
   auf jedem System anders aus. Alle sechzehn stammen jetzt aus demselben Satz wie
-  die Oberfläche. Gemeldet von der Autor.
+  die Oberfläche.
 
 - **Ein Bildschirmfoto zeigte den Heimatpfad des Autors.** `screenshot-pfade.png`
   lag seit v3.0.0-rc11 im Repo und führte dreimal `/home/<benutzer>/` vor —
   genau das, was der Fehlerbericht mit `pfade.kuerzen()` sonst herausnimmt.
   Entfernt; die Ordner-Seite bekommt kein Bild mehr, weil dort zwangsläufig
   Pfade stehen. An ihrer Stelle steht jetzt der Serverstatus, der nie eins
-  hatte. Gefunden von der Autor.
+  hatte.
 
 ### Behoben
 
 - **Die Filterknöpfe auf „Was ist neu" blieben auf Englisch deutsch.** „Alles /
   Neu / Verbessert / Behoben" standen fest im Code statt in `sprache.py` — direkt
   neben einem sauber übersetzten Änderungstext. Aufgefallen auf einem
-  Bildschirmfoto der englischen Oberfläche. Gefunden von der Autor.
+  Bildschirmfoto der englischen Oberfläche.
 
 ## v3.0.0-rc58 - 2026-08-27
 
@@ -591,30 +891,27 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   sagte nicht, **wo** diese Texte auftauchen. „Ingame-Texte" stand kurz zur Wahl
   und ist unter Spielern gängig — dagegen sprach, dass jeder andere Reiter der
   Leiste deutsch ist und ein einzelner Anglizismus dazwischen auffällt.
-  Angestoßen von der Autor.
 - **Auf „Update & Über" steht das Programmsymbol neben der Version.** Die Seite
   hatte gar kein Bild mehr, seit der Autor-Block auf „Danke & Lizenzen" gewandert
-  ist. Gemeldet von der Autor.
+  ist.
 
 - **Die Anleitung zeigte Zeichen, die es im Werkzeug nicht mehr gibt.** Die
   Knopf-Legende in beiden READMEs führte `☰`, `ⓘ`, `⟳`, `⏻` und `🗑` auf — zwei
   davon sind längst entfernt, die anderen sehen anders aus. Sie zeigt jetzt die
   **echten Bilddateien** aus `assets/symbole/`; damit kann sie nicht mehr
   veralten, weil sich mit einem getauschten Symbol das Bild in der Anleitung von
-  selbst mitändert. Dasselbe für die Zeichen-Erklärung der Meldungen. Gefunden
-  von der Autor.
+  selbst mitändert. Dasselbe für die Zeichen-Erklärung der Meldungen.
 - **„Wer das gebaut hat" stand plötzlich zweimal.** Der Block mit Autor,
   scmdb, SC Deutsch Launcher und StarStrings lag auf „Update & Über" — und die
   neue Seite „Danke & Lizenzen" nannte dieselben Projekte noch einmal. Er liegt
   jetzt nur noch auf „Danke & Lizenzen", und zwar mit dem Autor **ganz oben**:
   Eine Seite, die fremde Arbeit aufzählt, muss die eigene zuerst nennen.
-  Gemeldet von der Autor.
 
 - **Der Spenden-Link war auf GitHub nirgends zu sehen.** Der Knopf „Kaffee
   spendieren" gibt es im Werkzeug seit Langem — auf der Projektseite selbst
   fehlte er aber komplett: kein Sponsor-Knopf, keine Erwähnung in der Anleitung.
   Wer das Werkzeug noch nicht installiert hatte, konnte ihn also gar nicht
-  finden. Jetzt gibt es beides. Gefunden von der Autor.
+  finden. Jetzt gibt es beides.
 
 - **Neuer Reiter „Danke & Lizenzen"** unter *Info*. Bis hierher stand im ganzen
   Programm **keine einzige Lizenzangabe** — weder die eigene (GPL-3.0) noch die
@@ -623,7 +920,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   gehört: das Programm selbst, die Symbole von Lucide, die Daten von scmdb,
   StarStrings und der SC Deutsch Launcher — jeweils mit Lizenz und anklickbarem
   Verweis. Dazu der Dank an die, aus deren Rückmeldung etwas geworden ist.
-  Vorgeschlagen von der Autor.
 
 ## v3.0.0-rc57 - 2026-08-27
 
@@ -641,7 +937,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   50–70 % aus, und jedes anders; `🗑` und `▶` sind gefüllte Flächen, `⚙ ⟳ ✕`
   dünne Striche; und jedes Betriebssystem greift zu einer anderen Ersatzschrift.
   Ersetzt durch fertige Bilder aus dem **Lucide**-Satz — alle auf einem
-  24×24-Raster mit gleicher Strichstärke gezeichnet. Vorgeschlagen von der Autor.
+  24×24-Raster mit gleicher Strichstärke gezeichnet.
 - **Auf Windows, Linux und Mac sieht die Oberfläche jetzt gleich aus.** Das war
   vorher nicht so: Windows nahm `Segoe UI Symbol`, die anderen Systeme etwas
   anderes. Wer auf einem Mac entwickelt, sah damit andere Zeichen als die
@@ -651,14 +947,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   als bunte Klötzchen, die die eingestellte Farbe **ignorierten** — ausgerechnet
   an der Stelle, die man am häufigsten sieht.
 - **Star Citizen starten heißt jetzt Rakete statt Abspielpfeil.** Ein `▶` heißt
-  überall „Video ab", nicht „Programm starten". Gemeldet von der Autor.
+  überall „Video ab", nicht „Programm starten".
 - **Meldungen wegräumen heißt jetzt Radiergummi statt Mülleimer.** Der Knopf
   löscht nichts — er räumt nur die Anzeige auf, die Baupläne bleiben. Ein
-  Mülleimer verspricht Vernichtung und schreckt vom Klicken ab. Angeregt von
-  der Autor.
+  Mülleimer verspricht Vernichtung und schreckt vom Klicken ab.
 - **„Einrichtung" heißt jetzt „Einrichtung starten".** Ein Verb sagt, dass etwas
-  losgeht; das Wort allein klang nach einem Ort zum Nachschlagen. Vorgeschlagen
-  von der Autor.
+  losgeht; das Wort allein klang nach einem Ort zum Nachschlagen.
 - Die Höhe der Melde-Leiste wächst jetzt mit der eingestellten Schriftgröße mit.
   Sie stand fest auf 26 Pixel, wodurch die Symbole bei „groß" oben und unten
   herausragten.
@@ -670,9 +964,9 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Kreuz, das das Programm wirklich schließt — zwei Knöpfe, die beide nach „aus"
   aussahen. Die Einstellung steht unverändert unter „Allgemein".
 - **Der Knopf für den Einrichtungs-Assistenten ist aus der Melde-Leiste
-  verschwunden.** Er bleibt im großen Fenster oben rechts erreichbar. der Autor:
-  „reicht glaube ich in den einstellungen, da gehen die leute eh hin wenn die
-  merken es klemmt etwas."
+  verschwunden.** Er bleibt im großen Fenster oben rechts erreichbar — in den
+  Einstellungen reicht er, dorthin geht ohnehin jeder, der merkt, dass etwas
+  klemmt.
 
 ### Behoben
 
@@ -683,9 +977,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Dank
 
-- **der Autor** — für den Anstoß zur ganzen Umstellung („die sollen alle gleich
-  groß sein, sind aber unterschiedlich groß") und für die Hinweise zu Rakete,
-  Radiergummi und „Einrichtung starten".
 
 ## v3.0.0 - 2026-08-29
 
@@ -762,8 +1053,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   verstehen, was ein Kanal ist, und den richtigen der beiden Kästen anklicken —
   wer den falschen wählte, bekam gar nichts angeboten. Jetzt steht darüber ein
   Knopf über die volle Breite, der sofort holt, was es gerade gibt, auch eine
-  Testfassung. An der Einstellung darunter ändert er nichts. Vorgeschlagen von
-  der Autor, nachdem Morkhan an genau dieser Stelle hängenblieb.
+  Testfassung. An der Einstellung darunter ändert er nichts.
 
 - **Star Citizen lässt sich aus dem Werkzeug heraus starten.** Auf der Seite
   „Angaben im Spiel" steht ein Knopf, der das Spiel über den Weg startet, den
@@ -978,7 +1268,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   sie kamen aus verschiedenen Schriftdateien. Jetzt wird unter Windows
   ausdrücklich **Segoe UI Symbol** verlangt: alle vierzehn Zeichen einfarbig,
   in der eingestellten Textfarbe, halb so breit gestreut. Unter Linux war es
-  nie ein Problem und bleibt unverändert. Gemeldet von der Autor.
+  nie ein Problem und bleibt unverändert.
 
 - **Das Overlay blieb beim Umschalten auf Englisch deutsch.** Wer die Sprache
   wechselte, bekam ein englisches Fenster und eine deutsche Melde-Leiste:
@@ -994,18 +1284,16 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   vorhin eingefroren; erst ein Neustart räumte das auf. Meldungen tragen jetzt
   ihren Textschlüssel mit und werden beim Sprachwechsel neu gesetzt — samt
   Datum, das im Englischen anders geschrieben wird (2026-08-22 statt
-  22.08.2026). Gemeldet von der Autor.
+  22.08.2026).
 
 - **Der Hinweis am Startknopf ▶ überschrieb die Statuszeile.** Als einziges der
   zehn Zeichen hatte er keine Erklärblase, sondern schrieb in die Statuszeile
   und stellte danach einen Merker wieder her, der nie fortgeschrieben wurde —
   eine Fundmeldung war nach einem Mausschlenker über das Zeichen weg.
-  Gemeldet von der Autor.
 
 - **Das Logo fehlte in der fertigen Version.** Auf „Update & Über" lud das
   Programm `assets/xharig.png`, der Bau packte diese Datei aber nie ein — beim
-  Start aus dem Quellcode fiel das nie auf, weil sie dort liegt. Gemeldet von
-  der Autor, dem es im Bildschirmfoto eines Testers auffiel.
+  Start aus dem Quellcode fiel das nie auf, weil sie dort liegt.
 
 - **Das „ⓘ" am Overlay öffnete ein eigenes Fenster mit eigener Update-Logik** —
   und in dem fehlte der Neustart-Knopf. Wer darüber ging, lud die neue Version

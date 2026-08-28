@@ -115,6 +115,7 @@ FARBEN = {
     # Punkt grün gemalt werden, und die Zeile verlöre ihre Aussage.
     'gelb':  '#d8a03a',      # PROV   — aus der Game.log, noch nicht bestätigt
     'blau':  '#4aa3d8',      # CATA   — neu im Spiel craftbar, kein eigener Fund
+    'rot':   '#e05252',      # ROT    — „hier meldest du, wenn etwas klemmt“
 }
 
 # Welche Lucide-Vorlage wofür steht. Der Schlüssel ist der Name, unter dem das
@@ -143,6 +144,11 @@ KNOPF_SYMBOLE = {
                                          # Ein Mülleimer verspricht Vernichtung
                                          # und schreckt vom Klicken ab.
     'schliessen':   'x',
+    # Klicks werden ins Spiel durchgereicht (zu) oder abgefangen (offen). Das
+    # Schloss bleibt als einziges Element klickbar — sonst käme man aus dem
+    # durchlässigen Zustand nur heraus, indem man aus dem Spiel heraustabbt.
+    'schloss_zu':   'lock',
+    'schloss_auf':  'lock-open',
     'ziehgriff':    'grip',              # die Ecke zum Größerziehen
     # --- Seitenleiste und Titelknöpfe des großen Fensters ---
     'fortschritt':  'chart-column',

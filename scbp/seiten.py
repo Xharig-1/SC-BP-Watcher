@@ -126,12 +126,18 @@ def _knopf(fenster, eltern, text, tat, stark=False, gefahr=False):
     schrift = fenster.f_klein
     hoehe = schrift.metrics('linespace') + 16
     breite = schrift.measure(text) + 30
-    farbe = ACCENT if stark else FG
+    # ⚠ `gefahr` faerbt **dauerhaft**, nicht erst beim Überfahren. Ein Knopf,
+    # der erst rot wird, wenn die Maus schon darauf steht, warnt niemanden —
+    # gesehen hat man ihn dann längst. der Autor am 28.08.2026 zum
+    # Absende-Knopf: „der Button wird erst beim Überfahren rot."
+    farbe = ROT if gefahr else (ACCENT if stark else FG)
+    rand = ROT if gefahr else (ACCENT if stark else LINIE)
     c = tk.Canvas(eltern, width=breite, height=hoehe, bg=BG,
                   highlightthickness=0, bd=0, cursor='hand2')
     flaeche = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1, radius=5,
-                               fill='#1d2a14' if stark else FLAECHE,
-                               outline=ACCENT if stark else LINIE, width=1)
+                               fill='#2a1414' if gefahr
+                               else ('#1d2a14' if stark else FLAECHE),
+                               outline=rand, width=1)
     beschriftung = c.create_text(breite / 2.0, hoehe / 2.0, text=text,
                                  fill=farbe, font=schrift, anchor='center')
 
@@ -140,7 +146,7 @@ def _knopf(fenster, eltern, text, tat, stark=False, gefahr=False):
         c.itemconfigure(beschriftung, fill=ROT if gefahr else ACCENT)
 
     def raus(_=None):
-        c.itemconfigure(flaeche, outline=ACCENT if stark else LINIE)
+        c.itemconfigure(flaeche, outline=rand)
         c.itemconfigure(beschriftung, fill=farbe)
 
     def mitwachsen(_=None):
@@ -292,9 +298,24 @@ def _umbruch(label, anteil=1.0, abzug=0, bezug=None, neben=None):
             except tk.TclError:
                 pass
         if breite > 40:
+            # ⚠ Der eigene Rahmen des Labels zählt mit. `wraplength` begrenzt
+            # nur den TEXT; was das Label am Ende belegt, ist Text + Rand +
+            # Innenabstand. Stand `wraplength` auf der vollen Breite, brauchte
+            # es also ein paar Pixel mehr, als es bekam — und Tk schnitt still
+            # ab. Genau so gemessen am 28.08.2026: die englische Warnzeile auf
+            # der Spiel-Seite ragte um 5 px heraus, bei 1100×842.
+            #
+            # Erfragt statt geschätzt, damit es auch bei anderer Darstellung
+            # stimmt.
             try:
-                label.configure(wraplength=max(160,
-                                              int(breite * anteil) - abzug))
+                rand = 2 * (int(label.cget('borderwidth'))
+                            + int(label.cget('padx'))
+                            + int(label.cget('highlightthickness')))
+            except (tk.TclError, ValueError):
+                rand = 4
+            try:
+                label.configure(wraplength=max(160, int(breite * anteil)
+                                               - abzug - rand))
             except tk.TclError:
                 pass          # zwischen Prüfung und Zugriff zerstört
 
@@ -653,7 +674,7 @@ def _anzeige(fenster, rahmen):
     dauer.bind('<FocusOut>', dauer_merken)
     dauer.bind('<Return>', dauer_merken)
 
-    ziel = _feld(fenster, innen, t('s_ov_durch'), t('s_ov_durch_h'), breit=True)
+    ziel = _feld(fenster, innen, t('s_ov_durch'), t('s_ov_durch_h'))
     if _durchklick_moeglich():
         schiebeschalter(ziel, pfade.einstellung_wahrheit('durchklickbar', False),
                         lambda: _durchklick_um(fenster)).pack()
@@ -1082,7 +1103,7 @@ def _spiel(fenster, rahmen):
     # ⚠ Der Schalter fehlte ganz. Wer auf PTU spielt oder die Textdatei in Ruhe
     # lassen will, hatte keine Möglichkeit außer „Wieder entfernen" — und beim
     # nächsten Start schrieb das Werkzeug wieder hinein.
-    ziel = _feld(fenster, innen, t('s_sp_an'), t('s_sp_an_h'), breit=True)
+    ziel = _feld(fenster, innen, t('s_sp_an'), t('s_sp_an_h'))
 
     def inj_an_um():
         neu_wert = not pfade.einstellung_wahrheit('inj_an', True)
@@ -1116,6 +1137,26 @@ def _spiel(fenster, rahmen):
 
     schiebeschalter(ziel, pfade.einstellung_wahrheit('inj_auto', True),
                     inj_auto_um).pack()
+
+    # --- Angaben am Gegenstand ----------------------------------------------
+    # Klasse, Größe und Gütegrad direkt am Namen — bei Raketen der Suchkopf.
+    # Abschaltbar, weil es die Gegenstandsnamen im Spiel verändert: Wer das
+    # nicht will, soll die Bauplan-Angaben trotzdem behalten können.
+    ziel = _feld(fenster, innen, t('s_sp_angaben'), t('s_sp_angaben_h'))
+
+    def angaben_um():
+        from . import injektion as inj_modul
+        neu_wert = not pfade.einstellung_wahrheit(inj_modul.EINSTELLUNG_ANGABEN,
+                                                  True)
+        pfade.einstellung_setzen(inj_modul.EINSTELLUNG_ANGABEN, neu_wert)
+        fenster.sagen(t('s_sp_angaben_sagen')
+                      % (t('e_an') if neu_wert else t('e_aus')))
+        return neu_wert
+
+    from . import injektion as _inj
+    schiebeschalter(ziel,
+                    pfade.einstellung_wahrheit(_inj.EINSTELLUNG_ANGABEN, True),
+                    angaben_um).pack()
 
     ziel = _feld(fenster, innen, t('s_sp_hand'), t('s_sp_hand_h'), breit=True)
     reihe = tk.Frame(ziel, bg=BG)
@@ -3102,7 +3143,38 @@ def _diagnose(fenster, rahmen):
         fenster.sagen(t('s_di_gespeichert') % os.path.basename(ziel_datei)
                       if ziel_datei else t('s_di_speich_weg'))
 
+    def absenden():
+        """Auf Knopfdruck an den Entwickler — mit vorheriger Rückfrage.
+
+        ⚠ Der Weg für alle, die nicht basteln wollen. Kopieren und in Discord
+        einfügen scheitert daran, dass der Bericht zu lang ist und man wissen
+        muss, wohin damit. der Autor am 28.08.2026: „ich will nicht jedem eine
+        Stunde erklären, wie ich zu dem Bericht komme."
+
+        Gefragt wird trotzdem: Etwas ins Netz zu schicken, ohne dass jemand
+        zugestimmt hat, macht dieses Werkzeug nicht.
+        """
+        from tkinter import messagebox
+        if not messagebox.askyesno(t('s_di_ab_frage_t'), t('s_di_ab_frage'),
+                                   parent=fenster.root):
+            return
+        fenster.sagen(t('s_di_ab_laeuft'))
+        fenster.root.update_idletasks()
+        geklappt, grund = bericht.absenden(text, fenster.version)
+        fenster.sagen(t('s_di_ab_ok') if geklappt
+                      else t('s_di_ab_weg') % grund)
+
+    # ⚠ Ganz vorn und in Rot: Wer hier landet, hat ein Problem und sucht den
+    # kürzesten Weg.
+    #
+    # ⚠ **Immer zeigen, auch ohne eingebautes Ziel.** Der erste Anlauf blendete
+    # ihn aus, wenn nicht gesendet werden kann — gedacht als „ein Knopf, der
+    # nichts tut, ist schlimmer als keiner". In der Praxis trifft das nur den
+    # Quellcode, also den Entwickler selbst. der Autor am 28.08.2026 vor der
+    # Diagnose-Seite: „nicht mal ICH finde den." Ein Knopf, der fehlt, sieht aus
+    # wie ein Fehler; einer, der beim Drücken sagt, was ihm fehlt, erklärt sich.
     _knopfreihe(reihe, [
+        _knopf(fenster, reihe, t('s_di_absenden'), absenden, gefahr=True),
         _knopf(fenster, reihe, t('s_di_melden'), melden, stark=True),
         _knopf(fenster, reihe, t('s_di_kopieren'), kopieren),
         _knopf(fenster, reihe, t('s_di_speichern'), speichern),

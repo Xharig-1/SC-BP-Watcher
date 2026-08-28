@@ -60,6 +60,20 @@ from .sprache import t
 
 BASIS = 'https://scmdb.net/data'
 CACHE = 'katalog-cache.json'
+
+# Aufbau-Nummer des Katalogs — **nicht** die Spielversion.
+#
+# ⚠ Der Katalog wird sonst nur erneuert, wenn Star Citizen eine neue Version
+# bringt. Ändert sich sein *Aufbau*, weil das Programm etwas Neues hineinlegt,
+# reicht das nicht: Wer schon einen Katalog auf der Platte hat, behielte den
+# alten bis zum nächsten Patch — der Umbau wäre für ihn unsichtbar.
+#
+# Am 28.08.2026 genau so aufgefallen: `_missionen()` führt seither die
+# Preisstufen eines Auftrags zusammen (797 Baupläne, die vorher niemand sah).
+# Ohne diese Nummer hätte kein einziger Tester den Fix zu Gesicht bekommen.
+#
+# **Hochzählen, sobald `_missionen()` oder `_herkunft()` etwas anders ablegen.**
+FORMAT = 2
 KENNUNG = 'SC-BP-Watcher/2.0 (+https://github.com/Xharig-1/SC-BP-Watcher)'
 ZEITLIMIT = 120
 AUS = os.environ.get('SC_BP_NO_NET', '') not in ('', '0')
@@ -382,34 +396,100 @@ def _missionen(merged):
         pools[guid] = [b.get('name') for b in (pool.get('blueprints') or [])
                        if b.get('name')]
     belohnungen_pools = merged.get('factionRewardsPools') or []
-    ergebnis = {}
+
+    # ⚠ **Ein Schlüssel, viele Verträge — der Fehler vom 28.08.2026.**
+    # Hier stand am Ende `ergebnis[titel_key or text_key] = eintrag`. Verträge,
+    # die sich einen Textschlüssel teilen, haben sich damit gegenseitig
+    # überschrieben: Der zuletzt eingelesene gewann, alle anderen fielen still
+    # weg. Gemessen am Dump 4.10.0-live.12519617:
+    #
+    #     353 Schlüssel, davon 123 mehrfach belegt
+    #     319 Verträge fielen weg
+    #     797 Bauplan-Einträge wurden dadurch nie angezeigt
+    #
+    # Gemeldet hat es Morkhan: „ich bekomme nicht angezeigt welche baupläne ich
+    # beim neulingsauftrag bekommen kann, sondern NUR die auf der höchsten
+    # stufe." Es war nicht die höchste Stufe — es war die zuletzt gelesene.
+    #
+    # Jetzt werden alle Varianten **zusammengeführt**: Die Liste zeigt, was der
+    # Auftragstyp überhaupt hergibt, das Kästchen sagt, was man davon hat.
+    # der Autor dazu am 28.08.2026: „wenn es den da nicht gibt ist das egal, er
+    # hat ihn, also gehört er abgehakt PUNKT."
+    roh = {}
     for vertrag in ((merged.get('contracts') or [])
                     + (merged.get('legacyContracts') or [])):
+        schluessel = vertrag.get('titleLocKey') or vertrag.get('descriptionLocKey')
+        if schluessel:
+            roh.setdefault(schluessel, []).append(vertrag)
+
+    ergebnis = {}
+    for schluessel, varianten in roh.items():
+        # ⚠ Varianten **ohne** Baupläne bleiben in `gesehen` mit dabei. Vorher
+        # flogen sie sofort raus — dadurch war nicht mehr erkennbar, dass es
+        # Stufen dieses Auftrags gibt, die leer ausgehen. 14 Auftragstexte sind
+        # so gebaut, darunter Morkhans Beispiel: Die Trainee-Stufe schüttet
+        # nichts aus, hängt aber am selben Text wie die beiden höheren.
+        gesehen = []
+        for v in varianten:
+            namen = []
+            for r in (v.get('blueprintRewards') or []):
+                namen.extend(pools.get(r.get('blueprintPool'), []))
+            rang = v.get('minStanding') or {}
+            gesehen.append({'namen': set(namen), 'vertrag': v,
+                            'rep': rang.get('minReputation'),
+                            'rang': rang.get('name'),
+                            'uec': v.get('rewardUEC')})
+        mit_bp = [g for g in gesehen if g['namen']]
+        if not mit_bp:
+            continue
+
+        alle_namen = set()
+        for g in mit_bp:
+            alle_namen |= g['namen']
+
+        # Der **leichteste** Weg liefert die Kopfdaten: niedrigster Ruf, bei
+        # Gleichstand die höhere Bezahlung — dieselbe Regel wie in `_herkunft()`.
+        def _leichtest(menge):
+            return sorted(menge, key=lambda g: ((g['rep'] if g['rep'] is not None
+                                                 else 10 ** 9),
+                                                -(g['uec'] or 0)))[0]
+
+        # Ab welchem Rang ein Bauplan überhaupt zu haben ist. Nur dort, wo sich
+        # die Stufen wirklich unterscheiden — sonst stünde an jedem dasselbe.
+        # Das ist reine Zusatzinfo: Sie ändert weder Kästchen noch Auswahl,
+        # sondern beantwortet „warum finde ich den hier gerade nicht".
+        ab_rang = {}
+        if len(set(g['rep'] for g in mit_bp)) > 1:
+            for name in alle_namen:
+                q = _leichtest([g for g in mit_bp if name in g['namen']])
+                if q['rang'] and q['rep']:
+                    ab_rang[name] = {'rang': q['rang'], 'rep': q['rep']}
+            # ⚠ **Nur wenn es die Baupläne unterscheidet.** Beim ersten Anlauf
+            # stand die Angabe an *jedem* Bauplan derselbe Auftrags — zwölfmal
+            # „erst ab Sr. Contractor" untereinander. Das ist kein Wissen,
+            # sondern Lärm: Gilt für alle derselbe Rang, steht er ohnehin oben
+            # unter „Min. Reputation". Die Zeile lohnt sich erst, wenn ein
+            # Bauplan einen *höheren* Rang braucht als ein anderer.
+            if len(set((b['rang'], b['rep']) for b in ab_rang.values())) < 2:
+                ab_rang = {}
+
+        leicht = _leichtest(mit_bp)
+        vertrag = leicht['vertrag']
         belohnungen = vertrag.get('blueprintRewards') or []
-        if not belohnungen:
-            continue
-        titel_key = vertrag.get('titleLocKey')
-        text_key = vertrag.get('descriptionLocKey')
-        if not (titel_key or text_key):
-            continue
-        namen, sicher = [], False
-        for r in belohnungen:
-            namen.extend(pools.get(r.get('blueprintPool'), []))
-            if r.get('chance') == 1:
-                sicher = True
-        if not namen:
-            continue
+        # „Sicher" und „Chance" über **alle** Varianten: Wenn irgendeine den
+        # Bauplan garantiert gibt, ist er erreichbar.
+        sicher = any(r.get('chance') == 1 for g in mit_bp
+                     for r in (g['vertrag'].get('blueprintRewards') or []))
+        chance = max((r.get('chance') or 0) for g in mit_bp
+                     for r in (g['vertrag'].get('blueprintRewards') or []))
         rang = vertrag.get('minStanding') or {}
         hoechst = vertrag.get('maxStanding') or {}
-        # Die Angaben, die der SC Deutsch Launcher auch zeigt — sie stehen
-        # vollständig in scmdb, es muss sie nur jemand einsammeln.
         i = vertrag.get('factionRewardsIndex')
         rufgewinn = None
         if isinstance(i, int) and 0 <= i < len(belohnungen_pools):
             rufgewinn = sum(e.get('amount', 0) for e in belohnungen_pools[i])
-        chance = max((r.get('chance') or 0) for r in belohnungen)
         eintrag = {
-            'bp': sorted(set(namen)),
+            'bp': sorted(alle_namen),
             'sicher': sicher,
             'chance': chance,
             'rep': rang.get('minReputation'),
@@ -423,15 +503,22 @@ def _missionen(merged):
                          if vertrag.get('hasPersonalCooldown') else None),
         }
         eintrag = {k: v for k, v in eintrag.items() if v not in (None, '', [])}
-        eintrag['bp'] = sorted(set(namen))
+        eintrag['bp'] = sorted(alle_namen)
         eintrag['sicher'] = sicher
-        if titel_key:
-            eintrag['titel_key'] = titel_key
-        if text_key:
-            eintrag['text_key'] = text_key
-        # Schlüssel ist der Titel-Key, weil die Auszeichnung im Titel steht;
-        # fehlt er, tut es der Beschreibungs-Key auch.
-        ergebnis[titel_key or text_key] = eintrag
+        if ab_rang:
+            eintrag['ab'] = ab_rang
+        # Wie viele Stufen dieses Auftrags leer ausgehen — steht als Warnung
+        # dran, damit niemand für eine Liste hinfliegt, die seine Stufe nicht
+        # hergibt.
+        leer = len(gesehen) - len(mit_bp)
+        if leer:
+            eintrag['leer'] = leer
+            eintrag['stufen'] = len(gesehen)
+        if vertrag.get('titleLocKey'):
+            eintrag['titel_key'] = vertrag.get('titleLocKey')
+        if vertrag.get('descriptionLocKey'):
+            eintrag['text_key'] = vertrag.get('descriptionLocKey')
+        ergebnis[schluessel] = eintrag
     return ergebnis
 
 
@@ -530,7 +617,8 @@ def erzeugen(version=None, fortschritt=None, aus_datei=None):
         if k in herkunft:
             eintrag['seit'] = herkunft[k]
 
-    daten = {'version': version, 'geholt': time.strftime('%Y-%m-%d %H:%M'),
+    daten = {'version': version, 'format': FORMAT,
+             'geholt': time.strftime('%Y-%m-%d %H:%M'),
              'bauplaene': bauplaene, 'missionen': _missionen(merged)}
     ziel = pfade.app_datei(CACHE)
     temp = ziel + '.tmp'
@@ -625,7 +713,12 @@ def aktualisieren(fortschritt=None):
         return False, 0, ''
     try:
         version = aktuelle_version()
-        if not version or version == laden().get('version'):
+        da = laden()
+        # Neu gebaut wird bei neuer Spielversion **oder** bei neuem Aufbau
+        # (siehe `FORMAT`). Das zweite ist der Grund, warum ein Katalog-Umbau
+        # überhaupt bei jemandem ankommt, der schon einen liegen hat.
+        if not version or (version == da.get('version')
+                           and da.get('format') == FORMAT):
             return False, 0, version or ''
         anzahl, version = erzeugen(version, fortschritt)
         return bool(anzahl), anzahl, version

@@ -416,8 +416,8 @@ class Einstellungsfenster:
                 if not ok:
                     self._melden(t('inj_fehler', meldung), ROT)
                     return
+                # `g_language` setzt `spieltexte.holen()` selbst.
                 ziel = uebersetzung.ziel_ini(sprache_ordner)
-                uebersetzung.user_cfg_setzen(sprache_ordner)
                 uebersetzung.vermerken('original', 'Data.p4k')
             else:
                 ok, meldung = uebersetzung.holen(quelle, fortschritt=melde)
@@ -435,45 +435,17 @@ class Einstellungsfenster:
         self._inj_lage_zeigen()
 
     def _inj_ini(self):
-        """Die global.ini, um die es geht — nach der **gewählten** Textquelle.
+        """Die `global.ini`, um die es geht — siehe `injektion.ini_datei()`.
 
-        ⚠ Hier stand eine feste Reihenfolge: erst „deutsch", dann „starstrings",
-        und die erste eingerichtete gewann. Wer beide einmal benutzt hatte und
-        dann auf StarStrings umstellte, bekam trotzdem weiter „Quelle: Deutsch
-        (rjcncpt)" angezeigt — die deutsche war ja auch noch eingerichtet. Genau
-        so gemeldet. Maßgeblich ist, was der Nutzer **gewählt** hat; die
-        Reihenfolge greift nur, solange nichts gewählt wurde.
+        ⚠ Die Logik steht bewusst NICHT mehr hier, sondern frei im Modul
+        `injektion`: Der Diagnosebericht braucht dieselbe Auskunft und hat
+        kein Fenster. Zwei Kopien wären zwei Wahrheiten.
         """
-        gewaehlt = pfade.einstellung('inj_quelle')
-        reihenfolge = ['deutsch', 'starstrings']
-        if gewaehlt in reihenfolge:
-            reihenfolge.remove(gewaehlt)
-            reihenfolge.insert(0, gewaehlt)
-        elif gewaehlt == 'original':
-            # Die Originaltexte kommen aus dem Spiel selbst, nicht aus einem
-            # fremden Projekt — dort gibt es keine Version zu vermerken.
-            for sprache_ordner in ('english', 'german_(germany)'):
-                pfad = uebersetzung.ziel_ini(sprache_ordner)
-                if pfad and os.path.isfile(pfad):
-                    return pfad, sprache_ordner, None
-        for quelle in reihenfolge:
-            if uebersetzung.installiert(quelle):
-                sprache_ordner = uebersetzung.QUELLEN[quelle]['sprache']
-                return uebersetzung.ziel_ini(sprache_ordner), sprache_ordner, quelle
-        # Nichts vermerkt: dann die Datei nehmen, die tatsächlich daliegt.
-        for sprache_ordner in ('german_(germany)', 'english'):
-            p = uebersetzung.ziel_ini(sprache_ordner)
-            if p and os.path.isfile(p):
-                return p, sprache_ordner, None
-        return None, 'english', None
+        return injektion.ini_datei()
 
     def inj_lage(self=None):
         """Steht etwas im Spiel, und aus welcher Quelle? (dict für die Seite)"""
-        pfad, _sprache, quelle = self._inj_ini()
-        da = bool(pfad and os.path.isfile(pfad))
-        drin = bool(da and injektion.ist_drin(pfad))
-        return {'datei': pfad, 'drin': drin, 'quelle': quelle,
-                'stand': uebersetzung.installiert(quelle) if quelle else None}
+        return injektion.lage()
 
     def _inj_lage_zeigen(self):
         lage = self.inj_lage()

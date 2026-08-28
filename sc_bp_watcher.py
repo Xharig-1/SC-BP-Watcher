@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc75'
+__version__ = '3.0.0-rc83'
 
 
 def _mitgeliefert(name):
@@ -1203,6 +1203,10 @@ class Overlay:
         self._popup_uhr = None
         self._letzte_lage = ''
         self._anfasser = None
+        self._schloss = None
+        # Das Schloss zieht mit, egal wer das Durchreichen umschaltet — hier im
+        # Overlay oder drüben in den Einstellungen.
+        overlay.SCHLOSS_RUECKRUF[0] = self._schloss_anwenden
         self._maus_drauf = False
         # Durchsichtigkeit einstellbar (30–100 %). Wer nur **einen** Monitor hat,
         # legt das Overlay zwangsläufig übers Spiel — dann muss man hindurchsehen
@@ -2105,6 +2109,71 @@ class Overlay:
     # letzten Position. Der bekommt echte `<Enter>`-Ereignisse, unter Wayland wie
     # unter X11 und Windows. Nebenbei ist er ehrlicher als eine unsichtbare
     # Zauberzone — man **sieht**, wo das Overlay wartet.
+    # Kantenlänge des Schlosses, das im durchlässigen Zustand als einziges
+    # klickbar bleibt. Klein genug, um im Gefecht nicht zu stören, groß genug,
+    # um es mit der Maus zu treffen.
+    SCHLOSS_KANTE = 26
+
+    def _schloss_anwenden(self, an):
+        """Das Schloss zeigen oder wegnehmen — gerufen aus `overlay.py`.
+
+        ⚠ Der einzige Weg zurück. Werden Klicks durchgereicht, ist am Overlay
+        nichts mehr zu treffen: kein Knopf, keine Leiste, auch der Schalter in
+        den Einstellungen ist unerreichbar, weil man das Fenster nicht mehr
+        aufbekommt. Bis hierher half nur, das Programm ein zweites Mal zu
+        starten — und dafür muss man aus dem Spiel heraus. Genau das soll die
+        Einstellung ja vermeiden.
+
+        Deshalb ein **eigenes kleines Fenster**: Es liegt über dem Overlay, wird
+        nie durchlässig gemacht und trägt das Schloss. Ein Klick darauf hebt das
+        Durchreichen wieder auf. Denselben Weg geht Ryze beim TeamSpeak-Plugin.
+        """
+        if not an:
+            return self._schloss_weg()
+        try:
+            self.root.update_idletasks()
+            breite = self.root.winfo_width()
+            x = self.root.winfo_rootx() + max(0, breite - self.SCHLOSS_KANTE - 4)
+            y = self.root.winfo_rooty() + 4
+            if self._schloss is None or not self._schloss.winfo_exists():
+                self._schloss = tk.Toplevel(self.root)
+                self._schloss.overrideredirect(True)
+                self._schloss.attributes('-topmost', True)
+                self._schloss.configure(bg=BAR, cursor='hand2')
+                bild = zeichen.bild('schloss_zu', 18, zeichen.GRUEN,
+                                    master=self._schloss)
+                marke = tk.Label(self._schloss, image=bild, bg=BAR,
+                                 cursor='hand2')
+                marke.bild = bild        # sonst räumt Tk das Bild weg
+                marke.pack(expand=True)
+                for w in (self._schloss, marke):
+                    w.bind('<Button-1>', lambda e: self._schloss_loesen())
+                hinweis.anhaengen(self._schloss,
+                                  lambda: sprache.t('hinweis_schloss'))
+            self._schloss.geometry('%dx%d+%d+%d'
+                                   % (self.SCHLOSS_KANTE, self.SCHLOSS_KANTE,
+                                      x, y))
+            self._schloss.deiconify()
+            self._schloss.lift()
+        except tk.TclError:
+            pass
+        except Exception as ausnahme:
+            fehler.merken('overlay.schloss', ausnahme)
+
+    def _schloss_weg(self):
+        try:
+            if self._schloss is not None and self._schloss.winfo_exists():
+                self._schloss.withdraw()
+        except tk.TclError:
+            pass
+
+    def _schloss_loesen(self):
+        """Klick aufs Schloss: Klicks wieder abfangen, Overlay ist bedienbar."""
+        pfade.einstellung_setzen('durchklickbar', False)
+        self._durchklick_war_an = True   # damit `durchklick_anwenden` es aufhebt
+        self.durchklick_anwenden()
+        self._status_setzen(sprache.Satz('ov_schloss_offen'))
+
     ANFASSER_BREITE = 54
     ANFASSER_HOEHE = 5
 
