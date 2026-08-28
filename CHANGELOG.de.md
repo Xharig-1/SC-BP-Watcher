@@ -12,6 +12,21 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Verbessert
 
+- **Die Sicherheitsabfragen sehen jetzt aus wie der Rest des Programms.**
+  Bisher kam an drei Stellen der graue System-Kasten von Tk: heller Hintergrund
+  im dunklen Fenster, fremde Schrift — und schmal und hoch, sodass ein längerer
+  Satz zu einer Säule wurde.
+
+  Jetzt ist es ein eigener Dialog in denselben Farben und mit denselben Knöpfen
+  wie überall sonst, **breit statt hoch** (620 px), mittig über dem Fenster.
+  Eingabetaste heißt ja, Escape heißt nein.
+
+  Betrifft: Textquelle wechseln · Fehlerbericht absenden · Bestand zurücksetzen.
+
+  Angestoßen von **der Autor** am 28.08.2026: „muss die box nur noch mein Design
+  haben, und eher breiter statt hoch".
+
+
 - **„Texte im Spiel" steht jetzt in der Reihenfolge, in der man es liest.**
   Zuerst die Textquelle — woher die Grundlage kommt —, dann was hineingeschrieben
   wird: erst die Bauplan-Angaben, dann die Angaben am Gegenstand. Vorher stand

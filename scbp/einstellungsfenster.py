@@ -389,12 +389,11 @@ class Einstellungsfenster:
         if quelle in gemerkt.split(','):
             return True
 
-        from tkinter import messagebox
+        from .hauptfenster import frage_stellen
         name = {'deutsch': t('s_sp_q_de'),
                 'starstrings': t('s_sp_q_ss')}.get(quelle, quelle)
-        if not messagebox.askyesno(t('s_sp_warnung_titel'),
-                                   t('s_sp_warnung') % name,
-                                   parent=self.root):
+        if not frage_stellen(self.root, t('s_sp_warnung_titel'),
+                             t('s_sp_warnung') % name):
             return False
         neu = [x for x in gemerkt.split(',') if x] + [quelle]
         pfade.einstellung_setzen('inj_bestaetigt', ','.join(neu))

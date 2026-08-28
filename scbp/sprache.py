@@ -1297,6 +1297,8 @@ TEXTE = {
     'e_ton':             ('Signalton', 'Sound'),
     'e_ton_hilfe':       ('Kurzer Ton, wenn ein Bauplan erscheint.',
                           'A short sound when a blueprint shows up.'),
+    'e_ja':              ('Ja', 'Yes'),
+    'e_nein':            ('Nein', 'No'),
     'e_an':              ('an', 'on'),
     'e_aus':             ('aus', 'off'),
     'e_durchsuchen':     ('Suchen …', 'Browse …'),

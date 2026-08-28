@@ -1850,3 +1850,116 @@ def _mitgeliefert(name):
         return os.path.join(basis, name)
     except Exception:
         return None
+
+
+# --------------------------------------------------------------- Frage-Dialog
+#
+# ⚠ **Warum nicht `messagebox.askyesno`.** Der System-Dialog von Tk ist auf
+# einem dunklen Programm ein Fremdkörper: heller Kasten, fremde Schrift — und
+# seine Knöpfe holt er aus Tks eigener Sprachtabelle, die auf vielen
+# Linux-Systemen unvollständig ist. Ergebnis war deutscher Text über den
+# Knöpfen **Yes / No** (der Autor, 28.08.2026). Die Sprache liesse sich über
+# `msgcat` flicken, das Aussehen nicht: Farben und Breite gibt der Dialog nicht
+# her, und er wird **hoch statt breit** — bei einem längeren Satz eine schmale
+# Säule.
+#
+# Deshalb ein eigener. Er kostet wenig, sieht aus wie das Programm und ist in
+# beiden Sprachen richtig beschriftet.
+FRAGE_BREITE = 620          # bewusst breit: Am 28.08.: "eher breiter statt hoch"
+
+
+def _dialog_knopf(eltern, text, tat, schrift, stark=False):
+    """Knopf im Programmstil — dieselbe Machart wie `seiten._knopf`.
+
+    Bewusst hier nachgebaut statt importiert: `seiten` importiert aus diesem
+    Modul, andersherum gäbe es einen Ringschluss.
+    """
+    hoehe = schrift.metrics('linespace') + 16
+    breite = schrift.measure(text) + 40
+    farbe = ACCENT if stark else FG
+    rand = ACCENT if stark else LINIE
+    c = tk.Canvas(eltern, width=breite, height=hoehe, bg=BG,
+                  highlightthickness=0, bd=0, cursor='hand2')
+    flaeche = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1, radius=5,
+                               fill='#1d2a14' if stark else FLAECHE,
+                               outline=rand, width=1)
+    beschriftung = c.create_text(breite / 2.0, hoehe / 2.0, text=text,
+                                 fill=farbe, font=schrift, anchor='center')
+    c.bind('<Enter>', lambda _=None: (c.itemconfigure(flaeche, outline=ACCENT),
+                                      c.itemconfigure(beschriftung, fill=ACCENT)))
+    c.bind('<Leave>', lambda _=None: (c.itemconfigure(flaeche, outline=rand),
+                                      c.itemconfigure(beschriftung, fill=farbe)))
+    c.bind('<Button-1>', lambda _=None: tat())
+    return c
+
+
+def frage_stellen(eltern, titel, text, ja=None, nein=None):
+    """Ja/Nein-Frage im Programmstil. Gibt True zurück, wenn bejaht wurde.
+
+    Ersatz für `messagebox.askyesno`. Modal, mittig über dem Elternfenster,
+    Eingabetaste = ja, Escape = nein.
+
+    Fällt bei einem Fehler auf den System-Dialog zurück: Eine Frage, die sich
+    nicht stellen lässt, wäre schlimmer als eine hässliche.
+    """
+    try:
+        ja = ja or t('e_ja')
+        nein = nein or t('e_nein')
+        top = tk.Toplevel(eltern)
+        top.title(titel)
+        top.configure(bg=BG)
+        top.resizable(False, False)
+        top.transient(eltern)
+
+        schrift_titel = tkfont.Font(family='Segoe UI', size=12, weight='bold')
+        schrift_text = tkfont.Font(family='Segoe UI', size=10)
+        schrift_knopf = tkfont.Font(family='Segoe UI', size=9)
+
+        rahmen = tk.Frame(top, bg=BG, padx=26, pady=22)
+        rahmen.pack(fill='both', expand=True)
+        tk.Label(rahmen, text=titel, bg=BG, fg=ACCENT, font=schrift_titel,
+                 anchor='w', justify='left').pack(fill='x')
+        tk.Label(rahmen, text=text, bg=BG, fg=FG, font=schrift_text,
+                 anchor='w', justify='left',
+                 wraplength=FRAGE_BREITE - 52).pack(fill='x', pady=(10, 0))
+
+        antwort = {'wert': False}
+
+        def schliessen(wert):
+            antwort['wert'] = wert
+            try:
+                top.grab_release()
+            except tk.TclError:
+                pass
+            top.destroy()
+
+        reihe = tk.Frame(rahmen, bg=BG)
+        reihe.pack(anchor='e', pady=(20, 0))
+        _dialog_knopf(reihe, nein, lambda: schliessen(False),
+                      schrift_knopf).pack(side='right', padx=(8, 0))
+        _dialog_knopf(reihe, ja, lambda: schliessen(True),
+                      schrift_knopf, stark=True).pack(side='right')
+
+        top.bind('<Return>', lambda _=None: schliessen(True))
+        top.bind('<Escape>', lambda _=None: schliessen(False))
+        top.protocol('WM_DELETE_WINDOW', lambda: schliessen(False))
+
+        # Mittig über das Elternfenster setzen — erst messen, dann schieben.
+        top.update_idletasks()
+        breite = max(FRAGE_BREITE, top.winfo_reqwidth())
+        hoehe = top.winfo_reqheight()
+        try:
+            x = eltern.winfo_rootx() + (eltern.winfo_width() - breite) // 2
+            y = eltern.winfo_rooty() + (eltern.winfo_height() - hoehe) // 3
+        except tk.TclError:
+            x = y = 200
+        top.geometry('%dx%d+%d+%d' % (breite, hoehe, max(0, x), max(0, y)))
+
+        top.grab_set()
+        top.focus_set()
+        eltern.wait_window(top)
+        return antwort['wert']
+    except Exception as ausnahme:
+        fehler.merken('hauptfenster.frage_stellen', ausnahme)
+        from tkinter import messagebox
+        return bool(messagebox.askyesno(titel, text, parent=eltern))

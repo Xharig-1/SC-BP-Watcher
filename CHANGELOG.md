@@ -12,6 +12,20 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Improved
 
+- **Confirmation dialogs now look like the rest of the program.** Three
+  places still showed Tk's grey system box: a light panel inside a dark window,
+  a foreign font — and narrow and tall, turning a longer sentence into a column.
+
+  It is now a dialog of its own, in the same colours and with the same buttons
+  as everywhere else, **wide rather than tall** (620 px), centred over the
+  window. Enter means yes, Escape means no.
+
+  Affects: switching the text source · sending a problem report · resetting the
+  inventory.
+
+  Prompted by **der Autor** on 2026-08-28.
+
+
 - **The "In-game text" page now follows the order you read it in.** The text
   source first — where the base text comes from — then what gets written into
   it: blueprint details first, then the details on the item itself. Previously

@@ -3229,9 +3229,9 @@ def _diagnose(fenster, rahmen):
         Gefragt wird trotzdem: Etwas ins Netz zu schicken, ohne dass jemand
         zugestimmt hat, macht dieses Werkzeug nicht.
         """
-        from tkinter import messagebox
-        if not messagebox.askyesno(t('s_di_ab_frage_t'), t('s_di_ab_frage'),
-                                   parent=fenster.root):
+        from .hauptfenster import frage_stellen
+        if not frage_stellen(fenster.root, t('s_di_ab_frage_t'),
+                             t('s_di_ab_frage')):
             return
         fenster.sagen(t('s_di_ab_laeuft'))
         fenster.root.update_idletasks()
@@ -3272,8 +3272,9 @@ def _diagnose(fenster, rahmen):
     ziel = _feld(fenster, innen, t('s_di_reset'), t('s_di_reset_h'))
 
     def zuruecksetzen():
-        from tkinter import messagebox
-        if not messagebox.askyesno(t('s_di_reset'), t('s_di_reset_frage')):
+        from .hauptfenster import frage_stellen
+        if not frage_stellen(fenster.root, t('s_di_reset'),
+                             t('s_di_reset_frage')):
             return
         try:
             os.remove(pfade.app_datei('bestand.json'))
