@@ -10,6 +10,25 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc90 - 2026-08-28
+
+### Improved
+
+- **The lock now sits permanently in the overlay's title bar.** Passing clicks
+  through to the game was only reachable via Settings → Overlay; getting back
+  was comfortable, through the lock that appears while it is active.
+
+  A way there and back belongs in the same place. The title bar therefore
+  carries an **open** lock — it means „the overlay catches clicks". One click
+  closes it, and from then on the floating lock at the top right takes over, as
+  before. No more detour through the settings.
+
+  The button only appears where the system can pass clicks through at all —
+  under native Wayland it would do nothing. Should it fail against expectation,
+  the setting is rolled back rather than storing an „on" that has no effect.
+
+  Suggested by **Haldjas (pr0)** on 2026-08-28.
+
 ## v3.0.0-rc89 - 2026-08-28
 
 ### Fixed

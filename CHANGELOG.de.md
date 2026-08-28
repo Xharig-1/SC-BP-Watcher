@@ -10,6 +10,28 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc90 - 2026-08-28
+
+### Verbessert
+
+- **Das Schloss steht jetzt fest in der Leiste des Overlays.** Klicks ins Spiel
+  durchreichen ging bisher nur über Einstellungen → Overlay; zurück kam man
+  bequem über das Schloss, das dabei erscheint.
+
+  Ein Weg hin und her gehört an dieselbe Stelle. In der Titelleiste steht
+  deshalb ein **offenes** Schloss — es heißt „das Overlay fängt Klicks ab". Ein
+  Klick sperrt zu, und ab dann übernimmt das schwebende Schloss oben rechts, wie
+  bisher. Kein Umweg über die Einstellungen mehr.
+
+  Der Knopf erscheint nur dort, wo das System Klicks überhaupt durchreichen kann
+  — unter nativem Wayland wäre er wirkungslos. Klappt es wider Erwarten nicht,
+  wird die Einstellung zurückgenommen, statt ein „an" zu speichern, das nichts
+  bewirkt.
+
+  Vorgeschlagen von **Haldjas (pr0)** am 28.08.2026: „man kann das durckclicken
+  entfernen, aber eventuell kann der button zum locken stehen bleiben? sonst
+  muss man ja erst wieder in die einstellungen".
+
 ## v3.0.0-rc89 - 2026-08-28
 
 ### Behoben

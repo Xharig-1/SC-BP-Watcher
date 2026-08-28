@@ -545,6 +545,13 @@ TEXTE = {
                         'Clicks are going through to the game. Click here to make the overlay usable again.'),
     'ov_schloss_offen': ('Das Overlay fängt wieder Klicks ab.',
                          'The overlay catches clicks again.'),
+    'hinweis_schloss_zu': ('Klicks ab jetzt ins Spiel durchreichen. Zurück holt '
+                           'das Schloss, das dann oben rechts am Overlay steht.',
+                           'Pass clicks through to the game from now on. The lock '
+                           'that then sits at the top right of the overlay brings '
+                           'it back.'),
+    'ov_schloss_zu':   ('Klicks gehen jetzt ins Spiel — das Schloss oben rechts holt das Overlay zurück.',
+                        'Clicks now go to the game — the lock at the top right brings the overlay back.'),
     's_sp_angaben':    ('Angaben am Gegenstand', 'Details on the item'),
     's_sp_angaben_h':  ('Schreibt Klasse, Größe und Gütegrad hinter den Namen — bei Raketen stattdessen den Suchkopf (IR, EM, CS). Damit steht am Traktorstrahl „Glacier (Mil/1/A)" statt nur „Glacier", ohne dass man die Beschreibung aufklappen muss. Die Angaben stammen aus der Textdatei des Spiels selbst.',
                           'Adds class, size and grade after the name — for missiles the seeker type instead (IR, EM, CS). The tractor beam then shows „Glacier (Mil/1/A)" rather than just „Glacier", with no need to expand the description. The details come from the game\'s own text file.'),
@@ -815,13 +822,15 @@ TEXTE = {
                           'that an overlay permanently in view, swallowing clicks, '
                           'gets in the way during combat. Neither would exist '
                           'without him.'),
-    's_dk_haldjas_bugs': ('Dazu: das Setup, das an der laufenden Datei abbrach · '
+    's_dk_haldjas_bugs': ('Dazu: der Weg zurück UND hin zum Durchklicken · '
+                          'das Setup, das an der laufenden Datei abbrach · '
                           'die Konsolenfenster beim Update · das verschwundene '
                           'Symbol neben der Uhr · der Absturz nach dem Neustart · '
                           'die Schriftgröße, die das Overlay nicht erreichte · die '
                           'vergessene Textquelle im Assistenten · und der Fund, der '
                           'alles erklärte: „da bleibt er bei rc25".',
-                          'Also: the installer that failed on the running file · the '
+                          'Also: the way back AND forth to click-through · '
+                          'the installer that failed on the running file · the '
                           'console windows during updates · the tray symbol that '
                           'vanished · the crash after restarting · the font size that '
                           'never reached the overlay · the forgotten text source in '
