@@ -1276,6 +1276,29 @@ class Overlay:
         self.klapp_lbl.pack(side='right', padx=(0, 6))
         hinweis.anhaengen(self.klapp_lbl, self._hinweis_klappen)
 
+        # ⚠ Der **Hinweg** zum Durchreichen. Bis rc89 gab es nur den Rückweg:
+        # Das schwebende Schloss erscheint erst, wenn durchgereicht wird, und
+        # verschwindet beim Abschalten wieder — danach führte der einzige Weg
+        # über Einstellungen → Overlay. Haldjas (pr0) am 28.08.2026: „man kann
+        # das durchklicken entfernen, aber eventuell kann der button zum locken
+        # stehen bleiben? sonst muss man ja erst wieder in die einstellungen".
+        #
+        # Ein **offenes** Schloss heißt „das Overlay fängt Klicks ab" — ein
+        # Klick sperrt zu. Das geschlossene Schloss taucht dann als eigenes
+        # Fenster auf (`_schloss_anwenden`), weil diese Leiste hier ab dem
+        # Moment nicht mehr zu treffen ist.
+        #
+        # Nur, wo das System es überhaupt kann: Unter nativem Wayland wäre ein
+        # Knopf ohne Wirkung schlimmer als keiner — dieselbe Regel wie beim
+        # Schalter in den Einstellungen.
+        if overlay.durchklickbar_moeglich():
+            self.schloss_lbl = zeichen.knopf(bar, 'schloss_auf',
+                                             self._schloss_zusperren,
+                                             schrift=self.f_title)
+            self.schloss_lbl.pack(side='right', padx=(0, 6))
+            hinweis.anhaengen(self.schloss_lbl,
+                              lambda: sprache.t('hinweis_schloss_zu'))
+
         # Zwei Ansichten, ein Programm: die schmale Melde-Leiste bleibt, das
         # Verwaltungsfenster kommt auf Klick dazu.
         # ⚠ Ein Klemmbrett statt der drei Striche. Drei Striche heissen
@@ -2079,7 +2102,7 @@ class Overlay:
         """Klicks durchreichen, wenn eingestellt — und melden, wenn es nicht geht."""
         an = pfade.einstellung_wahrheit('durchklickbar', False)
         if not an and not getattr(self, '_durchklick_war_an', False):
-            return                       # nie eingeschaltet gewesen: nichts zu tun
+            return True                  # nie eingeschaltet gewesen: nichts zu tun
         self._durchklick_war_an = an
         try:
             geklappt = overlay.durchklickbar_setzen(self.root, an)
@@ -2088,6 +2111,10 @@ class Overlay:
             geklappt = False
         if an and not geklappt:
             self._status_setzen(sprache.Satz('ov_durchklick_geht_nicht'))
+        # ⚠ Der Rückgabewert wird gebraucht: Der Schloss-Knopf in der Leiste
+        # muss die Einstellung zurücknehmen, wenn das System nicht mitspielt —
+        # sonst steht dort „durchklickbar an", während nichts durchgereicht wird.
+        return geklappt
 
     # ---------------------------------------------- Der Anfasser holt es zurück
     #
@@ -2173,6 +2200,23 @@ class Overlay:
         self._durchklick_war_an = True   # damit `durchklick_anwenden` es aufhebt
         self.durchklick_anwenden()
         self._status_setzen(sprache.Satz('ov_schloss_offen'))
+
+    def _schloss_zusperren(self):
+        """Klick auf das offene Schloss in der Leiste: Klicks ab jetzt ins Spiel.
+
+        Das Gegenstück zu `_schloss_loesen()` — und der Grund, warum es den
+        Knopf gibt: Ohne ihn war das Einschalten nur über die Einstellungen
+        erreichbar, während das Ausschalten direkt am Overlay ging.
+
+        Klappt es nicht, wird die Einstellung **zurückgenommen**. Ein
+        gespeichertes „an", während in Wahrheit nichts durchgereicht wird, wäre
+        das schlechteste von beidem — genauso hält es der Schalter in den
+        Einstellungen (`seiten._durchklick_um`)."""
+        pfade.einstellung_setzen('durchklickbar', True)
+        if self.durchklick_anwenden():
+            self._status_setzen(sprache.Satz('ov_schloss_zu'))
+        else:
+            pfade.einstellung_setzen('durchklickbar', False)
 
     ANFASSER_BREITE = 54
     ANFASSER_HOEHE = 5

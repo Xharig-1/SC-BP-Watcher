@@ -2972,6 +2972,77 @@ def main():
             os.environ['SC_BP_HOME'] = _alt_home43
 
     print()
+    print('44. Das Schloss laesst sich auch wieder ZUsperren')
+    # ⚠ Haldjas (pr0) am 28.08.2026: „man kann das durckclicken entfernen, aber
+    # eventuell kann der button zum locken stehen bleiben? sonst muss man ja
+    # erst wieder in die einstellungen."
+    #
+    # Er hat den blinden Fleck getroffen: Gebaut war nur der Rueckweg. Das
+    # schwebende Schloss erscheint, solange durchgereicht wird — schaltet man ab,
+    # ist es weg, und der Hinweg fuehrte allein ueber Einstellungen -> Overlay.
+    # Ein Weg hin und her gehoert an dieselbe Stelle.
+    import tempfile as _tf44
+    from scbp import pfade as pf44, sprache as sp44
+    import sc_bp_watcher as w44
+    _q44 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'), encoding='utf-8').read()
+
+    pruefe("zeichen.knopf(bar, 'schloss_auf'" in _q44,
+           'in der Overlay-Leiste steht ein offenes Schloss')
+    # ⚠ Nur, wo das System es kann. Unter nativem Wayland waere ein Knopf ohne
+    #   Wirkung schlimmer als keiner — dieselbe Regel wie beim Schalter.
+    pruefe(_q44.index('overlay.durchklickbar_moeglich()')
+           < _q44.index("zeichen.knopf(bar, 'schloss_auf'"),
+           'und zwar nur, wenn das System Klicks durchreichen kann')
+    pruefe(os.path.exists(os.path.join(WURZEL, 'assets', 'symbole',
+                                       'schloss_auf.png'))
+           or "'schloss_auf'" in open(os.path.join(WURZEL, 'tools',
+                                                   'symbole_bauen.py'),
+                                      encoding='utf-8').read(),
+           'das Symbol dafuer gibt es')
+    for _sl44 in ('hinweis_schloss_zu', 'ov_schloss_zu'):
+        _e44 = sp44.TEXTE.get(_sl44)
+        pruefe(bool(_e44) and len(_e44) == 2 and all(_e44),
+               'Text %s steht in beiden Sprachen' % _sl44)
+
+    # ⚠ Der teurere Teil: Klappt das Durchreichen nicht, MUSS die Einstellung
+    #   zurueckgenommen werden. Ein gespeichertes „an", waehrend in Wahrheit
+    #   nichts durchgereicht wird, ist das schlechteste von beidem — der Nutzer
+    #   sieht einen Zustand, den es nicht gibt. Der Schalter in den
+    #   Einstellungen macht es genauso (`seiten._durchklick_um`).
+    _alt_home44 = os.environ.get('SC_BP_HOME')
+    os.environ['SC_BP_HOME'] = _tf44.mkdtemp(prefix='sc-bp-schloss-')
+    try:
+        class _Ohne44:
+            """Ein Overlay ohne Tk — die Methode braucht nur diese zwei Dinge."""
+            gemeldet = None
+            klappt = False
+
+            def _status_setzen(self, satz):
+                self.gemeldet = satz
+
+            def durchklick_anwenden(self):
+                return self.klappt
+
+        _o44 = _Ohne44()
+        w44.Overlay._schloss_zusperren(_o44)
+        pruefe(pf44.einstellung_wahrheit('durchklickbar', False) is False,
+               'geht das Durchreichen nicht, wird die Einstellung zurueckgenommen')
+        pruefe(_o44.gemeldet is None,
+               'und es wird kein Erfolg gemeldet, den es nicht gab')
+
+        _o44.klappt = True
+        w44.Overlay._schloss_zusperren(_o44)
+        pruefe(pf44.einstellung_wahrheit('durchklickbar', False) is True,
+               'klappt es, bleibt das Durchreichen an')
+        pruefe(_o44.gemeldet is not None,
+               'und der Nutzer erfaehrt, wie er zurueckkommt')
+    finally:
+        if _alt_home44 is None:
+            os.environ.pop('SC_BP_HOME', None)
+        else:
+            os.environ['SC_BP_HOME'] = _alt_home44
+
+    print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
         for f in fehler:
