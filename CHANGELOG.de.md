@@ -10,6 +10,21 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc94 - 2026-08-28
+
+### Verbessert
+
+- **Im Aufblend-Betrieb sitzt das Schloss jetzt am Anfasser-Streifen.** Es stand
+  an der rechten oberen Ecke der gemerkten Overlay-Lage — richtig gerechnet,
+  aber einsam: Der Streifen, der zeigt wo das Overlay wartet, sitzt mittig, das
+  Schloss gut zweihundert Pixel weiter rechts, wo nichts zu sehen ist.
+
+  Zwei Marken für dieselbe Sache gehören zusammen. Jetzt liest es sich als
+  eines: hier wartet das Overlay, und hier ist das Schloss.
+
+  Gemeldet von **Haldjas (pr0)** am 28.08.2026: „das schloss sitzt jetzt neben
+  dem watcher".
+
 ## v3.0.0-rc93 - 2026-08-28
 
 ### Behoben

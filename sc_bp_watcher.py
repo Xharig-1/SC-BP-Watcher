@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc93'
+__version__ = '3.0.0-rc94'
 
 
 def _mitgeliefert(name):
@@ -2232,11 +2232,21 @@ class Overlay:
                 # obere Ecke dieser Lage — dorthin, wo im sichtbaren Zustand der
                 # Knopf in der Leiste sitzt. Blendet das Overlay auf, rückt es
                 # von selbst an seinen Platz (`_popup_zeigen` fasst nach).
+                #
+                # ⚠ Und zwar **direkt neben den Anfasser-Streifen**, nicht an
+                # die rechte Ecke der gemerkten Lage. Haldjas zu rc93: „das
+                # schloss sitzt jetzt neben dem watcher" — richtig gerechnet,
+                # aber einsam: Der Streifen sitzt mittig, das Schloss saß gut
+                # zweihundert Pixel weiter rechts, wo gar nichts zu sehen ist.
+                # Zwei Marken für dieselbe Sache gehören zusammen; dann liest
+                # man „hier wartet das Overlay, und hier ist das Schloss".
                 lage = GEOM_RE.match(self._letzte_lage or '')
                 if lage is not None and lage.group(3) is not None:
                     ov_breite, _h, links, oben = (int(z) for z in lage.groups())
-                    x = links + max(0, ov_breite - self.SCHLOSS_KANTE - 4)
-                    y = max(0, oben) + 4
+                    streifen = links + max(0, (ov_breite
+                                               - self.ANFASSER_BREITE) // 2)
+                    x = streifen + self.ANFASSER_BREITE + 4
+                    y = max(0, oben)
                 else:
                     x = (self.root.winfo_rootx()
                          + max(0, self.root.winfo_width()
