@@ -10,6 +10,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Geändert
+
+- **Der Reiter „Diagnose" heißt jetzt „Fehler melden" und trägt Rot.** Niemand
+  sucht unter „Diagnose", wenn etwas klemmt — und schon gar nicht in einem
+  zugeklappten Menü, wo er vorher steckte.
+
+  Das Rot arbeitet in zwei Stufen, damit es etwas bedeutet: **Das Wort ist
+  immer rot**, damit man den Reiter findet. **Das Symbol wird nur rot, wenn
+  wirklich Fehler mitgeschrieben wurden** — sonst stünde der Watcher dauerhaft
+  auf Alarm, obwohl alles läuft, und niemand nähme die Farbe noch ernst.
+
 ### Behoben
 
 - **Im Fehlerbericht ließ sich erst rollen, wenn die Seite ganz unten war.**

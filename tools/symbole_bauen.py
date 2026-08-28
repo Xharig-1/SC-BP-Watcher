@@ -115,6 +115,7 @@ FARBEN = {
     # Punkt grün gemalt werden, und die Zeile verlöre ihre Aussage.
     'gelb':  '#d8a03a',      # PROV   — aus der Game.log, noch nicht bestätigt
     'blau':  '#4aa3d8',      # CATA   — neu im Spiel craftbar, kein eigener Fund
+    'rot':   '#e05252',      # ROT    — „hier meldest du, wenn etwas klemmt“
 }
 
 # Welche Lucide-Vorlage wofür steht. Der Schlüssel ist der Name, unter dem das

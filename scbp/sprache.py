@@ -1244,7 +1244,7 @@ TEXTE = {
                           'broken while this says "operational", both can be '
                           'true.'),
     'hf_erkennung':      ('Erkennung', 'Detection'),
-    'hf_diagnose':       ('Diagnose', 'Diagnostics'),
+    'hf_diagnose':     ('Fehler melden', 'Report a problem'),
     'hf_neu':            ('neu', 'new'),
     'hf_sofort':         ('Änderungen werden sofort gespeichert',
                           'Changes are saved right away'),

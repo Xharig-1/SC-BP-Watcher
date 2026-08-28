@@ -10,6 +10,17 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Changed
+
+- **The „Diagnostics" tab is now called „Report a problem" and carries red.**
+  Nobody looks under „Diagnostics" when something is stuck — least of all
+  inside a collapsed menu, where it used to sit.
+
+  The red works in two stages so that it means something: **the word is always
+  red**, so the tab can be found. **The icon only turns red when errors have
+  actually been recorded** — otherwise the watcher would sit on permanent alert
+  while everything is fine, and nobody would take the colour seriously.
+
 ### Fixed
 
 - **The error report only scrolled once the page was at the bottom.** The mouse

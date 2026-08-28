@@ -60,6 +60,9 @@ SUB     = '#8b98a5'
 ACCENT  = '#9ce430'
 LINIE   = '#232c3d'
 GOLD    = '#e8c353'
+# Rot ist hier kein Zustand, sondern ein Wegweiser: Der Reiter „Fehler
+# melden“ traegt es, damit ihn niemand suchen muss.
+ROT     = '#e05252'
 
 # Mindestgröße: Darunter bricht die Bedienung, und keine Layout-Regel hilft mehr.
 # Kleinste Größe, auf die sich das Fenster ziehen lässt — zugleich die Startgröße.
@@ -1694,6 +1697,19 @@ class Hauptfenster:
                 zeile, strich, z, b, _ = eintrag
                 self.knoepfe[kennung] = (zeile, strich, z, b, None)
 
+    def _fehler_liegen_an(self):
+        """Wurde seit dem Start etwas mitgeschrieben? Faerbt das Reiter-Symbol.
+
+        Gefragt wird bei jedem Neuzeichnen der Leiste — also bei jedem
+        Seitenwechsel. Das genuegt: Wer gerade auf einen Fehler laeuft, klickt
+        ohnehin weiter, und dann steht die Farbe.
+        """
+        try:
+            from . import fehler as fehler_modul
+            return fehler_modul.anzahl() > 0
+        except Exception:
+            return False
+
     def _reiter_faerben(self):
         for kennung, (zeile, strich, z, b, marke) in self.knoepfe.items():
             an = (kennung == self.aktuell)
@@ -1704,8 +1720,24 @@ class Hauptfenster:
                 marke.hintergrund(grund)
             # ⚠ Ein Bild nimmt kein `fg` an — die passend eingefärbte Version
             # muss eingehängt werden.
-            z.faerben(zeichen.HELL if an else zeichen.GRAU)
-            b.configure(fg=FG if an else SUB, font=self.f_fett if an else self.f_grund)
+            # ⚠ „Fehler melden“ traegt Rot — aber in zwei Stufen, damit die
+            # Farbe etwas bedeutet und nicht nur schmueckt:
+            #
+            #   * **Das Wort ist immer rot.** Wer ein Problem hat, soll den
+            #     Reiter finden, ohne ein Menue zu durchsuchen. der Autor am
+            #     28.08.2026: „damit wirklich niemand uebersieht“.
+            #   * **Das Symbol wird nur rot, wenn wirklich etwas passiert ist**
+            #     — wenn also Fehler mitgeschrieben wurden. Sonst stuende der
+            #     Reiter dauerhaft auf Alarm, obwohl alles laeuft, und niemand
+            #     naehme ihn noch ernst.
+            #
+            # Der Strich darunter bleibt gruen, wenn die Seite offen ist —
+            # sonst saehe die gewaehlte Seite aus wie eine Warnung.
+            rot = (kennung == 'diagnose')
+            z.faerben(zeichen.ROT if (rot and self._fehler_liegen_an())
+                      else (zeichen.HELL if an else zeichen.GRAU))
+            b.configure(fg=ROT if rot else (FG if an else SUB),
+                        font=self.f_fett if (an or rot) else self.f_grund)
             strich.configure(bg=ACCENT if an else FLAECHE)
 
     def neu_aufbauen(self):

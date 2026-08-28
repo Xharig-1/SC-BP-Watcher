@@ -45,6 +45,9 @@ GRAU, GRUEN, HELL = 'grau', 'gruen', 'hell'
 # Die beiden Zustandsfarben der Bauplanzeilen — Gelb heißt „aus der Game.log,
 # noch nicht vom Launcher bestätigt", Blau „neu im Spiel craftbar".
 GELB, BLAU = 'gelb', 'blau'
+# Rot ist keine Zustandsfarbe, sondern ein Wegweiser: Der Reiter „Fehler
+# melden“ traegt sie, damit ihn niemand sucht, wenn gerade etwas klemmt.
+ROT = 'rot'
 
 # ⚠ Muss zu `KNOPF`/`ZEILE` in `tools/symbole_bauen.py` passen. Zwei Skalen,
 # weil es auf den Einsatzort ankommt: ein Knopf in der Leiste ist etwas anderes

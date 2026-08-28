@@ -2234,6 +2234,38 @@ def main():
             w35.destroy()
 
         print()
+        print('36. Der Reiter „Fehler melden“ faellt auf, ohne zu luegen')
+        # ⚠ Zwei Stufen, damit Rot etwas bedeutet (Entscheidung 28.08.2026):
+        #   * Das Wort ist IMMER rot — wer ein Problem hat, soll den Reiter
+        #     finden, ohne ein Menue zu durchsuchen.
+        #   * Das Symbol wird NUR rot, wenn wirklich Fehler mitgeschrieben
+        #     wurden. Sonst stuende der Reiter dauerhaft auf Alarm, obwohl
+        #     alles laeuft — und niemand naehme ihn noch ernst.
+        quelle36 = open(os.path.join(WURZEL, 'scbp', 'hauptfenster.py'),
+                        encoding='utf-8').read()
+        stelle36 = quelle36[quelle36.index('def _reiter_faerben'):][:2200]
+        pruefe("rot = (kennung == 'diagnose')" in stelle36,
+               'der Reiter diagnose wird gesondert behandelt')
+        pruefe('_fehler_liegen_an()' in stelle36,
+               'das Symbol haengt an tatsaechlichen Fehlern, nicht am Reiter')
+        pruefe('fg=ROT if rot' in stelle36,
+               'das Wort ist unabhaengig davon rot')
+        # Die Farbe muss es als Bild wirklich geben, sonst bleibt es unsichtbar
+        # — genau so ist heute Nacht schon einmal ein X verschwunden.
+        from scbp import zeichen as zi36
+        pruefe(zi36.ROT == 'rot', 'zeichen kennt die Farbe rot')
+        for n36 in ('diagnose',):
+            pfad36 = os.path.join(WURZEL, 'assets', 'symbole', '22',
+                                  n36 + '-rot.png')
+            pruefe(os.path.isfile(pfad36),
+                   'das Symbol %s liegt in Rot vor' % n36)
+        # Und der Reiter heisst, was er tut.
+        from scbp import sprache as sp36
+        sp36.setzen('de')
+        pruefe(sp36.t('hf_diagnose') == 'Fehler melden',
+               'der Reiter heisst „Fehler melden“, nicht „Diagnose“')
+
+        print()
         print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')
         # ⚠ Wer ueber Lutris, Heroic oder Flatpak spielt, bekam GAR KEINEN
         # Startknopf. Der Ausweg (Einstellung `spielstarter`) existierte, stand
