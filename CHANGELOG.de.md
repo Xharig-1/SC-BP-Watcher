@@ -10,6 +10,8 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc86 - 2026-08-28
+
 ### Behoben
 
 - **Auf „Texte im Spiel" standen Sternchen im Klartext.** In der Erklärung
