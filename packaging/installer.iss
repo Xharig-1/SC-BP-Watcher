@@ -267,3 +267,36 @@ begin
       Sleep(600);
   end;
 end;
+
+{ ⚠ Der Autostart wird an ZWEI Stellen gesetzt — und nur eine raeumt auf.
+
+  Der [Registry]-Abschnitt oben legt den Wert an, wenn beim Installieren das
+  Haekchen "Mit Windows starten" gewaehlt wurde; `uninsdeletevalue` raeumt genau
+  diesen Fall wieder weg. Das Programm selbst schreibt denselben Wert aber auch
+  (`scbp/autostart.py`, NAME = 'SC BP Watcher') — und davon weiss der
+  Deinstaller nichts.
+
+  Folge, gemessen am 28.08.2026 (der Autor): Nach dem Deinstallieren stand
+
+      HKCU\...\CurrentVersion\Run
+        "SC BP Watcher" -> C:\Users\...\Programs\SC BP Watcher\SC-BP-Watcher.exe
+
+  weiter in der Registry und zeigte auf eine Datei, die es nicht mehr gab.
+  Windows versucht sie bei jeder Anmeldung zu starten und scheitert still.
+  Wer deinstalliert, will das Programm loswerden — nicht einen Eintrag behalten,
+  von dem er nichts weiss.
+
+  Deshalb wird der Wert beim Deinstallieren **immer** entfernt, unabhaengig
+  davon, wer ihn gesetzt hat. `RegDeleteValue` stoert sich nicht daran, wenn er
+  gar nicht da ist.
+
+  ⚠ Nur der eine Wert, nicht der Schluessel: Unter `Run` stehen die
+  Autostart-Eintraege aller Programme. }
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  if CurUninstallStep = usPostUninstall then
+    RegDeleteValue(HKEY_CURRENT_USER,
+                   'Software\Microsoft\Windows\CurrentVersion\Run',
+                   'SC BP Watcher');
+end;

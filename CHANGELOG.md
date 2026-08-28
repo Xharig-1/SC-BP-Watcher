@@ -10,6 +10,24 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Fixed
+
+- **Uninstalling left the autostart entry behind.** The registry kept pointing
+  at a file that no longer existed — Windows tried to start it at every sign-in
+  and failed silently.
+
+  The reason: the entry is written in **two** places. The installer creates it
+  when you tick "Start with Windows" during setup, and it cleans up exactly that
+  case. But turning autostart on **inside the program** writes the same value —
+  and the uninstaller knew nothing about it.
+
+  Found by **der Autor** on 2026-08-28 while cleaning up after a test run. It is
+  the same autostart that made the update fail earlier that morning (code 5) —
+  it was only half handled at both ends.
+
+  The uninstaller now always removes the value, no matter who set it. Only that
+  one value — autostart entries of other programs are left alone.
+
 ## v3.0.0-rc84 - 2026-08-28
 
 ### Fixed

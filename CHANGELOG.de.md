@@ -10,6 +10,26 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Behoben
+
+- **Deinstallieren ließ den Autostart-Eintrag liegen.** Danach stand in der
+  Registry weiter ein Verweis auf eine Datei, die es nicht mehr gab — Windows
+  versuchte sie bei jeder Anmeldung zu starten und scheiterte still.
+
+  Der Grund: Der Eintrag wird an **zwei** Stellen gesetzt. Der Installer legt ihn
+  an, wenn man beim Installieren „Mit Windows starten“ wählt, und räumt genau
+  diesen Fall auch wieder weg. Schaltet man den Autostart aber **im Programm**
+  ein, schreibt das Programm denselben Wert — und davon wusste der Deinstaller
+  nichts.
+
+  Gefunden von **der Autor** am 28.08.2026 beim Aufräumen nach einem Testlauf.
+  Es ist derselbe Autostart, der am selben Morgen das Update scheitern ließ
+  (Code 5) — er war an beiden Enden nur halb geregelt.
+
+  Der Deinstaller entfernt den Wert jetzt immer, unabhängig davon, wer ihn
+  gesetzt hat. Nur diesen einen Wert — die Autostart-Einträge anderer Programme
+  bleiben unangetastet.
+
 ## v3.0.0-rc84 - 2026-08-28
 
 ### Behoben
