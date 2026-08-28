@@ -1910,6 +1910,13 @@ def frage_stellen(eltern, titel, text, ja=None, nein=None):
         top.configure(bg=BG)
         top.resizable(False, False)
         top.transient(eltern)
+        # ⚠ Eigene Kante. Ohne sie ist der Dialog eine dunkle Flaeche auf
+        # dunklem Grund — jeder andere Kasten im Programm (Zustandskasten,
+        # Karten) hat eine sichtbare Linie, und ohne sie wirkt er nicht
+        # dazugehoerig. Der Fensterrahmen des Systems ersetzt das nicht: Er
+        # sieht auf jedem Schreibtisch anders aus, innen bleibt es randlos.
+        top.configure(highlightthickness=1, highlightbackground=LINIE,
+                      highlightcolor=LINIE)
 
         schrift_titel = tkfont.Font(family='Segoe UI', size=12, weight='bold')
         schrift_text = tkfont.Font(family='Segoe UI', size=10)

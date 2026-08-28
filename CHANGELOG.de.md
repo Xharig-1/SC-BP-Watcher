@@ -10,6 +10,8 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc87 - 2026-08-28
+
 ### Verbessert
 
 - **Die Sicherheitsabfragen sehen jetzt aus wie der Rest des Programms.**

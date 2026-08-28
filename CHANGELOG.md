@@ -10,6 +10,8 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc87 - 2026-08-28
+
 ### Improved
 
 - **Confirmation dialogs now look like the rest of the program.** Three
