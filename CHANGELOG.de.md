@@ -10,6 +10,72 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0 - 2026-08-28
+
+> [!important]
+> **Unter Windows gibt es jetzt einen Installer statt einer einzelnen `.exe`.**
+> Beim Update öffnet sich deshalb einmal ein Installationsfenster — das ist
+> richtig so und keine fremde Software. Danach startet der Watcher von selbst
+> wieder. Unter Linux bleibt es bei einer Datei: dem AppImage.
+>
+> **Der SC Deutsch Launcher wird nicht mehr gebraucht.** Die Baupläne kommen aus
+> Star Citizens eigener `Game.log`. Wer den Launcher hat, behält deutsche
+> Bezeichnungen und ein paar Zusatzangaben — wer nicht (unter Linux immer), dem
+> fehlt nichts Wesentliches.
+
+Ein Jahr nach der ersten Fassung ist aus der schmalen Melde-Leiste ein Werkzeug
+geworden, das die Frage „welchen Bauplan habe ich, und wo bekomme ich den Rest?"
+vollständig beantwortet — ohne aus dem Spiel zu gehen.
+
+### Das Wichtigste
+
+- **Ein eigenes Fenster mit allem drin.** Bauplan-Liste zum Durchsuchen und
+  Abhaken, Fortschritt nach Bereichen, Einstellungen, Serverstatus, „Was ist
+  neu" — statt verstreuter kleiner Fenster.
+- **Herkunft je Bauplan.** Ein Klick zeigt Fraktion, Auftrag, nötigen Rang und
+  Belohnung — für **655 von 722** Bauplänen, sortiert nach dem leichtesten Weg.
+  „Mir fehlt X" ist die halbe Auskunft; „X gibt es bei Foxwell ab Veteran" ist
+  die ganze.
+- **Neu im Spiel.** Ein Filter zeigt, was der aktuelle Patch gebracht hat, ein
+  Auswahlfeld dazu jeden früheren Patch. Jeder Bauplan trägt die Spielversion,
+  in der es ihn zuerst gab.
+- **Angaben im Spiel.** Der Watcher schreibt in die Auftragstexte, **welche**
+  Baupläne ein Auftrag ausschüttet — mit `[x]` für die, die du schon hast. Und
+  auf Wunsch Klasse, Größe und Gütegrad an den Gegenstandsnamen, sodass am
+  Traktorstrahl „Glacier (Mil/1/A)" steht statt nur „Glacier".
+- **Das Overlay macht Platz, wenn du es brauchst.** Auf Wunsch blendet es nur
+  noch bei einem Neuzugang kurz auf; Mausklicks lassen sich ins Spiel
+  durchreichen, und ein Schloss in der Leiste holt es zurück. Einklappen geht
+  auch, dann bleibt nur die Titelzeile stehen.
+- **Fehler melden ohne Rätselraten.** Ein roter Knopf sammelt System, Fassung,
+  Spielstand und die letzten Fehler in einen Bericht — ohne Namen und ohne
+  Pfade. Das ist der Grund, warum die Fehler in diesem Änderungsprotokoll so
+  genau beschrieben sind.
+- **Deutsch und Englisch, vollständig.** Umschaltbar im Programm. Die
+  Bauplan-Meldung im Log erkennt der Watcher in **jeder** Spielsprache — er
+  findet die Formulierung selbst heraus.
+- **Windows und Linux aus einer Codebasis**, mit Autostart, Selbst-Update und
+  Ablagesymbol auf beiden.
+
+### Dank
+
+Ohne die drei hier wäre v3.0.0 deutlich schlechter — sie haben auf ihren eigenen
+Rechnern getestet und Fehler so beschrieben, dass sie zu finden waren:
+
+- **Bomb20** (pr0) — dass das Werkzeug unter Linux nicht aktuell zu halten war,
+  dazu der Absturz beim allerersten Start und ein Vormittag mit vier Funden, die
+  sonst jeden Nutzer getroffen hätten.
+- **Haldjas** (pr0) — der Aufblend-Betrieb und die durchgereichten Mausklicks
+  gehen auf ihn zurück; ebenso der Weg **hin und zurück** zum Durchreichen, das
+  Setup, das an der laufenden Datei abbrach, und die Konsolenfenster beim
+  Update.
+- **Morkhan** (Das Kartell) — die Angaben am Gegenstand im Spiel, und der Fund,
+  dass sich mehrere Preisstufen eines Auftrags im Katalog gegenseitig
+  überschrieben: **797 Baupläne** hatte davor nie jemand gesehen.
+
+Die vollständige Liste jeder einzelnen Änderung steht in den Abschnitten
+`v3.0.0-rc1` bis `v3.0.0-rc99` darunter.
+
 ## v3.0.0-rc99 - 2026-08-28
 
 ### Behoben

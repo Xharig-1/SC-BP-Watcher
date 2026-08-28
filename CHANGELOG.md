@@ -10,6 +10,69 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0 - 2026-08-28
+
+> [!important]
+> **On Windows there is now an installer instead of a single `.exe`.** Updating
+> therefore opens an installation window once — that is correct and not foreign
+> software. The watcher restarts by itself afterwards. On Linux it stays one
+> file: the AppImage.
+>
+> **The SC Deutsch Launcher is no longer required.** Blueprints come from Star
+> Citizen's own `Game.log`. With the launcher you keep German names and a few
+> extra details — without it (always the case on Linux) nothing essential is
+> missing.
+
+A year after the first build, the narrow notification bar has grown into a tool
+that fully answers „which blueprint do I have, and where do I get the rest?" —
+without leaving the game.
+
+### The main points
+
+- **One window with everything in it.** Blueprint list to search and tick off,
+  progress by area, settings, server status, „What's new" — instead of scattered
+  little windows.
+- **Where each blueprint drops.** One click shows the faction, the contract, the
+  standing required and the payout — for **655 of 722** blueprints, sorted by
+  the easiest route. „I'm missing X" is half the information; „X drops at
+  Foxwell from Veteran" is all of it.
+- **New in the game.** A filter shows what the current patch brought, and a
+  dropdown next to it every earlier patch. Every blueprint carries the game
+  version it first appeared in.
+- **Details inside the game.** The watcher writes into contract texts **which**
+  blueprints a contract hands out — with `[x]` for the ones you already have.
+  And on request class, size and grade onto item names, so the tractor beam
+  reads „Glacier (Mil/1/A)" rather than just „Glacier".
+- **The overlay gets out of the way.** On request it only pops up briefly when a
+  blueprint arrives; mouse clicks can be passed through to the game, and a lock
+  in the bar brings it back. It can also fold down to just its title bar.
+- **Reporting problems without guesswork.** A red button collects system,
+  version, game state and the last errors into one report — no names, no paths.
+  That is why the bugs in this changelog are described so precisely.
+- **German and English, completely.** Switchable in the program. The blueprint
+  message in the log is recognised in **any** game language — the watcher works
+  out the wording by itself.
+- **Windows and Linux from one codebase**, with autostart, self-update and a
+  tray icon on both.
+
+### Thanks
+
+Without these three, v3.0.0 would be markedly worse. They tested on their own
+machines and described faults well enough to find them:
+
+- **Bomb20** (pr0) — that the tool could not be kept up to date on Linux, plus
+  the crash on the very first start and a morning with four finds that would
+  otherwise have hit every user.
+- **Haldjas** (pr0) — pop-up mode and click-through go back to him; so does the
+  way **there and back** for click-through, the installer that failed on the
+  running file, and the console windows during updates.
+- **Morkhan** (Das Kartell) — the item details in game, and the find that
+  several reward tiers of one contract were overwriting each other in the
+  catalogue: **797 blueprints** nobody had ever seen before.
+
+The complete list of every single change is in the `v3.0.0-rc1` to `v3.0.0-rc99`
+sections below.
+
 ## v3.0.0-rc99 - 2026-08-28
 
 ### Fixed
