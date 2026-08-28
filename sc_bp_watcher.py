@@ -862,6 +862,30 @@ class Watcher(threading.Thread):
         except Exception:
             pass
 
+    # Bis zu wie vielen nachgelesenen Bauplänen einzeln gemeldet wird.
+    #
+    # ⚠ **Warum es überhaupt eine Grenze gibt.** Die Nachlese war bis v3.0.3
+    # vollständig still — mit gutem Grund: Beim allerersten Start geht sie über
+    # **alle** aufgehobenen Sitzungen (auf einem gewachsenen Rechner sind das
+    # über hundert), und niemand will danach hunderte Zeilen wegklicken.
+    #
+    # Nur trifft dieser Fall genau **einmal** zu. Im Alltag findet sie null bis
+    # drei — und die will man sehen. der Autor am 28.08.2026, nachdem ein Bauplan
+    # still im Bestand gelandet war: „sonst geht das still in den Bestand wie bei
+    # mir heute, und niemand sieht es."
+    #
+    # Also beides: bis zu dieser Zahl einzeln melden, darüber nur die Summe in
+    # der Statuszeile wie bisher.
+    NACHLESE_MELDEN_BIS = 10
+
+    def _nachgelesenes_melden(self, namen):
+        """Nachgelesene Baupläne in die Liste stellen — wenn es wenige sind."""
+        if not namen or len(namen) > self.NACHLESE_MELDEN_BIS:
+            return
+        for name in namen:
+            self.q.put(('new', name, art_of(name), meta_of(name) or '',
+                        time.strftime('%H:%M:%S'), True))
+
     def _emit(self, key, log_meta=None):
         # log_meta = Kürzel aus dem Log-Zusatz; wird nur genommen, wenn der
         # Launcher-Katalog nichts hergibt (brandneues Item nach einem SC-Patch).
@@ -918,15 +942,18 @@ class Watcher(threading.Thread):
             fehler.merken('watcher.neu_einlesen', ausnahme)
             self.q.put(('status', sprache.Satz('neu_gelesen_fehler')))
             return
-        neu = 0
+        dazu = []
         for name, _zusatz in funde:
             if bestand_datei.hinzufuegen(self.bestand, name, 'nachlese'):
-                neu += 1
-        if neu:
+                dazu.append(name)
+        if dazu:
             bestand_datei.speichern(self.bestand)
             self.seen = set(bestand_datei.schluessel(self.bestand))
         self.q.put(('status', sprache.Satz('neu_gelesen',
-                                           bericht.get('dateien', 0), neu)))
+                                           bericht.get('dateien', 0), len(dazu))))
+        # ⚠ Hier erst recht: Wer den Knopf drückt, will das Ergebnis sehen und
+        # nicht nur eine Zahl in der Leiste.
+        self._nachgelesenes_melden(dazu)
 
     def _nachlese(self):
         """Beim Start die aufgehobenen Logs durchsehen und in den Bestand nehmen.
@@ -939,14 +966,15 @@ class Watcher(threading.Thread):
             funde, bericht = logquelle.nachlesen(self.stand)
         except Exception:
             return
-        neu = 0
+        dazu = []
         for name, _zusatz in funde:
             if bestand_datei.hinzufuegen(self.bestand, name, 'nachlese'):
-                neu += 1
-        if neu:
+                dazu.append(name)
+        if dazu:
             bestand_datei.speichern(self.bestand)
-            self.q.put(('status', sprache.Satz('nachgelesen', neu,
+            self.q.put(('status', sprache.Satz('nachgelesen', len(dazu),
                                             bericht['dateien'])))
+            self._nachgelesenes_melden(dazu)
         if bericht.get('luecke') and bericht.get('grund'):
             self.q.put(('hinweis', bericht['grund']))
 
@@ -1742,12 +1770,17 @@ class Overlay:
         self._placeholder()
 
     @staticmethod
-    def _sub_text(art, meta, ts):
+    def _sub_text(art, meta, ts, nachlese=False):
         parts = [p for p in (art, meta) if p]
         parts.append(ts)
+        # ⚠ Nachgelesenes muss als solches erkennbar sein. Sonst sieht es aus
+        # wie ein Fund von eben — und wer gerade nichts freigeschaltet hat,
+        # fragt sich, woher der kommt.
+        if nachlese:
+            parts.append(sprache.t('nachlese_marke'))
         return ' · '.join(parts)
 
-    def add_new(self, key, art, meta, ts):
+    def add_new(self, key, art, meta, ts, nachlese=False):
         if self.count == 0 and hasattr(self, '_ph') and self._ph.winfo_exists():
             self._ph.destroy()
         self.count += 1
@@ -1773,8 +1806,8 @@ class Overlay:
         name = tk.Label(txt, text=key, bg=BG, fg=FG, font=self.f_item,
                         anchor='w', justify='left')
         name.pack(fill='x', anchor='w')
-        sub = tk.Label(txt, text=self._sub_text(art, meta, ts), bg=BG,
-                       fg=SUB, font=self.f_sub, anchor='w')
+        sub = tk.Label(txt, text=self._sub_text(art, meta, ts, nachlese),
+                       bg=BG, fg=SUB, font=self.f_sub, anchor='w')
         sub.pack(fill='x', anchor='w')
         row._bpkey = nk
         self.rows[nk] = {'frame': row, 'dot': dot, 'name': name, 'sub': sub, 'ts': ts}
@@ -1881,7 +1914,7 @@ class Overlay:
                     # auffallen, aber kein Fenster aufreißen.
                     self.add_hinweis(msg[1])
                 elif msg[0] == 'new':
-                    self.add_new(msg[1], msg[2], msg[3], msg[4])
+                    self.add_new(*msg[1:])
                 elif msg[0] == 'catalog':
                     self.add_catalog(msg[1], msg[2], msg[3], msg[4])
         except queue.Empty:
@@ -2190,28 +2223,28 @@ class Overlay:
     # Feinausgleich in Pixeln, um den das schwebende Schloss nach rechts gesetzt
     # wird, während es über dem Knopf in der Leiste liegt.
     #
-    # ⚠ **Gemessen, nicht geschätzt.** Aus einem Bildschirmfoto vom 28.08.2026
-    # spaltenweise ausgezählt (PNG von Hand dekodiert, grüne Bildpunkte je
-    # Spalte gezählt):
+    # ⚠ **Steht auf 0, und das ist das Ergebnis einer Messung — keine
+    # Bequemlichkeit.** Am 28.08.2026 stand hier kurzzeitig eine 7. Sie stammte
+    # aus einem Bildschirmfoto, auf dem das schwebende Schloss sichtbar links
+    # neben dem Knopf saß; ausgezählt ergab das sieben Pixel.
     #
-    #     schwebendes Schloss   x = 1068 … 1091
-    #     Knopf darunter        x = 1094 … 1098  (nur dieser Rest war zu sehen)
+    # Der Haken: Das Foto war **5120×1440** groß — der zweite Monitor, nicht der
+    # Hauptbildschirm mit 4096×1152. Dort sind die Symbole 24 px breit statt 22.
+    # Ein in Pixeln gemessener Ausgleich gilt damit genau für den einen
+    # Bildschirm, auf dem gemessen wurde, und verschiebt ihn auf jedem anderen.
     #
-    # Beide Symbole sind 24 px breit, der untere beginnt also bei 1075 —
-    # **7 px weiter rechts**. Der hervorschauende Streifen zeigte nur den
-    # Schlosskörper und keinen Bügel: genau das Muster zweier versetzter
-    # Symbole, nicht etwa ein Zeichenfehler.
+    # Nachgemessen am laufenden Programm auf dem Hauptbildschirm (Fensterlage
+    # über `EnumWindows`, Leiste über `PrintWindow` abgegriffen und die
+    # Symbolspalten ausgezählt):
     #
-    # ⚠ **Die Ursache ist damit NICHT gefunden, nur die Wirkung.** Im Nachbau
-    # (gleiche Tk-Fassung, gleiche Symbole, gleicher Aufbau) sitzt es bei 0
-    # exakt — zweimal nachgemessen. Deshalb steht der Wert hier oben und nicht
-    # mitten in der Rechnung: Zeigt sich auf einem anderen Aufbau ein anderer
-    # Versatz, ist genau **eine** Zeile zu ändern.
+    #     Knopf in der Leiste   Symbol bei x = 838 … 855
+    #     schwebendes Fenster   x = 843, Symbol also ab 845
     #
-    # Und er gilt nur für den sichtbaren Fall. Der Aufblend-Betrieb rechnet aus
-    # der Streifen-Position und darf davon nichts abbekommen — sonst zieht man
-    # das eine gerade und bricht dabei das andere.
-    SCHLOSS_FEIN_X = 7
+    # Mit Ausgleich saß es **sieben Pixel zu weit rechts**; ohne sitzt es
+    # deckungsgleich. Der Wert bleibt als benannte Konstante stehen, damit die
+    # Stelle auffindbar ist — wer hier wieder eine Zahl einträgt, sollte den
+    # Absatz oben gelesen haben.
+    SCHLOSS_FEIN_X = 0
 
     def _schloss_anwenden(self, an, versuch=0):
         """Das Schloss zeigen oder wegnehmen — gerufen aus `overlay.py`.
@@ -2267,8 +2300,8 @@ class Overlay:
                 y = knopf.winfo_rooty()
                 breite = max(knopf.winfo_width(), 8)
                 hoehe = max(knopf.winfo_height(), 8)
-            elif (knopf is not None and versuch < 10
-                    and self._wird_noch_gezeichnet()):
+            elif (knopf is not None and self._wird_noch_gezeichnet()
+                    and (versuch < 10 or self.anzeigeart != 'popup')):
                 # ⚠ **Beim Start ist der Knopf noch nicht gezeichnet — dann wird
                 # gewartet, nicht geraten.** Gemeldet von Haldjas (pr0) am
                 # 28.08.2026 zu rc91: „Starte Watcher — Schloss ist an 2
@@ -2285,8 +2318,20 @@ class Overlay:
                 #
                 # Ein kurz aufblitzendes falsches Schloss wäre nur die halbe
                 # Reparatur — also gar nicht erst bauen, sondern nachfassen, bis
-                # die Leiste steht. Begrenzt, sonst liefe es ewig weiter, solange
-                # das Overlay eingeklappt oder im Pop-up-Betrieb versteckt ist.
+                # die Leiste steht.
+                #
+                # ⚠ **Die Begrenzung gilt nur im Aufblend-Betrieb.** Dort ist das
+                # Overlay absichtlich weg und kommt vielleicht nie wieder — nach
+                # zehn Anläufen weicht das Schloss deshalb auf den
+                # Anfasser-Streifen aus, den es dort ja gibt.
+                #
+                # Steht das Overlay dauerhaft ("Immer sichtbar"), gibt es keinen
+                # Anfasser, auf den man ausweichen könnte: Die gemerkte Lage ist
+                # dann irgendeine frühere Fensterposition, und das Schloss landete
+                # sichtbar daneben, bis es beim nächsten Anlass zurücksprang.
+                # Gemeldet am 28.08.2026: "das schloss springt nach ner zeit an
+                # die richtige stelle". Also: dort ohne Begrenzung warten — die
+                # Leiste kommt, sie ist ja sichtbar.
                 self.root.after(300, lambda: self._nachfassen(versuch + 1))
                 return
             else:

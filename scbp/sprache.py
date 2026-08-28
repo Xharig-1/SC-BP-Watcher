@@ -282,6 +282,7 @@ TEXTE = {
                           'Reading … the result will appear in the bar shortly.'),
     's_be_neu_kein':     ('Dafür muss der Watcher laufen.',
                           'The watcher needs to be running for this.'),
+    'nachlese_marke':    ('nachgelesen', 'caught up'),
     'nachgelesen':       ('Nachgelesen: %d Baupläne aus %d früheren Sitzungen '
                           'übernommen.',
                           'Caught up: %d blueprints from %d earlier sessions.'),

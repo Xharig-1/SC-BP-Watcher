@@ -157,7 +157,7 @@ On top of that: class, size and grade are right there in the line (`M/1/A`), the
 | <img src="assets/symbole/22/abhaken-gruen.png" width="22" alt=""> **Tells you about updates** | Notices new versions by itself — with „What's new" to read up on, including older releases |
 | <img src="assets/symbole/22/nurlesend-gruen.png" width="22" alt=""> **Read only** | Changes nothing in the game — reads `Game.log` and, if present, the launcher files |
 | <img src="assets/symbole/22/eigenbuch-gruen.png" width="22" alt=""> **Own inventory** | Keeps track of which blueprints you have — without the SC Deutsch Launcher |
-| 🕓 **Catch-up** | Reads stored logs of earlier sessions on start and picks up what was unlocked while it wasn't running |
+| 🕓 **Catch-up** | Reads stored logs of earlier sessions **and the running one** on start, picking up what was unlocked while it wasn't running — finds are reported, not added silently. A **Read the logs again** button (overlay and settings) goes through everything once more on demand |
 | 🐧 **Windows and Linux** | One build for both systems, including autostart and log language detection |
 
 ## Requirements

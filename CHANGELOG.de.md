@@ -10,6 +10,29 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Neu
+
+- **Nachgelesene Baupläne werden gemeldet, nicht nur still eingetragen.** Findet
+  der Watcher beim Start oder auf Knopfdruck etwas in den Protokollen, steht es
+  jetzt in der Liste — gekennzeichnet mit *nachgelesen*, damit es nicht wie ein
+  Fund von eben aussieht.
+
+  Bis zu zehn Stück einzeln; darüber bleibt es bei der Summe in der Statuszeile.
+  Der Grund für diese Grenze: Beim allerersten Start geht die Nachlese über
+  **alle** aufgehobenen Sitzungen — auf einem gewachsenen Rechner sind das über
+  hundert, und die will niemand einzeln wegklicken. Im Alltag sind es null bis
+  drei, und genau die will man sehen.
+
+### Behoben
+
+- **Das schwebende Schloss saß sieben Pixel zu weit rechts.** Der Ausgleich
+  dafür stammte aus einer Messung auf einem **anderen Bildschirm** (5120×1440
+  statt 4096×1152) — dort sind die Symbole 24 px breit statt 22, und ein in
+  Pixeln gemessener Ausgleich gilt genau für den einen Bildschirm.
+
+  Am laufenden Programm nachgemessen: Ohne Ausgleich sitzt es deckungsgleich.
+  Er steht wieder auf null.
+
 ## v3.0.3 - 2026-08-28
 
 ### Behoben

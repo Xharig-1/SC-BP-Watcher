@@ -242,6 +242,22 @@ def main():
                 print('         Abweichung:', x)
 
         print('\n3. Neuer Fund im laufenden Spiel')
+        # ⚠ Erst die Schlange leeren. Seit v3.1.0 meldet die Nachlese, was sie
+        #   gefunden hat (bis zu `NACHLESE_MELDEN_BIS` Stück) — das sind hier
+        #   sieben, und die stünden sonst in der Auswertung unten und ließen den
+        #   frischen Fund wie einen von acht aussehen. Der Test prüft, dass
+        #   **dieser eine** gemeldet wird, nicht wie viele vorher kamen.
+        _vorher = []
+        while not q.empty():
+            _vorher.append(q.get())
+        _nachgelesen = [m for m in _vorher if m[0] == 'new']
+        pruefe(bool(_nachgelesen),
+               'die Nachlese meldet ihre Funde (%d Zeilen)' % len(_nachgelesen))
+        # ⚠ Und sie sind als nachgelesen gekennzeichnet, sonst sehen sie aus wie
+        #   ein Fund von eben — wer gerade nichts freigeschaltet hat, wundert sich.
+        pruefe(all(m[-1] is True for m in _nachgelesen),
+               'und zwar als nachgelesen gekennzeichnet')
+
         with open(os.path.join(live, 'Game.log'), 'a', encoding='utf-8') as f:
             f.write(zeile('Bauplan erhalten: Behring FS-9 LMG', 2))
         time.sleep(w.POLL_SEC + 2)

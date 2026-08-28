@@ -10,6 +10,29 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Added
+
+- **Caught-up blueprints are now reported, not just added silently.** When the
+  watcher finds something in the logs — on startup or at the push of the button
+  — it appears in the list, marked *caught up* so it doesn't look like a fresh
+  find.
+
+  Up to ten individually; above that it stays with the summary in the status
+  bar. The reason for that limit: on the very first start the catch-up goes
+  through **every** stored session — on a well-used machine that is over a
+  hundred, and nobody wants to dismiss those one by one. Day to day it is zero
+  to three, and those are exactly the ones you want to see.
+
+### Fixed
+
+- **The floating lock sat seven pixels too far right.** The offset for it came
+  from a measurement on a **different screen** (5120×1440 instead of 4096×1152)
+  — symbols are 24 px wide there instead of 22, and an offset measured in pixels
+  applies to exactly the one screen it was measured on.
+
+  Measured again on the running program: without the offset it sits exactly on
+  target. It is back to zero.
+
 ## v3.0.3 - 2026-08-28
 
 ### Fixed
