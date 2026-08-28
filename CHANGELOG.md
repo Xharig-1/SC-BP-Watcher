@@ -10,6 +10,21 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc94 - 2026-08-28
+
+### Improved
+
+- **In pop-up mode the lock now sits by the handle strip.** It sat at the top
+  right corner of the remembered overlay position — correctly calculated, but
+  on its own: the strip that shows where the overlay is waiting sits centred,
+  with the lock a good two hundred pixels further right, where there is nothing
+  to see.
+
+  Two markers for the same thing belong together. It now reads as one: this is
+  where the overlay waits, and this is the lock.
+
+  Reported by **Haldjas (pr0)** on 2026-08-28.
+
 ## v3.0.0-rc93 - 2026-08-28
 
 ### Fixed

@@ -3070,6 +3070,11 @@ def main():
         pruefe('self._letzte_lage' in _rumpf44,
                'im Pop-up-Betrieb gilt die gemerkte Lage, nicht das '
                'versteckte Fenster')
+        # ⚠ Und dort gehoert es an den Anfasser-Streifen. An der rechten Ecke
+        #   der gemerkten Lage saesse es einsam, weit weg von der einzigen Marke,
+        #   die im Aufblend-Betrieb ueberhaupt zu sehen ist.
+        pruefe('ANFASSER_BREITE' in _rumpf44,
+               'und haengt am Anfasser-Streifen, nicht in der leeren Ecke')
         # Und wenn sich der Bezugspunkt aendert, muss es mitkommen.
         for _wo44, _was44 in (('def _popup_zeigen', 'beim Aufblenden'),
                               ('def _popup_verstecken', 'beim Zublenden')):
