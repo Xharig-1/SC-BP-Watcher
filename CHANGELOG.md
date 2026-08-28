@@ -10,6 +10,8 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc85 - 2026-08-28
+
 ### Fixed
 
 - **On Linux, description texts were cut off instead of wrapping — pushing the
