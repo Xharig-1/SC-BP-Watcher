@@ -10,6 +10,25 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc99 - 2026-08-28
+
+### Behoben
+
+- **Das grüne Schloss lag nicht genau auf dem Schloss in der Leiste.** Rechts
+  schaute dadurch ein schmaler Rand des Symbols darunter hervor — es sah aus wie
+  zwei Schlösser statt wie eines, das die Farbe wechselt.
+
+  Der Versatz wurde aus einem Bildschirmfoto **ausgemessen**, nicht geschätzt:
+  Das obere Schloss stand bei x=1068–1091, vom unteren war nur x=1094–1098 zu
+  sehen. Bei 24 px Breite beginnt das untere damit bei 1075 — **7 px weiter
+  rechts**. Genau um diesen Wert rückt das obere jetzt nach.
+
+  ⚠ Der Wert ist gemessen, seine **Ursache nicht gefunden**: In einem Nachbau
+  mit gleicher Tk-Fassung und gleichen Symbolen sitzt das Schloss ohne Ausgleich
+  exakt. Er steht deshalb als benannte Konstante an einer Stelle und gilt nur
+  für den sichtbaren Zustand — der Aufblend-Betrieb rechnet anders und bleibt
+  unangetastet.
+
 ## v3.0.0-rc98 - 2026-08-28
 
 ### Behoben

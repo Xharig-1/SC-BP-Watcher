@@ -3070,6 +3070,14 @@ def main():
         # ⚠ Ein Toplevel erbt die Deckkraft des Hauptfensters NICHT. Ohne diese
         #   Zeile lag ein voll deckendes Schloss ueber einem zu 93 % durch-
         #   scheinenden Knopf — zwei Symbole mit verschiedener Saettigung.
+        # ⚠ Der Feinausgleich gilt NUR im sichtbaren Fall. Der Aufblend-Betrieb
+        #   rechnet aus der Streifen-Position — wer ihn dort mit einrechnet,
+        #   bricht das eine, waehrend er das andere geradezieht.
+        pruefe('SCHLOSS_FEIN_X' in _rumpf44,
+               'der Feinausgleich steht als benannte Konstante im sichtbaren Fall')
+        _versteckt44 = _rumpf44[_rumpf44.index('ANFASSER_BREITE + 4'):]
+        pruefe('SCHLOSS_FEIN_X' not in _versteckt44,
+               'und fasst den Aufblend-Betrieb nicht an')
         pruefe('DECKKRAFT' in _rumpf44,
                'das Schloss traegt dieselbe Deckkraft wie das Overlay')
         pruefe('self._letzte_lage' in _rumpf44,
