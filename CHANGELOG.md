@@ -10,6 +10,47 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Fixed
+
+- **A contract with several payout tiers lost nearly all its blueprints.**
+  Contracts sharing a text key overwrote each other while the catalogue was
+  built — the last one read won, the rest were dropped. Measured against game
+  build 4.10.0: **123 of 353** contract keys are shared, **319** contracts were
+  dropped, and **797 blueprint entries** were never shown to anyone. The bounty
+  contract listed 8 blueprints instead of 25.
+
+  Found by **Morkhan**, who kept pushing: "I still don't get shown which
+  blueprints I can get from the beginner contract, only the ones from the
+  highest tier." It wasn't the highest tier — it was the last one read. All
+  tiers are now merged.
+
+- **A catalogue already on disk would never have picked up this rebuild.** It
+  was only refreshed when Star Citizen shipped a new version. It now carries
+  its own build number — if its structure changes, it is rebuilt, patch or no
+  patch.
+
+### Changed
+
+- **The `[BP 3/12]` count in the title is gone; it now reads just `[BP]`.** The
+  number looked useful but was not true: a contract's list merges all payout
+  tiers, and which of them your own tier grants cannot be resolved — 123 of 353
+  contracts share their text key across tiers. "3 of 12" really meant "3 of 12
+  that someone, somewhere, can get". The same number is gone from the list
+  heading too.
+
+  What remains is the honest part: **ticked means you have it** — regardless of
+  whether this tier grants it, or where it came from.
+
+- **Where tiers differ, the required rank is shown behind the blueprint.** For
+  example "needs Head Contractor (38,000 XP)" next to plans only available far
+  up, while others from the same contract drop from 800 XP. Shown only where it
+  actually tells blueprints apart — if they all need the same rank, it is
+  already stated above under "Min. reputation".
+
+- **Contracts with tiers that grant nothing now say so.** "Note: 1 of the 3
+  tiers of this contract give no blueprints at all."
+
+
 ### Changed
 
 - **The „Diagnostics" tab is now called „Report a problem" and carries red.**

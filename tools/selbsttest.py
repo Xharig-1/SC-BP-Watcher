@@ -2515,6 +2515,60 @@ def main():
         shutil.rmtree(basis, ignore_errors=True)
 
     print()
+    print('37. Ein Auftrag mit mehreren Preisstufen verliert keine Bauplaene')
+    # ⚠ Der Fehler vom 28.08.2026, gemeldet von Morkhan. `_missionen()` legte
+    # die Auftraege unter ihrem Textschluessel ab — und Vertraege, die sich
+    # einen teilen (123 von 353), ueberschrieben sich gegenseitig. Der zuletzt
+    # gelesene gewann, 797 Bauplan-Eintraege sah nie jemand.
+    #
+    # Geprueft wird an einem winzigen Dump mit genau dieser Falle: zwei
+    # Stufen, ein Schluessel, verschiedene Toepfe. Kommt nur eine Seite an,
+    # ist der alte Fehler zurueck.
+    from scbp import katalog as k37
+    dump37 = {
+        'blueprintPools': {
+            'p-klein': {'blueprints': [{'name': 'Kleiner Plan'}]},
+            'p-gross': {'blueprints': [{'name': 'Grosser Plan'}]},
+        },
+        'factionRewardsPools': [],
+        'contracts': [
+            {'titleLocKey': 'geteilt_title', 'descriptionLocKey': 'geteilt_desc',
+             'rewardUEC': 50000, 'blueprintRewards': [{'blueprintPool': 'p-klein',
+                                                       'chance': 1}],
+             'minStanding': {'name': 'Neuling', 'minReputation': 800}},
+            {'titleLocKey': 'geteilt_title', 'descriptionLocKey': 'geteilt_desc',
+             'rewardUEC': 260000, 'blueprintRewards': [{'blueprintPool': 'p-gross',
+                                                        'chance': 1}],
+             'minStanding': {'name': 'Meister', 'minReputation': 38000}},
+            # Dritte Stufe, die gar nichts ausschuettet — der Fall, wegen dem
+            # jemand fuer eine Liste hinfliegt, die seine Stufe nie hergibt.
+            {'titleLocKey': 'geteilt_title', 'descriptionLocKey': 'geteilt_desc',
+             'rewardUEC': 20000, 'blueprintRewards': [],
+             'minStanding': {'name': 'Anwaerter', 'minReputation': 1}},
+        ],
+    }
+    m37 = k37._missionen(dump37)
+    e37 = m37.get('geteilt_title') or {}
+    pruefe(sorted(e37.get('bp') or []) == ['Grosser Plan', 'Kleiner Plan'],
+           'beide Stufen kommen an, keine ueberschreibt die andere')
+    pruefe(e37.get('leer') == 1 and e37.get('stufen') == 3,
+           'die Stufe ohne Bauplaene wird vermerkt (1 von 3)')
+    pruefe((e37.get('ab') or {}).get('Grosser Plan', {}).get('rep') == 38000,
+           'der hoehere Plan traegt seinen eigenen Rang')
+    pruefe((e37.get('ab') or {}).get('Kleiner Plan', {}).get('rep') == 800,
+           'und der kleine seinen')
+    # Gegenprobe: Brauchen alle Plaene denselben Rang, faellt die Angabe weg —
+    # sonst stuende zwoelfmal dieselbe Zeile untereinander.
+    gleich37 = json.loads(json.dumps(dump37))
+    gleich37['contracts'][1]['minStanding'] = {'name': 'Neuling',
+                                               'minReputation': 800}
+    pruefe(not (k37._missionen(gleich37).get('geteilt_title') or {}).get('ab'),
+           'bei gleichem Rang steht die Angabe NICHT an jedem Plan')
+    # Und der Katalog auf der Platte muss den Umbau ueberhaupt mitbekommen.
+    pruefe(k37.FORMAT >= 2,
+           'der Katalog hat eine Aufbau-Nummer (sonst greift der Umbau nie)')
+
+    print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), len(fehler) + 0))
         for f in fehler:

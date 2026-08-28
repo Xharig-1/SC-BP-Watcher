@@ -10,6 +10,49 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Behoben
+
+- **Ein Auftrag mit mehreren Preisstufen verlor fast alle seine Baupläne.**
+  Verträge, die sich einen Textschlüssel teilen, haben sich beim Aufbauen des
+  Katalogs gegenseitig überschrieben — der zuletzt eingelesene gewann, alle
+  anderen fielen weg. Gemessen am Spielstand 4.10.0: **123 von 353**
+  Auftrags-Schlüsseln sind mehrfach belegt, **319** Verträge fielen weg, und
+  **797 Bauplan-Einträge** hat dadurch nie jemand zu Gesicht bekommen. Beim
+  Kopfgeld-Auftrag standen 8 Baupläne statt 25.
+
+  Gefunden von **Morkhan**, der nicht lockergelassen hat: „ich bekomme nicht
+  angezeigt, welche Baupläne ich beim Neulingsauftrag bekommen kann, sondern
+  NUR die auf der höchsten Stufe." Es war nicht die höchste Stufe — es war die
+  zuletzt gelesene. Jetzt werden alle Stufen zusammengeführt.
+
+- **Ein Katalog, der schon auf der Platte lag, hätte den Umbau nie
+  mitbekommen.** Er wurde bisher nur erneuert, wenn Star Citizen eine neue
+  Version bringt. Er trägt jetzt eine eigene Aufbau-Nummer — ändert sich sein
+  Inneres, wird er neu gebaut, auch ohne Patch.
+
+### Geändert
+
+- **Die Zählung `[BP 3/12]` im Titel ist weg, es steht nur noch `[BP]`.** Die
+  Zahl sah nützlich aus, war aber nicht wahr: Die Liste eines Auftrags führt
+  alle Preisstufen zusammen, und welche davon die eigene Stufe hergibt, lässt
+  sich nicht auflösen — 123 von 353 Aufträgen teilen sich den Textschlüssel
+  über ihre Stufen hinweg. „3 von 12" hieß in Wahrheit „3 von 12, die
+  irgendjemand irgendwo bekommen kann". Dieselbe Zahl ist auch aus der
+  Listen-Überschrift verschwunden.
+
+  Was bleibt, ist das Ehrliche: **Angehakt heißt „hab ich"** — unabhängig
+  davon, ob diese Stufe den Bauplan hergibt oder woher er kam.
+
+- **Wo sich die Stufen unterscheiden, steht der nötige Rang hinter dem
+  Bauplan.** Zum Beispiel „erst ab Head Contractor (38.000 XP)" neben Plänen,
+  die es erst weit oben gibt, während andere desselben Auftrags schon ab 800
+  XP fallen. Steht nur dort, wo es die Baupläne wirklich unterscheidet —
+  brauchen alle denselben Rang, steht er ohnehin oben unter „Min. Reputation".
+
+- **Aufträge, bei denen einzelne Stufen leer ausgehen, sagen das jetzt.**
+  „Achtung: 1 der 3 Stufen dieses Auftrags geben gar keine Baupläne."
+
+
 ### Geändert
 
 - **Der Reiter „Diagnose" heißt jetzt „Fehler melden" und trägt Rot.** Niemand
