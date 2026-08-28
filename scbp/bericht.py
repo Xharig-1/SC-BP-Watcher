@@ -82,6 +82,23 @@ def _spielsprache():
     return '%s (%s)' % (', '.join(gefunden), woher)
 
 
+def _patchhistorie():
+    """Was die Historie je Spielversion führt — mit Anzahl.
+
+    ⚠ Diese Zeile gibt es, weil ein Fehler sich hier drei Wochen lang verstecken
+    konnte: Ein eigener Fund überschrieb die mitgelieferte Liste derselben
+    Version, und aus 24 Bauplänen in 4.10.0 wurden 3. Im Bericht stand nur der
+    Katalogstand — der war völlig in Ordnung, die Historie darunter nicht. Wer
+    „der Patch-Filter zeigt fast nichts" meldet, soll die Zahlen sehen können,
+    ohne dass jemand erst eine JSON-Datei aufmacht."""
+    from . import patchhistorie
+    liste = patchhistorie.patches()
+    if not liste:
+        return None
+    return ', '.join('%s (%d)' % (kurz, anzahl)
+                     for _voll, kurz, anzahl in liste[:5])
+
+
 def _json_groesse(pfad_, schluessel):
     """Wie viele Einträge stehen in einer unserer JSON-Dateien?
 
@@ -271,6 +288,7 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
         __import__('scbp.merkliste', fromlist=['pfad']).pfad(), 'eintraege')))
     zeile(t('b_katalog'), _sicher(lambda: __import__(
         'scbp.katalog', fromlist=['aktuelle_version']).aktuelle_version()))
+    zeile(t('b_historie'), _sicher(_patchhistorie))
     zeilen.append('')
 
     zeile(t('b_ordner'), _sicher(lambda: uebersicht.get('app_ordner')))

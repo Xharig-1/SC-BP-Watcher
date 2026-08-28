@@ -2854,6 +2854,61 @@ def main():
            'und zwar genau den Namen, den das Programm schreibt (%s)' % as41.NAME)
 
     print()
+    print('42. Ein eigener Fund ergaenzt einen Patch, er ersetzt ihn nicht')
+    # ⚠ Gemessen am 28.08.2026 (der Autor): Im Filter stand „4.10.0 (3)", und
+    # darunter drei Schiffswaffen. Mitgeliefert waren 21 Baupläne für dieselbe
+    # Version — der ganze Patch war aus der Anzeige verschwunden.
+    #
+    # Ursache: `laden()` legte die eigene Historie per `update()` über die
+    # mitgelieferte. Bei gleichem Versionsschlüssel gewann die eigene komplett.
+    # Nur: Was `eintragen()` schreibt, ist immer bloß der **Zuwachs seit dem
+    # letzten Lauf** — hier drei Waffen, die scmdb zwei Tage später nachreichte.
+    # Als vollständige Patch-Liste gelesen ist das zwangsläufig falsch.
+    #
+    # Diese Prüfung hält beide Richtungen fest: mitgeliefert + eigen, und eigen
+    # + eigen. Fällt eine heraus, frisst der nächste Nachzügler wieder den Patch.
+    import tempfile as _tf42
+    from scbp import patchhistorie as ph42
+    _alt_home42 = os.environ.get('SC_BP_HOME')
+    os.environ['SC_BP_HOME'] = _tf42.mkdtemp(prefix='sc-bp-historie-')
+    try:
+        _mit42 = ph42._lies(ph42.pfade.programm_datei(ph42.MITGELIEFERT))
+        _v42 = sorted(_mit42, key=ph42.rang)[-1]
+        _vorher42 = len(_mit42[_v42].get('neu') or [])
+        pruefe(_vorher42 > 1,
+               'die mitgelieferte Historie fuehrt mehrere Bauplaene (%d)'
+               % _vorher42)
+
+        # a) Der Fall vom 28.08.2026: zwei Nachzuegler in derselben Version.
+        ph42.eintragen(_v42, ['Testwaffe A', 'Testwaffe B'], datum='2099-12-31')
+        pruefe(len(ph42.laden()[_v42]['neu']) == _vorher42 + 2,
+               'eigene Funde kommen dazu, statt den Patch zu ersetzen')
+        pruefe(ph42.laden()[_v42]['datum'] == _mit42[_v42].get('datum'),
+               'und das fruehere Datum bleibt stehen')
+
+        # b) Und der zweite eigene Fund wirft den ersten nicht weg.
+        ph42.eintragen(_v42, ['Testwaffe C'])
+        pruefe(len(ph42.laden()[_v42]['neu']) == _vorher42 + 3,
+               'ein zweiter eigener Fund loescht den ersten nicht')
+
+        # c) Was schon dasteht, darf nicht doppelt gezaehlt werden.
+        ph42.eintragen(_v42, [_mit42[_v42]['neu'][0], 'Testwaffe A'])
+        pruefe(len(ph42.laden()[_v42]['neu']) == _vorher42 + 3,
+               'bekannte Namen kommen nicht ein zweites Mal hinein')
+
+        # d) ⚠ Und der Bericht muss die Zahlen zeigen. Ohne diese Zeile stand im
+        #    Bericht nur der Katalogstand — der war in Ordnung, die Historie
+        #    darunter nicht. Genau deshalb blieb der Fehler unsichtbar.
+        from scbp import bericht as ber42
+        pruefe('(%d)' % (_vorher42 + 3) in (ber42._patchhistorie() or ''),
+               'der Bericht nennt die Anzahl je Patch')
+    finally:
+        if _alt_home42 is None:
+            os.environ.pop('SC_BP_HOME', None)
+        else:
+            os.environ['SC_BP_HOME'] = _alt_home42
+
+    print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
         for f in fehler:
