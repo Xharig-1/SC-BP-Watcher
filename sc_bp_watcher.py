@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc98'
+__version__ = '3.0.0-rc99'
 
 
 def _mitgeliefert(name):
@@ -2110,6 +2110,32 @@ class Overlay:
     # um es mit der Maus zu treffen.
     SCHLOSS_KANTE = 26
 
+    # Feinausgleich in Pixeln, um den das schwebende Schloss nach rechts gesetzt
+    # wird, während es über dem Knopf in der Leiste liegt.
+    #
+    # ⚠ **Gemessen, nicht geschätzt.** Aus einem Bildschirmfoto vom 28.08.2026
+    # spaltenweise ausgezählt (PNG von Hand dekodiert, grüne Bildpunkte je
+    # Spalte gezählt):
+    #
+    #     schwebendes Schloss   x = 1068 … 1091
+    #     Knopf darunter        x = 1094 … 1098  (nur dieser Rest war zu sehen)
+    #
+    # Beide Symbole sind 24 px breit, der untere beginnt also bei 1075 —
+    # **7 px weiter rechts**. Der hervorschauende Streifen zeigte nur den
+    # Schlosskörper und keinen Bügel: genau das Muster zweier versetzter
+    # Symbole, nicht etwa ein Zeichenfehler.
+    #
+    # ⚠ **Die Ursache ist damit NICHT gefunden, nur die Wirkung.** Im Nachbau
+    # (gleiche Tk-Fassung, gleiche Symbole, gleicher Aufbau) sitzt es bei 0
+    # exakt — zweimal nachgemessen. Deshalb steht der Wert hier oben und nicht
+    # mitten in der Rechnung: Zeigt sich auf einem anderen Aufbau ein anderer
+    # Versatz, ist genau **eine** Zeile zu ändern.
+    #
+    # Und er gilt nur für den sichtbaren Fall. Der Aufblend-Betrieb rechnet aus
+    # der Streifen-Position und darf davon nichts abbekommen — sonst zieht man
+    # das eine gerade und bricht dabei das andere.
+    SCHLOSS_FEIN_X = 7
+
     def _schloss_anwenden(self, an, versuch=0):
         """Das Schloss zeigen oder wegnehmen — gerufen aus `overlay.py`.
 
@@ -2160,7 +2186,8 @@ class Overlay:
             except tk.TclError:
                 sichtbar = False
             if sichtbar:
-                x, y = knopf.winfo_rootx(), knopf.winfo_rooty()
+                x = knopf.winfo_rootx() + self.SCHLOSS_FEIN_X
+                y = knopf.winfo_rooty()
                 breite = max(knopf.winfo_width(), 8)
                 hoehe = max(knopf.winfo_height(), 8)
             elif (knopf is not None and versuch < 10

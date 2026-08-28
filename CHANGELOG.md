@@ -10,6 +10,24 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc99 - 2026-08-28
+
+### Fixed
+
+- **The green lock did not sit exactly on the lock in the bar.** A narrow edge
+  of the symbol underneath showed on the right — it looked like two locks
+  instead of one changing colour.
+
+  The offset was **measured** from a screenshot, not estimated: the upper lock
+  sat at x=1068–1091, of the lower one only x=1094–1098 was visible. At 24 px
+  wide the lower one therefore starts at 1075 — **7 px further right**. The
+  upper one now moves by exactly that.
+
+  ⚠ The value is measured, its **cause is not known**: in a rebuild with the
+  same Tk version and the same symbols, the lock sits exactly right without any
+  offset. It is therefore a named constant in one place, and applies only to the
+  visible state — pop-up mode calculates differently and is left alone.
+
 ## v3.0.0-rc98 - 2026-08-28
 
 ### Fixed
