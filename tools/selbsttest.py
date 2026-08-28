@@ -1659,8 +1659,15 @@ def main():
                'die Diagnose-Seite selbst steht nicht als letzte Zeile drin')
         quelle26b = open(os.path.join(WURZEL, 'scbp', 'hauptfenster.py'),
                          encoding='utf-8').read()
-        pruefe(quelle26b.count("fehler.spur('Seite ") == 2,
-               'jeder Seitenwechsel schreibt zwei Zeilen (bauen/steht)')
+        # ⚠ Drei Stellen seit dem 28.08.2026: „bauen beginnt" beim ersten
+        # Aufbauen, „zeigen" beim erneuten Einblenden, „steht" am Ende. Vorher
+        # gab es die mittlere nicht — ging beim zweiten Besuch etwas schief,
+        # fehlte die Zeile GANZ statt zur Haelfte, und der Bericht verspricht,
+        # dass die letzte Zeile ohne „steht" die ist, an der es hing.
+        pruefe(quelle26b.count("fehler.spur('Seite ") == 3,
+               'jeder Seitenwechsel schreibt zwei Zeilen (bauen bzw. zeigen, dann steht)')
+        pruefe("Seite %s: zeigen" in quelle26b,
+               'auch der zweite Besuch hinterlaesst eine Spur')
         quelle26c = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
                          encoding='utf-8').read()
         pruefe('fehler.absturzfaenger()' in quelle26c,
