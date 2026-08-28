@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.1'
+__version__ = '3.0.2'
 
 
 def _mitgeliefert(name):
@@ -1505,6 +1505,7 @@ class Overlay:
         self.watcher = Watcher(self.q)
         self.watcher.start()
         self.root.after(200, self._poll_queue)
+        # ⚠ **Und danach stündlich wieder** — siehe `_nach_version_sehen`.
         self.root.after(2000, self._nach_version_sehen)   # nicht beim Start drängeln
 
     # ---- Drag & Resize ----
@@ -1901,12 +1902,35 @@ class Overlay:
             self.root, eigene_version=__version__,
             beim_schliessen=lambda: setattr(self, '_versionen', None))
 
+    # Wie oft nach einer neuen Fassung gesehen wird, in Millisekunden.
+    # Dasselbe Maß wie `aktualisierung.ABSTAND` (eine Stunde) — die Abfrage
+    # selbst hat ihren eigenen Zwischenspeicher, hier geht es nur darum, dass
+    # überhaupt jemand fragt.
+    VERSION_TAKT = 3600 * 1000
+
     def _nach_version_sehen(self):
         """Im Hintergrund nachsehen, ob es etwas Neues gibt.
 
         Im Nebenläufer, damit der Start nicht auf das Netz wartet — und still,
         wenn nichts da ist. Ein Werkzeug, das beim Spielen im Vordergrund liegt,
-        soll nicht ungefragt Fenster aufreißen; der Knopf färbt sich, mehr nicht."""
+        soll nicht ungefragt Fenster aufreißen; der Knopf färbt sich, mehr nicht.
+
+        ⚠ **Und danach wieder, jede Stunde.** Bis v3.0.1 lief das hier **genau
+        einmal**, zwei Sekunden nach dem Start. Der Stundenabstand in
+        `aktualisierung.nachsehen()` lief damit ins Leere — er begrenzt, wie oft
+        gefragt werden *darf*, aber fragen musste jemand. Wer den Watcher
+        durchlaufen ließ, erfuhr nie von einer neuen Fassung; sie erschien erst
+        nach einem Neustart. Gemeldet von der Autor am 28.08.2026, als v3.0.1
+        draußen war und der laufende Watcher weiter schwieg — obwohl er die neue
+        Fassung längst abgerufen hatte und sie in seinem Zwischenspeicher stand.
+        """
+        # Erst den nächsten Blick einplanen, dann arbeiten: Wirft das Nachsehen,
+        # hört die Reihe sonst still auf.
+        try:
+            self.root.after(self.VERSION_TAKT, self._nach_version_sehen)
+        except tk.TclError:
+            return                       # Fenster ist zu, dann reicht es auch
+
         def arbeit():
             try:
                 neu = aktualisierung.nachsehen(__version__)

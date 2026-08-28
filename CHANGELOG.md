@@ -10,6 +10,29 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.2 - 2026-08-28
+
+### Fixed
+
+- **A running watcher never learned about a new version.** The notice only
+  appeared after a restart — anyone leaving the program running for days never
+  saw it.
+
+  It looked **exactly once**, two seconds after startup. The hourly interval in
+  the check only limits how often it *may* ask; someone still has to ask. That
+  now happens every hour.
+
+  Reported by **der Autor** on 2026-08-28: v3.0.1 was out and the running watcher
+  stayed quiet — even though it had already fetched it and had it in its cache.
+
+- **An expected error made the problem report useless.** While downloading,
+  progress arrives every second; if the window closes during that, every single
+  update fails — caught, but logged each time.
+
+  In one report that filled **50 of 50** slots with the same line, all within
+  eight seconds. Every real error had been pushed out. This message is now only
+  recorded the first time.
+
 ## v3.0.1 - 2026-08-28
 
 ### Fixed

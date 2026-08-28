@@ -10,6 +10,31 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.2 - 2026-08-28
+
+### Behoben
+
+- **Ein laufender Watcher erfuhr nie von einer neuen Fassung.** Die Meldung kam
+  erst nach einem Neustart — wer das Programm tagelang durchlaufen lässt, sah
+  nie etwas.
+
+  Nachgesehen wurde **genau einmal**, zwei Sekunden nach dem Start. Der
+  Stundenabstand in der Abfrage begrenzt nur, wie oft gefragt werden *darf*;
+  fragen muss trotzdem jemand. Das passiert jetzt stündlich.
+
+  Gemeldet von **der Autor** am 28.08.2026: v3.0.1 war draußen, der laufende
+  Watcher schwieg — obwohl er sie längst abgerufen hatte und sie in seinem
+  Zwischenspeicher stand.
+
+- **Ein erwarteter Fehler machte das Fehlerprotokoll unbrauchbar.** Beim
+  Herunterladen kommt der Fortschritt im Sekundentakt; geht dabei das Fenster
+  zu, scheitert jede einzelne Meldung — abgefangen, aber jedes Mal
+  protokolliert.
+
+  In einem Bericht waren dadurch **50 von 50** Plätzen mit derselben Zeile
+  belegt, alle innerhalb von acht Sekunden. Jeder echte Fehler war daraus
+  verdrängt. Diese Meldung wird jetzt nur beim ersten Mal festgehalten.
+
 ## v3.0.1 - 2026-08-28
 
 ### Behoben
