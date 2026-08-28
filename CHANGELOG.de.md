@@ -10,6 +10,28 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc93 - 2026-08-28
+
+### Behoben
+
+- **Im Aufblend-Betrieb schwebte das Schloss neben dem Overlay.** Der Fix aus
+  rc92 griff für alle, die das Overlay dauerhaft sehen — im Betrieb „nur bei
+  einem Neuzugang" blieb es beim alten Verhalten.
+
+  Der Grund: Dort wird das Overlay beim Start **versteckt**, bevor es je
+  gezeichnet wurde. Damit gibt es keine Leiste, an der sich das Schloss
+  ausrichten könnte, und die Ersatzrechnung nahm die Lage eines unsichtbaren
+  Fensters — nachgemessen meldet ein nie gezeichnetes Fenster Breite 1 und
+  Position 0. Das Schloss landete irgendwo neben dem Overlay.
+
+  Es hängt jetzt an derselben gemerkten Position wie der Anfasser-Streifen, der
+  im Aufblend-Betrieb ohnehin zeigt, wo das Overlay wartet — und rückt auf die
+  Leiste, sobald das Overlay aufblendet.
+
+  Gemeldet von **Haldjas (pr0)** am 28.08.2026. Sein Fehlerbericht hat es
+  entschieden: Ohne die Zeile `overlay_modus=popup` darin wäre weiter geraten
+  worden, warum es bei ihm auftritt und bei anderen nicht.
+
 ## v3.0.0-rc92 - 2026-08-28
 
 ### Behoben

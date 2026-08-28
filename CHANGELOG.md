@@ -10,6 +10,28 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc93 - 2026-08-28
+
+### Fixed
+
+- **In pop-up mode the lock floated beside the overlay.** The rc92 fix worked
+  for everyone who keeps the overlay visible — in „only on a new blueprint"
+  mode the old behaviour remained.
+
+  The reason: there the overlay is **hidden** at startup, before it has ever
+  been drawn. That leaves no bar for the lock to align with, and the fallback
+  used the position of an invisible window — measured, a never-drawn window
+  reports width 1 and position 0. The lock ended up somewhere beside the
+  overlay.
+
+  It now hangs off the same remembered position as the handle strip, which in
+  pop-up mode already shows where the overlay is waiting — and moves onto the
+  bar as soon as the overlay pops up.
+
+  Reported by **Haldjas (pr0)** on 2026-08-28. His problem report settled it:
+  without the line `overlay_modus=popup` in it, why this hit him and not others
+  would still be guesswork.
+
 ## v3.0.0-rc92 - 2026-08-28
 
 ### Fixed
