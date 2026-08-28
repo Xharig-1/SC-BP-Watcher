@@ -10,6 +10,8 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc84 - 2026-08-28
+
 ### Fixed
 
 - **Updating failed when autostart cut in halfway through.**
