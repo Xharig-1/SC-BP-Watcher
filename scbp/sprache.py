@@ -995,10 +995,10 @@ TEXTE = {
     's_ub_sucht':      ('Suche nach einer neuen Version …',
                           'Looking for a new version …'),
     's_ub_einrichtung': ('Einrichtung wiederholen', 'Run setup again'),
-    's_ub_taeglich':   ('Täglich nach neuen Versionen sehen',
+    's_ub_taeglich':   ('Nach neuen Versionen sehen',
                           'Check daily for new versions'),
-    's_ub_taeglich_h': ('Höchstens einmal am Tag, ausschließlich bei GitHub. Ist etwas da, färbt sich die Glocke in der Titelleiste grün.',
-                          'At most once a day, only at GitHub. If there is something, the bell in the title bar turns green.'),
+    's_ub_taeglich_h': ('Einmal pro Stunde, ausschließlich bei GitHub. Ist etwas da, färbt sich die Glocke in der Titelleiste grün.',
+                          'Once an hour, only at GitHub. If there is something, the bell in the title bar turns green.'),
     's_up_sofort':     ('Jetzt die neueste Version holen',
                         'Get the latest version now'),
     's_up_sofort_h':   ('Holt sofort, was es gerade gibt — auch eine Testversion. '

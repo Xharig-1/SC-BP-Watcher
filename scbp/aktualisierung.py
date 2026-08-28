@@ -172,7 +172,13 @@ def grenze_erreicht():
 def nachsehen(eigene_version, erzwingen=False):
     """Gibt es etwas Neues? Rückgabe: dict mit Angaben oder None.
 
-    Gefragt wird höchstens einmal am Tag; dazwischen gilt der gemerkte Stand.
+    Gefragt wird höchstens einmal je `ABSTAND` (eine Stunde); dazwischen gilt
+    der gemerkte Stand.
+
+    ⚠ Der Abstand allein macht noch keine Wiederholung: Bis v3.0.1 rief diese
+    Funktion **niemand** ein zweites Mal, und ein laufender Watcher erfuhr nie
+    von einer neuen Fassung. Wer den Takt ändert, ändert ihn an **zwei** Stellen
+    — hier und in `Overlay.VERSION_TAKT`.
     Fehler sind kein Drama — ohne Netz meldet sich das Programm einfach nicht."""
     zwischen = _cache_lesen()
     # `SC_BP_NO_NET` verbietet das **Abfragen**, nicht das Wissen: Was schon
