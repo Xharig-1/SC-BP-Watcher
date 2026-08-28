@@ -10,6 +10,33 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc95 - 2026-08-28
+
+### Changed
+
+> [!important]
+> **A found blueprint is green from now on — no more yellow „provisional".**
+> Anyone with the SC Deutsch Launcher installed saw every find from the
+> `Game.log` in yellow first, until the launcher confirmed it. That confirmation
+> no longer exists, and neither does the yellow waiting.
+
+- **The waiting state is gone, not just the colour.** The yellow dot meant „read
+  from the Game.log, waiting for the launcher to confirm". Since the `Game.log`
+  is the source and the launcher only adds to it, that confirmation can never
+  arrive.
+
+  What remained was a state with no way out: with the launcher you saw permanent
+  yellow — without it permanent green, at **exactly the same certainty**. Two
+  colours for one statement are not information, they are a dead end.
+
+  The whole mechanism went, not just the display: the register of unconfirmed
+  rows, the matching of log names to launcher keys, the after-the-fact
+  confirming of a row, the word „provisional" — and the yellow dot in the
+  documentation, so nobody hunts for a symbol that does not exist.
+
+  The launcher stays what it is: an addition. German names, maintained details
+  for type, size and grade, and it reports anything the log missed.
+
 ## v3.0.0-rc94 - 2026-08-28
 
 ### Improved

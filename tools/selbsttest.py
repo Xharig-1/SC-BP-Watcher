@@ -3178,6 +3178,36 @@ def main():
            'jedes Bild in der Doku liegt auch im Repo (%d tote)' % len(_tot45))
 
     print()
+    print('46. Ein Fund ist ein Fund - kein Wartezustand mehr')
+    # ⚠ Bis v3.0.0-rc94 stand ein Bauplan aus der Game.log GELB da: „vorlaeufig",
+    # bis die Launcher-Datei ihn auf Gruen bestaetigt. Diese Bestaetigung kann es
+    # nicht mehr geben — die Game.log ist die Quelle, der Launcher nur noch eine
+    # Ergaenzung. Uebrig blieb ein Zustand, aus dem nichts mehr herausfuehrt:
+    # Wer den Launcher hatte, sah dauerhaft Gelb; wer ihn nicht hat, dauerhaft
+    # Gruen — bei genau derselben Sicherheit.
+    #
+    # der Autor am 28.08.2026: die Bestaetigung wird „nicht nur nicht mehr
+    # gebraucht, sondern kann auch gar nicht mehr geben".
+    #
+    # Diese Pruefung haelt fest, dass die Mechanik WEG ist und nicht nur
+    # stillgelegt — halb entfernter Code kommt sonst beim naechsten Umbau
+    # zurueck.
+    _q46 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'), encoding='utf-8').read()
+    for _rest46 in ('provisional', '_match_prov', 'self.prov',
+                    "'vorlaeufig'", "'confirm'"):
+        pruefe(_rest46 not in _q46,
+               'keine Spur mehr von %s im Programm' % _rest46)
+    from scbp import sprache as sp46
+    pruefe('vorlaeufig' not in sp46.TEXTE,
+           'und der Text „vorlaeufig" ist aus der Sprachdatei raus')
+    # ⚠ Und die Anleitung darf die zwei Stufen nicht weiter versprechen — sonst
+    #   sucht jemand einen gelben Punkt, den es nicht gibt.
+    for _d46 in ('README.de.md', 'README.md'):
+        _t46 = open(os.path.join(WURZEL, _d46), encoding='utf-8').read()
+        pruefe('vorlaeufig-gelb' not in _t46,
+               '%s zeigt keinen gelben Wartepunkt mehr' % _d46)
+
+    print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
         for f in fehler:
