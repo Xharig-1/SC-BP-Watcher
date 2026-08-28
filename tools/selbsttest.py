@@ -34,6 +34,7 @@ hier als Fälle drin, damit ein Umbau sie nicht unbemerkt wieder einreißt.
 import importlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -83,6 +84,11 @@ ERWARTET = {
 }
 
 fehler = []
+# ⚠ Die Bilanz am Ende sagte immer „N von N fehlgeschlagen", weil sie die
+# Gesamtzahl aus der Fehlerzahl selbst errechnete (`len(fehler) + 0`). Ein
+# einzelner Fehler unter zweihundert Prüfungen las sich damit als „1 von 1" —
+# also als hätte gar nichts geklappt. Deshalb wird jetzt wirklich gezählt.
+geprueft = [0]
 
 
 def hat_anzeige():
@@ -107,9 +113,78 @@ def uebersprungen(was, grund='kein Bildschirm vorhanden'):
 
 
 def pruefe(bedingung, was):
+    geprueft[0] += 1
     print(('  [ok]   ' if bedingung else '  [FEHL] ') + was)
     if not bedingung:
         fehler.append(was)
+
+
+# ---------------------------------------------------------------------------
+# ⚠ Am 28.08.2026 stand in `release.yml` zweimal `shell: bash` untereinander.
+# YAML verbietet denselben Schlüssel zweimal in einer Map — GitHub lehnte die
+# **ganze Datei** ab. Folge: Jeder Bau brach nach 0 Sekunden ab („workflow file
+# issue"), über eine Stunde lang unbemerkt, weil niemand hinsah. Die Commits
+# von 00:03 bis 00:57 wurden nie gebaut.
+#
+# Genau die Sorte Fehler, die der Selbsttest sonst sichtbar macht — nur prüfte
+# er die Workflow-Dateien nicht.
+#
+# ⚠ Und PyYAML hilft hier NICHT: `safe_load` meldet doppelte Schlüssel nicht,
+# es nimmt still den letzten Wert. Gemessen, nicht vermutet. Also von Hand über
+# die Zeilen — was zugleich heißt: keine Fremdbibliothek, die fehlen kann.
+_YAML_SCHLUESSEL = re.compile(r'^(\s*)(-\s+)?([A-Za-z_][\w.\- ]*):(\s|$)')
+_YAML_BLOCK = re.compile(
+    r'^(\s*)(?:-\s+)?[A-Za-z_][\w.\- ]*:\s*[|>][-+]?\d*\s*(?:#.*)?$')
+
+
+def doppelte_schluessel(text):
+    """Schlüssel, die in derselben Map zweimal stehen. [(zeile, name, erste), …]
+
+    Zwei Fallen, an denen eine naive Zeilensuche scheitert:
+
+    1. **Listeneinträge sind eigene Maps.** In `steps:` darf `name` bei jedem
+       Schritt wieder stehen — ein `- ` beginnt eine neue Map, der Zähler wird
+       zurückgesetzt.
+    2. **Textblöcke enthalten alles Mögliche.** Hinter `run: |` stehen bei uns
+       Shell- und Python-Zeilen, Heredocs inklusive; `on: 1` darin ist Text,
+       kein Schlüssel. Alles, was tiefer eingerückt ist als der Blockschlüssel,
+       wird deshalb übersprungen.
+    """
+    funde = []
+    stapel = []          # [(einrueckung, {schluessel: zeile}), …]
+    block_ein = None     # in einem |- oder >-Textblock: dessen Einrückung
+    for nr, zeile in enumerate(text.splitlines(), 1):
+        if block_ein is not None:
+            if not zeile.strip():
+                continue
+            if len(zeile) - len(zeile.lstrip()) > block_ein:
+                continue                      # gehört noch zum Textblock
+            block_ein = None
+        roh = zeile.rstrip()
+        if not roh.strip() or roh.lstrip().startswith('#'):
+            continue
+        treffer = _YAML_SCHLUESSEL.match(roh)
+        if not treffer:
+            continue
+        vor, strich, name = treffer.group(1), treffer.group(2), treffer.group(3)
+        tiefe = len(vor) + (len(strich) if strich else 0)
+        while stapel and stapel[-1][0] > tiefe:
+            stapel.pop()
+        if strich:
+            # Neuer Listeneintrag = neue Map; was davor stand, zählt nicht mehr.
+            while stapel and stapel[-1][0] >= tiefe:
+                stapel.pop()
+            stapel.append((tiefe, {}))
+        elif not stapel or stapel[-1][0] < tiefe:
+            stapel.append((tiefe, {}))
+        map_ = stapel[-1][1]
+        if name in map_:
+            funde.append((nr, name, map_[name]))
+        else:
+            map_[name] = nr
+        if _YAML_BLOCK.match(roh):
+            block_ein = tiefe
+    return funde
 
 
 def baue(basis):
@@ -2580,9 +2655,47 @@ def main():
     pruefe(k37.FORMAT >= 2,
            'der Katalog hat eine Aufbau-Nummer (sonst greift der Umbau nie)')
 
+    # ------------------------------------------------------------------
+    # Die Bau-Anleitungen selbst. Ein Tippfehler darin kostet keinen Fehler
+    # im Programm, sondern **jeden Bau** — und zwar stumm: GitHub meldet nur
+    # „workflow file issue", nichts davon steht im Fehlerbericht eines
+    # Nutzers. Am 28.08.2026 lief das über eine Stunde so.
+    print()
+    print('38. Die Bau-Anleitungen sind gueltiges YAML')
+    _wf = os.path.join(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))), '.github', 'workflows')
+    _dateien = sorted(f for f in (os.listdir(_wf) if os.path.isdir(_wf) else [])
+                      if f.endswith(('.yml', '.yaml')))
+    pruefe(bool(_dateien), 'es gibt ueberhaupt Bau-Anleitungen zu pruefen')
+    for _name in _dateien:
+        with open(os.path.join(_wf, _name), encoding='utf-8') as _f:
+            _funde = doppelte_schluessel(_f.read())
+        pruefe(not _funde, '%s hat keinen doppelten Schluessel%s'
+               % (_name, '' if not _funde else
+                  ' (Zeile %d: „%s“ stand schon in Zeile %d)'
+                  % (_funde[0][0], _funde[0][1], _funde[0][2])))
+
+    # Gegenprobe — eine Prüfung, die nie anschlägt, prüft nichts. Das hier ist
+    # der echte Fehler vom 28.08.2026, Zeichen für Zeichen.
+    _kaputt = ('jobs:\n  bau:\n    steps:\n'
+               '      - name: Berichtsziel einsetzen\n'
+               '        shell: bash\n        shell: bash\n'
+               '        run: echo hi\n')
+    pruefe([f[1] for f in doppelte_schluessel(_kaputt)] == ['shell'],
+           'und der Fehler von damals wird auch wirklich gefunden')
+    # Und die Gegenrichtung: Was erlaubt ist, darf nicht gemeldet werden —
+    # sonst schaltet man die Prüfung nach dem dritten Fehlalarm ab.
+    _erlaubt = ('jobs:\n  bau:\n    steps:\n'
+                '      - name: A\n        run: |\n'
+                '          cat <<X\n          on: 1\n          on: 2\n          X\n'
+                '      - name: B\n        run: echo b\n')
+    pruefe(not doppelte_schluessel(_erlaubt),
+           'gleiche Namen in getrennten Schritten sind KEIN Fehler')
+
+
     print()
     if fehler:
-        print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), len(fehler) + 0))
+        print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
         for f in fehler:
             print('  ·', f)
         return 1
