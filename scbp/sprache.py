@@ -640,9 +640,14 @@ TEXTE = {
     's_er_alt_knopf':  ('Von vorn lesen', 'Read from the start'),
 
     # -- Seite „Diagnose" --
-    's_di_lead':       ('Wenn etwas klemmt: Dieser Block sagt in einem Rutsch, woran es liegen könnte. Kopieren, in ein Issue einfügen, fertig.',
-                          'When something is stuck: this block says in one go what it might be. Copy it, paste it into an issue, done.'),
-    's_di_melden':     ('Fehler melden …', 'Report a problem …'),
+    's_di_lead':       ('Wenn etwas klemmt: Dieser Block sagt in einem Rutsch, woran es liegen könnte. Der rote Knopf schickt ihn dem Entwickler — mehr musst du nicht tun.',
+                          'When something is stuck: this block says in one go what it might be. The red button sends it to the developer — that is all you need to do.'),
+    # ⚠ „Auf GitHub" gehört in den Namen. Vorher hieß der Knopf „Fehler
+    # melden …" und stand neben „Fehlerbericht absenden" — zwei Namen, die
+    # dasselbe versprechen, während der eine den Browser aufmacht und ein
+    # GitHub-Konto verlangt. der Autor am 28.08.2026: „woher weiß ein User, was
+    # Fehler melden macht?"
+    's_di_melden':     ('GitHub Issue …', 'GitHub issue …'),
     's_di_absenden':   ('Fehlerbericht absenden', 'Send error report'),
     's_di_ab_frage_t': ('Fehlerbericht absenden?', 'Send error report?'),
     's_di_ab_frage':   ('Der Bericht oben geht als Datei an den Entwickler — genau der Text, den du siehst, nichts weiter.\n\nEr enthält keine Namen, keine Pfade und keine Zugangsdaten; die sind bereits herausgenommen.\n\nAbsenden?',
