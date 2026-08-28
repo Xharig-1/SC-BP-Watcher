@@ -258,6 +258,30 @@ TEXTE = {
     'craftdaten_neu':    ('scmdb-Craftdaten aktualisiert (%s, %d Gegenst\u00e4nde)',
                           'scmdb crafting data updated (%s, %d items)'),
     'ohne_launcher':     ('ohne Launcher', 'no launcher'),
+    'neu_gelesen':       ('%d Protokolle noch einmal gelesen, %d Baupläne '
+                          'dazugekommen.',
+                          '%d logs read again, %d blueprints added.'),
+    'neu_gelesen_fehler': ('Das erneute Einlesen hat nicht geklappt.',
+                           'Reading the logs again did not work.'),
+    'hinweis_neulesen':  ('Protokolle erneut einlesen — für den Fall, dass ein '
+                          'Bauplan fehlt',
+                          'Read the logs again — in case a blueprint is missing'),
+    's_be_neu':          ('Protokolle erneut einlesen', 'Read the logs again'),
+    's_be_neu_h':        ('Sieht jede aufgehobene Spielsitzung noch einmal durch, '
+                          'auch die schon gelesenen, und trägt nach was fehlt. '
+                          'Hilft, wenn der Watcher zu war, während Star Citizen '
+                          'weiterlief: Die Baupläne dieser Sitzung stehen dann in '
+                          'einer Datei, die er für erledigt hält. Doppelte können '
+                          'dabei nicht entstehen.',
+                          'Goes through every stored session again, including the '
+                          'ones already read, and fills in what is missing. Helps '
+                          'when the watcher was closed while Star Citizen kept '
+                          'running: that session\'s blueprints then sit in a file '
+                          'it considers done. Duplicates cannot happen.'),
+    's_be_neu_los':      ('Wird gelesen … das Ergebnis steht gleich in der Leiste.',
+                          'Reading … the result will appear in the bar shortly.'),
+    's_be_neu_kein':     ('Dafür muss der Watcher laufen.',
+                          'The watcher needs to be running for this.'),
     'nachgelesen':       ('Nachgelesen: %d Baupläne aus %d früheren Sitzungen '
                           'übernommen.',
                           'Caught up: %d blueprints from %d earlier sessions.'),
@@ -380,8 +404,8 @@ TEXTE = {
     's_ov_dauer_sagen': ('Aufblenden für %d Sekunden', 'Popping up for %d seconds'),
     's_ov_durch':      ('Mausklicks ins Spiel durchreichen',
                           'Let mouse clicks through to the game'),
-    's_ov_durch_h':    ('Das Overlay bleibt sichtbar, fängt aber keine Klicks mehr ab — im Kampf schießt du hindurch statt darauf. ⚠ Dann lässt es sich auch nicht mehr verschieben und seine Knöpfe sind nicht mehr erreichbar; das Fenster holst du über einen zweiten Programmstart.',
-                          'The overlay stays visible but no longer catches clicks — in combat you shoot through it instead of at it. ⚠ It can then no longer be moved and its buttons cannot be reached; start the program again to get the window back.'),
+    's_ov_durch_h':    ('Das Overlay bleibt sichtbar, fängt aber keine Klicks mehr ab — im Kampf schießt du hindurch statt darauf. Verschieben und die Knöpfe gehen dann nicht mehr; zurück kommst du über das Schloss in der Titelleiste, das anklickbar bleibt.',
+                          'The overlay stays visible but no longer catches clicks — in combat you shoot through it instead of at it. Moving it and its buttons stop working; you get back via the lock in the title bar, which stays clickable.'),
     's_ov_durch_sagen': ('Klicks durchreichen: %s', 'Clicks passed through: %s'),
     's_ov_durch_nein': ('Auf diesem System nicht möglich: Unter Wayland kann ein gewöhnliches Fenster keine Klicks weiterreichen.',
                           'Not possible on this system: under Wayland an ordinary window cannot pass clicks on.'),
@@ -540,15 +564,10 @@ TEXTE = {
     's_sp_auto_h':     ('Prüft beim Start und alle sechs Stunden. Ohne das sind die Angaben nach jedem Spiel-Patch still verschwunden — jedes Update schreibt die Textdatei neu.',
                           'Checks on start and every six hours. Without it the details are silently gone after every game patch — each update rewrites the text file.'),
     's_sp_auto_sagen': ('Selbst aktuell halten: %s', 'Keep up to date: %s'),
-    'hinweis_schloss': ('Klicks gehen gerade ins Spiel. Hier klicken, um das Overlay wieder bedienbar zu machen.',
-                        'Clicks are going through to the game. Click here to make the overlay usable again.'),
+    'hinweis_schloss': ('Durchklicken beenden', 'Stop click-through'),
     'ov_schloss_offen': ('Das Overlay fängt wieder Klicks ab.',
                          'The overlay catches clicks again.'),
-    'hinweis_schloss_zu': ('Klicks ab jetzt ins Spiel durchreichen. Zurück holt '
-                           'das Schloss, das dann oben rechts am Overlay steht.',
-                           'Pass clicks through to the game from now on. The lock '
-                           'that then sits at the top right of the overlay brings '
-                           'it back.'),
+    'hinweis_schloss_zu': ('Durchklickbar machen', 'Make click-through'),
     'ov_schloss_zu':   ('Klicks gehen jetzt ins Spiel — das Schloss oben rechts holt das Overlay zurück.',
                         'Clicks now go to the game — the lock at the top right brings the overlay back.'),
     's_sp_angaben':    ('Angaben am Gegenstand', 'Details on the item'),

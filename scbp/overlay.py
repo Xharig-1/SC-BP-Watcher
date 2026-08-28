@@ -186,6 +186,32 @@ def durchklickbar_moeglich():
 # Schloss, das anklickbar bleibt — denselben Weg gehen wir.
 SCHLOSS_RUECKRUF = [None]
 
+# Dasselbe für „Protokolle erneut einlesen". Beide Bedienelemente — der Knopf am
+# Overlay und der in den Einstellungen — rufen hier an; die Arbeit macht der
+# Watcher-Faden.
+#
+# ⚠ **Warum nicht einfach in der Oberfläche einlesen.** Der Bestand liegt im
+# Watcher-Faden und wird von dort geschrieben. Läse eine Seite nebenher ein und
+# speicherte, überschriebe der Faden das beim nächsten Fund mit seinem eigenen,
+# älteren Stand — die neu gefundenen Baupläne wären wieder weg. Es gibt genau
+# einen Ort, an dem der Bestand angefasst wird, und das bleibt so.
+NEULESEN_RUECKRUF = [None]
+
+
+def neu_einlesen_anstossen():
+    """Bitten, alle Protokolle noch einmal durchzusehen.
+
+    Gibt zurück, ob jemand zugehört hat — ohne laufenden Watcher passiert
+    nichts, und der Aufrufer soll das sagen können statt so zu tun."""
+    ruf = NEULESEN_RUECKRUF[0]
+    if ruf is None:
+        return False
+    try:
+        ruf()
+        return True
+    except Exception:
+        return False
+
 
 def durchklickbar_setzen(fenster, an):
     """Klicks durchreichen (oder wieder abfangen). Gibt zurück, ob es geklappt hat."""

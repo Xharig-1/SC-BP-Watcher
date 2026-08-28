@@ -1386,6 +1386,23 @@ def _bestand(fenster, rahmen):
     # niemand weiß, dass vor dem Übernehmen noch eine Vorschau kommt.
     _leere_vorschau(fenster, vorschau_platz)
 
+    # ⚠ **Protokolle erneut einlesen.** Steht hier unten und nicht oben: Es ist
+    # kein Weg, den man täglich geht, sondern einer für den Fall, dass etwas
+    # fehlt. Denselben Knopf gibt es am Overlay — dort ist er näher an dem
+    # Moment, in dem jemand merkt, dass ein Bauplan nicht angekommen ist.
+    #
+    # Die Arbeit macht der Watcher-Faden (`overlay.neu_einlesen_anstossen`),
+    # nicht diese Seite: Der Bestand wird an genau einer Stelle geschrieben,
+    # sonst überschreibt der Faden das Ergebnis beim nächsten Fund.
+    ziel = _feld(fenster, innen, t('s_be_neu'), t('s_be_neu_h'))
+
+    def neu_einlesen():
+        from . import overlay as ov
+        fenster.sagen(t('s_be_neu_los') if ov.neu_einlesen_anstossen()
+                      else t('s_be_neu_kein'))
+
+    _knopf(fenster, ziel, t('s_be_neu'), neu_einlesen).pack()
+
 
 def _leere_vorschau(fenster, eltern):
     """Der Vorschau-Kasten, bevor eine Datei gewählt wurde."""

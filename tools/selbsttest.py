@@ -3245,6 +3245,49 @@ def main():
                '%s zeigt keinen gelben Wartepunkt mehr' % _d46)
 
     print()
+    print('47. Protokolle lassen sich erneut einlesen')
+    # ⚠ Gemeldet von der Autor am 28.08.2026, wenige Stunden nach v3.0.0: Ein
+    # Bauplan kam an, waehrend der Watcher zu war und Star Citizen weiterlief.
+    # Beim naechsten Start war er weg — und zwar dauerhaft.
+    #
+    # Der Grund: `nachlesen()` fasste die laufende Game.log nur an, wenn sie
+    # NOCH NIE gelesen war. Danach galt sie als erledigt, das Mitlesen setzte
+    # beim gemerkten Stand an, und alles davor war unerreichbar. In
+    # `logbackups/` landet die Datei erst beim naechsten Spielstart.
+    #
+    # Gemessen: Bauplan bei Byte 11.987.664, Lesestand 12.759.872.
+    _q47 = open(os.path.join(WURZEL, 'scbp', 'logquelle.py'),
+                encoding='utf-8').read()
+    _lauf47 = _q47[_q47.index('if auch_laufende:'):]
+    _lauf47 = _lauf47[:_lauf47.index('bericht[')]
+    # ⚠ Nur den Code ansehen. Die alte Bedingung steht als Zitat im Kommentar
+    #   daneben — wer die Zeilen nicht filtert, prueft die Erklaerung statt der
+    #   Sache und meldet einen Fehler, den es nicht gibt.
+    _code47 = chr(10).join(z for z in _lauf47.split(chr(10))
+                           if not z.lstrip().startswith('#'))
+    pruefe("aktiv_holen(aktiv) is None" not in _code47,
+           'die laufende Game.log wird immer gelesen, nicht nur beim ersten Mal')
+    from scbp import logquelle as lq47
+    pruefe(hasattr(lq47, 'alles_neu'),
+           'es gibt einen Weg, alles noch einmal einzulesen')
+
+    # ⚠ Und beides muss BEDIENBAR sein — an zwei Stellen, wie gewuenscht:
+    #    am Overlay (dort merkt man den fehlenden Bauplan) und in den
+    #    Einstellungen (dort sucht man danach).
+    from scbp import overlay as ov47
+    pruefe(hasattr(ov47, 'neu_einlesen_anstossen'),
+           'der Anstoss geht ueber einen Rueckruf wie beim Schloss')
+    _w47 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'), encoding='utf-8').read()
+    pruefe('self.neulesen_lbl' in _w47, 'ein Knopf sitzt in der Overlay-Leiste')
+    _s47 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'), encoding='utf-8').read()
+    pruefe("t('s_be_neu')" in _s47, 'und einer in den Einstellungen')
+    # ⚠ Die Arbeit gehoert in den Watcher-Faden. Laese die Seite selbst ein und
+    #   speicherte, ueberschriebe der Faden das beim naechsten Fund mit seinem
+    #   aelteren Stand — die gefundenen Bauplaene waeren wieder weg.
+    pruefe('alles_neu' not in _s47,
+           'die Seite liest NICHT selbst ein (der Bestand hat einen Besitzer)')
+
+    print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
         for f in fehler:
