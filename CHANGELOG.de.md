@@ -10,6 +10,36 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc95 - 2026-08-28
+
+### Geändert
+
+> [!important]
+> **Ein gefundener Bauplan ist ab sofort grün — kein gelbes „vorläufig" mehr.**
+> Wer den SC Deutsch Launcher installiert hat, sah jeden Fund aus der `Game.log`
+> zuerst gelb, bis der Launcher ihn bestätigte. Diese Bestätigung gibt es nicht
+> mehr, und das gelbe Warten damit auch nicht.
+
+- **Der Wartezustand ist raus, nicht nur die Farbe.** Der gelbe Punkt hieß „aus
+  der Game.log gelesen, wartet auf Bestätigung durch den Launcher". Seit die
+  `Game.log` die Quelle ist und der Launcher nur noch ergänzt, kann diese
+  Bestätigung gar nicht mehr kommen.
+
+  Übrig geblieben war ein Zustand, aus dem nichts mehr herausführt: Wer den
+  Launcher hatte, sah dauerhaft Gelb — wer ihn nicht hat, dauerhaft Grün, bei
+  **genau derselben Sicherheit**. Zwei Farben für dieselbe Aussage sind keine
+  Auskunft, sondern eine Sackgasse.
+
+  Entfernt wurde die ganze Mechanik, nicht nur die Anzeige: der Merker für
+  unbestätigte Zeilen, die Zuordnung von Log-Namen zu Launcher-Schlüsseln, das
+  Nachträgliche-Bestätigen einer Zeile, der Text „vorläufig" — und der gelbe
+  Punkt aus der Anleitung, damit niemand nach einem Symbol sucht, das es nicht
+  gibt.
+
+  Der Launcher bleibt, was er ist: eine Ergänzung. Deutsche Bezeichnungen,
+  gepflegte Angaben zu Typ, Größe und Gütegrad, und er meldet nach, was im Log
+  fehlte.
+
 ## v3.0.0-rc94 - 2026-08-28
 
 ### Verbessert

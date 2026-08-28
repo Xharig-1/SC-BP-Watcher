@@ -261,7 +261,6 @@ TEXTE = {
     'nachgelesen':       ('Nachgelesen: %d Baupläne aus %d früheren Sitzungen '
                           'übernommen.',
                           'Caught up: %d blueprints from %d earlier sessions.'),
-    'vorlaeufig':        ('vorläufig', 'provisional'),
     'neu_craftbar':      ('neu im Spiel craftbar', 'newly craftable in game'),
     'jetzt_craftbar':    ('%s — jetzt craftbar!', '%s — now craftable!'),
     # -- Erklärtexte beim Überfahren mit der Maus --

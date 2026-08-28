@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc94'
+__version__ = '3.0.0-rc95'
 
 
 def _mitgeliefert(name):
@@ -668,7 +668,6 @@ class Watcher(threading.Thread):
         self.q = out_queue
         self.known = None       # BP-Namen aus der Launcher-Datei (None = kein Launcher)
         self.seen = set()       # schon angezeigte Namen (normalisiert) — gegen Dubletten
-        self.prov = {}          # noch unbestätigt: norm(Log-Name) -> Log-Name
         self.stand = logquelle.Lesestand()
         self.tail = logquelle.LogTail(self.stand)
         self.bestand = bestand_datei.laden()   # der eigene, dauerhafte Bestand
@@ -862,23 +861,11 @@ class Watcher(threading.Thread):
         except Exception:
             pass
 
-    def _emit(self, key, provisional, log_meta=None):
+    def _emit(self, key, log_meta=None):
         # log_meta = Kürzel aus dem Log-Zusatz; wird nur genommen, wenn der
         # Launcher-Katalog nichts hergibt (brandneues Item nach einem SC-Patch).
         self.q.put(('new', key, art_of(key), meta_of(key) or log_meta or '',
-                    time.strftime('%H:%M:%S'), provisional))
-
-    def _match_prov(self, key):
-        """Zeile suchen, die diesen Launcher-Schlüssel vorläufig schon anzeigt.
-        Erst exakt, dann (nur bei Eindeutigkeit) ohne Klammer-Zusatz."""
-        row = self.prov.pop(_norm(key), None)
-        if row:
-            return row
-        hits = [v for k, v in self.prov.items() if _loose(k) == _loose(key)]
-        if len(hits) == 1:
-            self.prov.pop(_norm(hits[0]), None)
-            return hits[0]
-        return None
+                    time.strftime('%H:%M:%S')))
 
     # ---- Sprache des Spiels erschließen ----
     def _sprache_erschliessen(self):
@@ -1046,9 +1033,7 @@ class Watcher(threading.Thread):
                 self.seen.add(nk)
                 if bestand_datei.hinzufuegen(self.bestand, name, 'log'):
                     geaendert = True
-                if HAT_LAUNCHER:
-                    self.prov[nk] = name
-                self._emit(name, HAT_LAUNCHER, kuerzel_aus_zusatz(zusatz))
+                self._emit(name, kuerzel_aus_zusatz(zusatz))
                 self._merkliste_erledigen(name)
             if geaendert:
                 bestand_datei.speichern(self.bestand)
@@ -1059,16 +1044,13 @@ class Watcher(threading.Thread):
             if cur is not None:
                 zuwachs = False
                 for k in sorted(cur - (self.known or set())):
-                    row = self._match_prov(k)
                     dup = _norm(k) in self.seen      # steht schon in der Liste
                     self.seen.add(_norm(k))
                     if bestand_datei.hinzufuegen(self.bestand, k, 'launcher'):
                         zuwachs = True
                     self._merkliste_erledigen(k)
-                    if row:
-                        self.q.put(('confirm', row, k, art_of(k), meta_of(k)))
-                    elif not dup:
-                        self._emit(k, False)
+                    if not dup:
+                        self._emit(k)
                 if zuwachs:
                     bestand_datei.speichern(self.bestand)
                 self.known = cur
@@ -1706,14 +1688,12 @@ class Overlay:
         self._placeholder()
 
     @staticmethod
-    def _sub_text(art, meta, ts, provisional):
+    def _sub_text(art, meta, ts):
         parts = [p for p in (art, meta) if p]
         parts.append(ts)
-        if provisional:
-            parts.append(sprache.t('vorlaeufig'))
         return ' · '.join(parts)
 
-    def add_new(self, key, art, meta, ts, provisional):
+    def add_new(self, key, art, meta, ts):
         if self.count == 0 and hasattr(self, '_ph') and self._ph.winfo_exists():
             self._ph.destroy()
         self.count += 1
@@ -1721,21 +1701,26 @@ class Overlay:
         top = self.list.pack_slaves()          # aktuell oberste Zeile (Reihenfolge im Fenster!)
         row = tk.Frame(self.list, bg=BG)
         row.pack(fill='x', anchor='w', padx=2, pady=1)
-        # ⚠ Gelb heißt „aus der Game.log, noch nicht bestätigt", Grün heißt
-        # „vom Launcher bestätigt". Bis v3.0.0-rc55 standen hier die Emoji
-        # `🟡` und `🟢` — und die nahmen unter Windows die Farb-Emoji-Schrift,
-        # womit sie als bunte Klötzchen erschienen und jede eingestellte Farbe
-        # ignorierten. Ausgerechnet vor jeder einzelnen Zeile.
-        dot = zeichen.zeile(row, 'vorlaeufig' if provisional else 'bestaetigt',
-                            farbe=zeichen.GELB if provisional else zeichen.GRUEN,
+        # ⚠ **Ein Zustand, nicht zwei.** Bis v3.0.0-rc94 stand ein Fund aus der
+        # Game.log **gelb** da — „vorläufig", bis die Launcher-Datei ihn
+        # bestätigt. Diese Bestätigung kann es nicht mehr geben: Die Game.log
+        # ist die Quelle, der Launcher nur noch eine Ergänzung. Übrig blieb ein
+        # Zustand, aus dem nichts mehr herausführt — wer den Launcher hat, sah
+        # dauerhaft Gelb, wer ihn nicht hat dauerhaft Grün, bei genau derselben
+        # Sicherheit. Das ist keine Auskunft, das ist eine Sackgasse.
+        #
+        # Noch früher standen hier die Emoji `🟡`/`🟢`: Die nahmen unter Windows
+        # die Farb-Emoji-Schrift, erschienen als bunte Klötzchen und ignorierten
+        # jede eingestellte Farbe — vor jeder einzelnen Zeile.
+        dot = zeichen.zeile(row, 'bestaetigt', farbe=zeichen.GRUEN,
                             grund=BG, schrift=self.f_item)
         dot.pack(side='left', padx=(0, 4))
         txt = tk.Frame(row, bg=BG); txt.pack(side='left', fill='x', expand=True)
         name = tk.Label(txt, text=key, bg=BG, fg=FG, font=self.f_item,
                         anchor='w', justify='left')
         name.pack(fill='x', anchor='w')
-        sub = tk.Label(txt, text=self._sub_text(art, meta, ts, provisional), bg=BG,
-                       fg=PROV if provisional else SUB, font=self.f_sub, anchor='w')
+        sub = tk.Label(txt, text=self._sub_text(art, meta, ts), bg=BG,
+                       fg=SUB, font=self.f_sub, anchor='w')
         sub.pack(fill='x', anchor='w')
         row._bpkey = nk
         self.rows[nk] = {'frame': row, 'dot': dot, 'name': name, 'sub': sub, 'ts': ts}
@@ -1815,20 +1800,6 @@ class Overlay:
         self.canvas.yview_moveto(0)
         signalton(auffaellig=bool(titel))
 
-    def confirm(self, row_key, key, art, meta):
-        """Der Launcher hat den vorläufig (aus der Game.log) gemeldeten BP bestätigt:
-        Punkt auf Grün, „vorläufig" raus, Name/Art/Kürzel mit den Launcher-Daten
-        auffrischen (`row_key` = angezeigter Log-Name, `key` = Launcher-Schlüssel)."""
-        r = self.rows.pop(_norm(row_key), None)
-        if not r or not r['frame'].winfo_exists():
-            return
-        r['dot'].symbol_tauschen('bestaetigt')
-        r['dot'].faerben(zeichen.GRUEN)      # Gelb war „noch nicht bestätigt"
-        r['name'].config(text=key)
-        r['sub'].config(text=self._sub_text(art, meta, r['ts'], False), fg=SUB)
-        r['frame']._bpkey = _norm(key)
-        self.rows[_norm(key)] = r
-
     def _trim(self):
         """Nur so viele Zeilen behalten wie eingestellt — älteste fliegen raus."""
         rows = self.list.pack_slaves()
@@ -1856,9 +1827,7 @@ class Overlay:
                     # auffallen, aber kein Fenster aufreißen.
                     self.add_hinweis(msg[1])
                 elif msg[0] == 'new':
-                    self.add_new(msg[1], msg[2], msg[3], msg[4], msg[5])
-                elif msg[0] == 'confirm':
-                    self.confirm(msg[1], msg[2], msg[3], msg[4])
+                    self.add_new(msg[1], msg[2], msg[3], msg[4])
                 elif msg[0] == 'catalog':
                     self.add_catalog(msg[1], msg[2], msg[3], msg[4])
         except queue.Empty:
