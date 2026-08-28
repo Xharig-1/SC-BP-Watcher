@@ -10,6 +10,8 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc91 - 2026-08-28
+
 ### Improved
 
 - **One lock instead of two.** The green lock used to sit in the overlay's
