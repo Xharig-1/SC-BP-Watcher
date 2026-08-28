@@ -298,9 +298,24 @@ def _umbruch(label, anteil=1.0, abzug=0, bezug=None, neben=None):
             except tk.TclError:
                 pass
         if breite > 40:
+            # ⚠ Der eigene Rahmen des Labels zählt mit. `wraplength` begrenzt
+            # nur den TEXT; was das Label am Ende belegt, ist Text + Rand +
+            # Innenabstand. Stand `wraplength` auf der vollen Breite, brauchte
+            # es also ein paar Pixel mehr, als es bekam — und Tk schnitt still
+            # ab. Genau so gemessen am 28.08.2026: die englische Warnzeile auf
+            # der Spiel-Seite ragte um 5 px heraus, bei 1100×842.
+            #
+            # Erfragt statt geschätzt, damit es auch bei anderer Darstellung
+            # stimmt.
             try:
-                label.configure(wraplength=max(160,
-                                              int(breite * anteil) - abzug))
+                rand = 2 * (int(label.cget('borderwidth'))
+                            + int(label.cget('padx'))
+                            + int(label.cget('highlightthickness')))
+            except (tk.TclError, ValueError):
+                rand = 4
+            try:
+                label.configure(wraplength=max(160, int(breite * anteil)
+                                               - abzug - rand))
             except tk.TclError:
                 pass          # zwischen Prüfung und Zugriff zerstört
 
