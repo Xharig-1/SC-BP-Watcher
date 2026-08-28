@@ -2835,6 +2835,24 @@ def main():
     pruefe('s_sp_aus_rest' in se41,
            'und benutzt das auch')
 
+    # ⚠ Der Autostart wird an ZWEI Stellen gesetzt: vom [Registry]-Abschnitt des
+    # Installers (nur bei gewaehltem Haekchen) und vom Programm selbst
+    # (`scbp/autostart.py`). `uninsdeletevalue` raeumt nur den ersten Fall weg.
+    #
+    # Gemessen am 28.08.2026 (der Autor): Nach dem Deinstallieren stand der Wert
+    # weiter in der Registry und zeigte auf eine geloeschte Datei. Windows
+    # versucht sie bei jeder Anmeldung zu starten und scheitert still.
+    #
+    # Derselbe Autostart hat morgens den Update-Fehler (Code 5) ausgeloest — er
+    # war an beiden Enden nur halb geregelt.
+    pruefe('CurUninstallStepChanged' in iss40 and 'RegDeleteValue' in iss40,
+           'der Deinstaller raeumt den Autostart-Eintrag weg')
+    # ⚠ Beide Seiten MUESSEN denselben Wertnamen meinen, sonst raeumt der
+    # Deinstaller ins Leere und der echte Eintrag bleibt liegen.
+    from scbp import autostart as as41
+    pruefe("'" + as41.NAME + "'" in iss40,
+           'und zwar genau den Namen, den das Programm schreibt (%s)' % as41.NAME)
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

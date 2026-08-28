@@ -10,6 +10,56 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc85 - 2026-08-28
+
+### Behoben
+
+- **Unter Linux wurden Beschreibungstexte abgeschnitten statt umgebrochen — und
+  drückten die Schalter aus dem Fenster.** Betroffen war jede Seite mit
+  Fließtext neben einem Bedienelement: „Texte im Spiel“, „Bestand“, „Fehler
+  melden“. Bei kleiner Fenstergröße endeten die Sätze mitten im Wort, und die
+  Schalter rechts waren gar nicht erreichbar.
+
+  Der Grund lag eine Ebene tiefer, als es aussieht. Die Funktion, die den
+  Zeilenumbruch an die Fensterbreite hängt, fragt beim Label nach seinem
+  eigenen Rand. Tk gibt so eine Maßangabe je nach Aufbau als Zahl, als Text
+  **oder als Tcl-Objekt** zurück — und auf Letzteres wirft `int()` einen
+  `TypeError`. Aufgefangen wurden aber nur `TclError` und `ValueError`, und ein
+  `TypeError` ist keins von beiden. Der Fehler flog also durch und beendete die
+  Funktion, **bevor** sie den Umbruch setzen konnte. Der Text blieb einzeilig
+  und breit — genau der Zustand, den diese Funktion verhindern soll.
+
+  Warum es erst jetzt auffiel: Das Tk im Windows-Bau liefert diese Angaben als
+  Zahl, das Tk im Linux-AppImage als Tcl-Objekt. Unter Windows konnte der
+  Fehler nicht auftreten.
+
+  Gefunden von **der Autor** am 28.08.2026 in der ersten Linux-Testrunde nach
+  dem Update auf rc84 — zuerst am abgeschnittenen Text, dann bestätigt im
+  eigenen Fehlerbericht: **50 von 50** aufgehobenen Fehlern kamen aus dieser
+  einen Zeile.
+
+  Maßangaben werden jetzt mit Tks eigenem Umwandler gelesen, der alle drei
+  Formen versteht. Dieselbe Falle steckte an zwei weiteren Stellen im
+  Zeilenumbruch und wurde dort gleich mit beseitigt.
+
+- **Deinstallieren ließ den Autostart-Eintrag liegen.** Danach stand in der
+  Registry weiter ein Verweis auf eine Datei, die es nicht mehr gab — Windows
+  versuchte sie bei jeder Anmeldung zu starten und scheiterte still.
+
+  Der Grund: Der Eintrag wird an **zwei** Stellen gesetzt. Der Installer legt ihn
+  an, wenn man beim Installieren „Mit Windows starten“ wählt, und räumt genau
+  diesen Fall auch wieder weg. Schaltet man den Autostart aber **im Programm**
+  ein, schreibt das Programm denselben Wert — und davon wusste der Deinstaller
+  nichts.
+
+  Gefunden von **der Autor** am 28.08.2026 beim Aufräumen nach einem Testlauf.
+  Es ist derselbe Autostart, der am selben Morgen das Update scheitern ließ
+  (Code 5) — er war an beiden Enden nur halb geregelt.
+
+  Der Deinstaller entfernt den Wert jetzt immer, unabhängig davon, wer ihn
+  gesetzt hat. Nur diesen einen Wert — die Autostart-Einträge anderer Programme
+  bleiben unangetastet.
+
 ## v3.0.0-rc84 - 2026-08-28
 
 ### Behoben

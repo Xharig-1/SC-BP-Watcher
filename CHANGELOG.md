@@ -10,6 +10,53 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc85 - 2026-08-28
+
+### Fixed
+
+- **On Linux, description texts were cut off instead of wrapping — pushing the
+  switches out of the window.** Every page with body text next to a control was
+  affected: "In-game text", "Inventory", "Report a problem". At small window
+  sizes sentences ended mid-word, and the switches on the right could not be
+  reached at all.
+
+  The cause sits one level deeper than it looks. The function that ties line
+  wrapping to the window width asks the label for its own border size. Depending
+  on the build, Tk returns such a measurement as a number, as text, **or as a
+  Tcl object** — and on the last one `int()` raises a `TypeError`. Only
+  `TclError` and `ValueError` were caught, and a `TypeError` is neither. So the
+  error escaped and ended the function **before** it could set the wrap width.
+  The text stayed on one long line — exactly the state this function exists to
+  prevent.
+
+  Why it surfaced only now: the Tk in the Windows build returns these values as
+  numbers, the Tk in the Linux AppImage as Tcl objects. The bug could not occur
+  on Windows.
+
+  Found by **der Autor** on 2026-08-28 during the first Linux test round after
+  updating to rc84 — first by the cut-off text, then confirmed in the app's own
+  problem report: **50 out of 50** recorded errors came from this single line.
+
+  Measurements are now read with Tk's own converter, which understands all three
+  forms. The same trap was present at two further points in the wrapping code
+  and was removed there as well.
+
+- **Uninstalling left the autostart entry behind.** The registry kept pointing
+  at a file that no longer existed — Windows tried to start it at every sign-in
+  and failed silently.
+
+  The reason: the entry is written in **two** places. The installer creates it
+  when you tick "Start with Windows" during setup, and it cleans up exactly that
+  case. But turning autostart on **inside the program** writes the same value —
+  and the uninstaller knew nothing about it.
+
+  Found by **der Autor** on 2026-08-28 while cleaning up after a test run. It is
+  the same autostart that made the update fail earlier that morning (code 5) —
+  it was only half handled at both ends.
+
+  The uninstaller now always removes the value, no matter who set it. Only that
+  one value — autostart entries of other programs are left alone.
+
 ## v3.0.0-rc84 - 2026-08-28
 
 ### Fixed
