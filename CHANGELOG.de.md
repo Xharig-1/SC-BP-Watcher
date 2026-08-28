@@ -10,6 +10,24 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc97 - 2026-08-28
+
+### Behoben
+
+- **Auf einem zweiten Bildschirm sprangen Streifen und Schloss auf den falschen
+  Monitor.** Betroffen war der Aufblend-Betrieb: Wer das Overlay auf einem
+  Monitor **oberhalb** des Hauptbildschirms liegen hat, fand den grünen Streifen
+  samt Schloss an der Oberkante des Hauptmonitors wieder.
+
+  Ein Monitor über dem Hauptbildschirm arbeitet mit **negativen** Y-Werten —
+  das ist keine kaputte Angabe, sondern eine gültige. Beim Merken der Position
+  wurde das ausdrücklich berücksichtigt, beim Anzeigen dann wieder verworfen:
+  Ein `max(0, …)` klemmte jede Höhe unterhalb von null auf die Oberkante des
+  Hauptmonitors.
+
+  Der Streifen hatte diese Zeile von Anfang an; das Schloss hat sie beim Umzug
+  an den Streifen (rc94) geerbt. Beide sind sie los.
+
 ## v3.0.0-rc96 - 2026-08-28
 
 ### Behoben

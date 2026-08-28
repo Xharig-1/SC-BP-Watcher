@@ -10,6 +10,23 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc97 - 2026-08-28
+
+### Fixed
+
+- **On a second screen, the strip and lock jumped to the wrong monitor.** This
+  affected pop-up mode: if the overlay sits on a monitor **above** the main
+  screen, the green strip and its lock reappeared at the top edge of the main
+  monitor.
+
+  A monitor above the main screen works with **negative** Y values — that is a
+  valid position, not a broken one. Remembering the position accounted for it;
+  displaying it threw it away again: a `max(0, …)` clamped every height below
+  zero to the top edge of the main monitor.
+
+  The strip carried that line from the start; the lock inherited it when it
+  moved next to the strip in rc94. Both are rid of it.
+
 ## v3.0.0-rc96 - 2026-08-28
 
 ### Fixed

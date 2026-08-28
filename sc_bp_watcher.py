@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc96'
+__version__ = '3.0.0-rc97'
 
 
 def _mitgeliefert(name):
@@ -2216,7 +2216,7 @@ class Overlay:
                     streifen = links + max(0, (ov_breite
                                                - self.ANFASSER_BREITE) // 2)
                     x = streifen + self.ANFASSER_BREITE + 4
-                    y = max(0, oben)
+                    y = oben
                 else:
                     x = (self.root.winfo_rootx()
                          + max(0, self.root.winfo_width()
@@ -2358,7 +2358,18 @@ class Overlay:
             return
         breite, _hoehe, links, oben = (int(z) for z in m.groups())
         x = links + max(0, (breite - self.ANFASSER_BREITE) // 2)
-        y = max(0, oben)
+        # ⚠ **Kein `max(0, …)` auf der Höhe.** Hier stand es, und damit
+        # widersprach diese Zeile dem, was `_current_geom()` zwei Funktionen
+        # weiter oben ausdrücklich bewahrt: „so bleibt negatives Y als absolute
+        # Position erhalten (`+-1439`)".
+        #
+        # Auf **mehreren Bildschirmen** ist ein negatives Y keine kaputte
+        # Angabe, sondern eine gültige: Wer einen zweiten Monitor über dem
+        # Hauptmonitor liegen hat, arbeitet dort mit Werten unterhalb von null.
+        # `max(0, …)` klemmt sie auf die Oberkante des Hauptmonitors — Streifen
+        # und Schloss sprangen dadurch auf den falschen Bildschirm. Aufgefallen
+        # am 28.08.2026 an einem Aufbau mit zwei Monitoren übereinander.
+        y = oben
         try:
             if self._anfasser is None or not self._anfasser.winfo_exists():
                 self._anfasser = tk.Toplevel(self.root)
