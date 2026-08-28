@@ -31,13 +31,14 @@ Vier Dinge sind Absicht und bleiben so:
 | ✅ | Windows und Linux, mit Autostart auf beiden |
 | ✅ | Bestand ausgeben — für das KRT Profit Basetool, für scmdb.net und als vollständige Sicherung |
 | ✅ | Overlay einklappen, für alle mit einem Bildschirm |
+| ✅ | **Ablage-Symbol**: neben der Uhr unter Windows, im Startmenü unter Linux — der Weg zurück zu Liste und Einstellungen, während sich das Overlay zurückhält |
 | ✅ | **Angaben am Gegenstand im Spiel** — Klasse, Größe und Gütegrad am Traktorstrahl, bei Raketen der Suchkopf |
 
 ## Woran gearbeitet wird
 
 Ohne Zeitplan und ohne feste Reihenfolge — Stand der Dinge steht im [`CHANGELOG.de.md`](CHANGELOG.de.md), und im Fenster „Was ist neu" lässt sich nachlesen, was jede Version gebracht hat.
 
-Gerade in Arbeit sind mehr Komfort beim Einrichten und ein Ablage-Symbol.
+Was als Nächstes kommt, ergibt sich aus den Rückmeldungen. Das Werkzeug ist täglich im Einsatz, und die meisten Änderungen haben als Nachricht von jemandem angefangen.
 
 ## Verhältnis zum SC Deutsch Launcher
 
