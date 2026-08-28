@@ -3075,6 +3075,18 @@ def main():
         #   die im Aufblend-Betrieb ueberhaupt zu sehen ist.
         pruefe('ANFASSER_BREITE' in _rumpf44,
                'und haengt am Anfasser-Streifen, nicht in der leeren Ecke')
+        # ⚠ Und OHNE die Hoehe auf null zu klemmen. `_current_geom()` bewahrt
+        #   negatives Y ausdruecklich („so bleibt negatives Y als absolute
+        #   Position erhalten") — auf mehreren Bildschirmen ist das eine
+        #   gueltige Angabe, keine kaputte. `max(0, oben)` warf Streifen und
+        #   Schloss auf den Hauptmonitor.
+        for _wo, _name in ((_rumpf44, 'das Schloss'),
+                           (_q44[_q44.index('def _anfasser_zeigen'):]
+                            [:_q44[_q44.index('def _anfasser_zeigen'):]
+.index('    def ', 10)], 'der Anfasser')):
+            pruefe('max(0, oben)' not in _wo,
+                   '%s klemmt die Hoehe nicht auf null (zweiter Monitor)'
+                   % _name)
         # Und wenn sich der Bezugspunkt aendert, muss es mitkommen.
         for _wo44, _was44 in (('def _popup_zeigen', 'beim Aufblenden'),
                               ('def _popup_verstecken', 'beim Zublenden')):
