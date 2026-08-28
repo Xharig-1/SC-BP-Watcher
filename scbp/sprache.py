@@ -1053,6 +1053,19 @@ TEXTE = {
     'b_standard':      ('alle auf Standard', 'all at default'),
     'b_nicht_gefunden': ('nicht gefunden', 'not found'),
     'b_nicht_da':      ('nicht vorhanden', 'not present'),
+    # ⚠ Die wichtigste Zeile für den häufigsten Support-Fall: „ich sehe deine
+    # Angaben im Spiel nicht mehr". Ursache ist fast immer, dass ein
+    # Übersetzungs-Update oder ein Spiel-Patch die `global.ini` neu geschrieben
+    # und die Angaben dabei stillschweigend entfernt hat. Ohne diese Zeile war
+    # das aus dem Bericht nicht abzulesen, sondern nur zu erraten.
+    'b_inj':           ('Angaben im Spiel', 'Notes in game'),
+    'b_inj_drin':      ('eingetragen', 'in place'),
+    'b_inj_weg':       ('NICHT eingetragen', 'NOT in place'),
+    'b_inj_aus':       ('Einspielen ist ausgeschaltet', 'writing them is switched off'),
+    'b_inj_auto':      ('Auffrischen automatisch', 'refreshes automatically'),
+    'b_inj_hand':      ('Auffrischen von Hand', 'refresh by hand'),
+    'b_inj_datei':     ('Textdatei', 'Text file'),
+    'b_inj_keine':     ('keine gefunden', 'none found'),
     'b_fehler':        ('Letzte Fehler (%s von %s aufgehoben)',
                           'Recent errors (%s of %s kept)'),
     'b_fehler_keine':  ('Letzte Fehler        keine aufgezeichnet',

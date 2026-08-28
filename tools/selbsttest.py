@@ -2693,6 +2693,48 @@ def main():
            'gleiche Namen in getrennten Schritten sind KEIN Fehler')
 
 
+    # ------------------------------------------------------------------
+    # ⚠ Der häufigste Support-Fall: „ich sehe deine Angaben im Spiel nicht
+    # mehr". Ein Übersetzungs-Update oder ein Spiel-Patch schreibt die
+    # `global.ini` neu und wirft die Angaben dabei stillschweigend hinaus.
+    # Am 28.08.2026 stand in Morkhans Bericht nur `inj_quelle=deutsch` — ob
+    # etwas eingetragen war, musste erschlossen werden statt abgelesen.
+    print()
+    print('39. Der Bericht sagt, ob die Angaben im Spiel stehen')
+    from scbp import bericht as ber39, injektion as inj39
+    # ⚠ Eigener Ordner statt `basis`: Der ist an dieser Stelle bereits
+    # aufgeräumt, und ein Schreibversuch darin bricht den ganzen Lauf ab.
+    _ordner39 = tempfile.mkdtemp(prefix='sc-bp-inj39-')
+    _ini39 = os.path.join(_ordner39, 'global39.ini')
+    _echt39 = inj39.ini_datei
+    try:
+        # Datei da, Angaben vom Launcher hinausgeworfen — Morkhans Lage.
+        with open(_ini39, 'w', encoding='utf-8') as f:
+            f.write('mission_a_desc=Deliver cargo.\n')
+        inj39.ini_datei = lambda: (_ini39, 'german_(germany)', 'deutsch')
+        _l39 = ber39._injektionslage()
+        pruefe('NICHT' in _l39 or 'NOT' in _l39,
+               'ohne Angaben in der Datei sagt der Bericht das auch')
+
+        # Dieselbe Datei, Angaben drin.
+        with open(_ini39, 'a', encoding='utf-8') as f:
+            f.write('mission_b_title=Bounty <EM4>[BP]</EM4>\n')
+        _l39b = ber39._injektionslage()
+        pruefe('NICHT' not in _l39b and 'NOT' not in _l39b,
+               'und mit Angaben meldet er sie als eingetragen')
+
+        # ⚠ Gar keine Datei ist NICHT dasselbe wie „nicht eingetragen": Unter
+        # Linux ohne Übersetzung ist das der Normalzustand, und eine Warnung
+        # davor wäre eine Warnung vor nichts.
+        inj39.ini_datei = lambda: (None, 'english', None)
+        _l39c = ber39._injektionslage()
+        pruefe('NICHT' not in _l39c and 'NOT' not in _l39c,
+               'ohne Textdatei warnt er NICHT vor dem Normalzustand')
+    finally:
+        inj39.ini_datei = _echt39
+        shutil.rmtree(_ordner39, ignore_errors=True)
+
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

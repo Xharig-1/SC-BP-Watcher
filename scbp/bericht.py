@@ -175,6 +175,43 @@ def _spielstarter():
     return kurz
 
 
+def _injektionslage():
+    """Stehen die Bauplan-Angaben im Spiel? Eine Zeile, die einen Anruf spart.
+
+    ⚠ Der häufigste Support-Fall lautet „ich sehe deine Angaben im Spiel nicht
+    mehr". Ursache ist fast immer, dass ein Übersetzungs-Update oder ein
+    Spiel-Patch die `global.ini` neu geschrieben und die Angaben dabei
+    stillschweigend entfernt hat — das Werkzeug merkt davon nichts.
+
+    Am 28.08.2026 stand in Morkhans Bericht nur `inj_quelle=deutsch`. Ob
+    überhaupt etwas eingetragen war, ließ sich daraus nicht ablesen; es musste
+    erschlossen werden. Genau dafür gibt es den Bericht.
+
+    Die Auskunft kommt aus `injektion.lage()` — derselben Stelle, die auch das
+    Einstellungsfenster anzeigt. Kosten: rund 20 ms für eine 9-MB-Datei,
+    gemessen; das fällt neben dem Rest nicht auf.
+    """
+    from . import injektion
+    lage = injektion.lage()
+    # ⚠ „Keine Datei" ist NICHT dasselbe wie „nicht eingetragen". Wer unter
+    # Linux ohne Übersetzung spielt, hat schlicht keine `global.ini` — dort
+    # wäre ein fettes „NICHT eingetragen" eine Warnung vor dem Normalzustand.
+    if not lage['datei']:
+        return t('b_inj_keine')
+    teile = [t('b_inj_drin') if lage['drin'] else t('b_inj_weg')]
+    # ⚠ Beide Schalter stehen auf „an", solange niemand sie anfasst — dann
+    # tauchen sie in `selbst_gesetzt` NICHT auf. Ohne diese zwei Angaben liest
+    # man „nicht eingetragen" und weiß nicht, ob das Absicht ist.
+    if not pfade.einstellung_wahrheit('inj_an', True):
+        teile.append(t('b_inj_aus'))
+    teile.append(t('b_inj_auto')
+                 if pfade.einstellung_wahrheit('inj_auto', True)
+                 else t('b_inj_hand'))
+    if lage['quelle']:
+        teile.append('%s %s' % (lage['quelle'], lage['stand'] or ''))
+    return ' · '.join(x for x in teile if x)
+
+
 def bauen(version='', wurzel=None, fehleranzahl=8):
     """Den Bericht als Text zusammensetzen."""
     zeilen = []
@@ -222,6 +259,10 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
     # geraten ist — genau die Auskunft, die man bei „er erkennt meine Baupläne
     # nicht" als Erstes braucht.
     zeile(t('b_spielsprache'), _sicher(_spielsprache))
+    zeile(t('b_inj'), _sicher(_injektionslage))
+    zeile(t('b_inj_datei'), _sicher(
+        lambda: __import__('scbp.injektion', fromlist=['ini_datei'])
+        .ini_datei()[0] or t('b_inj_keine')))
     zeilen.append('')
 
     zeile(t('b_bestand'), _sicher(lambda: t('b_n_bauplaene') % _json_groesse(

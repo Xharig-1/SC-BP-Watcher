@@ -12,6 +12,22 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Der Bericht sagt jetzt, ob die Bauplan-Angaben im Spiel stehen.**
+  Der häufigste Support-Fall lautet „ich sehe deine Angaben im Spiel nicht
+  mehr". Dahinter steckt fast immer dasselbe: Ein Übersetzungs-Update oder ein
+  Spiel-Patch hat die Textdatei des Spiels neu geschrieben und die Angaben
+  dabei stillschweigend hinausgeworfen. Das Werkzeug merkt davon nichts.
+
+  Im Bericht stand bisher nur, welche Textquelle eingestellt ist — ob
+  tatsächlich etwas eingetragen war, ließ sich daraus nicht ablesen, sondern
+  nur erraten. Genau so am 28.08.2026 bei **Morkhan** geschehen.
+
+  Neu sind zwei Zeilen: ob die Angaben eingetragen sind, ob das Einspielen
+  überhaupt eingeschaltet ist, ob automatisch aufgefrischt wird — und welche
+  Textdatei gemeint ist. Wer unter Linux ohne Übersetzung spielt, bekommt
+  dabei **keine** Warnung: Dort gibt es keine solche Datei, und das ist der
+  Normalzustand, kein Fehler.
+
 - **Abgeschnittener Text statt Umbruch — überall dort, wo es knapp wurde.**
   Aufgefallen ist es an einer einzigen Stelle: Die englische Warnzeile auf der
   Spiel-Seite („Every translation update and every game patch wipes the

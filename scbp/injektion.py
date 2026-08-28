@@ -795,3 +795,61 @@ def ist_drin(ini_pfad):
     except OSError:
         pass
     return False
+
+
+# ---------------------------------------------------------------------------
+# ⚠ Diese beiden Funktionen lagen bis zum 28.08.2026 als Methoden im
+# Einstellungsfenster. Damit war der Zustand der Injektion nur zu erfahren,
+# wenn ein Fenster offen war — der **Diagnosebericht** kam nicht heran.
+#
+# Das kostete echte Zeit: Als Morkhan am 28.08. meldete, er sehe die
+# Bauplan-Angaben im Spiel nicht mehr, stand in seinem Bericht nur
+# `inj_quelle=deutsch`. Ob überhaupt etwas eingetragen war, ließ sich daraus
+# nicht ablesen — es musste erschlossen werden. Die Antwort lag im Programm
+# vor, nur nicht dort, wo man im Fehlerfall nachsieht.
+#
+# Jetzt stehen sie frei, und Fenster wie Bericht fragen dieselbe Stelle.
+
+def ini_datei():
+    """Die `global.ini`, um die es geht. (Pfad, Sprachordner, Quelle).
+
+    ⚠ Maßgeblich ist die **gewählte** Textquelle, nicht die zuerst gefundene.
+    Hier stand eine feste Reihenfolge: erst „deutsch", dann „starstrings", und
+    die erste eingerichtete gewann. Wer beide einmal benutzt hatte und dann auf
+    StarStrings umstellte, bekam trotzdem weiter „Quelle: Deutsch (rjcncpt)"
+    angezeigt — die deutsche war ja auch noch eingerichtet. Genau so gemeldet.
+    Die Reihenfolge greift nur, solange nichts gewählt wurde.
+    """
+    from . import uebersetzung
+    gewaehlt = pfade.einstellung('inj_quelle')
+    reihenfolge = ['deutsch', 'starstrings']
+    if gewaehlt in reihenfolge:
+        reihenfolge.remove(gewaehlt)
+        reihenfolge.insert(0, gewaehlt)
+    elif gewaehlt == 'original':
+        # Die Originaltexte kommen aus dem Spiel selbst, nicht aus einem
+        # fremden Projekt — dort gibt es keine Version zu vermerken.
+        for sprache_ordner in ('english', 'german_(germany)'):
+            pfad = uebersetzung.ziel_ini(sprache_ordner)
+            if pfad and os.path.isfile(pfad):
+                return pfad, sprache_ordner, None
+    for quelle in reihenfolge:
+        if uebersetzung.installiert(quelle):
+            sprache_ordner = uebersetzung.QUELLEN[quelle]['sprache']
+            return uebersetzung.ziel_ini(sprache_ordner), sprache_ordner, quelle
+    # Nichts vermerkt: dann die Datei nehmen, die tatsächlich daliegt.
+    for sprache_ordner in ('german_(germany)', 'english'):
+        p = uebersetzung.ziel_ini(sprache_ordner)
+        if p and os.path.isfile(p):
+            return p, sprache_ordner, None
+    return None, 'english', None
+
+
+def lage():
+    """Steht etwas im Spiel, und aus welcher Quelle? (dict)"""
+    from . import uebersetzung
+    pfad, _sprache, quelle = ini_datei()
+    da = bool(pfad and os.path.isfile(pfad))
+    drin = bool(da and ist_drin(pfad))
+    return {'datei': pfad, 'drin': drin, 'quelle': quelle,
+            'stand': uebersetzung.installiert(quelle) if quelle else None}

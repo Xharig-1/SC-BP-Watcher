@@ -12,6 +12,22 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The report now says whether the blueprint notes are in the game.**
+  The most common support case is "I can't see your notes in the game any
+  more". Behind it is almost always the same thing: a translation update or a
+  game patch rewrote the game's text file and silently threw the notes out.
+  The tool has no way of noticing.
+
+  Until now the report only said which text source was selected — whether
+  anything was actually in place could not be read from it, only guessed. That
+  is exactly what happened with **Morkhan** on 28 Aug 2026.
+
+  Two lines are new: whether the notes are in place, whether writing them is
+  switched on at all, whether they are refreshed automatically — and which text
+  file is meant. Anyone playing on Linux without a translation gets **no**
+  warning: there is no such file there, and that is the normal state, not a
+  fault.
+
 - **Text was cut off instead of wrapped — everywhere it got tight.**
   It showed up in one place: the English warning line on the Game page ("Every
   translation update and every game patch wipes the details.") stuck out by
