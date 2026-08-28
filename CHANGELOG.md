@@ -10,6 +10,45 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Fixed
+
+- **Updating failed when autostart cut in halfway through.**
+  Reported and measured by **der Autor** on 2026-08-28, updating rc75 → rc83:
+  the installer got halfway and then stopped with
+
+      An error occurred while trying to replace the existing file:
+      DeleteFile failed; code 5. Access is denied.
+
+  The Windows Restart Manager was **not** at fault — it had done its job. The
+  setup log shows the whole chain:
+
+      05:43:47  Shutting down applications using our files. (forced)
+      05:43:55  << the watcher is running again — parent process explorer.exe >>
+      05:44:17  DeleteFile: The existing file appears to be in use (5).
+
+  Eight seconds after the shutdown, **autostart** brought the program back up.
+  Windows processes autostart entries with a delay after `explorer.exe` starts;
+  if the shell had restarted shortly before (a crash, a fresh sign-in), that
+  delay lands right inside the running installation. The proof is the **parent
+  process**: `explorer.exe` — had the watcher restarted itself, something else
+  would be there.
+
+  Deleting the running program cannot win that race: the installer closes it
+  **once**, and it never sees what comes back afterwards. On its own it only
+  retries four times, one second apart.
+
+  The installer now follows up immediately before copying and terminates a
+  program that has come back — three times in short succession, so it also
+  catches an autostart firing at that very moment. Only on **updates**; a fresh
+  installation waits no longer than before.
+
+### Changed
+
+- **"Launch Star Citizen" no longer appears twice.** The "In-game text" page had
+  its own section for it — even though the button sits permanently in the
+  bottom left of the sidebar, reachable from every page. Spotted by **der Autor**
+  on 2026-08-28. The section is gone; the sidebar button is unchanged.
+
 ## v3.0.0-rc83 - 2026-08-28
 
 ### Fixed

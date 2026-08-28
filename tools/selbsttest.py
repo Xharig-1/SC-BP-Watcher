@@ -2736,6 +2736,54 @@ def main():
 
 
     print()
+    print('40. Der Installer haelt das Programm auch UNTEN, nicht nur zu')
+    # ⚠ Gemessen am 28.08.2026 (der Autor, Update rc75 -> rc83). Im
+    # Setup-Protokoll steht die ganze Kette:
+    #
+    #     05:43:47  Shutting down applications using our files. (forced)
+    #     05:43:55  << Watcher laeuft wieder, Elternprozess explorer.exe >>
+    #     05:44:17  DeleteFile: The existing file appears to be in use (5).
+    #
+    # `CloseApplications=force` hat sauber geschlossen. Acht Sekunden spaeter
+    # hat der **Autostart** das Programm wieder hochgefahren, und das Kopieren
+    # lief gegen Code 5. Bewiesen ueber den Elternprozess: `explorer.exe`
+    # arbeitet die Run-Werte verzoegert nach seinem eigenen Start ab.
+    #
+    # `CloseApplications` kann das prinzipiell nicht loesen — es schliesst
+    # einmal. Deshalb faehrt `PrepareToInstall` direkt vor dem Kopieren nach.
+    # Ohne diese Pruefung faellt der Fix bei der naechsten Ueberarbeitung
+    # unbemerkt heraus, und der Fehler kommt bei Nutzern wieder — dort, wo
+    # ihn niemand messen kann.
+    iss40 = open(os.path.join(WURZEL, 'packaging', 'installer.iss'),
+                 encoding='utf-8').read()
+    pruefe('[Code]' in iss40 and 'PrepareToInstall' in iss40,
+           'PrepareToInstall faehrt vor dem Kopieren nach')
+    pruefe('taskkill' in iss40,
+           'und beendet dabei einen wieder hochgefahrenen Watcher')
+    pruefe('FileExists' in iss40,
+           'nur beim Update — Erstinstallationen warten nicht')
+    # Die zwei Direktiven, an denen der Weg schon zweimal gescheitert ist.
+    aktiv40 = [z.strip() for z in iss40.splitlines()
+               if z.strip() and not z.strip().startswith(';')]
+    pruefe(not any(z.startswith('AppMutex=') for z in aktiv40),
+           'AppMutex steht NICHT drin (blockierte den Weg am 26.08.2026)')
+    pruefe('RestartApplications=no' in aktiv40,
+           'RestartApplications=no — der RM faehrt nichts von selbst hoch')
+    # ⚠ Und die Erklaerung im Code muss dazu passen. Sie tat es bis zum
+    # 28.08.2026 nicht und schickte die Fehlersuche in die falsche Richtung.
+    ak40 = open(os.path.join(WURZEL, 'scbp', 'aktualisierung.py'),
+                encoding='utf-8').read()
+    kopf40 = ak40[ak40.index('Der Eigenbau ist deshalb weg'):][:3000]
+    # ⚠ Auf Wortabwesenheit zu pruefen waere falsch: Der Kommentar ZITIERT die
+    # beiden alten Falschaussagen, um sie zu widerlegen. Geprueft wird deshalb,
+    # ob er den echten Stand nennt — daran haengt, ob der naechste Leser richtig
+    # informiert wird.
+    pruefe('RestartApplications=no' in kopf40,
+           'der Code nennt den echten Stand: RestartApplications=no')
+    pruefe('PrepareToInstall' in kopf40,
+           'und verweist auf das Nachfassen im Installer')
+
+    print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
         for f in fehler:

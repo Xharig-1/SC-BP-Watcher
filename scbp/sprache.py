@@ -437,14 +437,6 @@ TEXTE = {
                           'Hard crash during the previous run — the program was killed mid-instruction'),
     'b_fehler_alt':    ('(aus einer älteren Version — vermutlich längst behoben)',
                           '(from an older version — most likely fixed since)'),
-    's_sp_start':      ('Star Citizen starten', 'Launch Star Citizen'),
-    's_sp_start_h':    ('Startet das Spiel über den Weg, den du ohnehin '
-                        'benutzt — den RSI Launcher unter Windows, den '
-                        'lug-helper unter Linux. Wird keiner gefunden, steht '
-                        'hier nichts.',
-                        'Starts the game the way you already do — the RSI '
-                        'Launcher on Windows, lug-helper on Linux. If neither '
-                        'is found, nothing appears here.'),
     's_sp_start_knopf': ('Star Citizen starten', 'Launch Star Citizen'),
     's_sp_start_lauft': ('Star Citizen wird gestartet …', 'Starting Star Citizen …'),
     's_sp_kein_starter': ('kein Starter gefunden', 'no launcher found'),

@@ -639,9 +639,29 @@ def herunterladen(datei, fortschritt=None):
 # Der Eigenbau ist deshalb weg. Unter Windows startet jetzt der Installer, und
 # der kann all das, was hier mühsam nachgebaut war: Er beendet das laufende
 # Programm über den Restart Manager (`CloseApplications=force` in
-# `installer.iss`, erkannt über `AppMutex`), ersetzt die Datei, pflegt den
-# Eintrag in „Apps & Features" und startet den Watcher danach wieder
-# (`RestartApplications=yes`).
+# `installer.iss`), ersetzt die Datei und pflegt den Eintrag in
+# „Apps & Features“.
+#
+# ⚠ **Zwei Angaben standen hier falsch** und haben am 28.08.2026 die Fehlersuche
+# in die Irre geschickt. Wer hier nachliest, soll den Stand aus `installer.iss`
+# bekommen, nicht den von vorgestern:
+#
+#   * „erkannt über `AppMutex`“ — **nein.** Der Restart Manager erkennt ein
+#     laufendes Programm an den Dateien, die es offen hält; einen Mutex braucht
+#     er dafür nicht. `AppMutex` stand einmal in `installer.iss` und hat den
+#     Update-Weg am 26.08.2026 vollständig blockiert — die Begründung steht
+#     ausführlich dort.
+#   * „startet den Watcher danach wieder (`RestartApplications=yes`)“ —
+#     **nein.** Dort steht `RestartApplications=no`, mit Absicht: Der Restart
+#     Manager fährt nur wieder hoch, was er selbst *sanft* geschlossen hat, und
+#     `force` schliesst hart. Nach einem stillen Update startet **niemand** den
+#     Watcher — der Nutzer macht das selbst, angesagt über
+#     `s_ub_hinweis_neustart`.
+#
+# ⚠ Der Installer hält das Programm auch nicht *unten*: Ein Autostart-Eintrag
+# kann es mitten in der Installation wieder hochfahren — gemessen am 28.08.2026,
+# `DeleteFile ... in use (5)`. Dagegen steht `PrepareToInstall` im
+# `[Code]`-Abschnitt von `installer.iss`.
 
 
 # ⚠ Unter Windows übernimmt der Installer auch den **Neustart**. `neu_starten()`

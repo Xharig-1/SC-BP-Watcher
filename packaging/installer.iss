@@ -190,3 +190,80 @@ Filename: "{app}\SC-BP-Watcher.exe"; \
 
 ; Kein [UninstallDelete] für die Nutzerdaten: Wer deinstalliert, will das
 ; Programm loswerden — nicht seinen über Monate gesammelten Bauplan-Bestand.
+
+[Code]
+{ ⚠ Der Restart Manager schliesst das Programm — er haelt es aber nicht unten.
+
+  Gemessen am 28.08.2026 (der Autor, Update rc75 → rc83), im Setup-Protokoll
+  Zeile fuer Zeile belegt:
+
+      05:43:47  RestartManager found an application using one of our files
+      05:43:47  Shutting down applications using our files. (forced)
+      05:43:55  << der Watcher laeuft wieder — Elternprozess explorer.exe >>
+      05:44:17  DeleteFile: The existing file appears to be in use (5). Retrying.
+                (viermal, dann: DeleteFile schlug fehl; Code 5)
+
+  `CloseApplications=force` hat sauber gearbeitet. Acht Sekunden spaeter hat der
+  **Autostart** den Watcher wieder hochgefahren — der Wert unter
+  HKCU\...\CurrentVersion\Run, den der [Registry]-Abschnitt weiter oben selbst
+  anlegt. Windows arbeitet diese Werte verzoegert nach dem Start von
+  `explorer.exe` ab; war die Shell kurz vorher neu gestartet (Absturz, frische
+  Anmeldung, `explorer.exe` von Hand neu gestartet), faellt diese Verzoegerung
+  genau in die laufende Installation.
+
+  Bewiesen ist es ueber den **Elternprozess**: `explorer.exe`. Haette der Watcher
+  sich selbst neu gestartet — die naheliegende Vermutung ueber `neu_starten()` —
+  stuende dort der alte Watcher-Prozess oder `cmd.exe`.
+
+  ⚠ `CloseApplications` kann das prinzipiell nicht loesen: Es schliesst **einmal**,
+  vor dem Kopieren, und was danach hochkommt, sieht es nicht mehr. Inno wiederholt
+  von sich aus nur viermal im Sekundenabstand — gegen einen Autostart, der acht
+  Sekunden nach dem Schliessen feuert, kommt es damit nicht an.
+
+  Deshalb wird hier direkt vor dem Kopieren nachgefasst. `PrepareToInstall` ist
+  die richtige Stelle: Inno ruft es **nach** `CloseApplications` und **vor** dem
+  ersten Dateieintrag auf.
+
+  ⚠ Nur beim **Update**, nicht bei der Erstinstallation — sonst warten Nutzer, bei
+  denen gar nichts laufen kann. Erkannt daran, dass die Zieldatei schon da ist.
+
+  Hart beenden ist hier vertretbar, aus demselben Grund wie bei
+  `CloseApplications=force` weiter oben: Der Bauplan-Bestand liegt in
+  `Dokumente\SC BP Watcher` und wird bei jeder Aenderung geschrieben, nicht erst
+  beim Beenden. }
+
+const
+  WATCHER_EXE = 'SC-BP-Watcher.exe';
+
+{ Einmal hart beenden. Rueckgabe ist der Rueckgabewert von taskkill:
+  0 = etwas beendet, 128 = kein solcher Prozess, -1 = taskkill nicht startbar. }
+function WatcherBeenden(): Integer;
+var
+  RC: Integer;
+begin
+  Result := -1;
+  if Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM ' + WATCHER_EXE,
+          '', SW_HIDE, ewWaitUntilTerminated, RC) then
+    Result := RC;
+end;
+
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  I: Integer;
+begin
+  Result := '';        { leer heisst: weitermachen — alles andere bricht ab }
+
+  { Kein Update, also niemand, der die Datei halten koennte. }
+  if not FileExists(ExpandConstant('{app}\') + WATCHER_EXE) then
+    Exit;
+
+  { Dreimal mit kurzem Abstand: Der erste Durchgang raeumt weg, was der Restart
+    Manager stehen liess; die zwei folgenden fangen einen Autostart ab, der
+    genau in diesem Moment nachfeuert. Kostet im Normalfall gut eine Sekunde. }
+  for I := 1 to 3 do
+  begin
+    WatcherBeenden();
+    if I < 3 then
+      Sleep(600);
+  end;
+end;
