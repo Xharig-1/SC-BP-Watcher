@@ -10,6 +10,24 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc86 - 2026-08-28
+
+### Fixed
+
+- **Asterisks showed up as plain text on the "In-game text" page.** The
+  explanation of the text source read "after that the `**entire game**` is in
+  that language" — asterisks included.
+
+  The `**bold**` markup in the language file is meant for whoever reads that
+  file; a Tk label cannot mix formats and simply displays it. The credits page
+  already stripped it, the settings rows did not — the same job in two places,
+  one of them forgotten. Both now go through the same function.
+
+  Found by **der Autor** on 2026-08-28 in a screenshot of rc85. The self-test
+  had missed it: it looked for German text in the English interface, not for
+  markup. **It now checks for this too** — and the check was verified by
+  putting the bug back in.
+
 ## v3.0.0-rc85 - 2026-08-28
 
 ### Fixed

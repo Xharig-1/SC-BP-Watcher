@@ -408,6 +408,22 @@ def _fliesstext(eltern, text, schrift, farbe=SUB, grund=BG, abzug=0, **pack):
     return _umbruch(label, abzug=abzug)
 
 
+def _ohne_marken(text):
+    """Die Auszeichnung `**fett**` aus einem Text nehmen.
+
+    ⚠ Tk-Labels können kein Mischformat — ein Label ist ganz fett oder gar
+    nicht. Die Sternchen in `sprache.py` markieren die Betonung fuer den
+    Leser der Sprachdatei; auf dem Bildschirm haben sie nichts zu suchen.
+
+    Die Danke-Seite entfernte sie schon, die Einstellungszeilen nicht: Auf
+    "Texte im Spiel" stand dadurch woertlich `**ganze Spiel**` auf dem
+    Bildschirm (gefunden von der Autor am 28.08.2026 unter rc85). Damit das
+    nicht bei jedem neuen Text wieder passiert, geht es jetzt durch diese
+    eine Stelle.
+    """
+    return text.replace('**', '') if text else text
+
+
 def _feld(fenster, eltern, bezeichnung, hilfe, breit=False):
     """Eine Einstellungszeile: Bezeichnung, Erklärung, Platz für das Bedienelement."""
     zeile = tk.Frame(eltern, bg=BG)
@@ -419,7 +435,7 @@ def _feld(fenster, eltern, bezeichnung, hilfe, breit=False):
     beschriftung.pack(fill='x')
     erklaerung = None
     if hilfe:
-        erklaerung = tk.Label(links, text=hilfe, bg=BG, fg=SUB,
+        erklaerung = tk.Label(links, text=_ohne_marken(hilfe), bg=BG, fg=SUB,
                               font=fenster.f_klein, anchor='w', justify='left')
         erklaerung.pack(fill='x')
     if breit:
@@ -2731,7 +2747,7 @@ def _person(fenster, eltern, name, gruppe, idee, funde):
         for text, farbe in ((idee, FG), (funde, SUB)):
             if not text:
                 continue
-            lab = tk.Label(koerper, text=text.replace('**', ''), bg=FLAECHE,
+            lab = tk.Label(koerper, text=_ohne_marken(text), bg=FLAECHE,
                            fg=farbe, font=fenster.f_klein, anchor='w',
                            justify='left')
             lab.pack(fill='x', padx=(46, 16), pady=(0, 8))

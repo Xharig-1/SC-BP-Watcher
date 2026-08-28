@@ -74,9 +74,21 @@ def pruefe():
     wurzel.withdraw()
     fenster = Hauptfenster(wurzel, version='pruefung')
     treffer = {}
+    # ⚠ Zweite Ernte aus demselben Durchgang: sichtbarer Text, in dem noch die
+    # Auszeichnung `**fett**` steht. Tk-Labels können kein Mischformat, also
+    # muss sie vor der Anzeige heraus — sonst liest der Nutzer die Sternchen
+    # mit. Genau das stand am 28.08.2026 unter rc85 auf "Texte im Spiel":
+    # »danach ist das **ganze Spiel** in dieser Sprache«. Gefunden hat es
+    # der Autor auf einem Bildschirmfoto, nicht diese Prüfung — die sah nur
+    # nach deutschem Text. Jetzt sieht sie auch das.
+    marken = set()
 
     def merken(text):
-        if isinstance(text, str) and text.strip() in tabelle:
+        if not isinstance(text, str):
+            return
+        if '**' in text:
+            marken.add(text.strip())
+        if text.strip() in tabelle:
             treffer[text.strip()] = tabelle[text.strip()]
 
     def sammeln(widget):
@@ -105,7 +117,7 @@ def pruefe():
         wurzel.destroy()
     except Exception:
         pass
-    return tabelle, treffer
+    return tabelle, treffer, marken
 
 
 def main():
@@ -120,11 +132,22 @@ def main():
         print('Symbolbilder: alle da.\n')
 
     print('Oberfläche auf Englisch:')
-    tabelle, treffer = pruefe()
+    tabelle, treffer, marken = pruefe()
     print('  %d Textpaare, die sich unterscheiden' % len(tabelle))
+
+    if marken:
+        print('\n%d sichtbare(r) Text(e) mit **-Auszeichnung — Tk zeigt die '
+              'Sternchen mit:' % len(marken))
+        for text in sorted(marken):
+            print('  · %s' % (text[:100] + ('…' if len(text) > 100 else '')))
+        print('\n  → durch _ohne_marken() schicken, bevor der Text ins Label '
+              'geht (scbp/seiten.py).')
+    else:
+        print('  keine **-Auszeichnung im sichtbaren Text')
+
     if not treffer:
         print('\nKein deutscher Text in der englischen Oberfläche.')
-        return 1 if fehlend else 0
+        return 1 if (fehlend or marken) else 0
     print('\n%d deutsche Stelle(n) — sie stehen fest im Code statt in '
           'sprache.py:' % len(treffer))
     for deutsch, (schluessel, englisch) in sorted(treffer.items()):
