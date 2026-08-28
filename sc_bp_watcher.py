@@ -2159,40 +2159,87 @@ class Overlay:
             return self._schloss_weg()
         try:
             self.root.update_idletasks()
-            breite = self.root.winfo_width()
-            x = self.root.winfo_rootx() + max(0, breite - self.SCHLOSS_KANTE - 4)
-            y = self.root.winfo_rooty() + 4
-            if self._schloss is None or not self._schloss.winfo_exists():
-                self._schloss = tk.Toplevel(self.root)
-                self._schloss.overrideredirect(True)
-                self._schloss.attributes('-topmost', True)
-                self._schloss.configure(bg=BAR, cursor='hand2')
-                bild = zeichen.bild('schloss_zu', 18, zeichen.GRUEN,
-                                    master=self._schloss)
-                marke = tk.Label(self._schloss, image=bild, bg=BAR,
-                                 cursor='hand2')
-                marke.bild = bild        # sonst räumt Tk das Bild weg
-                marke.pack(expand=True)
-                for w in (self._schloss, marke):
-                    w.bind('<Button-1>', lambda e: self._schloss_loesen())
-                hinweis.anhaengen(self._schloss,
-                                  lambda: sprache.t('hinweis_schloss'))
-            self._schloss.geometry('%dx%d+%d+%d'
-                                   % (self.SCHLOSS_KANTE, self.SCHLOSS_KANTE,
-                                      x, y))
-            self._schloss.deiconify()
+            # ⚠ Es soll aussehen, als würde **dasselbe** Schloss grün. der Autor
+            # am 28.08.2026: „am besten wäre das gleiche schloss grün zu färben
+            # was eh in der leiste ist, und es damit auch wieder zu entsperren".
+            #
+            # Genau das passiert hier — mit einer Einschränkung, die bleiben
+            # muss: Ein eigenes Fenster ist es trotzdem. Wer Klicks durchreicht,
+            # reicht sie für das **ganze** Fenster durch; ein Knopf in der Leiste
+            # wäre in dem Moment genauso tot wie der Rest. Deshalb liegt hier ein
+            # zweites, nie durchlässiges Fenster **passgenau über** dem Schloss
+            # in der Leiste: gleiche Stelle, gleiche Größe, gleiches Bauteil.
+            # Für den Spieler ist es ein Schloss, das die Farbe wechselt.
+            knopf = getattr(self, 'schloss_lbl', None)
+            sichtbar = False
+            try:
+                sichtbar = knopf is not None and knopf.winfo_ismapped()
+            except tk.TclError:
+                sichtbar = False
+            if sichtbar:
+                x, y = knopf.winfo_rootx(), knopf.winfo_rooty()
+                breite = max(knopf.winfo_width(), 8)
+                hoehe = max(knopf.winfo_height(), 8)
+            else:
+                # Eingeklappt oder im Pop-up-Betrieb versteckt: Dann gibt es das
+                # Schloss in der Leiste gerade nicht, und der alte Platz in der
+                # Ecke ist der einzige, der sicher zu treffen ist.
+                x = (self.root.winfo_rootx()
+                     + max(0, self.root.winfo_width() - self.SCHLOSS_KANTE - 4))
+                y = self.root.winfo_rooty() + 4
+                breite = hoehe = self.SCHLOSS_KANTE
+            # ⚠ Jedes Mal frisch bauen, nicht wiederverwenden. Die Symbolgröße
+            # hängt an der eingestellten Schriftgröße — ein aufgehobenes Fenster
+            # trüge nach einem Wechsel das alte Bild und säße daneben.
+            self._schloss_wegraeumen()
+            self._schloss = tk.Toplevel(self.root)
+            self._schloss.overrideredirect(True)
+            self._schloss.attributes('-topmost', True)
+            self._schloss.configure(bg=BAR, cursor='hand2')
+            # Dasselbe Bauteil wie in der Leiste — nur grün und geschlossen.
+            marke = zeichen.knopf(self._schloss, 'schloss_zu',
+                                  self._schloss_loesen, farbe=zeichen.GRUEN,
+                                  grund=BAR, schrift=self.f_title)
+            marke.pack(expand=True)
+            self._schloss.bind('<Button-1>', lambda e: self._schloss_loesen())
+            hinweis.anhaengen(self._schloss,
+                              lambda: sprache.t('hinweis_schloss'))
+            self._schloss.geometry('%dx%d+%d+%d' % (breite, hoehe, x, y))
             self._schloss.lift()
+            # Und das Schloss darunter sagt jetzt dasselbe: zu und grün. Sichtbar
+            # ist es nicht, solange das Fenster darüber liegt — aber wenn dieses
+            # aus irgendeinem Grund nicht kommt, steht dort wenigstens nicht das
+            # Gegenteil des wahren Zustands.
+            self._leistenschloss(True)
         except tk.TclError:
             pass
         except Exception as ausnahme:
             fehler.merken('overlay.schloss', ausnahme)
 
-    def _schloss_weg(self):
+    def _leistenschloss(self, zu):
+        """Das Schloss in der Leiste auf den wahren Zustand stellen."""
+        knopf = getattr(self, 'schloss_lbl', None)
+        if knopf is None:
+            return
         try:
-            if self._schloss is not None and self._schloss.winfo_exists():
-                self._schloss.withdraw()
+            knopf.symbol_tauschen('schloss_zu' if zu else 'schloss_auf')
+            knopf.faerben(zeichen.GRUEN if zu else zeichen.GRAU)
+        except Exception:
+            pass                         # Anzeige darf das Schalten nie kippen
+
+    def _schloss_wegraeumen(self):
+        """Das schwebende Schloss abbauen, falls eines steht."""
+        alt = self._schloss
+        self._schloss = None
+        try:
+            if alt is not None and alt.winfo_exists():
+                alt.destroy()
         except tk.TclError:
             pass
+
+    def _schloss_weg(self):
+        self._schloss_wegraeumen()
+        self._leistenschloss(False)
 
     def _schloss_loesen(self):
         """Klick aufs Schloss: Klicks wieder abfangen, Overlay ist bedienbar."""

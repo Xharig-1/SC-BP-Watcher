@@ -3036,6 +3036,50 @@ def main():
                'klappt es, bleibt das Durchreichen an')
         pruefe(_o44.gemeldet is not None,
                'und der Nutzer erfaehrt, wie er zurueckkommt')
+
+        # ⚠ Zweiter Wunsch von der Autor am selben Tag: „am besten waere das
+        #   gleiche schloss gruen zu faerben was eh in der leiste ist, und es
+        #   damit auch wieder zu entsperren."
+        #
+        #   Ein eigenes Fenster MUSS es bleiben — durchgereicht wird immer fuer
+        #   das ganze Fenster, ein Knopf in der Leiste waere in dem Moment
+        #   genauso tot wie der Rest. Also liegt es passgenau darueber. Diese
+        #   Pruefung haelt fest, dass die Lage vom Leisten-Knopf kommt und nicht
+        #   wieder in die Ecke rutscht.
+        _ank44 = _q44.index('def _schloss_anwenden')
+        _bis44 = _q44.index('def _leistenschloss')
+        _rumpf44 = _q44[_ank44:_bis44]
+        pruefe('knopf.winfo_rootx()' in _rumpf44,
+               'das schwebende Schloss nimmt die Lage vom Leisten-Knopf')
+        pruefe('winfo_ismapped()' in _rumpf44,
+               'und faellt auf die Ecke zurueck, wenn der Knopf nicht da ist')
+
+        # Und das Schloss darunter sagt dasselbe — sonst stuende dort das
+        # Gegenteil des wahren Zustands, falls das Fenster darueber ausbleibt.
+        from scbp import zeichen as zn44
+
+        class _Knopf44:
+            symbol, farbe = 'schloss_auf', zn44.GRAU
+
+            def symbol_tauschen(self, name):
+                self.symbol = name
+
+            def faerben(self, farbe):
+                self.farbe = farbe
+
+        class _Leiste44:
+            pass
+
+        _l44 = _Leiste44()
+        _l44.schloss_lbl = _Knopf44()
+        w44.Overlay._leistenschloss(_l44, True)
+        pruefe(_l44.schloss_lbl.symbol == 'schloss_zu'
+               and _l44.schloss_lbl.farbe == zn44.GRUEN,
+               'beim Zusperren wird das Leisten-Schloss zu und gruen')
+        w44.Overlay._leistenschloss(_l44, False)
+        pruefe(_l44.schloss_lbl.symbol == 'schloss_auf'
+               and _l44.schloss_lbl.farbe == zn44.GRAU,
+               'und danach wieder offen und grau')
     finally:
         if _alt_home44 is None:
             os.environ.pop('SC_BP_HOME', None)

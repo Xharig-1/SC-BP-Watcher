@@ -10,6 +10,24 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Improved
+
+- **One lock instead of two.** The green lock used to sit in the overlay's
+  corner while the title bar still showed an open one — two locks, one of them
+  stating the opposite of the truth.
+
+  The green lock now sits **exactly on top of** the one in the title bar: same
+  place, same size, same component. To the player it is one lock changing
+  colour — closed and green means „clicks go to the game", open and grey means
+  „the overlay catches them". You unlock where you locked.
+
+  It remains a **separate window**, and that cannot change: passing clicks
+  through applies to the whole window — a button in the bar would be just as
+  unreachable as the rest. If the bar is collapsed or the overlay hidden in
+  pop-up mode, the lock falls back to its old place in the corner.
+
+  Suggested by **der Autor** on 2026-08-28.
+
 ## v3.0.0-rc90 - 2026-08-28
 
 ### Improved
