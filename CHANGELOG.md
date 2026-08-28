@@ -31,6 +31,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
+- **The heading now reads "POSSIBLE BLUEPRINTS FOR THIS MISSION TYPE".** It
+  previously said "BLUEPRINTS FROM THIS CONTRACT" — promising more than the data
+  can deliver. Read literally, you accept the contract and get nothing. Morkhan
+  on 28 Aug 2026: "it's confusing no matter how you turn it." He was right, and
+  the confusion sat in the heading, not in the list.
+
+  The SC Deutsch Launcher words it the same way for the same reason — 367 times
+  in its data file.
+
+
 - **The `[BP 3/12]` count in the title is gone; it now reads just `[BP]`.** The
   number looked useful but was not true: a contract's list merges all payout
   tiers, and which of them your own tier grants cannot be resolved — 123 of 353

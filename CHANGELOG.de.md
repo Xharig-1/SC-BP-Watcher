@@ -32,6 +32,16 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Geändert
 
+- **Die Überschrift heißt jetzt „MÖGLICHE BAUPLÄNE FÜR DIESEN MISSIONSTYP".**
+  Vorher stand dort „BAUPLÄNE AUS DIESEM AUFTRAG" — und das versprach mehr, als
+  die Daten hergeben. Wer das wörtlich liest, nimmt den Auftrag an und bekommt
+  nichts. Morkhan am 28.08.2026: „is trotzdem verwirrend, egal wie man's dreht."
+  Er hatte recht, und die Verwirrung saß in der Überschrift, nicht in der Liste.
+
+  Der SC Deutsch Launcher formuliert es aus demselben Grund so — 367 mal in
+  seiner Datendatei.
+
+
 - **Die Zählung `[BP 3/12]` im Titel ist weg, es steht nur noch `[BP]`.** Die
   Zahl sah nützlich aus, war aber nicht wahr: Die Liste eines Auftrags führt
   alle Preisstufen zusammen, und welche davon die eigene Stufe hergibt, lässt

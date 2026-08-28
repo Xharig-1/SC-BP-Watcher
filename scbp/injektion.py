@@ -154,7 +154,18 @@ OHNE_MARKE = re.compile(
 TEXTE = {
     'de': {
         'kurz':      'BP',
-        'ueberschr': 'BAUPLÄNE AUS DIESEM AUFTRAG',
+        # ⚠ **„Missionstyp", nicht „dieser Auftrag" (28.08.2026).** Hier stand
+        # „BAUPLÄNE AUS DIESEM AUFTRAG" — und das versprach mehr, als die Daten
+        # hergeben: Die Liste führt alle Preisstufen zusammen, weil sich 123 von
+        # 353 Aufträgen den Textschlüssel über ihre Stufen hinweg teilen.
+        # Morkhan las die Überschrift wörtlich, nahm den Auftrag an und bekam
+        # nichts — „is trotzdem verwirrend, egal wie man's dreht." Die
+        # Verwirrung saß in der Überschrift, nicht in der Liste.
+        #
+        # Der SC Deutsch Launcher schreibt aus demselben Grund „MÖGLICHE
+        # BAUPLÄNE FÜR DIESEN MISSIONSTYP" (367 mal in seiner Datei). Eine
+        # Überschrift, die nichts verspricht, was sie nicht halten kann.
+        'ueberschr': 'MÖGLICHE BAUPLÄNE FÜR DIESEN MISSIONSTYP',
         'chance':    'Chance auf Bauplan',
         'rep_min':   'Min. Reputation',
         'rep_max':   'Max. Reputation',
@@ -173,7 +184,7 @@ TEXTE = {
     },
     'en': {
         'kurz':      'BP',
-        'ueberschr': 'BLUEPRINTS FROM THIS CONTRACT',
+        'ueberschr': 'POSSIBLE BLUEPRINTS FOR THIS MISSION TYPE',
         'chance':    'Blueprint chance',
         'rep_min':   'Min. reputation',
         'rep_max':   'Max. reputation',
