@@ -1128,6 +1128,28 @@ def _spiel(fenster, rahmen):
     e.lage_melder = lage_zeigen
     lage_zeigen()
 
+    # --- Textquelle ----------------------------------------------------------
+    ziel = _feld(fenster, innen, t('s_sp_quelle'), t('s_sp_quelle_h'),
+                 breit=True)
+    wahl = _wahl(fenster, ziel,
+                 [('deutsch', t('s_sp_q_de')), ('starstrings', t('s_sp_q_ss')),
+                  ('original', t('s_sp_q_or'))],
+                 pfade.einstellung('inj_quelle') or '',
+                 lambda k: _quelle_waehlen(fenster, e, wahl, k, lage_zeigen))
+    wahl.pack()
+
+    ziel = _feld(fenster, innen, t('s_sp_auto'), t('s_sp_auto_h'))
+
+    def inj_auto_um():
+        neu_wert = not pfade.einstellung_wahrheit('inj_auto', True)
+        pfade.einstellung_setzen('inj_auto', neu_wert)
+        fenster.sagen(t('s_sp_auto_sagen')
+                      % (t('e_an') if neu_wert else t('e_aus')))
+        return neu_wert
+
+    schiebeschalter(ziel, pfade.einstellung_wahrheit('inj_auto', True),
+                    inj_auto_um).pack()
+
     # --- An oder aus ---------------------------------------------------------
     # ⚠ Der Schalter fehlte ganz. Wer auf PTU spielt oder die Textdatei in Ruhe
     # lassen will, hatte keine Möglichkeit außer „Wieder entfernen" — und beim
@@ -1164,28 +1186,6 @@ def _spiel(fenster, rahmen):
 
     schiebeschalter(ziel, pfade.einstellung_wahrheit('inj_an', True),
                     inj_an_um).pack()
-
-    # --- Textquelle ----------------------------------------------------------
-    ziel = _feld(fenster, innen, t('s_sp_quelle'), t('s_sp_quelle_h'),
-                 breit=True)
-    wahl = _wahl(fenster, ziel,
-                 [('deutsch', t('s_sp_q_de')), ('starstrings', t('s_sp_q_ss')),
-                  ('original', t('s_sp_q_or'))],
-                 pfade.einstellung('inj_quelle') or '',
-                 lambda k: _quelle_waehlen(fenster, e, wahl, k, lage_zeigen))
-    wahl.pack()
-
-    ziel = _feld(fenster, innen, t('s_sp_auto'), t('s_sp_auto_h'))
-
-    def inj_auto_um():
-        neu_wert = not pfade.einstellung_wahrheit('inj_auto', True)
-        pfade.einstellung_setzen('inj_auto', neu_wert)
-        fenster.sagen(t('s_sp_auto_sagen')
-                      % (t('e_an') if neu_wert else t('e_aus')))
-        return neu_wert
-
-    schiebeschalter(ziel, pfade.einstellung_wahrheit('inj_auto', True),
-                    inj_auto_um).pack()
 
     # --- Angaben am Gegenstand ----------------------------------------------
     # Klasse, Größe und Gütegrad direkt am Namen — bei Raketen der Suchkopf.
@@ -3229,9 +3229,9 @@ def _diagnose(fenster, rahmen):
         Gefragt wird trotzdem: Etwas ins Netz zu schicken, ohne dass jemand
         zugestimmt hat, macht dieses Werkzeug nicht.
         """
-        from tkinter import messagebox
-        if not messagebox.askyesno(t('s_di_ab_frage_t'), t('s_di_ab_frage'),
-                                   parent=fenster.root):
+        from .hauptfenster import frage_stellen
+        if not frage_stellen(fenster.root, t('s_di_ab_frage_t'),
+                             t('s_di_ab_frage')):
             return
         fenster.sagen(t('s_di_ab_laeuft'))
         fenster.root.update_idletasks()
@@ -3272,8 +3272,9 @@ def _diagnose(fenster, rahmen):
     ziel = _feld(fenster, innen, t('s_di_reset'), t('s_di_reset_h'))
 
     def zuruecksetzen():
-        from tkinter import messagebox
-        if not messagebox.askyesno(t('s_di_reset'), t('s_di_reset_frage')):
+        from .hauptfenster import frage_stellen
+        if not frage_stellen(fenster.root, t('s_di_reset'),
+                             t('s_di_reset_frage')):
             return
         try:
             os.remove(pfade.app_datei('bestand.json'))

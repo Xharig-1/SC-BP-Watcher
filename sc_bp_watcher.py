@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc86'
+__version__ = '3.0.0-rc87'
 
 
 def _mitgeliefert(name):
@@ -2401,6 +2401,10 @@ if __name__ == '__main__':
     fehler.spur('Start, Version %s, %s' % (__version__, sys.platform))
     wurzel = tk.Tk()
     wurzel.withdraw()
+    # Die Knöpfe der System-Abfragen auf die Programmsprache bringen. Muss nach
+    # dem Tk-Start stehen und vor der ersten Abfrage — der Assistent kann schon
+    # eine zeigen.
+    sprache.knoepfe_eindeutschen(wurzel)
     fehler.spur('Tk-Wurzel steht')
 
     zeige_liste = False
