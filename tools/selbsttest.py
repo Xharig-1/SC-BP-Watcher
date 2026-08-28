@@ -3080,11 +3080,68 @@ def main():
         pruefe(_l44.schloss_lbl.symbol == 'schloss_auf'
                and _l44.schloss_lbl.farbe == zn44.GRAU,
                'und danach wieder offen und grau')
+
+        # ⚠ Gemeldet von Haldjas (pr0) am 28.08.2026 zu rc91: „nach dem ersten
+        #   start ist das schloss symbol weiterhin in der ecke wie vorher auch,
+        #   erst wenn man es einmal benutzt hat aendert es die position in die
+        #   leiste."
+        #
+        #   Grund: `verhalten_anwenden()` laeuft unmittelbar vor `mainloop()`.
+        #   Die Leiste steht dann im Baum, aber Tk hat noch nichts gemalt — also
+        #   meldet `winfo_ismapped()` falsch, und der Rueckfall auf die Ecke
+        #   greift bei JEDEM Start, sobald jemand das Durchreichen eingeschaltet
+        #   gespeichert hat. Es wird deshalb nachgefasst.
+        pruefe('_nachfassen' in _rumpf44,
+               'ist die Leiste noch nicht gezeichnet, wird nachgefasst')
+        # ⚠ Und zwar OHNE vorher eines an der falschen Stelle zu bauen. Genau
+        #   das hat Haldjas gesehen: „Schloss ist an 2 Positionen". Ein kurz
+        #   aufblitzendes falsches Schloss waere nur die halbe Reparatur.
+        _warte44 = _rumpf44.split('_nachfassen(versuch + 1)', 1)[1]
+        pruefe(_warte44.lstrip(') ' + chr(10)).startswith('return'),
+               'und zwar ohne vorher eines an der falschen Stelle zu bauen')
+        _nach44 = _q44[_q44.index('def _nachfassen'):]
+        _nach44 = _nach44[:_nach44.index('def _leistenschloss')]
+        pruefe("einstellung_wahrheit('durchklickbar'" in _nach44,
+               'und zwar nur, solange das Durchreichen ueberhaupt noch an ist')
+        # ⚠ Begrenzt — sonst liefe es ewig weiter, solange das Overlay
+        #   eingeklappt oder im Pop-up-Betrieb versteckt ist.
+        pruefe('versuch < 10' in _rumpf44,
+               'und begrenzt, damit es nicht ewig weiterlaeuft')
     finally:
         if _alt_home44 is None:
             os.environ.pop('SC_BP_HOME', None)
         else:
             os.environ['SC_BP_HOME'] = _alt_home44
+
+    print()
+    print('45. Kein totes Bild in der Anleitung')
+    # ⚠ Gefunden am 28.08.2026 beim Ergaenzen der Funktionsliste: Drei Bilder
+    # in der Tabelle zeigten ins Leere — `symbole/22/punkt-blau.png` (zweimal)
+    # und `symbole/22/gemerkt-gruen.png`. Beides sind **Zeilen**-Symbole, und die
+    # werden nur bis 18 px gebaut (`tools/symbole_bauen.py`: ZEILE geht bis 18,
+    # KNOPF bis 30). Auf GitHub stand dort ein kaputtes Bild-Kaestchen — in der
+    # Funktionsliste, also auf dem, was ein Interessierter als Erstes sieht.
+    #
+    # Niemand hat es gemeldet, weil ein fehlendes Bild niemandem wehtut. Genau
+    # deshalb gehoert es in den Selbsttest: Wer ein Symbol umbenennt oder eine
+    # Groesse nicht baut, erfaehrt es hier statt gar nicht.
+    import re as _re45
+    _tot45 = []
+    for _d45 in ('README.md', 'README.de.md', 'CHANGELOG.md', 'CHANGELOG.de.md',
+                 'ROADMAP.md', 'ROADMAP.de.md'):
+        _pfad45 = os.path.join(WURZEL, _d45)
+        if not os.path.exists(_pfad45):
+            continue
+        _inhalt45 = open(_pfad45, encoding='utf-8').read()
+        _bilder45 = (_re45.findall(r'src="([^":]+)"', _inhalt45)
+                     + _re45.findall(r'!\[[^\]]*\]\(([^):]+)\)', _inhalt45))
+        for _b45 in _bilder45:
+            if not os.path.exists(os.path.join(WURZEL, _b45)):
+                _tot45.append('%s -> %s' % (_d45, _b45))
+    for _z45 in _tot45:
+        print('         ' + _z45)
+    pruefe(not _tot45,
+           'jedes Bild in der Doku liegt auch im Repo (%d tote)' % len(_tot45))
 
     print()
     if fehler:

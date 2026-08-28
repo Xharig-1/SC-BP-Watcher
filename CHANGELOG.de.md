@@ -10,6 +10,30 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc92 - 2026-08-28
+
+### Behoben
+
+- **Nach dem Start stand das Schloss neben dem Overlay statt darauf.** Wer das
+  Durchreichen eingeschaltet gespeichert hatte, sah nach jedem Start **zwei**
+  Schlösser: eines an der falschen Stelle neben dem Fenster, eines in der
+  Leiste. Erst das erste Umschalten rückte es an seinen Platz — und beim
+  nächsten Start ging es wieder von vorn los.
+
+  Die Ursache ist eine alte `tkinter`-Falle: Der Zustand wird unmittelbar vor
+  dem Start der Fensterschleife angewendet. Die Leiste steht da zwar schon im
+  Baum, aber Tk hat noch nichts gezeichnet — weder „ist sichtbar" noch die Maße
+  stimmen zu diesem Zeitpunkt. Das Schloss wurde also an einen geratenen Platz
+  gesetzt.
+
+  Jetzt wird **gewartet statt geraten**: Solange die Leiste noch nicht steht,
+  wird gar kein Schloss gebaut, sondern nachgefasst, bis sie da ist. Ein kurz
+  aufblitzendes falsches Schloss wäre nur die halbe Reparatur gewesen.
+
+  Gemeldet von **Haldjas (pr0)** am 28.08.2026, mit dem vollständigen Ablauf zum
+  Nachstellen: „Starte Watcher — Schloss ist an 2 Positionen … position bleibt so
+  bis man den watcher neu startet".
+
 ## v3.0.0-rc91 - 2026-08-28
 
 ### Verbessert
@@ -29,8 +53,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   der Leiste wäre in dem Moment genauso wenig zu treffen wie der Rest. Ist die
   Leiste eingeklappt oder das Overlay im Pop-up-Betrieb versteckt, fällt das
   Schloss auf seinen alten Platz in der Ecke zurück.
-
-  Vorgeschlagen von **der Autor** am 28.08.2026.
 
 ## v3.0.0-rc90 - 2026-08-28
 
@@ -75,8 +97,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Das Fenster stempelt jetzt selbst nach, **bevor** es den Katalog liest. Das
   trifft jeden Nutzer beim ersten Start nach einer Fassung mit neuer Historie.
 
-  Gefunden von **der Autor** am 28.08.2026 unter Windows, direkt nach rc88.
-
 ## v3.0.0-rc88 - 2026-08-28
 
 ### Behoben
@@ -95,8 +115,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Beide Listen werden jetzt **vereinigt** statt ersetzt, und beim Datum gilt
   das frühere. Das gleiche galt für zwei eigene Funde nacheinander: Der zweite
   löschte den ersten. Auch das ist behoben.
-
-  Gefunden von **der Autor** am 28.08.2026 unter Windows.
 
 ### Verbessert
 
@@ -124,16 +142,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
   Betrifft: Textquelle wechseln · Fehlerbericht absenden · Bestand zurücksetzen.
 
-  Angestoßen von **der Autor** am 28.08.2026: „muss die box nur noch mein Design
-  haben, und eher breiter statt hoch".
+  Die Vorgabe dahinter: Die Abfrage soll das Design des Programms tragen — und
+  eher breit als hoch sein.
 
 
 - **„Texte im Spiel" steht jetzt in der Reihenfolge, in der man es liest.**
   Zuerst die Textquelle — woher die Grundlage kommt —, dann was hineingeschrieben
   wird: erst die Bauplan-Angaben, dann die Angaben am Gegenstand. Vorher stand
   der Schreib-Schalter über der Quelle, auf die er sich bezieht.
-
-  Vorgeschlagen von **der Autor** am 28.08.2026.
 
 ### Behoben
 
@@ -149,8 +165,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Das Programm trägt die Wörter jetzt selbst ein — und zieht sie beim
   Sprachwechsel mit, statt sie beim Start einmal zu setzen.
 
-  Gefunden von **der Autor** am 28.08.2026 unter Linux.
-
 ## v3.0.0-rc86 - 2026-08-28
 
 ### Behoben
@@ -165,8 +179,8 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Einstellungszeilen nicht — dieselbe Aufgabe an zwei Stellen, eine davon
   vergessen. Beide gehen jetzt durch dieselbe Funktion.
 
-  Gefunden von **der Autor** am 28.08.2026 auf einem Bildschirmfoto von rc85.
-  Der Selbsttest hatte es nicht gesehen: Er suchte nach deutschem Text in der
+  Aufgefallen auf einem Bildschirmfoto von rc85. Der Selbsttest hatte es nicht
+  gesehen: Er suchte nach deutschem Text in der
   englischen Oberfläche, nicht nach Auszeichnung. **Er prüft es jetzt mit** —
   und die Prüfung wurde gegengeprobt, indem der Fehler noch einmal eingebaut
   wurde.
@@ -194,9 +208,8 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Zahl, das Tk im Linux-AppImage als Tcl-Objekt. Unter Windows konnte der
   Fehler nicht auftreten.
 
-  Gefunden von **der Autor** am 28.08.2026 in der ersten Linux-Testrunde nach
-  dem Update auf rc84 — zuerst am abgeschnittenen Text, dann bestätigt im
-  eigenen Fehlerbericht: **50 von 50** aufgehobenen Fehlern kamen aus dieser
+  Aufgefallen in der ersten Linux-Testrunde nach dem Update auf rc84 — zuerst am
+  abgeschnittenen Text, dann bestätigt im Fehlerbericht: **50 von 50** aufgehobenen Fehlern kamen aus dieser
   einen Zeile.
 
   Maßangaben werden jetzt mit Tks eigenem Umwandler gelesen, der alle drei
@@ -213,8 +226,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   ein, schreibt das Programm denselben Wert — und davon wusste der Deinstaller
   nichts.
 
-  Gefunden von **der Autor** am 28.08.2026 beim Aufräumen nach einem Testlauf.
-  Es ist derselbe Autostart, der am selben Morgen das Update scheitern ließ
+  Aufgefallen beim Aufräumen nach einem Testlauf. Es ist derselbe Autostart, der am selben Morgen das Update scheitern ließ
   (Code 5) — er war an beiden Enden nur halb geregelt.
 
   Der Deinstaller entfernt den Wert jetzt immer, unabhängig davon, wer ihn
@@ -226,8 +238,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 ### Behoben
 
 - **Das Update scheiterte, wenn der Autostart mitten hineinfuhr.**
-  Gemeldet und gemessen von **der Autor** am 28.08.2026 beim Update rc75 → rc83:
-  Der Installer lief bis zur Hälfte und brach dann ab mit
+  Gemessen beim Update rc75 → rc83: Der Installer lief bis zur Hälfte und brach dann ab mit
 
       Fehler beim Ersetzen einer vorhandenen Datei:
       DeleteFile schlug fehl; Code 5. Zugriff verweigert.
@@ -266,12 +277,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Verschlimmert wurde es durch den Kasten darüber: Der versprach „Änderungen
   wirken beim nächsten Spielstart“ — also genau das, was nicht stimmte.
 
-  Gefunden von **der Autor** am 28.08.2026 im eigenen Test: Schalter aus,
-  Statuszeile meldete „aus“, und in der Textdatei standen unverändert **1.217**
-  Angaben. Beim zweiten Schalter fiel er auf dieselbe Sache herein, obwohl der
-  Hinweis dort danebenstand — „ich hab das fette gelesen aber nicht das
-  kleinere“. Damit war die Frage entschieden: Ein Hinweis im Kleingedruckten
-  ist keine Lösung.
+  Gemessen im Test: Schalter aus, Statuszeile meldete „aus“ — und in der
+  Textdatei standen unverändert **1.217** Angaben. Beim zweiten Schalter
+  passierte dasselbe, obwohl der Hinweis danebenstand: Gelesen wird das Fette,
+  nicht das Kleingedruckte. Damit war die Frage entschieden — ein Hinweis im
+  Kleingedruckten ist keine Lösung.
 
   Jetzt wirkt das Umlegen sofort — aus heißt weg, an heißt da. Das ist
   verlustfrei: Der ursprüngliche Wortlaut des Spiels ist gemerkt und wird beim
@@ -282,8 +292,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **„Star Citizen starten" steht nicht mehr doppelt.** Auf der Seite „Texte im
   Spiel" gab es einen eigenen Abschnitt dafür — obwohl der Knopf ohnehin
   dauerhaft unten links in der Leiste steht, auf jeder Seite erreichbar.
-  Aufgefallen **der Autor** am 28.08.2026. Der Abschnitt ist weg, der Knopf in
-  der Leiste bleibt unverändert.
+  Der Abschnitt ist weg, der Knopf in der Leiste bleibt unverändert.
 
 ## v3.0.0-rc83 - 2026-08-28
 

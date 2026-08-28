@@ -144,13 +144,14 @@ On top of that: class, size and grade are right there in the line (`M/1/A`), the
 | <img src="assets/symbole/22/liste-gruen.png" width="22" alt=""> **Blueprint list** | Search everything, grouped by type, filters *all / owned / missing / watching / new in game*, with progress. Tick items with one click |
 | <img src="assets/symbole/22/herkunft-gruen.png" width="22" alt=""> **Where it drops** | One click shows faction, contract, required standing and payout — for **655 of 722** blueprints, sorted by the easiest route |
 | <img src="assets/symbole/22/einrichtung-gruen.png" width="22" alt=""> **Setup wizard** | Four steps on first start — and **repeatable any time**, no digging through menus |
-| <img src="assets/symbole/22/punkt-blau.png" width="22" alt=""> **Catalogue watch** | Also reports when something becomes **newly craftable in the game** — a blueprint CIG added that did not exist before |
+| <img src="assets/symbole/18/punkt-blau.png" width="22" alt=""> **Catalogue watch** | Also reports when something becomes **newly craftable in the game** — a blueprint CIG added that did not exist before |
 | <img src="assets/symbole/22/serverstatus-gruen.png" width="22" alt=""> **Server status** | A tab of its own: **is Star Citizen up?** Shows what CIG reports on its status page — all three systems plus the incidents of the last two months in full. Refreshes itself once a minute. States stay in CIG's own wording; the entries are maintained by hand, not measured |
-| <img src="assets/symbole/22/punkt-blau.png" width="22" alt=""> **New in game** | Its own filter in the list: **only what the current patch added**. Every blueprint carries the game version it first appeared in; when the next patch lands, the new ones move in and the old ones drop out of the filter — the stamp stays |
-| <img src="assets/symbole/22/gemerkt-gruen.png" width="22" alt=""> **Watchlist** | Click the star next to anything you are waiting for. When it shows up it is announced in gold — and **removed from the watchlist by itself** |
+| <img src="assets/symbole/18/punkt-blau.png" width="22" alt=""> **New in game** | Its own filter in the list: **only what the current patch added**. Every blueprint carries the game version it first appeared in; when the next patch lands, the new ones move in and the old ones drop out of the filter — the stamp stays |
+| <img src="assets/symbole/18/gemerkt-gruen.png" width="22" alt=""> **Watchlist** | Click the star next to anything you are waiting for. When it shows up it is announced in gold — and **removed from the watchlist by itself** |
 | <img src="assets/symbole/22/kuerzel-gruen.png" width="22" alt=""> **Class · size · grade** | Compact tag `class/size/grade` per blueprint, e.g. `M/1/A` (Military · Size 1 · Grade A) |
 | <img src="assets/symbole/22/ton-gruen.png" width="22" alt=""> **Sound** | A short beep on every find — you don't have to watch the window |
 | <img src="assets/symbole/22/vordergrund-gruen.png" width="22" alt=""> **Always on top** | Borderless, slightly translucent overlay above the game |
+| <img src="assets/symbole/22/schloss_auf-gruen.png" width="22" alt=""> **Pass clicks through** | One click on the lock in the bar and the overlay lets mouse clicks through — still in view, no longer in the way. The same lock turns green and brings it back with one click, with no detour through the settings |
 | <img src="assets/symbole/22/verschieben-gruen.png" width="22" alt=""> **Movable & resizable** | Drag the title bar, resize at the ◢ handle — **position and size are remembered** |
 | <img src="assets/symbole/22/sprachen-gruen.png" width="22" alt=""> **German and English** | Interface switchable; the in-game blueprint message is recognised in both languages |
 | <img src="assets/symbole/22/abhaken-gruen.png" width="22" alt=""> **Tells you about updates** | Notices new versions by itself — with „What's new" to read up on, including older releases |
@@ -253,6 +254,7 @@ The narrow bar sits above the game and reports new finds. Everything else is beh
 | <img src="assets/symbole/22/starten-grau.png" width="22" alt=""> | **Rocket** — launch Star Citizen. Only appears if a way to start it was found |
 | <img src="assets/symbole/22/einstellungen-grau.png" width="22" alt=""> | **Gear** — open the settings |
 | <img src="assets/symbole/22/liste-grau.png" width="22" alt=""> | **Clipboard** — blueprint list: search, filter, tick off, look up where things drop |
+| <img src="assets/symbole/22/schloss_auf-grau.png" width="22" alt=""> | **Lock** — pass mouse clicks through to the game. It turns green and closed while they do; one click on it catches them again |
 | <img src="assets/symbole/22/einklappen-grau.png" width="22" alt=""> | **Chevron** — fold the overlay down to just its bar |
 | <img src="assets/symbole/22/leeren-grau.png" width="22" alt=""> | **Eraser** — clear the messages on screen. Your blueprints stay |
 | <img src="assets/symbole/22/schliessen-grau.png" width="22" alt=""> | **Cross** — close |
@@ -392,7 +394,7 @@ The values for type, size, grade and class as well as the origin of each bluepri
 
 > The watcher **does not ship this data**; it fetches it on your machine directly from scmdb.net, the way a browser would. scmdb is licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/); a bundled copy would be redistribution and would conflict with that licence as well as with this project's GPL. Fetching is sparing: only when a **new game version** is out.
 
-And thanks to **Haldjas** from **pr0**: he pointed out that an overlay permanently in the way, catching mouse clicks, hurts more than it helps in combat. Two things came out of his suggestion that would not exist otherwise — the overlay can now **pop up only when a blueprint arrives**, and mouse clicks can be **passed through to the game**. Both live under *Display*. Good call, well spotted. 🙏
+And thanks to **Haldjas** from **pr0**: he pointed out that an overlay permanently in the way, catching mouse clicks, hurts more than it helps in combat. Two things came out of his suggestion that would not exist otherwise — the overlay can now **pop up only when a blueprint arrives**, and mouse clicks can be **passed through to the game**. Both live under *Display*. He later pointed out that passing clicks through needs a button that stays put — which is why the lock now sits permanently in the bar. Good call, well spotted. 🙏
 
 The interface symbols come from the **[Lucide](https://lucide.dev)** set (ISC licence) — all drawn on the same grid with the same stroke width, which is why they look identical on Windows, Linux and macOS. **Thanks** to the Lucide community! 🙏 The licence text ships with the tool (`assets/symbole/LIZENZ.txt`) and is shown under **Thanks & Licenses**.
 

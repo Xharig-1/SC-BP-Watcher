@@ -823,6 +823,8 @@ TEXTE = {
                           'gets in the way during combat. Neither would exist '
                           'without him.'),
     's_dk_haldjas_bugs': ('Dazu: der Weg zurück UND hin zum Durchklicken · '
+                          'das Schloss, das nach dem Start neben dem Overlay '
+                          'stand statt darauf · '
                           'das Setup, das an der laufenden Datei abbrach · '
                           'die Konsolenfenster beim Update · das verschwundene '
                           'Symbol neben der Uhr · der Absturz nach dem Neustart · '
@@ -830,6 +832,7 @@ TEXTE = {
                           'vergessene Textquelle im Assistenten · und der Fund, der '
                           'alles erklärte: „da bleibt er bei rc25".',
                           'Also: the way back AND forth to click-through · '
+                          'the lock that sat beside the overlay after a restart instead of on it · '
                           'the installer that failed on the running file · the '
                           'console windows during updates · the tray symbol that '
                           'vanished · the crash after restarting · the font size that '
