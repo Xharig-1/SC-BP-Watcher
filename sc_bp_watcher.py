@@ -56,7 +56,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.0.0-rc95'
+__version__ = '3.0.0-rc96'
 
 
 def _mitgeliefert(name):
@@ -2163,7 +2163,8 @@ class Overlay:
                 x, y = knopf.winfo_rootx(), knopf.winfo_rooty()
                 breite = max(knopf.winfo_width(), 8)
                 hoehe = max(knopf.winfo_height(), 8)
-            elif knopf is not None and versuch < 10:
+            elif (knopf is not None and versuch < 10
+                    and self._wird_noch_gezeichnet()):
                 # ⚠ **Beim Start ist der Knopf noch nicht gezeichnet — dann wird
                 # gewartet, nicht geraten.** Gemeldet von Haldjas (pr0) am
                 # 28.08.2026 zu rc91: „Starte Watcher — Schloss ist an 2
@@ -2249,6 +2250,27 @@ class Overlay:
             pass
         except Exception as ausnahme:
             fehler.merken('overlay.schloss', ausnahme)
+
+    def _wird_noch_gezeichnet(self):
+        """Fehlt der Knopf, weil Tk noch malt — oder weil das Fenster weg soll?
+
+        ⚠ Diese Unterscheidung fehlte, und sie kostete drei Sekunden bei jedem
+        Zublenden. Haldjas (pr0) am 28.08.2026 zu rc95: „wenn der watcher
+        minimiert wurde, dauert es nochmal 3 sekunden bis das schloss sich wieder
+        seine alte position neben dem balken sucht." Das waren **genau** die
+        zehn Nachfass-Versuche à 300 ms — gedacht für den Start, wo die Leiste
+        gleich kommt, aber blind auch dann gelaufen, wenn das Overlay gerade
+        absichtlich verschwunden ist. Warten auf etwas, das nicht kommt.
+
+        Nachgemessen trennt `root.winfo_ismapped()` die beiden Fälle sauber:
+
+            Start, nach update_idletasks   root=1  knopf=0   ← wird noch gemalt
+            nach withdraw()                root=0  knopf=0   ← soll gar nicht da sein
+        """
+        try:
+            return bool(self.root.winfo_ismapped())
+        except tk.TclError:
+            return False
 
     def _schloss_nachziehen(self):
         """Das Schloss neu platzieren, wenn es eines gibt.

@@ -10,6 +10,34 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc96 - 2026-08-28
+
+### Behoben
+
+- **Beim Zublenden brauchte das Schloss drei Sekunden zurück an seinen Platz.**
+  Blendet sich das Overlay im Aufblend-Betrieb weg, gehört das Schloss wieder an
+  den Anfasser-Streifen — es blieb aber erst noch dort stehen, wo eben die Leiste
+  war.
+
+  Es waren **genau** die zehn Nachfass-Versuche à 300 ms aus rc92. Die sind für
+  den Start gedacht, wo die Leiste gleich kommt: Solange sie noch gezeichnet
+  wird, wartet das Schloss, statt an eine geratene Stelle zu springen. Nur lief
+  dieses Warten auch dann, wenn das Overlay gerade **absichtlich** verschwunden
+  ist — Warten auf etwas, das nicht kommt.
+
+  Beide Fälle sehen am Knopf gleich aus, am Fenster aber nicht. Nachgemessen:
+
+  | Fall | Fenster | Knopf |
+  |---|---|---|
+  | Start, wird noch gezeichnet | 1 | 0 |
+  | absichtlich weggeblendet | 0 | 0 |
+
+  Gefragt wird jetzt das Fenster. Ist es weg, springt das Schloss sofort.
+
+  Gemeldet von **Haldjas (pr0)** am 28.08.2026 — samt der genauen Trennung von
+  den sechs Sekunden, die das Overlay selbst noch stehen bleibt: „wenn der
+  watcher minimiert wurde, dauert es nochmal 3 sekunden".
+
 ## v3.0.0-rc95 - 2026-08-28
 
 ### Geändert
