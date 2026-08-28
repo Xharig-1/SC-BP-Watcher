@@ -64,7 +64,7 @@ The watcher writes into the game's mission text **which** blueprints a contract 
 ### The window
 
 > [!NOTE]
-> The screenshots below show **v3.0.0** (currently a test build, `v3.0.0-rc`, under [Releases](../../releases)). In v2.0.0 the window still looks different — if you are looking for something shown here and cannot find it, that is the older version, not a bug.
+> The screenshots below show **v3.0.0**. In v2.0.0 the window still looks different — if you are looking for something shown here and cannot find it, that is the older version, not a bug.
 
 <table>
 <tr>

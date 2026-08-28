@@ -64,7 +64,7 @@ Der Watcher schreibt in die Auftragstexte des Spiels, **welche** Baupläne ein A
 ### Das Fenster
 
 > [!NOTE]
-> Die folgenden Bilder zeigen **v3.0.0** (derzeit als Testversion `v3.0.0-rc` unter [Releases](../../releases)). In v2.0.0 sieht das Fenster noch anders aus — wer dort etwas sucht, was hier zu sehen ist, findet es nicht. Das ist kein Fehler, sondern die ältere Version.
+> Die folgenden Bilder zeigen **v3.0.0**. In v2.0.0 sieht das Fenster noch anders aus — wer dort etwas sucht, was hier zu sehen ist, findet es nicht. Das ist kein Fehler, sondern die ältere Version.
 
 <table>
 <tr>
