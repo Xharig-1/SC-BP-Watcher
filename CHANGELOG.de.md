@@ -10,6 +10,28 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc91 - 2026-08-28
+
+### Verbessert
+
+- **Ein Schloss statt zwei.** Bisher saß das grüne Schloss in der Ecke des
+  Overlays, während in der Leiste weiter ein offenes stand — zwei Schlösser,
+  von denen eines das Gegenteil des wahren Zustands zeigte.
+
+  Jetzt liegt das grüne Schloss **passgenau über** dem in der Leiste: gleiche
+  Stelle, gleiche Größe, gleiches Bauteil. Für den Spieler ist es ein Schloss,
+  das die Farbe wechselt — zu und grün heißt „Klicks gehen ins Spiel", offen
+  und grau heißt „das Overlay fängt sie ab". Entsperrt wird an derselben Stelle,
+  an der man zugesperrt hat.
+
+  Ein **eigenes Fenster** bleibt es trotzdem, und das lässt sich nicht ändern:
+  Wer Klicks durchreicht, reicht sie für das ganze Fenster durch — ein Knopf in
+  der Leiste wäre in dem Moment genauso wenig zu treffen wie der Rest. Ist die
+  Leiste eingeklappt oder das Overlay im Pop-up-Betrieb versteckt, fällt das
+  Schloss auf seinen alten Platz in der Ecke zurück.
+
+  Vorgeschlagen von **der Autor** am 28.08.2026.
+
 ## v3.0.0-rc90 - 2026-08-28
 
 ### Verbessert
