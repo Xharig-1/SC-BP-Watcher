@@ -2197,6 +2197,43 @@ def main():
                        'keine Webhook-Adresse in scbp/%s' % _d34)
 
         print()
+        print('35. Ein Textfeld rollt sich selbst, nicht die Seite dahinter')
+        # ⚠ Von zwei Leuten unabhaengig gemeldet (28.08.2026): Im Bericht auf
+        # der Diagnose-Seite liess sich erst rollen, NACHDEM man die ganze
+        # Seite nach unten geschoben hatte. Das Rad ging an die Rollflaeche
+        # dahinter, weil ein `tk.Text` keine registrierte Flaeche ist.
+        from scbp import hauptfenster as hf35
+        import tkinter as tk35
+        w35 = tk35.Tk()
+        # ⚠ Zeigen, sonst rechnet Tk das Layout nicht — `yview()` liefert dann
+        # (0.0, 0.0), und jedes Feld saehe nach Ueberlauf aus. Weit ausserhalb
+        # des Bildschirms und durchsichtig, damit niemand es sieht (siehe 23).
+        w35.geometry('300x200+-4000+-4000')
+        w35.attributes('-alpha', 0.0)
+        w35.deiconify()
+        try:
+            rahmen35 = tk35.Frame(w35)
+            rahmen35.pack(fill='both', expand=True)
+            feld35 = tk35.Text(rahmen35, height=3)
+            feld35.pack()
+            # Kurzer Inhalt: passt hinein, also soll die SEITE rollen.
+            feld35.insert('1.0', 'kurz')
+            w35.update_idletasks()
+            pruefe(hf35._eigenes_rollen(feld35, rahmen35) is None,
+                   'ein Feld ohne Ueberlauf gibt das Rad an die Seite weiter')
+            # Langer Inhalt: laeuft ueber, also gehoert ihm das Rad.
+            feld35.insert('end', '\n'.join('Zeile %d' % i for i in range(60)))
+            w35.update_idletasks()
+            pruefe(hf35._eigenes_rollen(feld35, rahmen35) is feld35,
+                   'ein ueberlaufendes Feld rollt sich selbst')
+            # Und Widgets ohne Textfeld dazwischen aendern nichts.
+            marke35 = tk35.Label(rahmen35, text='x')
+            pruefe(hf35._eigenes_rollen(marke35, rahmen35) is None,
+                   'eine Beschriftung faengt das Rad nicht ab')
+        finally:
+            w35.destroy()
+
+        print()
         print('25. Eigener Startbefehl und die Starter-Zeile im Bericht')
         # ⚠ Wer ueber Lutris, Heroic oder Flatpak spielt, bekam GAR KEINEN
         # Startknopf. Der Ausweg (Einstellung `spielstarter`) existierte, stand

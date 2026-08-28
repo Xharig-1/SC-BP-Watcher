@@ -398,6 +398,26 @@ def rundbalken(eltern, hoehe, anteil, grund, leer, voll, breite=None):
     return c
 
 
+def _eigenes_rollen(vom, bis):
+    """Ein Textfeld zwischen `vom` und `bis`, das selbst rollen kann — oder None.
+
+    Geprüft wird, ob überhaupt etwas zu rollen **ist**: Ein Feld, dessen Inhalt
+    hineinpasst, meldet `(0.0, 1.0)`. Dort soll weiter die Seite rollen, sonst
+    bliebe der Zeiger über einem kurzen Feld hängen und nichts bewegte sich.
+    """
+    knoten = vom
+    while knoten is not None and knoten is not bis:
+        if isinstance(knoten, tk.Text):
+            try:
+                oben, unten = knoten.yview()
+                if (unten - oben) < 0.999:
+                    return knoten
+            except tk.TclError:
+                pass
+        knoten = getattr(knoten, 'master', None)
+    return None
+
+
 def rad_anschliessen(leinwand):
     """Das Mausrad an eine Rollfläche hängen — für das ganze Fenster.
 
@@ -462,11 +482,28 @@ def rad_anschliessen(leinwand):
             return -ganze                        # nach oben = negativ
 
         def flaeche_unter(e):
-            """Die registrierte Rollfläche unter dem Mauszeiger — oder nichts."""
+            """Was unter dem Mauszeiger gerollt werden soll — oder nichts.
+
+            ⚠ **Ein Textfeld rollt sich selbst.** Vorher zählten nur die
+            registrierten Rollflächen; ein `tk.Text` ist keine, also ging das
+            Rad an die Seite dahinter. Auf der Diagnose-Seite hieß das: Erst
+            die ganze Seite nach unten schieben, und **dann** erst ließ sich im
+            Bericht rollen. der Autor am 28.08.2026, nachdem sein Bruder
+            dasselbe gemeldet hatte: „in dem Fehlerbericht-Fenster kann man
+            erst scrollen, nachdem die Diagnose-Seite nach unten gescrollt
+            ist."
+
+            Wie im Browser: Was unter dem Zeiger liegt und rollen kann, rollt
+            — die Seite bewegt man daneben.
+            """
             unter = wurzel.winfo_containing(e.x_root, e.y_root)
+            erstes = unter
             while unter is not None:
                 if unter in wurzel.rollflaechen:
-                    return unter
+                    # Liegt auf dem Weg dorthin ein Textfeld, das ueberlaeuft,
+                    # gehoert ihm das Rad.
+                    eigenes = _eigenes_rollen(erstes, unter)
+                    return eigenes if eigenes is not None else unter
                 unter = getattr(unter, 'master', None)
             return None
 

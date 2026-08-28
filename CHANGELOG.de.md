@@ -10,6 +10,20 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Behoben
+
+- **Im Fehlerbericht ließ sich erst rollen, wenn die Seite ganz unten war.**
+  Das Mausrad ging an die Seite dahinter statt an das Textfeld unter dem
+  Zeiger — man musste also erst die ganze Diagnose-Seite nach unten schieben,
+  bevor sich im Bericht etwas bewegte. Jetzt rollt, was unter dem Zeiger liegt,
+  wie man es aus dem Browser kennt. Gemeldet von **Morkhan**.
+- **Der Knopf zum Absenden ist dauerhaft rot**, nicht erst beim Überfahren —
+  ein Warnknopf, den man erst sieht, wenn die Maus darauf steht, warnt
+  niemanden.
+- **Der zweite Meldeweg heißt jetzt „GitHub Issue"** statt „Fehler melden".
+  Zwei Knöpfe, die dasselbe versprachen, während der eine den Browser öffnet
+  und ein GitHub-Konto verlangt.
+
 ## v3.0.0-rc81 - 2026-08-28
 
 > **Ein Knopf statt neun Schritten: Fehlerbericht absenden.**

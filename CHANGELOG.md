@@ -10,6 +10,19 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Fixed
+
+- **The error report only scrolled once the page was at the bottom.** The mouse
+  wheel went to the page behind instead of the text field under the pointer, so
+  you had to push the whole diagnostics page down before anything moved inside
+  the report. Now whatever sits under the pointer scrolls, the way browsers do
+  it. Reported by **Morkhan**.
+- **The send button is red all the time**, not only on hover — a warning button
+  you only see once the mouse is on it warns nobody.
+- **The second reporting route is now called „GitHub issue"** instead of
+  „Report a problem". Two buttons promised the same thing, while one opens the
+  browser and needs a GitHub account.
+
 ## v3.0.0-rc81 - 2026-08-28
 
 > **One button instead of nine steps: send the error report.**
