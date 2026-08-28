@@ -10,6 +10,8 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc89 - 2026-08-28
+
 ### Fixed
 
 - **The dropdown promised more than the list showed.** After the patch-history

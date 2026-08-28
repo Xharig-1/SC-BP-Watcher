@@ -10,6 +10,8 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc89 - 2026-08-28
+
 ### Behoben
 
 - **Das Auswahlfeld versprach mehr, als die Liste zeigte.** Nach dem Fix an
