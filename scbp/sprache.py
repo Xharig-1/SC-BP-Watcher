@@ -1445,6 +1445,49 @@ def anmelden(rueckruf):
         _zuhoerer.append(rueckruf)
 
 
+# Die Knopfbeschriftungen der System-Abfragen (`messagebox.askyesno`) kommen
+# nicht aus dieser Datei, sondern aus Tks eigener Sprachtabelle `msgcat`.
+#
+# ⚠ Und die ist unvollständig: Auf Linux stand die Tk-Sprache bereits richtig
+# auf `de_de`, die deutschen Texte fehlten der Installation aber schlicht —
+# gemessen am 28.08.2026, `::msgcat::mc Yes` gab „Yes“ zurück. Ergebnis war
+# eine Abfrage mit deutschem Text und den Knöpfen **Yes / No**, gefunden von
+# der Autor beim Umstellen der Textquelle. Unter Windows fällt es nicht auf,
+# weil Tk die Texte dort mitbringt.
+#
+# Also tragen wir sie selbst ein. Nur für Deutsch — im englischen Betrieb sind
+# „Yes/No“ ja richtig.
+_MSGCAT_DE = (('Yes', 'Ja'), ('No', 'Nein'), ('Cancel', 'Abbrechen'),
+              ('OK', 'OK'), ('Retry', 'Wiederholen'), ('Abort', 'Abbrechen'),
+              ('Ignore', 'Ignorieren'))
+
+
+_msgcat_widget = [None]
+
+
+def knoepfe_eindeutschen(widget):
+    """Tks Abfrage-Knöpfe auf die Programmsprache bringen.
+
+    Braucht ein beliebiges Tk-Widget (für den Zugang zum Interpreter) und
+    wirkt auf alle späteren `messagebox`-Abfragen. Nach jedem Sprachwechsel
+    erneut aufrufen.
+    """
+    if widget is None:
+        return
+    _msgcat_widget[0] = widget
+    try:
+        if aktuelle() == 'de':
+            for schluessel, wort in _MSGCAT_DE:
+                widget.tk.call('::msgcat::mcset', 'de', schluessel, wort)
+            widget.tk.call('::msgcat::mclocale', 'de')
+        else:
+            widget.tk.call('::msgcat::mclocale', 'en')
+    except Exception:
+        # Ein Tk ohne msgcat ist denkbar — dann bleiben die Knöpfe englisch.
+        # Das ist ein Schönheitsfehler, kein Grund, das Programm anzuhalten.
+        pass
+
+
 def setzen(sprache):
     """Sprache für diesen Lauf umstellen (ohne die Einstellung zu ändern).
 
@@ -1457,6 +1500,9 @@ def setzen(sprache):
         _aktuell[0] = systemsprache()
     if _aktuell[0] == vorher:
         return
+    # ⚠ Auch die Knöpfe der System-Abfragen mitziehen — sie haengen an Tks
+    # eigener Tabelle und wuerden sonst in der vorigen Sprache stehen bleiben.
+    knoepfe_eindeutschen(_msgcat_widget[0])
     for rueckruf in list(_zuhoerer):
         try:
             rueckruf()

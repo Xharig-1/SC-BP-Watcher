@@ -19,6 +19,22 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
   Vorgeschlagen von **der Autor** am 28.08.2026.
 
+### Behoben
+
+- **Abfragen hatten deutschen Text, aber englische Knöpfe.** Beim Umstellen
+  der Textquelle stand „Einsetzen?" über den Knöpfen **Yes** und **No**.
+
+  Diese Knöpfe kommen nicht aus der Sprachdatei des Programms, sondern aus
+  Tks eigener Tabelle — und die ist auf vielen Linux-Systemen unvollständig.
+  Nachgemessen am 28.08.2026: Die Tk-Sprache stand bereits richtig auf
+  `de_de`, die deutschen Wörter fehlten der Installation trotzdem. Unter
+  Windows bringt Tk sie mit, deshalb ist es dort nie aufgefallen.
+
+  Das Programm trägt die Wörter jetzt selbst ein — und zieht sie beim
+  Sprachwechsel mit, statt sie beim Start einmal zu setzen.
+
+  Gefunden von **der Autor** am 28.08.2026 unter Linux.
+
 ## v3.0.0-rc86 - 2026-08-28
 
 ### Behoben

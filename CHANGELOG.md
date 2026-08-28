@@ -19,6 +19,22 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
   Suggested by **der Autor** on 2026-08-28.
 
+### Fixed
+
+- **Dialogs had German text but English buttons.** Switching the text source
+  showed "Einsetzen?" above buttons labelled **Yes** and **No**.
+
+  Those buttons do not come from the program's own language file but from Tk's
+  own table — which is incomplete on many Linux systems. Measured on
+  2026-08-28: Tk's locale was already set correctly to `de_de`, yet the German
+  words were simply missing from the installation. On Windows Tk ships them,
+  which is why it never showed up there.
+
+  The program now supplies the words itself, and updates them on a language
+  switch instead of setting them once at startup.
+
+  Found by **der Autor** on 2026-08-28 on Linux.
+
 ## v3.0.0-rc86 - 2026-08-28
 
 ### Fixed
