@@ -3054,6 +3054,35 @@ def main():
         pruefe('winfo_ismapped()' in _rumpf44,
                'und faellt auf die Ecke zurueck, wenn der Knopf nicht da ist')
 
+        # ⚠ Der Fall, an dem rc92 noch scheiterte — gemeldet von Haldjas (pr0)
+        #   am 28.08.2026, belegt durch seinen Bericht: `overlay_modus=popup`.
+        #
+        #   Im Pop-up-Betrieb ruft `verhalten_anwenden()` `withdraw()`, BEVOR je
+        #   gezeichnet wurde. Der Knopf ist dann dauerhaft nicht gemappt, das
+        #   Nachfassen laeuft zehnmal leer — und danach rechnete die Stelle aus
+        #   der Lage eines UNSICHTBAREN Fensters. Gemessen:
+        #
+        #       versteckt (war sichtbar):  ismapped=0  w=56  rootx=1161
+        #       nie gemalt, dann versteckt: ismapped=0  w=1   rootx=0
+        #
+        #   `_anfasser_zeigen()` loest denselben Fall seit jeher richtig: aus
+        #   `self._letzte_lage`. Das Schloss geht jetzt denselben Weg.
+        pruefe('self._letzte_lage' in _rumpf44,
+               'im Pop-up-Betrieb gilt die gemerkte Lage, nicht das '
+               'versteckte Fenster')
+        # Und wenn sich der Bezugspunkt aendert, muss es mitkommen.
+        for _wo44, _was44 in (('def _popup_zeigen', 'beim Aufblenden'),
+                              ('def _popup_verstecken', 'beim Zublenden')):
+            _teil44 = _q44[_q44.index(_wo44):]
+            _teil44 = _teil44[:_teil44.index('    def ', 10)]
+            pruefe('_schloss_nachziehen()' in _teil44,
+                   'das Schloss zieht %s mit' % _was44)
+        # ⚠ Gemessen am 28.08.2026: Ein ungezeichnetes Widget meldet Breite 1 und
+        #   Position 0. `ismapped()` allein reicht deshalb nicht — sonst saesse
+        #   das Schloss in der Bildschirmecke statt auf der Leiste.
+        pruefe('winfo_width() > 1' in _rumpf44,
+               'und prueft die Masse mit, nicht nur ismapped')
+
         # Und das Schloss darunter sagt dasselbe — sonst stuende dort das
         # Gegenteil des wahren Zustands, falls das Fenster darueber ausbleibt.
         from scbp import zeichen as zn44

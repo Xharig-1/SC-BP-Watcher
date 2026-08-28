@@ -2173,7 +2173,21 @@ class Overlay:
             knopf = getattr(self, 'schloss_lbl', None)
             sichtbar = False
             try:
-                sichtbar = knopf is not None and knopf.winfo_ismapped()
+                # ⚠ `ismapped()` allein genügt nicht — die Maße müssen auch
+                # stimmen. Nachgemessen am 28.08.2026 an einem Fenster wie dem
+                # Overlay:
+                #
+                #     direkt nach dem Bau    ismapped=0  w=1   rootx=0
+                #     nach update_idletasks  ismapped=0  w=1   rootx=0
+                #     nach update            ismapped=1  w=68  rootx=488
+                #
+                # Ein ungezeichnetes Widget meldet Breite **1** und Position 0.
+                # Kommt eine Tk-Fassung mit `ismapped=1` bei noch fehlenden Maßen
+                # heraus, säße das Schloss in der Bildschirmecke — schlimmer als
+                # der Rückfall. Beides muss stimmen, sonst wird gewartet.
+                sichtbar = (knopf is not None and knopf.winfo_ismapped()
+                            and knopf.winfo_width() > 1
+                            and knopf.winfo_height() > 1)
             except tk.TclError:
                 sichtbar = False
             if sichtbar:
@@ -2202,12 +2216,32 @@ class Overlay:
                 self.root.after(300, lambda: self._nachfassen(versuch + 1))
                 return
             else:
-                # Eingeklappt oder im Pop-up-Betrieb versteckt: Dann gibt es das
-                # Schloss in der Leiste gerade nicht, und der alte Platz in der
-                # Ecke ist der einzige, der sicher zu treffen ist.
-                x = (self.root.winfo_rootx()
-                     + max(0, self.root.winfo_width() - self.SCHLOSS_KANTE - 4))
-                y = self.root.winfo_rooty() + 4
+                # ⚠ **Im Pop-up-Betrieb ist das Overlay versteckt** — und ein
+                # verstecktes Fenster taugt nicht als Bezugspunkt. Genau daran
+                # scheiterte rc92 bei Haldjas (pr0): Sein Bericht zeigt
+                # `overlay_modus=popup`, und `verhalten_anwenden()` ruft dort
+                # `withdraw()`, **bevor** je gezeichnet wurde. Der Knopf in der
+                # Leiste ist damit dauerhaft nicht gemappt, das Nachfassen läuft
+                # zehnmal leer, und danach rechnete diese Stelle aus der Lage
+                # eines unsichtbaren Fensters. Für ihn schwebte das Schloss frei
+                # neben dem Overlay — „rechts neben dem watcher".
+                #
+                # Denselben Fall löst `_anfasser_zeigen()` seit jeher richtig:
+                # Es rechnet aus `self._letzte_lage`, der gemerkten Position.
+                # Das Schloss geht denselben Weg und legt sich an die rechte
+                # obere Ecke dieser Lage — dorthin, wo im sichtbaren Zustand der
+                # Knopf in der Leiste sitzt. Blendet das Overlay auf, rückt es
+                # von selbst an seinen Platz (`_popup_zeigen` fasst nach).
+                lage = GEOM_RE.match(self._letzte_lage or '')
+                if lage is not None and lage.group(3) is not None:
+                    ov_breite, _h, links, oben = (int(z) for z in lage.groups())
+                    x = links + max(0, ov_breite - self.SCHLOSS_KANTE - 4)
+                    y = max(0, oben) + 4
+                else:
+                    x = (self.root.winfo_rootx()
+                         + max(0, self.root.winfo_width()
+                               - self.SCHLOSS_KANTE - 4))
+                    y = self.root.winfo_rooty() + 4
                 breite = hoehe = self.SCHLOSS_KANTE
             # ⚠ Jedes Mal frisch bauen, nicht wiederverwenden. Die Symbolgröße
             # hängt an der eingestellten Schriftgröße — ein aufgehobenes Fenster
@@ -2236,6 +2270,18 @@ class Overlay:
             pass
         except Exception as ausnahme:
             fehler.merken('overlay.schloss', ausnahme)
+
+    def _schloss_nachziehen(self):
+        """Das Schloss neu platzieren, wenn es eines gibt.
+
+        Gerufen, sobald sich der Bezugspunkt ändert — im Pop-up-Betrieb also
+        beim Auf- und Zublenden. Steht kein Schloss, passiert nichts."""
+        try:
+            if (self._schloss is not None and self._schloss.winfo_exists()
+                    and pfade.einstellung_wahrheit('durchklickbar', False)):
+                self._schloss_anwenden(True)
+        except Exception:
+            pass
 
     def _nachfassen(self, versuch):
         """Die Lage des Schlosses noch einmal setzen, sobald die Leiste steht.
@@ -2359,6 +2405,11 @@ class Overlay:
             self.root.attributes('-topmost', True)
         except tk.TclError:
             return
+        # ⚠ Jetzt gibt es die Leiste wieder — also gehört das Schloss darauf und
+        # nicht mehr an die gemerkte Lage. Ohne diese Zeile bliebe es dort
+        # liegen, wo es im versteckten Zustand saß, und läge im schlimmsten Fall
+        # neben dem gerade aufgeblendeten Fenster.
+        self._schloss_nachziehen()
         if self._popup_uhr is not None:
             try:
                 self.root.after_cancel(self._popup_uhr)
@@ -2405,6 +2456,8 @@ class Overlay:
                 self._letzte_lage = jetzt
             self.root.withdraw()
             self._anfasser_zeigen()
+            # Dasselbe rückwärts: Ohne Leiste gilt wieder die gemerkte Lage.
+            self._schloss_nachziehen()
         except tk.TclError:
             pass
 
