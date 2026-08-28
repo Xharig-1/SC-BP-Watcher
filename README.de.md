@@ -9,6 +9,7 @@
 <sub>Windows · Linux · ohne Konto, ohne Cloud — mit Installer oder als einzelne Datei</sub>
 
 [![Version](https://img.shields.io/github/v/release/Xharig-1/SC-BP-Watcher?include_prereleases&label=Version&color=5fa522)](../../releases)
+[![Heruntergeladen](https://img.shields.io/github/downloads/Xharig-1/SC-BP-Watcher/total?label=Heruntergeladen&color=5fa522)](../../releases)
 [![Lizenz](https://img.shields.io/badge/Lizenz-GPL--3.0-5fa522)](LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-beitreten-5fa522?logo=discord&logoColor=white)](https://discord.gg/g2E7e6XxZC)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Kaffee%20spendieren-5fa522?logo=kofi&logoColor=white)](https://ko-fi.com/xharig)
