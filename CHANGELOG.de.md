@@ -10,6 +10,8 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc82 - 2026-08-28
+
 ### Behoben
 
 - **Ein Auftrag mit mehreren Preisstufen verlor fast alle seine Baupläne.**

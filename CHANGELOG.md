@@ -10,6 +10,8 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc82 - 2026-08-28
+
 ### Fixed
 
 - **A contract with several payout tiers lost nearly all its blueprints.**
