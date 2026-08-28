@@ -10,6 +10,25 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Fixed
+
+- **Text was cut off instead of wrapped — everywhere it got tight.**
+  It showed up in one place: the English warning line on the Game page ("Every
+  translation update and every game patch wipes the details.") stuck out by
+  5 pixels and was silently clipped.
+
+  The cause was not the text but a sum with a missing term. The wrap limit
+  bounds the **text** only; what a label ends up occupying is text plus border
+  plus padding. With the limit set to the full available width, the label
+  needed a few pixels more than it was given — and Tk clips an oversized child
+  at its parent without an error or any other sign.
+
+  The border is now read from the widget itself rather than guessed, and
+  subtracted. This applies to **every** place that wraps automatically,
+  including those that just barely fit today and would have tipped over with
+  the next longer string. Measured afterwards: nothing is clipped any more,
+  across 11 pages × 2 languages × 2 window sizes.
+
 ## v3.0.0-rc82 - 2026-08-28
 
 ### Fixed

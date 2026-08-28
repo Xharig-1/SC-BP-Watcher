@@ -10,6 +10,26 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Behoben
+
+- **Abgeschnittener Text statt Umbruch — überall dort, wo es knapp wurde.**
+  Aufgefallen ist es an einer einzigen Stelle: Die englische Warnzeile auf der
+  Spiel-Seite („Every translation update and every game patch wipes the
+  details.") ragte um 5 Pixel heraus und wurde stillschweigend abgeschnitten.
+
+  Die Ursache lag nicht am Text, sondern an einer Rechnung, der ein Posten
+  fehlte. Die Umbruchgrenze begrenzt nur den **Text**; was eine Beschriftung am
+  Ende belegt, ist Text plus Rand plus Innenabstand. Stand die Grenze auf der
+  vollen verfügbaren Breite, brauchte die Beschriftung ein paar Pixel mehr, als
+  sie bekam — und Tk schneidet ein zu breites Element stumm am Rahmen ab, ohne
+  Fehler, ohne Hinweis.
+
+  Der Rand wird jetzt beim Element selbst erfragt statt geschätzt und
+  abgezogen. Das wirkt an **jeder** Stelle mit selbsttätigem Umbruch, auch an
+  denen, die heute knapp durchgingen und beim nächsten längeren Text gekippt
+  wären. Nachgemessen: nichts wird mehr abgeschnitten, über 11 Seiten × 2
+  Sprachen × 2 Fenstergrößen.
+
 ## v3.0.0-rc82 - 2026-08-28
 
 ### Behoben
