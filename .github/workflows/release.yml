@@ -180,7 +180,7 @@ jobs:
           # dem Quellcode heraus prüfen lässt. Zwei Fassungen derselben Datei,
           # die auseinanderlaufen, sind genau die Sorte Fehler, die niemand
           # sucht.
-          python - <<'PYEOF'
+          python3 - <<'PYEOF'
           import io
           p = 'scbp/berichtziel.py'
           t = io.open(p, encoding='utf-8').read()

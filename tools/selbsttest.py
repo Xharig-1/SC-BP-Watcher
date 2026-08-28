@@ -2225,12 +2225,24 @@ def main():
             feld35.pack()
             # Kurzer Inhalt: passt hinein, also soll die SEITE rollen.
             feld35.insert('1.0', 'kurz')
-            w35.update_idletasks()
-            pruefe(hf35._eigenes_rollen(feld35, rahmen35) is None,
-                   'ein Feld ohne Ueberlauf gibt das Rad an die Seite weiter')
+            # ⚠ `update()`, nicht nur `update_idletasks()`. Unter Windows
+            # rechnet Tk das Layout eines Fensters ausserhalb des Bildschirms
+            # sonst nicht zu Ende: `yview()` gibt dann (0.0, 0.0), das sieht
+            # wie Ueberlauf aus, und die Pruefung schlug im Bau fehl, obwohl
+            # sie hier gruen war (28.08.2026).
+            w35.update()
+            oben35, unten35 = feld35.yview()
+            if (unten35 - oben35) <= 0.0:
+                # Tk hat trotzdem nicht gerechnet — dann ist hier nichts zu
+                # pruefen. Lieber offen ueberspringen als falschen Alarm geben.
+                print('  [--]   Tk rechnet dieses Fenster nicht durch — '
+                      'Rollpruefung uebersprungen')
+            else:
+                pruefe(hf35._eigenes_rollen(feld35, rahmen35) is None,
+                       'ein Feld ohne Ueberlauf gibt das Rad an die Seite weiter')
             # Langer Inhalt: laeuft ueber, also gehoert ihm das Rad.
             feld35.insert('end', '\n'.join('Zeile %d' % i for i in range(60)))
-            w35.update_idletasks()
+            w35.update()
             pruefe(hf35._eigenes_rollen(feld35, rahmen35) is feld35,
                    'ein ueberlaufendes Feld rollt sich selbst')
             # Und Widgets ohne Textfeld dazwischen aendern nichts.
