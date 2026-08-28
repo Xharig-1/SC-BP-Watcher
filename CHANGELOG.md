@@ -10,6 +10,15 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+### Improved
+
+- **The "In-game text" page now follows the order you read it in.** The text
+  source first — where the base text comes from — then what gets written into
+  it: blueprint details first, then the details on the item itself. Previously
+  the write switch sat above the source it depends on.
+
+  Suggested by **der Autor** on 2026-08-28.
+
 ## v3.0.0-rc86 - 2026-08-28
 
 ### Fixed

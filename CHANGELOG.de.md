@@ -10,6 +10,15 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+### Verbessert
+
+- **„Texte im Spiel" steht jetzt in der Reihenfolge, in der man es liest.**
+  Zuerst die Textquelle — woher die Grundlage kommt —, dann was hineingeschrieben
+  wird: erst die Bauplan-Angaben, dann die Angaben am Gegenstand. Vorher stand
+  der Schreib-Schalter über der Quelle, auf die er sich bezieht.
+
+  Vorgeschlagen von **der Autor** am 28.08.2026.
+
 ## v3.0.0-rc86 - 2026-08-28
 
 ### Behoben
