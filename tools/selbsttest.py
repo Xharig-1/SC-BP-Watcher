@@ -3288,6 +3288,31 @@ def main():
            'die Seite liest NICHT selbst ein (der Bestand hat einen Besitzer)')
 
     print()
+    print('48. Nach einer neuen Fassung wird immer wieder gesehen')
+    # ⚠ Gemeldet von der Autor am 28.08.2026: v3.0.1 war draussen, der laufende
+    # Watcher schwieg — obwohl er die Fassung laengst abgerufen hatte und sie in
+    # seinem Zwischenspeicher stand.
+    #
+    # Der Grund: `_nach_version_sehen()` wurde GENAU EINMAL gerufen, zwei
+    # Sekunden nach dem Start. Der Stundenabstand in `aktualisierung.nachsehen()`
+    # begrenzt nur, wie oft gefragt werden DARF — fragen muss trotzdem jemand.
+    # Wer den Watcher durchlaufen liess, erfuhr nie von einer neuen Fassung.
+    _w48 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'), encoding='utf-8').read()
+    _f48 = _w48[_w48.index('def _nach_version_sehen'):]
+    _f48 = _f48[:_f48.index('    def ', 10)]
+    pruefe('_nach_version_sehen' in _f48.split('def _nach_version_sehen', 1)[1],
+           'die Pruefung plant sich selbst wieder ein')
+    pruefe('VERSION_TAKT' in _f48, 'und zwar in einem benannten Takt')
+
+    # ⚠ Und ein erwarteter Fehler darf das Protokoll nicht fluten: Beim Download
+    #   kommt der Fortschritt im Sekundentakt; geht dabei das Fenster zu, wirft
+    #   jeder Aufruf. Ein Bericht zeigte 50 von 50 Plaetzen mit derselben
+    #   Meldung — jeder echte Fehler war daraus verdraengt.
+    _s48 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'), encoding='utf-8').read()
+    pruefe('_IM_TK_GEMELDET' in _s48,
+           'derselbe erwartete Fehler wird nur einmal gemerkt')
+
+    print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
         for f in fehler:

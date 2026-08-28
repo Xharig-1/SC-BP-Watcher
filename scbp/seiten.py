@@ -1908,6 +1908,9 @@ def _holen_text(mit_vorab, eigene=''):
 _BEREIT = [None]
 
 
+_IM_TK_GEMELDET = [False]      # siehe unten: nur der erste wird gemerkt
+
+
 def _im_tk(fenster, tat):
     """Etwas im Tk-Faden erledigen — und daran nicht scheitern.
 
@@ -1920,12 +1923,21 @@ def _im_tk(fenster, tat):
     Bomb20 am 27.08.2026: „ich habe auf get 68 geklickt, aber da kam nix mit
     restart oder install." In seinem Bericht stand der Fehler dreimal, bei jedem
     Klick einmal.
+
+    ⚠ **Gemerkt wird nur der erste.** Beim Herunterladen kommt der Fortschritt
+    im Sekundentakt; geht dabei das Fenster zu, wirft jeder einzelne Aufruf.
+    Ein Bericht vom 28.08.2026 zeigte **50 von 50** Plätzen mit derselben
+    Meldung belegt, alle innerhalb von acht Sekunden — und damit war jeder
+    echte Fehler aus dem Protokoll verdrängt. Ein erwarteter Fehler, der die
+    Diagnose unbrauchbar macht, ist schlimmer als keiner.
     """
     try:
         fenster.root.after(0, tat)
         return True
     except Exception as ausnahme:
-        fehler.merken('seiten.im_tk', ausnahme)
+        if not _IM_TK_GEMELDET[0]:
+            _IM_TK_GEMELDET[0] = True
+            fehler.merken('seiten.im_tk', ausnahme)
         return False
 
 
