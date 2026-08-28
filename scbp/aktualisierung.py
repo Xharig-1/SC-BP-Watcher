@@ -58,7 +58,12 @@ from . import pfade
 
 REPO = 'Xharig-1/SC-BP-Watcher'
 API = 'https://api.github.com/repos/%s/releases' % REPO
-SEITE = 'https://github.com/%s/releases/latest' % REPO
+# ⚠ **Kein `/releases/latest` mehr (28.08.2026).** Der Link führte auf
+# **v2.0.0**: GitHub blendet dort Vorabversionen aus, und alle rc-Fassungen
+# sind welche. Wer ihn weitergab, schickte Leute auf einen Stand von vor
+# Monaten — und bekam prompt Fehler gemeldet, die längst behoben waren.
+# Die Übersicht zeigt alles, auch die Vorabversionen.
+SEITE = 'https://github.com/%s/releases' % REPO
 KENNUNG = 'SC-BP-Watcher (+https://github.com/%s)' % REPO
 CACHE = 'versionen.json'
 # Wie lange ein Blick auf GitHub gilt. Früher standen hier 24 Stunden — „einmal
