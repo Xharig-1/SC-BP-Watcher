@@ -6,7 +6,7 @@
 
 **Live overlay that shows new Star Citizen blueprints the moment you unlock them**
 
-<sub>Windows · Linux · no account, no cloud — installer or a single file</sub>
+<sub>Windows · Linux · no account, no cloud — installer on Windows, single file on Linux</sub>
 
 [![Version](https://img.shields.io/github/v/release/Xharig-1/SC-BP-Watcher?include_prereleases&label=Version&color=5fa522)](../../releases)
 [![Downloads](https://img.shields.io/github/downloads/Xharig-1/SC-BP-Watcher/total?label=Downloads&color=5fa522)](../../releases)

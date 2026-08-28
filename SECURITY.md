@@ -18,9 +18,8 @@ Released artifacts:
 
 | File | Platform | Built with |
 |---|---|---|
-| `SC-BP-Watcher.exe` | Windows | PyInstaller (single file) |
-| `SC-BP-Watcher-Setup.exe` | Windows | Inno Setup |
-| `SC-BP-Watcher.AppImage` | Linux | PyInstaller + AppImage |
+| `SC-BP-Watcher-Setup.exe` | Windows | PyInstaller + Inno Setup |
+| `SC-BP-Watcher-x86_64.AppImage` | Linux | PyInstaller + AppImage |
 
 ## Dependencies
 
