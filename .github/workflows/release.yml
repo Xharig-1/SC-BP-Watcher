@@ -71,7 +71,6 @@ jobs:
 
       - name: Berichtsziel einsetzen
         shell: bash
-        shell: bash
         run: |
           # ⚠ Nur die eine Zeile ersetzen, die Datei NICHT neu schreiben.
           # Sonst fehlt in der gebauten Fassung alles andere — etwa die
@@ -89,6 +88,7 @@ jobs:
           io.open(p, 'w', encoding='utf-8').write(t.replace(alt, neu, 1))
           print('Ziel eingesetzt:', 'ja' if len(neu) > len(alt) else 'leer')
           PYEOF
+
       - name: PyInstaller
         run: pip install --upgrade pyinstaller
 
@@ -190,6 +190,7 @@ jobs:
           io.open(p, 'w', encoding='utf-8').write(t.replace(alt, neu, 1))
           print('Ziel eingesetzt:', 'ja' if len(neu) > len(alt) else 'leer')
           PYEOF
+
       - name: Binaerdatei bauen
         run: >
           python3 -m PyInstaller --noconfirm --onefile --windowed
