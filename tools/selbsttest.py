@@ -2784,6 +2784,58 @@ def main():
            'und verweist auf das Nachfassen im Installer')
 
     print()
+    print('41. Ein Schalter, der aus sagt, macht auch aus')
+    # ⚠ Gemessen am 28.08.2026 (der Autor): „Angaben am Gegenstand“ abgeschaltet,
+    # Statuszeile meldete „aus“ — und die `global.ini` blieb unangetastet. 1.217
+    # Angaben standen weiter drin, das Spiel zeigte sie unverändert.
+    #
+    # Schlimmer noch der Kasten darüber: „Änderungen wirken beim nächsten
+    # Spielstart“ — wer danach neu startete und alles unverändert vorfand, hielt
+    # das Werkzeug für kaputt. der Autor: „ein user erwartet das was er liest und
+    # sieht, ist es aus angaben weg also muss das auch so sein.“
+    #
+    # Der Schalter stößt das Neuschreiben jetzt selbst an. Diese Prüfung hält das
+    # fest — fällt es heraus, ist der Fehler zurück, und zwar unsichtbar.
+    se41 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                encoding='utf-8').read()
+    i41 = se41.index('def angaben_um():')
+    rumpf41 = se41[i41:se41.index('return neu_wert', i41)]
+    pruefe('_inj_erneuern' in rumpf41,
+           'Umlegen schreibt die Textdatei neu')
+    pruefe('lage_zeigen' in rumpf41,
+           'und der Zustandskasten wird danach aufgefrischt')
+    # ⚠ Zwei Riegel, sonst stößt ein Formatschalter eine Einfügung an, die
+    # niemand wollte — der obere Schalter lässt Vorhandenes mit Absicht stehen.
+    pruefe("inj_an" in rumpf41,
+           'aber nur, wenn das Schreiben überhaupt eingeschaltet ist')
+    pruefe("drin" in rumpf41,
+           'und nur, wenn schon etwas in der Datei steht')
+
+    # ⚠ Derselbe Anspruch für den Hauptschalter — der Autor fiel im eigenen Test
+    # darauf herein und hat damit den Punkt bewiesen: „ich hab das fette gelesen
+    # aber nicht das kleinere“. Der Hinweis stand im Kleingedruckten, und genau
+    # das liest niemand. Aus heißt jetzt weg, an heißt da.
+    i41b = se41.index('def inj_an_um():')
+    rumpf41b = se41[i41b:se41.index('return neu_wert', i41b)]
+    pruefe('_inj_entfernen' in rumpf41b,
+           'Ausschalten nimmt vorhandene Angaben heraus')
+    pruefe('_inj_erneuern' in rumpf41b,
+           'und Einschalten trägt sie wieder ein')
+    # ⚠ Der Hilfetext MUSS mitziehen, sonst behauptet er das Gegenteil des
+    # Verhaltens — schlimmer als gar kein Hinweis.
+    from scbp import sprache as sp41
+    hilfe41 = sp41.TEXTE['s_sp_an_h']
+    pruefe('entfernt vorhandene Angaben nicht' not in hilfe41[0],
+           'der Hilfetext behauptet nicht mehr das Gegenteil (de)')
+    pruefe('does not remove' not in hilfe41[1],
+           'dasselbe auf Englisch')
+    # ⚠ Und der Kasten muss den Rest zugeben, statt „nichts geschrieben“ zu sagen.
+    pruefe('s_sp_aus_rest' in sp41.TEXTE and 's_sp_aus_rest_h' in sp41.TEXTE,
+           'der Kasten kann sagen, dass noch Angaben im Spiel stehen')
+    pruefe('s_sp_aus_rest' in se41,
+           'und benutzt das auch')
+
+    print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
         for f in fehler:

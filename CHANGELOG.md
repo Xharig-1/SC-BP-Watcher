@@ -44,6 +44,27 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
+- **A switch that says "off" now actually turns things off.** Both switches on
+  the "In-game text" page only stored the setting — the text file was left
+  untouched until someone pressed "Write now" under "By hand". Anyone who
+  turned the details off, restarted the game and found everything unchanged
+  concluded the tool was broken.
+
+  The status box above made it worse: it promised "changes take effect the next
+  time you start the game" — precisely what was not true.
+
+  Found by **der Autor** on 2026-08-28 while testing: switch off, status line
+  reported "off", and **1,217** details were still sitting in the text file. He
+  then fell for the same thing on the second switch, even though the note was
+  right next to it — "I read the bold part but not the smaller one". That
+  settled it: a note in the small print is not a fix.
+
+  Flipping a switch now takes effect immediately — off means gone, on means
+  there. Nothing is lost: the original wording is remembered and restored
+  exactly when the details are removed. If something does remain, the status
+  box now says so instead of reporting "nothing is being written".
+
+
 - **"Launch Star Citizen" no longer appears twice.** The "In-game text" page had
   its own section for it — even though the button sits permanently in the
   bottom left of the sidebar, reachable from every page. Spotted by **der Autor**

@@ -44,6 +44,28 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Geändert
 
+- **Ein Schalter, der „aus“ sagt, macht jetzt auch aus.** Beide Schalter auf
+  der Seite „Texte im Spiel“ setzten bisher nur die Einstellung — die Textdatei
+  blieb unangetastet, bis jemand unten unter „Von Hand“ auf „Jetzt eintragen“
+  drückte. Wer die Angaben abschaltete, das Spiel neu startete und alles
+  unverändert vorfand, hielt das Werkzeug für kaputt.
+
+  Verschlimmert wurde es durch den Kasten darüber: Der versprach „Änderungen
+  wirken beim nächsten Spielstart“ — also genau das, was nicht stimmte.
+
+  Gefunden von **der Autor** am 28.08.2026 im eigenen Test: Schalter aus,
+  Statuszeile meldete „aus“, und in der Textdatei standen unverändert **1.217**
+  Angaben. Beim zweiten Schalter fiel er auf dieselbe Sache herein, obwohl der
+  Hinweis dort danebenstand — „ich hab das fette gelesen aber nicht das
+  kleinere“. Damit war die Frage entschieden: Ein Hinweis im Kleingedruckten
+  ist keine Lösung.
+
+  Jetzt wirkt das Umlegen sofort — aus heißt weg, an heißt da. Das ist
+  verlustfrei: Der ursprüngliche Wortlaut des Spiels ist gemerkt und wird beim
+  Entfernen buchstabengenau wiederhergestellt. Bleibt doch etwas stehen, sagt
+  der Kasten das jetzt auch, statt „es wird nichts geschrieben“ zu melden.
+
+
 - **„Star Citizen starten" steht nicht mehr doppelt.** Auf der Seite „Texte im
   Spiel" gab es einen eigenen Abschnitt dafür — obwohl der Knopf ohnehin
   dauerhaft unten links in der Leiste steht, auf jeder Seite erreichbar.

@@ -1061,7 +1061,17 @@ def _spiel(fenster, rahmen):
             fehler.merken('seiten.spiel.lage', ausnahme)
             return
         if not pfade.einstellung_wahrheit('inj_an', True):
-            _status(fenster, kasten, 'offen', t('s_sp_aus_hinweis'), '', farbe=SUB)
+            # ⚠ „Ausgeschaltet“ allein ist die halbe Wahrheit. Bleibt etwas in der
+            # Datei stehen (Entfernen scheiterte, oder es wurde von Hand
+            # abgeschaltet), sieht der Spieler seine Angaben weiter im Spiel —
+            # und der Kasten behauptet, es sei nichts da. Genau daran ist
+            # der Autor am 28.08.2026 im Test hängengeblieben.
+            if lage['drin']:
+                _status(fenster, kasten, 'offen', t('s_sp_aus_rest'),
+                        t('s_sp_aus_rest_h'), farbe=SUB)
+            else:
+                _status(fenster, kasten, 'offen', t('s_sp_aus_hinweis'), '',
+                        farbe=SUB)
             return
         if lage['drin']:
             zusatz = []
@@ -1090,6 +1100,26 @@ def _spiel(fenster, rahmen):
         pfade.einstellung_setzen('inj_an', neu_wert)
         fenster.sagen(t('s_sp_an_sagen')
                       % (t('e_an') if neu_wert else t('e_aus')))
+        # ⚠ **Aus heißt weg, an heißt da.** Bis rc83 setzte der Schalter nur die
+        # Einstellung: Wer abschaltete, sah seine Angaben weiter im Spiel und
+        # musste erst unten „Wieder entfernen“ finden. Der Hinweis darauf stand
+        # im Kleingedruckten — und genau das liest niemand.
+        #
+        # der Autor am 28.08.2026, nachdem er im eigenen Test darauf hereinfiel:
+        # „ich schalte es auf aus, also ist es weg.“
+        #
+        # Gefahrlos, weil verlustfrei: Der Urtext ist gemerkt
+        # (`injektion.URTEXT_DATEI`), das Entfernen stellt den Wortlaut auf den
+        # Buchstaben genau wieder her, und Einschalten trägt neu ein.
+        try:
+            from . import injektion as inj_modul
+            drin = bool(inj_modul.lage().get('drin'))
+            if neu_wert and not drin:
+                e._inj_erneuern()
+            elif not neu_wert and drin:
+                e._inj_entfernen()
+        except Exception as ausnahme:
+            fehler.merken('seiten.inj_an_um', ausnahme)
         lage_zeigen()
         return neu_wert
 
@@ -1131,6 +1161,30 @@ def _spiel(fenster, rahmen):
         pfade.einstellung_setzen(inj_modul.EINSTELLUNG_ANGABEN, neu_wert)
         fenster.sagen(t('s_sp_angaben_sagen')
                       % (t('e_an') if neu_wert else t('e_aus')))
+        # ⚠ **Umlegen muss sofort wirken.** Bis rc83 setzte dieser Schalter nur
+        # die Einstellung — die `global.ini` blieb unangetastet, bis jemand unten
+        # auf „Jetzt eintragen“ drückte. Wer die Angaben abschaltete, das Spiel
+        # neu startete und sie weiter sah, hielt das Werkzeug für kaputt.
+        #
+        # Verschlimmert durch den Kasten darüber: Der sagt „Änderungen wirken beim
+        # nächsten Spielstart“ — also genau das, was hier eben NICHT stimmte.
+        # Gemessen am 28.08.2026 (der Autor): Schalter aus, Datei unverändert,
+        # 1.217 Angaben standen weiter drin.
+        #
+        # der Autor dazu: „ein user erwartet das was er liest und sieht, ist es aus
+        # angaben weg also muss das auch so sein.“
+        #
+        # ⚠ Nur wenn wirklich etwas drinsteht und das Schreiben überhaupt
+        # eingeschaltet ist. Sonst würde ein Formatschalter ungefragt eine
+        # Einfügung anstoßen, die der Nutzer gar nicht wollte — der obere
+        # Schalter lässt Vorhandenes mit Absicht stehen (PTU-Fall).
+        try:
+            if (pfade.einstellung_wahrheit('inj_an', True)
+                    and inj_modul.lage().get('drin')):
+                e._inj_erneuern()
+                lage_zeigen()
+        except Exception as ausnahme:
+            fehler.merken('seiten.angaben_um', ausnahme)
         return neu_wert
 
     from . import injektion as _inj
