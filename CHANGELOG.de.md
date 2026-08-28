@@ -23,6 +23,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Beim zweiten Besuch einer Seite fehlte die Spur im Bericht.** Sie wurde nur
+  beim ersten Aufbauen geschrieben; ging beim erneuten Einblenden etwas schief,
+  fehlte die Zeile ganz statt zur Hälfte — und der Bericht verspricht, dass die
+  letzte Zeile ohne „steht" die ist, an der es hing. Jetzt steht dort „zeigen",
+  und man sieht den Unterschied zwischen „beim Aufbauen gestorben" und „beim
+  Einblenden gestorben".
 - **Im Fehlerbericht ließ sich erst rollen, wenn die Seite ganz unten war.**
   Das Mausrad ging an die Seite dahinter statt an das Textfeld unter dem
   Zeiger — man musste also erst die ganze Diagnose-Seite nach unten schieben,

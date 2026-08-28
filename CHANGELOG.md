@@ -23,6 +23,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **Revisiting a page left no trace in the report.** It was only written while a
+  page was first built; if something went wrong on a later visit, the line was
+  missing entirely rather than half — and the report promises that the last line
+  without „ready" is where it stopped. It now says „showing", so you can tell
+  „died while building" from „died while showing".
 - **The error report only scrolled once the page was at the bottom.** The mouse
   wheel went to the page behind instead of the text field under the pointer, so
   you had to push the whole diagnostics page down before anything moved inside

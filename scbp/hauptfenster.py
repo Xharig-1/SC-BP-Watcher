@@ -1657,7 +1657,19 @@ class Hauptfenster:
         """Eine Seite zeigen — und beim ersten Mal ihren Inhalt bauen."""
         if kennung not in self.seiten:
             self.seiten[kennung] = tk.Frame(self.inhalt, bg=BG)
-        if kennung not in self.gezeichnet:
+        # ⚠ Beim **zweiten** Besuch wurde bisher nur „steht" geschrieben, weil
+        # die Seite schon gebaut war. Knallte es dabei, fehlte die Zeile ganz
+        # statt nur zur Hälfte — und die Überschrift des Berichts verspricht
+        # „die letzte Zeile ohne ‚steht' ist die, an der es hing". Das stimmte
+        # dann nicht mehr. Aufgefallen im rc75-Bericht, notiert für dieses
+        # Release.
+        #
+        # Deshalb auch hier eine Zeile, aber eine eigene: „zeigen" statt
+        # „bauen beginnt". Wer den Bericht liest, sieht damit den Unterschied
+        # zwischen „beim Aufbauen gestorben" und „beim Einblenden gestorben".
+        if kennung in self.gezeichnet:
+            fehler.spur('Seite %s: zeigen' % kennung)
+        else:
             self.gezeichnet.add(kennung)
             # ⚠ Die Spur führt jetzt auch über die Bedienung, nicht nur über den
             # Start. Grund: Bomb20 meldete am 27.08.2026 einen reproduzierbaren
