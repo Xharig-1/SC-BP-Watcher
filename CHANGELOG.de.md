@@ -10,6 +10,8 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc90 - 2026-08-28
+
 ### Verbessert
 
 - **Das Schloss steht jetzt fest in der Leiste des Overlays.** Klicks ins Spiel
