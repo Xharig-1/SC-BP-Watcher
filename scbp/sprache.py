@@ -1044,6 +1044,7 @@ TEXTE = {
     'b_merkliste':     ('Merkliste', 'Watchlist'),
     'b_n_eintraege':   ('%s Einträge', '%s entries'),
     'b_katalog':       ('Katalogstand', 'Catalogue state'),
+    'b_historie':      ('Patch-Historie', 'Patch history'),
     'b_ordner':        ('Eigener Ordner', 'Own folder'),
     'b_einstellungen': ('Einstellungen', 'Settings'),
     'b_standard':      ('alle auf Standard', 'all at default'),

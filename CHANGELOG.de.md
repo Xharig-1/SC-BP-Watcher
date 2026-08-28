@@ -10,6 +10,38 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc88 - 2026-08-28
+
+### Behoben
+
+- **Der Patch-Filter verlor fast den ganzen Patch.** Im Auswahlfeld stand
+  „4.10.0 (3)", und die Liste zeigte drei Schiffswaffen. In Wahrheit hat 4.10.0
+  **24** Baupläne gebracht — die 21 mitgelieferten waren aus der Anzeige
+  verschwunden.
+
+  Ursache: Das Programm legte die selbst beobachtete Historie über die
+  mitgelieferte. Bei gleicher Spielversion gewann die eigene komplett. Nur:
+  Was das Programm selbst einträgt, ist immer bloß der **Zuwachs seit dem
+  letzten Lauf** — hier drei Waffen, die die Quelle zwei Tage später
+  nachreichte. Als vollständige Patch-Liste gelesen ist das zwangsläufig falsch.
+
+  Beide Listen werden jetzt **vereinigt** statt ersetzt, und beim Datum gilt
+  das frühere. Das gleiche galt für zwei eigene Funde nacheinander: Der zweite
+  löschte den ersten. Auch das ist behoben.
+
+  Gefunden von **der Autor** am 28.08.2026 unter Windows.
+
+### Verbessert
+
+- **Der Diagnosebericht nennt jetzt die Patch-Historie.** Eine neue Zeile
+  unter dem Katalogstand: welche Spielversionen die Historie führt und mit
+  wie vielen Bauplänen — zum Beispiel `4.10.0 (24)`.
+
+  Der Fehler oben konnte sich verstecken, weil der Bericht nur den Katalogstand
+  zeigte. Der war völlig in Ordnung, die Historie darunter nicht. Wer jetzt
+  „der Patch-Filter zeigt fast nichts" meldet, hat die Zahlen im Bericht
+  stehen, ohne dass jemand erst eine Datei aufmachen muss.
+
 ## v3.0.0-rc87 - 2026-08-28
 
 ### Verbessert

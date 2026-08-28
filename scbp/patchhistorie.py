@@ -80,26 +80,59 @@ def _lies(pfad):
         return {}
 
 
+def _vereinen(alt, neu):
+    """Zwei Einträge derselben Spielversion zu einem zusammenfassen.
+
+    ⚠ **Vereinigen, nicht ersetzen.** Hier stand einmal schlicht ein `update()`,
+    und damit warf jeder eigene Fund die mitgelieferte Liste derselben Version
+    weg. Am 28.08.2026 sah der Watcher drei nachgereichte Schiffswaffen in
+    4.10.0, schrieb sie als *die* Zugänge dieser Version — und aus dem Filter
+    „4.10.0" verschwanden die 21 mitgelieferten Baupläne. Von 24 blieben 3.
+
+    Der Grund liegt in der Natur der eigenen Funde: Was `eintragen()` schreibt,
+    ist immer nur der **Zuwachs seit dem letzten Lauf**, nie die vollständige
+    Liste eines Patches. Als vollständige Liste gelesen ist sie zwangsläufig
+    falsch, sobald eine Quelle etwas nachreicht.
+
+    Beim Datum gewinnt das **frühere**. Der Patch kam, als er kam — dass dieses
+    Gerät zwei Tage später noch etwas nachgetragen bekam, verschiebt ihn nicht."""
+    namen = list(alt.get('neu') or [])
+    bekannt = {_norm(n) for n in namen}
+    for name in neu.get('neu') or []:
+        if _norm(name) not in bekannt:
+            bekannt.add(_norm(name))
+            namen.append(name)
+    daten = [d for d in (alt.get('datum'), neu.get('datum')) if d]
+    return {'datum': min(daten) if daten else '', 'neu': sorted(namen)}
+
+
 def laden():
     """Die ganze Historie: was mitgeliefert wurde, ergänzt um eigene Funde.
 
-    Bei gleicher Spielversion gewinnt der **eigene** Fund. Wer selbst
-    zugesehen hat, wie ein Patch eingespielt wurde, hat den genaueren Stand als
-    eine Datei, die beim Bauen des Programms entstanden ist."""
-    zusammen = dict(_lies(pfade.programm_datei(MITGELIEFERT)))
-    zusammen.update(_lies(pfade.app_datei(LOKAL)))
+    Bei gleicher Spielversion werden beide Listen **vereinigt** — was in
+    `_vereinen()` steht, gilt hier: keine der beiden Seiten kennt den Patch
+    vollständig, erst zusammen ergeben sie ihn."""
+    zusammen = {}
+    for pfad in (pfade.programm_datei(MITGELIEFERT), pfade.app_datei(LOKAL)):
+        for version, eintrag in _lies(pfad).items():
+            alt = zusammen.get(version)
+            zusammen[version] = _vereinen(alt, eintrag) if alt else dict(eintrag)
     return zusammen
 
 
 def eintragen(version, namen, datum=None):
     """Einen Patch in die **eigene** Historie schreiben. Die mitgelieferte Datei
-    bleibt unangetastet — sie gehört zum Programm, nicht zum Nutzer."""
+    bleibt unangetastet — sie gehört zum Programm, nicht zum Nutzer.
+
+    ⚠ Auch hier wird **ergänzt**, nicht ersetzt: Reicht die Quelle in derselben
+    Spielversion später etwas nach, wäre der erste eigene Fund sonst weg."""
     if not version or not namen:
         return
     ziel = pfade.app_datei(LOKAL)
     eigene = _lies(ziel)
-    eigene[version] = {'datum': datum or time.strftime('%Y-%m-%d'),
-                       'neu': sorted(namen)}
+    neu = {'datum': datum or time.strftime('%Y-%m-%d'), 'neu': sorted(namen)}
+    eigene[version] = (_vereinen(eigene[version], neu)
+                       if version in eigene else neu)
     _schreib(ziel, eigene)
 
 

@@ -10,6 +10,37 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc88 - 2026-08-28
+
+### Fixed
+
+- **The patch filter lost almost the entire patch.** The dropdown read
+  „4.10.0 (3)" and the list showed three ship weapons. In truth 4.10.0 brought
+  **24** blueprints — the 21 shipped ones had vanished from the view.
+
+  Cause: the program layered its own observed history on top of the shipped
+  one. For the same game version, the local one won outright. But what the
+  program records itself is only ever the **increase since the last run** —
+  here three weapons the source added two days later. Read as a complete patch
+  list, that is bound to be wrong.
+
+  Both lists are now **merged** rather than replaced, and the earlier date
+  wins. The same applied to two local findings in a row: the second erased the
+  first. That is fixed as well.
+
+  Found by **der Autor** on 2026-08-28 on Windows.
+
+### Improved
+
+- **The diagnostic report now states the patch history.** A new line below the
+  catalogue state: which game versions the history holds, and with how many
+  blueprints — for example `4.10.0 (24)`.
+
+  The bug above could hide because the report only showed the catalogue state.
+  That was perfectly fine; the history below it was not. Anyone reporting „the
+  patch filter shows almost nothing" now has the numbers right there, with no
+  need to open a file first.
+
 ## v3.0.0-rc87 - 2026-08-28
 
 ### Improved
