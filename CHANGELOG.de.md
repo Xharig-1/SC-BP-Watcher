@@ -12,6 +12,34 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Unter Linux wurden Beschreibungstexte abgeschnitten statt umgebrochen — und
+  drückten die Schalter aus dem Fenster.** Betroffen war jede Seite mit
+  Fließtext neben einem Bedienelement: „Texte im Spiel“, „Bestand“, „Fehler
+  melden“. Bei kleiner Fenstergröße endeten die Sätze mitten im Wort, und die
+  Schalter rechts waren gar nicht erreichbar.
+
+  Der Grund lag eine Ebene tiefer, als es aussieht. Die Funktion, die den
+  Zeilenumbruch an die Fensterbreite hängt, fragt beim Label nach seinem
+  eigenen Rand. Tk gibt so eine Maßangabe je nach Aufbau als Zahl, als Text
+  **oder als Tcl-Objekt** zurück — und auf Letzteres wirft `int()` einen
+  `TypeError`. Aufgefangen wurden aber nur `TclError` und `ValueError`, und ein
+  `TypeError` ist keins von beiden. Der Fehler flog also durch und beendete die
+  Funktion, **bevor** sie den Umbruch setzen konnte. Der Text blieb einzeilig
+  und breit — genau der Zustand, den diese Funktion verhindern soll.
+
+  Warum es erst jetzt auffiel: Das Tk im Windows-Bau liefert diese Angaben als
+  Zahl, das Tk im Linux-AppImage als Tcl-Objekt. Unter Windows konnte der
+  Fehler nicht auftreten.
+
+  Gefunden von **der Autor** am 28.08.2026 in der ersten Linux-Testrunde nach
+  dem Update auf rc84 — zuerst am abgeschnittenen Text, dann bestätigt im
+  eigenen Fehlerbericht: **50 von 50** aufgehobenen Fehlern kamen aus dieser
+  einen Zeile.
+
+  Maßangaben werden jetzt mit Tks eigenem Umwandler gelesen, der alle drei
+  Formen versteht. Dieselbe Falle steckte an zwei weiteren Stellen im
+  Zeilenumbruch und wurde dort gleich mit beseitigt.
+
 - **Deinstallieren ließ den Autostart-Eintrag liegen.** Danach stand in der
   Registry weiter ein Verweis auf eine Datei, die es nicht mehr gab — Windows
   versuchte sie bei jeder Anmeldung zu starten und scheiterte still.

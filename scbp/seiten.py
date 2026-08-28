@@ -256,6 +256,29 @@ def _pfadfeld(fenster, eltern, wert, waehlen, oeffnen=None, platzhalter=''):
 
 
 
+def _masszahl(widget, wert, ersatz=0):
+    """Eine Tk-Massangabe als ganze Zahl lesen.
+
+    ⚠ `cget()` liefert je nach Widget und Option mal ein `int`, mal einen
+    String, mal ein `_tkinter.Tcl_Obj`. Auf Letzteres wirft `int()` einen
+    **TypeError** — und der wurde von `except (TclError, ValueError)` nicht
+    gefangen, weil ein TypeError keins von beiden ist.
+
+    Gemessen am 28.08.2026 unter Linux (AppImage, Python 3.14.6, Tk 8.6):
+    **50 von 50** aufgehobenen Fehlern kamen aus dieser einen Stelle. Die Folge
+    war nicht nur ein volles Protokoll — `_umbruch` brach ab, *bevor* es
+    `wraplength` setzen konnte. Der Text blieb einzeilig und breit, wurde am
+    Fensterrand abgeschnitten und drückte die Schalter rechts hinaus. Auf
+    "Texte im Spiel" und "Bestand" war das bei kleiner Fenstergröße sichtbar.
+
+    `tk.getint()` ist Tks eigener Umwandler und versteht alle drei Formen.
+    """
+    try:
+        return widget.tk.getint(wert)
+    except (tk.TclError, ValueError, TypeError):
+        return ersatz
+
+
 def _umbruch(label, anteil=1.0, abzug=0, bezug=None, neben=None):
     """Den Zeilenumbruch an die tatsächliche Breite hängen.
 
@@ -308,10 +331,10 @@ def _umbruch(label, anteil=1.0, abzug=0, bezug=None, neben=None):
             # Erfragt statt geschätzt, damit es auch bei anderer Darstellung
             # stimmt.
             try:
-                rand = 2 * (int(label.cget('borderwidth'))
-                            + int(label.cget('padx'))
-                            + int(label.cget('highlightthickness')))
-            except (tk.TclError, ValueError):
+                rand = 2 * (_masszahl(label, label.cget('borderwidth'))
+                            + _masszahl(label, label.cget('padx'))
+                            + _masszahl(label, label.cget('highlightthickness')))
+            except tk.TclError:
                 rand = 4
             try:
                 label.configure(wraplength=max(160, int(breite * anteil)
@@ -1541,7 +1564,8 @@ def _fassung(fenster, eltern, eintrag, punkte, offen):
         def lead_umbruch(ereignis, lab=satz):
             passend = max(200, ereignis.width - 8)
             try:
-                if abs(int(lab.cget('wraplength')) - passend) > 4:
+                if abs(_masszahl(lab, lab.cget('wraplength'))
+                       - passend) > 4:
                     lab.configure(wraplength=passend)
             except tk.TclError:
                 pass
@@ -1581,7 +1605,8 @@ def _fassung(fenster, eltern, eintrag, punkte, offen):
             # Höhe, das löst wieder ein <Configure> aus.
             passend = max(200, ereignis.width - 8)
             try:
-                if abs(int(lab.cget('wraplength')) - passend) > 4:
+                if abs(_masszahl(lab, lab.cget('wraplength'))
+                       - passend) > 4:
                     lab.configure(wraplength=passend)
             except tk.TclError:
                 pass
