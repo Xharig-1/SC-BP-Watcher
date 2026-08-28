@@ -10,6 +10,8 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 > Sammelt sich bis zum nächsten Veröffentlichungstag (samstags).
 
+## v3.0.0-rc93 - 2026-08-28
+
 ### Behoben
 
 - **Im Aufblend-Betrieb schwebte das Schloss neben dem Overlay.** Der Fix aus

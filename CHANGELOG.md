@@ -10,6 +10,8 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 > Collects until the next release day (Saturdays).
 
+## v3.0.0-rc93 - 2026-08-28
+
 ### Fixed
 
 - **In pop-up mode the lock floated beside the overlay.** The rc92 fix worked
