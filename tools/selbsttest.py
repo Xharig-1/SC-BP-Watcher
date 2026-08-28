@@ -2909,6 +2909,69 @@ def main():
             os.environ['SC_BP_HOME'] = _alt_home42
 
     print()
+    print('43. Das Auswahlfeld verspricht nur, was die Liste zeigen kann')
+    # ⚠ Gemessen am 28.08.2026 (der Autor), direkt nach dem Fix an der Historie:
+    # Im Feld stand „4.10.0 (24)", darunter drei Zeilen. Die Zahl in Klammern
+    # ist eine Zusage, wie viele Zeilen kommen — und sie kam aus einer anderen
+    # Quelle als die Zeilen selbst: `patches()` las die Historie, der Filter
+    # prueft den Stempel `seit` im Katalog.
+    #
+    # Zwei Quellen fuer dieselbe Frage gehen irgendwann auseinander. Das Feld
+    # zaehlt jetzt den Katalog. Damit dort auch alles gestempelt ist, zieht das
+    # Fenster den Stempel nach, BEVOR es den Katalog liest — vorher hing das
+    # allein am Netz-Takt, der irgendwann nach dem Start in einem eigenen Faden
+    # laeuft (gemessen: Fenster 10:44:02, Stempel 10:44:03 — eine Sekunde zu
+    # spaet, und die Liste blieb bis zum naechsten Oeffnen falsch).
+    import tempfile as _tf43
+    from scbp import katalog as kat43, patchhistorie as ph43
+    _alt_home43 = os.environ.get('SC_BP_HOME')
+    os.environ['SC_BP_HOME'] = _tf43.mkdtemp(prefix='sc-bp-patchfeld-')
+    try:
+        # Die Historie kennt DREI Bauplaene, der Katalog fuehrt nur zwei davon.
+        ph43._schreib(ph43.pfade.app_datei('patch-historie.json'),
+                      {'4.10.0-live.7': {'datum': '2026-08-26',
+                                         'neu': ['Erster Bauplan',
+                                                 'Zweiter Bauplan',
+                                                 'Nicht im Katalog']}})
+        with open(kat43.pfade.app_datei('katalog-cache.json'), 'w',
+                  encoding='utf-8') as f:
+            json.dump({'version': '4.10.0-live.7', 'geholt': '',
+                       'bauplaene': {'erster bauplan': {'n': 'Erster Bauplan'},
+                                     'zweiter bauplan': {'n': 'Zweiter Bauplan'},
+                                     'alter bauplan': {'n': 'Alter Bauplan'}},
+                       'missionen': {}}, f)
+
+        # a) Ungestempelt darf das Feld gar nichts versprechen.
+        pruefe(kat43.patches(kat43.laden()) == [],
+               'ohne Stempel bleibt das Feld leer, statt zu versprechen')
+
+        # b) Nach dem Nachziehen: genau die zwei, die es im Katalog gibt.
+        pruefe(kat43.stempel_nachziehen() == 2,
+               'zwei Stempel werden nachgetragen')
+        _p43 = kat43.patches(kat43.laden())
+        pruefe(_p43 == [('4.10.0-live.7', '4.10.0', 2)],
+               'das Feld zaehlt den Katalog (2), nicht die Historie (3)')
+
+        # c) Und die Liste kommt auf dieselbe Zahl — das ist der ganze Punkt.
+        _d43 = kat43.laden()
+        pruefe(len(kat43.neue(_d43)) == _p43[0][2],
+               'Feld und Liste kommen auf dieselbe Zahl')
+
+        # d) ⚠ Und das Fenster muss stempeln, BEVOR es liest. Andersherum sieht
+        #    es beim ersten Start nach einem Update den alten Stand.
+        _q43 = open(os.path.join(WURZEL, 'scbp', 'bestandsfenster.py'),
+                    encoding='utf-8').read()
+        pruefe('katalog_modul.stempel_nachziehen()' in _q43
+               and (_q43.index('katalog_modul.stempel_nachziehen()')
+                    < _q43.index('self.katalog = katalog_modul.laden()')),
+               'das Fenster stempelt, BEVOR es den Katalog liest')
+    finally:
+        if _alt_home43 is None:
+            os.environ.pop('SC_BP_HOME', None)
+        else:
+            os.environ['SC_BP_HOME'] = _alt_home43
+
+    print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
         for f in fehler:

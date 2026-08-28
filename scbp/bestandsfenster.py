@@ -241,6 +241,18 @@ class Bestandsfenster:
             self.root.geometry('720x780')
 
         self.bestand = bestand_datei.laden()
+        # ⚠ Erst stempeln, dann laden. Das Nachziehen hing bisher allein am
+        # Netz-Takt (`katalog.aktualisieren()`), und der läuft irgendwann nach
+        # dem Start in einem eigenen Faden. Am 28.08.2026 war das Fenster um
+        # 10:44:02 gebaut und der Katalog um 10:44:03 fertig gestempelt — eine
+        # Sekunde zu spät: Die Liste hielt den ungestempelten Stand fest und
+        # zeigte drei Zeilen, wo 24 hingehörten. Sichtbar wurde es erst beim
+        # nächsten Öffnen.
+        #
+        # Genau das trifft **jeden** Nutzer beim ersten Start nach einer
+        # Fassung, die neue Historie mitbringt. Hier kostet es nichts: gelesen
+        # wird ohnehin, geschrieben nur, wenn sich wirklich etwas ändert.
+        katalog_modul.stempel_nachziehen()
         self.katalog = katalog_modul.laden()
         self.filter = 'alle'
         self.suche = tk.StringVar()
