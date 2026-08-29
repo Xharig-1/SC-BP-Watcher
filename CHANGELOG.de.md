@@ -10,6 +10,44 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Neu
 
+- ⭐ **Filter nach Unterart — endlich sieht man, welche Waffe was ist.** In der
+  Bauplan-Liste stand unter „Schiffswaffen" alles zusammen: *„ich weiß grad
+  nicht, welche Ballistik sind, welche Laser, welche Repeater oder Cannon."*
+  Jetzt gibt es ein zusätzliches Auswahlfeld — bei Schiffswaffen mit
+  **Ballistisch (32) · Laser (40) · Distortion (6) · Neutron (6) · Tachyon (3)**,
+  bei Rüstung mit den **Rollen** (Kampf, Technik, Jagd, Tarnung, Bergbau …).
+
+  > **Es erscheint nur, wenn es etwas zu wählen gibt.** Bei Kühlern gäbe es
+  > bloß Größen, und die haben ihr eigenes Feld — ein Auswahlfeld, das nur
+  > „alle" anbietet, lässt einen suchen, was es filtern soll.
+
+  Möglich wird das, weil zwei Quellen zusammengeführt werden: Der Katalog kennt
+  die Körperteile der Rüstung (Helm, Torso, Arme, Beine), die Rezeptdaten die
+  Waffenart. Verbunden über den Namen — **738 von 738** Bauplänen passen.
+  Vorschlag von Xharig-1.
+
+- ⭐ **Die Herstellung hat jetzt dieselben Filter**: Art, Unterart bzw.
+  Rüstungsrolle, Hersteller und „Bauplan vorhanden / fehlt". Vorher gab es dort
+  nur ein Suchfeld, und wer nicht wusste, wonach er sucht, blätterte 1597
+  Zeilen durch.
+
+- **Der Bergbau bekommt Auswahlfelder** für Rohstoff und Ort — 38 und 48
+  Einträge, die man vorher auswendig kennen musste, um sie eintippen zu können.
+
+  > Alle drei Seiten benutzen dieselben Bedienelemente wie die Bauplan-Liste.
+  > Xharig-1 dazu: *„egal wo, sollte das Bedienkonzept nicht jedes Mal ändern —
+  > die Leute wollen es nutzen und nicht erst lernen, wie sie es nutzen."*
+
+### Behoben
+
+- ⚠ **„Du beobachtest noch nichts", obwohl neun Beobachtungen hinterlegt
+  waren.** Die Merkliste führt zwei Sorten: angeklickte Baupläne aus dem
+  Katalog — und eigene Beobachtungen mit Suchmustern, etwa
+  „Mamba-Staffelrüstung: Helm" → `morozov-sh helmet redshift`. Die Ansicht
+  zeigte nur die erste Sorte, der Diagnosebericht zählte beide. Jetzt stehen
+  die eigenen Beobachtungen mit ihren Suchmustern oben in der Ansicht.
+  Gemeldet von Xharig-1.
+
 - **Beim Herstellen lässt sich eine Anzahl angeben.** Wer zehn Stück am Stück
   baut, klickte bisher zehnmal — und beim elften Klick stimmte der Bestand nicht
   mehr, ohne dass es auffiel. Jetzt steht neben dem Knopf ein Feld: Anzahl

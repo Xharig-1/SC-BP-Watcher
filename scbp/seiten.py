@@ -153,6 +153,56 @@ def _suche_leeren_kreuz(fenster, halter, var):
     return kreuz
 
 
+def _filterleiste(fenster, eltern, felder, beim_wechsel, zustand):
+    """Eine Reihe Auswahlfelder plus „Auswahl zurücksetzen" — für jede Seite gleich.
+
+    ⚠⚠ **Ein Bedienkonzept für das ganze Programm.** Xharig-1 am 29.08.2026:
+    *„egal wo, sollte das Bedienkonzept nicht jedes Mal ändern — die Leute
+    wollen es nutzen und nicht erst lernen, wie sie es nutzen."* Wer die
+    Bauplan-Liste bedienen kann, muss Herstellung und Bergbau ohne Umlernen
+    bedienen können. Deshalb dasselbe `rundwahl` wie dort, derselbe
+    Zurücksetzen-Knopf an derselben Stelle.
+
+    `felder` ist eine Liste aus `(schluessel, beschriftung, eintraege)`:
+    `eintraege` sind Paare `(wert, text)`; ein leerer Wert ist der „alle"-Fall.
+    **Ein Feld ohne echte Auswahl wird weggelassen** — ein Auswahlfeld, das nur
+    „alle" anbietet, ist Ballast und lässt einen suchen, was es filtern soll.
+
+    `zustand` ist ein Wörterbuch, in dem die Wahl landet; `beim_wechsel` wird
+    nach jeder Änderung gerufen.
+
+    Gibt eine Funktion zurück, die alles zurücksetzt.
+    """
+    from .hauptfenster import rundwahl
+    reihe = tk.Frame(eltern, bg=BG)
+    reihe.pack(fill='x', pady=(0, 8))
+    links = tk.Frame(reihe, bg=BG)
+    links.pack(side='left', fill='x', expand=True)
+
+    gebaut = {}
+    for schluessel, beschriftung, eintraege in felder:
+        if len(eintraege) <= 1:
+            continue
+        w = rundwahl(links, [('', beschriftung)] + list(eintraege),
+                     zustand.get(schluessel, ''),
+                     lambda wert, s=schluessel: (zustand.__setitem__(s, wert),
+                                                 beim_wechsel()),
+                     fenster.f_klein)
+        w.pack(side='left', padx=(0, 8), pady=2)
+        gebaut[schluessel] = w
+
+    def zuruecksetzen():
+        for schluessel, w in gebaut.items():
+            zustand[schluessel] = ''
+            try:
+                w.stumm_setzen('')
+            except Exception:
+                pass
+        beim_wechsel()
+
+    return zuruecksetzen, reihe, gebaut
+
+
 def _mass_sichern(c, beschriftung, flaeche, hoehe, fuellung, rand):
     """Sorgt dafür, dass eine Knopf-Leinwand ihren Text wirklich fasst.
 
@@ -3542,7 +3592,72 @@ def _herstellung(fenster, rahmen):
     # ⚠ Gleiches Bedienelement wie beim Bergbau. Zwei Suchfelder, die sich
     # unterschiedlich verhalten, sind schlimmer als eines ohne Kreuz.
     _suche_leeren_kreuz(fenster, ziel_suche, suche_var)
-    fenster.beim_zeigen['herstellung'] = lambda: suche_var.set('')
+    def _herst_frisch():
+        suche_var.set('')
+        for schluessel in wahl:
+            wahl[schluessel] = ''
+        filter_bauen()
+        zeichnen()
+
+    fenster.beim_zeigen['herstellung'] = _herst_frisch
+
+    # --- Filter, dieselben Bedienelemente wie in der Bauplan-Liste ----------
+    # ⚠ „egal wo, sollte das Bedienkonzept nicht jedes Mal ändern — die Leute
+    # wollen es nutzen und nicht erst lernen, wie sie es nutzen." (29.08.2026)
+    #
+    # ⚠ Die Werte kommen aus den **vorhandenen** Einträgen, nicht aus einer
+    # festen Liste. Bringt ein Patch eine neue Waffenart, steht sie am nächsten
+    # Tag im Feld, ohne dass jemand etwas nachträgt.
+    wahl = {'art': '', 'unterart': '', 'hersteller': '', 'zustand': ''}
+
+    def _werte(feld):
+        return sorted({(e.get(feld) or '') for e in eintraege} - {''},
+                      key=str.lower)
+
+    def _unterarten_zur_art(art):
+        """Nur die Unterarten, die es in dieser Art wirklich gibt.
+
+        Ohne die Einschränkung stünden bei „Kühler" die Waffenarten mit im
+        Feld — und wer sie wählt, bekommt eine leere Liste ohne zu wissen,
+        warum."""
+        # ⚠ `size1`, `size2` … sind die Grösse, keine Unterart — und die
+        # steht im Katalog ohnehin als eigenes Merkmal.
+        return sorted({(e.get('unterart') or '') for e in eintraege
+                       if (not art or (e.get('art') or '') == art)
+                       and not (e.get('unterart') or '').lower().startswith('size')}
+                      - {''}, key=str.lower)
+
+    filter_rahmen = tk.Frame(innen, bg=BG)
+    filter_rahmen.pack(fill='x')
+
+    def filter_bauen():
+        for w in filter_rahmen.winfo_children():
+            w.destroy()
+        unterarten = _unterarten_zur_art(wahl['art'])
+        # Bei Rüstung ist die Unterart die **Rolle** — dann heisst das Feld auch so.
+        unter_text = (t('ff_alle_rollen') if wahl['art'] == 'armour'
+                      else t('ff_alle_unterarten'))
+        felder = [
+            ('art', t('ff_alle_arten'),
+             [(a_, herst_modul.artname(a_)) for a_ in _werte('art')]),
+            ('unterart', unter_text,
+             [(u, herst_modul.unterartname(u)) for u in unterarten]),
+            ('hersteller', t('ff_alle_hersteller'),
+             [(h_, h_) for h_ in _werte('hersteller')]),
+            ('zustand', t('ff_alle_zustaende'),
+             [('habe', t('ff_zustand_habe')), ('fehlt', t('ff_zustand_fehlt'))]),
+        ]
+        _filterleiste(fenster, filter_rahmen, felder, gewechselt, wahl)
+
+    def gewechselt():
+        # Eine Unterart, die zur neuen Art nicht passt, muss weg — sonst
+        # filtert man auf etwas, das es in dieser Art gar nicht gibt.
+        if wahl['unterart'] and wahl['unterart'] not in _unterarten_zur_art(wahl['art']):
+            wahl['unterart'] = ''
+        filter_bauen()
+        zeichnen()
+
+    filter_bauen()
 
     liste_rahmen = tk.Frame(innen, bg=BG)
     liste_rahmen.pack(fill='both', expand=True)
@@ -3552,15 +3667,31 @@ def _herstellung(fenster, rahmen):
     # vermeiden soll.
     offen = {'name': None}
 
+    def passt(e):
+        if wahl['art'] and (e.get('art') or '') != wahl['art']:
+            return False
+        if wahl['unterart'] and (e.get('unterart') or '') != wahl['unterart']:
+            return False
+        if wahl['hersteller'] and (e.get('hersteller') or '') != wahl['hersteller']:
+            return False
+        # ⚠ `habe` kann None sein („unklar", drei mehrdeutige Namen). Unklares
+        # gilt weder als vorhanden noch als fehlend — sonst behaupten wir etwas.
+        if wahl['zustand'] == 'habe' and e.get('habe') is not True:
+            return False
+        if wahl['zustand'] == 'fehlt' and e.get('habe') is not False:
+            return False
+        return True
+
     def zeichnen(*_):
         for w in liste_rahmen.winfo_children():
             w.destroy()
         text = suche_var.get().strip().lower()
         treffer = [e for e in eintraege
-                   if not text
-                   or text in e['name'].lower()
-                   or text in (e['hersteller'] or '').lower()
-                   or text in (e['art'] or '').lower()]
+                   if passt(e)
+                   and (not text
+                        or text in e['name'].lower()
+                        or text in (e['hersteller'] or '').lower()
+                        or text in (e['art'] or '').lower())]
         if not treffer:
             _fliesstext(liste_rahmen, t('s_he_nichts'), fenster.f_klein,
                         fill='x')
@@ -3915,6 +4046,28 @@ def _bergbau(fenster, rahmen):
                        LINIE, ACCENT, FG)
     feld.halter.pack(fill='x', pady=(4, 12))
     _suche_leeren_kreuz(fenster, ziel_suche, suche_var)
+
+    # ⚠ Dieselben Auswahlfelder wie auf den anderen Seiten. Tippen bleibt
+    # möglich — aber wer die 38 Rohstoffe oder 48 Orte nicht auswendig kann,
+    # soll sie aufklappen können, statt zu raten. „egal wo, sollte das
+    # Bedienkonzept nicht jedes Mal ändern." (29.08.2026)
+    berg_wahl = {'erz': '', 'ort': ''}
+
+    def berg_gewechselt():
+        # Die Auswahl schreibt in dasselbe Suchfeld — es gibt nur **einen**
+        # Filter, nicht zwei, die sich gegenseitig widersprechen könnten.
+        suche_var.set(berg_wahl['erz'] or berg_wahl['ort'] or '')
+
+    # ⚠ `erze()` und `orte()` liefern **Objekte**, keine Namen — mit ihnen
+    # direkt bestückt bliebe das Feld leer.
+    _erznamen = sorted({(e_.get('name') or '') for e_ in erze} - {''},
+                       key=str.lower)
+    _ortnamen = sorted({(o_.get('name') or '') for o_ in orte} - {''},
+                       key=str.lower)
+    _filterleiste(fenster, innen,
+                  [('erz', t('s_bg_alle_erze'), [(x, x) for x in _erznamen]),
+                   ('ort', t('s_bg_alle_orte'), [(x, x) for x in _ortnamen])],
+                  berg_gewechselt, berg_wahl)
     # Beim erneuten Aufrufen des Reiters wieder leer — die Seite wird nur
     # ein- und ausgeblendet, nicht neu gebaut.
     fenster.beim_zeigen['bergbau'] = lambda: suche_var.set('')

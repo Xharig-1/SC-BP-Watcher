@@ -413,8 +413,8 @@ class Bestandsfenster:
 
         reihe = tk.Frame(self.root, bg=BG)
         reihe.pack(fill='x', padx=14, pady=(0, 8))
-        self.fein = {'art': '', 'klasse': '', 'groesse': '', 'quelle': '',
-                     'grad': '', 'patch': ''}
+        self.fein = {'art': '', 'unterart': '', 'klasse': '', 'groesse': '',
+                     'quelle': '', 'grad': '', 'patch': ''}
 
         # ⚠ Eigener Rahmen für die Auswahlfelder. Sie werden per `grid`
         # angeordnet (damit sie umbrechen können), und Tk verträgt `grid` und
@@ -424,32 +424,7 @@ class Bestandsfenster:
         self.fein_rahmen.pack(side='left', fill='x', expand=True)
 
 
-        def feld(schluessel, eintraege):
-            if len(eintraege) <= 1:      # nichts zu wählen — Feld weglassen
-                return
-            w = rundwahl(self.fein_rahmen, eintraege, '',
-                         lambda wert, s=schluessel: self._fein_setzen(s, wert),
-                         schrift(10), grund=BG)
-            self.fein_felder[schluessel] = w
-
-        self.fein_felder = {}
-        # Die Zahl hinter jedem Eintrag sagt, was einen erwartet — und erklärt
-        # eine Null, statt sie rätselhaft zu lassen.
-        feld('art', [('', t('ff_alle_arten'))]
-             + self._mit_zahl(self._arten(),
-                              self._anzahl_je('a', katalog_modul.art_kennung)))
-        feld('klasse', [('', t('ff_alle_klassen'))]
-             + self._mit_zahl(self._klassen(), self._anzahl_je('c')))
-        feld('groesse', [('', t('ff_alle_groessen'))]
-             + self._mit_zahl(self._groessen(), self._anzahl_je('s')))
-        feld('quelle', [('', t('ff_alle_quellen'))] + self._quellen())
-        feld('grad', [('', t('ff_alle_grade'))]
-             + self._mit_zahl(self._grade(), self._anzahl_je('g')))
-        # Erweitert sich von allein: Jeder Patch, der Baupläne bringt, stempelt
-        # seine Version an die Neuzugänge und steht dadurch beim nächsten
-        # Öffnen im Feld. Vor dem zweiten Katalogbau ist die Liste leer, dann
-        # lässt `feld()` das Auswahlfeld weg.
-        feld('patch', [('', t('ff_alle_patches'))] + self._patches())
+        self._feinfilter_felder()
 
         # ⚠ Ein Knopf, kein unterstrichener Kleintext. Er stand hier als
         # graue 9-Punkt-Zeile neben dem Trefferzähler — und wurde übersehen:
@@ -474,12 +449,7 @@ class Bestandsfenster:
         self.treffer_lbl = tk.Label(reihe, text='', bg=BG, fg=SUB,
                                     font=schrift(9))
         self.treffer_lbl.pack(side='right')
-        self._reihe_umbrechen(
-            self.fein_rahmen,
-            [self.fein_felder[k] for k in
-             ('art', 'klasse', 'groesse', 'quelle', 'grad', 'patch')
-             if k in self.fein_felder],
-            rechts_frei=self.treffer_lbl)
+        # (Das Anordnen macht `_feinfilter_felder()` selbst.)
 
     def _reihe_umbrechen(self, rahmen, elemente, rechts_frei=None):
         """Eine Reihe von Bedienelementen umbrechen lassen, wenn es eng wird.
@@ -671,6 +641,42 @@ class Bestandsfenster:
         eintraege += [('t:' + s, s) for s in sorted(sonder, key=str.lower)]
         return eintraege
 
+    def _eigene_beobachtungen(self):
+        """Die Muster-Beobachtungen zeigen — sie stehen in keinem Katalog.
+
+        Die Merkliste führt zwei Sorten: angeklickte Baupläne (die stehen im
+        Katalog und erscheinen als normale Zeilen) und **eigene Regeln** mit
+        Suchmustern, etwa „Mamba-Staffelrüstung: Helm" → `morozov-sh helmet
+        redshift`. Für die zweite Sorte gibt es keinen Katalogeintrag, den man
+        anzeigen könnte — also bekommt sie hier eigene Zeilen.
+
+        ⚠ Nur unter „beobachtet". In der vollen Liste stünden sie zwischen
+        Bauplänen, die es wirklich gibt, und sähen aus wie welche.
+        """
+        if self.filter != 'merk':
+            return
+        eintraege = merk.laden().get('eintraege') or []
+        if not eintraege:
+            return
+        tk.Label(self.inhalt, text=t('merk_eigene'), bg=BG, fg=ACCENT,
+                 font=schrift(11, fett=True), anchor='w',
+                 pady=6).pack(fill='x')
+        tk.Label(self.inhalt, text=t('merk_eigene_h'), bg=BG, fg=SUB,
+                 font=schrift(9), anchor='w', justify='left',
+                 wraplength=560).pack(fill='x', pady=(0, 6))
+        for e in eintraege:
+            z = tk.Frame(self.inhalt, bg=FLAECHE)
+            z.pack(fill='x', pady=2)
+            tk.Label(z, text=e.get('titel') or '?', bg=FLAECHE, fg=FG,
+                     font=schrift(10), anchor='w').pack(fill='x', padx=10,
+                                                        pady=(6, 0))
+            muster = ', '.join(e.get('muster') or [])
+            if muster:
+                tk.Label(z, text=t('merk_wartet') % muster, bg=FLAECHE, fg=SUB,
+                         font=schrift(9), anchor='w', justify='left',
+                         wraplength=540).pack(fill='x', padx=10, pady=(0, 6))
+        tk.Frame(self.inhalt, bg=BG, height=10).pack(fill='x')
+
     def _treffer_zeigen(self, gruppen):
         """Rechts die Zahl, links „zurücksetzen" — beides nur, wenn es zählt.
 
@@ -705,6 +711,9 @@ class Bestandsfenster:
         zwei Dinge: `f:` eine Fraktion, die den Bauplan auslobt, `t:` einen
         Belohnungstopf (XenoThreat und Verwandte).
         """
+        if self.fein.get('unterart'):
+            if self._unterart_von(e) != self.fein['unterart']:
+                return False
         if self.fein['klasse'] and e.get('c') != self.fein['klasse']:
             return False
         # Aus welchem Patch stammt der Bauplan? Ohne Stempel ist er älter als
@@ -732,10 +741,135 @@ class Bestandsfenster:
                     return False
         return True
 
+    def _feinfilter_felder(self):
+        """Die Auswahlfelder bestücken — auch nach einem Wechsel der Art neu.
+
+        ⚠ Eigene Methode, weil die **Unterarten von der Art abhängen**: Wählt
+        jemand „Schiffswaffen", müssen dort `ballistic` und `laser` stehen, bei
+        „Rüstung" die Rollen. Ohne Neuaufbau bliebe die Liste der vorigen Art
+        stehen, und wer daraus wählt, bekommt eine leere Trefferliste.
+        """
+        from .hauptfenster import rundwahl
+
+        def feld(schluessel, eintraege):
+            if len(eintraege) <= 1:      # nichts zu wählen — Feld weglassen
+                return
+            w = rundwahl(self.fein_rahmen, eintraege,
+                         self.fein.get(schluessel) or '',
+                         lambda wert, s=schluessel: self._fein_setzen(s, wert),
+                         schrift(10), grund=BG)
+            self.fein_felder[schluessel] = w
+
+        self.fein_felder = {}
+        # Die Zahl hinter jedem Eintrag sagt, was einen erwartet — und erklärt
+        # eine Null, statt sie rätselhaft zu lassen.
+        feld('art', [('', t('ff_alle_arten'))]
+             + self._mit_zahl(self._arten(),
+                              self._anzahl_je('a', katalog_modul.art_kennung)))
+        # ⭐ Unterart — genau das, was in der langen Waffenliste fehlte:
+        # „ich weiß grad nicht, welche Ballistik sind, welche Laser, welche
+        # Repeater oder Cannon" (29.08.2026). Der Katalog kennt nur
+        # `WeaponGun`; welche davon ballistisch sind, steht in den Rezeptdaten.
+        # Beide werden über den Namen verbunden — 738 von 738 passen.
+        #
+        # ⚠ Das Feld erscheint nur, wenn die gewählte Art wirklich Unterarten
+        # hat. Bei Kühlern gäbe es nichts zu wählen, und ein leeres Feld lässt
+        # einen suchen, was es filtern soll.
+        feld('unterart', [('', self._unterart_beschriftung())]
+             + self._unterarten())
+        feld('klasse', [('', t('ff_alle_klassen'))]
+             + self._mit_zahl(self._klassen(), self._anzahl_je('c')))
+        feld('groesse', [('', t('ff_alle_groessen'))]
+             + self._mit_zahl(self._groessen(), self._anzahl_je('s')))
+        feld('quelle', [('', t('ff_alle_quellen'))] + self._quellen())
+        feld('grad', [('', t('ff_alle_grade'))]
+             + self._mit_zahl(self._grade(), self._anzahl_je('g')))
+        # Erweitert sich von allein: Jeder Patch, der Baupläne bringt, stempelt
+        # seine Version an die Neuzugänge und steht dadurch beim nächsten
+        # Öffnen im Feld. Vor dem zweiten Katalogbau ist die Liste leer, dann
+        # lässt `feld()` das Auswahlfeld weg.
+        feld('patch', [('', t('ff_alle_patches'))] + self._patches())
+
+
+        # Und neu anordnen — die Felder wechseln je nach Art.
+        self._reihe_umbrechen(
+            self.fein_rahmen,
+            [self.fein_felder[k] for k in
+             ('art', 'unterart', 'klasse', 'groesse', 'quelle', 'grad', 'patch')
+             if k in self.fein_felder],
+            rechts_frei=getattr(self, 'treffer_lbl', None))
+
+    def _unterart_von(self, eintrag):
+        """Die Unterart eines Katalog-Bauplans — aus den Rezeptdaten."""
+        try:
+            from . import herstellung as herst
+            return herst.unterart_von(eintrag.get('n') or '')
+        except Exception:
+            return ''
+
+    def _unterart_beschriftung(self):
+        """Bei Rüstung heisst die Unterart **Rolle** — dann sagt das Feld das."""
+        if (self.fein.get('art') or '').startswith('Char_Armor'):
+            return t('ff_alle_rollen')
+        return t('ff_alle_unterarten')
+
+    def _unterarten(self):
+        """Die Unterarten, die es in der gewählten Art gibt — mit Anzahl.
+
+        Ohne gewählte Art bleibt die Liste leer: Alle Unterarten aller Arten
+        durcheinander („ballistic" neben „combat" neben „size2") wäre eine
+        Liste, aus der niemand etwas findet — genau das Problem, das dieses
+        Feld lösen soll.
+        """
+        art = self.fein.get('art') or ''
+        if not art:
+            return []
+        try:
+            from . import herstellung as herst
+        except Exception:
+            return []
+        zaehler = {}
+        for e in (self.katalog.get('bauplaene') or {}).values():
+            if (e.get('a') or '') != art:
+                continue
+            u = herst.unterart_von(e.get('n') or '')
+            # ⚠ `size1`, `size2` … sind keine Unterart im gemeinten Sinn — das
+            # ist die Grösse, und die hat ihr eigenes Feld direkt daneben.
+            # Zweimal dasselbe zur Wahl zu stellen verwirrt nur.
+            if u and not u.lower().startswith('size'):
+                zaehler[u] = zaehler.get(u, 0) + 1
+        return [(u, '%s (%d)' % (herst.unterartname(u), n))
+                for u, n in sorted(zaehler.items(), key=lambda p: p[0].lower())]
+
     def _fein_setzen(self, schluessel, wert):
         self.fein[schluessel] = wert
+        # ⚠ Die Unterarten hängen an der Art. Wird die Art gewechselt, muss das
+        # Feld neu bestückt werden — sonst stünden dort die Unterarten der
+        # vorigen Art, und wer eine wählt, bekommt eine leere Liste.
+        if schluessel == 'art':
+            alt = self.fein.get('unterart') or ''
+            if alt and alt not in [w for w, _b in self._unterarten()]:
+                self.fein['unterart'] = ''
+            self._feinfilter_neu()
         self.alle_zeigen = False
         self._zeichnen(nach_oben=True)
+
+    def _feinfilter_neu(self):
+        """Die Auswahlfelder neu aufbauen — nach einem Wechsel der Art."""
+        try:
+            merke = dict(self.fein)
+            for kind in self.fein_rahmen.winfo_children():
+                kind.destroy()
+            self._feinfilter_felder()
+            self.fein.update(merke)
+            for schluessel, w in self.fein_felder.items():
+                if merke.get(schluessel):
+                    try:
+                        w.stumm_setzen(merke[schluessel])
+                    except Exception:
+                        pass
+        except tk.TclError:
+            pass
 
     def _alles_leeren(self):
         """Zurück auf Anfang — Auswahlfelder, Suchfeld und Zustandswahl.
@@ -981,6 +1115,11 @@ class Bestandsfenster:
             gezeichnet = gesamt_zeilen
         else:
             self._bloecke_abraeumen()
+            # ⚠ Eigene Beobachtungen zuerst. Sie stehen in keinem Katalog und
+            # tauchten deshalb nirgends auf: Die Liste meldete „Du beobachtest
+            # noch nichts", während neun Einträge hinterlegt waren — acht
+            # Muster-Beobachtungen und ein Name, der nicht im Katalog steht.
+            self._eigene_beobachtungen()
             deckel = self._zeilen_deckel() if self.alle_zeigen else ZEILEN_ZUERST
             gezeichnet = 0
             for art, treffer in gruppen:
@@ -1001,7 +1140,8 @@ class Bestandsfenster:
                 mehr.pack(fill='x')
                 mehr.bind('<Button-1>', lambda e: self._alle())
         self._treffer_zeigen(gruppen)
-        if not gruppen:
+        if not gruppen and not (self.filter == 'merk'
+                                and (merk.laden().get('eintraege') or [])):
             leer = (t('merkliste_leer') if self.filter == 'merk'
                     else t('neu_leer') if self.filter == 'neu'
                     else t('nichts_gefunden'))

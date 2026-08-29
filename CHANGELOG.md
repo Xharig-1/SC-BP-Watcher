@@ -10,6 +10,37 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- ⭐ **Filter by subtype — you can finally tell the weapons apart.** The
+  blueprint list lumped all ship weapons together. There is now an extra
+  dropdown: for ship weapons **Ballistic (32) · Laser (40) · Distortion (6) ·
+  Neutron (6) · Tachyon (3)**, for armour the **roles** (combat, engineer,
+  hunter, stealth, miner …).
+
+  > **It only appears when there is something to choose.** Coolers would offer
+  > sizes only, and those have their own field.
+
+  This works by joining two sources: the catalogue knows the armour body parts,
+  the recipe data knows the weapon type. Joined by name — **738 of 738**
+  blueprints match. Suggested by Xharig-1.
+
+- ⭐ **Crafting now has the same filters**: type, subtype or armour role,
+  manufacturer, and "blueprint owned / missing". It previously had a search box
+  only, and without knowing what to search for you paged through 1597 rows.
+
+- **Mining gets dropdowns** for material and location — 38 and 48 entries you
+  previously had to know by heart in order to type them.
+
+  > All three pages use the same controls as the blueprint list: the way you
+  > operate this tool should not change from page to page.
+
+### Fixed
+
+- ⚠ **"You are not watching anything" while nine watches were stored.** The
+  watchlist holds two kinds: blueprints clicked in the catalogue — and your own
+  watches with search patterns. The view showed only the first kind while the
+  diagnostic report counted both. Your own watches now appear at the top of the
+  view with their patterns. Reported by Xharig-1.
+
 - **Crafting takes a quantity.** Building ten in a row meant ten clicks — and on
   the eleventh the stock was wrong without anyone noticing. There is now a field
   next to the button: enter the number, click once, done. It resets to 1

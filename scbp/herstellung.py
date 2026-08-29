@@ -64,6 +64,7 @@ gibt es `norm_rohstoff()`.
 """
 import json
 import os
+import re
 
 from . import fehler, pfade
 from .katalog import AUS, hole_datei, _norm
@@ -295,6 +296,84 @@ def alle():
             })
     raus.sort(key=lambda x: x['name'].lower())
     return raus
+
+
+_einordnung_gemerkt = {'stand': None, 'daten': None}
+
+
+def _schluessel(name):
+    """Namen vergleichbar machen — nur Buchstaben und Ziffern, klein."""
+    return re.sub(r'[^a-z0-9]+', '', (name or '').lower())
+
+
+def einordnung():
+    """Zu jedem Bauplan seine Art und Unterart aus den Rezeptdaten.
+
+        {'10seriesgreatswordcannon': ('weapons', 'laser'), …}
+
+    ⚠ **Das ist der Schlüssel für die Filter.** Der Katalog kennt bei
+    Schiffswaffen nur `WeaponGun` — welche davon ballistisch und welche Laser
+    sind, steht ausschliesslich hier. Umgekehrt kennt er die Körperteile der
+    Rüstung (`Char_Armor_Helmet`), die den Rezeptdaten fehlen; dort steht
+    stattdessen die **Rolle** (`combat`, `engineer`, `stealth`).
+
+    Beide Quellen zusammen ergeben also erst das vollständige Bild. Verknüpft
+    wird über den Namen — gemessen am 29.08.2026: **738 von 738** Bauplänen des
+    Katalogs finden so ihr Rezept.
+
+    Wird einmal gelesen und gemerkt; die 2-MB-Datei bei jedem Filterklick neu
+    zu lesen wäre dieselbe Falle wie beim Qualitätsregler.
+    """
+    daten = laden()
+    kennung = id(daten)
+    if _einordnung_gemerkt['stand'] == kennung:
+        return _einordnung_gemerkt['daten']
+    zuordnung = {}
+    for b in daten.get('blueprints') or []:
+        name = b.get('productName') or _name_aus_tag(b.get('tag'))
+        if not name:
+            continue
+        zuordnung[_schluessel(name)] = ((b.get('type') or ''),
+                                        (b.get('subtype') or ''))
+    _einordnung_gemerkt['stand'] = kennung
+    _einordnung_gemerkt['daten'] = zuordnung
+    return zuordnung
+
+
+# Wie die Unterarten und Arten im Fenster heissen sollen. Was hier fehlt,
+# wird unveraendert gezeigt — lieber der englische Rohwert als gar nichts.
+def _uebersetzt(vorsilbe, wert):
+    """Den Anzeigenamen holen — oder den Rohwert, wenn er unbekannt ist.
+
+    Die Namen stehen in `sprache.py` unter `he_art_*` und `he_sub_*`. Fehlt
+    einer (neue Waffenart nach einem Patch), wird der englische Rohwert
+    gezeigt: lieber `tachyon` als eine leere Zeile.
+    """
+    from .sprache import TEXTE
+    schluessel = 'he_%s_%s' % (vorsilbe, (wert or '').lower())
+    if schluessel in TEXTE:
+        return t(schluessel)
+    return wert or ''
+
+
+def artname(wert):
+    """Wie eine Rezept-Art im Fenster heisst."""
+    return _uebersetzt('art', wert)
+
+
+def unterartname(wert):
+    """Wie eine Unterart im Fenster heisst — Waffenart oder Rüstungsrolle."""
+    return _uebersetzt('sub', wert)
+
+
+def unterart_von(name):
+    """Die Unterart eines Bauplans — `ballistic`, `laser`, `combat` … oder ''."""
+    return einordnung().get(_schluessel(name), ('', ''))[1]
+
+
+def art_von(name):
+    """Die Rezept-Art eines Bauplans — `weapons`, `armour`, `cooler` … oder ''."""
+    return einordnung().get(_schluessel(name), ('', ''))[0]
 
 
 def rezept(name_oder_tag):

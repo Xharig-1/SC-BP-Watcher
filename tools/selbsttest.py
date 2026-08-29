@@ -3717,6 +3717,48 @@ def main():
     finally:
         _w52d.destroy()
 
+    # 52e. Unterarten — Waffenart und Ruestungsrolle
+    #
+    # Der Katalog kennt nur `WeaponGun`; welche davon ballistisch sind und
+    # welche Laser, steht ausschliesslich in den Rezeptdaten. Umgekehrt kennt
+    # er die Koerperteile der Ruestung, die dort fehlen. Erst beide zusammen
+    # ergeben die Filter, nach denen am 29.08.2026 gefragt wurde: „ich weiss
+    # grad nicht, welche Ballistik sind, welche Laser".
+    print()
+    print('52e. Unterarten aus den Rezeptdaten')
+    from scbp import herstellung as _he52e
+    _echt52e = _he52e.einordnung
+    _he52e.einordnung = lambda: {
+        'zehnserieskanone': ('weapons', 'ballistic'),
+        'laserkanone': ('weapons', 'laser'),
+        'kampfhelm': ('armour', 'combat'),
+        'kuehlerzwei': ('cooler', 'size2'),
+    }
+    try:
+        pruefe(_he52e.unterart_von('Zehn-Series Kanone') == 'ballistic',
+               'die Waffenart kommt aus den Rezeptdaten')
+        pruefe(_he52e.art_von('Kampfhelm') == 'armour',
+               'und die Art dazu')
+        pruefe(_he52e.unterart_von('gibt es nicht') == '',
+               'ein unbekannter Name ergibt keine Unterart')
+    finally:
+        _he52e.einordnung = _echt52e
+    # Anzeigenamen: zweisprachig und mit Rueckfall auf den Rohwert
+    for _k52e in ('he_art_weapons', 'he_art_armour', 'he_sub_ballistic',
+                  'he_sub_laser', 'he_sub_combat', 'he_sub_stealth'):
+        _w52e = _sp51.TEXTE.get(_k52e)
+        pruefe(bool(_w52e) and len(_w52e) == 2 and all(_w52e),
+               'Anzeigename %s gibt es deutsch und englisch' % _k52e)
+    pruefe(_he52e.unterartname('gibtsnichtimmer') == 'gibtsnichtimmer',
+           'eine unbekannte Unterart wird roh gezeigt statt verschluckt')
+    for _k52e in ('ff_alle_unterarten', 'ff_alle_rollen', 'ff_alle_hersteller',
+                  'ff_alle_zustaende', 'ff_zustand_habe', 'ff_zustand_fehlt',
+                  's_bg_alle_erze', 's_bg_alle_orte', 'merk_eigene',
+                  'merk_wartet', 'merk_eigene_h'):
+        _w52e = _sp51.TEXTE.get(_k52e)
+        pruefe(bool(_w52e) and len(_w52e) == 2 and all(_w52e),
+               'Text %s gibt es deutsch und englisch' % _k52e)
+
     # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
     #
     # Eintragen ohne Berichtigen war halb fertig: Wer sich vertippt oder

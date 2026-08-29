@@ -1299,6 +1299,76 @@ TEXTE = {
     'ff_alle_groessen': ('Alle Größen', 'All sizes'),
     'ff_alle_quellen': ('Alle Quellen', 'All sources'),
     'ff_alle_grade':   ('Alle Grade', 'All grades'),
+    # ⚠ Die Unterart heisst je nach Art etwas anderes: Bei Waffen ist es die
+    # Waffenart (ballistisch, Laser), bei Ruestung die Rolle (Kampf, Technik).
+    # Ein Feld, zwei Beschriftungen — sonst muesste man raten, was es filtert.
+    # ⚠ Die Merkliste fuehrt ZWEI Sorten: angeklickte Bauplaene aus dem Katalog
+    # und eigene Beobachtungen mit Suchmustern. Die Liste zeigte nur die erste
+    # Sorte und meldete „Du beobachtest noch nichts", obwohl neun Eintraege
+    # hinterlegt waren. Am 29.08.2026 gemeldet.
+    'merk_eigene':      ('Eigene Beobachtungen', 'Your own watches'),
+    'merk_wartet':      ('wartet auf: %s', 'waiting for: %s'),
+    'merk_eigene_h':    ('Diese stehen in keinem Katalog — der Watcher hält '
+                         'nach den Suchmustern Ausschau, sobald etwas im Spiel '
+                         'freigeschaltet wird.',
+                         'These are in no catalogue — the watcher looks out '
+                         'for the search patterns whenever something is '
+                         'unlocked in the game.'),
+    'ff_alle_unterarten': ('Alle Unterarten', 'All subtypes'),
+    'ff_alle_rollen':   ('Alle Rüstungsrollen', 'All armour roles'),
+    'ff_alle_hersteller': ('Alle Hersteller', 'All manufacturers'),
+    # Anzeigenamen der Rezept-Arten und Unterarten. ⚠ Gehoeren hierher,
+    # nicht ins Datenmodul: Es sind Oberflaechentexte, und der
+    # Selbsttest besteht zu Recht darauf, dass jeder davon zweisprachig
+    # an EINER Stelle steht.
+    'he_art_weapons': ('Waffen', 'Weapons'),
+    'he_art_armour': ('Rüstung', 'Armour'),
+    'he_art_cooler': ('Kühler', 'Coolers'),
+    'he_art_powerplant': ('Generatoren', 'Power plants'),
+    'he_art_shield': ('Schilde', 'Shields'),
+    'he_art_radar': ('Radar', 'Radar'),
+    'he_art_quantumdrive': ('Quantenantriebe', 'Quantum drives'),
+    'he_art_ammo': ('Munition', 'Ammunition'),
+    'he_art_mininglaser': ('Bergbaulaser', 'Mining lasers'),
+    'he_art_tractorbeam': ('Traktorstrahlen', 'Tractor beams'),
+    'he_art_refuelling': ('Betankung', 'Refuelling'),
+    'he_art_orepod': ('Erzbehälter', 'Ore pods'),
+    'he_art_miningmodule': ('Bergbaumodule', 'Mining modules'),
+    'he_art_salvage': ('Bergung', 'Salvage'),
+    'he_sub_ballistic': ('Ballistisch', 'Ballistic'),
+    'he_sub_laser': ('Laser', 'Laser'),
+    'he_sub_distortion': ('Distortion', 'Distortion'),
+    'he_sub_neutron': ('Neutron', 'Neutron'),
+    'he_sub_plasma': ('Plasma', 'Plasma'),
+    'he_sub_tachyon': ('Tachyon', 'Tachyon'),
+    'he_sub_electron': ('Elektron', 'Electron'),
+    'he_sub_pistol': ('Pistole', 'Pistol'),
+    'he_sub_rifle': ('Gewehr', 'Rifle'),
+    'he_sub_sniper': ('Scharfschütze', 'Sniper'),
+    'he_sub_smg': ('Maschinenpistole', 'SMG'),
+    'he_sub_shotgun': ('Schrotflinte', 'Shotgun'),
+    'he_sub_lmg': ('Leichtes MG', 'LMG'),
+    'he_sub_combat': ('Kampf', 'Combat'),
+    'he_sub_engineer': ('Technik', 'Engineer'),
+    'he_sub_hunter': ('Jagd', 'Hunter'),
+    'he_sub_stealth': ('Tarnung', 'Stealth'),
+    'he_sub_miner': ('Bergbau', 'Miner'),
+    'he_sub_explorer': ('Erkundung', 'Explorer'),
+    'he_sub_environment': ('Umwelt', 'Environment'),
+    'he_sub_cosmonaut': ('Kosmonaut', 'Cosmonaut'),
+    'he_sub_undersuit': ('Unteranzug', 'Undersuit'),
+    'he_sub_flightsuit': ('Fluganzug', 'Flight suit'),
+    'he_sub_medic': ('Sanitäter', 'Medic'),
+    'he_sub_pilot': ('Pilot', 'Pilot'),
+    'he_sub_utility': ('Allzweck', 'Utility'),
+    'he_sub_heavy': ('Schwer', 'Heavy'),
+    'he_sub_light': ('Leicht', 'Light'),
+    'he_sub_medium': ('Mittel', 'Medium'),
+    's_bg_alle_erze':    ('Alle Rohstoffe', 'All materials'),
+    's_bg_alle_orte':    ('Alle Orte', 'All locations'),
+    'ff_alle_zustaende': ('Bauplan: alle', 'Blueprint: all'),
+    'ff_zustand_habe':  ('Bauplan vorhanden', 'Blueprint owned'),
+    'ff_zustand_fehlt': ('Bauplan fehlt', 'Blueprint missing'),
     'ff_groesse':      ('Größe %s', 'Size %s'),
     'ff_grad':         ('Grad %s', 'Grade %s'),
     # ⚠ „Auswahl zurücksetzen", nicht nur „zurücksetzen". Auf einem Knopf
