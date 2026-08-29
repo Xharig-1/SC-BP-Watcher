@@ -155,6 +155,13 @@ def sicherstellen(breite=1400, hoehe=1000, messend=False):
         return
     if os.environ.get(SCHON_UNSICHTBAR):
         return
+    if os.environ.get('CI'):
+        # Auf einem Bau-Laeufer sitzt niemand vor dem Bildschirm. Der Workflow
+        # bringt seinen eigenen Xvfb mit, und auf dem Windows-Laeufer wuerde
+        # ein verstecktes Fenster die Groessenmessungen verfaelschen: Zwei
+        # Pruefungen meldeten dort [1, 1] px, weil ein withdraw()-Fenster keine
+        # Geometrie hat. Also hier nicht eingreifen.
+        return
 
     if not noetig():
         # Kein Xvfb zur Hand. Hängt trotzdem ein Bildschirm dran, muss der
