@@ -1139,6 +1139,19 @@ TEXTE = {
     'm_keine_ini_archiv': ('global.ini im Archiv nicht gefunden',
                           'global.ini not found in the archive'),
     'm_keine_version': ('Version nicht gefunden', 'version not found'),
+    # ⚠ 403 ist KEIN Netzfehler. scmdb steht hinter Cloudflare, und dessen
+    # Schutz weist Abrufe ohne eigene Kennung ab (die nackte
+    # `Python-urllib`-Kennung laeuft auf 403, gemessen 29.08.2026). Ohne
+    # eigene Meldung stand dort nur "Netzfehler", und man sucht an der
+    # falschen Stelle — dieselbe Falle wie beim Zertifikatsfehler.
+    'm_abgewiesen':    ('Die Seite hat den Abruf abgewiesen (403). Ihr Schutz '
+                        'blockiert gerade Programme — das liegt nicht an dir. '
+                        'Der Watcher arbeitet mit dem zuletzt geladenen Stand '
+                        'weiter; versuch es später noch einmal.',
+                        'The site refused the request (403). Its protection is '
+                        'currently blocking programs — this is not your fault. '
+                        'The watcher keeps working with the data it already '
+                        'has; try again later.'),
     'm_kein_zertifikat': ('Sichere Verbindung fehlgeschlagen — die Zertifikate des Systems wurden nicht gefunden',
                           'Secure connection failed — the system certificates were not found'),
     'm_keine_logs':    ('Keine Log-Sicherungen gefunden — der bisherige Bestand lässt sich nicht nachlesen.',

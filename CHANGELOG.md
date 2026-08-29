@@ -6,6 +6,22 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.2.2 - unreleased
+
+### Fixed
+
+- **"Network error" where the site had simply refused the request.** SCMDB sits
+  behind bot protection that rejects requests without their own user agent with
+  a **403**. The watcher has always sent its own identifier and is not affected —
+  but if a 403 does happen (protection being tightened, or GitHub's rate limit),
+  all you used to see was "network error". You then go looking at your own
+  connection, where there is nothing to find. Now the tool says plainly that the
+  other side refused, and that it keeps working with the data it already has.
+
+  A 403 is also **no longer retried three times**. A refusal is not a loose
+  cable; that cost about six seconds of waiting for nothing. Now it stops after
+  0.1 seconds.
+
 ## v3.2.1 - 2026-08-29
 
 ### Fixed

@@ -6,6 +6,23 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.2.2 - unveröffentlicht
+
+### Behoben
+
+- **„Netzfehler", wo die Seite den Abruf nur abgelehnt hatte.** scmdb steht
+  hinter einem Bot-Schutz, der Abrufe ohne eigene Kennung mit **403** abweist.
+  Der Watcher schickt zwar seit jeher eine eigene Kennung und ist davon nicht
+  betroffen — aber wenn ein 403 doch einmal kommt (etwa weil ein Schutz
+  nachgeschärft wird, oder bei GitHubs Abruflimit), stand bisher nur „Netzfehler"
+  da. Man sucht dann beim eigenen Anschluss, wo nichts zu finden ist. Jetzt sagt
+  das Werkzeug klar, dass die Gegenseite abgelehnt hat und dass es mit dem
+  zuletzt geladenen Stand weiterarbeitet.
+
+  Nebenbei wird ein 403 **nicht mehr dreimal wiederholt**. Eine Absage ist kein
+  Wackelkontakt; das kostete rund sechs Sekunden Wartezeit für nichts. Jetzt ist
+  nach 0,1 Sekunden Schluss.
+
 ## v3.2.1 - 2026-08-29
 
 ### Behoben

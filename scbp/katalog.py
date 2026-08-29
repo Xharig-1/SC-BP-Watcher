@@ -53,10 +53,21 @@ import json
 import os
 import re
 import time
+import urllib.error
 import urllib.request
 
 from . import patchhistorie, pfade, sprache
 from .sprache import t
+
+
+class Abgewiesen(Exception):
+    """Die Seite hat den Abruf abgelehnt (HTTP 403).
+
+    Eigene Ausnahme, damit der Fall von einem echten Netzfehler zu
+    unterscheiden ist: Hier ist die Leitung in Ordnung, die Gegenseite mag
+    nur nicht. Wiederholen hilft nicht, und die Meldung muss eine andere
+    sein — sonst sucht man den Fehler bei sich."""
+
 
 BASIS = 'https://scmdb.net/data'
 CACHE = 'katalog-cache.json'
@@ -143,6 +154,15 @@ def _hole(url, zeitlimit=ZEITLIMIT, versuche=VERSUCHE):
             req = urllib.request.Request(url, headers={'User-Agent': KENNUNG})
             with urllib.request.urlopen(req, timeout=zeitlimit) as r:
                 return json.loads(r.read().decode('utf-8'))
+        except urllib.error.HTTPError as fehler:
+            # ⚠ 403 ist eine Absage, kein Wackelkontakt. Cloudflare weist
+            # Abrufe ohne eigene Kennung ab; noch zweimal zu fragen kostet nur
+            # Zeit und aendert nichts. Sofort raus, mit klarer Meldung.
+            if fehler.code == 403:
+                raise Abgewiesen(t('m_abgewiesen')) from fehler
+            letzter = fehler
+            if versuch + 1 < versuche:
+                time.sleep(2 * (versuch + 1))
         except Exception as fehler:
             letzter = fehler
             if versuch + 1 < versuche:

@@ -114,6 +114,11 @@ def neueste(quelle):
         text = str(e)
         if 'CERTIFICATE' in text.upper() or 'SSL' in text.upper():
             letzter_fehler[0] = t('m_kein_zertifikat')
+        elif getattr(e, 'code', None) == 403 or '403' in text:
+            # ⚠ Auch hier gilt: 403 ist eine Absage, kein Netzfehler. Bei
+            # GitHub ist es meist das Abruflimit, bei Cloudflare-Seiten der
+            # Bot-Schutz. Ohne eigene Meldung sucht man beim eigenen Anschluss.
+            letzter_fehler[0] = t('m_abgewiesen')
         else:
             letzter_fehler[0] = text
         return None
