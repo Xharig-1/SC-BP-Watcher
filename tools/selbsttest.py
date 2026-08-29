@@ -3849,6 +3849,34 @@ def main():
     pruefe(_qu52h.count("!= self.fein['art']") <= 1,
            'die Art wird hoechstens an einer Stelle verglichen')
 
+    # 52i. Suche nach dem Auftrag
+    #
+    # „Retake" fand bis rc21 nichts, obwohl sechs Bauplaene aus Auftraegen mit
+    # diesem Wort stammen. Wer eine Quest fliegt, will wissen, was dabei
+    # herausspringt.
+    print()
+    print('52i. Nach Auftrag, Fraktion und Auftragsart suchen')
+    from scbp import bestandsfenster as _bf52i
+    _bp52i = {'n': 'Test-Bauplan', 'a': 'Cooler', 'q': [
+        {'auftrag': 'Retake Platforms From Nine Tails', 'typ': 'Mercenary',
+         'fraktion': 'Headhunters', 'wo': {'ort': 'Stanton'}}]}
+    pruefe(_bf52i._passt(_bp52i, 'retake'), 'der Auftragsname wird gefunden')
+    pruefe(_bf52i._passt(_bp52i, 'headhunters'), 'die Fraktion ebenso')
+    pruefe(_bf52i._passt(_bp52i, 'mercenary'), 'und die Auftragsart')
+    pruefe(not _bf52i._passt(_bp52i, 'xenothreat'),
+           'ein fremder Begriff trifft nicht')
+    # ⚠ `wo` ist ein Objekt, kein Text — ohne Pruefung stuerzt die Suche bei
+    # jedem Tastendruck ab, und weil das im Zeichnen passiert, haengt das
+    # Fenster.
+    pruefe(_bf52i._passt(_bp52i, 'test-bauplan'),
+           'ein Objekt in den Herkunftsangaben laesst die Suche nicht abstuerzen')
+    _kat52i = {'bauplaene': {'x': _bp52i, 'y': dict(_bp52i, n='Zweiter')}}
+    pruefe(_bf52i.auftraege_zu('retake', _kat52i)
+           == [('Retake Platforms From Nine Tails', 2)],
+           'die Uebersicht zaehlt die Bauplaene je Auftrag')
+    pruefe(_bf52i.auftraege_zu('', _kat52i) == [],
+           'ohne Suchbegriff keine Auftragsliste')
+
     # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
     #
     # Eintragen ohne Berichtigen war halb fertig: Wer sich vertippt oder

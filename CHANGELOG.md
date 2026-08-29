@@ -10,6 +10,15 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- ⭐ **Search by contract.** "Retake" used to find nothing although six
+  blueprints come from contracts with that word. The search now also covers
+  **contract name, faction and contract type** — "nine tails" finds three
+  blueprints, "headhunters" 141.
+
+  Above the results an overview answers the actual question: **what does this
+  quest hold?** For "retake" that is `Retake Platforms From Nine Tails — 3
+  blueprints` and `Need multiple CFP outposts retaken — 3 blueprints`.
+
 - ⭐⭐ **Two levels instead of one long list — category and subtype.** The type
   dropdown had thirty entries: "Armour (arms)", "Armour (legs)", "Helmet",
   "Backpack", "Clothing (jacket)" … Assembling a full set of armour meant

@@ -217,7 +217,41 @@ def _passt(eintrag, text):
         return True
     if eintrag.get('s') and text in ('size %s' % eintrag['s']).lower():
         return True
+    # ⭐ **Auch nach dem Auftrag suchen.** „Retake" fand bis rc21 nichts,
+    # obwohl sechs Baupläne aus Aufträgen mit diesem Wort stammen. Wer einen
+    # Auftrag fliegt, will wissen, was dabei herausspringt — und wer einen
+    # Bauplan sucht, sucht oft über den Auftrag, aus dem er kommt.
+    for q in eintrag.get('q') or []:
+        for feld in ('auftrag', 'fraktion', 'typ', 'wo'):
+            wert = q.get(feld)
+            # ⚠ `wo` ist **kein Text**, sondern ein Objekt (Ort samt System).
+            # Ohne diese Prüfung stürzt die Suche bei jedem Tastendruck ab —
+            # und weil das im Zeichnen passiert, hängt das Fenster.
+            if isinstance(wert, str) and wert and text in wert.lower():
+                return True
     return False
+
+
+def auftraege_zu(text, katalog):
+    """Welche Aufträge passen zum Suchbegriff — und wie viele Baupläne je Auftrag.
+
+    Gibt Paare `(Auftragsname, Anzahl)` zurück, die häufigsten zuerst. Damit
+    beantwortet die Liste die Frage hinter der Suche: „Was gibt es in dieser
+    Quest überhaupt?"
+    """
+    if not text:
+        return []
+    zaehler = {}
+    for e in (katalog.get('bauplaene') or {}).values():
+        gesehen = set()
+        for q in e.get('q') or []:
+            name = (q.get('auftrag') or '').strip()
+            if not name or name in gesehen:
+                continue
+            if text in name.lower():
+                gesehen.add(name)
+                zaehler[name] = zaehler.get(name, 0) + 1
+    return sorted(zaehler.items(), key=lambda p: (-p[1], p[0].lower()))
 
 
 class Bestandsfenster:
@@ -767,6 +801,33 @@ class Bestandsfenster:
             # Eine Selbstprüfung darf nie das Zeichnen kosten.
             pass
 
+    def _auftragsuebersicht(self):
+        """Zeigt, welche Aufträge zum Suchbegriff passen — und wie viele
+        Baupläne in jedem stecken.
+
+        ⭐ Das ist die Frage hinter der Suche nach einem Auftrag: nicht „gibt es
+        ihn?", sondern „was springt dabei heraus?". Die Zeilen darunter sind
+        dann die Baupläne selbst.
+        """
+        try:
+            text = self.suche.get().strip().lower()
+            if len(text) < 3:
+                return                  # zu kurz — träfe zu viele Aufträge
+            treffer = auftraege_zu(text, self.katalog)
+            if not treffer:
+                return
+            tk.Label(self.inhalt, text=t('s_bp_auftrag_kopf') % text,
+                     bg=BG, fg=ACCENT, font=schrift(11, fett=True),
+                     anchor='w', pady=6).pack(fill='x')
+            for name, anzahl in treffer[:8]:
+                tk.Label(self.inhalt,
+                         text=t('s_bp_auftrag_zeile') % (name, anzahl),
+                         bg=FLAECHE, fg=FG, font=schrift(10), anchor='w',
+                         padx=10, pady=4).pack(fill='x', pady=1)
+            tk.Frame(self.inhalt, bg=BG, height=8).pack(fill='x')
+        except Exception:
+            pass
+
     def _eigene_beobachtungen(self):
         """Die Muster-Beobachtungen zeigen — sie stehen in keinem Katalog.
 
@@ -1289,6 +1350,7 @@ class Bestandsfenster:
             # noch nichts", während neun Einträge hinterlegt waren — acht
             # Muster-Beobachtungen und ein Name, der nicht im Katalog steht.
             self._eigene_beobachtungen()
+            self._auftragsuebersicht()
             deckel = self._zeilen_deckel() if self.alle_zeigen else ZEILEN_ZUERST
             gezeichnet = 0
             for art, treffer in gruppen:

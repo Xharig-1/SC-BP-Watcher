@@ -1436,6 +1436,11 @@ TEXTE = {
     'kat_unter_oberkoerper': ('Oberkörper', 'Torso'),
     'kat_unter_jacke':       ('Jacke', 'Jacket'),
     'kat_unter_schuhe':      ('Schuhe', 'Shoes'),
+    # ⭐ Suche nach dem Auftrag: „Retake" fand nichts, obwohl sechs Bauplaene
+    # aus solchen Auftraegen stammen. Wer eine Quest fliegt, will wissen, was
+    # dabei herausspringt.
+    's_bp_auftrag_kopf': ('Aufträge mit „%s"', 'Contracts matching "%s"'),
+    's_bp_auftrag_zeile': ('%s — %d Baupläne', '%s — %d blueprints'),
     's_bg_alle_erze':    ('Alle Rohstoffe', 'All materials'),
     's_bg_alle_orte':    ('Alle Orte', 'All locations'),
     'ff_alle_zustaende': ('Bauplan: alle', 'Blueprint: all'),

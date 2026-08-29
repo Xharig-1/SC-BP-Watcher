@@ -10,6 +10,16 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Neu
 
+- ⭐ **Suche nach dem Auftrag.** „Retake" fand bisher nichts, obwohl sechs
+  Baupläne aus Aufträgen mit diesem Wort stammen. Gesucht wird jetzt auch in
+  **Auftragsname, Fraktion und Auftragsart** — „nine tails" findet drei
+  Baupläne, „headhunters" 141, „bounty" 77.
+
+  Darüber steht eine Übersicht, die die eigentliche Frage beantwortet: **Was
+  gibt es in dieser Quest?** Bei „retake" etwa `Retake Platforms From Nine
+  Tails — 3 Baupläne` und `Need multiple CFP outposts retaken — 3 Baupläne`.
+  Darunter stehen die Baupläne selbst, mit Info-Zeichen, Abgabeort und Ruf.
+
 - ⭐⭐ **Zwei Ebenen statt einer langen Liste — Oberkategorie und Unterart.**
   Die Art-Auswahl hatte dreissig Einträge: „Rüstung (Arme)", „Rüstung (Beine)",
   „Rüstung (Torso)", „Helm", „Rucksack", „Kleidung (Jacke)" … Wer eine ganze
