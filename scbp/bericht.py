@@ -302,6 +302,33 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
     zeile(t('b_katalog'), _sicher(lambda: __import__(
         'scbp.katalog', fromlist=['aktuelle_version']).aktuelle_version()))
     zeile(t('b_historie'), _sicher(_patchhistorie))
+
+    # ⚠ Die drei Werkstatt-Seiten (ab v3.3.0). Ohne sie liesse sich eine
+    # Meldung wie „bei mir bleibt die Herstellung leer" nicht beurteilen —
+    # man saehe nicht, ob die Daten ueberhaupt geladen sind.
+    def _lagerzeile():
+        from . import rohstoffe
+        posten = rohstoffe.laden()
+        arten = {(p_.get('material') or '').strip().lower() for p_ in posten}
+        return t('b_n_posten') % (len(posten), len(arten - {''}))
+
+    def _rezeptzeile():
+        from . import herstellung
+        stand = herstellung.stand()
+        if not stand:
+            return t('b_nicht_geladen')
+        return t('b_n_bauplaene_kurz') % (len(herstellung.alle()), stand)
+
+    def _bergbauzeile():
+        from . import bergbau
+        stand = bergbau.stand()
+        if not stand:
+            return t('b_nicht_geladen')
+        return t('b_n_orte') % (len(bergbau.orte()), stand)
+
+    zeile(t('b_lager'), _sicher(_lagerzeile))
+    zeile(t('b_rezepte'), _sicher(_rezeptzeile))
+    zeile(t('b_bergbaudaten'), _sicher(_bergbauzeile))
     zeilen.append('')
 
     zeile(t('b_ordner'), _sicher(lambda: uebersicht.get('app_ordner')))

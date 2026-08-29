@@ -1309,7 +1309,12 @@ TEXTE = {
                           'watcher deducts the ingredients.'),
     's_lg_material':     ('Rohstoff', 'Resource'),
     's_lg_menge':        ('Menge (SCU)', 'Amount (SCU)'),
-    's_lg_qualitaet':    ('Güte % (freiwillig)', 'Quality % (optional)'),
+    # Die Skala der Rezepte laeuft 0 bis 1000, NICHT in Prozent. Stand hier
+    # als 'Guete %' — wer im Spiel 72 abliest und eintraegt, haette danach
+    # lauter falsche Ergebnisse bekommen: sein Erz gaelte als unbrauchbar.
+    's_lg_qualitaet':    ('Qualität 0–1000 (freiwillig)',
+                          'Quality 0–1000 (optional)'),
+    's_lg_q_wert':       ('Q %g', 'Q %g'),
     's_lg_ort':          ('Fundort (freiwillig)', 'Location (optional)'),
     's_lg_eintragen':    ('Eintragen', 'Add'),
     's_lg_leer':         ('Noch nichts eingetragen.', 'Nothing entered yet.'),
@@ -1381,6 +1386,18 @@ TEXTE = {
     # ⚠ Wird NIE vorausgefüllt (auch nicht mit dem Windows-/Linux-Benutzernamen).
     # Das Werkzeug sammelt sonst nichts über den Nutzer, und im Discord-Post
     # steht „no telemetry" — ein heimlich mitgeschickter Name wäre ein Bruch.
+    # ⚠ Der Bericht muss mit jeder neuen Funktion mitwachsen. Ohne diese drei
+    # Zeilen liesse sich eine Meldung wie "bei mir ist das Lager leer" nicht
+    # beurteilen: Man wuesste weder, ob Posten da sind, noch ob die Rezept- und
+    # Bergbaudaten ueberhaupt geladen wurden.
+    'b_lager':           ('Mein Lager', 'My stock'),
+    'b_n_posten':        ('%d Posten · %d Materialien',
+                          '%d entries · %d materials'),
+    'b_rezepte':         ('Rezepte', 'Recipes'),
+    'b_bergbaudaten':    ('Bergbaudaten', 'Mining data'),
+    'b_n_bauplaene_kurz': ('%d Baupläne · Stand %s', '%d blueprints · build %s'),
+    'b_n_orte':          ('%d Orte · Stand %s', '%d locations · build %s'),
+    'b_nicht_geladen':   ('noch nicht geladen', 'not loaded yet'),
     'b_melder':          ('Von', 'From'),
     's_melder':          ('Dein Name (freiwillig)', 'Your name (optional)'),
     's_melder_h':        ('Steht im Fehlerbericht, damit sich Rückfragen '

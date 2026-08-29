@@ -3828,7 +3828,8 @@ def _lager(fenster, rahmen):
                      fg=ACCENT, font=fenster.f_klein,
                      anchor='w').pack(side='left', padx=(10, 0))
             beiwerk = ' · '.join(x for x in (
-                ('%s %%' % p['qualitaet']) if p.get('qualitaet') else '',
+                # ⚠ Kein Prozent: Die Skala der Rezepte laeuft 0–1000.
+                (t('s_lg_q_wert') % float(p['qualitaet'])) if p.get('qualitaet') else '',
                 p.get('ort') or '') if x)
             if beiwerk:
                 tk.Label(z, text=beiwerk, bg=BG, fg=SUB, font=fenster.f_klein,
