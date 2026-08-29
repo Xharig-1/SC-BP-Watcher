@@ -58,6 +58,27 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠⚠ **„Nichts gefunden", sobald eine Kategorie gewählt war** — jetzt wirklich.
+  Der Filter rechnete richtig, aber **eine zweite Stelle** sortierte ganze
+  Gruppen vorab aus und verglich dabei Katalog-Art gegen Oberkategorie. Das
+  trifft nie zu, also fiel jede Gruppe heraus. Diese Abkürzung ist weg —
+  geprüft wird an genau **einer** Stelle. Gemessen: „Schiffsmodule" zeigt
+  wieder 157 von 738, „Generator" 44.
+
+- ⭐ **Der Watcher merkt solche Fälle jetzt selbst.** Steht im Auswahlfeld
+  „Schiffsmodule (157)" und die Liste bleibt leer, ist das ein Widerspruch:
+  Die eine Zahl kommt aus dem Katalog, die andere aus dem Filter. Der Watcher
+  schreibt das in sein Fehlerprotokoll, und es steht im Diagnosebericht — statt
+  dass jemand ein Bildschirmfoto schicken muss.
+
+  > Der Fehler war zweimal nur am leeren Bildschirm zu sehen; abgestürzt ist
+  > nichts, also stand auch nichts im Bericht. Ein Werkzeug, das solche
+  > Widersprüche anzeigt, aber nicht meldet, liegt in der Ecke.
+
+- **Der Bergbau zeigt die Rohstoffe zuerst.** Im Grundzustand standen dort die
+  48 Orte — man kommt aber mit „wo finde ich Titanium?" herein, nicht mit „wo
+  bin ich?". Die Orte stehen jetzt darunter und beantworten die zweite Frage.
+
 - ⚠⚠ **„Nichts gefunden", sobald eine Kategorie gewählt war.** Die Liste zeigte
   `0 von 738`, obwohl „Schiffsmodule (157)" und „Generator (44)" ausgewählt
   waren. Der Filter selbst rechnete richtig — das **Zeichnen** brach ab.

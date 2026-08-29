@@ -40,6 +40,21 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠⚠ **"Nothing found" as soon as a category was selected** — now really fixed.
+  The filter was right, but **a second place** discarded whole groups in
+  advance, comparing catalogue type against the new top-level category. That
+  never matches, so every group fell out. The shortcut is gone; the check now
+  happens in exactly one place.
+
+- ⭐ **The watcher now notices such cases itself.** If the dropdown says
+  "Ship modules (157)" and the list stays empty, that is a contradiction — one
+  number comes from the catalogue, the other from the filter. It is written to
+  the error log and appears in the diagnostic report, instead of someone having
+  to send a screenshot.
+
+- **Mining lists materials first.** It used to show the 48 locations by
+  default, but you arrive asking "where do I find titanium?", not "where am I?".
+
 - ⚠⚠ **"Nothing found" as soon as a category was selected.** The list showed
   `0 of 738` although a category and subtype were chosen. The filter itself was
   right — the **drawing** aborted: rebuilding the dropdowns left the old layout

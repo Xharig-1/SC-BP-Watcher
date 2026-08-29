@@ -3832,6 +3832,23 @@ def main():
     pruefe(not _mk52g._muster_trifft({'titel': 'P', 'muster': ['']}, 'irgendwas'),
            'ein leeres Muster ebenso wenig')
 
+    # 52h. Die Kategorie wird an genau EINER Stelle geprueft
+    #
+    # Bis rc19 gab es eine zweite: eine Abkuerzung, die ganze Gruppen vorab
+    # aussortierte und dabei Katalog-Art gegen Oberkategorie verglich. Das
+    # trifft nie zu — jede Gruppe fiel heraus, die Liste zeigte „Nichts
+    # gefunden" bei 157 vorhandenen Bauplaenen. Zwei Stellen fuer dieselbe
+    # Frage waren genau eine zu viel.
+    print()
+    print('52h. Kategorie-Pruefung nur an einer Stelle')
+    with open(os.path.join(_wurzelpfad, 'scbp', 'bestandsfenster.py'),
+              encoding='utf-8') as _fh52h:
+        _qu52h = _fh52h.read()
+    pruefe("art_kennung(liste[0])" not in _qu52h,
+           'keine Gruppen-Vorpruefung ueber die Katalog-Art mehr')
+    pruefe(_qu52h.count("!= self.fein['art']") <= 1,
+           'die Art wird hoechstens an einer Stelle verglichen')
+
     # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
     #
     # Eintragen ohne Berichtigen war halb fertig: Wer sich vertippt oder

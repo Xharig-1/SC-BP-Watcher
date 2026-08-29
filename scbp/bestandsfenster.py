@@ -723,6 +723,50 @@ class Bestandsfenster:
         eintraege += [('t:' + s, s) for s in sorted(sonder, key=str.lower)]
         return eintraege
 
+    def _widerspruch_pruefen(self, gezeigt):
+        """Meldet, wenn die Liste leer bleibt, obwohl das Feld Treffer verspricht.
+
+        ⚠ **Der stumme Fehler.** Am 29.08.2026 stand im Auswahlfeld
+        „Schiffsmodule (157)", und die Liste zeigte „Nichts gefunden" — eine
+        vorgelagerte Prüfung verglich Katalog-Art gegen Oberkategorie und warf
+        jede Gruppe weg. Am Bildschirm sah das aus wie ein leerer Bestand; im
+        Diagnosebericht stand nichts davon, weil nichts abgestürzt war.
+
+        Genau das hält diese Prüfung fest: Die Zahl **im Feld** kommt aus dem
+        Katalog, die Zahl **in der Liste** aus dem Filter. Klaffen sie
+        auseinander, stimmt der Filter nicht — und die Meldung steht im
+        Bericht, bevor jemand ein Bildschirmfoto schicken muss.
+
+        Ein Werkzeug, das solche Widersprüche nur anzeigt und nicht meldet,
+        liegt in der Ecke.
+        """
+        try:
+            if gezeigt or not self.fein.get('art'):
+                return
+            erwartet = 0
+            for wert, beschriftung in self._oberkategorien():
+                if wert == self.fein['art']:
+                    zahl = beschriftung.rsplit('(', 1)[-1].rstrip(')')
+                    erwartet = int(zahl) if zahl.isdigit() else 0
+                    break
+            if erwartet <= 0:
+                return
+            # Andere Filter dürfen sehr wohl auf null führen — dann ist es
+            # kein Widerspruch, sondern eine ehrliche leere Schnittmenge.
+            weitere = [s for s, w in self.fein.items() if w and s != 'art']
+            wenn_nur_art = not weitere and self.filter == 'alle' \
+                and not self.suche.get().strip()
+            if not wenn_nur_art:
+                return
+            fehler.merken(
+                'bestandsfenster.filter_leer',
+                RuntimeError('Kategorie %r verspricht %d Bauplaene, '
+                             'die Liste zeigt keinen'
+                             % (self.fein['art'], erwartet)))
+        except Exception:
+            # Eine Selbstprüfung darf nie das Zeichnen kosten.
+            pass
+
     def _eigene_beobachtungen(self):
         """Die Muster-Beobachtungen zeigen — sie stehen in keinem Katalog.
 
@@ -795,6 +839,8 @@ class Bestandsfenster:
         self.treffer_lbl.configure(
             text=(t('ff_treffer') % (gezeigt, gesamt)) if eng
             else (t('ff_alle_treffer') % gesamt))
+
+        self._widerspruch_pruefen(gezeigt)
 
         # Die ganze Zeile ein- oder ausblenden — sie steht unter den
         # Auswahlfeldern und nimmt sonst Platz weg, wenn nichts gefiltert ist.
@@ -1120,11 +1166,18 @@ class Bestandsfenster:
         for og, art, liste in katalog_modul.gruppen_geordnet(self.katalog):
             if og in self.bereiche_aus:
                 continue
-            # Die Art ist ein Merkmal der ganzen Gruppe — einmal prüfen reicht,
-            # statt für jede der bis zu 87 Zeilen darin.
-            if self.fein['art'] and (liste and katalog_modul.art_kennung(liste[0])
-                                     != self.fein['art']):
-                continue
+            # ⚠ **Hier wird die Art NICHT mehr vorab geprüft.** Bis rc19 stand
+            # hier eine Abkürzung: Die Katalog-Art sei ein Merkmal der ganzen
+            # Gruppe, also genüge eine Prüfung statt 87. Seit die Auswahl
+            # **Oberkategorien** anbietet (`schiffsmodul`), verglich sie
+            # Katalog-Art gegen Oberkategorie — das trifft nie zu, und **jede**
+            # Gruppe fiel heraus: „Nichts gefunden" bei 157 vorhandenen
+            # Bauplänen, gemeldet am 29.08.2026.
+            #
+            # Geprüft wird jetzt je Zeile in `_fein_passt()`. Das ist die
+            # einzige Stelle, an der die Kategorie ausgewertet wird — zwei
+            # Stellen waren genau eine zu viel. Die Kategorie je Bauplan ist
+            # gemerkt, das kostet also kaum etwas.
             # Suchwörter der Art: „Kühler" soll die Cooler finden, obwohl die
             # Kategorie im Spiel englisch heißt.
             wortliste = katalog_modul.suchworte(liste[0].get('a')) if liste else ()

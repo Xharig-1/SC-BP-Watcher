@@ -4162,12 +4162,16 @@ def _bergbau(fenster, rahmen):
             w.destroy()
         text = suche_var.get().strip().lower()
 
-        # Erst die Rohstoffe, die passen — wer einen Rohstoff sucht, will die
-        # Orte sehen, nicht eine Ortsliste durchblättern.
-        if text:
-            for e in erze:
-                if text in e['name'].lower():
-                    _berg_erz(fenster, liste_rahmen, e, offen, zeichnen)
+        # ⚠ **Rohstoffe zuerst, auch ohne Suche.** Die Seite zeigte im
+        # Grundzustand die 48 Orte — man kam also mit „wo bin ich?" herein,
+        # gesucht wird aber mit „wo finde ich Titanium?". Am 29.08.2026:
+        # „in der Liste sollten auch nicht die Orte, sondern erst das Mineral
+        # stehen, da sucht man als Erstes nach."
+        for e in erze:
+            if not text or text in e['name'].lower():
+                _berg_erz(fenster, liste_rahmen, e, offen, zeichnen)
+        # Orte danach — sie beantworten die zweite Frage („was gibt es hier?").
+        # Ohne Suche stehen sie unter den Rohstoffen, nicht davor.
         for o in orte:
             passt = (not text
                      or text in o['name'].lower()
