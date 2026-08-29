@@ -95,7 +95,39 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - **"Progress" is now "Blueprint progress".** With the new pages the old name
   would have been ambiguous.
 
+### Added
+
+- **The watcher now shows which contracts are running** — and keeps them across
+  a restart. Until now an accepted contract was only a line in the log view;
+  restarting the watcher lost it.
+
+  This works because Star Citizen writes not just the acceptance to its log but
+  every ending too. Across the logs of a single machine: 701 acceptances, 303
+  completions, 112 withdrawals, 57 failures — each with the same mission id.
+  The watcher walks the running log once and keeps score: accepted with no
+  ending after it means still open.
+
+  > **Finished ones disappear.** Someone running ten contracts in an evening
+  > should not have to look at ten dead lines. Completion, withdrawal and
+  > failure remove the contract from the display, immediately and while
+  > running.
+
+  **Shared** contracts count as well: if someone in your group passes one to
+  you, you see just as clearly whether it holds blueprints for you.
+
+  Two things the log cannot know, so they are not claimed: restarting the
+  **game** starts a fresh log, and nothing is asserted about what ran before.
+  And if a contract is lost to a bug, the game says nothing — for exactly that
+  case every line can be dismissed with a click on the ×.
+
 ### Fixed
+
+- ⚠ **Buttons cut off their own labels.** One button read "e change" instead of
+  "Save change". Cause: the surface was sized with `measure()` but drawn with
+  whatever font the system actually provides — where those differ, the text
+  runs past the edge and is clipped on both sides. Every button now measures
+  itself after its text is set. This affected all buttons, not just one.
+  Reported by Xharig-1.
 
 - ⚠ **Stock entries could not be corrected.** After a typo or after handing
   material to someone else, the only option was to delete the entry and retype

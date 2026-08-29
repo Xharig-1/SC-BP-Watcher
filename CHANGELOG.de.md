@@ -98,7 +98,39 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **„Fortschritt" heißt jetzt „Bauplan-Fortschritt".** Mit den neuen Seiten wäre
   der alte Name mehrdeutig gewesen.
 
+### Neu
+
+- **Der Watcher zeigt jetzt, welche Aufträge gerade laufen** — und behält das
+  über einen Neustart hinweg. Bisher war ein angenommener Auftrag nur eine
+  Zeile im Verlauf; nach einem Neustart des Watchers war sie weg.
+
+  Möglich wird das, weil Star Citizen nicht nur die Annahme ins Log schreibt,
+  sondern auch jedes Ende. In den Protokollen eines einzigen Rechners: 701
+  Annahmen, 303 Abschlüsse, 112 Rücknahmen, 57 Fehlschläge — jeweils mit
+  derselben Missions-Kennung. Der Watcher geht das laufende Log einmal durch
+  und führt Buch: angenommen und danach kein Ende gesehen heisst offen.
+
+  > **Abgeschlossene verschwinden.** Wer an einem Abend zehn Aufträge macht,
+  > soll nicht zehn tote Zeilen ansehen. Abschluss, Abbruch und Fehlschlag
+  > nehmen den Auftrag aus der Anzeige — sofort, auch im laufenden Betrieb.
+
+  Auch **geteilte** Aufträge zählen: Wer in der Gruppe einen Auftrag
+  weitergereicht bekommt, sieht genauso, ob darin Baupläne für ihn stecken.
+
+  Zwei Dinge kann das Log nicht wissen, deshalb stehen sie auch nicht da:
+  Nach einem Neustart des **Spiels** beginnt ein frisches Protokoll — was
+  davor lief, wird nicht behauptet. Und geht ein Auftrag durch einen Fehler im
+  Spiel verloren, meldet das Spiel nichts. Für genau den Fall lässt sich jede
+  Zeile mit einem Klick auf das × selbst ausblenden.
+
 ### Behoben
+
+- ⚠ **Knöpfe schnitten ihre Beschriftung ab.** Auf einem Knopf stand „erung
+  speichern" statt „Änderung speichern". Ursache: Die Fläche wurde mit
+  `measure()` bemessen, gezeichnet wurde aber mit der Schrift, die das System
+  wirklich hergibt — weichen die ab, steht der Text über den Rand und wird
+  beidseitig gekappt. Jeder Knopf misst jetzt nach dem Setzen seines Textes
+  selbst nach. Betraf alle Knöpfe, nicht nur den einen. Gemeldet von Xharig-1.
 
 - ⚠ **Der Lagerbestand liess sich nicht berichtigen.** Wer sich vertippt oder
   Material weitergegeben hatte, konnte den Posten nur löschen und neu tippen —

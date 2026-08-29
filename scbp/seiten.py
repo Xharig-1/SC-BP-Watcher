@@ -137,12 +137,28 @@ def _knopf(fenster, eltern, text, tat, stark=False, gefahr=False):
     rand = ROT if gefahr else (ACCENT if stark else LINIE)
     c = tk.Canvas(eltern, width=breite, height=hoehe, bg=BG,
                   highlightthickness=0, bd=0, cursor='hand2')
+    # ⚠ Erst der Text, dann der Rahmen — und dazwischen wird **nachgemessen**.
+    # `schrift.measure()` sagt, wie breit Tk den Text glaubt; gezeichnet wird
+    # er mit der Schrift, die das System wirklich hergibt. Weichen die ab, ist
+    # die Leinwand zu schmal und schneidet beidseitig ab: Am 29.08.2026 stand
+    # auf einem Knopf „erung speichern" statt „Änderung speichern".
+    # `bbox()` liefert die tatsaechliche Ausdehnung, ohne dass das Fenster
+    # sichtbar sein muss.
+    beschriftung = c.create_text(breite / 2.0, hoehe / 2.0, text=text,
+                                 fill=farbe, font=schrift, anchor='center')
+    kasten = c.bbox(beschriftung)
+    if kasten:
+        noetig = (kasten[2] - kasten[0]) + 30
+        if noetig > breite:
+            breite = noetig
+            c.configure(width=breite)
+            c.coords(beschriftung, breite / 2.0, hoehe / 2.0)
     flaeche = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1, radius=5,
                                fill='#2a1414' if gefahr
                                else ('#1d2a14' if stark else FLAECHE),
                                outline=rand, width=1)
-    beschriftung = c.create_text(breite / 2.0, hoehe / 2.0, text=text,
-                                 fill=farbe, font=schrift, anchor='center')
+    # Der Rahmen ist zuletzt entstanden und laege sonst ueber der Schrift.
+    c.tag_lower(flaeche, beschriftung)
 
     def rein(_=None):
         c.itemconfigure(flaeche, outline=ROT if gefahr else ACCENT)

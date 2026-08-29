@@ -424,6 +424,16 @@ TEXTE = {
     # auf Englisch umstellte, bekam ein englisches Hauptfenster und ein
     # deutsches Overlay. Gemeldet.
     'ov_starte':       ('Starte \u2026', 'Starting \u2026'),
+    # Die Anzeige der laufenden Auftraege. ⚠ „laut Log" steht bewusst dabei:
+    # Geht ein Auftrag durch einen Fehler im Spiel verloren, meldet das Spiel
+    # nichts — der Watcher wuerde ihn weiter fuehren. Also behaupten wir nicht,
+    # dass er laeuft, sondern sagen, woher wir es haben.
+    'ov_auftraege_kopf': ('Laufende Aufträge (laut Log)',
+                          'Active contracts (per log)'),
+    # Wegklicken von Hand, fuer genau den Fall oben — und fuer den, in dem man
+    # ausloggen musste, um einen Fehler loszuwerden.
+    'ov_auftrag_weg':    ('Diesen Auftrag ausblenden',
+                          'Hide this contract'),
     'ov_warte':        ('Warte auf neue Baupl\u00e4ne \u2026',
                         'Waiting for new blueprints \u2026'),
     'ov_as_fehler':    ('Autostart lie\u00df sich nicht \u00e4ndern.',

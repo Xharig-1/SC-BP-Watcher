@@ -69,12 +69,42 @@ import re
 from . import fehler, katalog, pfade
 
 # Der sprachneutrale Schlüssel für „Auftrag angenommen" — in jeder Sprache derselbe.
-INI_SCHLUESSEL = 'mobiGlas_ui_MissionEvent_Activated'
+# Dazu das Teilen in der Gruppe: Wer einen Auftrag geteilt **bekommt**, soll
+# genauso erfahren, dass darin Baupläne stecken.
+#
+# Gemessen an Logs, in denen **beide** Rollen vorkamen — geteilt und
+# geteilt bekommen: Auf jedes „geteilt" folgt eine Annahme. Streng genommen
+# genuegte also die Annahme allein. Das Teilen bleibt trotzdem drin, weil es
+# nichts kostet: Steht der Titel schon in der Liste, bleibt es bei einem
+# Eintrag. Faellt die Annahme in einer kuenftigen Spielfassung einmal weg,
+# steht der Auftrag trotzdem da.
+INI_SCHLUESSEL = ('mobiGlas_ui_MissionEvent_Activated',
+                  'mobiGlas_ui_Mission_Shared')
 
-# Rückfall, falls die `global.ini` nicht vorliegt. Beide an echten Logs gemessen.
+# Und die drei Arten, wie ein Auftrag endet. ⚠ Ohne sie hielte der Watcher
+# jeden Auftrag für ewig offen: Wer zehn hintereinander macht, haette zehn
+# Zeilen stehen, von denen neun erledigt sind.
+#
+# `Deactivate` heisst im Spiel „zurückgezogen" — das ist der Abbruch von Hand.
+INI_ENDE = (
+    'mobiGlas_ui_MissionEvent_Complete',      # abgeschlossen
+    'mobiGlas_ui_MissionEvent_Deactivate',    # zurückgezogen (abgebrochen)
+    'mobiGlas_ui_MissionEvent_Fail',          # fehlgeschlagen
+)
+
+# Rückfall, falls die `global.ini` nicht vorliegt. Beide an echten Logs gemessen
+# (aus echten Log-Sicherungen, 29.08.2026: 701 Annahmen, 303 Abschluesse, 112
+# Ruecknahmen, 57 Fehlschlaege).
 TABELLE = {
-    'de': ['Auftrag angenommen'],
-    'en': ['Contract Accepted'],
+    'de': ['Auftrag angenommen', 'Auftrag geteilt'],
+    'en': ['Contract Accepted', 'Contract Shared'],
+}
+
+# ⚠ „Auftrag geteilt" gehoert NICHT hierher — das ist ein Anfang, kein Ende.
+TABELLE_ENDE = {
+    'de': ['Auftrag abgeschlossen', 'Auftrag zurückgezogen',
+           'Auftrag fehlgeschlagen'],
+    'en': ['Contract Complete', 'Contract Withdrawn', 'Contract Failed'],
 }
 
 # Dieselbe Zeilenform wie bei den Bauplänen — sie ist zu eigen, als dass sie
@@ -132,29 +162,48 @@ def _phrase_kuerzen(wert):
     return _PLATZHALTER_ENDE.sub('', sauber(wert)).strip()
 
 
-def phrasen():
-    """Wie „Auftrag angenommen" in der laufenden Spielsprache heißt.
+def _phrasen_zu(schluessel, rueckfall):
+    """Den Wortlaut zu einem oder mehreren `global.ini`-Schlüsseln holen.
 
     Erst aus der `global.ini` des Spiels — die ist immer richtig, auch in
     Sprachen, die wir nie gesehen haben. Sonst die mitgelieferte Tabelle.
     """
+    schluessel = (schluessel,) if isinstance(schluessel, str) else tuple(schluessel)
+    anfaenge = tuple(s + '=' for s in schluessel)
     gefunden = []
     for pfad in _ini_dateien():
         try:
             with open(pfad, encoding='utf-8', errors='ignore') as f:
                 for zeile in f:
-                    if zeile.startswith(INI_SCHLUESSEL + '='):
+                    # ⚠ Kein `break` nach dem ersten Treffer mehr — es sind
+                    # jetzt mehrere Schlüssel je Datei zu holen.
+                    if zeile.startswith(anfaenge):
                         wert = _phrase_kuerzen(zeile.split('=', 1)[1])
                         if wert and wert not in gefunden:
                             gefunden.append(wert)
-                        break
         except OSError:
             continue
-    for liste in TABELLE.values():
+    for liste in rueckfall.values():
         for p in liste:
             if p not in gefunden:
                 gefunden.append(p)
     return gefunden
+
+
+def phrasen():
+    """Womit ein Auftrag bei mir anfaengt — angenommen oder geteilt bekommen."""
+    return _phrasen_zu(INI_SCHLUESSEL, TABELLE)
+
+
+def ende_phrasen():
+    """Wie die drei Enden heißen — abgeschlossen, zurückgezogen, gescheitert.
+
+    ⚠ Der Watcher braucht sie nicht, um etwas zu melden, sondern um etwas
+    **wegzunehmen**. Ein erledigter Auftrag, der stehen bleibt, ist schlimmer
+    als gar keine Anzeige: Nach einem Abend mit zehn Auftraegen stuende dort
+    eine Liste, von der nichts mehr stimmt.
+    """
+    return _phrasen_zu(INI_ENDE, TABELLE_ENDE)
 
 
 def _ini_dateien():
@@ -177,9 +226,55 @@ def _ini_dateien():
 
 
 def muster():
-    """Das fertige Suchmuster für die Log-Zeile."""
+    """Das fertige Suchmuster für die Log-Zeile — angenommene Auftraege."""
     teile = '|'.join(re.escape(p) for p in phrasen())
     return re.compile(RAHMEN % teile)
+
+
+def ende_muster():
+    """Dasselbe für die drei Enden — abgeschlossen, zurückgezogen, gescheitert.
+
+    Bewusst ein zweites Muster statt eines gemeinsamen mit Gruppen: Die beiden
+    Listen kommen aus verschiedenen Schlüsseln, und ein Fehlgriff hiesse, dass
+    ein abgeschlossener Auftrag als neu angenommen gilt.
+    """
+    teile = '|'.join(re.escape(p) for p in ende_phrasen())
+    return re.compile(RAHMEN % teile)
+
+
+def offene_aus_text(text, muster_an=None, muster_aus=None):
+    """Welche Auftraege laut diesem Log-Text noch offen sind.
+
+    Geht den Text **in seiner Reihenfolge** durch und führt Buch: Eine Annahme
+    legt den Titel ab, ein Ende nimmt ihn wieder weg. Was am Schluss übrig
+    bleibt, lief zu diesem Zeitpunkt noch.
+
+    ⚠ Verglichen wird über `sauber()`, also ohne unsere eingefügten Marken —
+    im Log steht der Titel mit `[SCBPW]…[/SCBPW]` darin, und beim Abschluss
+    kann die Bauplan-Blase eine andere Zahl tragen als bei der Annahme.
+
+    Gibt die Titel in der Reihenfolge der Annahme zurück.
+    """
+    muster_an = muster_an or muster()
+    muster_aus = muster_aus or ende_muster()
+
+    ereignisse = []
+    for m in muster_an.finditer(text):
+        ereignisse.append((m.start(), True, m.group(1)))
+    for m in muster_aus.finditer(text):
+        ereignisse.append((m.start(), False, m.group(1)))
+    ereignisse.sort(key=lambda e: e[0])
+
+    offen = {}
+    for _stelle, ist_annahme, titel in ereignisse:
+        rein = sauber(titel)
+        if not rein:
+            continue
+        if ist_annahme:
+            offen.setdefault(rein, titel)
+        else:
+            offen.pop(rein, None)
+    return list(offen.values())
 
 
 def _index_bauen():

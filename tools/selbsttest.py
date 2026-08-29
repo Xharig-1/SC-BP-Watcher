@@ -1260,6 +1260,9 @@ def main():
             ('scbp/aktualisierung.py', 'hinzugefügt'),
             ('scbp/katalog.py', 'CDS-Rüstung'),
             ('scbp/katalog.py', 'geschütz'),
+            # Wortlaut des SPIELS, mit dem im Log GESUCHT wird — angezeigt
+            # wird er nie. Rueckfall, falls die `global.ini` fehlt.
+            ('scbp/auftraege.py', 'Auftrag zurückgezogen'),
             # Datenfeld der Übersetzungsquellen, nirgends angezeigt (geprüft)
             ('scbp/uebersetzung.py', 'Deutsche Übersetzung (rjcncpt)'),
             ('scbp/uebersetzung.py', 'StarStrings (aufgeräumte englische Texte)'),
@@ -3602,6 +3605,48 @@ def main():
            'englisch: nur unter "# Blueprints" wird angekreuzt')
     pruefe('- Stanton System' in _neu52en and '- Port Olisar' in _neu52en,
            'englisch: Region und Delivery bleiben unangetastet')
+
+    # 52b. Kein Knopf schneidet seine Beschriftung ab
+    #
+    # `_knopf` bemisst die Leinwand mit `schrift.measure()`. Gezeichnet wird
+    # aber mit der Schrift, die das System hergibt — weichen die ab, steht der
+    # Text ueber den Rand und wird beidseitig abgeschnitten. Am 29.08.2026 in
+    # rc7 gemeldet: Auf dem Knopf stand „erung speichern".
+    print()
+    print('52b. Knoepfe schneiden ihre Beschriftung nicht ab')
+    import tkinter as _tk52b
+    from scbp import seiten as _se52b
+    from scbp.hauptfenster import Hauptfenster as _HF52b
+    _w52b = _tk52b.Tk()
+    try:
+        _f52b = _HF52b(_w52b, version='knopfprobe')
+        _w52b.update_idletasks()
+        _lang = [_sp51.TEXTE[k][0] for k in
+                 ('s_lg_speichern', 's_lg_abbrechen', 's_lg_trotzdem',
+                  's_lg_eintragen')]
+        _lang += [_sp51.TEXTE[k][1] for k in
+                  ('s_lg_speichern', 's_lg_trotzdem')]
+        _eng52b = []
+        for _txt in _lang:
+            _k = _se52b._knopf(_f52b, _w52b, _txt, lambda: None)
+            # ⚠ Nur den TEXT messen. `bbox('all')` nimmt den Rahmen mit, und
+            # der ist naturgemaess so breit wie die Leinwand — die Pruefung
+            # schluege dann immer an.
+            _text_ids = [_i for _i in _k.find_all()
+                         if _k.type(_i) == 'text']
+            _kasten = _k.bbox(_text_ids[0]) if _text_ids else None
+            _breit = int(_k['width'])
+            if _kasten and (_kasten[2] - _kasten[0]) > _breit:
+                _eng52b.append('%r braucht %d, hat %d'
+                               % (_txt, _kasten[2] - _kasten[0], _breit))
+            _k.destroy()
+        pruefe(not _eng52b,
+               'jeder Knopf ist breit genug fuer seinen Text (%d zu eng)'
+               % len(_eng52b))
+        for _e in _eng52b[:4]:
+            print('       ·', _e)
+    finally:
+        _w52b.destroy()
 
     # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
     #

@@ -57,7 +57,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.3.0-rc7'
+__version__ = '3.3.0-rc8'
 
 
 def _mitgeliefert(name):
@@ -675,9 +675,15 @@ class Watcher(threading.Thread):
         # aus, meldet `auftraege` einfach nichts — der Bauplan-Weg bleibt heil.
         try:
             self.tail.auftrag_muster = auftraege.muster()
+            self.tail.auftrag_ende_muster = auftraege.ende_muster()
         except Exception as ausnahme:
             fehler.merken('watcher.auftrag_muster', ausnahme)
         self._auftraege_gesehen = set()   # je Programmlauf, gegen Doppelmeldungen
+        # Was gerade laeuft — Titel (ohne unsere Marken) → fertige Zeile.
+        # ⚠ Ein Zustand, keine Verlaufsliste: Beim Abschluss muss der Auftrag
+        # **verschwinden**. Sonst stehen nach zehn Auftraegen am Abend zehn
+        # Zeilen da, von denen neun erledigt sind.
+        self._offene_auftraege = {}
         self.bestand = bestand_datei.laden()   # der eigene, dauerhafte Bestand
         self._neu_einlesen = False            # Auftrag von außen, siehe unten
         self.running = True
@@ -894,6 +900,90 @@ class Watcher(threading.Thread):
             self.q.put(('new', name, art_of(name), meta_of(name) or '',
                         time.strftime('%H:%M:%S'), True))
 
+    def auftrag_wegklicken(self, rein):
+        """Einen Auftrag von Hand aus der Anzeige nehmen.
+
+        ⚠ Es gibt Faelle, die kein Log meldet: Ein Auftrag geht durch einen
+        Fehler im Spiel verloren, oder man muss ausloggen, um einen Fehler
+        loszuwerden — dann ist der Auftrag weg, ohne dass „abgeschlossen" oder
+        „zurückgezogen" im Log stuende. Der Watcher kann das nicht wissen, der
+        Spieler schon. Also darf er es sagen.
+
+        Der Titel bleibt in `_auftraege_gesehen`, damit er nicht beim naechsten
+        Log-Abschnitt wieder auftaucht.
+        """
+        if self._offene_auftraege.pop(rein, None) is not None:
+            self.q.put(('auftraege', list(self._offene_auftraege.items())))
+
+    def _auftrag_zeile(self, titel, rein):
+        """Die fertige Zeile zu einem Auftrag — mit Bauplan-Angabe, wenn möglich.
+
+        ⚠ Kennt der Katalog den Auftrag nicht, bleibt es beim blossen Titel.
+        Der ist keine Zusage, sondern nur der Name, den das Spiel selbst
+        gemeldet hat. Eine erfundene Bauplan-Angabe waere schlimmer als keine.
+        """
+        try:
+            ergebnis = auftraege.pruefen(
+                titel, lambda n: bestand_datei.norm(n) in self.bestand['bauplaene'])
+        except Exception as ausnahme:
+            fehler.merken('watcher.auftraege', ausnahme)
+            return None
+        if ergebnis is None:
+            return None
+        gesamt, fehlend = ergebnis
+        if not fehlend:
+            zusatz = sprache.Satz('auftrag_komplett', gesamt)
+        elif len(fehlend) == 1:
+            zusatz = sprache.Satz('auftrag_fehlt', gesamt, fehlend[0])
+        else:
+            zusatz = sprache.Satz('auftrag_fehlt_mehr', gesamt, len(fehlend),
+                                  ', '.join(fehlend[:2]))
+        return '%s  →  %s' % (sprache.Satz('auftrag_zeile', rein), zusatz)
+
+    def _auftraege_beim_start(self):
+        """Was laut laufendem `Game.log` gerade offen ist.
+
+        Das Spiel meldet nicht nur die Annahme, sondern auch jedes Ende —
+        abgeschlossen, zurückgezogen, fehlgeschlagen. Wer das Log einmal ganz
+        durchgeht und Buch führt, weiss beim Start, was noch laeuft. Vorher war
+        ein Auftrag nach einem Neustart des Watchers einfach weg: Er stand nur
+        als Verlaufszeile da, nicht als Zustand.
+
+        ⚠ **Nur die laufende Log-Datei.** Startet man das Spiel neu, beginnt
+        eine frische; was in den Sicherungen davor steht, kann laengst erledigt
+        sein. Lieber nichts zeigen als etwas Falsches behaupten.
+        """
+        if not getattr(self.tail, 'auftrag_muster', None):
+            return
+        try:
+            pfad = pfade.game_log()
+            if not pfad or not os.path.isfile(pfad):
+                return
+            with open(pfad, 'rb') as f:
+                text = f.read().decode('utf-8', 'ignore')
+        except OSError as ausnahme:
+            fehler.merken('watcher.auftraege_start', ausnahme)
+            return
+
+        try:
+            offen = auftraege.offene_aus_text(
+                text, self.tail.auftrag_muster, self.tail.auftrag_ende_muster)
+        except Exception as ausnahme:
+            fehler.merken('watcher.auftraege_start', ausnahme)
+            return
+
+        for titel in offen:
+            rein = auftraege.sauber(titel)
+            if not rein:
+                continue
+            # Beim Start nicht in die Verlaufsliste melden — das waere ein
+            # Schwall alter Nachrichten. Nur der Stand wird gesetzt.
+            self._auftraege_gesehen.add(rein)
+            self._offene_auftraege[rein] = (self._auftrag_zeile(titel, rein)
+                                            or sprache.Satz('auftrag_zeile', rein))
+        if self._offene_auftraege:
+            self.q.put(('auftraege', list(self._offene_auftraege.items())))
+
     def _auftraege_melden(self):
         """Zu jedem angenommenen Auftrag sagen, ob Bauplaene dabei sind.
 
@@ -904,33 +994,49 @@ class Watcher(threading.Thread):
         falsche Bauplan-Zusage waere schlimmer als gar keine Meldung — und der
         Katalog kennt 353 von deutlich mehr Auftraegen im Spiel.
         """
-        roh = getattr(self.tail, 'auftraege', None)
-        if not roh:
+        roh = getattr(self.tail, 'auftraege', None) or []
+        beendet = getattr(self.tail, 'auftraege_beendet', None) or []
+        if not roh and not beendet:
             return
         self.tail.auftraege = []
+        self.tail.auftraege_beendet = []
+        veraendert = False
+
+        # Zuerst wegnehmen, dann hinzufügen. Wer einen Auftrag abbricht und
+        # sofort neu annimmt, soll ihn danach sehen — nicht andersherum.
+        for titel in beendet:
+            rein = auftraege.sauber(titel)
+            if self._offene_auftraege.pop(rein, None) is not None:
+                veraendert = True
+            # Damit dieselbe Mission spaeter wieder gemeldet wird. Ohne das
+            # bliebe ein wiederholter Auftrag stumm — und genau die macht man
+            # im Spiel reihenweise.
+            self._auftraege_gesehen.discard(rein)
+
         for titel in dict.fromkeys(roh):
             rein = auftraege.sauber(titel)
-            if not rein or rein in self._auftraege_gesehen:
+            if not rein:
+                continue
+            if rein not in self._offene_auftraege:
+                # Der blosse Titel ist noch keine Bauplan-Zusage — den darf
+                # die Anzeige auch dann führen, wenn der Katalog die Mission
+                # nicht kennt. Steht unten ein Ergebnis, wird er ersetzt.
+                self._offene_auftraege[rein] = sprache.Satz('auftrag_zeile', rein)
+                veraendert = True
+            if rein in self._auftraege_gesehen:
                 continue
             self._auftraege_gesehen.add(rein)
-            try:
-                ergebnis = auftraege.pruefen(
-                    titel, lambda n: bestand_datei.norm(n) in self.bestand['bauplaene'])
-            except Exception as ausnahme:
-                fehler.merken('watcher.auftraege', ausnahme)
+            zeile = self._auftrag_zeile(titel, rein)
+            if zeile is None:
                 continue
-            if ergebnis is None:
-                continue
-            gesamt, fehlend = ergebnis
-            if not fehlend:
-                zusatz = sprache.Satz('auftrag_komplett', gesamt)
-            elif len(fehlend) == 1:
-                zusatz = sprache.Satz('auftrag_fehlt', gesamt, fehlend[0])
-            else:
-                zusatz = sprache.Satz('auftrag_fehlt_mehr', gesamt, len(fehlend),
-                                      ', '.join(fehlend[:2]))
-            self.q.put(('hinweis', '%s  →  %s'
-                        % (sprache.Satz('auftrag_zeile', rein), zusatz)))
+            self._offene_auftraege[rein] = zeile
+            veraendert = True
+            self.q.put(('hinweis', zeile))
+
+        if veraendert:
+            # Die Anzeige bekommt den **ganzen** Stand, nicht die Änderung —
+            # dann kann sie nicht auseinanderlaufen.
+            self.q.put(('auftraege', list(self._offene_auftraege.items())))
 
     def _emit(self, key, log_meta=None):
         # log_meta = Kürzel aus dem Log-Zusatz; wird nur genommen, wenn der
@@ -1000,6 +1106,15 @@ class Watcher(threading.Thread):
         # ⚠ Hier erst recht: Wer den Knopf drückt, will das Ergebnis sehen und
         # nicht nur eine Zahl in der Leiste.
         self._nachgelesenes_melden(dazu)
+        # Und den Auftragsstand mitziehen. Wer neu einliest, will einen
+        # sauberen Stand — auch dann, wenn er zwischendurch einen Auftrag von
+        # Hand ausgeblendet hat. Deshalb erst leeren, dann neu aus dem Log
+        # ermitteln: angenommen und danach kein Ende gesehen heisst offen.
+        self._offene_auftraege = {}
+        self._auftraege_beim_start()
+        if not self._offene_auftraege:
+            # Auch die Leere melden, sonst bleibt eine alte Liste stehen.
+            self.q.put(('auftraege', []))
 
     def _nachlese(self):
         """Beim Start die aufgehobenen Logs durchsehen und in den Bestand nehmen.
@@ -1123,6 +1238,10 @@ class Watcher(threading.Thread):
         self.seen = set(bestand_datei.schluessel(self.bestand))
         overlay.NEULESEN_RUECKRUF[0] = self.neu_einlesen_anstossen
         self.tail.new_names()          # Lesestand der Game.log setzen/fortführen
+        # 6) Was laeuft gerade? Das Log weiss es — auch nach einem Neustart
+        #    des Watchers. Nach `new_names()`, damit der Lesestand steht und
+        #    laufende Meldungen nicht doppelt kommen.
+        self._auftraege_beim_start()
         self.q.put(('status', self._statuszeile()))
         while self.running:
             time.sleep(POLL_SEC)
@@ -1505,9 +1624,18 @@ class Overlay:
                                font=self.f_sub, anchor='w')
         self.status.pack(fill='x', padx=8, pady=(4, 2))
 
+        # --- Laufende Auftraege ------------------------------------------
+        # ⚠ Ein Zustand, keine Verlaufszeilen: Was abgeschlossen, abgebrochen
+        # oder gescheitert ist, verschwindet hier wieder. Wer an einem Abend
+        # zehn Auftraege macht, soll nicht zehn tote Zeilen ansehen muessen.
+        # Die Leiste bleibt leer und unsichtbar, solange nichts laeuft.
+        self._auftrag_zeilen = []
+        self.auftragsleiste = tk.Frame(self.root, bg=BG)
+
         # --- Liste (scrollbar) ---
         wrap = tk.Frame(self.root, bg=BG)
         wrap.pack(fill='both', expand=True, padx=6, pady=(0, 6))
+        self._listen_traeger = wrap
         self.canvas = tk.Canvas(wrap, bg=BG, highlightthickness=0)
         # ⚠ Keine tk.Scrollbar: Die reicht Tk an das System durch — unter Linux
         # grau, auf dem Mac hellweiss, und damit der einzige Fleck, der aus dem
@@ -1872,6 +2000,53 @@ class Overlay:
         signalton()
         self._popup_zeigen()
 
+    def auftraege_zeigen(self, paare):
+        """Die laufenden Auftraege setzen — die Leiste zeigt immer den Stand.
+
+        `paare` ist eine Liste aus (Titel ohne Marken, fertige Zeile). Der
+        Titel dient nur als Schluessel fuers Wegklicken.
+        """
+        for w in self.auftragsleiste.winfo_children():
+            w.destroy()
+        self._auftrag_zeilen = []
+
+        if not paare:
+            # Nichts offen? Dann nimmt die Leiste auch keinen Platz weg.
+            self.auftragsleiste.pack_forget()
+            return
+
+        kopf = tk.Label(self.auftragsleiste, text=sprache.t('ov_auftraege_kopf'),
+                        bg=BG, fg=SUB, font=self.f_sub, anchor='w')
+        kopf.pack(fill='x')
+        kopf._quelle = sprache.Satz('ov_auftraege_kopf')
+
+        for rein, zeile in paare:
+            z = tk.Frame(self.auftragsleiste, bg=BG)
+            z.pack(fill='x')
+            lbl = tk.Label(z, text=str(zeile), bg=BG, fg=FG, font=self.f_sub,
+                           anchor='w', justify='left')
+            if sprache.auffrischbar(zeile):
+                lbl._quelle = zeile
+            lbl.pack(side='left', fill='x', expand=True, anchor='w')
+            # Das Kreuz zum Ausblenden. Ein Auftrag kann im Spiel verloren
+            # gehen, ohne dass das Log ein Wort darueber verliert.
+            weg = tk.Label(z, text='\u00d7', bg=BG, fg=SUB, font=self.f_sub,
+                           cursor='hand2')
+            weg.pack(side='right', padx=(6, 2))
+            weg.bind('<Button-1>', lambda _e, r=rein: self._auftrag_ausblenden(r))
+            self._auftrag_zeilen.append(lbl)
+
+        # ⚠ Vor der Liste einordnen, sonst rutscht die Leiste ans Fensterende.
+        self.auftragsleiste.pack(fill='x', padx=8, pady=(0, 2),
+                                 before=self._listen_traeger)
+
+    def _auftrag_ausblenden(self, rein):
+        """Der Spieler nimmt einen Auftrag selbst aus der Anzeige."""
+        try:
+            self.watcher.auftrag_wegklicken(rein)
+        except Exception as ausnahme:
+            fehler.merken('fenster.auftrag_weg', ausnahme)
+
     def add_hinweis(self, text):
         """Eine Zeile, die keine Freischaltung meldet, sondern etwas erklärt —
         derzeit nur: „im Bestand fehlt möglicherweise etwas".
@@ -1964,6 +2139,8 @@ class Overlay:
                     # wird farblich abgesetzt — eine Lücke im Bestand soll
                     # auffallen, aber kein Fenster aufreißen.
                     self.add_hinweis(msg[1])
+                elif msg[0] == 'auftraege':
+                    self.auftraege_zeigen(msg[1])
                 elif msg[0] == 'new':
                     self.add_new(*msg[1:])
                 elif msg[0] == 'catalog':

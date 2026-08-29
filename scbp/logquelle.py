@@ -342,6 +342,11 @@ class LogTail:
         # und der Bauplan-Weg ist der Weg, der nie brechen darf.
         self.auftrag_muster = None
         self.auftraege = []
+        # Und die Gegenstuecke: abgeschlossen, zurueckgezogen, fehlgeschlagen.
+        # ⚠ Ohne sie bliebe jeder Auftrag ewig stehen — nach einem Abend mit
+        # zehn Auftraegen stuende eine Liste da, von der nichts mehr stimmt.
+        self.auftrag_ende_muster = None
+        self.auftraege_beendet = []
 
     def _locate(self):
         p = pfade.game_log()
@@ -411,6 +416,9 @@ class LogTail:
         # Derselbe Textabschnitt, zweiter Blick: angenommene Auftraege.
         self.auftraege = (self.auftrag_muster.findall(text)
                           if self.auftrag_muster else [])
+        # Und ein dritter: was in diesem Abschnitt zu Ende gegangen ist.
+        self.auftraege_beendet = (self.auftrag_ende_muster.findall(text)
+                                  if self.auftrag_ende_muster else [])
         return _namen_aus_text(text, self.muster)
 
 
