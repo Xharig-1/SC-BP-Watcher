@@ -185,15 +185,48 @@ def nach_vorn(fenster, fokus=False):
     Nutzer das Werkzeug gerade selbst gestartet und will hin.
     """
     try:
+        # 1. Der sanfte Weg — reicht unter X11 und den meisten Oberflächen.
         fenster.deiconify()
         fenster.lift()
         fenster.attributes('-topmost', True)
         fenster.after(400, lambda: fenster.attributes('-topmost', False))
         if fokus:
             fenster.focus_force()
+
+        # 2. Wayland lässt das oft ins Leere laufen: Dort entscheidet der
+        #    Compositor, wer vorne steht, und ein Fenster darf sich nicht
+        #    selbst vordrängen. Was er annimmt, ist ein Fenster, das sich
+        #    **neu anmeldet** — also einmal ab- und wieder aufmelden.
+        #
+        #    ⚠ Nur unter Wayland, und nur wenn das Fenster wirklich verdeckt
+        #    ist. Es kostet ein kurzes Flackern; das ist der Preis dafür, dass
+        #    der Klick überhaupt etwas tut. Ohne diesen Schritt blieb nur
+        #    „Programm neu starten", und dazu Xharig-1 am 29.08.2026:
+        #    „nen user findet das nervig und wers nicht nervig findet rafft es
+        #    nicht."
+        if _wayland() and not fenster.focus_displayof():
+            fenster.withdraw()
+            fenster.update_idletasks()
+            fenster.deiconify()
+            fenster.lift()
+            fenster.attributes('-topmost', True)
+            fenster.after(400, lambda: fenster.attributes('-topmost', False))
+            if fokus:
+                fenster.focus_force()
         return True
     except tk.TclError:
         return False                 # ohne Fenstermanager nicht möglich
+
+
+def _wayland():
+    """Läuft die Sitzung unter Wayland?
+
+    Beide Kennzeichen gelten: `WAYLAND_DISPLAY` setzt der Compositor,
+    `XDG_SESSION_TYPE` die Anmeldung. Unter X11 ist keines davon gesetzt —
+    dann bleibt es beim sanften Weg, der dort zuverlässig wirkt.
+    """
+    return bool(os.environ.get('WAYLAND_DISPLAY')
+                or os.environ.get('XDG_SESSION_TYPE') == 'wayland')
 
 
 def regler(eltern, von, bis, wert, beim_ziehen, breite=190, grund=None):

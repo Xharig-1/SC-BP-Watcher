@@ -123,6 +123,48 @@ def _rollflaeche(rahmen, rand=24):
     return innen_ziel
 
 
+def _mass_sichern(c, beschriftung, flaeche, hoehe, fuellung, rand):
+    """Sorgt dafür, dass eine Knopf-Leinwand ihren Text wirklich fasst.
+
+    ⚠ **Einmal beim Bauen zu messen reicht nicht.** `schrift.measure()` sagt,
+    wie breit Tk den Text glaubt; gezeichnet wird er mit der Schrift, die das
+    System hergibt — und unter Wayland steht die erst fest, wenn das Fenster
+    angezeigt wird. Auf einem anderen Rechner stand deshalb „erung speichern" auf
+    einem Knopf, während derselbe Knopf hier sauber aussah.
+
+    Deshalb wird dreimal nachgesehen: sofort, beim ersten `<Configure>` und
+    einmal im Leerlauf. Vergrössert wird nur, wenn es nötig ist — dadurch kommt
+    es zur Ruhe, statt sich gegenseitig neu auszulösen.
+
+    `flaeche` ist eine **Liste** mit der Kennung des Rahmens. Wächst die
+    Leinwand, wird der Rahmen neu gezeichnet, sonst endet er mitten im Wort;
+    die Liste hält die neue Kennung fest, damit die Farbwechsel weiter greifen.
+    """
+    from .hauptfenster import _rundes_rechteck
+
+    def nachmessen(_=None):
+        try:
+            kasten = c.bbox(beschriftung)
+        except tk.TclError:
+            return
+        if not kasten:
+            return
+        noetig = (kasten[2] - kasten[0]) + 30
+        if noetig <= int(c['width']):
+            return
+        c.configure(width=noetig)
+        c.coords(beschriftung, noetig / 2.0, hoehe / 2.0)
+        c.delete(flaeche[0])
+        flaeche[0] = _rundes_rechteck(c, 1, 1, noetig - 1, hoehe - 1, radius=5,
+                                      fill=fuellung, outline=rand, width=1)
+        c.tag_lower(flaeche[0], beschriftung)
+
+    nachmessen()
+    c.bind('<Configure>', nachmessen, add='+')
+    c.after_idle(nachmessen)
+    return nachmessen
+
+
 def _knopf(fenster, eltern, text, tat, stark=False, gefahr=False):
     """Ein Knopf im Stil der Vorschau — Rand, Farbe beim Überfahren."""
     from .hauptfenster import _rundes_rechteck
@@ -146,26 +188,20 @@ def _knopf(fenster, eltern, text, tat, stark=False, gefahr=False):
     # sichtbar sein muss.
     beschriftung = c.create_text(breite / 2.0, hoehe / 2.0, text=text,
                                  fill=farbe, font=schrift, anchor='center')
-    kasten = c.bbox(beschriftung)
-    if kasten:
-        noetig = (kasten[2] - kasten[0]) + 30
-        if noetig > breite:
-            breite = noetig
-            c.configure(width=breite)
-            c.coords(beschriftung, breite / 2.0, hoehe / 2.0)
-    flaeche = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1, radius=5,
-                               fill='#2a1414' if gefahr
-                               else ('#1d2a14' if stark else FLAECHE),
-                               outline=rand, width=1)
-    # Der Rahmen ist zuletzt entstanden und laege sonst ueber der Schrift.
-    c.tag_lower(flaeche, beschriftung)
+    fuellung = ('#2a1414' if gefahr
+                else ('#1d2a14' if stark else FLAECHE))
+    flaeche = [_rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1, radius=5,
+                                fill=fuellung, outline=rand, width=1)]
+    c.tag_lower(flaeche[0], beschriftung)
+
+    _mass_sichern(c, beschriftung, flaeche, hoehe, fuellung, rand)
 
     def rein(_=None):
-        c.itemconfigure(flaeche, outline=ROT if gefahr else ACCENT)
+        c.itemconfigure(flaeche[0], outline=ROT if gefahr else ACCENT)
         c.itemconfigure(beschriftung, fill=ROT if gefahr else ACCENT)
 
     def raus(_=None):
-        c.itemconfigure(flaeche, outline=rand)
+        c.itemconfigure(flaeche[0], outline=rand)
         c.itemconfigure(beschriftung, fill=farbe)
 
     def mitwachsen(_=None):
@@ -210,11 +246,14 @@ def _wahl(fenster, eltern, eintraege, aktiv, tat):
         c = tk.Canvas(reihe, width=breite, height=hoehe, bg=BG,
                       highlightthickness=0, bd=0, cursor='hand2')
         c.pack(side='left', padx=(0, 6))
-        flaeche = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1, radius=5,
-                                   fill=FLAECHE, outline=ACCENT if an else LINIE,
-                                   width=1)
+        flaeche = [_rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1, radius=5,
+                                    fill=FLAECHE, outline=ACCENT if an else LINIE,
+                                    width=1)]
         beschr = c.create_text(breite / 2.0, hoehe / 2.0, text=text,
                                fill=ACCENT if an else SUB, font=schrift)
+        # Dieselbe Falle wie beim gewoehnlichen Knopf — siehe `_nachmessen`.
+        _mass_sichern(c, beschr, flaeche, hoehe, FLAECHE,
+                      ACCENT if an else LINIE)
         c.teile = (flaeche, beschr)
         c.bind('<Button-1>', lambda e, k=kennung: tat(k))
         c.ist_knopf = True      # damit tools/randpruefung.py ihn prüft
@@ -224,7 +263,7 @@ def _wahl(fenster, eltern, eintraege, aktiv, tat):
         for kennung, c in knoepfe.items():
             an = (kennung == gewaehlt)
             flaeche, beschr = c.teile
-            c.itemconfigure(flaeche, outline=ACCENT if an else LINIE)
+            c.itemconfigure(flaeche[0], outline=ACCENT if an else LINIE)
             c.itemconfigure(beschr, fill=ACCENT if an else SUB)
 
     reihe.setzen = setzen

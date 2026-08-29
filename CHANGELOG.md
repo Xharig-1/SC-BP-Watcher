@@ -122,6 +122,29 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠ **Buttons cut off their own labels** — one read "e change" instead of "Save
+  change", and in the overlay the contract line ended mid-word. That is not
+  cosmetic: someone reading half a word goes looking for a bug that does not
+  exist.
+
+  Cause: the surface was sized with `measure()` but drawn with whatever font the
+  system provides — and under **Wayland** that is only settled once the window
+  is shown. Every button now measures itself three times: when built, when first
+  shown, and once when idle. If it grows, its frame grows with it. Applies to
+  all buttons including filter rows. Reported by Xharig-1.
+
+- ⚠ **The overlay could be dragged narrower than its own icon bar**, hiding the
+  bell and the icons on the right. It now has a minimum width derived from that
+  bar, and a too-small saved size is raised on startup. Reported by Xharig-1.
+
+- **The contract line in the overlay wraps instead of being cut off.**
+
+- ⚠ **An open window would not come to the front under Wayland.** Clicking the
+  overlay appeared to do nothing and only restarting helped. Under Wayland a
+  window may not raise itself; what the compositor does accept is a window that
+  **re-registers** itself, and that is what now happens — only under Wayland,
+  and only when the window really is covered. Keyboard focus stays with the game.
+
 - ⚠ **Buttons cut off their own labels.** One button read "e change" instead of
   "Save change". Cause: the surface was sized with `measure()` but drawn with
   whatever font the system actually provides — where those differ, the text

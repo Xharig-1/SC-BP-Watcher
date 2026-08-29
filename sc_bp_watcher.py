@@ -57,7 +57,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.3.0-rc8'
+__version__ = '3.3.0-rc9'
 
 
 def _mitgeliefert(name):
@@ -1434,6 +1434,9 @@ class Overlay:
         # können. 93 % bleibt der Standard, das ist auf zwei Bildschirmen richtig.
         self.root.attributes('-alpha', DECKKRAFT / 100.0)
         self.root.geometry(startlage(self.root))
+        # ⚠ Erst wenn alles gebaut ist, kennt die Kopfleiste ihre Breite —
+        # deshalb ueber `after_idle` und nicht hier direkt.
+        self.root.after_idle(self._mindestgroesse_setzen)
         self._icon_setzen()
         self.count = 0
         self.rows = {}          # normalisierter Name -> Zeilen-Widgets (für die Bestätigung)
@@ -1455,6 +1458,9 @@ class Overlay:
         # ⚠ Die Höhe wächst mit der Schriftgröße mit. Sie stand lange fest auf
         # 26 px — bei „groß" ragten die Symbole dann oben und unten heraus.
         bar = tk.Frame(self.root, bg=BAR, height=zeichen.breite() + 4)
+        # Für die Mindestbreite gemerkt: Schmaler als diese Leiste darf das
+        # Overlay nicht werden, sonst fehlen die Symbole.
+        self.kopf = bar
         bar.pack(fill='x', side='top')
         bar.pack_propagate(False)
         self.bar = bar
@@ -1920,8 +1926,43 @@ class Overlay:
     def _drag_start(self, e): self._dx, self._dy = e.x, e.y
     def _drag_move(self, e):
         self.root.geometry(f'+{self.root.winfo_x()+e.x-self._dx}+{self.root.winfo_y()+e.y-self._dy}')
+    def _mindestgroesse_setzen(self):
+        """Das Overlay darf nicht schmaler werden als seine Symbolleiste.
+
+        Gilt in beide Richtungen: Der Fenstermanager bekommt die Grenze über
+        `minsize()`, und eine gespeicherte Groesse von frueher wird angehoben,
+        falls sie darunter liegt. Sonst startet das Overlay in genau der Groesse
+        wieder, in der die Symbole fehlten.
+        """
+        try:
+            breite = self._mindestbreite()
+            self.root.minsize(breite, 120)
+            if self.root.winfo_width() < breite:
+                self.root.geometry('%dx%d' % (
+                    breite, max(120, self.root.winfo_height())))
+        except Exception as ausnahme:
+            fehler.merken('overlay.mindestgroesse', ausnahme)
+
+    def _mindestbreite(self):
+        """Wie schmal das Overlay hoechstens werden darf.
+
+        ⚠ Nicht raten, sondern die Kopfleiste fragen. Wird das Fenster
+        schmaler, verschwinden die Symbole rechts — und wer sie nicht sieht,
+        sucht einen Fehler, den es nicht gibt. Genau so gemeldet am 29.08.2026:
+        Glocke und die Symbole rechts waren weg.
+
+        Der Zuschlag deckt Rahmen und Innenabstand. Findet sich keine
+        Kopfleiste, bleibt es beim alten Wert.
+        """
+        try:
+            noetig = self.kopf.winfo_reqwidth() + 16
+        except Exception:
+            return 260
+        return max(260, noetig)
+
     def _resize(self, e):
-        w = max(260, self.root.winfo_pointerx() - self.root.winfo_x())
+        w = max(self._mindestbreite(),
+                self.root.winfo_pointerx() - self.root.winfo_x())
         h = max(160, self.root.winfo_pointery() - self.root.winfo_y())
         self.root.geometry(f'{w}x{h}')
 
@@ -2028,6 +2069,10 @@ class Overlay:
             if sprache.auffrischbar(zeile):
                 lbl._quelle = zeile
             lbl.pack(side='left', fill='x', expand=True, anchor='w')
+            # ⚠ In die Umbruchliste. Ohne das steht die Zeile in einer festen
+            # Breite und wird am Fensterrand abgeschnitten — auf einem schmalen
+            # Overlay endete sie mitten in „dir fehlt: H".
+            self._wrap_labels.append(lbl)
             # Das Kreuz zum Ausblenden. Ein Auftrag kann im Spiel verloren
             # gehen, ohne dass das Log ein Wort darueber verliert.
             weg = tk.Label(z, text='\u00d7', bg=BG, fg=SUB, font=self.f_sub,

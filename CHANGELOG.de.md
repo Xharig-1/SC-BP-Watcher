@@ -125,6 +125,33 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠ **Knöpfe schnitten ihre Beschriftung ab** — auf einem Knopf stand „erung
+  speichern" statt „Änderung speichern", und im Overlay endete die Auftragszeile
+  mitten im Wort. Das ist kein Schönheitsfehler: Wer ein halbes Wort liest,
+  sucht einen Fehler, den es nicht gibt. Xharig-1 dazu: *„sonst suchen die User
+  Symbole, die sie selber abgeschnitten haben."*
+
+  Ursache: Die Fläche wurde mit `measure()` bemessen, gezeichnet wird aber mit
+  der Schrift, die das System liefert — und unter **Wayland** steht die erst
+  fest, wenn das Fenster angezeigt wird. Jeder Knopf misst jetzt dreimal nach:
+  beim Bauen, beim ersten Anzeigen und einmal im Leerlauf. Wächst er, wächst
+  der Rahmen mit. Gilt für alle Knöpfe samt Filterreihen. Gemeldet von Xharig-1.
+
+- ⚠ **Das Overlay ließ sich schmaler ziehen als seine eigene Symbolleiste.**
+  Glocke und die Symbole rechts verschwanden einfach. Es hat jetzt eine
+  Mindestbreite, die sich an der Leiste bemisst — und eine zu klein gespeicherte
+  Größe von früher wird beim Start angehoben. Gemeldet von Xharig-1.
+
+- **Die Auftragszeile im Overlay bricht um, statt abgeschnitten zu werden.**
+
+- ⚠ **Ein offenes Fenster kam unter Wayland nicht nach vorn.** Der Klick aufs
+  Overlay schien wirkungslos, und es half nur, das Programm neu zu starten —
+  Xharig-1: *„nen User findet das nervig, und wer's nicht nervig findet, rafft
+  es nicht."* Unter Wayland darf sich ein Fenster nicht selbst vordrängen; was
+  der Compositor annimmt, ist ein Fenster, das sich **neu anmeldet**. Genau das
+  passiert jetzt — aber nur unter Wayland und nur, wenn das Fenster wirklich
+  verdeckt ist. Der Tastaturfokus bleibt dabei beim Spiel.
+
 - ⚠ **Knöpfe schnitten ihre Beschriftung ab.** Auf einem Knopf stand „erung
   speichern" statt „Änderung speichern". Ursache: Die Fläche wurde mit
   `measure()` bemessen, gezeichnet wurde aber mit der Schrift, die das System
