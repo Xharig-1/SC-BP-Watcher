@@ -1580,7 +1580,7 @@ def main():
                    % len(_offen))
 
         # ------------------------------------------------------------------
-        # ⚠ Am 27.08.2026 meldete der Autor, dass bei „sehr gross" die Knoepfe
+        # ⚠ Am 27.08.2026 meldete gemeldet, dass bei „sehr gross" die Knoepfe
         # der Overlay-Wahl abgeschnitten sind. Ein benanntes Tk-Font wirkt
         # sofort auf jeden Text — aber die gezeichneten Rundknoepfe legen ihre
         # Leinwand beim Bauen **einmal** auf `schrift.measure(text)` fest.
@@ -3083,7 +3083,7 @@ def main():
         pruefe(_o44.gemeldet is not None,
                'und der Nutzer erfaehrt, wie er zurueckkommt')
 
-        # ⚠ Zweiter Wunsch von der Autor am selben Tag: „am besten waere das
+        # ⚠ Zweiter Wunsch von Gemeldet am selben Tag: „am besten waere das
         #   gleiche schloss gruen zu faerben was eh in der leiste ist, und es
         #   damit auch wieder zu entsperren."
         #
@@ -3450,6 +3450,92 @@ def main():
         else:
             sys.frozen = _alt_frozen50
         _im50.reload(_as50)
+    print()
+    print('51. Angenommene Auftraege: bringt der etwas, das mir fehlt?')
+    # Der Weg hat vier Glieder (Log -> Phrase -> Missionsschluessel -> Katalog).
+    # Geprueft wird jedes einzeln, damit ein Bruch benannt werden kann statt nur
+    # "meldet nichts". Die Daten werden nachgebaut — auf dem Bau-Rechner gibt es
+    # weder Spiel noch Katalog.
+    import importlib as _im51
+    from scbp import auftraege as _au51
+
+    # a) Die Marken des eigenen Werkzeugs muessen aus dem Titel verschwinden.
+    _faelle51 = [
+        ('Retake Platforms From Nine Tails <EM4>[BP!]</EM4>',
+         'Retake Platforms From Nine Tails'),
+        ('Retake Platforms[SCBPW] <EM4>[BP 4/8]</EM4>[/SCBPW]', 'Retake Platforms'),
+        ('Ganz normaler Titel', 'Ganz normaler Titel'),
+    ]
+    for _roh51, _soll51 in _faelle51:
+        pruefe(_au51.sauber(_roh51) == _soll51, 'Marken entfernt: %s' % _soll51[:34])
+
+    # b) ⚠ Die Phrase kommt aus der global.ini MIT Platzhalter (`... : %s`).
+    #    Bliebe er stehen, passte die Zeile nie — die Funktion waere tot und
+    #    niemand haette es gemerkt.
+    pruefe(_au51._phrase_kuerzen('Auftrag angenommen: %s') == 'Auftrag angenommen',
+           'der Platzhalter am Phrasen-Ende faellt weg')
+
+    # c) Das Suchmuster muss die echte Logzeile treffen — und die Zwischenziele
+    #    in Ruhe lassen. ⚠ Auf Deutsch heissen `MissionEvent_Available` UND
+    #    `ObjectiveEvent_Activated` beide "Neuer Auftrag"; wer darauf hoert,
+    #    meldet bei jedem Etappenziel.
+    _m51 = _au51.muster()
+    _treffer51 = _m51.findall(
+        'Added notification "Auftrag angenommen: Retake Platforms: "\n'
+        'Added notification "Contract Accepted: Data Transfer: "\n')
+    pruefe(_treffer51 == ['Retake Platforms', 'Data Transfer'],
+           'Annahme wird erkannt, deutsch und englisch')
+    pruefe(not _m51.findall('Added notification "Neuer Auftrag: Koerper durchsuchen: "'),
+           'ein Zwischenziel loest NICHTS aus')
+    pruefe(not _m51.findall('Added notification "Auftrag zurueckgezogen: Irgendwas: "'),
+           'ein zurueckgezogener Auftrag loest NICHTS aus')
+
+    # d) Die Auswertung selbst, mit nachgebautem Katalog.
+    _alt51 = _au51._missionen, _au51._index, _au51._muster_index
+    try:
+        _au51._missionen = {'test_title_001': {'bp': ['Alpha BP', 'Beta BP', 'Gamma BP']}}
+        _au51._index = {'testauftrag': 'test_title_001'}
+        _au51._muster_index = []
+        _hat51 = lambda n: n in ('Alpha BP', 'Beta BP')
+        pruefe(_au51.pruefen('Testauftrag', _hat51) == (3, ['Gamma BP']),
+               'meldet Gesamtzahl und was davon fehlt')
+        pruefe(_au51.pruefen('Testauftrag', lambda n: True) == (3, []),
+               'hat man alles, bleibt die Liste leer')
+        pruefe(_au51.pruefen('Voellig unbekannter Auftrag', _hat51) is None,
+               'unbekannter Auftrag: es wird GESCHWIEGEN, nicht geraten')
+        # ⚠ Platzhalter-Titel: 58 von 353 tragen `~mission(...)`, ein woertlicher
+        #    Vergleich scheitert dort. Der Rest muss trotzdem woertlich passen.
+        _au51._index = {}
+        _au51._muster_index = [(__import__('re').compile(r'^High\-Risk Bounty: .+$'),
+                                'test_title_001')]
+        pruefe(_au51.pruefen('High-Risk Bounty: Jemand', _hat51) == (3, ['Gamma BP']),
+               'Platzhalter-Titel werden ueber ein Muster gefunden')
+        pruefe(_au51.pruefen('Low-Risk Bounty: Jemand', _hat51) is None,
+               'und das Muster passt nicht auf einen anderen Auftragstyp')
+    finally:
+        _au51._missionen, _au51._index, _au51._muster_index = _alt51
+
+    # e) Jeder Text der neuen Zeile muss in BEIDEN Sprachen dastehen.
+    from scbp import sprache as _sp51
+    for _k51 in ('auftrag_zeile', 'auftrag_fehlt', 'auftrag_fehlt_mehr',
+                 'auftrag_komplett'):
+        _w51 = _sp51.TEXTE.get(_k51)
+        pruefe(bool(_w51) and len(_w51) == 2 and all(_w51),
+               'Text %s gibt es deutsch und englisch' % _k51)
+
+    # f) Der Log-Leser darf den Bauplan-Weg nicht angetastet haben.
+    from scbp import logquelle as _lq51
+    _tail51 = _lq51.LogTail(_lq51.Lesestand())
+    pruefe(getattr(_tail51, 'auftrag_muster', 'fehlt') is None,
+           'ein frischer LogTail sucht KEINE Auftraege (muss gesetzt werden)')
+    pruefe(_tail51.auftraege == [],
+           'und traegt eine leere Auftragsliste')
+    # ⚠ Der Bauplan-Weg darf sich nicht veraendert haben: `new_names()` liefert
+    #    weiterhin Paare (Name, Zusatz) — mehrere Stellen verlassen sich darauf.
+    pruefe(_lq51.LogTail.new_names.__doc__ and
+           'Name, Zusatz' in _lq51.LogTail.new_names.__doc__,
+           'new_names() liefert unveraendert (Name, Zusatz)')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

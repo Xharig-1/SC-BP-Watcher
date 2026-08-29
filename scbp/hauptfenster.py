@@ -846,7 +846,7 @@ def rundknopf(eltern, text, tat, schrift, grund, fuellung, rand, fg,
     es genau einmal in Textbreite und blieb so. Wer den Knopf mit `fill='x'`
     streckte, bekam ein breiteres Canvas mit einem schmalen Rechteck darin — der
     Knopf sah je nach Textlänge unterschiedlich breit aus, obwohl beide dieselbe
-    Anweisung hatten. Aufgefallen an zwei Knöpfen untereinander (der Autor,
+    Anweisung hatten. Aufgefallen an zwei Knöpfen untereinander (gemeldet,
     26.08.2026): „Discord Button sollte die Gleiche Breite haben wie SC Starten".
 
     `malen` ist eine Funktion `(leinwand, x, mitte, hoehe, farbe)`, die links im
@@ -1250,7 +1250,7 @@ class Hauptfenster:
                  font=self.f_klein).pack(side='left', padx=(6, 0))
 
         # Symbol UND Wort: Ein Symbol allein erklärt sich nur dem, der es gebaut
-        # hat — hier war selbst der Autor unsicher, was `⟳` bedeutet. Genau
+        # hat — hier war selbst der Entwickler unsicher, was `⟳` bedeutet. Genau
         # deshalb steht der Zauberstab jetzt neben dem Wort „Einrichtung
         # starten": ein Verb sagt, dass etwas losgeht; „Einrichtung" allein
         # klang nach einem Ort, an dem man etwas nachschlägt.
@@ -1858,7 +1858,7 @@ def _mitgeliefert(name):
 # einem dunklen Programm ein Fremdkörper: heller Kasten, fremde Schrift — und
 # seine Knöpfe holt er aus Tks eigener Sprachtabelle, die auf vielen
 # Linux-Systemen unvollständig ist. Ergebnis war deutscher Text über den
-# Knöpfen **Yes / No** (der Autor, 28.08.2026). Die Sprache liesse sich über
+# Knöpfen **Yes / No** (gemeldet, 28.08.2026). Die Sprache liesse sich über
 # `msgcat` flicken, das Aussehen nicht: Farben und Breite gibt der Dialog nicht
 # her, und er wird **hoch statt breit** — bei einem längeren Satz eine schmale
 # Säule.

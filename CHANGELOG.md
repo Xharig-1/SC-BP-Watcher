@@ -6,6 +6,38 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.2.0 - 2026-08-29
+
+### Added
+
+- **When you accept a contract, the watcher now tells you whether blueprints are
+  part of it — and which of those you are still missing.** Until now you only
+  found out once the blueprint arrived. It appears in the list the moment you
+  accept:
+
+  ```
+  Contract accepted: Retake Platforms From Nine Tails
+    →  3 blueprints · you are missing: H4-PBF Ammo Carrier
+  ```
+
+  This is deliberately **not** contract management: no list, no tab, no second
+  window. Just a line, like a blueprint find. The tool does not take on a second
+  job — it answers its own question earlier.
+
+  **If the catalogue does not know the contract, it stays quiet.** A wrong
+  promise about blueprints would be worse than no message at all.
+
+  Acceptance is detected through the key `mobiGlas_ui_MissionEvent_Activated`
+  from the game's own files rather than through the wording — in German the
+  **sub-objectives** are also called "Neuer Auftrag", so wording alone would fire
+  at every step. It works the same way if your game runs in English.
+
+### Changed
+
+- **The thanks to testers no longer sit in the readme.** They belong in the
+  changelog and on the "Thanks & Licenses" page inside the tool, where they
+  remain in full.
+
 ## v3.1.0 - 2026-08-29
 
 ### Added

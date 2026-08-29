@@ -3,7 +3,7 @@
 
 **Warum nicht die GitHub-Discord-Anbindung?** Die richtet man in Discord ein und
 sie postet immer denselben Einzeiler: `[Repo] New release published: v3.0.0-rc60`.
-Wer das liest, weiß nicht, ob sich das Laden lohnt. der Autor am 27.08.2026 nach
+Wer das liest, weiß nicht, ob sich das Laden lohnt. Gemeldet am 27.08.2026 nach
 dem Vergleich mit dem StarStrings-Kanal: „finde nur das das hier besser aussieht,
 wäre das bei mir auch machbar mit bissl mehr infos, statt einfach nur dem nakten
 Link?"
@@ -17,7 +17,7 @@ fällt bei einer Vorabfassung ohne eigenen Abschnitt auf die **Grundversion**
 zurück — sinnvoll für die Release-Seite, hier aber falsch: Dann stünde in der
 Meldung zu `rc60` alles, was seit `v3.0.0` je dazukam. Deshalb prüft dieses
 Skript **exakt** auf den Tag und schweigt lieber, als zu viel zu erzählen.
-der Autor: „wichtig ist das da dann wirklich nur das steht was in der version neu
+Gemeldet: „wichtig ist das da dann wirklich nur das steht was in der version neu
 ist."
 
 **Aufruf** (aus dem Bau-Ablauf, `DISCORD_WEBHOOK` als Secret):

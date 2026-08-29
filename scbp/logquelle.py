@@ -333,6 +333,15 @@ class LogTail:
         self.stand = stand or Lesestand()
         self.muster = muster or phrasen.muster()
         self.path, self.offset = None, 0
+        # Zweites Muster fuer angenommene Auftraege (ab v3.2.0). Wird von aussen
+        # gesetzt; ist es None, aendert sich am Verhalten nichts.
+        #
+        # ⚠ Bewusst NICHT ueber den Rueckgabewert von `new_names()`: Den werten
+        # mehrere Stellen aus (Watcher-Faden, Nachlese, Selbsttest). Eine zweite
+        # Sorte Treffer hineinzumischen haette jede davon anfassen muessen —
+        # und der Bauplan-Weg ist der Weg, der nie brechen darf.
+        self.auftrag_muster = None
+        self.auftraege = []
 
     def _locate(self):
         p = pfade.game_log()
@@ -398,7 +407,11 @@ class LogTail:
         self.offset += cut + 1
         self.stand.aktiv_setzen(self.path, self.offset)
         self.stand.speichern()
-        return _namen_aus_text(chunk[:cut].decode('utf-8', 'ignore'), self.muster)
+        text = chunk[:cut].decode('utf-8', 'ignore')
+        # Derselbe Textabschnitt, zweiter Blick: angenommene Auftraege.
+        self.auftraege = (self.auftrag_muster.findall(text)
+                          if self.auftrag_muster else [])
+        return _namen_aus_text(text, self.muster)
 
 
 if __name__ == '__main__':

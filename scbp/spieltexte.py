@@ -202,7 +202,7 @@ def holen(sprache='english', spielordner=None, fortschritt=None,
     erst hier. Genau deshalb steht der Eintrag jetzt in dieser Funktion und
     nicht bei den Aufrufern: Dort stand er zweimal, in `assistent.py` und in
     `einstellungsfenster.py`, und ein dritter Weg hätte ihn vergessen.
-    (Hinweis von der Autor, 27.08.2026: „auch da ist dann die user cfg wieder
+    (Hinweis von gemeldet, 27.08.2026: „auch da ist dann die user cfg wieder
     mit wichtig, sonst kann man das nie ohne eine übersetzung nutzen.")
 
     `sprache_eintragen=False` lässt die `user.cfg` in Ruhe — für Werkzeuge,

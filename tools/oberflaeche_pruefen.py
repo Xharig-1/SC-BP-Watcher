@@ -7,7 +7,7 @@ Tupelpaar in einer Schleife oder in einem Wörterbuch, ist sie für eine
 Quelltext-Prüfung unsichtbar. Genau so blieben die Filterknöpfe auf „Was ist neu"
 (*Alles · Neu · Verbessert · Behoben*) monatelang auch in der englischen
 Oberfläche deutsch — direkt neben einem sauber übersetzten Änderungstext.
-Aufgefallen ist es erst auf einem Bildschirmfoto (der Autor, 27.08.2026).
+Aufgefallen ist es erst auf einem Bildschirmfoto (gemeldet, 27.08.2026).
 
 **Der andere Weg.** Nicht den Code fragen, sondern das fertige Fenster: Sprache
 auf Englisch stellen, alle Seiten aufbauen, jeden sichtbaren Text einsammeln —

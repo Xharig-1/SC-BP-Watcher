@@ -22,6 +22,7 @@ Four things are deliberate and will stay that way:
 | ✅ | **Catch-up**: earlier play sessions are read on start |
 | ✅ | **Blueprint list** to look up, filter and tick off, with progress |
 | ✅ | **Where each blueprint drops** — faction, contract, required standing, payout |
+| ✅ | **When you accept a contract**: does it carry blueprints, and which are you missing? |
 | ✅ | Catalogue watch: reports what becomes **newly craftable** in the game, plus a watchlist |
 | ✅ | **New in game** filter plus a patch dropdown: see what each patch added |
 | ✅ | **Server status**: a tab of its own with CIG's live status, refreshing itself |

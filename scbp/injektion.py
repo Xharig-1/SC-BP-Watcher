@@ -371,7 +371,7 @@ def _titel_zusatz(eintrag, habe, worte):
     Textschlüssel über ihre Stufen hinweg. „3 von 12" hieß damit in Wahrheit
     „3 von 12, die irgendjemand irgendwo bekommen kann".
 
-    der Autor, nachdem die Meldungen kamen: „die zählung war meine idee und ich
+    gemeldet, nachdem die Meldungen kamen: „die zählung war meine idee und ich
     fand sie gut, bis die fehlermeldungen kamen — nun weiß ich, sie ist Schrott
     und eh nicht wahr." Ein schlichtes `[BP]` sagt, was stimmt: Hier gibt es
     Baupläne. Was man davon hat, sagen die Kästchen in der Liste.

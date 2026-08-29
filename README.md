@@ -393,16 +393,14 @@ The values for type, size, grade and class as well as the origin of each bluepri
 
 > The watcher **does not ship this data**; it fetches it on your machine directly from scmdb.net, the way a browser would. scmdb is licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/); a bundled copy would be redistribution and would conflict with that licence as well as with this project's GPL. Fetching is sparing: only when a **new game version** is out.
 
-And thanks to **Haldjas** from **pr0**: he pointed out that an overlay permanently in the way, catching mouse clicks, hurts more than it helps in combat. Two things came out of his suggestion that would not exist otherwise — the overlay can now **pop up only when a blueprint arrives**, and mouse clicks can be **passed through to the game**. Both live under *Display*. He later pointed out that passing clicks through needs a button that stays put — which is why the lock now sits permanently in the bar. Good call, well spotted. 🙏
-
 The interface symbols come from the **[Lucide](https://lucide.dev)** set (ISC licence) — all drawn on the same grid with the same stroke width, which is why they look identical on Windows, Linux and macOS. **Thanks** to the Lucide community! 🙏 The licence text ships with the tool (`assets/symbole/LIZENZ.txt`) and is shown under **Thanks & Licenses**.
 
 SC BP Watcher is an independent, unofficial companion tool with **no** official connection to the SC Deutsch Launcher or Cloud Imperium Games. All brand and project names belong to their respective owners.
 
 ## Author
 
-[![Xharig](https://github.com/der Autor.png?size=40)](https://github.com/der Autor)
-**Xharig** — [github.com/der Autor](https://github.com/der Autor)
+[![Xharig](https://github.com/Xharig-1.png?size=40)](https://github.com/Xharig-1)
+**Xharig** — [github.com/Xharig-1](https://github.com/Xharig-1)
 
 If you fork this project, please keep the credit in the footer or mention the original source.
 

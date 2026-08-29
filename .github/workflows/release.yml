@@ -1,7 +1,7 @@
 # Baut bei jedem Versions-Tag die fertigen Dateien und haengt sie an ein Release.
 #
 # Warum das hier laeuft und nicht auf dem Entwicklungsrechner:
-#   * Niemand soll etwas selbst bauen muessen — weder die Nutzer noch der Autor.
+#   * Niemand soll etwas selbst bauen muessen — weder die Nutzer noch der Entwickler.
 #   * Die .exe braucht Windows, das AppImage braucht Linux. Kein Rechner hat beides.
 #   * Frueher hing die veroeffentlichte .exe vier Versionen hinter dem Code, weil
 #     "Tag pushen" und "Release anlegen" zwei verschiedene Dinge sind. Jetzt ist es
@@ -263,7 +263,7 @@ jobs:
           prerelease: ${{ steps.art.outputs.vorab }}
           body_path: release-text.md
           # ⚠ Die nackte `SC-BP-Watcher.exe` wird NICHT mehr angehängt
-          # (Entscheidung der Autor, 27.08.2026: „ich will die exe ohne install
+          # (bewusste Entscheidung, 27.08.2026: „ich will die exe ohne install
           # loswerden … nun wollen wir es funktionierend und einfach").
           #
           # Sie war seinerzeit dazu da, Vertrauen aufzubauen — ein unsigniertes

@@ -44,7 +44,8 @@ from tkinter import font as tkfont
 from scbp import sprache
 from scbp import zeichen
 from scbp import fehler
-from scbp import (ablagesymbol, aktualisierung, assistent, autostart,
+from scbp import (
+    auftraege,ablagesymbol, aktualisierung, assistent, autostart,
                   bildschirm, overlay,
                   bestand as bestand_datei, bestandsfenster as bestandsfenster_modul,
                   einstellungsfenster, hinweis, injektion,
@@ -56,7 +57,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.1.0'
+__version__ = '3.2.0'
 
 
 def _mitgeliefert(name):
@@ -670,6 +671,13 @@ class Watcher(threading.Thread):
         self.seen = set()       # schon angezeigte Namen (normalisiert) — gegen Dubletten
         self.stand = logquelle.Lesestand()
         self.tail = logquelle.LogTail(self.stand)
+        # Zweites Muster: angenommene Auftraege (ab v3.2.0). Faellt der Katalog
+        # aus, meldet `auftraege` einfach nichts — der Bauplan-Weg bleibt heil.
+        try:
+            self.tail.auftrag_muster = auftraege.muster()
+        except Exception as ausnahme:
+            fehler.merken('watcher.auftrag_muster', ausnahme)
+        self._auftraege_gesehen = set()   # je Programmlauf, gegen Doppelmeldungen
         self.bestand = bestand_datei.laden()   # der eigene, dauerhafte Bestand
         self._neu_einlesen = False            # Auftrag von außen, siehe unten
         self.running = True
@@ -885,6 +893,44 @@ class Watcher(threading.Thread):
         for name in namen:
             self.q.put(('new', name, art_of(name), meta_of(name) or '',
                         time.strftime('%H:%M:%S'), True))
+
+    def _auftraege_melden(self):
+        """Zu jedem angenommenen Auftrag sagen, ob Bauplaene dabei sind.
+
+        Die eine Frage des Werkzeugs, nur frueher beantwortet: nicht erst wenn
+        der Bauplan kommt, sondern schon beim Annehmen.
+
+        ⚠ Kennt der Katalog den Auftrag nicht, wird **geschwiegen**. Eine
+        falsche Bauplan-Zusage waere schlimmer als gar keine Meldung — und der
+        Katalog kennt 353 von deutlich mehr Auftraegen im Spiel.
+        """
+        roh = getattr(self.tail, 'auftraege', None)
+        if not roh:
+            return
+        self.tail.auftraege = []
+        for titel in dict.fromkeys(roh):
+            rein = auftraege.sauber(titel)
+            if not rein or rein in self._auftraege_gesehen:
+                continue
+            self._auftraege_gesehen.add(rein)
+            try:
+                ergebnis = auftraege.pruefen(
+                    titel, lambda n: bestand_datei.norm(n) in self.bestand['bauplaene'])
+            except Exception as ausnahme:
+                fehler.merken('watcher.auftraege', ausnahme)
+                continue
+            if ergebnis is None:
+                continue
+            gesamt, fehlend = ergebnis
+            if not fehlend:
+                zusatz = sprache.Satz('auftrag_komplett', gesamt)
+            elif len(fehlend) == 1:
+                zusatz = sprache.Satz('auftrag_fehlt', gesamt, fehlend[0])
+            else:
+                zusatz = sprache.Satz('auftrag_fehlt_mehr', gesamt, len(fehlend),
+                                      ', '.join(fehlend[:2]))
+            self.q.put(('hinweis', '%s  →  %s'
+                        % (sprache.Satz('auftrag_zeile', rein), zusatz)))
 
     def _emit(self, key, log_meta=None):
         # log_meta = Kürzel aus dem Log-Zusatz; wird nur genommen, wenn der
@@ -1106,6 +1152,11 @@ class Watcher(threading.Thread):
                 self._merkliste_erledigen(name)
             if geaendert:
                 bestand_datei.speichern(self.bestand)
+
+            # 1b) Angenommene Auftraege: bringt der etwas, das noch fehlt?
+            #     Bewusst NACH den Bauplaenen — ein frisch erhaltener Bauplan
+            #     soll schon im Bestand stehen, wenn der Auftrag geprueft wird.
+            self._auftraege_melden()
 
             # 2) Launcher-Datei: bestätigt die Funde und meldet nach, was im Log
             #    fehlte. Gibt es keinen Launcher, entfällt dieser Schritt still.

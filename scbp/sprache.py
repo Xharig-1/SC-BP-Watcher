@@ -283,6 +283,15 @@ TEXTE = {
     's_be_neu_kein':     ('Dafür muss der Watcher laufen.',
                           'The watcher needs to be running for this.'),
     'nachlese_marke':    ('nachgelesen', 'caught up'),
+    # Angenommener Auftrag (ab v3.2.0) — die Zeile im Overlay.
+    'auftrag_zeile':     ('Auftrag angenommen: %s',
+                          'Contract accepted: %s'),
+    'auftrag_fehlt':     ('%d Baupläne · dir fehlt: %s',
+                          '%d blueprints · you are missing: %s'),
+    'auftrag_fehlt_mehr': ('%d Baupläne · dir fehlen %d, darunter: %s',
+                          '%d blueprints · you are missing %d, among them: %s'),
+    'auftrag_komplett':  ('%d Baupläne · hast du alle',
+                          '%d blueprints · you have them all'),
     'nachgelesen':       ('Nachgelesen: %d Baupläne aus %d früheren Sitzungen '
                           'übernommen.',
                           'Caught up: %d blueprints from %d earlier sessions.'),
@@ -959,7 +968,7 @@ TEXTE = {
     # ⚠ „Jetzt nachsehen" sagte nicht, wonach. Und „Aktualisieren" waere
     # falsch: Der Knopf **prueft** nur, er holt nichts. Der
     # SC-Deutsch-Launcher loest dasselbe mit „SCDL auf Aktualitaet
-    # pruefen" — Vorbild uebernommen (der Autor, 26.08.2026).
+    # pruefen" — Vorbild uebernommen (gemeldet, 26.08.2026).
     'hf_kofi':         ('Kaffee spendieren', 'Buy me a coffee'),
     'hf_kofi_auf':     ('Ko-fi wird im Browser geöffnet …',
                         'Opening Ko-fi in your browser …'),

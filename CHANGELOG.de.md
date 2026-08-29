@@ -6,6 +6,37 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.2.0 - 2026-08-29
+
+### Neu
+
+- **Der Watcher sagt dir beim Annehmen eines Auftrags, ob Baupläne dabei sind —
+  und welche dir davon noch fehlen.** Bisher erfuhrst du es erst, wenn der
+  Bauplan kam. Jetzt steht es in der Liste, sobald du den Auftrag annimmst:
+
+  ```
+  Auftrag angenommen: Retake Platforms From Nine Tails
+    →  3 Baupläne · dir fehlt: H4-PBF Ammo Carrier
+  ```
+
+  Es ist bewusst **keine Auftragsverwaltung**: keine Liste, kein Reiter, kein
+  zweites Fenster. Eine Zeile wie bei einem Bauplanfund auch. Das Werkzeug
+  bekommt keine zweite Aufgabe — es beantwortet seine eigene früher.
+
+  **Kennt der Katalog den Auftrag nicht, wird geschwiegen.** Eine falsche
+  Bauplan-Zusage wäre schlimmer als gar keine Meldung.
+
+  Erkannt wird die Annahme über den Schlüssel `mobiGlas_ui_MissionEvent_Activated`
+  aus der Spieldatei, nicht über den Wortlaut — auf Deutsch heißen sonst auch die
+  **Zwischenziele** „Neuer Auftrag", und die Meldung käme bei jedem Etappenziel.
+  Läuft dein Spiel auf Englisch, funktioniert es genauso.
+
+### Geändert
+
+- **Der Dank an die Tester steht nicht mehr in der Anleitung.** Er gehört in das
+  Änderungsprotokoll und auf die Seite „Danke & Lizenzen" im Programm — dort ist
+  er weiterhin vollständig.
+
 ## v3.1.0 - 2026-08-29
 
 ### Neu
@@ -2179,7 +2210,7 @@ selbst geführt, und zu den meisten Bauplänen steht dabei, woher man sie bekomm
 - **Fertige Dateien für beide Systeme, gebaut von GitHub.** Ein Versions-Tag löst den Bau aus: ein Windows-Rechner baut die `.exe`, ein Linux-Rechner das AppImage, beide werden ans Release gehängt — samt Beschreibung aus dem CHANGELOG, damit im Werkzeug unter „Was ist neu" dasselbe steht wie auf GitHub.
   - Das AppImage wird **in einem Ubuntu-22.04-Container** gebaut (glibc 2.35). Auf neuerem glibc gebaut, würde es auf verbreiteten Systemen gar nicht erst starten.
   - Der Bau bricht ab, wenn Tag und `__version__` nicht zusammenpassen. Wer „v2.0.0" lädt, soll im Fenster nicht etwas anderes lesen.
-  - Niemand baut mehr selbst — weder die Nutzer noch der Autor.
+  - Niemand baut mehr selbst — weder die Nutzer noch der Entwickler.
 - **Neue Versionen werden gemeldet und lassen sich nachlesen** (`scbp/aktualisierung.py`, `scbp/versionsfenster.py`). Das Werkzeug sieht höchstens einmal am Tag nach; gibt es etwas Neues, färbt sich ⓘ in der Titelleiste. Dahinter liegt die Versionsgeschichte — **auch für ältere Versionen**, damit man nachlesen kann, was man übersprungen hat.
   - Geladen wird ausschließlich von `github.com`; eine Datei von woanders wird abgelehnt.
   - Unter Linux ersetzt sich das AppImage selbst, unter Windows übernimmt ein Hilfsskript nach dem Beenden (eine laufende `.exe` kann sich nicht selbst überschreiben). Wer aus dem Quellcode startet, bekommt keinen Selbstersatz angeboten — dort ist `git pull` der richtige Weg.
