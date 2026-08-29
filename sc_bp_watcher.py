@@ -44,6 +44,7 @@ from tkinter import font as tkfont
 from scbp import sprache
 from scbp import zeichen
 from scbp import fehler
+from scbp import hinweis
 from scbp import (
     auftraege,ablagesymbol, aktualisierung, assistent, autostart,
                   bildschirm, overlay,
@@ -57,7 +58,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.3.0-rc24'
+__version__ = '3.3.0-rc25'
 
 
 def _mitgeliefert(name):
@@ -177,6 +178,9 @@ SETTINGS_FILE = pfade.app_datei('watcher.json')
 # Xharig-Grün für dunklen Grund. Bis v1.5.0 stand hier noch #47aa42 — die alte
 # Markenfarbe von vor dem Logo-Wechsel. Zwei Grüntöne im selben Programm gehen nicht.
 BG, FG, ACCENT, SUB, BAR = '#10141c', '#e6edf3', '#9ce430', '#8b98a5', '#1b2230'
+# Für das Verbotszeichen an einer Auftragszeile — dieselbe Warnfarbe wie im
+# Hauptfenster, damit „hier wird etwas weggenommen" überall gleich aussieht.
+ROT = '#e05555'
 PROV = '#d8a03a'        # Gelb für „vorläufig" (aus der Game.log, noch nicht vom Launcher bestätigt)
 CATA = '#4aa3d8'        # Blau für „neu im Spiel craftbar" (Katalog-Zuwachs, kein eigener Fund)
 
@@ -1685,7 +1689,14 @@ class Overlay:
         # eingeklappt, hat sie keine Höhe, und mit ihr ist er weg. Kein Timing,
         # keine Sonderbehandlung. Ein Zustand, der sich aus dem Aufbau ergibt,
         # ist verlässlicher als einer, den man nachträglich herstellt.
-        self.grip = tk.Label(wrap, text='◢', bg=BG, fg=SUB,
+        # ⚠ Größer und in der Akzentfarbe. In Grau und Schriftgröße war er
+        # kaum zu finden — „der Anfasser zum Größerziehen ist nicht mehr da
+        # oder nicht mehr zu sehen" (29.08.2026). Er ist der einzige Weg, das
+        # Overlay in der Größe zu ändern; wer ihn nicht sieht, hält die Größe
+        # für fest.
+        self.grip = tk.Label(wrap, text='◢', bg=BG, fg=ACCENT,
+                             font=(self.f_sub.actual('family'),
+                                   self.f_sub.actual('size') + 4),
                              cursor=sicherer_cursor(CURSOR_GROESSE))
         self.grip.place(relx=1.0, rely=1.0, anchor='se')
         self.grip.bind('<B1-Motion>', self._resize)
@@ -2086,12 +2097,18 @@ class Overlay:
             # Breite und wird am Fensterrand abgeschnitten — auf einem schmalen
             # Overlay endete sie mitten in „dir fehlt: H".
             self._wrap_labels.append(lbl)
-            # Das Kreuz zum Ausblenden. Ein Auftrag kann im Spiel verloren
-            # gehen, ohne dass das Log ein Wort darueber verliert.
-            weg = tk.Label(z, text='\u00d7', bg=BG, fg=SUB, font=self.f_sub,
-                           cursor='hand2')
-            weg.pack(side='right', padx=(6, 2))
+            # Zum Ausblenden. Ein Auftrag kann im Spiel verloren gehen, ohne
+            # dass das Log ein Wort darüber verliert — dann nimmt man ihn hier
+            # selbst heraus.
+            # ⚠ Das Symbol kommt aus dem festgelegten Satz (`zeichen.py`,
+            # Lucide `ban`) — nichts wird hier selbst gemalt. Genau das war der
+            # Grund der Umstellung auf Bilder: gemalte und getippte Zeichen
+            # sahen unterschiedlich aus und auf jedem System wieder anders.
+            weg = zeichen.zeile(z, 'ausblenden', farbe=zeichen.ROT, grund=BG,
+                                schrift=self.f_sub)
+            weg.pack(side='right', padx=(8, 2))
             weg.bind('<Button-1>', lambda _e, r=rein: self._auftrag_ausblenden(r))
+            hinweis.anhaengen(weg, lambda: sprache.t('ov_auftrag_weg'))
             self._auftrag_zeilen.append(lbl)
 
         # ⚠ Vor der Liste einordnen, sonst rutscht die Leiste ans Fensterende.

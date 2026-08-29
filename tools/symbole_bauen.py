@@ -144,6 +144,11 @@ KNOPF_SYMBOLE = {
                                          # Ein Mülleimer verspricht Vernichtung
                                          # und schreckt vom Klicken ab.
     'schliessen':   'x',
+    # ⚠ Für „diesen Auftrag ausblenden" — **nicht** `x`. Das Kreuz steht im
+    # Programm für „Fenster schliessen"; hier wird eine einzelne Zeile
+    # weggenommen. Der durchgestrichene Kreis sagt „gilt nicht mehr", und er
+    # ist deutlich zu sehen: „nen Blinder findet das sonst nicht mehr."
+    'ausblenden':   'ban',
     # Klicks werden ins Spiel durchgereicht (zu) oder abgefangen (offen). Das
     # Schloss bleibt als einziges Element klickbar — sonst käme man aus dem
     # durchlässigen Zustand nur heraus, indem man aus dem Spiel heraustabbt.
@@ -207,6 +212,9 @@ ZEILEN_SYMBOLE = {
     # Liste. Fehlte die kleine Version, blieb dort eine leere Lücke statt
     # eines Kreuzes; gemeldet von am 27.08.2026 gemeldet.
     'schliessen':   'x',
+    # Steht ebenfalls in beiden Tabellen: Im Overlay sitzt es in einer Zeile
+    # (klein), im grossen Fenster koennte es als Knopf gebraucht werden.
+    'ausblenden':   'ban',
 }
 
 # Alles zusammen, mit dem passenden Größensatz.

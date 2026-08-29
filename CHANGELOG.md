@@ -52,6 +52,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The overlay's resize grip was hard to spot** — a grey character at text
+  size. It is now larger and in the accent colour.
+
+- **The dismiss control on a contract line is now a crossed-out circle**, red
+  and clearly larger. A cross means "close the window" everywhere else in the
+  program; removing a single line is a different thing.
+
 - ⚠⚠ **The overlay said 405 blueprints, the progress page 382 of 738.** Two
   numbers for the same thing, and neither explained the other.
 

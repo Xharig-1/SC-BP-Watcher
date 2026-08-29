@@ -75,6 +75,15 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Der Ziehgriff des Overlays war kaum zu finden.** Er stand als graues Zeichen
+  in Schriftgrösse unten rechts. Jetzt grösser und in der Akzentfarbe — er ist
+  der einzige Weg, das Overlay in der Grösse zu ändern.
+
+- **Das Kreuz zum Ausblenden eines Auftrags ist ein durchgestrichener Kreis
+  geworden**, rot und deutlich grösser. Das Kreuz steht im Programm für
+  „Fenster schliessen"; hier wird eine einzelne Zeile weggenommen, und das
+  sagt der durchgestrichene Kreis besser.
+
 - ⚠⚠ **Das Overlay meldete 405 Baupläne, der Fortschritt 382 von 738.** Zwei
   Zahlen für dasselbe, und keine erklärte die andere.
 

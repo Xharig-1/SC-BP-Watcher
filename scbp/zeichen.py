@@ -249,10 +249,11 @@ KNOPF_NAMEN = (
     'leeren', 'schliessen', 'ziehgriff', 'fortschritt', 'anzeige',
     'auftragstexte', 'bestand', 'wasistneu', 'ueber', 'serverstatus', 'ordner',
     'erkennung', 'diagnose', 'einrichtung', 'neustart', 'herunterladen',
-    'zurueck',
+    'zurueck', 'ausblenden',
 )
 ZEILEN_NAMEN = (
     'bestaetigt', 'vorlaeufig', 'punkt', 'gemerkt', 'haken', 'offen',
     'standard', 'aufklappen', 'zuklappen', 'hinweiszeile', 'kaffee',
+    'ausblenden',
 )
 ALLE = KNOPF_NAMEN + ZEILEN_NAMEN
