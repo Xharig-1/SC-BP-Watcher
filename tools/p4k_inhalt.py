@@ -45,14 +45,13 @@ import struct
 import sys
 from collections import Counter, defaultdict
 
-# Dieselbe Suche wie in extract_global_ini.py — die Windows-Platte ist unter
-# Linux eingehaengt, das Wine-Praefix ist der Regelfall seit dem Umstieg.
+# Dieselbe Suche wie in extract_global_ini.py. Wer das Spiel woanders liegen
+# hat — zweites System, eingehaengte Fremdplatte — setzt SC_INSTALL_DIR.
+# ⚠ Hier stehen KEINE persoenlichen Pfade: Das Repo ist oeffentlich.
 SC_DIRS = [
     os.environ.get('SC_INSTALL_DIR'),
     os.path.expanduser('~/Games/star-citizen/drive_c/Program Files/'
                        'Roberts Space Industries/StarCitizen/LIVE'),
-    '/run/media/xharig/Windows (2TB SSD)/Program Files/'
-    'Roberts Space Industries/StarCitizen/LIVE',
     r'C:\Program Files\Roberts Space Industries\StarCitizen\LIVE',
 ]
 

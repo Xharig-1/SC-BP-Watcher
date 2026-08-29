@@ -18,9 +18,29 @@ os.environ['SC_BP_HOME'] = heim
 os.environ['SC_BP_NO_NET'] = '1'
 from scbp import injektion, bestand as bestand_datei
 
-ECHT = ("/home/xharig/Games/star-citizen/drive_c/Program Files/"
-        "Roberts Space Industries/StarCitizen/LIVE/data/Localization/"
-        "german_(germany)/global.ini")
+# ⚠ Kein fester Pfad: Der Spielordner liegt bei jedem woanders, und ein
+# Heimverzeichnis im Quelltext ist eine persoenliche Angabe im oeffentlichen
+# Repo (Projektregel "Keine persoenlichen Daten"). Ueber SC_INSTALL_DIR
+# setzbar, sonst werden die ueblichen Orte der Reihe nach probiert.
+def _global_ini():
+    kandidaten = []
+    eigen = os.environ.get("SC_INSTALL_DIR")
+    if eigen:
+        kandidaten.append(eigen)
+    kandidaten += [
+        os.path.expanduser("~/Games/star-citizen/drive_c/Program Files/"
+                           "Roberts Space Industries/StarCitizen/LIVE"),
+        r"C:\Program Files\Roberts Space Industries\StarCitizen\LIVE",
+    ]
+    for basis in kandidaten:
+        pfad = os.path.join(basis, "data", "Localization",
+                            "german_(germany)", "global.ini")
+        if os.path.exists(pfad):
+            return pfad
+    raise SystemExit("global.ini nicht gefunden — SC_INSTALL_DIR setzen.")
+
+
+ECHT = _global_ini()
 arbeit = os.path.join(heim, 'global.ini')
 
 # Der aktuelle Stand hat noch die ALTEN Marken -> erst sauber machen
@@ -28,7 +48,7 @@ shutil.copyfile(ECHT, arbeit)
 print('Kopie angelegt:', os.path.getsize(arbeit) // 1024, 'KB')
 print('Marken vorher :', sum(1 for z in open(arbeit, encoding='utf-8', errors='ignore') if '[SCBPW]' in z))
 
-# Bestand aus die des Autors: echter Ablage holen, damit die Haken stimmen
+# Den echten Bestand des laufenden Systems holen, damit die Haken stimmen
 import json
 bestand = json.load(open(os.path.expanduser('~/Dokumente/SC BP Watcher/Bauplaene/bestand.json'), encoding='utf-8'))
 
