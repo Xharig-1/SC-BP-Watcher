@@ -10,6 +10,63 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Neu
 
+- ⭐⭐ **Zwei Ebenen statt einer langen Liste — Oberkategorie und Unterart.**
+  Die Art-Auswahl hatte dreissig Einträge: „Rüstung (Arme)", „Rüstung (Beine)",
+  „Rüstung (Torso)", „Helm", „Rucksack", „Kleidung (Jacke)" … Wer eine ganze
+  Rüstung zusammenstellt, sucht sich darin einen Wolf.
+
+  Jetzt gibt es **sieben Gruppen** — Schiffswaffen, Schiffsmodule,
+  Schiffswerkzeuge, FPS-Waffen, Ausrüstung, Rüstung, Kleidung — und darunter
+  die feinen Arten:
+
+  | Gruppe | Unterarten |
+  |---|---|
+  | Schiffswaffen (87) | Laserkanone 22 · Laser-Repeater 15 · Ballistische Kanone 13 · Ballistische Gatling 9 · Scattergun 6 · Mass Driver 4 · je 3 Distortion, Neutron, Tachyon |
+  | Rüstung (303) | Helm 84 · Torso 70 · Arme 69 · Beine 69 · Unteranzug 11 |
+  | FPS-Waffen (89) | Pistole 20 · Gewehr 18 · Schrotflinte 15 · MP 12 · Scharfschütze 11 · LMG 8 |
+  | Schiffsmodule (157) | Kühler 45 · Generator 44 · Schild 37 · Radar 18 · Quantenantrieb 13 |
+  | Ausrüstung (52) | Magazin 34 · Rucksack 15 · Behälter 3 |
+
+  > **Was sich nicht bündeln lässt, bleibt allein stehen** — Andockkragen,
+  > Frachtmodul und die übrigen Einzelgänger verschwinden nicht in einem
+  > Sammeltopf, sie stehen unter den Gruppen.
+
+  **Die Gliederung ist nicht erfunden:** Sie folgt der Liste, die Xharig-1 seit
+  Monaten von Hand in seiner Vault pflegt. Gegengeprüft — die Zahlen decken
+  sich mit ihr, Bauplan für Bauplan.
+
+  **Bauplan-Liste und Herstellung teilen sich dieselbe Einteilung.** Es sind
+  dieselben Baupläne, also muss man auf dieselbe Art suchen können; beide
+  Seiten fragen dasselbe Modul, damit es keine zwei Wahrheiten gibt.
+
+  Die feinen Waffenarten stehen in keinem Datenfeld — sie stecken im Tag der
+  Rezeptdaten (`BP_CRAFT_APAR_BallisticGatling_S4`), so wie im Vault-Skript.
+
+- **Das Unterart-Feld sagt jetzt, dass es eines ist.** Statt „Alle Unterarten"
+  steht dort „12 Unterarten — hier verfeinern", sobald es etwas zu holen gibt:
+  *„niemand hat es auf Anhieb gefunden, erst nach Erklärung."*
+
+- **Eigene Beobachtungen lassen sich abwählen** — jede Zeile hat ein ×.
+  Wechselt die Staffel ein Rüstungsteil, wirft man die Beobachtung wieder raus.
+
+- ⚠ **Wird ein beobachtetes Teil im Spiel verfügbar, siehst du es jetzt auch.**
+  Der Filter „beobachtet" prüfte nur angeklickte Namen — ein Treffer auf ein
+  Suchmuster blieb unsichtbar. Man beobachtete etwas und erfuhr nicht, dass es
+  da ist. Jetzt erscheint es als ganz normale Zeile, mit Info-Zeichen,
+  Abgabeort und Ruf. Im vorliegenden Bestand trifft das bereits auf zwei zu:
+  `FBL-8u Undersuit SecondWind` und `Warden Backpack Purgatory Camo`.
+
+### Behoben
+
+- ⚠ **Auf „Fehler melden" standen die fünf Knöpfe untereinander.** Die
+  Mindestbreite des Fensters war 1100 px, die Knopfreihe braucht auf Deutsch
+  aber 869 px zuzüglich Seitenleiste und Rändern. Jetzt sind es 1160 px, und
+  die Reihe steht nebeneinander. Gemeldet von Xharig-1.
+
+- **Die Rüstungsrolle ist wieder raus** (Kampf, Technik, Tarnung). Sie war als
+  Filter angeboten, aber: *„danach sucht laut Rückmeldung niemand."* Bei
+  Rüstung zählen die Körperteile.
+
 - ⭐ **Filter nach Unterart — endlich sieht man, welche Waffe was ist.** In der
   Bauplan-Liste stand unter „Schiffswaffen" alles zusammen: *„ich weiß grad
   nicht, welche Ballistik sind, welche Laser, welche Repeater oder Cannon."*

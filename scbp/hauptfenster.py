@@ -82,7 +82,12 @@ ROT     = '#e05252'
 # Rücksicht auf kleine Laptop-Bildschirme braucht es nicht: Wer Star Citizen
 # spielt, sitzt nicht an einem 1366×768-Gerät. Ein Fenster, das sich nicht beliebig
 # klein ziehen lässt, macht weniger Ärger als abgeschnittene Knöpfe.
-MIN_BREITE, MIN_HOEHE = 1100, 760
+# ⚠ **1160, nicht 1100.** Die Knopfreihe auf „Fehler melden" braucht auf
+# Deutsch 869 px (fünf Knöpfe, gemessen 29.08.2026); dazu die Seitenleiste mit
+# 210 und rund 60 für Ränder und Rollleiste. Bei 1100 brach sie um und die
+# Knöpfe standen untereinander — Xharig-1: „das sieht schrecklich aus."
+# Englisch käme mit 710 aus; massgeblich ist die längere Sprache.
+MIN_BREITE, MIN_HOEHE = 1160, 760
 
 # Startbreite der Seitenleiste. Auch sie ist nur eine Untergrenze: Wie breit
 # „Angaben im Spiel" oder das englische „In-game details" wirklich wird, hängt

@@ -128,6 +128,24 @@ def entfernen(name, daten=None):
     return daten
 
 
+def eintrag_entfernen(titel, daten=None):
+    """Eine **eigene Beobachtung** herausnehmen — über ihren Titel.
+
+    ⚠ Nicht dasselbe wie `entfernen()`. Das nimmt einen Bauplan-Namen heraus
+    und wirft dabei jede Muster-Beobachtung mit weg, die auf ihn passt. Hier
+    geht es um die Beobachtung selbst: „Mamba-Staffelrüstung: Helm" abwählen,
+    weil die Staffel ein anderes Teil nimmt — die Baupläne, die das Muster
+    zufällig trifft, gehen niemanden etwas an.
+
+    Gibt die geänderten Daten zurück (noch nicht gespeichert).
+    """
+    daten = daten or laden()
+    gesucht = (titel or '').strip().lower()
+    daten['eintraege'] = [e for e in daten['eintraege']
+                          if (e.get('titel') or '').strip().lower() != gesucht]
+    return daten
+
+
 def umschalten(name):
     """Klick im Fenster: rein oder raus. Gibt zurück, ob er jetzt drin ist."""
     daten = laden()

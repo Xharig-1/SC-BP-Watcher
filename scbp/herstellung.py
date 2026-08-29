@@ -366,6 +366,33 @@ def unterartname(wert):
     return _uebersetzt('sub', wert)
 
 
+_roh_gemerkt = {'stand': None, 'daten': None}
+
+
+def rezept_roh(name):
+    """Der unveränderte Rezept-Eintrag zu einem Namen — oder `None`.
+
+    Gebraucht für die Einordnung: Dort zählt der **Tag**
+    (`BP_CRAFT_APAR_BallisticGatling_S4`), und den gibt `rezept()` nicht heraus,
+    weil er für die Anzeige nichts taugt.
+
+    Wird als Verzeichnis gemerkt — 738 Baupläne einzeln durch eine Liste mit
+    1607 Einträgen zu suchen wäre bei jedem Filterklick eine halbe Million
+    Vergleiche.
+    """
+    daten = laden()
+    kennung = id(daten)
+    if _roh_gemerkt['stand'] != kennung:
+        verzeichnis = {}
+        for b in daten.get('blueprints') or []:
+            n_ = b.get('productName') or _name_aus_tag(b.get('tag'))
+            if n_:
+                verzeichnis.setdefault(_schluessel(n_), b)
+        _roh_gemerkt['stand'] = kennung
+        _roh_gemerkt['daten'] = verzeichnis
+    return _roh_gemerkt['daten'].get(_schluessel(name))
+
+
 def unterart_von(name):
     """Die Unterart eines Bauplans — `ballistic`, `laser`, `combat` … oder ''."""
     return einordnung().get(_schluessel(name), ('', ''))[1]

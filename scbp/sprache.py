@@ -1308,6 +1308,10 @@ TEXTE = {
     # hinterlegt waren. Am 29.08.2026 gemeldet.
     'merk_eigene':      ('Eigene Beobachtungen', 'Your own watches'),
     'merk_wartet':      ('wartet auf: %s', 'waiting for: %s'),
+    # ⚠ Abwaehlen muss gehen. Eine Beobachtung, die man nur anlegen, aber nicht
+    # loswerden kann, wird zur Altlast: „falls wir die doch auswechseln, dann
+    # muss ich die abwählen können." (29.08.2026)
+    'merk_eigene_weg':  ('Diese Beobachtung entfernen', 'Remove this watch'),
     'merk_eigene_h':    ('Diese stehen in keinem Katalog — der Watcher hält '
                          'nach den Suchmustern Ausschau, sobald etwas im Spiel '
                          'freigeschaltet wird.',
@@ -1315,6 +1319,13 @@ TEXTE = {
                          'for the search patterns whenever something is '
                          'unlocked in the game.'),
     'ff_alle_unterarten': ('Alle Unterarten', 'All subtypes'),
+    # ⚠ Das leere Feld sagt, dass es etwas zu holen gibt — sonst findet es
+    # niemand: „man muss irgendwie sichtbar machen, dass man die Unterarten
+    # auswählen kann, niemand hat es auf Anhieb gefunden, erst nach Erklärung."
+    # (29.08.2026) Ein Feld mit „Alle Unterarten" sieht aus wie eine Anzeige;
+    # eines mit „12 Unterarten ▾" wie eine Einladung.
+    'ff_unterart_waehlen': ('%d Unterarten — hier verfeinern',
+                            '%d subtypes — refine here'),
     'ff_alle_rollen':   ('Alle Rüstungsrollen', 'All armour roles'),
     'ff_alle_hersteller': ('Alle Hersteller', 'All manufacturers'),
     # Anzeigenamen der Rezept-Arten und Unterarten. ⚠ Gehoeren hierher,
@@ -1364,6 +1375,67 @@ TEXTE = {
     'he_sub_heavy': ('Schwer', 'Heavy'),
     'he_sub_light': ('Leicht', 'Light'),
     'he_sub_medium': ('Mittel', 'Medium'),
+    # --- Zwei Ebenen: Oberkategorie und Unterart ---------------------------
+    # ⚠ Die Gliederung folgt einer erprobten Vergleichsliste, die
+    # seit Monaten von Hand pflegt. Was sich dort bewaehrt hat, erfindet das
+    # Werkzeug nicht neu.
+    'kat_ober_schiffswaffe':    ('Schiffswaffen', 'Ship weapons'),
+    'kat_ober_schiffsmodul':    ('Schiffsmodule', 'Ship modules'),
+    'kat_ober_schiffswerkzeug': ('Schiffswerkzeuge', 'Ship tools'),
+    'kat_ober_fpswaffe':        ('FPS-Waffen', 'FPS weapons'),
+    'kat_ober_ausruestung':     ('Ausrüstung', 'Gear'),
+    'kat_ober_ruestung':        ('Rüstung', 'Armour'),
+    'kat_ober_kleidung':        ('Kleidung', 'Clothing'),
+    'kat_ober_sonstiges':       ('Sonstiges', 'Other'),
+    # Schiffswaffen
+    'kat_unter_ballistic_cannon':   ('Ballistische Kanone', 'Ballistic cannon'),
+    'kat_unter_ballistic_gatling':  ('Ballistische Gatling', 'Ballistic gatling'),
+    'kat_unter_ballistic_repeater': ('Ballistischer Repeater', 'Ballistic repeater'),
+    'kat_unter_laser_cannon':       ('Laserkanone', 'Laser cannon'),
+    'kat_unter_laser_repeater':     ('Laser-Repeater', 'Laser repeater'),
+    'kat_unter_dist_cannon':        ('Distortion-Kanone', 'Distortion cannon'),
+    'kat_unter_dist_repeater':      ('Distortion-Repeater', 'Distortion repeater'),
+    'kat_unter_neutron_cannon':     ('Neutronenkanone', 'Neutron cannon'),
+    'kat_unter_neutron_repeater':   ('Neutronen-Repeater', 'Neutron repeater'),
+    'kat_unter_tachyon_cannon':     ('Tachyonenkanone', 'Tachyon cannon'),
+    'kat_unter_scatter_gun':        ('Scattergun', 'Scattergun'),
+    'kat_unter_mass_driver':        ('Mass Driver', 'Mass driver'),
+    # Schiffswerkzeuge
+    'kat_unter_mining_laser':     ('Bergbaulaser', 'Mining laser'),
+    'kat_unter_salvage_modifier': ('Salvage-Modifikator', 'Salvage modifier'),
+    'kat_unter_salvage_head':     ('Salvage-Kopf', 'Salvage head'),
+    'kat_unter_tractor_beam':     ('Traktorstrahl', 'Tractor beam'),
+    'kat_unter_andockkragen':     ('Andockkragen', 'Docking collar'),
+    'kat_unter_fuelnozzle':       ('Betankungsdüse', 'Fuel nozzle'),
+    'kat_unter_frachtmodul':      ('Frachtmodul', 'Cargo module'),
+    # Schiffsmodule
+    'kat_unter_cooler':       ('Kühler', 'Cooler'),
+    'kat_unter_powerplant':   ('Generator', 'Power plant'),
+    'kat_unter_quantumdrive': ('Quantenantrieb', 'Quantum drive'),
+    'kat_unter_schild':       ('Schild', 'Shield'),
+    'kat_unter_radar':        ('Radar', 'Radar'),
+    # FPS-Waffen
+    'kat_unter_pistole':      ('Pistole', 'Pistol'),
+    'kat_unter_gewehr':       ('Gewehr', 'Rifle'),
+    'kat_unter_sniper':       ('Scharfschützengewehr', 'Sniper rifle'),
+    'kat_unter_smg':          ('Maschinenpistole', 'SMG'),
+    'kat_unter_schrotflinte': ('Schrotflinte', 'Shotgun'),
+    'kat_unter_lmg':          ('Leichtes MG', 'LMG'),
+    # Ausruestung
+    'kat_unter_magazin':   ('Magazin', 'Magazine'),
+    'kat_unter_munition':  ('Munition', 'Ammunition'),
+    'kat_unter_rucksack':  ('Rucksack', 'Backpack'),
+    'kat_unter_aufsatz':   ('Waffenaufsatz', 'Weapon attachment'),
+    'kat_unter_behaelter': ('Behälter', 'Container'),
+    # Ruestung und Kleidung
+    'kat_unter_helm':        ('Helm', 'Helmet'),
+    'kat_unter_torso':       ('Torso', 'Torso'),
+    'kat_unter_arme':        ('Arme', 'Arms'),
+    'kat_unter_beine':       ('Beine', 'Legs'),
+    'kat_unter_unteranzug':  ('Unteranzug', 'Undersuit'),
+    'kat_unter_oberkoerper': ('Oberkörper', 'Torso'),
+    'kat_unter_jacke':       ('Jacke', 'Jacket'),
+    'kat_unter_schuhe':      ('Schuhe', 'Shoes'),
     's_bg_alle_erze':    ('Alle Rohstoffe', 'All materials'),
     's_bg_alle_orte':    ('Alle Orte', 'All locations'),
     'ff_alle_zustaende': ('Bauplan: alle', 'Blueprint: all'),

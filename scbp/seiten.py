@@ -3610,22 +3610,71 @@ def _herstellung(fenster, rahmen):
     # Tag im Feld, ohne dass jemand etwas nachträgt.
     wahl = {'art': '', 'unterart': '', 'hersteller': '', 'zustand': ''}
 
+    # ⚠⚠ **Dieselbe Gliederung wie in der Bauplan-Liste.** Xharig-1:
+    # „BP und Herstellung sind ja die gleichen BP, also muss man auf die
+    # gleiche Art suchen." Beide Seiten fragen dasselbe Modul — wer hier eine
+    # eigene Einteilung baute, hätte zwei Wahrheiten über dieselben Daten.
+    from . import kategorien as kat_modul
+    from . import katalog as kat_daten
+
+    _kat_arten = {}
+    try:
+        for _k, _v in (kat_daten.laden().get('bauplaene') or {}).items():
+            _kat_arten[herst_modul._schluessel(_v.get('n') or '')] = _v.get('a') or ''
+    except Exception as ausnahme:
+        fehler.merken('seiten.herstellung.katalog', ausnahme)
+
+    _kat_merker = {}
+
+    def _kategorie(e):
+        name = e.get('basis') or e.get('name') or ''
+        if name in _kat_merker:
+            return _kat_merker[name]
+        b = herst_modul.rezept_roh(name) or {}
+        wert = kat_modul.einordnen(
+            art=_kat_arten.get(herst_modul._schluessel(name), ''),
+            tag=b.get('tag') or '',
+            unterart=e.get('unterart') or '',
+            rezeptart=e.get('art') or '')
+        _kat_merker[name] = wert
+        return wert
+
     def _werte(feld):
         return sorted({(e.get(feld) or '') for e in eintraege} - {''},
                       key=str.lower)
 
-    def _unterarten_zur_art(art):
-        """Nur die Unterarten, die es in dieser Art wirklich gibt.
+    def _oberkategorien():
+        """Die Oberkategorien mit Anzahl — Gruppen zuerst, Einzelgänger danach."""
+        zaehler = {}
+        for e in eintraege:
+            o, _u = _kategorie(e)
+            if o:
+                zaehler[o] = zaehler.get(o, 0) + 1
+        raus = []
+        for o, n in zaehler.items():
+            name = kat_modul.obername(o)
+            if not kat_modul.ist_gruppe(o):
+                name = kat_daten.art_lesbar(kat_modul.rohe_art(o)) or name
+            raus.append((o, '%s (%d)' % (name, n), kat_modul.ist_gruppe(o), name))
+        raus.sort(key=lambda p: (not p[2], p[3].lower()))
+        return [(o, b) for o, b, _g, _n in raus]
 
-        Ohne die Einschränkung stünden bei „Kühler" die Waffenarten mit im
-        Feld — und wer sie wählt, bekommt eine leere Liste ohne zu wissen,
-        warum."""
-        # ⚠ `size1`, `size2` … sind die Grösse, keine Unterart — und die
-        # steht im Katalog ohnehin als eigenes Merkmal.
-        return sorted({(e.get('unterart') or '') for e in eintraege
-                       if (not art or (e.get('art') or '') == art)
-                       and not (e.get('unterart') or '').lower().startswith('size')}
-                      - {''}, key=str.lower)
+    def _unterarten_zur_art(ober):
+        """Nur die Unterarten der gewählten Oberkategorie.
+
+        Ohne die Einschränkung stünde „Laserkanone" neben „Helm" neben
+        „Magazin" — wieder die lange Liste, die zwei Ebenen gerade abschaffen."""
+        if not ober:
+            return []
+        zaehler = {}
+        for e in eintraege:
+            o, u = _kategorie(e)
+            if o != ober or not u:
+                continue
+            zaehler[u] = zaehler.get(u, 0) + 1
+        return [(u, '%s (%d)' % (kat_modul.untername(u), n))
+                for u, n in sorted(zaehler.items(),
+                                   key=lambda q: kat_modul.untername(q[0]).lower())]
 
     filter_rahmen = tk.Frame(innen, bg=BG)
     filter_rahmen.pack(fill='x')
@@ -3634,14 +3683,13 @@ def _herstellung(fenster, rahmen):
         for w in filter_rahmen.winfo_children():
             w.destroy()
         unterarten = _unterarten_zur_art(wahl['art'])
-        # Bei Rüstung ist die Unterart die **Rolle** — dann heisst das Feld auch so.
-        unter_text = (t('ff_alle_rollen') if wahl['art'] == 'armour'
+        # Das leere Feld nennt die Zahl — sonst findet niemand, dass es hier
+        # weitergeht.
+        unter_text = (t('ff_unterart_waehlen') % len(unterarten) if unterarten
                       else t('ff_alle_unterarten'))
         felder = [
-            ('art', t('ff_alle_arten'),
-             [(a_, herst_modul.artname(a_)) for a_ in _werte('art')]),
-            ('unterart', unter_text,
-             [(u, herst_modul.unterartname(u)) for u in unterarten]),
+            ('art', t('ff_alle_arten'), _oberkategorien()),
+            ('unterart', unter_text, unterarten),
             ('hersteller', t('ff_alle_hersteller'),
              [(h_, h_) for h_ in _werte('hersteller')]),
             ('zustand', t('ff_alle_zustaende'),
@@ -3668,10 +3716,12 @@ def _herstellung(fenster, rahmen):
     offen = {'name': None}
 
     def passt(e):
-        if wahl['art'] and (e.get('art') or '') != wahl['art']:
-            return False
-        if wahl['unterart'] and (e.get('unterart') or '') != wahl['unterart']:
-            return False
+        if wahl['art'] or wahl['unterart']:
+            ober, unter = _kategorie(e)
+            if wahl['art'] and ober != wahl['art']:
+                return False
+            if wahl['unterart'] and unter != wahl['unterart']:
+                return False
         if wahl['hersteller'] and (e.get('hersteller') or '') != wahl['hersteller']:
             return False
         # ⚠ `habe` kann None sein („unklar", drei mehrdeutige Namen). Unklares

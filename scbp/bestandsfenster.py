@@ -507,6 +507,61 @@ class Bestandsfenster:
                 werte.add(wert)
         return sorted(werte, key=lambda x: str(x).lower())
 
+    def _kategorie(self, eintrag):
+        """Ober- und Unterkategorie eines Bauplans — `(ober, unter)`.
+
+        ⚠ Einmal je Bauplan berechnet und gemerkt. Die Zuordnung fragt die
+        Rezeptdaten (2 MB) nach dem Tag; das bei jedem Filterklick für 738
+        Baupläne zu tun wäre dieselbe Falle wie beim Qualitätsregler.
+        """
+        name = eintrag.get('n') or ''
+        merker = getattr(self, '_kat_merker', None)
+        if merker is None:
+            merker = self._kat_merker = {}
+        if name in merker:
+            return merker[name]
+        try:
+            from . import kategorien as kat_modul, herstellung as herst
+            b = herst.rezept_roh(name) or {}
+            wert = kat_modul.einordnen(art=eintrag.get('a') or '',
+                                       tag=b.get('tag') or '',
+                                       unterart=b.get('subtype') or '',
+                                       rezeptart=b.get('type') or '')
+        except Exception:
+            wert = ('', '')
+        merker[name] = wert
+        return wert
+
+    def _oberkategorien(self):
+        """Die Oberkategorien fürs Auswahlfeld — mit Anzahl.
+
+        ⚠ **Zwei Ebenen statt dreissig Einträgen.** Vorher standen hier
+        „Rüstung (Arme)", „Rüstung (Beine)", „Rüstung (Torso)", „Helm",
+        „Rucksack" … als je eigener Eintrag. Wer eine ganze Rüstung
+        zusammenstellt, sucht sich darin einen Wolf. Die Gliederung folgt der
+        Vault-Liste, die Xharig-1 seit Monaten von Hand pflegt.
+
+        Was sich nicht bündeln lässt, bleibt als eigener Eintrag stehen —
+        „nur was man nicht bündeln kann, sollte noch alleine stehen bleiben."
+        """
+        from . import kategorien as kat_modul
+        zaehler = {}
+        for e in (self.katalog.get('bauplaene') or {}).values():
+            ober, _u = self._kategorie(e)
+            if ober:
+                zaehler[ober] = zaehler.get(ober, 0) + 1
+        eintraege = []
+        for ober, n in zaehler.items():
+            name = kat_modul.obername(ober)
+            if not kat_modul.ist_gruppe(ober):
+                # Einzelgänger: den gewohnten Katalognamen zeigen.
+                name = katalog_modul.art_lesbar(kat_modul.rohe_art(ober)) or name
+            eintraege.append((ober, '%s (%d)' % (name, n),
+                              kat_modul.ist_gruppe(ober), name))
+        # Gruppen zuerst, danach die Einzelgänger — beides alphabetisch.
+        eintraege.sort(key=lambda p: (not p[2], p[3].lower()))
+        return [(o, b) for o, b, _g, _n in eintraege]
+
     def _arten(self):
         """Die Arten für das Auswahlfeld — zusammengehörende nur einmal.
 
@@ -667,15 +722,34 @@ class Bestandsfenster:
         for e in eintraege:
             z = tk.Frame(self.inhalt, bg=FLAECHE)
             z.pack(fill='x', pady=2)
-            tk.Label(z, text=e.get('titel') or '?', bg=FLAECHE, fg=FG,
-                     font=schrift(10), anchor='w').pack(fill='x', padx=10,
-                                                        pady=(6, 0))
+            kopfzeile = tk.Frame(z, bg=FLAECHE)
+            kopfzeile.pack(fill='x', padx=10, pady=(6, 0))
+            tk.Label(kopfzeile, text=e.get('titel') or '?', bg=FLAECHE, fg=FG,
+                     font=schrift(10), anchor='w').pack(side='left', fill='x',
+                                                        expand=True)
+            # ⚠ Abwählen muss gehen — sonst wird jede Beobachtung zur Altlast.
+            weg = tk.Label(kopfzeile, text='\u00d7', bg=FLAECHE, fg=SUB,
+                           font=schrift(11), cursor='hand2')
+            weg.pack(side='right')
+            hinweis.anhaengen(weg, lambda: t('merk_eigene_weg'))
+            weg.bind('<Enter>', lambda _e, l=weg: l.configure(fg='#e05555'))
+            weg.bind('<Leave>', lambda _e, l=weg: l.configure(fg=SUB))
+            weg.bind('<Button-1>',
+                     lambda _e, titel=(e.get('titel') or ''): self._eigene_weg(titel))
             muster = ', '.join(e.get('muster') or [])
             if muster:
                 tk.Label(z, text=t('merk_wartet') % muster, bg=FLAECHE, fg=SUB,
                          font=schrift(9), anchor='w', justify='left',
                          wraplength=540).pack(fill='x', padx=10, pady=(0, 6))
         tk.Frame(self.inhalt, bg=BG, height=10).pack(fill='x')
+
+    def _eigene_weg(self, titel):
+        """Eine eigene Beobachtung abwählen."""
+        try:
+            merk.speichern(merk.eintrag_entfernen(titel))
+        except Exception as ausnahme:
+            fehler.merken('bestandsfenster.eigene_weg', ausnahme)
+        self._zeichnen(nach_oben=False)
 
     def _treffer_zeigen(self, gruppen):
         """Rechts die Zahl, links „zurücksetzen" — beides nur, wenn es zählt.
@@ -711,8 +785,11 @@ class Bestandsfenster:
         zwei Dinge: `f:` eine Fraktion, die den Bauplan auslobt, `t:` einen
         Belohnungstopf (XenoThreat und Verwandte).
         """
-        if self.fein.get('unterart'):
-            if self._unterart_von(e) != self.fein['unterart']:
+        if self.fein.get('art') or self.fein.get('unterart'):
+            ober, unter = self._kategorie(e)
+            if self.fein.get('art') and ober != self.fein['art']:
+                return False
+            if self.fein.get('unterart') and unter != self.fein['unterart']:
                 return False
         if self.fein['klasse'] and e.get('c') != self.fein['klasse']:
             return False
@@ -763,9 +840,7 @@ class Bestandsfenster:
         self.fein_felder = {}
         # Die Zahl hinter jedem Eintrag sagt, was einen erwartet — und erklärt
         # eine Null, statt sie rätselhaft zu lassen.
-        feld('art', [('', t('ff_alle_arten'))]
-             + self._mit_zahl(self._arten(),
-                              self._anzahl_je('a', katalog_modul.art_kennung)))
+        feld('art', [('', t('ff_alle_arten'))] + self._oberkategorien())
         # ⭐ Unterart — genau das, was in der langen Waffenliste fehlte:
         # „ich weiß grad nicht, welche Ballistik sind, welche Laser, welche
         # Repeater oder Cannon" (29.08.2026). Der Katalog kennt nur
@@ -775,8 +850,13 @@ class Bestandsfenster:
         # ⚠ Das Feld erscheint nur, wenn die gewählte Art wirklich Unterarten
         # hat. Bei Kühlern gäbe es nichts zu wählen, und ein leeres Feld lässt
         # einen suchen, was es filtern soll.
-        feld('unterart', [('', self._unterart_beschriftung())]
-             + self._unterarten())
+        _unter = self._unterarten()
+        # ⚠ Das leere Feld nennt die Zahl. Ein Feld, das „Alle Unterarten"
+        # sagt, sieht aus wie eine Anzeige — eines, das „12 Unterarten — hier
+        # verfeinern" sagt, wie eine Einladung. Genau daran hat es gefehlt.
+        feld('unterart',
+             [('', t('ff_unterart_waehlen') % len(_unter) if _unter
+                   else self._unterart_beschriftung())] + _unter)
         feld('klasse', [('', t('ff_alle_klassen'))]
              + self._mit_zahl(self._klassen(), self._anzahl_je('c')))
         feld('groesse', [('', t('ff_alle_groessen'))]
@@ -808,38 +888,37 @@ class Bestandsfenster:
             return ''
 
     def _unterart_beschriftung(self):
-        """Bei Rüstung heisst die Unterart **Rolle** — dann sagt das Feld das."""
-        if (self.fein.get('art') or '').startswith('Char_Armor'):
-            return t('ff_alle_rollen')
+        """Was im leeren Unterart-Feld steht.
+
+        ⚠ Die **Rüstungsrolle** (Kampf, Technik, Tarnung) stand hier kurz als
+        eigene Auswahl — sie ist wieder raus: „das mit den Rollen war ne gute
+        Idee, aber danach sucht laut Rückmeldung niemand" (29.08.2026). Bei
+        Rüstung zählen die Körperteile.
+        """
         return t('ff_alle_unterarten')
 
     def _unterarten(self):
-        """Die Unterarten, die es in der gewählten Art gibt — mit Anzahl.
+        """Die Unterarten **der gewählten Oberkategorie** — mit Anzahl.
 
-        Ohne gewählte Art bleibt die Liste leer: Alle Unterarten aller Arten
-        durcheinander („ballistic" neben „combat" neben „size2") wäre eine
-        Liste, aus der niemand etwas findet — genau das Problem, das dieses
-        Feld lösen soll.
+        ⚠ Ohne gewählte Oberkategorie bleibt die Liste leer. Alle Unterarten
+        durcheinander („Laserkanone" neben „Helm" neben „Magazin") wäre wieder
+        die lange Liste, die dieses Feld gerade abschaffen soll: „wichtig ist,
+        dass man nur die Unterarten passend zur Überkategorie zur Auswahl hat,
+        sonst suchen die Leute sich wieder nen Wolf" (29.08.2026).
         """
-        art = self.fein.get('art') or ''
-        if not art:
-            return []
-        try:
-            from . import herstellung as herst
-        except Exception:
+        from . import kategorien as kat_modul
+        ober = self.fein.get('art') or ''
+        if not ober:
             return []
         zaehler = {}
         for e in (self.katalog.get('bauplaene') or {}).values():
-            if (e.get('a') or '') != art:
+            o, u = self._kategorie(e)
+            if o != ober or not u:
                 continue
-            u = herst.unterart_von(e.get('n') or '')
-            # ⚠ `size1`, `size2` … sind keine Unterart im gemeinten Sinn — das
-            # ist die Grösse, und die hat ihr eigenes Feld direkt daneben.
-            # Zweimal dasselbe zur Wahl zu stellen verwirrt nur.
-            if u and not u.lower().startswith('size'):
-                zaehler[u] = zaehler.get(u, 0) + 1
-        return [(u, '%s (%d)' % (herst.unterartname(u), n))
-                for u, n in sorted(zaehler.items(), key=lambda p: p[0].lower())]
+            zaehler[u] = zaehler.get(u, 0) + 1
+        return [(u, '%s (%d)' % (kat_modul.untername(u), n))
+                for u, n in sorted(zaehler.items(),
+                                   key=lambda p: kat_modul.untername(p[0]).lower())]
 
     def _fein_setzen(self, schluessel, wert):
         self.fein[schluessel] = wert
@@ -1030,7 +1109,14 @@ class Bestandsfenster:
                 if self.filter == 'fehlt' and drin:
                     continue
                 if self.filter == 'merk' and k not in beobachtet:
-                    continue
+                    # ⚠ Auch die **Muster** zählen. Wird ein beobachtetes Teil
+                    # im Spiel verfügbar, taucht es hier als ganz normale Zeile
+                    # auf — mit Info-Zeichen, Abgabeort und Ruf. Vorher prüfte
+                    # der Filter nur angeklickte Namen, und ein Treffer auf
+                    # „Mamba-Staffelrüstung: Helm" wäre unsichtbar geblieben:
+                    # Man beobachtet etwas und erfährt nicht, dass es da ist.
+                    if not merk.treffer(e['n']):
+                        continue
                 if self.filter == 'neu' and k not in neu_im_spiel:
                     continue
                 if text and not art_passt and not _passt(e, text):

@@ -10,6 +10,42 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- ⭐⭐ **Two levels instead of one long list — category and subtype.** The type
+  dropdown had thirty entries: "Armour (arms)", "Armour (legs)", "Helmet",
+  "Backpack", "Clothing (jacket)" … Assembling a full set of armour meant
+  hunting through all of them.
+
+  There are now **seven groups** — ship weapons, ship modules, ship tools, FPS
+  weapons, gear, armour, clothing — each with its own subtypes: ship weapons
+  split into laser cannon (22), laser repeater (15), ballistic cannon (13),
+  ballistic gatling (9), scattergun (6) and the rest; armour into helmet (84),
+  torso (70), arms (69), legs (69), undersuit (11).
+
+  > **What cannot be grouped stays on its own** — docking collars and the other
+  > one-offs do not vanish into a catch-all.
+
+  The grouping follows the list Xharig-1 has kept by hand for months, and the
+  numbers were checked against it blueprint by blueprint. **Blueprint list and
+  crafting share one grouping** — same blueprints, so the same way to search.
+
+- **The subtype field now says that it is one**: instead of "All subtypes" it
+  reads "12 subtypes — refine here" whenever there is something to pick.
+
+- **Your own watches can be removed** — every row has an ×.
+
+- ⚠ **When a watched item becomes available, you now see it.** The "watching"
+  filter only checked clicked names — a match on a search pattern stayed
+  invisible, so you watched something and were never told it had arrived. It
+  now shows as an ordinary row with its info icon, drop-off and reputation.
+
+### Fixed
+
+- ⚠ **On "Report a problem" the five buttons stacked vertically.** The window's
+  minimum width was 1100 px while the button row needs 869 px in German plus
+  sidebar and margins. It is now 1160 px. Reported by Xharig-1.
+
+- **The armour role filter is gone again** — nobody searches by it.
+
 - ⭐ **Filter by subtype — you can finally tell the weapons apart.** The
   blueprint list lumped all ship weapons together. There is now an extra
   dropdown: for ship weapons **Ballistic (32) · Laser (40) · Distortion (6) ·
