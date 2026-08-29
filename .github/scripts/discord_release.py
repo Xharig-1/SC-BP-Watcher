@@ -61,11 +61,34 @@ def nur_diese_fassung(tag):
     except OSError:
         return None
     zahl = tag.lstrip('v')
-    for block in re.split(r'^## ', text, flags=re.M)[1:]:
-        kopf, _, rest = block.partition('\n')
-        # Wortgrenze: „3.0.0" darf nicht in „3.0.0-rc1" fassen und umgekehrt.
-        if re.search(r'(?<![\w.-])v?%s(?![\w.-])' % re.escape(zahl), kopf):
-            return rest.strip()
+
+    def suche(gesuchte_zahl):
+        for block in re.split(r'^## ', text, flags=re.M)[1:]:
+            kopf, _, rest = block.partition('\n')
+            # Wortgrenze: „3.0.0" darf nicht in „3.0.0-rc1" fassen und umgekehrt.
+            if re.search(r'(?<![\w.-])v?%s(?![\w.-])' % re.escape(gesuchte_zahl),
+                         kopf):
+                return rest.strip()
+        return None
+
+    treffer = suche(zahl)
+    if treffer:
+        return treffer
+
+    # ⚠ **Testfassungen bekommen den Block ihrer Zielversion.**
+    #
+    # Ein `rc` hat fast nie einen eigenen Changelog-Abschnitt — gesammelt wird
+    # unter der Version, auf die er hinarbeitet (`v3.3.0-rc1` → `## v3.3.0`).
+    # Ohne diesen Rückgriff stand im Discord nur „Im Changelog steht zu dieser
+    # Version noch nichts", ausgerechnet bei der Ankündigung, die Tester lesen
+    # sollen (29.08.2026 bei rc1 genau so passiert).
+    #
+    # Das ist **nicht** der Sammelblock einer fremden Version, vor dem die
+    # Vorsicht hier schützen soll: 3.3.0-rc1 gehört zu 3.3.0. Fremd wäre
+    # 3.2.1 — und das findet dieser Rückgriff nicht.
+    grund = re.sub(r'-(rc|beta|alpha|dev)[0-9.]*$', '', zahl, flags=re.I)
+    if grund != zahl:
+        return suche(grund)
     return None
 
 
@@ -87,7 +110,12 @@ def fuer_discord(text):
     # ⚠ Weiche Umbrüche zusammenziehen. Der Changelog bricht bei ~80 Zeichen um,
     # damit er sich im Editor lesen lässt. Discord bricht selbst um — die harten
     # Umbrüche ergäben dort ein zerhacktes Schriftbild.
-    text = re.sub(r'\n(?![\n\-*>#])\s*', ' ', text)
+    # ⚠ Der Lookahead muss die **Einrückung überspringen**. Ein Blockzitat im
+    # Changelog ist oft eingerückt („  > Bei zwei Zeilen …"); direkt nach dem
+    # Umbruch steht dann ein Leerzeichen, nicht das `>`. Ohne `\s*` im
+    # Lookahead wurden solche Zitate zusammengezogen, und die `>` standen
+    # mitten im Satz — so geschehen bei v3.3.0-rc1.
+    text = re.sub(r'\n(?!\s*[\n\-*>#])\s*', ' ', text)
 
     if len(text) > MAX_BESCHREIBUNG:
         # An einem Absatz abschneiden, nicht mitten im Wort.
