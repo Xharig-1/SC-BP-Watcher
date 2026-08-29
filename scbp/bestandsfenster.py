@@ -471,7 +471,28 @@ class Bestandsfenster:
         gebaut wurde, und wechselt nur Zeile und Spalte.
         """
         def ordnen(_=None):
-            platz = rahmen.winfo_width()
+            # ⚠ Tote Elemente überspringen. Die Auswahlfelder werden neu
+            # gebaut, sobald die Oberkategorie wechselt — die alte Bindung
+            # hängt aber weiter am Rahmen und griff dann auf zerstörte
+            # Leinwände zu: `TclError: bad window path name … !canvas14`.
+            # Der Fehler wurde gefangen, aber `ordnen()` brach mittendrin ab,
+            # die Felder blieben ungesetzt und die Liste zeichnete nichts mehr —
+            # „0 von 738" bei gewählter Kategorie (29.08.2026).
+            try:
+                if not rahmen.winfo_exists():
+                    return
+                platz = rahmen.winfo_width()
+            except tk.TclError:
+                return
+            lebende = []
+            for element in elemente:
+                try:
+                    if element.winfo_exists():
+                        lebende.append(element)
+                except tk.TclError:
+                    pass
+            if not lebende:
+                return
             if platz <= 1:
                 return
             if rechts_frei is not None:
@@ -480,8 +501,11 @@ class Bestandsfenster:
                 except tk.TclError:
                     pass
             plaetze, zeile, spalte, breite = [], 0, 0, 0
-            for element in elemente:
-                braucht = element.winfo_reqwidth() + 6
+            for element in lebende:
+                try:
+                    braucht = element.winfo_reqwidth() + 6
+                except tk.TclError:
+                    continue
                 if spalte and breite + braucht > platz:
                     zeile, spalte, breite = zeile + 1, 0, 0
                 plaetze.append((element, zeile, spalte))
@@ -491,8 +515,11 @@ class Bestandsfenster:
                 return                  # unverändert — nicht neu setzen
             rahmen.zuletzt = plaetze
             for element, z, s in plaetze:
-                element.grid(row=z, column=s, sticky='w',
-                             padx=(0, 6), pady=(0 if z == 0 else 4, 0))
+                try:
+                    element.grid(row=z, column=s, sticky='w',
+                                 padx=(0, 6), pady=(0 if z == 0 else 4, 0))
+                except tk.TclError:
+                    pass
 
         rahmen.bind('<Configure>', ordnen, add='+')
         rahmen.after_idle(ordnen)
@@ -939,6 +966,9 @@ class Bestandsfenster:
             merke = dict(self.fein)
             for kind in self.fein_rahmen.winfo_children():
                 kind.destroy()
+            # ⚠ Der Merker zeigt sonst auf zerstörte Widgets und `ordnen()`
+            # hielte die neue Anordnung für „unverändert".
+            self.fein_rahmen.zuletzt = None
             self._feinfilter_felder()
             self.fein.update(merke)
             for schluessel, w in self.fein_felder.items():

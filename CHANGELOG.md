@@ -40,6 +40,23 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠⚠ **"Nothing found" as soon as a category was selected.** The list showed
+  `0 of 738` although a category and subtype were chosen. The filter itself was
+  right — the **drawing** aborted: rebuilding the dropdowns left the old layout
+  callback pointing at destroyed widgets (`TclError: bad window path name`).
+  Dead elements are now skipped. Reported by Xharig-1, found through the error
+  log that recorded the crash while the screen showed only an empty list.
+
+- ⚠ **The subtype could not be selected on the crafting page.** The check
+  "does this subtype belong to the chosen category?" compared against a list of
+  **pairs** rather than values, so it never matched and the selection was
+  cleared immediately.
+
+- **The button row on "Report a problem" now claims the space it needs**
+  instead of wrapping — up to the screen width. Two fixed minimum widths had
+  failed: how wide a button really gets is only known once it is drawn, and
+  that differs per system.
+
 - ⚠⚠ **Watch patterns matched inside words — and reported the wrong item.**
   The pattern `arden backpack` matched *W**arden** Backpack Purgatory Camo*:
   the watcher announced a piece of armour as available that has nothing to do

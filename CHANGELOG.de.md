@@ -58,6 +58,36 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠⚠ **„Nichts gefunden", sobald eine Kategorie gewählt war.** Die Liste zeigte
+  `0 von 738`, obwohl „Schiffsmodule (157)" und „Generator (44)" ausgewählt
+  waren. Der Filter selbst rechnete richtig — das **Zeichnen** brach ab.
+
+  > Ursache: Beim Wechsel der Oberkategorie werden die Auswahlfelder neu
+  > gebaut. Die alte Anordnungs-Funktion hing aber weiter am Rahmen und griff
+  > auf die zerstörten Felder zu (`TclError: bad window path name … !canvas14`,
+  > acht Stück im Fehlerprotokoll). Sie brach mittendrin ab, die Felder blieben
+  > ungesetzt und die Liste zeichnete nichts mehr.
+
+  Die Anordnung übersteht den Neubau jetzt: Tote Elemente werden übersprungen,
+  der Merker für „unverändert" wird beim Neubau geleert. Gemeldet von Xharig-1
+  — **gefunden über das Fehlerprotokoll**, das den Absturz mitgeschrieben hat,
+  obwohl am Bildschirm nur eine leere Liste zu sehen war.
+
+- ⚠ **Die Unterart liess sich auf der Herstellung nicht auswählen.** Man klickte
+  sie an, und nichts war gewählt. Die Prüfung „gehört diese Unterart zur
+  gewählten Kategorie?" verglich gegen eine Liste aus **Paaren** statt aus
+  Werten — sie traf deshalb nie zu, und die Auswahl wurde sofort wieder
+  geleert.
+
+- **Die Knopfreihe auf „Fehler melden" verschafft sich jetzt selbst Platz.**
+  Reicht die Breite nicht, fordert sie die fehlenden Pixel vom Fenster an,
+  statt umzubrechen — bis zur Bildschirmbreite.
+
+  > Zwei feste Mindestbreiten (1100, dann 1160) hatten nicht gereicht: Wie
+  > breit ein Knopf wirklich wird, steht erst fest, wenn er gezeichnet ist, und
+  > das fällt je nach System anders aus. Eine geratene Zahl kann das nicht
+  > treffen — die Reihe muss selbst messen.
+
 - ⚠⚠ **Beobachtungs-Muster trafen mitten im Wort — und meldeten das Falsche.**
   Das Muster `arden backpack` traf auf *W**arden** Backpack Purgatory Camo*:
   Der Watcher meldete ein Rüstungsteil als verfügbar, das mit dem gesuchten

@@ -513,6 +513,32 @@ def _knopfreihe(eltern, knoepfe, abstand=8):
         platz = eltern.winfo_width()
         gebraucht = sum(k.winfo_reqwidth() for k in knoepfe) \
             + abstand * (len(knoepfe) - 1)
+
+        # ⚠⚠ **Erst Platz schaffen, dann umbrechen.** Untereinander stehende
+        # Knöpfe sehen aus wie ein Fehler — Xharig-1: „das sieht schrecklich
+        # aus." Bevor umgebrochen wird, fordert die Reihe deshalb die Breite
+        # an, die sie braucht.
+        #
+        # Eine feste Mindestbreite genügt dafür nicht: Wie breit ein Knopf
+        # wirklich wird, steht erst fest, wenn er gezeichnet ist — unter
+        # Wayland fällt das messbar anders aus als hier. Zwei Anläufe mit
+        # geschätzten Zahlen (1100, dann 1160) reichten beide nicht.
+        try:
+            oben = eltern.winfo_toplevel()
+            fehlend = gebraucht - platz
+            if platz > 1 and fehlend > 0:
+                noetig = oben.winfo_width() + fehlend + 4
+                # Nicht breiter als der Bildschirm — sonst schiebt sich das
+                # Fenster aus dem Bild, und das ist schlimmer als ein Umbruch.
+                grenze = oben.winfo_screenwidth() - 40
+                if noetig <= grenze:
+                    oben.minsize(noetig, oben.winfo_height())
+                    if oben.winfo_width() < noetig:
+                        oben.geometry('%dx%d' % (noetig, oben.winfo_height()))
+                    return          # `<Configure>` kommt gleich mit mehr Platz
+        except tk.TclError:
+            pass
+
         nebeneinander = platz <= 1 or gebraucht <= platz
         if nebeneinander == getattr(eltern, 'zuletzt_nebeneinander', None):
             return
@@ -3700,7 +3726,12 @@ def _herstellung(fenster, rahmen):
     def gewechselt():
         # Eine Unterart, die zur neuen Art nicht passt, muss weg — sonst
         # filtert man auf etwas, das es in dieser Art gar nicht gibt.
-        if wahl['unterart'] and wahl['unterart'] not in _unterarten_zur_art(wahl['art']):
+        # ⚠ `_unterarten_zur_art()` liefert **Paare** (Wert, Beschriftung) —
+        # der Vergleich gegen die rohe Liste traf deshalb nie zu, und jede
+        # gewählte Unterart wurde sofort wieder geleert: „klicke ich sie an,
+        # ist nichts ausgewählt" (29.08.2026).
+        gueltig = [u for u, _b in _unterarten_zur_art(wahl['art'])]
+        if wahl['unterart'] and wahl['unterart'] not in gueltig:
             wahl['unterart'] = ''
         filter_bauen()
         zeichnen()
