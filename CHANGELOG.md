@@ -122,6 +122,22 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠ **"With your material" was shown even when none of it was in stock.** The
+  line on the right said "you are missing 1.2", yet a factor was calculated
+  below — from the slider default, not from your material. Anyone reading that
+  takes the factor for their own result. The heading now says what it shows:
+  "What quality 500 would give", whenever a value is being tried or the stock
+  holds nothing. Reported by Xharig-1.
+
+- **The search fields on Crafting and Mining kept their contents.** Searching
+  for "titan" and returning to the tab later still showed only titanium — easily
+  mistaken for the whole list. They are empty again on reopening.
+
+  > Cause: a page is built **once** and only shown and hidden after that.
+  > Anything that should be fresh has to register for it.
+
+- **Both search fields have a × to clear them**, shown only when something is in.
+
 - ⚠ **Buttons cut off their own labels** — one read "e change" instead of "Save
   change", and in the overlay the contract line ended mid-word. That is not
   cosmetic: someone reading half a word goes looking for a bug that does not

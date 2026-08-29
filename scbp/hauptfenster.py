@@ -1745,6 +1745,9 @@ class Hauptfenster:
     # ------------------------------------------------------------ Seitenwahl
     def oeffnen(self, kennung):
         """Eine Seite zeigen — und beim ersten Mal ihren Inhalt bauen."""
+        if not hasattr(self, 'beim_zeigen'):
+            # kennung -> Funktion, die beim erneuten Anzeigen laeuft
+            self.beim_zeigen = {}
         if kennung not in self.seiten:
             self.seiten[kennung] = tk.Frame(self.inhalt, bg=BG)
         # ⚠ Beim **zweiten** Besuch wurde bisher nur „steht" geschrieben, weil
@@ -1759,6 +1762,17 @@ class Hauptfenster:
         # zwischen „beim Aufbauen gestorben" und „beim Einblenden gestorben".
         if kennung in self.gezeichnet:
             fehler.spur('Seite %s: zeigen' % kennung)
+            # ⚠ Eine Seite wird **einmal** gebaut und danach nur noch ein- und
+            # ausgeblendet. Alles, was beim erneuten Aufrufen frisch sein soll,
+            # muss sich deshalb hier melden — sonst steht der Suchbegriff von
+            # vorhin noch da. Am 29.08.2026 gemeldet: „da sollte man den
+            # Titan-Eintrag im Suchfeld nicht speichern."
+            ruf = self.beim_zeigen.get(kennung)
+            if ruf:
+                try:
+                    ruf()
+                except Exception as ausnahme:
+                    fehler.merken('hauptfenster.zeigen:%s' % kennung, ausnahme)
         else:
             self.gezeichnet.add(kennung)
             # ⚠ Die Spur führt jetzt auch über die Bedienung, nicht nur über den

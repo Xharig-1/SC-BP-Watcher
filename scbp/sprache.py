@@ -434,6 +434,10 @@ TEXTE = {
     # ausloggen musste, um einen Fehler loszuwerden.
     'ov_auftrag_weg':    ('Diesen Auftrag ausblenden',
                           'Hide this contract'),
+    # Das Kreuz im Suchfeld. ⚠ Ein Feld ohne sichtbaren Weg zurueck laesst
+    # Leute den Text markieren und loeschen — oder sie glauben, die Liste sei
+    # kurz, weil nichts da ist.
+    's_suche_leeren':    ('Suche leeren', 'Clear search'),
     'ov_warte':        ('Warte auf neue Baupl\u00e4ne \u2026',
                         'Waiting for new blueprints \u2026'),
     'ov_as_fehler':    ('Autostart lie\u00df sich nicht \u00e4ndern.',
@@ -1388,6 +1392,12 @@ TEXTE = {
     # Wirkung der Materialqualitaet auf die Werte des Produkts.
     # 1540 der 1607 Bauplaene haben solche Angaben (gemessen 29.08.2026).
     's_he_werte':        ('Mit deinem Material', 'With your material'),
+    # ⚠ Dieselbe Flaeche zeigt zwei verschiedene Dinge, also braucht sie zwei
+    # Ueberschriften. Steht nichts im Lager, ist es kein „dein Material" —
+    # dann wird ein Wert durchgespielt, und das muss dranstehen. Am 29.08.2026
+    # gesehen: „dir fehlt: 1.2" bei Borase, darunter „Mit deinem Material".
+    's_he_werte_probe':  ('Was Qualität %g bringen würde',
+                          'What quality %g would give'),
     's_he_faktor':       ('× %.3f', '× %.3f'),
     's_he_woher':        ('%s · Q %g', '%s · Q %g'),
     # Durchspielen: „was käme mit besserem Erz heraus?" — dieselbe Frage,

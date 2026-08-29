@@ -125,6 +125,23 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠ **„Mit deinem Material" stand auch dann da, wenn nichts davon im Lager
+  lag.** Rechts meldete die Zeile „dir fehlt: 1.2", darunter wurde trotzdem
+  gerechnet — mit dem Standardwert des Reglers, nicht mit deinem Material. Wer
+  das liest, hält den Faktor für sein Ergebnis. Die Überschrift sagt jetzt, was
+  sie zeigt: „Was Qualität 500 bringen würde", sobald durchgespielt wird oder
+  nichts im Lager liegt. Gemeldet von Xharig-1.
+
+- **Die Suchfelder bei Herstellung und Bergbau merkten sich ihren Inhalt.** Wer
+  „titan" gesucht und den Reiter später wieder aufgerufen hatte, sah weiter nur
+  Titan — und hielt das leicht für den ganzen Bestand. Sie sind jetzt beim
+  erneuten Aufrufen leer.
+
+  > Ursache: Eine Seite wird **einmal** gebaut und danach nur ein- und
+  > ausgeblendet. Alles, was frisch sein soll, muss sich dafür eigens anmelden.
+
+- **Beide Suchfelder haben ein × zum Leeren**, sichtbar nur, wenn etwas drinsteht.
+
 - ⚠ **Knöpfe schnitten ihre Beschriftung ab** — auf einem Knopf stand „erung
   speichern" statt „Änderung speichern", und im Overlay endete die Auftragszeile
   mitten im Wort. Das ist kein Schönheitsfehler: Wer ein halbes Wort liest,

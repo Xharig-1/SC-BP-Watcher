@@ -123,6 +123,35 @@ def _rollflaeche(rahmen, rand=24):
     return innen_ziel
 
 
+def _suche_leeren_kreuz(fenster, halter, var):
+    """Ein × neben dem Suchfeld, das den Text wegnimmt.
+
+    ⚠ Es erscheint nur, wenn wirklich etwas im Feld steht. Ein Kreuz an einem
+    leeren Feld sieht aus wie ein Knopf, der nichts tut.
+
+    Warum es das braucht: Wer „titan" gesucht hat und danach die ganze Liste
+    sehen will, musste den Text von Hand markieren und löschen — und wer den
+    Suchbegriff übersieht, hält die kurze Liste für den ganzen Bestand.
+    """
+    from . import hinweis
+    kreuz = tk.Label(halter, text='\u00d7', bg=BG, fg=SUB,
+                     font=fenster.f_grund, cursor='hand2')
+    hinweis.anhaengen(kreuz, lambda: t('s_suche_leeren'))
+    kreuz.bind('<Button-1>', lambda _e: var.set(''))
+    kreuz.bind('<Enter>', lambda _e: kreuz.configure(fg=ACCENT))
+    kreuz.bind('<Leave>', lambda _e: kreuz.configure(fg=SUB))
+
+    def nachziehen(*_):
+        if var.get().strip():
+            kreuz.pack(side='right', padx=(6, 2))
+        else:
+            kreuz.pack_forget()
+
+    var.trace_add('write', nachziehen)
+    nachziehen()
+    return kreuz
+
+
 def _mass_sichern(c, beschriftung, flaeche, hoehe, fuellung, rand):
     """Sorgt dafür, dass eine Knopf-Leinwand ihren Text wirklich fasst.
 
@@ -3496,6 +3525,10 @@ def _herstellung(fenster, rahmen):
     suchfeld = rundes_feld(ziel_suche, suche_var, fenster.f_klein, '#0c1017',
                            LINIE, ACCENT, FG)
     suchfeld.halter.pack(fill='x', pady=(4, 12))
+    # ⚠ Gleiches Bedienelement wie beim Bergbau. Zwei Suchfelder, die sich
+    # unterschiedlich verhalten, sind schlimmer als eines ohne Kreuz.
+    _suche_leeren_kreuz(fenster, ziel_suche, suche_var)
+    fenster.beim_zeigen['herstellung'] = lambda: suche_var.set('')
 
     liste_rahmen = tk.Frame(innen, bg=BG)
     liste_rahmen.pack(fill='both', expand=True)
@@ -3666,9 +3699,13 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
         # Regler unten da. Ohne Lagerstand wird mit Q 500 (Mitte) begonnen.
         alle_materialien = [r for _s, r, _m, _g in stufe['zutaten'] if r]
         if alle_materialien:
-            tk.Label(block, text=t('s_he_werte'), bg='#0c1017', fg=FG,
-                     font=fenster.f_grund, anchor='w').pack(fill='x', padx=12,
-                                                            pady=(10, 2))
+            # ⚠ Die Ueberschrift ist NICHT fest. Liegt nichts von den Zutaten
+            # im Lager, waere „Mit deinem Material" eine Behauptung ueber
+            # Material, das es nicht gibt — gerechnet wird dann mit dem
+            # Reglerwert. `werte_zeichnen()` setzt sie passend.
+            werte_kopf = tk.Label(block, text=t('s_he_werte'), bg='#0c1017',
+                                  fg=FG, font=fenster.f_grund, anchor='w')
+            werte_kopf.pack(fill='x', padx=12, pady=(10, 2))
             werte_rahmen = tk.Frame(block, bg='#0c1017')
             werte_rahmen.pack(fill='x')
             regler_lbl = tk.Label(block, text='', bg='#0c1017', fg=SUB,
@@ -3738,6 +3775,18 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                     leer_lbl.pack(fill='x', padx=12)
                 else:
                     leer_lbl.pack_forget()
+
+                # Ueberschrift der Lage anpassen: „dein Material" nur, wenn
+                # wirklich etwas davon im Lager liegt und nichts durchgespielt
+                # wird.
+                if vorgabe is None and qualitaeten:
+                    werte_kopf.configure(text=t('s_he_werte'))
+                else:
+                    gewaehlt = float(vorgabe if vorgabe is not None
+                                     else (max(qualitaeten.values())
+                                           if qualitaeten else 500))
+                    werte_kopf.configure(
+                        text=t('s_he_werte_probe') % gewaehlt)
 
             # --- Regler zum Durchspielen ---
             # Dieselbe Frage, die man sonst auf scmdb.net von Hand stellt:
@@ -3830,6 +3879,10 @@ def _bergbau(fenster, rahmen):
     feld = rundes_feld(ziel_suche, suche_var, fenster.f_klein, '#0c1017',
                        LINIE, ACCENT, FG)
     feld.halter.pack(fill='x', pady=(4, 12))
+    _suche_leeren_kreuz(fenster, ziel_suche, suche_var)
+    # Beim erneuten Aufrufen des Reiters wieder leer — die Seite wird nur
+    # ein- und ausgeblendet, nicht neu gebaut.
+    fenster.beim_zeigen['bergbau'] = lambda: suche_var.set('')
 
     liste_rahmen = tk.Frame(innen, bg=BG)
     liste_rahmen.pack(fill='both', expand=True)

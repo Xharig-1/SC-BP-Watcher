@@ -3679,6 +3679,44 @@ def main():
     finally:
         _ov52c.root.destroy()
 
+    # 52d. Suchfelder vergessen ihren Inhalt beim naechsten Aufruf
+    #
+    # Seiten werden EINMAL gebaut und danach nur ein- und ausgeblendet. Ohne
+    # Rueckruf stand der Suchbegriff von vorhin noch da: „da sollte man den
+    # Titan-Eintrag im Suchfeld nicht speichern" (29.08.2026).
+    print()
+    print('52d. Suchfelder sind beim erneuten Aufrufen leer')
+    _w52d = _tk52b.Tk()
+    try:
+        _f52d = _HF52b(_w52d, version='suchprobe')
+        for _seite in ('bergbau', 'herstellung'):
+            _f52d.oeffnen(_seite)
+        _w52d.update_idletasks()
+        pruefe(hasattr(_f52d, 'beim_zeigen'),
+               'das Fenster fuehrt ein Verzeichnis fuer das erneute Anzeigen')
+        # ⚠ Im Wegwerf-Ordner fehlen Bergbau- und Rezeptdaten; die Seiten
+        # brechen dann vor dem Suchfeld ab. Ob sie sich anmelden, steht
+        # deshalb im Quelltext — datenunabhaengig und trotzdem verbindlich.
+        with open(os.path.join(_wurzelpfad, 'scbp', 'seiten.py'),
+                  encoding='utf-8') as _fh52d:
+            _qu52d = _fh52d.read()
+        for _seite in ('bergbau', 'herstellung'):
+            pruefe("beim_zeigen['%s']" % _seite in _qu52d,
+                   'Seite %s meldet sich fuers erneute Anzeigen an' % _seite)
+        pruefe(_qu52d.count('_suche_leeren_kreuz(') >= 3,
+               'beide Suchfelder haben ein Kreuz zum Leeren')
+        # Und der Rueckruf muss auch wirklich leeren.
+        _leer52d = []
+        for _seite, _ruf in _f52d.beim_zeigen.items():
+            try:
+                _ruf()
+            except Exception as _a:
+                _leer52d.append('%s: %s' % (_seite, _a))
+        pruefe(not _leer52d, 'die Rueckrufe laufen fehlerfrei (%d Fehler)'
+               % len(_leer52d))
+    finally:
+        _w52d.destroy()
+
     # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
     #
     # Eintragen ohne Berichtigen war halb fertig: Wer sich vertippt oder
