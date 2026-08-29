@@ -146,11 +146,15 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 ### Behoben
 
 - ⚠ **Der Zurücksetzen-Knopf der Bauplan-Liste war nicht zu finden.** Es gab
-  ihn — als kleinen grauen Unterstrich-Text neben dem Trefferzähler. Xharig-1
-  suchte ihn vergeblich und stellte die Filter von Hand zurück: „nervt auf
-  Dauer". Was man nicht findet, ist nicht da. Er sieht jetzt aus wie ein Knopf,
-  mit Rahmen und in Grün, und erscheint weiterhin nur, wenn wirklich gefiltert
-  wird.
+  ihn — als kleinen grauen Unterstrich-Text unten rechts neben dem
+  Trefferzähler. Xharig-1 suchte ihn vergeblich und stellte die Filter von Hand
+  zurück: „nervt auf Dauer". Was man nicht findet, ist nicht da.
+
+  Er steht jetzt **oben in der Zustandszeile** neben „alle / habe ich / neu im
+  Spiel", ganz rechts und mit Abstand, als Knopf mit Rahmen und ×. Er erscheint
+  weiterhin nur, wenn wirklich etwas eingegrenzt ist — und nimmt jetzt **alles**
+  zurück: Auswahlfelder, Suchfeld und Zustandswahl. Vorher hätte er nur die
+  Auswahlfelder geleert, und die Liste wäre trotzdem gefiltert geblieben.
 
 - **Die Bauplan-Liste startet ohne Filter.** Wer „Andockkragen, Größe 2, Grad A"
   eingestellt und den Reiter später wieder aufgerufen hatte, sah „Nichts

@@ -1301,7 +1301,10 @@ TEXTE = {
     'ff_alle_grade':   ('Alle Grade', 'All grades'),
     'ff_groesse':      ('Größe %s', 'Size %s'),
     'ff_grad':         ('Grad %s', 'Grade %s'),
-    'ff_zuruecksetzen': ('zurücksetzen', 'reset'),
+    # ⚠ „Auswahl zurücksetzen", nicht nur „zurücksetzen". Auf einem Knopf
+    # allein sagt „zurücksetzen" nicht, WAS zurückgeht — und der Knopf wurde
+    # ohnehin schon einmal übersehen.
+    'ff_zuruecksetzen': ('Auswahl zurücksetzen', 'Clear filters'),
     'ff_treffer':      ('%d von %d Bauplänen', '%d of %d blueprints'),
     'ff_alle_treffer': ('alle %d Baupläne', 'all %d blueprints'),
 

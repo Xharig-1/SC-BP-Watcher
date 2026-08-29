@@ -138,10 +138,14 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 ### Fixed
 
 - ⚠ **The reset control in the blueprint list could not be found.** It existed —
-  as a small grey underlined text next to the result count. It was missed
-  entirely and filters were cleared by hand instead. What you cannot find is not
-  there. It now looks like a button, framed and in green, and still appears only
-  when a filter is actually set.
+  as a small grey underlined text at the bottom right, next to the result count.
+  It was missed entirely and filters were cleared by hand instead. What you
+  cannot find is not there.
+
+  It now sits **at the top**, in the row with "all / owned / new in game", far
+  right and set apart, as a framed button with an ×. It still appears only when
+  something is actually narrowed down — and now clears **everything**: the
+  dropdowns, the search box and the state selection.
 
 - **The blueprint list starts without filters.** Setting "docking collar, size 2,
   grade A" and returning to the tab later showed "Nothing found" — easily

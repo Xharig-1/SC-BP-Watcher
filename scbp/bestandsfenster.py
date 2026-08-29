@@ -372,8 +372,14 @@ class Bestandsfenster:
         # Zeile mit dem Suchfeld, das `expand=True` hat — wurde das Fenster
         # schmaler, schnitt Tk den letzten Knopf ab: „⭐ be…" statt
         # „⭐ beobachtet". Der Entwurf trennt das ebenfalls in eigene Zeilen.
-        knopfzeile = tk.Frame(self.root, bg=BG)
-        knopfzeile.pack(fill='x', padx=14, pady=(0, 6))
+        # ⚠ Ein Halter um die Zeile. Die Knöpfe selbst werden per `grid`
+        # angeordnet (Umbruch), und Tk verträgt `grid` und `pack` nicht im
+        # selben Elternteil — der Zurücksetzen-Knopf rechts wird aber gepackt.
+        knopfhalter = tk.Frame(self.root, bg=BG)
+        knopfhalter.pack(fill='x', padx=14, pady=(0, 6))
+        knopfzeile = tk.Frame(knopfhalter, bg=BG)
+        knopfzeile.pack(side='left', fill='x', expand=True)
+        self.knopfhalter = knopfhalter
 
         self.knoepfe = {}
         for schluessel, text in (('alle', t('filter_alle')),
@@ -417,6 +423,7 @@ class Bestandsfenster:
         self.fein_rahmen = tk.Frame(reihe, bg=BG)
         self.fein_rahmen.pack(side='left', fill='x', expand=True)
 
+
         def feld(schluessel, eintraege):
             if len(eintraege) <= 1:      # nichts zu wählen — Feld weglassen
                 return
@@ -448,12 +455,17 @@ class Bestandsfenster:
         # graue 9-Punkt-Zeile neben dem Trefferzähler — und wurde übersehen:
         # „ein Reset-Knopf fehlt, bisher muss man das per Hand machen"
         # (29.08.2026), obwohl es ihn gab. Was man nicht findet, ist nicht da.
+        # ⚠ Er sitzt **oben in der Zustandszeile**, ganz rechts und mit
+        # Abstand — nicht an „neu im Spiel" geklebt. Vorher stand er unten
+        # rechts beim Trefferzähler und wurde schlicht nicht gefunden: „ein
+        # Reset-Knopf fehlt … nervt auf Dauer" (29.08.2026), obwohl es ihn gab.
         self.zuruecksetzen_lbl = tk.Label(
-            reihe, text=t('ff_zuruecksetzen'), bg=FLAECHE, fg=ACCENT,
-            font=schrift(9), cursor='hand2', padx=10, pady=3,
+            self.knopfhalter, text='\u00d7  ' + t('ff_zuruecksetzen'),
+            bg=FLAECHE, fg=ACCENT, font=schrift(10), cursor='hand2',
+            padx=12, pady=4,
             highlightthickness=1, highlightbackground=ACCENT,
             highlightcolor=ACCENT)
-        self.zuruecksetzen_lbl.bind('<Button-1>', lambda e: self._fein_leeren())
+        self.zuruecksetzen_lbl.bind('<Button-1>', lambda e: self._alles_leeren())
         self.zuruecksetzen_lbl.bind(
             '<Enter>', lambda e: self.zuruecksetzen_lbl.configure(bg='#1d2a14'))
         self.zuruecksetzen_lbl.bind(
@@ -677,8 +689,12 @@ class Bestandsfenster:
             text=(t('ff_treffer') % (gezeigt, gesamt)) if eng
             else (t('ff_alle_treffer') % gesamt))
 
-        if any(self.fein.values()):
-            self.zuruecksetzen_lbl.pack(side='left', padx=(4, 0))
+        # Die ganze Zeile ein- oder ausblenden — sie steht unter den
+        # Auswahlfeldern und nimmt sonst Platz weg, wenn nichts gefiltert ist.
+        # ⚠ Auch die Suche und die Zustandswahl zählen. Wer „fehlt mir"
+        # gewählt hat, will genauso zurückkönnen wie nach einem Auswahlfeld.
+        if eng:
+            self.zuruecksetzen_lbl.pack(side='right', padx=(24, 0))
         else:
             self.zuruecksetzen_lbl.pack_forget()
 
@@ -720,6 +736,19 @@ class Bestandsfenster:
         self.fein[schluessel] = wert
         self.alle_zeigen = False
         self._zeichnen(nach_oben=True)
+
+    def _alles_leeren(self):
+        """Zurück auf Anfang — Auswahlfelder, Suchfeld und Zustandswahl.
+
+        ⚠ Muss alles drei umfassen. Der Knopf erscheint, sobald **irgendetwas**
+        eingegrenzt ist; nähme er nur die Auswahlfelder weg, drückte man ihn
+        und die Liste bliebe gefiltert — schlimmer als kein Knopf.
+        """
+        self.suche.set('')
+        self.filter = 'alle'
+        # `_fein_leeren()` zeichnet neu — und dabei werden die Zustandsknöpfe
+        # mit eingefärbt. Ein eigener Aufruf dafür wäre doppelt.
+        self._fein_leeren()
 
     def _fein_leeren(self):
         """Alle Auswahlfelder zurück auf „alle" — und EINMAL neu zeichnen.
@@ -788,6 +817,9 @@ class Bestandsfenster:
 
         rahmen = tk.Frame(self.root, bg=BG)
         rahmen.pack(fill='both', expand=True, padx=14, pady=(0, 10))
+        # Anker für die Zurücksetzen-Zeile: Sie schiebt sich davor, damit sie
+        # unter den Filtern steht und nicht unter der Liste.
+        self.liste_traeger = rahmen
         self.leinwand = tk.Canvas(rahmen, bg=BG, highlightthickness=0)
         from .hauptfenster import rundleiste
         rolle = rundleiste(rahmen, self.leinwand, grund=BG)

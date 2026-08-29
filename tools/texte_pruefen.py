@@ -111,6 +111,23 @@ def _literale(knoten):
         return []
     if isinstance(knoten, ast.Constant) and isinstance(knoten.value, str):
         return [(knoten.lineno, knoten.value)]
+    # ⚠ `eintrag.get('material')` liest ebenfalls ein Wörterbuch aus — der
+    # Schlüssel ist Technik, angezeigt wird der Wert. Ohne diese Ausnahme
+    # meldete die Prüfung am 29.08.2026 zwei Fehlalarme auf der Lager-Seite
+    # (`text=p.get('material')`). Eng gefasst: nur der **erste** Parameter, und
+    # nur bei den drei Wörterbuch-Methoden.
+    schluessel_holer = ('get', 'setdefault', 'pop')
+    if (isinstance(knoten, ast.Call)
+            and isinstance(knoten.func, ast.Attribute)
+            and knoten.func.attr in schluessel_holer
+            and knoten.args):
+        treffer = _literale(knoten.func)
+        for weiteres in knoten.args[1:]:
+            treffer += _literale(weiteres)
+        for schluesselwort in knoten.keywords:
+            treffer += _literale(schluesselwort.value)
+        return treffer
+
     treffer = []
     for kind in ast.iter_child_nodes(knoten):
         # `bericht['grund']` liest ein Wörterbuch aus — der Schlüssel dazwischen
