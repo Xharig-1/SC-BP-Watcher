@@ -1781,6 +1781,16 @@ TEXTE = {
     's_st_keine':        ('Keine offene Meldung.', 'No open incidents.'),
     's_st_leer':         ('Noch nichts abgerufen. Klick auf „Jetzt nachsehen".',
                           'Nothing fetched yet. Click "Check now".'),
+    # ⚠ Ohne Verbindung hilft „Jetzt nachsehen" nicht — dann muss dastehen,
+    # woran es liegt, sonst sucht man den Fehler bei sich.
+    's_st_kein_netz':    ('Keine Internetverbindung — der Serverstatus lässt '
+                          'sich gerade nicht abrufen.',
+                          'No internet connection — the server status cannot '
+                          'be fetched right now.'),
+    's_st_alt_ohne_netz': ('Keine Internetverbindung — das ist der zuletzt '
+                           'abgerufene Stand.',
+                           'No internet connection — this is the last fetched '
+                           'state.'),
     's_st_fehler':       ('Die Statusseite war nicht erreichbar.',
                           'The status page could not be reached.'),
     's_st_betroffen':    ('Betroffen', 'Affected'),

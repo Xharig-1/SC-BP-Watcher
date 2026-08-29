@@ -243,7 +243,14 @@ def lage(erzwingen=False, frist=None):
         daten, etag = _hole('/index.json',
                             None if erzwingen else gespeichert.get('etag'))
     except Exception:
-        return alt                      # Netz weg: der letzte Stand gilt weiter
+        # ⚠ **Sagen, dass es am Netz lag.** Vorher kam hier nur der alte Stand
+        # zurück — oder `{}`, wenn es nie einen gab. Die Seite konnte „noch nie
+        # abgerufen" und „gerade keine Verbindung" nicht auseinanderhalten und
+        # bat, auf „Jetzt nachsehen" zu klicken. Ohne Internet führt dieser
+        # Klick zu nichts, und der Nutzer sucht den Fehler bei sich.
+        alt = dict(alt) if alt else {}
+        alt['kein_netz'] = True
+        return alt
 
     if daten is None:                   # 304 — unverändert, nur die Uhr stellen
         if alt:

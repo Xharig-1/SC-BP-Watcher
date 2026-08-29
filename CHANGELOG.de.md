@@ -82,6 +82,33 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠⚠ **Ohne Internet liess sich „Fehler melden" nicht mehr öffnen** — das
+  Fenster blieb starr, bis ein Netz-Timeout ablief. Ausgerechnet die Seite, die
+  man bei Störungen braucht.
+
+  Ursache: Der Diagnosebericht fragte beim Bauen die aktuelle Spielversion bei
+  scmdb.net ab — im Hauptfaden, mehrfach. Er zeigt jetzt den **gespeicherten**
+  Katalogstand; das ist ohnehin die interessantere Angabe, weil sie sagt, womit
+  dieser Rechner arbeitet. Gemessen: von **6,1 Sekunden auf 0,1**.
+
+- ⚠⚠ **Der Serverstatus konnte das Fenster zum Absturz bringen**, wenn kein
+  Internet da war. Der Abruf läuft im Hintergrund und meldet sich danach im
+  Fenster zurück — wer währenddessen die Seite wechselte oder das Fenster
+  schloss, bekam einen Absturz, der in keinem Fehlerhaken landete, weil er in
+  einem eigenen Faden passierte. Ohne Netz dauert der Abruf am längsten, also
+  traf es genau dann. Jeder Rückweg ins Fenster ist jetzt abgesichert.
+
+- **Ohne Verbindung sagt der Serverstatus das auch.** Vorher stand dort „Noch
+  nichts abgerufen. Klick auf „Jetzt nachsehen"" — ein Rat, der ohne Internet zu
+  nichts führt und einen den Fehler bei sich suchen lässt. Jetzt: „Keine
+  Internetverbindung". Gibt es einen älteren Stand, wird der gezeigt, mit dem
+  Hinweis, dass er alt ist.
+
+- **Die Auswahlliste ragt nicht mehr aus dem Bild.** Sie begrenzte sich am
+  Bildschirm, nicht am Fenster: Bei 38 Rohstoffen im Bergbau und einem Fenster
+  weit unten im Bild lief sie unten heraus und wurde abgeschnitten. Sie ist
+  jetzt höchstens so hoch wie das Fenster und rollt, wenn ihr Inhalt länger ist.
+
 - ⚠ **Der Ziehgriff des Overlays fehlte ganz.** Er hing an der Bauplan-Liste —
   eine gute Idee, solange die Liste den Rest des Fensters bekam. Seit die
   Leiste mit den laufenden Aufträgen darüber Platz nimmt, kann die Liste

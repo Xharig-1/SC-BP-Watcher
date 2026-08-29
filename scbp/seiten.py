@@ -2437,9 +2437,19 @@ def _serverstatus(fenster, rahmen):
     def zeichnen(lage):
         for kind in behaelter.winfo_children():
             kind.destroy()
-        if not lage:
-            _fliesstext(behaelter, t('s_st_leer'), fenster.f_klein, pady=(4, 8))
+        # ⚠ Drei Fälle, drei Meldungen: nie abgerufen, keine Verbindung, oder
+        # keine Verbindung **aber** ein alter Stand. Vorher gab es nur „noch
+        # nichts abgerufen" — und den Rat, auf „Jetzt nachsehen" zu klicken,
+        # was ohne Internet zu nichts führt.
+        ohne_netz = bool(lage.get('kein_netz'))
+        if not lage.get('systeme'):
+            _fliesstext(behaelter,
+                        t('s_st_kein_netz') if ohne_netz else t('s_st_leer'),
+                        fenster.f_klein, pady=(4, 8))
             return
+        if ohne_netz:
+            _fliesstext(behaelter, t('s_st_alt_ohne_netz'), fenster.f_klein,
+                        farbe=GOLD, pady=(0, 8))
 
         # --- Kopfzeile, wie oben auf der Statusseite ---
         # Links „Zuletzt aktualisiert vor …", rechts die Zusammenfassung. Die
@@ -2478,13 +2488,29 @@ def _serverstatus(fenster, rahmen):
             fenster.sagen(t('s_st_laedt'))
 
         def arbeit():
+            # ⚠⚠ **Jeder Rückweg ins Fenster muss abgesichert sein.** Der Faden
+            # läuft weiter, auch wenn der Nutzer die Seite wechselt oder das
+            # Fenster schliesst — `after()` wirft dann
+            # `RuntimeError: main thread is not in main loop`, und der Fehler
+            # landet in keinem Haken, weil er in einem eigenen Faden passiert.
+            # Ohne Internet dauert der Abruf am längsten, also trifft es genau
+            # dann: „Einstellungsmenü stürzt ab, wenn der User kein Internet
+            # mehr hat und man auf Serverstatus geht" (30.08.2026).
             try:
                 lage = serverstatus.lage(erzwingen=erzwingen)
             except Exception as ausnahme:
                 fehler.merken('seiten.serverstatus', ausnahme)
-                fenster.root.after(0, lambda: fenster.sagen(t('s_st_fehler')))
-                return
-            fenster.root.after(0, lambda: zeichnen(lage))
+                lage = None
+            try:
+                if lage is None:
+                    fenster.root.after(
+                        0, lambda: behaelter.winfo_exists()
+                        and fenster.sagen(t('s_st_fehler')))
+                else:
+                    fenster.root.after(
+                        0, lambda: behaelter.winfo_exists() and zeichnen(lage))
+            except (RuntimeError, tk.TclError):
+                pass          # Fenster ist weg — dann gibt es nichts zu zeigen
 
         threading.Thread(target=arbeit, daemon=True).start()
 
@@ -2521,10 +2547,15 @@ def _serverstatus(fenster, rahmen):
                 lage, veraendert = serverstatus.nachfragen()
             except Exception:
                 lage, veraendert = None, False
-            if veraendert and lage:
-                fenster.root.after(0, lambda: behaelter.winfo_exists()
-                                   and zeichnen(lage))
-            fenster.root.after(TAKT_MS, takt)
+            # Dieselbe Absicherung wie oben: Der Takt läuft, während der Nutzer
+            # das Fenster schliessen kann.
+            try:
+                if veraendert and lage:
+                    fenster.root.after(0, lambda: behaelter.winfo_exists()
+                                       and zeichnen(lage))
+                fenster.root.after(TAKT_MS, takt)
+            except (RuntimeError, tk.TclError):
+                pass
 
         threading.Thread(target=arbeit, daemon=True).start()
 

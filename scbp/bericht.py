@@ -299,8 +299,18 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
         __import__('scbp.bestand', fromlist=['pfad']).pfad(), 'bauplaene')))
     zeile(t('b_merkliste'), _sicher(lambda: t('b_n_eintraege') % _json_groesse(
         __import__('scbp.merkliste', fromlist=['pfad']).pfad(), 'eintraege')))
-    zeile(t('b_katalog'), _sicher(lambda: __import__(
-        'scbp.katalog', fromlist=['aktuelle_version']).aktuelle_version()))
+    # ⚠⚠ **Der gespeicherte Stand, kein Netzabruf.** Hier stand
+    # `aktuelle_version()` — und die fragt scmdb.net. Ohne Internet wartete der
+    # Bericht auf den Timeout, und weil er im Hauptfaden gebaut wird, war das
+    # ganze Fenster so lange starr: „ohne Internetverbindung geht auch Fehler
+    # melden nicht aufzurufen, Einstellungsfenster ist auch da nicht mehr
+    # bedienbar" (30.08.2026). Ausgerechnet die Seite, die man bei Störungen
+    # braucht.
+    #
+    # Der Bericht soll ohnehin den **Ist-Zustand auf diesem Rechner** zeigen,
+    # nicht den im Netz: Interessant ist, welchen Katalog der Nutzer hat.
+    zeile(t('b_katalog'), _sicher(lambda: (__import__(
+        'scbp.katalog', fromlist=['laden']).laden().get('version') or None)))
     zeile(t('b_historie'), _sicher(_patchhistorie))
 
     # ⚠ Die drei Werkstatt-Seiten (ab v3.3.0). Ohne sie liesse sich eine

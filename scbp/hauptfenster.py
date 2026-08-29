@@ -1135,6 +1135,22 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
         nach_oben = gebraucht_hoehe > platz_unten and platz_oben > platz_unten
         sicht = min(gebraucht_hoehe, max(platz_oben if nach_oben
                                          else platz_unten, 120))
+        # ⚠ **Zweite Grenze: das Fenster selbst.** Der Bildschirm allein
+        # genügt nicht — steht das Fenster weit unten im Bild, passt eine lange
+        # Liste rechnerisch noch auf den Schirm, ragt aber weit darunter hinaus
+        # und wird am Bildrand abgeschnitten. Bei 38 Rohstoffen im Bergbau war
+        # sie länger als das Fenster hoch ist: „ist die Liste über dem
+        # Einstellungsfenster hinaus, wird die abgeschnitten, wenn man das
+        # Fenster zu weit unten im Bild hat" (30.08.2026).
+        #
+        # Wird sie dadurch kürzer als ihr Inhalt, bekommt sie unten eine
+        # Rollleiste — der Code dafür steht bereits da.
+        try:
+            fenster_hoch = c.winfo_toplevel().winfo_height()
+            if fenster_hoch > 200:
+                sicht = min(sicht, fenster_hoch - 40)
+        except tk.TclError:
+            pass
         y = (c.winfo_rooty() - sicht - 2) if nach_oben else unten
 
         leinwand.configure(width=gebraucht_breite - 2, height=sicht)

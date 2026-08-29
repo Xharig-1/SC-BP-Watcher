@@ -57,6 +57,24 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠⚠ **"Report a problem" could not be opened without internet** — the window
+  froze until a network timeout expired. Precisely the page you need when
+  something is wrong. The diagnostic report asked scmdb.net for the current game
+  version while being built, on the main thread. It now shows the **stored**
+  catalogue version. Measured: **6.1 seconds down to 0.1**.
+
+- ⚠⚠ **The server status page could crash the window** with no internet. The
+  fetch runs in the background and calls back into the window; switching pages
+  or closing the window meanwhile crashed in a thread where no error hook
+  catches it. Every callback is now guarded.
+
+- **Without a connection the status page says so** instead of "nothing fetched
+  yet, click Check now" — advice that leads nowhere offline.
+
+- **The dropdown no longer runs off screen.** It limited itself to the display
+  but not to the window; with 38 materials and the window low on screen it was
+  cut off. It is now at most as tall as the window and scrolls.
+
 - ⚠ **The overlay's resize grip was missing entirely.** It hung on the
   blueprint list — fine while the list got the rest of the window. Since the
   active-contracts bar sits above it, the list can end up **shorter than the
