@@ -687,16 +687,53 @@ def erzeugen(version=None, fortschritt=None, aus_datei=None):
 
 # ------------------------------------------------------------------ Lesen
 def laden():
-    """Der eigene Katalog von der Platte. Fehlt er, ist er leer."""
+    """Der eigene Katalog von der Platte. Fehlt er, ist er leer.
+
+    ⚠ **Die Schlüssel werden beim Laden neu gebildet.** Ein Katalog auf der
+    Platte kann Monate alt sein und mit einer früheren Fassung von
+    `namensform()` geschrieben worden sein. Genau das lag am 29.08.2026 vor:
+    Dort standen Magazine noch als `… magazine (15 cap)`, während der Bestand
+    sie längst als `… magazine (15)` führt — die Angleichung der Mengenangabe
+    kam erst später dazu.
+
+    Die Folge war eine Zahl, die niemand erklären konnte: Das Overlay meldete
+    **405** Baupläne, der Fortschritt **382 von 738**. 23 Magazine und
+    Batterien galten überall als fehlend, obwohl sie im Bestand standen.
+
+    Deshalb wird hier nicht mehr darauf vertraut, wie die Schlüssel einmal
+    geschrieben wurden — sie werden aus dem Namen neu gebildet.
+    """
     try:
         with open(pfade.app_datei(CACHE), encoding='utf-8') as f:
             d = json.load(f)
         if isinstance(d.get('bauplaene'), dict):
             d.setdefault('missionen', {})    # Kataloge vor v2.0.0-rc5
+            d['bauplaene'] = _schluessel_angleichen(d['bauplaene'])
             return d
     except Exception:
         pass
     return {'version': '', 'geholt': '', 'bauplaene': {}, 'missionen': {}}
+
+
+def _schluessel_angleichen(bauplaene):
+    """Schlüssel aus dem Namen neu bilden — für Kataloge älterer Fassungen.
+
+    Passt schon alles, wird nichts angefasst: Bei einem frischen Katalog kostet
+    das einen Vergleich je Bauplan und keine neue Verzeichnisstruktur.
+    """
+    umzubauen = False
+    for schluessel, e in bauplaene.items():
+        name = e.get('n')
+        if name and _norm(name) != schluessel:
+            umzubauen = True
+            break
+    if not umzubauen:
+        return bauplaene
+    neu = {}
+    for schluessel, e in bauplaene.items():
+        name = e.get('n')
+        neu[_norm(name) if name else schluessel] = e
+    return neu
 
 
 def _vergleichsgrundlage():

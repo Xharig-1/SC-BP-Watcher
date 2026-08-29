@@ -52,6 +52,18 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠⚠ **The overlay said 405 blueprints, the progress page 382 of 738.** Two
+  numbers for the same thing, and neither explained the other.
+
+  The cause was the catalogue on disk: written months ago, when magazines were
+  still keyed as `FS-9 Magazine (75 cap)`. The inventory has long used
+  `FS-9 Magazine (75)` — matching the quantity wording came later. **23
+  magazines and batteries** counted as missing everywhere although they were
+  owned.
+
+  Catalogue keys are now rebuilt from the name on load. If everything already
+  matches, nothing is touched.
+
 - ⚠ **The open dropdown stayed put while scrolling.** It floats as its own
   window above the page, so scrolling the list underneath left it lying across
   unrelated rows. No focus change happens there, and focus was all it watched.

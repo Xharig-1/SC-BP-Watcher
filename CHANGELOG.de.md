@@ -75,6 +75,19 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠⚠ **Das Overlay meldete 405 Baupläne, der Fortschritt 382 von 738.** Zwei
+  Zahlen für dasselbe, und keine erklärte die andere.
+
+  Die Ursache lag im Katalog auf der Platte: Er wurde vor Monaten geschrieben,
+  als Magazine dort noch `FS-9 Magazine (75 cap)` hießen. Der Bestand führt sie
+  längst als `FS-9 Magazine (75)` — die Angleichung der Mengenangabe kam später
+  dazu. **23 Magazine und Batterien** galten dadurch überall als fehlend,
+  obwohl sie im Bestand standen: im Fortschritt, an den Häkchen der Liste und
+  bei „404 von 1597 herstellbar".
+
+  Der Katalog wird beim Laden jetzt neu verschlüsselt — es zählt der Name, nicht
+  die Schreibweise von damals. Passt schon alles, wird nichts angefasst.
+
 - ⚠ **Die aufgeklappte Auswahlliste blieb beim Scrollen stehen.** Sie schwebt
   als eigenes Fenster über der Seite; rollt man die Liste darunter weg, lag sie
   quer über fremden Zeilen. Ein Fokuswechsel findet dabei nicht statt, und nur

@@ -3890,6 +3890,29 @@ def main():
     pruefe("or bool(self.auftrag)" in _qu52j,
            'der Zuruecksetzen-Knopf erscheint auch bei gewaehltem Auftrag')
 
+    # 52k. Ein alter Katalog bekommt neue Schluessel
+    #
+    # Der Katalog auf der Platte kann Monate alt sein. Am 29.08.2026 standen
+    # dort Magazine noch als „… magazine (15 cap)", waehrend der Bestand sie
+    # als „… magazine (15)" fuehrt — die Angleichung der Mengenangabe kam
+    # spaeter dazu. Ergebnis: Das Overlay meldete 405 Bauplaene, der
+    # Fortschritt 382 von 738, und niemand konnte die Zahlen erklaeren.
+    print()
+    print('52k. Alte Katalog-Schluessel werden angeglichen')
+    from scbp import katalog as _ka52k
+    _alt52k = {'a03 sniper rifle magazine (15 cap)':
+               {'n': 'A03 Sniper Rifle Magazine (15 cap)', 'a': 'WeaponAttachment'},
+               'bolide': {'n': 'Bolide', 'a': 'PowerPlant'}}
+    _neu52k = _ka52k._schluessel_angleichen(_alt52k)
+    pruefe('a03 sniper rifle magazine (15)' in _neu52k,
+           'der Schluessel wird aus dem Namen neu gebildet')
+    pruefe('bolide' in _neu52k, 'unauffaellige Schluessel bleiben, wie sie sind')
+    pruefe(len(_neu52k) == len(_alt52k), 'kein Bauplan geht dabei verloren')
+    # Passt schon alles, wird nichts angefasst — dasselbe Verzeichnis zurueck.
+    _sauber52k = {'bolide': {'n': 'Bolide'}}
+    pruefe(_ka52k._schluessel_angleichen(_sauber52k) is _sauber52k,
+           'ein frischer Katalog wird nicht unnoetig umgebaut')
+
     # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
     #
     # Eintragen ohne Berichtigen war halb fertig: Wer sich vertippt oder
