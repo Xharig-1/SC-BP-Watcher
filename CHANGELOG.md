@@ -52,8 +52,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
-- **The overlay's resize grip was hard to spot** — a grey character at text
-  size. It is now larger and in the accent colour.
+- ⚠ **The overlay's resize grip was missing entirely.** It hung on the
+  blueprint list — fine while the list got the rest of the window. Since the
+  active-contracts bar sits above it, the list can end up **shorter than the
+  grip itself**. It now hangs on the window and is present at any height —
+  checked at 190, 130 and 110 pixels — while still disappearing when collapsed.
 
 - **The dismiss control on a contract line is now a crossed-out circle**, red
   and clearly larger. A cross means "close the window" everywhere else in the

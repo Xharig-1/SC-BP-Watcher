@@ -58,7 +58,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.3.0-rc25'
+__version__ = '3.3.0-rc26'
 
 
 def _mitgeliefert(name):
@@ -1677,6 +1677,19 @@ class Overlay:
         # legte sich dann über das ✕, und man musste zielen, um das Fenster
         # überhaupt schließen zu können. Ein 26 Pixel hohes Fenster in der Höhe
         # zu ziehen ergibt ohnehin keinen Sinn.
+        # ⚠⚠ **Seit rc26 hängt der Griff wieder am Fenster.** Der Grund dafür,
+        # ihn an die Liste zu hängen, steht unten und war richtig — nur trägt
+        # er nicht mehr: Seit die Auftragsleiste über der Liste Platz nimmt,
+        # kann die Liste **niedriger werden als der Griff selbst**. Bei einem
+        # schmalen Overlay mit einem laufenden Auftrag blieben ihr rund 20
+        # Pixel, der Griff braucht 26 — und war schlicht weg. Gemeldet am
+        # 29.08.2026, zweimal: „kein Anfasser da zum Vergrössern des Fensters."
+        #
+        # Das Einklapp-Problem von damals löst inzwischen `_grip_nachziehen()`:
+        # Die Methode gab es zu jener Zeit noch nicht, sie setzt den Zustand
+        # durch, statt ihn einmal zu setzen.
+        #
+        # --- Die alte Begründung, zur Einordnung: ---
         # ⚠ Der Griff hängt an der **Liste**, nicht am Fenster.
         #
         # Am Fenster (`self.root`) sitzt er auf `rely=1.0` — bei einem auf
@@ -1694,7 +1707,7 @@ class Overlay:
         # oder nicht mehr zu sehen" (29.08.2026). Er ist der einzige Weg, das
         # Overlay in der Größe zu ändern; wer ihn nicht sieht, hält die Größe
         # für fest.
-        self.grip = tk.Label(wrap, text='◢', bg=BG, fg=ACCENT,
+        self.grip = tk.Label(self.root, text='◢', bg=BG, fg=ACCENT,
                              font=(self.f_sub.actual('family'),
                                    self.f_sub.actual('size') + 4),
                              cursor=sicherer_cursor(CURSOR_GROESSE))

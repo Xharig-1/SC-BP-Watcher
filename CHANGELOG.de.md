@@ -75,9 +75,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
-- **Der Ziehgriff des Overlays war kaum zu finden.** Er stand als graues Zeichen
-  in Schriftgrösse unten rechts. Jetzt grösser und in der Akzentfarbe — er ist
-  der einzige Weg, das Overlay in der Grösse zu ändern.
+- ⚠ **Der Ziehgriff des Overlays fehlte ganz.** Er hing an der Bauplan-Liste —
+  eine gute Idee, solange die Liste den Rest des Fensters bekam. Seit die
+  Leiste mit den laufenden Aufträgen darüber Platz nimmt, kann die Liste
+  **niedriger werden als der Griff selbst**: Bei einem schmalen Overlay mit
+  einem laufenden Auftrag blieben ihr rund 20 Pixel, der Griff braucht 26.
+
+  Er hängt jetzt am Fenster und ist in jeder Höhe da — geprüft bei 190, 130 und
+  110 Pixeln. Beim Einklappen verschwindet er weiterhin, sonst läge er über dem
+  Schliessen-Kreuz. Dazu grösser und in der Akzentfarbe: Er ist der einzige Weg,
+  das Overlay in der Grösse zu ändern, und wer ihn nicht sieht, hält die Grösse
+  für fest.
 
 - **Das Kreuz zum Ausblenden eines Auftrags ist ein durchgestrichener Kreis
   geworden**, rot und deutlich grösser. Das Kreuz steht im Programm für

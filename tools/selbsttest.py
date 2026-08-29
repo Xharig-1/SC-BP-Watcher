@@ -3913,6 +3913,43 @@ def main():
     pruefe(_ka52k._schluessel_angleichen(_sauber52k) is _sauber52k,
            'ein frischer Katalog wird nicht unnoetig umgebaut')
 
+    # 52m. Der Ziehgriff ueberlebt ein niedriges Overlay
+    #
+    # Er hing an der Liste — eine gute Idee, solange die Liste den Rest des
+    # Fensters bekam. Seit die Auftragsleiste darueber Platz nimmt, kann die
+    # Liste niedriger werden als der Griff selbst: Bei einem schmalen Overlay
+    # mit einem laufenden Auftrag blieben ihr rund 20 Pixel, der Griff braucht
+    # 26 — und war weg. Zweimal gemeldet am 29.08.2026.
+    print()
+    print('52m. Ziehgriff bleibt sichtbar')
+    import importlib.util as _ilu52m
+    _spec52m = _ilu52m.spec_from_file_location(
+        '_scbpw52m', os.path.join(_wurzelpfad, 'sc_bp_watcher.py'))
+    _m52m = _ilu52m.module_from_spec(_spec52m)
+    sys.modules['_scbpw52m'] = _m52m
+    _spec52m.loader.exec_module(_m52m)
+    _ov52m = _m52m.Overlay()
+    try:
+        _ov52m.auftraege_zeigen([('X', 'Auftrag angenommen: Testauftrag')])
+        _fehlt52m = []
+        for _h52m in (190, 130, 110):
+            _ov52m.root.geometry('660x%d' % _h52m)
+            _ov52m.root.update_idletasks()
+            if not _ov52m.grip.winfo_ismapped():
+                _fehlt52m.append(_h52m)
+        pruefe(not _fehlt52m,
+               'der Griff bleibt auch im niedrigen Fenster sichtbar (%s)'
+               % (_fehlt52m or 'alle Hoehen'))
+        pruefe(_ov52m.grip.master is _ov52m.root,
+               'er haengt am Fenster, nicht an der Liste')
+        _ov52m.eingeklappt = True
+        _ov52m._grip_nachziehen()
+        _ov52m.root.update_idletasks()
+        pruefe(not _ov52m.grip.winfo_ismapped(),
+               'eingeklappt verschwindet er weiterhin')
+    finally:
+        _ov52m.root.destroy()
+
     # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
     #
     # Eintragen ohne Berichtigen war halb fertig: Wer sich vertippt oder
