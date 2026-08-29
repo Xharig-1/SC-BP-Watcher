@@ -418,6 +418,8 @@ If you fork this project, please keep the credit in the footer or mention the or
 
 Work continues — what exactly is not on a list. What a build brought you can read in [`CHANGELOG.md`](CHANGELOG.md) or right in the tool under **„What's new"**.
 
+**Which version is being worked on right now** is in the changelog of the working branch: [CHANGELOG on `arbeit`](https://github.com/Xharig-1/SC-BP-Watcher/blob/arbeit/CHANGELOG.md). That is where finished but unreleased work collects — if you try a [test build](https://github.com/Xharig-1/SC-BP-Watcher/releases), that is where you read what is in it. This page always shows the **released** version.
+
 Wishes and bug reports are welcome as an [issue](../../issues) or on [Discord](https://discord.gg/g2E7e6XxZC) — suggestions make it into the next build more reliably than mind reading.
 
 ## Star Citizen Fan Content
