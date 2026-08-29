@@ -590,7 +590,10 @@ def oeffnen(eltern=None):
     vorhanden = getattr(oeffnen, '_offen', None)
     if vorhanden is not None:
         try:
-            vorhanden.root.lift()
+            # ⚠ `lift()` allein wird unter Wayland ignoriert, und ein
+            # minimiertes Fenster bliebe minimiert — siehe `nach_vorn()`.
+            from .hauptfenster import nach_vorn
+            nach_vorn(vorhanden.root)
             return vorhanden
         except tk.TclError:
             pass

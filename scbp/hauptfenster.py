@@ -152,6 +152,50 @@ def schiebeschalter(eltern, an, umschalten, grund=None):
     return c
 
 
+def nach_vorn(fenster, fokus=False):
+    """Ein vorhandenes Fenster nach vorn holen — **ohne aus dem Spiel zu werfen**.
+
+    ⚠ **`lift()` allein genügt nicht.** Unter Wayland — und je nach
+    Fensterverwaltung auch unter X11 — darf sich ein Fenster nicht selbst in
+    den Vordergrund setzen; `lift()` wirkt dann nur innerhalb der eigenen
+    Anwendung und `focus_force()` wird schlicht ignoriert. Gemeldet am
+    29.08.2026: Ein Klick auf das Overlay öffnete zwar die Seite, aber das
+    Fenster blieb hinter dem Spiel.
+
+    Was zuverlässig wirkt, ist `-topmost` **kurz** zu setzen und gleich wieder
+    abzuschalten: Der Compositor holt das Fenster dabei nach vorn, und danach
+    klebt es nicht dauerhaft über allem.
+
+    `deiconify()` gehört dazu — sonst bleibt ein **minimiertes** Fenster
+    minimiert, und der Klick scheint gar nichts zu tun.
+
+    ⚠⚠ **`focus_force()` nur auf ausdrücklichen Wunsch** (`fokus=True`).
+    Es zieht den Tastaturfokus — und wer gerade Star Citizen spielt, fliegt
+    damit aus dem Spiel. Genau das darf ein Overlay-Werkzeug nicht:
+
+        „ich bin mitten im spiel, du kannst die fenster aufrufen aber
+         bekommst du es hin mich nicht als raus zu tabben?"  (29.08.2026)
+
+    Ohne Fokus kommt das Fenster **sichtbar** nach vorn, die Tastatur bleibt
+    aber beim Spiel. Wer darin tippen will, klickt hinein — dann bekommt es den
+    Fokus vom Fenstermanager, und das ist eine bewusste Entscheidung des
+    Spielers statt eines Überfalls.
+
+    Mit `fokus=True` wird es nur beim **Programmstart** gerufen: Dort hat der
+    Nutzer das Werkzeug gerade selbst gestartet und will hin.
+    """
+    try:
+        fenster.deiconify()
+        fenster.lift()
+        fenster.attributes('-topmost', True)
+        fenster.after(400, lambda: fenster.attributes('-topmost', False))
+        if fokus:
+            fenster.focus_force()
+        return True
+    except tk.TclError:
+        return False                 # ohne Fenstermanager nicht möglich
+
+
 def regler(eltern, von, bis, wert, beim_ziehen, breite=190, grund=None):
     """Ein Schieberegler in der Machart des Fensters.
 
@@ -1845,13 +1889,9 @@ class Hauptfenster:
         `-topmost` wird gleich wieder abgeschaltet — es soll nach vorn
         kommen, aber nicht dauerhaft über allem kleben.
         """
-        try:
-            self.root.lift()
-            self.root.attributes('-topmost', True)
-            self.root.after(400, lambda: self.root.attributes('-topmost', False))
-            self.root.focus_force()
-        except tk.TclError:
-            pass                     # ohne Fenstermanager nicht möglich
+        # Beim Start ausdrücklich MIT Fokus: Der Nutzer hat das Werkzeug
+        # gerade selbst gestartet und will hin.
+        nach_vorn(self.root, fokus=True)
         self.root.mainloop()
 
 

@@ -57,7 +57,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.3.0-rc5'
+__version__ = '3.3.0-rc6'
 
 
 def _mitgeliefert(name):
@@ -1978,7 +1978,8 @@ class Overlay:
         vorhanden = getattr(self, '_versionen', None)
         if vorhanden is not None:
             try:
-                vorhanden.root.lift()
+                from scbp.hauptfenster import nach_vorn
+                nach_vorn(vorhanden.root)
                 return
             except Exception:
                 pass
@@ -2162,8 +2163,10 @@ class Overlay:
         vorhanden = getattr(self, '_fenster', None)
         if vorhanden is not None:
             try:
-                vorhanden.root.lift()
-                vorhanden.root.focus_force()
+                # ⚠ Über `nach_vorn()`: `lift()` allein wird unter Wayland
+                # ignoriert, und ein minimiertes Fenster bliebe minimiert.
+                from scbp.hauptfenster import nach_vorn
+                nach_vorn(vorhanden.root)
                 vorhanden.oeffnen(seite)
                 return
             except Exception:

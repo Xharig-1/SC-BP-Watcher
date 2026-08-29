@@ -100,6 +100,19 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Ein Klick auf das Overlay holt ein offenes Fenster jetzt wirklich nach
+  vorn.** Bisher blieb es hinter dem Spiel, und der Klick schien nichts zu tun.
+  Ursache: `lift()` allein wird unter **Wayland** ignoriert — dort darf sich ein
+  Fenster nicht selbst in den Vordergrund setzen. Jetzt wird kurz „immer oben"
+  gesetzt und gleich wieder abgeschaltet; das nimmt der Compositor an. Ein
+  **minimiertes** Fenster wird dabei ebenfalls wiederhergestellt, vorher blieb
+  es eingeklappt. Betrifft Bauplan-Liste, Einstellungen und „Was ist neu".
+
+  > **Dein Spiel behält die Tastatur.** Das Fenster kommt nach vorn, reißt aber
+  > nicht den Eingabefokus an sich — wer gerade fliegt, fliegt weiter. Wer im
+  > Fenster tippen will, klickt hinein. Nur beim Programmstart bekommt es den
+  > Fokus, denn den hast du ja selbst ausgelöst.
+
 - ⚠ **Der Qualitäts-Regler ruckelte, weil bei jeder Mausbewegung 4 MB von der
   Platte gelesen wurden.** Die Rezeptdatei wurde bei **jedem** Zugriff neu
   eingelesen — 22 ms pro Aufruf, und der Regler ruft bei jedem Pixel. Das waren

@@ -97,6 +97,18 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **Clicking the overlay now really brings an open window to the front.** It
+  used to stay behind the game, and the click seemed to do nothing. Cause:
+  `lift()` alone is ignored under **Wayland** — a window may not raise itself
+  there. Now "always on top" is set briefly and switched off again, which the
+  compositor accepts. A **minimised** window is restored too; it used to stay
+  collapsed. Affects the blueprint list, settings and "What's new".
+
+  > **Your game keeps the keyboard.** The window comes forward but does not
+  > grab input focus — if you are flying, you keep flying. Click into the
+  > window when you want to type in it. Only at startup does it take focus,
+  > because you started it yourself.
+
 - ⚠ **The quality slider stuttered because 4 MB were read from disk on every
   mouse move.** The recipe file was re-read on **every** access — 22 ms per
   call, and the slider fires on every pixel. That came to over 600 ms of
