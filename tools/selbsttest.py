@@ -3876,6 +3876,19 @@ def main():
            'die Uebersicht zaehlt die Bauplaene je Auftrag')
     pruefe(_bf52i.auftraege_zu('', _kat52i) == [],
            'ohne Suchbegriff keine Auftragsliste')
+    # ⚠ Die Auftragszeile muss anklickbar sein: „die Quest muss natuerlich
+    # anklickbar sein, sonst bringt das nichts." Ein Filter, aus dem man nicht
+    # herauskommt, waere allerdings schlimmer als keiner — deshalb schaltet
+    # derselbe Auftrag beim zweiten Klick wieder ab.
+    with open(os.path.join(_wurzelpfad, 'scbp', 'bestandsfenster.py'),
+              encoding='utf-8') as _fh52j:
+        _qu52j = _fh52j.read()
+    pruefe('_auftrag_waehlen' in _qu52j,
+           'die Auftragszeilen sind anklickbar')
+    pruefe("self.auftrag = '' if self.auftrag == name else name" in _qu52j,
+           'ein zweiter Klick loest den Auftrag wieder')
+    pruefe("or bool(self.auftrag)" in _qu52j,
+           'der Zuruecksetzen-Knopf erscheint auch bei gewaehltem Auftrag')
 
     # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
     #

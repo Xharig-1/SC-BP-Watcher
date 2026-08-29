@@ -1441,6 +1441,13 @@ TEXTE = {
     # dabei herausspringt.
     's_bp_auftrag_kopf': ('Aufträge mit „%s"', 'Contracts matching "%s"'),
     's_bp_auftrag_zeile': ('%s — %d Baupläne', '%s — %d blueprints'),
+    # ⚠ Eine Zeile, die aussieht wie eine Antwort, aber nichts tut, ist eine
+    # Sackgasse: „die Quest muss natürlich anklickbar sein, sonst bringt das
+    # nichts." (29.08.2026)
+    's_bp_auftrag_klick': ('Klick auf einen Auftrag zeigt nur seine Baupläne.',
+                           'Click a contract to see only its blueprints.'),
+    's_bp_auftrag_aktiv': ('Nur aus: %s', 'Only from: %s'),
+    's_bp_auftrag_weg':   ('Auftrag lösen', 'Clear contract'),
     's_bg_alle_erze':    ('Alle Rohstoffe', 'All materials'),
     's_bg_alle_orte':    ('Alle Orte', 'All locations'),
     'ff_alle_zustaende': ('Bauplan: alle', 'Blueprint: all'),

@@ -449,6 +449,10 @@ class Bestandsfenster:
         reihe.pack(fill='x', padx=14, pady=(0, 8))
         self.fein = {'art': '', 'unterart': '', 'klasse': '', 'groesse': '',
                      'quelle': '', 'grad': '', 'patch': ''}
+        # Ein angeklickter Auftrag — dann zeigt die Liste nur, was aus ihm
+        # stammt. Kein Auswahlfeld: Aufträge gibt es hunderte, sie kommen
+        # über die Suche und werden dort angeklickt.
+        self.auftrag = ''
 
         # ⚠ Eigener Rahmen für die Auswahlfelder. Sie werden per `grid`
         # angeordnet (damit sie umbrechen können), und Tk verträgt `grid` und
@@ -820,13 +824,34 @@ class Bestandsfenster:
                      bg=BG, fg=ACCENT, font=schrift(11, fett=True),
                      anchor='w', pady=6).pack(fill='x')
             for name, anzahl in treffer[:8]:
-                tk.Label(self.inhalt,
-                         text=t('s_bp_auftrag_zeile') % (name, anzahl),
-                         bg=FLAECHE, fg=FG, font=schrift(10), anchor='w',
-                         padx=10, pady=4).pack(fill='x', pady=1)
+                gewaehlt = (name == self.auftrag)
+                z = tk.Label(
+                    self.inhalt,
+                    text=t('s_bp_auftrag_zeile') % (name, anzahl),
+                    bg='#1d2a14' if gewaehlt else FLAECHE,
+                    fg=ACCENT if gewaehlt else FG,
+                    font=schrift(10), anchor='w', cursor='hand2',
+                    padx=10, pady=4)
+                z.pack(fill='x', pady=1)
+                # ⚠ Klick schaltet um: derselbe Auftrag noch einmal angeklickt
+                # löst ihn wieder. Ein Filter, aus dem man nicht herauskommt,
+                # ist schlimmer als keiner.
+                z.bind('<Button-1>', lambda _e, a_=name: self._auftrag_waehlen(a_))
+                z.bind('<Enter>', lambda _e, l=z, g=gewaehlt:
+                       l.configure(bg='#1d2a14' if g else BAR))
+                z.bind('<Leave>', lambda _e, l=z, g=gewaehlt:
+                       l.configure(bg='#1d2a14' if g else FLAECHE))
+            tk.Label(self.inhalt, text=t('s_bp_auftrag_klick'), bg=BG, fg=SUB,
+                     font=schrift(9), anchor='w').pack(fill='x', pady=(4, 0))
             tk.Frame(self.inhalt, bg=BG, height=8).pack(fill='x')
         except Exception:
             pass
+
+    def _auftrag_waehlen(self, name):
+        """Einen Auftrag als Filter setzen — oder wieder lösen."""
+        self.auftrag = '' if self.auftrag == name else name
+        self.alle_zeigen = False
+        self._zeichnen(nach_oben=True)
 
     def _eigene_beobachtungen(self):
         """Die Muster-Beobachtungen zeigen — sie stehen in keinem Katalog.
@@ -896,7 +921,7 @@ class Bestandsfenster:
         gezeigt = sum(len(treffer) for _, treffer in gruppen)
         gesamt = len(self.katalog.get('bauplaene') or {})
         eng = bool(self.suche.get().strip()) or self.filter != 'alle' \
-            or any(self.fein.values())
+            or any(self.fein.values()) or bool(self.auftrag)
         self.treffer_lbl.configure(
             text=(t('ff_treffer') % (gezeigt, gesamt)) if eng
             else (t('ff_alle_treffer') % gesamt))
@@ -919,6 +944,12 @@ class Bestandsfenster:
         zwei Dinge: `f:` eine Fraktion, die den Bauplan auslobt, `t:` einen
         Belohnungstopf (XenoThreat und Verwandte).
         """
+        if self.auftrag:
+            # Stammt dieser Bauplan aus dem angeklickten Auftrag?
+            namen = {(q.get('auftrag') or '').strip()
+                     for q in (e.get('q') or [])}
+            if self.auftrag not in namen:
+                return False
         if self.fein.get('art') or self.fein.get('unterart'):
             ober, unter = self._kategorie(e)
             if self.fein.get('art') and ober != self.fein['art']:
@@ -1096,6 +1127,7 @@ class Bestandsfenster:
         """
         self.suche.set('')
         self.filter = 'alle'
+        self.auftrag = ''
         # `_fein_leeren()` zeichnet neu — und dabei werden die Zustandsknöpfe
         # mit eingefärbt. Ein eigener Aufruf dafür wäre doppelt.
         self._fein_leeren()

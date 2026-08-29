@@ -19,6 +19,9 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   quest hold?** For "retake" that is `Retake Platforms From Nine Tails — 3
   blueprints` and `Need multiple CFP outposts retaken — 3 blueprints`.
 
+  > **And the contracts are clickable.** One click narrows the list to that
+  > contract's blueprints only; clicking it again releases the filter.
+
 - ⭐⭐ **Two levels instead of one long list — category and subtype.** The type
   dropdown had thirty entries: "Armour (arms)", "Armour (legs)", "Helmet",
   "Backpack", "Clothing (jacket)" … Assembling a full set of armour meant

@@ -18,6 +18,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Darüber steht eine Übersicht, die die eigentliche Frage beantwortet: **Was
   gibt es in dieser Quest?** Bei „retake" etwa `Retake Platforms From Nine
   Tails — 3 Baupläne` und `Need multiple CFP outposts retaken — 3 Baupläne`.
+
+  > **Und die Aufträge sind anklickbar.** Ein Klick zeigt nur noch die
+  > Baupläne dieses einen Auftrags — bei „Retake Platforms From Nine Tails"
+  > also `BUL-H4 Armor`, `BUL-H4 Helmet` und `H4-PBF Ammo Carrier`. Derselbe
+  > Auftrag noch einmal angeklickt löst den Filter wieder; ein Filter, aus dem
+  > man nicht herauskommt, wäre schlimmer als keiner.
+
   Darunter stehen die Baupläne selbst, mit Info-Zeichen, Abgabeort und Ruf.
 
 - ⭐⭐ **Zwei Ebenen statt einer langen Liste — Oberkategorie und Unterart.**
