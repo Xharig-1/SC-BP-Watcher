@@ -134,8 +134,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   all buttons including filter rows. Reported by Xharig-1.
 
 - ⚠ **The overlay could be dragged narrower than its own icon bar**, hiding the
-  bell and the icons on the right. It now has a minimum width derived from that
-  bar, and a too-small saved size is raised on startup. Reported by Xharig-1.
+  bell and the icons on the right — at 290 px not one of them was visible. It
+  now has a minimum width derived from that bar (measured: 520 px for the title
+  and ten icons), and a too-small saved size is raised on startup.
+
+  > The first attempt did nothing because it asked the bar for its requested
+  > width — but that bar runs with `pack_propagate(False)`, deliberately not
+  > passing on its children's size, and reported **1 pixel**. The elements are
+  > now added up individually.
+
+  Reported by Xharig-1.
 
 - **The contract line in the overlay wraps instead of being cut off.**
 

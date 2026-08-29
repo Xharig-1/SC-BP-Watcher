@@ -57,7 +57,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.3.0-rc9'
+__version__ = '3.3.0-rc10'
 
 
 def _mitgeliefert(name):
@@ -1955,7 +1955,20 @@ class Overlay:
         Kopfleiste, bleibt es beim alten Wert.
         """
         try:
-            noetig = self.kopf.winfo_reqwidth() + 16
+            kinder = self.kopf.winfo_children()
+            if not kinder:
+                return 260
+            # ⚠ NICHT `self.kopf.winfo_reqwidth()` nehmen. Die Leiste läuft mit
+            # `pack_propagate(False)` — sie gibt die Größe ihrer Kinder
+            # absichtlich nicht weiter, damit die Höhe fest bleibt. Gefragt
+            # meldet sie deshalb einen Fantasiewert, und die Mindestbreite war
+            # wirkungslos: Am 29.08.2026 war im Overlay kein einziges Symbol
+            # mehr zu sehen.
+            #
+            # Also die Kinder selbst zusammenzählen. Der Zuschlag je Element
+            # deckt dessen seitlichen Abstand, die 20 am Ende den Rand und den
+            # Anfasser zum Ziehen.
+            noetig = sum(k.winfo_reqwidth() + 8 for k in kinder) + 20
         except Exception:
             return 260
         return max(260, noetig)

@@ -3648,6 +3648,37 @@ def main():
     finally:
         _w52b.destroy()
 
+    # 52c. Die Mindestbreite des Overlays ist keine Fantasiezahl
+    #
+    # Der erste Anlauf fragte die Kopfleiste nach ihrer Wunschbreite. Die laeuft
+    # aber mit `pack_propagate(False)` und meldete **1 Pixel** — die Grenze war
+    # damit wirkungslos, und im Overlay war kein Symbol mehr zu sehen.
+    print()
+    print('52c. Mindestbreite des Overlays deckt die Symbolleiste')
+    import importlib.util as _ilu52c
+    _spec52c = _ilu52c.spec_from_file_location(
+        '_scbpw52c', os.path.join(_wurzelpfad, 'sc_bp_watcher.py'))
+    _m52c = _ilu52c.module_from_spec(_spec52c)
+    sys.modules['_scbpw52c'] = _m52c
+    _spec52c.loader.exec_module(_m52c)
+    _ov52c = _m52c.Overlay()
+    try:
+        _ov52c.root.update_idletasks()
+        _kinder52c = _ov52c.kopf.winfo_children()
+        pruefe(len(_kinder52c) >= 5,
+               'die Kopfleiste hat ihre Elemente (%d)' % len(_kinder52c))
+        _summe52c = sum(_k.winfo_reqwidth() for _k in _kinder52c)
+        _min52c = _ov52c._mindestbreite()
+        pruefe(_min52c >= _summe52c,
+               'die Mindestbreite deckt alle Elemente (%d >= %d)'
+               % (_min52c, _summe52c))
+        pruefe(_min52c > _ov52c.kopf.winfo_reqwidth(),
+               'sie stuetzt sich NICHT auf die Wunschbreite der Leiste')
+        pruefe(_ov52c.root.winfo_width() >= _min52c,
+               'und das Fenster ist mindestens so breit')
+    finally:
+        _ov52c.root.destroy()
+
     # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
     #
     # Eintragen ohne Berichtigen war halb fertig: Wer sich vertippt oder

@@ -138,9 +138,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   der Rahmen mit. Gilt für alle Knöpfe samt Filterreihen. Gemeldet von Xharig-1.
 
 - ⚠ **Das Overlay ließ sich schmaler ziehen als seine eigene Symbolleiste.**
-  Glocke und die Symbole rechts verschwanden einfach. Es hat jetzt eine
-  Mindestbreite, die sich an der Leiste bemisst — und eine zu klein gespeicherte
-  Größe von früher wird beim Start angehoben. Gemeldet von Xharig-1.
+  Glocke und die Symbole rechts verschwanden einfach — bei 290 px Breite war
+  kein einziges mehr zu sehen. Es hat jetzt eine Mindestbreite, die sich an der
+  Leiste bemisst (gemessen: 520 px für Titel und zehn Symbole), und eine zu
+  klein gespeicherte Größe von früher wird beim Start angehoben.
+
+  > Der erste Anlauf half nichts, weil er die Leiste nach ihrer Wunschbreite
+  > fragte — die läuft aber mit `pack_propagate(False)`, gibt die Größe ihrer
+  > Kinder also bewusst nicht weiter und meldete **1 Pixel**. Jetzt werden die
+  > Elemente einzeln zusammengezählt.
+
+  Gemeldet von Xharig-1.
 
 - **Die Auftragszeile im Overlay bricht um, statt abgeschnitten zu werden.**
 
