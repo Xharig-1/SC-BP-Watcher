@@ -25,6 +25,36 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The same blueprint counted twice when the game runs in German.** The SC
+  Deutsch Launcher reads the **English** catalogue and writes
+  `Ravager-212 Twin Shotgun Magazine (16 cap)`. Re-reading the logs picks up the
+  same crate in whatever language Star Citizen runs in — in German
+  `… (16 Schuss)`. To the Watcher those were two different blueprints.
+
+  Measured against a real inventory: **405 shown, 403 actually held.** The bug is
+  silent — nothing breaks, the number is simply too high.
+
+  The quantity in brackets is now language-neutral: `(16 Schuss)` and `(16 cap)`
+  are the same blueprint. **The number stays** — a 40-round and a 60-round
+  magazine are different blueprints and must remain so. Brackets that do not
+  start with a digit are untouched, so `Singe Cannon (S2)` keeps its name.
+
+  An inventory already on disk is migrated on the next start: duplicates are
+  merged into one entry, and the **older** find wins.
+
+- **"Start with the system" never worked on Linux.** The Watcher wrote the
+  AppImage's **temporary mount point** (`/tmp/.mount_SC-BP-ji95vH/…`) into the
+  autostart file. That path gets a new random name on every launch, so after a
+  reboot the entry pointed nowhere and the Watcher did not come up — with no
+  error message, because the file looked perfectly fine.
+
+  The cause was the order in the code: an AppImage also counts as "frozen", so
+  that branch won and the real AppImage path was never reached. Now reversed.
+
+  Found on 29 Aug 2026 on a machine where the entry had been dead ever since the
+  move to Linux.
+
+
 - **The floating lock sat seven pixels too far right.** The offset for it came
   from a measurement on a **different screen** (5120×1440 instead of 4096×1152)
   — symbols are 24 px wide there instead of 22, and an offset measured in pixels

@@ -25,6 +25,38 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Derselbe Bauplan zählte zweimal, wenn das Spiel auf Deutsch läuft.** Der SC
+  Deutsch Launcher liest den **englischen** Katalog und schreibt
+  `Ravager-212 Twin Shotgun Magazine (16 cap)`. Die Nachlese aus den Protokollen
+  liest dieselbe Kiste in der Sprache, in der Star Citizen läuft — auf Deutsch
+  also `… (16 Schuss)`. Für den Watcher waren das zwei verschiedene Baupläne.
+
+  Gemessen an einem echten Bestand: **405 angezeigt, 403 vorhanden.** Der Fehler
+  ist still — es geht nichts kaputt, es steht nur eine zu große Zahl da.
+
+  Die Mengenangabe in Klammern wird jetzt entsprachlicht: `(16 Schuss)` und
+  `(16 cap)` sind derselbe Bauplan. **Die Zahl bleibt stehen** — ein 40er- und
+  ein 60er-Magazin sind verschiedene Baupläne und müssen es bleiben. Klammern
+  ohne führende Ziffer bleiben unangetastet, `Singe Cannon (S2)` heißt weiter so.
+
+  Ein bereits gespeicherter Bestand zieht beim nächsten Start automatisch mit —
+  die Dubletten werden zu einem Eintrag zusammengeführt, wobei der **ältere**
+  Fund gewinnt.
+
+- **„Mit System starten" funktionierte unter Linux nie.** In die Autostart-Datei
+  schrieb der Watcher den **temporären Einhängepunkt** des AppImage
+  (`/tmp/.mount_SC-BP-ji95vH/…`). Der bekommt bei jedem Start einen neuen
+  Zufallsnamen — nach einem Neustart des Rechners zeigte der Eintrag ins Leere
+  und der Watcher kam nicht hoch. Ohne Fehlermeldung: Die Datei sah richtig aus.
+
+  Ursache war die Reihenfolge im Code. Ein AppImage gilt ebenfalls als
+  „eingefroren", deshalb gewann diese Abfrage, und der Pfad zur echten
+  AppImage-Datei kam nie an die Reihe. Jetzt andersherum.
+
+  Gefunden am 29.08.2026 auf einem Rechner, auf dem der Eintrag seit dem Umstieg
+  auf Linux tot dalag.
+
+
 - **Das schwebende Schloss saß sieben Pixel zu weit rechts.** Der Ausgleich
   dafür stammte aus einer Messung auf einem **anderen Bildschirm** (5120×1440
   statt 4096×1152) — dort sind die Symbole 24 px breit statt 22, und ein in

@@ -73,14 +73,20 @@ LAUFEND = [zeile('Bauplan erhalten: Scalpel Sniper Rifle Magazine (12 Schuss)', 
 ERWARTET = {
     'attrition-5 repeater',
     "7ca 'nargun'",
-    'arclight pistol battery (30 cap)',
+    # ⚠ `(30)` statt `(30 cap)`: `pfade.namensform()` laesst die ZAHL stehen und
+    # wirft nur das Wort weg — sonst waeren `(16 cap)` (Launcher, englisch) und
+    # `(16 Schuss)` (Log-Nachlese, deutsch) zwei Eintraege fuer dieselbe Kiste.
+    'arclight pistol battery (30)',
     # ⚠ Einfache Anführungszeichen, obwohl die Log-Zeile oben doppelte hat:
     # `pfade.namensform()` zieht alle Anführungszeichen auf ein einfaches `'`,
     # damit derselbe Bauplan aus Launcher-Export und scmdb-Katalog denselben
     # Schlüssel bekommt.
     "cf-117 bulldog 'hazard-zone' repeater",
     'singe cannon (s2)',
-    'scalpel sniper rifle magazine (12 schuss)',
+    # ⚠ `(12)`, nicht `(12 schuss)`: Die Log-Zeile oben ist DEUTSCH — genau der
+    # Fall, der den Bauplan frueher doppelt in den Bestand gelegt hat, weil der
+    # Launcher dieselbe Kiste als `(12 cap)` fuehrt.
+    'scalpel sniper rifle magazine (12)',
 }
 
 fehler = []
@@ -2188,10 +2194,21 @@ def main():
                    'mit und ohne Kuerzel derselbe Schluessel: %s' % mit33)
         # ⚠ Gegenrichtung: Echte Namensklammern MUESSEN bleiben, sonst waeren
         # zwei verschiedene Waffen plötzlich derselbe Eintrag.
-        for roh33 in ('Singe Cannon (S2)', 'Irgendwas (30 cap)',
-                      'Ding (Alpha/1/A)'):
+        for roh33 in ('Singe Cannon (S2)', 'Ding (Alpha/1/A)'):
             pruefe(nfm33(roh33) == roh33.lower(),
                    'unangetastet: %s' % roh33)
+        # ⚠ Die Mengenangabe ist der Sonderfall: Das WORT faellt weg, die ZAHL
+        # bleibt. Sonst zaehlt derselbe Bauplan doppelt, sobald das Spiel auf
+        # Deutsch laeuft (gemessen 29.08.2026: 405 angezeigt, 403 echt).
+        pruefe(nfm33('Ravager-212 Magazine (16 cap)')
+               == nfm33('Ravager-212 Magazine (16 Schuss)'),
+               'deutsch und englisch ergeben denselben Schluessel')
+        pruefe(nfm33('Irgendwas (30 cap)') == 'irgendwas (30)',
+               'die Zahl bleibt stehen, nur das Wort faellt weg')
+        pruefe(nfm33('Magazin (40 cap)') != nfm33('Magazin (60 cap)'),
+               'verschiedene Kapazitaeten bleiben verschiedene Bauplaene')
+        pruefe(nfm33('Singe Cannon (S1)') != nfm33('Singe Cannon (S2)'),
+               'Klammern ohne fuehrende Ziffer bleiben unangetastet')
         # ⚠ Und der wichtigste Teil: Ein **schon gespeicherter** Bestand muss
         # mitziehen. `namensform()` zu reparieren hilft nur neuen Eintraegen —
         # Morkhans 320 Bauplaene lagen mit den alten Schluesseln auf der Platte.
@@ -2216,6 +2233,12 @@ def main():
                                                       'zeit': '2026-08-05 09:00:00'},
                                'guardian': {'name': 'Guardian', 'quelle': 'log',
                                             'zeit': '2026-08-02 08:00:00'},
+                               'ravager-212 magazine (16 cap)': {
+                                   'name': 'Ravager-212 Magazine (16 cap)',
+                                   'quelle': 'launcher', 'zeit': '2026-08-03 07:00:00'},
+                               'ravager-212 magazine (16 schuss)': {
+                                   'name': 'Ravager-212 Magazine (16 Schuss)',
+                                   'quelle': 'nachlese', 'zeit': '2026-08-04 07:00:00'},
                            }}, f33, ensure_ascii=False)
             d33 = be33.laden()
             pruefe('xl-1' in d33['bauplaene'],
@@ -2226,11 +2249,18 @@ def main():
                    'eine Dublette wird zu einem Eintrag zusammengefuehrt')
             pruefe(d33['bauplaene']['guardian'].get('zeit') == '2026-08-02 08:00:00',
                    'dabei gewinnt der aeltere Fund, nicht der zuletzt gelesene')
-            pruefe(d33.get('version') == 2, 'die Datei-Version wird hochgesetzt')
+            pruefe(d33.get('version') == be33.DATEI_VERSION,
+               'die Datei-Version wird hochgesetzt')
             # ⚠ Nur EINMAL umziehen — sonst schreibt jeder Start die Datei neu.
             auf_platte33 = js33.load(open(be33.pfad(), encoding='utf-8'))
-            pruefe(auf_platte33.get('version') == 2,
+            pruefe(auf_platte33.get('version') == be33.DATEI_VERSION,
                    'der Umzug wird auf die Platte geschrieben, nicht nur gedacht')
+            # ⚠ Und der Umzug muss die Sprach-Dublette einsammeln — genau die,
+            # die am 29.08.2026 in der Autors Bestand lag. Nur `namensform()` zu
+            # reparieren haette den gespeicherten Bestand nicht angefasst.
+            pruefe(len([k for k in d33['bauplaene']
+                        if k.startswith('ravager-212')]) == 1,
+                   'die deutsche und die englische Fassung werden zusammengefuehrt')
         finally:
             if alt_heim33 is None:
                 os.environ.pop('SC_BP_HOME', None)
@@ -3382,6 +3412,44 @@ def main():
            'kein Aufruf zeigt den Schluesselnamen statt des Textes (%d)'
            % len(set(_fehlend49)))
 
+    print()
+    print('50. Der Autostart merkt sich einen Pfad, den es morgen noch gibt')
+    # ⚠ Gefunden am 29.08.2026 auf der Autors Linux-Rechner: In der Autostart-Datei
+    # stand `Exec=/tmp/.mount_SC-BP-ji95vH/usr/bin/SC-BP-Watcher` — der temporaere
+    # Einhaengepunkt des AppImage. Der bekommt bei JEDEM Start einen neuen
+    # Zufallsnamen. Folge: Der Watcher startete nach einem Neustart nie wieder,
+    # ohne Fehlermeldung — die Datei sah ja voellig richtig aus.
+    #
+    # Ursache war die Reihenfolge: Ein AppImage ist ebenfalls `sys.frozen`, also
+    # gewann die frozen-Abfrage und `APPIMAGE` kam nie dran. Genau das wird hier
+    # geprueft, weil es sich nur an der Reihenfolge entscheidet und ein spaeteres
+    # Umsortieren den Fehler lautlos zurueckholen wuerde.
+    import importlib as _im50
+    from scbp import autostart as _as50
+    _alt_appimage50 = os.environ.get('APPIMAGE')
+    _alt_frozen50 = getattr(sys, 'frozen', None)
+    try:
+        os.environ['APPIMAGE'] = '/home/wer/Programme/SC-BP-Watcher.AppImage'
+        sys.frozen = True
+        _im50.reload(_as50)
+        _befehl50 = _as50.befehl()
+        pruefe('/tmp/.mount' not in _befehl50,
+               'kein Wegwerf-Pfad aus dem AppImage-Einhaengepunkt')
+        pruefe(_befehl50 == '/home/wer/Programme/SC-BP-Watcher.AppImage',
+               'die echte AppImage-Datei gewinnt gegen die frozen-Abfrage')
+    finally:
+        if _alt_appimage50 is None:
+            os.environ.pop('APPIMAGE', None)
+        else:
+            os.environ['APPIMAGE'] = _alt_appimage50
+        if _alt_frozen50 is None:
+            try:
+                del sys.frozen
+            except AttributeError:
+                pass
+        else:
+            sys.frozen = _alt_frozen50
+        _im50.reload(_as50)
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

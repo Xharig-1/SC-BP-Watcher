@@ -53,7 +53,10 @@ import time
 
 from . import fehler, pfade
 
-DATEI_VERSION = 2
+# 3 (29.08.2026): `namensform()` gleicht jetzt auch die SPRACHE der Mengenangabe
+#   an — `(16 Schuss)` und `(16 cap)` sind derselbe Bauplan. Gespeicherte
+#   Bestaende haben die Dublette noch drin, deshalb muss der Umzug erneut laufen.
+DATEI_VERSION = 3
 
 # Rangfolge der Quellen: Ein Eintrag wird nur „aufgewertet", nie herabgestuft.
 # Sonst überschriebe eine spätere vorläufige Log-Zeile eine bereits vom
@@ -138,7 +141,10 @@ def laden():
     # wenn sich wirklich etwas geändert hat. Ein Schreibfehler darf den Start
     # nicht aufhalten: Der Bestand im Speicher stimmt dann trotzdem, nur der
     # Umzug wiederholt sich beim nächsten Mal.
-    if daten.get('version', 1) < 2:
+    # ⚠ Gegen DATEI_VERSION pruefen, nicht gegen eine feste Zahl: Beim Sprung
+    # auf 3 waere ein hart geschriebenes `< 2` stillschweigend wirkungslos
+    # geblieben, und die Dubletten haetten ueberlebt.
+    if daten.get('version', 1) < DATEI_VERSION:
         if _schluessel_erneuern(daten):
             daten['version'] = DATEI_VERSION
             try:
