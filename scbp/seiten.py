@@ -2905,7 +2905,7 @@ def _danke(fenster, rahmen):
              + '\n\n' + t('s_dk_bomb_dazu')),
             ('Morkhan', 'KRT', t('s_dk_morkhan_idee'),
              t('s_dk_morkhan_bugs')),
-            ('Horthy', 'Freilanze', t('s_dk_horthy_idee'), '')):
+            ('Horthy', 'KRT', t('s_dk_horthy_idee'), '')):
         _person(fenster, innen, name, gruppe, idee, funde)
 
     # --- Marken ---
@@ -3512,7 +3512,7 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
     rez = herst_modul.rezept(eintrag['basis'])
     from . import rohstoffe as lager
     for stufe in (rez or {}).get('stufen') or []:
-        # ⭐ Was davon liegt im eigenen Lager? (Vorschlag von Horthy | Freilanze™)
+        # ⭐ Was davon liegt im eigenen Lager? (Vorschlag von Horthy (KRT))
         # ⚠ Gezeigt wird „hast du" bzw. „dir fehlt" — **nie** „du kannst nicht
         # bauen". Das Lager wird von Hand gepflegt und ist irgendwann
         # lückenhaft; ein Hinweis darf danebenliegen, eine Behauptung nicht.
@@ -3768,7 +3768,7 @@ def _berg_ort(fenster, eltern, ort, offen, neu_zeichnen):
 
 # ------------------------------------------------------------------- Lager
 #
-# Vorschlag von **Horthy | Freilanze™** (29.08.2026): Rohstoffe selbst
+# Vorschlag von **Horthy (KRT)** (29.08.2026): Rohstoffe selbst
 # eintragen, beim Herstellen abziehen lassen.
 #
 # ⚠ **Von Hand, weil es nicht anders geht.** Die `Game.log` sagt nichts über

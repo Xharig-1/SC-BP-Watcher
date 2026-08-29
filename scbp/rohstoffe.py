@@ -25,7 +25,7 @@ einziges Mal `craft`, `resource`, `inventory` oder `cargo` vor. Was im
 Frachtraum liegt, kann der Watcher also nicht wissen — anders als bei den
 Bauplänen, die im Log stehen.
 
-**Der Vorschlag dahinter** stammt von **Horthy | Freilanze™** (29.08.2026):
+**Der Vorschlag dahinter** stammt von **Horthy (KRT)** (29.08.2026):
 Rohstoffe selbst eintragen, und beim Herstellen sagt man dem Werkzeug „Bauplan
 X baue ich jetzt" — dann zieht es die Zutaten ab. Die Mengen kennt es seit
 v3.3.0 ohnehin (`herstellung.rezept()`).

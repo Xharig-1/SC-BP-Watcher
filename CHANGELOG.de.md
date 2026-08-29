@@ -39,7 +39,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   die bessere Adresse; die Seite verweist auch dorthin.
 
 - **Mein Lager — und was deine Materialqualität aus dem Produkt macht.**
-  Vorgeschlagen von **Horthy | Freilanze™** 🙏
+  Vorgeschlagen von **Horthy (KRT)** 🙏
 
   Du trägst ein, was du an Rohstoffen hast: **Material, Menge, Qualität,
   Lagerort**. Im Rezept steht dann an jeder Zutat, ob sie da ist oder wie viel
@@ -90,7 +90,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Dank
 
-Die Idee zum Rohstoff-Lager kam von **Horthy | Freilanze™** — und aus ihr ist die Qualitätsrechnung geworden, die jetzt zeigt, was das eigene Material aus einem Bauplan macht. Danke dafür 🙏
+Die Idee zum Rohstoff-Lager kam von **Horthy (KRT)** — und aus ihr ist die Qualitätsrechnung geworden, die jetzt zeigt, was das eigene Material aus einem Bauplan macht. Danke dafür 🙏
 
 Dazu **Krovax** (SCMDB), der auf Anfrage eigens einen öffentlichen Datenspiegel eingerichtet hat, damit Werkzeuge wie dieses eine verlässliche Quelle haben.
 

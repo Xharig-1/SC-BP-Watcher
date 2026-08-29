@@ -38,7 +38,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   place; the page links there.
 
 - **My stock — and what your material quality makes of the product.**
-  Suggested by **Horthy | Freilanze™** 🙏
+  Suggested by **Horthy (KRT)** 🙏
 
   You enter what resources you have: **material, amount, quality, location**.
   Every ingredient in a recipe then shows whether it is there or how much is
@@ -88,7 +88,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Thanks
 
-The idea for the resource stock came from **Horthy | Freilanze™** — and out of it grew the quality calculation that now shows what your own material makes of a blueprint. Thank you 🙏
+The idea for the resource stock came from **Horthy (KRT)** — and out of it grew the quality calculation that now shows what your own material makes of a blueprint. Thank you 🙏
 
 And **Krovax** (SCMDB), who set up a public data mirror on request so tools like this one have a dependable source.
 
