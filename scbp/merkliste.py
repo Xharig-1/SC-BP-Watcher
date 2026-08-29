@@ -42,6 +42,7 @@ Format:
       "eintraege": [{"titel": "Mamba-Helm", "muster": ["adp-mk4", "woodland"]}]
     }
 """
+import re
 import json
 import os
 
@@ -156,8 +157,26 @@ def umschalten(name):
 
 
 def _muster_trifft(eintrag, name_norm):
-    muster = [str(m).lower() for m in (eintrag.get('muster') or [])]
-    return bool(muster) and any(m in name_norm for m in muster)
+    """Passt eine Beobachtung auf diesen Namen?
+
+    ⚠ **An Wortgrenzen, nicht mitten im Wort.** Ein blosses „steckt drin"
+    liefert falsche Treffer, die niemand als solche erkennt: Das Muster
+    `arden backpack` traf am 29.08.2026 auf *W**arden** Backpack Purgatory
+    Camo* — und der Watcher meldete ein Rüstungsteil als verfügbar, das mit
+    der gesuchten Ausrüstung nichts zu tun hat. Wer sich darauf verlässt,
+    fliegt umsonst los.
+
+    Vor und hinter dem Muster darf deshalb kein weiterer Buchstabe und keine
+    Ziffer stehen. Bindestriche und Leerzeichen zählen als Grenze, damit
+    `orc-mkv legs grey` weiter passt.
+    """
+    muster = [str(m).lower().strip() for m in (eintrag.get('muster') or [])]
+    for m in muster:
+        if not m:
+            continue
+        if re.search(r'(?<![a-z0-9])%s(?![a-z0-9])' % re.escape(m), name_norm):
+            return True
+    return False
 
 
 def treffer(name, daten=None):

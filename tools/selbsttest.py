@@ -3805,6 +3805,33 @@ def main():
         pruefe(bool(_w52f) and len(_w52f) == 2 and all(_w52f),
                'Text %s gibt es deutsch und englisch' % _k52f)
 
+    # 52g. Beobachtungs-Muster treffen an Wortgrenzen
+    #
+    # Ein blosses „steckt drin" liefert falsche Treffer, die niemand als solche
+    # erkennt: `arden backpack` traf am 29.08.2026 auf *Warden Backpack
+    # Purgatory Camo*, und der Watcher meldete ein Ruestungsteil als
+    # verfuegbar, das mit der gesuchten Ausruestung nichts zu tun hat. Bei
+    # einer Staffelruestung geht es um genau ein Teil je Platz — die Farben
+    # sind ueber Monate auf Tarnung getestet.
+    print()
+    print('52g. Muster treffen nur an Wortgrenzen')
+    from scbp import merkliste as _mk52g
+    _eintrag52g = {'titel': 'Probe', 'muster': ['arden-cl backpack archangel']}
+    pruefe(_mk52g._muster_trifft(_eintrag52g, 'arden-cl backpack archangel'),
+           'das gesuchte Teil wird erkannt')
+    pruefe(not _mk52g._muster_trifft(
+               {'titel': 'P', 'muster': ['arden backpack']},
+               'warden backpack purgatory camo'),
+           'ein Muster mitten im Wort trifft NICHT (Warden vs. arden)')
+    pruefe(_mk52g._muster_trifft(
+               {'titel': 'P', 'muster': ['orc-mkv legs grey']},
+               'orc-mkv legs grey'),
+           'Bindestriche und Leerzeichen zaehlen als Grenze')
+    pruefe(not _mk52g._muster_trifft({'titel': 'P', 'muster': []}, 'irgendwas'),
+           'ein Eintrag ohne Muster trifft nichts')
+    pruefe(not _mk52g._muster_trifft({'titel': 'P', 'muster': ['']}, 'irgendwas'),
+           'ein leeres Muster ebenso wenig')
+
     # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
     #
     # Eintragen ohne Berichtigen war halb fertig: Wer sich vertippt oder

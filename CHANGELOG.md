@@ -40,6 +40,21 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠⚠ **Watch patterns matched inside words — and reported the wrong item.**
+  The pattern `arden backpack` matched *W**arden** Backpack Purgatory Camo*:
+  the watcher announced a piece of armour as available that has nothing to do
+  with the one being watched.
+
+  Patterns now match at **word boundaries** only — no letter or digit directly
+  before or after. Hyphens and spaces count as boundaries, so `orc-mkv legs
+  grey` still matches.
+
+  > **Why this matters here:** a squadron armour set means exactly one item per
+  > slot. The colours were tested for months for camouflage; an "almost right"
+  > piece is worthless.
+
+  Found by Xharig-1 while proof-reading his own watches.
+
 - ⚠ **On "Report a problem" the five buttons stacked vertically.** The window's
   minimum width was 1100 px while the button row needs 869 px in German plus
   sidebar and margins. It is now 1160 px. Reported by Xharig-1.

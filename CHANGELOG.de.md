@@ -58,6 +58,22 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠⚠ **Beobachtungs-Muster trafen mitten im Wort — und meldeten das Falsche.**
+  Das Muster `arden backpack` traf auf *W**arden** Backpack Purgatory Camo*:
+  Der Watcher meldete ein Rüstungsteil als verfügbar, das mit dem gesuchten
+  nichts zu tun hat. Wer sich darauf verlässt, fliegt umsonst los.
+
+  Muster greifen jetzt nur an **Wortgrenzen** — vor und hinter dem Muster darf
+  kein Buchstabe und keine Ziffer stehen. Bindestriche und Leerzeichen zählen
+  als Grenze, `orc-mkv legs grey` passt also weiterhin.
+
+  > **Warum das hier besonders zählt:** Bei einer Staffelrüstung geht es um
+  > genau ein Teil je Platz. Die Farben sind über Monate auf Tarnung getestet —
+  > *„grad im Dunkeln sind wir mit den Farben kaum noch zu erkennen, selbst im
+  > Nahkampf."* Ein „fast passendes" Teil ist da wertlos.
+
+  Gefunden von Xharig-1 beim Gegenlesen der eigenen Beobachtungen.
+
 - ⚠ **Auf „Fehler melden" standen die fünf Knöpfe untereinander.** Die
   Mindestbreite des Fensters war 1100 px, die Knopfreihe braucht auf Deutsch
   aber 869 px zuzüglich Seitenleiste und Rändern. Jetzt sind es 1160 px, und
