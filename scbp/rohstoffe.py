@@ -84,6 +84,67 @@ def sichern(posten):
         return False
 
 
+def als_csv(posten=None):
+    """Das Lager als Tabelle — Material, Menge, Qualität, Lagerort.
+
+    Warum CSV und nicht nur JSON: Eine Tabelle öffnet sich in jedem
+    Tabellenprogramm und lässt sich weiterreichen. Das eigene JSON ist zum
+    Zurücklesen da, die Tabelle zum Ansehen und Teilen.
+
+    ⚠ Semikolon als Trenner und Komma als Dezimalzeichen — so erwartet es ein
+    deutsches Excel/LibreOffice. Mit Punkt und Komma-Trenner landet „1.36" dort
+    als Datum oder in einer Spalte zu viel.
+    """
+    posten = laden() if posten is None else posten
+    zeilen = ['Material;Menge;Qualitaet;Lagerort']
+    for p in posten:
+        menge = ('%g' % float(p.get('menge') or 0)).replace('.', ',')
+        guete = ('%g' % float(p['qualitaet'])) if p.get('qualitaet') else ''
+        zeilen.append(';'.join((
+            (p.get('material') or '').replace(';', ','),
+            menge, guete,
+            (p.get('ort') or '').replace(';', ','))))
+    return '\n'.join(zeilen) + '\n'
+
+
+def als_json(posten=None):
+    """Das Lager als JSON-Text — dasselbe Format, das `laden()` wieder liest.
+
+    Damit ist der Export zugleich eine Sicherung: Datei wegschreiben, später
+    zurückspielen, fertig.
+    """
+    posten = laden() if posten is None else posten
+    return json.dumps({'format': FORMAT, 'posten': posten},
+                      ensure_ascii=False, indent=1)
+
+
+def aus_json(text):
+    """Ein früher ausgegebenes Lager wieder einlesen.
+
+    Gibt die Postenliste zurück oder `None`, wenn die Datei nicht passt. ⚠ Es
+    wird **nichts** gespeichert — das entscheidet die Oberfläche, nachdem sie
+    gefragt hat, ob ersetzt oder ergänzt werden soll.
+    """
+    try:
+        daten = json.loads(text)
+    except Exception:
+        return None
+    if not isinstance(daten, dict) or daten.get('format') != FORMAT:
+        return None
+    posten = daten.get('posten')
+    if not isinstance(posten, list):
+        return None
+    sauber = []
+    for p in posten:
+        if not isinstance(p, dict) or not (p.get('material') or '').strip():
+            continue
+        sauber.append({'material': str(p.get('material')).strip(),
+                       'menge': float(p.get('menge') or 0),
+                       'qualitaet': p.get('qualitaet'),
+                       'ort': str(p.get('ort') or '').strip()})
+    return sauber
+
+
 def zahl_lesen(text):
     """Eine getippte Zahl lesen — Komma und Punkt gelten gleich.
 
@@ -246,8 +307,14 @@ def pruefen(zutaten):
     return raus
 
 
-def abziehen(zutaten):
-    """Die Zutaten eines Rezepts aus dem Lager nehmen.
+def abziehen(zutaten, anzahl=1):
+    """Die Zutaten eines Rezepts aus dem Lager nehmen — `anzahl` mal.
+
+    ⚠ **`anzahl` gibt es, damit niemand zählen muss.** Wer zehn Stück am Stück
+    baut, klickt sonst zehnmal — und beim elften Klick stimmt der Bestand nicht
+    mehr, ohne dass es auffällt. Am 29.08.2026 genau so gemeldet: „ich klicke
+    dann aber sogar 11 mal, weil ich mich verzählt habe."
+
 
     Gibt `(True, [])` zurück, wenn alles da war — sonst `(False, [Material, …])`
     mit dem, was fehlte. **Abgezogen wird trotzdem, so weit es reicht**: Wer
@@ -260,8 +327,9 @@ def abziehen(zutaten):
     """
     posten = laden()
     fehlt = []
+    faktor = max(1, int(anzahl or 1))
     for _slot, material, menge, guete in zutaten:
-        offen = float(menge or 0)
+        offen = float(menge or 0) * faktor
         gesucht = norm_rohstoff(material)
         # Nur Posten, die die geforderte Qualität erreichen — schlechteres Erz
         # wurde für dieses Rezept ja auch nicht verbraucht.

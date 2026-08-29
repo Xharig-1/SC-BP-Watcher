@@ -438,6 +438,28 @@ TEXTE = {
     # Leute den Text markieren und loeschen — oder sie glauben, die Liste sei
     # kurz, weil nichts da ist.
     's_suche_leeren':    ('Suche leeren', 'Clear search'),
+    # Stueckzahl beim Herstellen. ⚠ Ohne sie klickt man zehnmal und verzaehlt
+    # sich beim elften — dann stimmt der Bestand nicht mehr, ohne dass es
+    # auffaellt. Am 29.08.2026 gemeldet.
+    's_lg_anzahl':       ('Anzahl', 'How many'),
+    # Lager sichern und zurueckholen.
+    's_lg_ausgeben':     ('Lager ausgeben', 'Export stock'),
+    's_lg_aus_json':     ('Als Sicherung (.json)', 'As backup (.json)'),
+    's_lg_aus_csv':      ('Als Tabelle (.csv)', 'As spreadsheet (.csv)'),
+    's_lg_einlesen':     ('Sicherung einlesen', 'Load backup'),
+    's_lg_gespeichert':  ('Gespeichert: %s', 'Saved: %s'),
+    's_lg_eingelesen':   ('%d Posten eingelesen — dein Lager wurde ersetzt.',
+                          '%d entries loaded — your stock was replaced.'),
+    's_lg_datei_falsch': ('Diese Datei ist keine Lager-Sicherung.',
+                          'That file is not a stock backup.'),
+    's_lg_aus_hilfe':    ('Die Sicherung lässt sich hier wieder einlesen. Die '
+                          'Tabelle ist zum Ansehen und Weitergeben — sie kann '
+                          'nicht zurückgelesen werden.',
+                          'The backup can be loaded here again. The '
+                          'spreadsheet is for reading and sharing — it cannot '
+                          'be loaded back.'),
+    's_lg_abgezogen_n':  ('%d× hergestellt — Zutaten abgezogen.',
+                          'Made %d× — materials deducted.'),
     'ov_warte':        ('Warte auf neue Baupl\u00e4ne \u2026',
                         'Waiting for new blueprints \u2026'),
     'ov_as_fehler':    ('Autostart lie\u00df sich nicht \u00e4ndern.',
@@ -1545,7 +1567,11 @@ TEXTE = {
     # Anzeige, Bestand, Serverstatus …). Ein einzelner Anglizismus dazwischen
     # fällt auf, und Einheitlichkeit war der Grund für die ganze Überarbeitung.
     'hf_spiel':          ('Texte im Spiel', 'In-game text'),
-    'hf_bestand':        ('Bestand', 'Inventory'),
+    # ⚠ Nicht nur „Bestand". Seit es „Mein Lager" gibt, verwechseln Leute die
+    # beiden: Der eine Reiter fuehrt die Bauplaene, der andere die Rohstoffe.
+    # Der Name nennt deshalb, worum es geht — und passt zu den Nachbarn
+    # „Bauplan-Liste" und „Bauplan-Fortschritt".
+    'hf_bestand':        ('Bauplan-Bestand', 'Blueprint inventory'),
     # ⚠ „Über“ allein findet niemand, der ein Update sucht.
     # Gemeldet am 26.08.2026: „ich suche updates auch nicht bei Über“.
     'hf_ueber':          ('Update & Über', 'Update & About'),

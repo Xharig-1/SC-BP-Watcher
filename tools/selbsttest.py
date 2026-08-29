@@ -3764,6 +3764,38 @@ def main():
     finally:
         _ro53.sichern(_alt53)
 
+    # Mehrfach herstellen — einmal klicken statt zehnmal
+    _ro53.sichern([{'material': 'Iron', 'menge': 10.0, 'qualitaet': 500,
+                    'ort': ''}])
+    _zut53 = [('Frame', 'Iron', 2.0, 0)]
+    _ok53, _fehlt53 = _ro53.abziehen(_zut53, 3)
+    pruefe(_ok53 and abs(_ro53.menge_von('Iron') - 4.0) < 0.001,
+           'dreimal herstellen zieht dreimal die Zutaten ab (10 - 3x2 = 4)')
+    _ro53.sichern([{'material': 'Iron', 'menge': 10.0, 'qualitaet': 500,
+                    'ort': ''}])
+    _ro53.abziehen(_zut53)
+    pruefe(abs(_ro53.menge_von('Iron') - 8.0) < 0.001,
+           'ohne Angabe bleibt es bei einem Stueck')
+
+    # Ausgeben und wieder einlesen
+    _probe53 = [{'material': 'Iron', 'menge': 1.36, 'qualitaet': 540,
+                 'ort': 'Zuhause'},
+                {'material': 'Riccite', 'menge': 2.91, 'qualitaet': 800,
+                 'ort': ''}]
+    _csv53 = _ro53.als_csv(_probe53)
+    pruefe(_csv53.startswith('Material;Menge;Qualitaet;Lagerort'),
+           'die Tabelle hat eine Kopfzeile')
+    pruefe('1,36' in _csv53,
+           'Mengen stehen mit Komma darin (deutsches Tabellenprogramm)')
+    pruefe(_csv53.count(chr(10)) == 3, 'zwei Posten ergeben zwei Zeilen')
+    _zurueck53 = _ro53.aus_json(_ro53.als_json(_probe53))
+    pruefe(_zurueck53 == _probe53,
+           'was ausgegeben wurde, kommt unveraendert zurueck')
+    pruefe(_ro53.aus_json('kein json') is None,
+           'Unsinn wird nicht eingelesen')
+    pruefe(_ro53.aus_json('{"format": 99, "posten": []}') is None,
+           'und ein fremdes Format auch nicht')
+
     # Komma und Punkt gelten gleich — die einen tippen 12,5, die anderen 12.5
     pruefe(_ro53.zahl_lesen('12,5') == 12.5, 'ein Komma wird als Zahl gelesen')
     pruefe(_ro53.zahl_lesen('12.5') == 12.5, 'ein Punkt genauso')

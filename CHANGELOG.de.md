@@ -10,6 +10,26 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Neu
 
+- **Beim Herstellen lässt sich eine Anzahl angeben.** Wer zehn Stück am Stück
+  baut, klickte bisher zehnmal — und beim elften Klick stimmte der Bestand nicht
+  mehr, ohne dass es auffiel. Jetzt steht neben dem Knopf ein Feld: Anzahl
+  eintragen, einmal klicken, fertig. Danach springt es von selbst auf 1 zurück,
+  damit der nächste Klick nicht unbemerkt wieder zehn abzieht. Vorschlag von
+  Xharig-1.
+
+- **Das Lager lässt sich ausgeben und wieder einlesen.** Als Sicherung (`.json`)
+  — die kommt hier auch wieder herein — oder als Tabelle (`.csv`) zum Ansehen
+  und Weitergeben. Die Tabelle nutzt Semikolon und Komma, damit ein deutsches
+  Tabellenprogramm sie richtig aufteilt.
+
+  > Der Lagerbestand ist Handarbeit, die sonst nirgends liegt: kein Log, keine
+  > Datenquelle, nur deine Eingaben. Ohne Ausgabe wäre sie beim nächsten
+  > Rechnerwechsel weg.
+
+- **Der Reiter „Bestand" heißt jetzt „Bauplan-Bestand".** Seit es „Mein Lager"
+  gibt, waren zwei Reiter mit dem Wort Bestand einer zu viel — der eine führt
+  Baupläne, der andere Rohstoffe. Gemeldet von Xharig-1.
+
 - **Zwei neue Seiten: „Herstellung" und „Bergbau".** Sie beantworten die Frage,
   die nach dem Bauplan kommt — *was brauche ich dafür, und wo hole ich das?*
 

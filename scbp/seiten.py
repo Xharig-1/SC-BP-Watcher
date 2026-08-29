@@ -30,6 +30,7 @@ zeichnen, statt ein eigenes Fenster aufzumachen.
 """
 import os
 import sys
+import time
 import tkinter as tk
 
 from . import bericht, bestand as bestand_datei, fehler, katalog as katalog_modul
@@ -3617,15 +3618,36 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
         rueck = tk.Label(reihe, text='', bg='#0c1017', fg=SUB,
                          font=fenster.f_klein, anchor='w')
 
-        def hergestellt(_e=None, zutaten=stufe['zutaten'], lbl=rueck):
-            ok, fehlt = lager.abziehen(zutaten)
-            lbl.configure(
-                text=t('s_lg_abgezogen') if ok
-                else t('s_lg_teilweise') % ', '.join(fehlt),
-                fg=ACCENT if ok else GOLD)
+        # ⭐ Stückzahl daneben. Wer zehn Stück am Stück baut, soll einmal
+        # klicken statt zehnmal — beim elften Klick stimmt der Bestand sonst
+        # nicht mehr, und niemand merkt es.
+        anzahl_var = tk.StringVar(value='1')
+
+        def hergestellt(_e=None, zutaten=stufe['zutaten'], lbl=rueck,
+                        var=anzahl_var):
+            wie_oft = lager.zahl_lesen(var.get())
+            # Unsinn im Feld heisst 1 — lieber einmal abziehen als gar nichts
+            # tun und den Nutzer raten lassen, warum nichts passiert.
+            wie_oft = 1 if not wie_oft or wie_oft < 1 else int(wie_oft)
+            ok, fehlt = lager.abziehen(zutaten, wie_oft)
+            if ok:
+                text = (t('s_lg_abgezogen') if wie_oft == 1
+                        else t('s_lg_abgezogen_n') % wie_oft)
+            else:
+                text = t('s_lg_teilweise') % ', '.join(fehlt)
+            lbl.configure(text=text, fg=ACCENT if ok else GOLD)
+            var.set('1')          # zurück auf 1, damit der nächste Klick nicht
+                                  # unbemerkt wieder zehn abzieht
             neu_zeichnen()
 
         _knopf(fenster, reihe, t('s_lg_bauen'), hergestellt).pack(side='left')
+        tk.Label(reihe, text=t('s_lg_anzahl'), bg='#0c1017', fg=SUB,
+                 font=fenster.f_klein).pack(side='left', padx=(12, 6))
+        from .hauptfenster import rundes_feld as _rf_anzahl
+        _anzahl_feld = _rf_anzahl(reihe, anzahl_var, fenster.f_klein,
+                                  '#0c1017', LINIE, ACCENT, FG)
+        _anzahl_feld.halter.configure(width=70)
+        _anzahl_feld.halter.pack(side='left')
         rueck.pack(side='left', padx=(10, 0))
         # Eine Zeile, die sagt, was der Knopf tut — sonst rät man.
         _fliesstext(block, t('s_lg_bauen_hilfe'), fenster.f_klein, fill='x')
@@ -4354,5 +4376,58 @@ def _lager(fenster, rahmen):
     knopf_rahmen.pack(anchor='w', pady=(4, 10))
     meldung.pack(fill='x')
     liste_rahmen.pack(fill='both', expand=True, pady=(6, 0))
+
+    # --- Sichern und zurueckholen --------------------------------------
+    # ⚠ Das Lager wird von Hand gepflegt — es ist Arbeit, die sonst nirgends
+    # liegt. Ohne Ausgabe ist sie beim naechsten Rechnerwechsel weg.
+    def _ausgeben(art):
+        from . import dateiwahl
+        endung = '.csv' if art == 'csv' else '.json'
+        ziel = dateiwahl.datei_speichern(
+            t('s_lg_ausgeben'),
+            vorschlag='lager-%s%s' % (time.strftime('%Y-%m-%d'), endung),
+            endung=endung, start=None)
+        if not ziel:
+            return
+        try:
+            inhalt = (lager.als_csv() if art == 'csv' else lager.als_json())
+            with open(ziel, 'w', encoding='utf-8') as f:
+                f.write(inhalt)
+            meldung.configure(text=t('s_lg_gespeichert') % os.path.basename(ziel),
+                              fg=SUB)
+        except Exception as ausnahme:
+            fehler.merken('seiten.lager.ausgeben', ausnahme)
+
+    def _einlesen():
+        from . import dateiwahl
+        quelle = dateiwahl.datei_oeffnen(t('s_lg_einlesen'))
+        if not quelle:
+            return
+        try:
+            with open(quelle, encoding='utf-8') as f:
+                posten = lager.aus_json(f.read())
+        except Exception as ausnahme:
+            fehler.merken('seiten.lager.einlesen', ausnahme)
+            posten = None
+        if posten is None:
+            # ⚠ Nicht schweigen. Wer eine falsche Datei waehlt und nichts
+            # passieren sieht, haelt das Einlesen fuer kaputt.
+            meldung.configure(text=t('s_lg_datei_falsch'), fg=GOLD)
+            return
+        lager.sichern(posten)
+        verwerfen()
+        meldung.configure(text=t('s_lg_eingelesen') % len(posten), fg=SUB)
+        zeichnen()
+
+    _reihe_aus = tk.Frame(innen, bg=BG)
+    _reihe_aus.pack(fill='x', pady=(14, 0))
+    _knopf(fenster, _reihe_aus, t('s_lg_aus_json'),
+           lambda: _ausgeben('json')).pack(side='left')
+    _knopf(fenster, _reihe_aus, t('s_lg_aus_csv'),
+           lambda: _ausgeben('csv')).pack(side='left', padx=(8, 0))
+    _knopf(fenster, _reihe_aus, t('s_lg_einlesen'),
+           lambda: _einlesen()).pack(side='left', padx=(8, 0))
+    _fliesstext(innen, t('s_lg_aus_hilfe'), fenster.f_klein, fill='x')
+
     zeichnen()
 

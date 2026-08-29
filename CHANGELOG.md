@@ -10,6 +10,21 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **Crafting takes a quantity.** Building ten in a row meant ten clicks — and on
+  the eleventh the stock was wrong without anyone noticing. There is now a field
+  next to the button: enter the number, click once, done. It resets to 1
+  afterwards so the next click does not quietly deduct ten again. Suggested by
+  Xharig-1.
+
+- **The stock list can be exported and loaded back.** As a backup (`.json`),
+  which loads again here, or as a spreadsheet (`.csv`) for reading and sharing.
+
+  > Your stock is handwork that exists nowhere else: no log, no data source,
+  > only what you typed. Without an export it is gone at the next machine.
+
+- **The "Inventory" tab is now "Blueprint inventory".** With "My stock" next to
+  it, one of the two names had to say which is which. Reported by Xharig-1.
+
 - **Two new pages: "Crafting" and "Mining".** They answer the question that
   comes after the blueprint — *what do I need, and where do I get it?*
 
