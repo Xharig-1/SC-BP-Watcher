@@ -1314,6 +1314,15 @@ TEXTE = {
     # lauter falsche Ergebnisse bekommen: sein Erz gaelte als unbrauchbar.
     's_lg_qualitaet':    ('Qualität 0–1000 (freiwillig)',
                           'Quality 0–1000 (optional)'),
+    # Vorschlaege beim Eintippen — ein freies Feld fuer einen Namen, der exakt
+    # passen muss, ist eine stille Fehlerquelle. Wer "Aslerite" schreibt,
+    # bekommt nie einen Treffer und erfaehrt auch nicht, warum.
+    's_lg_meinst_du':    ('Meintest du:', 'Did you mean:'),
+    's_lg_unbekannt':    ('Dieses Material kommt in keinem Rezept vor. Du kannst '
+                          'es trotzdem eintragen — dann taucht es nur nicht beim '
+                          'Herstellen auf.',
+                          'This material appears in no recipe. You can still add '
+                          'it — it just will not show up when crafting.'),
     's_lg_q_wert':       ('Q %g', 'Q %g'),
     's_lg_ort':          ('Fundort (freiwillig)', 'Location (optional)'),
     's_lg_eintragen':    ('Eintragen', 'Add'),

@@ -499,3 +499,46 @@ def werte_mit_lager(name_oder_tag, qualitaet_je_material):
                          'material': s['material'], 'qualitaet': q,
                          'faktor': f, 'slot': s['slot']})
     return raus
+
+
+def rohstoffnamen():
+    """Alle Materialien, die in Rezepten vorkommen — alphabetisch.
+
+    ⚠ **Damit niemand raten oder tippen muss.** Ein freies Textfeld für einen
+    Namen, der exakt passen muss, ist eine stille Fehlerquelle: Wer „Aslerite"
+    schreibt, bekommt nie einen Treffer und erfährt auch nicht, warum. Gemessen
+    am 29.08.2026 sind es **26** Materialien — eine Liste, die in jede Auswahl
+    passt.
+    """
+    namen = set()
+    for b in laden().get('blueprints') or []:
+        for t_ in b.get('tiers') or []:
+            for slot, rohstoff, _menge, _guete in _zutaten(t_):
+                if rohstoff:
+                    namen.add(rohstoff)
+    return sorted(namen, key=lambda x: x.lower())
+
+
+def kennt_rohstoff(name):
+    """Ist dieser Name einem Rezept-Material zuzuordnen?"""
+    if not (name or '').strip():
+        return False
+    gesucht = norm_rohstoff(name)
+    return any(norm_rohstoff(n) == gesucht for n in rohstoffnamen())
+
+
+def aehnliche_rohstoffe(name, hoechstens=3):
+    """Vorschläge zu einem Namen, der so nicht bekannt ist.
+
+    Erst Namen, die den Text enthalten; sonst die mit der kleinsten
+    Tippabweichung. Damit aus „Aslerite" ein „Aslarite" wird, statt eines
+    stillen Fehlschlags."""
+    import difflib
+    text = (name or '').strip().lower()
+    if not text:
+        return []
+    alle = rohstoffnamen()
+    treffer = [n for n in alle if text in n.lower()]
+    if treffer:
+        return treffer[:hoechstens]
+    return difflib.get_close_matches(text, alle, n=hoechstens, cutoff=0.6)

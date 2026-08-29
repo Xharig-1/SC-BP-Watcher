@@ -60,6 +60,10 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   ausdrücklich dabei — sonst hieße es „dir fehlt 0,3", während 12 SCU im Lager
   liegen.
 
+  **Beim Eintragen schlägt der Watcher die Materialien vor**, die es wirklich
+  gibt — 26 Stück aus den Rezepten. Wer „Aslerite" tippt, bekommt „Aslarite"
+  angeboten, statt stillschweigend nie einen Treffer zu haben.
+
   ⚠ **Das Lager wird von Hand geführt**, weil das Spiel nichts darüber verrät:
   In 17 MB Protokollen steht kein Wort zu Rohstoffen oder Herstellung. Deshalb
   sagt der Watcher auch nie „du kannst das nicht bauen", sondern nur „dir fehlt
@@ -82,6 +86,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   der alte Name mehrdeutig gewesen.
 
 ### Behoben
+
+- ⚠ **Die neuen Daten kamen bei niemandem an, der schon einen Katalog hatte.**
+  Der Abruf brach ab, sobald der Bauplan-Katalog aktuell war — und das ist er
+  bei jedem bisherigen Nutzer. Herstellung, Bergbau und Lager wären dauerhaft
+  leer geblieben, bis Star Citizen das nächste Mal patcht. Die beiden Abrufe
+  werden jetzt **immer** geprüft; sie bringen ihre eigene „schon aktuell?"-Frage
+  mit und laden nichts doppelt.
+- **Die Qualitätsskala stand falsch da.** Im Lager hieß das Feld „Güte %" und
+  zeigte Werte als „720 %" an. Die Rezepte rechnen aber mit **0 bis 1000**. Wer
+  im Spiel „72" abliest und einträgt, hätte danach lauter falsche Ergebnisse
+  bekommen — sein Erz gälte als unbrauchbar, obwohl es gut ist.
 
 - **„Netzfehler", wo die Seite den Abruf nur abgelehnt hatte.** Ein 403 ist eine
   Absage, kein Wackelkontakt: Das Werkzeug sagt das jetzt klar, arbeitet mit dem

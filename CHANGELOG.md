@@ -58,6 +58,10 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   If material is on hand but below the required quality, it says so — otherwise
   you would read "missing 0.3" while 12 SCU sit in your stock.
 
+  **When adding, the watcher suggests the materials that actually exist** — 26
+  of them, from the recipes. Type "Aslerite" and you are offered "Aslarite",
+  instead of silently never getting a match.
+
   ⚠ **The stock is kept by hand**, because the game gives nothing away: 17 MB of
   logs contain not one word about resources or crafting. That is why the watcher
   never says "you cannot build this", only "you are missing Iron". A stock that
@@ -80,6 +84,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   would have been ambiguous.
 
 ### Fixed
+
+- ⚠ **The new data never arrived for anyone who already had a catalogue.**
+  The fetch stopped as soon as the blueprint catalogue was current — which it is
+  for every existing user. Crafting, Mining and Stock would have stayed empty
+  until the next Star Citizen patch. Both fetches are now **always** checked;
+  they carry their own "already current?" test and load nothing twice.
+- **The quality scale was shown wrongly.** In the stock the field read
+  "Quality %" and values appeared as "720 %". The recipes work with **0 to
+  1000**. Anyone reading "72" in game and entering that would have got wrong
+  results throughout — their ore would count as unusable when it is good.
 
 - **"Network error" where the site had simply refused the request.** A 403 is a
   refusal, not a loose cable: the tool now says so plainly, keeps working with

@@ -3791,6 +3791,7 @@ def _lager(fenster, rahmen):
     guete = tk.StringVar()
     ort = tk.StringVar()
 
+    vorschlag_rahmen = None
     for beschriftung, var in ((t('s_lg_material'), material),
                               (t('s_lg_menge'), menge),
                               (t('s_lg_qualitaet'), guete),
@@ -3798,6 +3799,37 @@ def _lager(fenster, rahmen):
         ziel = _feld(fenster, innen, beschriftung, '')
         f = rundes_feld(ziel, var, fenster.f_klein, '#0c1017', LINIE, ACCENT, FG)
         f.halter.pack(fill='x', pady=(4, 8))
+        if var is material:
+            # ⭐ Vorschläge direkt unter dem Materialfeld — anklickbar.
+            # Ohne sie tippt jemand „Aslerite", bekommt nie einen Treffer und
+            # sucht den Fehler bei sich. Die Liste ist kurz (26 Materialien),
+            # also passt sie unter das Feld statt in ein Auswahlmenü.
+            vorschlag_rahmen = tk.Frame(innen, bg=BG)
+            vorschlag_rahmen.pack(fill='x', pady=(0, 8))
+
+    def vorschlaege_zeigen(*_):
+        from . import herstellung as h
+        if vorschlag_rahmen is None:
+            return
+        for w in vorschlag_rahmen.winfo_children():
+            w.destroy()
+        text = material.get().strip()
+        if not text or h.kennt_rohstoff(text):
+            return
+        treffer = h.aehnliche_rohstoffe(text)
+        if not treffer:
+            _fliesstext(vorschlag_rahmen, t('s_lg_unbekannt'), fenster.f_klein,
+                        fill='x')
+            return
+        tk.Label(vorschlag_rahmen, text=t('s_lg_meinst_du'), bg=BG, fg=SUB,
+                 font=fenster.f_klein).pack(side='left', padx=(0, 8))
+        for name in treffer:
+            lbl = tk.Label(vorschlag_rahmen, text=name, bg=BG, fg=ACCENT,
+                           font=fenster.f_klein, cursor='hand2')
+            lbl.pack(side='left', padx=(0, 10))
+            lbl.bind('<Button-1>', lambda _e, n=name: material.set(n))
+
+    material.trace_add('write', vorschlaege_zeigen)
 
     liste_rahmen = tk.Frame(innen, bg=BG)
     meldung = tk.Label(innen, text='', bg=BG, fg=SUB, font=fenster.f_klein,

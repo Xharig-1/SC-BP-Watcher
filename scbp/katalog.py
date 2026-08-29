@@ -774,14 +774,21 @@ def aktualisieren(fortschritt=None):
         # Neu gebaut wird bei neuer Spielversion **oder** bei neuem Aufbau
         # (siehe `FORMAT`). Das zweite ist der Grund, warum ein Katalog-Umbau
         # überhaupt bei jemandem ankommt, der schon einen liegen hat.
-        if not version or (version == da.get('version')
-                           and da.get('format') == FORMAT):
-            return False, 0, version or ''
-        anzahl, version = erzeugen(version, fortschritt)
-        # Die Rezepte hängen an derselben Spielversion — also im selben Zug
-        # holen. **Ein eigener Versuch mit eigenem `try`**: Scheitert er, soll
-        # der Katalog trotzdem stehen; die Herstellungs-Seite bleibt dann leer
-        # und sagt das, statt den ganzen Abruf zu verlieren.
+        # ⚠⚠ **Die Werkstatt-Daten VOR der Abbruchbedingung holen.**
+        #
+        # Sie standen ursprünglich hinter `erzeugen()` — und wurden damit bei
+        # niemandem je geholt, der schon einen aktuellen Katalog hatte. Also
+        # bei **allen bisherigen Nutzern**: Der Katalog stimmte, die Funktion
+        # kehrte hier um, und Herstellung, Bergbau und Lager blieben dauerhaft
+        # leer, bis CIG das nächste Mal patcht.
+        #
+        # Beide Module bringen ihre **eigene** Prüfung mit (`schon aktuell?`)
+        # und laden nichts doppelt. Sie hängen nicht am Katalog-Format, sondern
+        # nur an der Spielversion.
+        #
+        # Jeweils **eigenes `try`**: Scheitert eines, soll der Katalog trotzdem
+        # durchlaufen — eine leere Seite, die das sagt, ist besser als ein
+        # verlorener Abruf.
         try:
             from . import herstellung
             herstellung.aktualisieren(version, fortschritt)
@@ -792,6 +799,11 @@ def aktualisieren(fortschritt=None):
             bergbau.aktualisieren(version, fortschritt)
         except Exception as ausnahme:
             fehler.merken('katalog.aktualisieren.bergbau', ausnahme)
+
+        if not version or (version == da.get('version')
+                           and da.get('format') == FORMAT):
+            return False, 0, version or ''
+        anzahl, version = erzeugen(version, fortschritt)
         return bool(anzahl), anzahl, version
     except Exception:
         return False, 0, ''
