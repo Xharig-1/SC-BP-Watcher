@@ -10,6 +10,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Neu
 
+- **Ein roter Knopf „Lager löschen"** — mit Rückfrage, damit niemand
+  versehentlich seinen Bestand verliert. In der Frage steht, **wie viele
+  Posten** verschwinden; „4 Posten werden entfernt" wiegt anders als „wirklich
+  löschen?". Das Lager ist Handarbeit, die sonst nirgends liegt: kein Log,
+  keine Datenquelle, nur deine Eingaben. Sichern lässt es sich mit dem Knopf
+  daneben.
+
 - ⭐ **Suche nach dem Auftrag.** „Retake" fand bisher nichts, obwohl sechs
   Baupläne aus Aufträgen mit diesem Wort stammen. Gesucht wird jetzt auch in
   **Auftragsname, Fraktion und Auftragsart** — „nine tails" findet drei

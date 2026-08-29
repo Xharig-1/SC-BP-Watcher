@@ -4678,6 +4678,30 @@ def _lager(fenster, rahmen):
            lambda: _ausgeben('csv')).pack(side='left', padx=(8, 0))
     _knopf(fenster, _reihe_aus, t('s_lg_einlesen'),
            lambda: _einlesen()).pack(side='left', padx=(8, 0))
+
+    def _leeren():
+        """Das ganze Lager verwerfen — nach Rückfrage.
+
+        ⚠ Rot **und** mit Frage. Das Lager ist Handarbeit, die sonst nirgends
+        liegt: kein Log, keine Datenquelle, nur die eigenen Eingaben. Ein
+        versehentlicher Klick wäre unwiederbringlich, deshalb steht in der
+        Frage auch die Zahl der Posten — „4 Posten werden entfernt" wiegt
+        anders als „wirklich löschen?".
+        """
+        from .hauptfenster import frage_stellen
+        anzahl = len(lager.laden())
+        if not anzahl:
+            return
+        if not frage_stellen(fenster.root, t('s_lg_leeren_frage_t'),
+                             t('s_lg_leeren_frage') % anzahl):
+            return
+        lager.sichern([])
+        verwerfen()
+        meldung.configure(text=t('s_lg_geleert') % anzahl, fg=GOLD)
+        zeichnen()
+
+    _knopf(fenster, _reihe_aus, t('s_lg_leeren'), _leeren,
+           gefahr=True).pack(side='left', padx=(24, 0))
     _fliesstext(innen, t('s_lg_aus_hilfe'), fenster.f_klein, fill='x')
 
     zeichnen()

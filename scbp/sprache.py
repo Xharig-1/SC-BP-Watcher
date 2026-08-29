@@ -290,7 +290,8 @@ TEXTE = {
                           '%d blueprints · you are missing: %s'),
     'auftrag_fehlt_mehr': ('%d Baupläne · dir fehlen %d, darunter: %s',
                           '%d blueprints · you are missing %d, among them: %s'),
-    'auftrag_komplett':  ('%d Baupläne · hast du alle',
+    # ⚠ „du hast alle", nicht „hast du alle" — das klingt sonst wie eine Frage.
+    'auftrag_komplett':  ('%d Baupläne · du hast alle',
                           '%d blueprints · you have them all'),
     'nachgelesen':       ('Nachgelesen: %d Baupläne aus %d früheren Sitzungen '
                           'übernommen.',
@@ -452,6 +453,19 @@ TEXTE = {
                           '%d entries loaded — your stock was replaced.'),
     's_lg_datei_falsch': ('Diese Datei ist keine Lager-Sicherung.',
                           'That file is not a stock backup.'),
+    # ⚠ Rot und mit Rückfrage. Das Lager ist Handarbeit, die sonst nirgends
+    # liegt — kein Log, keine Datenquelle, nur die eigenen Eingaben. Ein
+    # versehentlicher Klick waere unwiederbringlich.
+    's_lg_leeren':       ('Lager löschen', 'Clear stock'),
+    's_lg_leeren_frage_t': ('Wirklich das ganze Lager löschen?',
+                            'Really clear the whole stock?'),
+    's_lg_leeren_frage': ('%d Posten werden entfernt. Das lässt sich nicht '
+                          'rückgängig machen — sichere vorher, wenn du sie '
+                          'noch brauchst.',
+                          '%d entries will be removed. This cannot be undone — '
+                          'export first if you still need them.'),
+    's_lg_geleert':      ('Lager geleert — %d Posten entfernt.',
+                          'Stock cleared — %d entries removed.'),
     's_lg_aus_hilfe':    ('Die Sicherung lässt sich hier wieder einlesen. Die '
                           'Tabelle ist zum Ansehen und Weitergeben — sie kann '
                           'nicht zurückgelesen werden.',

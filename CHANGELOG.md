@@ -10,6 +10,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **A red "Clear stock" button** — with a confirmation, so nobody loses their
+  stock by accident. The question names **how many entries** will go. Your
+  stock is handwork that exists nowhere else, and the export button sits right
+  next to it.
+
 - ⭐ **Search by contract.** "Retake" used to find nothing although six
   blueprints come from contracts with that word. The search now also covers
   **contract name, faction and contract type** — "nine tails" finds three
