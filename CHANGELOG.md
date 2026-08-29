@@ -137,6 +137,17 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠ **The reset control in the blueprint list could not be found.** It existed —
+  as a small grey underlined text next to the result count. It was missed
+  entirely and filters were cleared by hand instead. What you cannot find is not
+  there. It now looks like a button, framed and in green, and still appears only
+  when a filter is actually set.
+
+- **The blueprint list starts without filters.** Setting "docking collar, size 2,
+  grade A" and returning to the tab later showed "Nothing found" — easily
+  mistaken for an empty inventory. Filters and search box are cleared on
+  reopening.
+
 - ⚠ **"With your material" was shown even when none of it was in stock.** The
   line on the right said "you are missing 1.2", yet a factor was calculated
   below — from the slider default, not from your material. Anyone reading that

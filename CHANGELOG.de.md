@@ -145,6 +145,18 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠ **Der Zurücksetzen-Knopf der Bauplan-Liste war nicht zu finden.** Es gab
+  ihn — als kleinen grauen Unterstrich-Text neben dem Trefferzähler. Xharig-1
+  suchte ihn vergeblich und stellte die Filter von Hand zurück: „nervt auf
+  Dauer". Was man nicht findet, ist nicht da. Er sieht jetzt aus wie ein Knopf,
+  mit Rahmen und in Grün, und erscheint weiterhin nur, wenn wirklich gefiltert
+  wird.
+
+- **Die Bauplan-Liste startet ohne Filter.** Wer „Andockkragen, Größe 2, Grad A"
+  eingestellt und den Reiter später wieder aufgerufen hatte, sah „Nichts
+  gefunden" — und konnte das leicht für einen leeren Bestand halten. Auswahl und
+  Suchfeld sind beim erneuten Aufrufen leer.
+
 - ⚠ **„Mit deinem Material" stand auch dann da, wenn nichts davon im Lager
   lag.** Rechts meldete die Zeile „dir fehlt: 1.2", darunter wurde trotzdem
   gerechnet — mit dem Standardwert des Reglers, nicht mit deinem Material. Wer

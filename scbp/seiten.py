@@ -567,6 +567,19 @@ def _liste(fenster, rahmen):
     from . import bestandsfenster
     fenster.bestandsseite = bestandsfenster.Bestandsfenster(rahmen=rahmen)
 
+    # ⚠ Beim erneuten Aufrufen ohne Filter anfangen. Die Seite wird nur ein-
+    # und ausgeblendet, sonst stünde die Auswahl von vorhin noch da — und wer
+    # „Andockkragen, Größe 2, Grad A" vergessen hat, sieht „Nichts gefunden"
+    # und hält den Bestand für leer. Am 29.08.2026 gemeldet.
+    def _frisch():
+        seite = getattr(fenster, 'bestandsseite', None)
+        if seite is None:
+            return
+        seite._fein_leeren()
+        seite._suche_leeren()
+
+    fenster.beim_zeigen['liste'] = _frisch
+
 
 def _fortschritt(fenster, rahmen):
     """Wie weit bin ich? — nach Bereichen gegliedert, jeder Bereich aufklappbar.

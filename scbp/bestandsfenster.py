@@ -444,10 +444,20 @@ class Bestandsfenster:
         # lässt `feld()` das Auswahlfeld weg.
         feld('patch', [('', t('ff_alle_patches'))] + self._patches())
 
+        # ⚠ Ein Knopf, kein unterstrichener Kleintext. Er stand hier als
+        # graue 9-Punkt-Zeile neben dem Trefferzähler — und wurde übersehen:
+        # „ein Reset-Knopf fehlt, bisher muss man das per Hand machen"
+        # (29.08.2026), obwohl es ihn gab. Was man nicht findet, ist nicht da.
         self.zuruecksetzen_lbl = tk.Label(
-            reihe, text=t('ff_zuruecksetzen'), bg=BG, fg=SUB,
-            font=schrift(9, unterstrichen=True), cursor='hand2', padx=6)
+            reihe, text=t('ff_zuruecksetzen'), bg=FLAECHE, fg=ACCENT,
+            font=schrift(9), cursor='hand2', padx=10, pady=3,
+            highlightthickness=1, highlightbackground=ACCENT,
+            highlightcolor=ACCENT)
         self.zuruecksetzen_lbl.bind('<Button-1>', lambda e: self._fein_leeren())
+        self.zuruecksetzen_lbl.bind(
+            '<Enter>', lambda e: self.zuruecksetzen_lbl.configure(bg='#1d2a14'))
+        self.zuruecksetzen_lbl.bind(
+            '<Leave>', lambda e: self.zuruecksetzen_lbl.configure(bg=FLAECHE))
 
         self.treffer_lbl = tk.Label(reihe, text='', bg=BG, fg=SUB,
                                     font=schrift(9))
