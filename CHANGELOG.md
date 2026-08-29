@@ -137,6 +137,19 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠ **With many sources for one blueprint you could not scroll to the bottom.**
+  Expanding the origins — the "Hart Scraper Module" has twelve — left the lower
+  entries out of view and out of reach.
+
+  > Cause: the scroll length is built from **estimated** row heights. That holds
+  > while every row is the same height; an expanded blueprint is several times
+  > taller, and the estimate knew nothing about it.
+
+  The list now re-measures whenever a built section differs from the estimate,
+  shifts the following ones and extends the scroll area. It does this by itself
+  rather than relying on someone remembering it at each click site. Reported by
+  Xharig-1.
+
 - ⚠ **The reset control in the blueprint list could not be found.** It existed —
   as a small grey underlined text at the bottom right, next to the result count.
   It was missed entirely and filters were cleared by hand instead. What you

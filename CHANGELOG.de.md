@@ -145,6 +145,19 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠ **Bei vielen Wegen zu einem Bauplan ließ sich nicht bis nach unten
+  rollen.** Wer die Herkunft aufklappte — beim „Hart Scraper Module" sind es
+  zwölf Wege —, sah die unteren Einträge nicht und kam auch nicht an sie heran.
+
+  > Ursache: Die Länge der Rollfläche entsteht aus **geschätzten** Zeilenhöhen.
+  > Das stimmt, solange jede Zeile gleich hoch ist; ein aufgeklappter Bauplan
+  > ist aber ein Vielfaches höher, und die Schätzung wusste nichts davon.
+
+  Die Liste misst jetzt nach, sobald ein gebauter Abschnitt von der Schätzung
+  abweicht, rückt die folgenden nach und verlängert die Rollfläche. Das läuft
+  von selbst — es hängt nicht daran, dass jemand an jeder Klickstelle daran
+  denkt. Gemeldet von Xharig-1.
+
 - ⚠ **Der Zurücksetzen-Knopf der Bauplan-Liste war nicht zu finden.** Es gab
   ihn — als kleinen grauen Unterstrich-Text unten rechts neben dem
   Trefferzähler. Xharig-1 suchte ihn vergeblich und stellte die Filter von Hand

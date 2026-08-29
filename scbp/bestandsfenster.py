@@ -1191,6 +1191,42 @@ class Bestandsfenster:
                                           width=breite)
         self._blockteile[nummer] = (wid, rahmen)
 
+    def _hoehen_nachziehen(self):
+        """Die echten Blockhöhen übernehmen — nach dem Auf- oder Zuklappen.
+
+        ⚠ Die Rollhöhe entsteht aus **geschätzten** Zeilenhöhen (Kopf, Zeile,
+        Zeile mit Zusatz). Das stimmt, solange jede Zeile gleich hoch ist. Klappt
+        jemand die Herkunft eines Bauplans auf, wächst der Block aber um ein
+        Vielfaches: Bei „Hart Scraper Module" sind es zwölf Wege. Die Schätzung
+        weiß nichts davon, die Rollfläche bleibt zu kurz — und die unteren Wege
+        sind nicht erreichbar. Am 29.08.2026 gemeldet: „wenn es sehr viele Orte
+        gibt, muss man scrollen können, um die unteren zu sehen."
+
+        Deshalb hier: gebaute Blöcke ausmessen, alle Blöcke neu untereinander
+        legen, Rollfläche auf die neue Gesamthöhe setzen.
+        """
+        if not self._block_start:
+            return
+        try:
+            self.leinwand.update_idletasks()
+            y = 0
+            for nummer in range(len(self._block_start)):
+                teil = self._blockteile.get(nummer)
+                if teil is not None:
+                    # Nur gebaute Blöcke lassen sich messen; die übrigen
+                    # behalten ihre Schätzung, bis sie ins Bild kommen.
+                    hoch = max(1, teil[1].winfo_reqheight())
+                    self._block_h[nummer] = hoch
+                    self.leinwand.coords(teil[0], 0, y)
+                self._block_y[nummer] = y
+                y += self._block_h[nummer]
+            self._gesamthoehe = y
+            breite = max(1, self.leinwand.winfo_width())
+            self.leinwand.configure(scrollregion=(0, 0, breite, y))
+        except tk.TclError:
+            return
+        self._bloecke_pflegen()
+
     def _bloecke_pflegen(self, *_):
         """Blöcke im Sichtfeld bauen, weit entfernte wieder abräumen."""
         if not self._block_start or getattr(self, '_pflege_laeuft', False):
@@ -1221,6 +1257,40 @@ class Bestandsfenster:
             pass
         finally:
             self._pflege_laeuft = False
+        # ⚠ Erst jetzt lässt sich prüfen, ob die Schätzung stimmt: Gebaut ist
+        # gebaut, und ein aufgeklappter Bauplan ist ein Vielfaches höher als
+        # eine Zeile. Ohne diese Runde bleibt die Rollfläche zu kurz und die
+        # unteren Wege sind unerreichbar.
+        self._hoehen_pruefen()
+
+    def _hoehen_pruefen(self):
+        """Weicht ein gebauter Block von seiner Schätzung ab? Dann nachziehen.
+
+        Selbsttätig statt an jeder Klickstelle einzeln: Aufgeklappt wird an
+        zwei Stellen (Herkunft eines Bauplans, „weitere Wege" darin), und beim
+        nächsten Umbau käme eine dritte dazu, die jemand vergisst.
+
+        ⚠ Der Wächter verhindert die Schleife — `_hoehen_nachziehen()` ruft
+        `_bloecke_pflegen()`, und das käme sonst wieder hier heraus.
+        """
+        if getattr(self, '_hoehen_laeuft', False) or not self._blockteile:
+            return
+        abweichung = False
+        try:
+            for nummer, (_wid, rahmen) in self._blockteile.items():
+                echt = max(1, rahmen.winfo_reqheight())
+                if abs(echt - self._block_h[nummer]) > 2:
+                    abweichung = True
+                    break
+        except (tk.TclError, IndexError, KeyError):
+            return
+        if not abweichung:
+            return
+        self._hoehen_laeuft = True
+        try:
+            self._hoehen_nachziehen()
+        finally:
+            self._hoehen_laeuft = False
 
     def _zeilen_deckel(self):
         """Wie viele Zeilen in eine Ansicht passen, ohne dass X11 aussteigt.
@@ -1456,6 +1526,9 @@ class Bestandsfenster:
             else:
                 inhalt.pack(fill='x', pady=(8, 0))
                 kopf.symbol_tauschen('zuklappen')
+            # ⚠ Ohne das bleibt die Rollfläche so lang wie vorher — die
+            # aufgeklappten Wege stehen dann unerreichbar unterhalb.
+            self._hoehen_nachziehen()
 
         kopf.bind('<Button-1>', umschalten)
         for q in weitere:
