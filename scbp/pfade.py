@@ -1030,6 +1030,22 @@ KUERZEL_RE = re.compile(
     r'|(?:ir|em|cs)\d{1,2})\)\s*$' % (_KLASSEN_KURZ, _KLASSEN_KURZ))
 
 
+# Die Mengenangabe am Namensende — `(16 cap)`, `(16 Schuss)`, `(40 rounds)`.
+#
+# ⚠ **Warum das Wort weg muss und die Zahl bleibt.** Der SC Deutsch Launcher
+# liest den **englischen** Katalog und schreibt `Ravager-212 Twin Shotgun
+# Magazine (16 cap)`. Die **Log-Nachlese** liest dieselbe Kiste in der Sprache,
+# in der das Spiel laeuft — bei der Autor auf Deutsch: `... (16 Schuss)`.
+# Ergebnis: derselbe Bauplan zweimal im Bestand, und die angezeigte Zahl ist zu
+# hoch. Gemessen am 29.08.2026 an einem echten Bestand: 405 angezeigt, 403 echt.
+#
+# Die **Zahl** ist Teil der Identitaet — ein 40er- und ein 60er-Magazin sind
+# verschiedene Bauplaene. Deshalb wird `(16 Schuss)` zu `(16)`, nicht zu nichts.
+# Und es greift nur, wenn die Klammer mit einer Ziffer beginnt und danach ein
+# Wort folgt: `Singe Cannon (S2)` und `(1/A)` bleiben unangetastet.
+MENGE_RE = re.compile(r'\((\d+)\s+[^)]*\)')
+
+
 def namensform(s):
     """Ein Bauplan-Name als Vergleichsschlüssel — die EINZIGE Stelle dafür.
 
@@ -1038,7 +1054,7 @@ def namensform(s):
     Hauptprogramm" — und war es nicht mehr. Wer eine davon anfasst, verschiebt
     stillschweigend, welche Baupläne noch zueinander finden.
 
-    Angeglichen wird dreierlei:
+    Angeglichen wird viererlei:
 
     * **Groß- und Kleinschreibung.**
     * **Geschützte und kaputte Leerzeichen** (`\xa0`, `\ufffd`).
@@ -1047,8 +1063,11 @@ def namensform(s):
       `7MA 'Lorica'` mit einfachen. Ohne Angleichung sind das zwei Schlüssel,
       und der Bauplan gilt als „fehlt", obwohl er im Bestand steht. Gefunden
       an einem echten Bestand mit 392 Bauplänen — genau einer fiel durch.
+    * **Die Sprache der Mengenangabe** (`(16 cap)` ↔ `(16 Schuss)`) — siehe
+      `MENGE_RE` oben. Die Zahl bleibt stehen, nur das Wort faellt weg.
     """
-    return KUERZEL_RE.sub('', str(s).lower()
+    return MENGE_RE.sub(r'(\1)',
+                        KUERZEL_RE.sub('', str(s).lower()
 .replace('\xa0', ' ')
 .replace('\ufffd', ' ')
-.translate(ANFUEHRUNG)).strip()
+.translate(ANFUEHRUNG)).strip()).strip()

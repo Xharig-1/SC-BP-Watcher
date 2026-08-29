@@ -340,7 +340,28 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
     zeilen.append('')
     if letzte:
         zeilen.append(t('b_fehler') % (len(letzte), gesamt))
+        # ⚠ **Gleichartige Fehler zusammenfassen.** Ein einziger Vorfall kann
+        # den ganzen Speicher belegen: Am 28.08.2026 stand in einem Bericht
+        # **50 von 50** Plätzen dieselbe Zeile, alle innerhalb von acht Sekunden
+        # (ein Fortschritt im Sekundentakt bei zugehendem Fenster). Acht davon
+        # wurden angezeigt — acht Zeilen, die dasselbe sagen, und kein Platz für
+        # das, was sonst noch passiert ist.
+        #
+        # Die Ursache dafür ist behoben, aber das Muster kann jederzeit
+        # wiederkommen: Jeder Fehler in einer Schleife tut das. Deshalb wird hier
+        # gebündelt, was sich nur in der Uhrzeit unterscheidet — dieselbe Stelle,
+        # dieselbe Art, dieselbe Meldung, dieselbe Fassung.
+        gebuendelt = []
         for e in letzte:
+            kennung = (e.get('fassung'), e.get('stelle'), e.get('art'),
+                       e.get('meldung'))
+            if gebuendelt and gebuendelt[-1][0] == kennung:
+                gebuendelt[-1][2] += 1
+                gebuendelt[-1][3] = e.get('zeit', '—')
+            else:
+                gebuendelt.append([kennung, e, 1, e.get('zeit', '—')])
+
+        for _kennung, e, wieoft, bis in gebuendelt:
             # ⚠ Die Version dazuschreiben und Altlasten kennzeichnen. Der Speicher
             # hebt die letzten zehn Einträge über Programmstarts hinweg auf; nach
             # einem Update stehen dort Fehler, die längst behoben sind. Ohne
@@ -353,6 +374,8 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
             zeilen.append('  %s  %-10s %-24s %s: %s%s'
                           % (e.get('zeit', '—'), fassung, e.get('stelle', '—'),
                              e.get('art', '—'), e.get('meldung', '—'), alt_marke))
+            if wieoft > 1:
+                zeilen.append(t('b_fehler_mehrfach') % (wieoft, bis))
     else:
         zeilen.append(t('b_fehler_keine'))
 

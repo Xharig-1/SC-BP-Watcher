@@ -6,9 +6,60 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## Unreleased
+## v3.1.0 - 2026-08-29
 
-> Collects until the next release day (Saturdays).
+### Added
+
+- **Caught-up blueprints are now reported, not just added silently.** When the
+  watcher finds something in the logs — on startup or at the push of the button
+  — it appears in the list, marked *caught up* so it doesn't look like a fresh
+  find.
+
+  Up to ten individually; above that it stays with the summary in the status
+  bar. The reason for that limit: on the very first start the catch-up goes
+  through **every** stored session — on a well-used machine that is over a
+  hundred, and nobody wants to dismiss those one by one. Day to day it is zero
+  to three, and those are exactly the ones you want to see.
+
+### Fixed
+
+- **The same blueprint counted twice when the game runs in German.** The SC
+  Deutsch Launcher reads the **English** catalogue and writes
+  `Ravager-212 Twin Shotgun Magazine (16 cap)`. Re-reading the logs picks up the
+  same crate in whatever language Star Citizen runs in — in German
+  `… (16 Schuss)`. To the Watcher those were two different blueprints.
+
+  Measured against a real inventory: **405 shown, 403 actually held.** The bug is
+  silent — nothing breaks, the number is simply too high.
+
+  The quantity in brackets is now language-neutral: `(16 Schuss)` and `(16 cap)`
+  are the same blueprint. **The number stays** — a 40-round and a 60-round
+  magazine are different blueprints and must remain so. Brackets that do not
+  start with a digit are untouched, so `Singe Cannon (S2)` keeps its name.
+
+  An inventory already on disk is migrated on the next start: duplicates are
+  merged into one entry, and the **older** find wins.
+
+- **"Start with the system" never worked on Linux.** The Watcher wrote the
+  AppImage's **temporary mount point** (`/tmp/.mount_SC-BP-ji95vH/…`) into the
+  autostart file. That path gets a new random name on every launch, so after a
+  reboot the entry pointed nowhere and the Watcher did not come up — with no
+  error message, because the file looked perfectly fine.
+
+  The cause was the order in the code: an AppImage also counts as "frozen", so
+  that branch won and the real AppImage path was never reached. Now reversed.
+
+  Found on 29 Aug 2026 on a machine where the entry had been dead ever since the
+  move to Linux.
+
+
+- **The floating lock sat seven pixels too far right.** The offset for it came
+  from a measurement on a **different screen** (5120×1440 instead of 4096×1152)
+  — symbols are 24 px wide there instead of 22, and an offset measured in pixels
+  applies to exactly the one screen it was measured on.
+
+  Measured again on the running program: without the offset it sits exactly on
+  target. It is back to zero.
 
 ## v3.0.3 - 2026-08-28
 

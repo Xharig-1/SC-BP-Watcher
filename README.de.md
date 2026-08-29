@@ -158,7 +158,7 @@ Dazu: Klasse, Größe und Gütegrad stehen direkt in der Zeile (`M/1/A`), die Ob
 | <img src="assets/symbole/22/abhaken-gruen.png" width="22" alt=""> **Sagt Bescheid** | Merkt selbst, wenn es eine neue Version gibt — mit „Was ist neu" zum Nachlesen, auch für ältere Versionen |
 | <img src="assets/symbole/22/nurlesend-gruen.png" width="22" alt=""> **Nur lesend** | Verändert am Spiel nichts — liest die `Game.log` und, falls vorhanden, die Launcher-Dateien |
 | <img src="assets/symbole/22/eigenbuch-gruen.png" width="22" alt=""> **Eigener Bestand** | Führt selbst Buch, welche Baupläne du hast — auch ohne den SC Deutsch Launcher |
-| 🕓 **Nachlese** | Liest beim Start die aufgehobenen Logs früherer Sitzungen und holt nach, was ohne laufenden Watcher freigeschaltet wurde |
+| 🕓 **Nachlese** | Liest beim Start die aufgehobenen Logs früherer Sitzungen **und die laufende** und holt nach, was ohne laufenden Watcher freigeschaltet wurde — die Funde werden gemeldet, nicht still eingetragen. Ein Knopf **Protokolle erneut einlesen** (Overlay und Einstellungen) geht auf Wunsch noch einmal alles durch |
 | 🐧 **Windows und Linux** | Eine Version für beide Systeme, inklusive Autostart und Spracherkennung im Log |
 
 ## Voraussetzungen
