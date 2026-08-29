@@ -31,8 +31,8 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   > Frachtmodul und die übrigen Einzelgänger verschwinden nicht in einem
   > Sammeltopf, sie stehen unter den Gruppen.
 
-  **Die Gliederung ist nicht erfunden:** Sie folgt der Liste, die Xharig-1 seit
-  Monaten von Hand in seiner Vault pflegt. Gegengeprüft — die Zahlen decken
+  **Die Gliederung ist nicht erfunden:** Sie folgt der seit Monaten von Hand gepflegten
+  Vault-Liste. Gegengeprüft — die Zahlen decken
   sich mit ihr, Bauplan für Bauplan.
 
   **Bauplan-Liste und Herstellung teilen sich dieselbe Einteilung.** Es sind
@@ -69,7 +69,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   > ungesetzt und die Liste zeichnete nichts mehr.
 
   Die Anordnung übersteht den Neubau jetzt: Tote Elemente werden übersprungen,
-  der Merker für „unverändert" wird beim Neubau geleert. Gemeldet von Xharig-1
+  der Merker für „unverändert" wird beim Neubau geleert.
   — **gefunden über das Fehlerprotokoll**, das den Absturz mitgeschrieben hat,
   obwohl am Bildschirm nur eine leere Liste zu sehen war.
 
@@ -100,14 +100,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   > **Warum das hier besonders zählt:** Bei einer Staffelrüstung geht es um
   > genau ein Teil je Platz. Die Farben sind über Monate auf Tarnung getestet —
   > *„grad im Dunkeln sind wir mit den Farben kaum noch zu erkennen, selbst im
-  > Nahkampf."* Ein „fast passendes" Teil ist da wertlos.
-
-  Gefunden von Xharig-1 beim Gegenlesen der eigenen Beobachtungen.
+  > Nahkampf."* Ein „fast passendes" Teil ist da wertlos. beim Gegenlesen der eigenen Beobachtungen.
 
 - ⚠ **Auf „Fehler melden" standen die fünf Knöpfe untereinander.** Die
   Mindestbreite des Fensters war 1100 px, die Knopfreihe braucht auf Deutsch
   aber 869 px zuzüglich Seitenleiste und Rändern. Jetzt sind es 1160 px, und
-  die Reihe steht nebeneinander. Gemeldet von Xharig-1.
+  die Reihe steht nebeneinander.
 
 - **Die Rüstungsrolle ist wieder raus** (Kampf, Technik, Tarnung). Sie war als
   Filter angeboten, aber: *„danach sucht laut Rückmeldung niemand."* Bei
@@ -127,7 +125,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Möglich wird das, weil zwei Quellen zusammengeführt werden: Der Katalog kennt
   die Körperteile der Rüstung (Helm, Torso, Arme, Beine), die Rezeptdaten die
   Waffenart. Verbunden über den Namen — **738 von 738** Bauplänen passen.
-  Vorschlag von Xharig-1.
+ 
 
 - ⭐ **Die Herstellung hat jetzt dieselben Filter**: Art, Unterart bzw.
   Rüstungsrolle, Hersteller und „Bauplan vorhanden / fehlt". Vorher gab es dort
@@ -138,7 +136,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Einträge, die man vorher auswendig kennen musste, um sie eintippen zu können.
 
   > Alle drei Seiten benutzen dieselben Bedienelemente wie die Bauplan-Liste.
-  > Xharig-1 dazu: *„egal wo, sollte das Bedienkonzept nicht jedes Mal ändern —
+  > *„egal wo, sollte das Bedienkonzept nicht jedes Mal ändern —
   > die Leute wollen es nutzen und nicht erst lernen, wie sie es nutzen."*
 
 ### Behoben
@@ -149,14 +147,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   „Mamba-Staffelrüstung: Helm" → `morozov-sh helmet redshift`. Die Ansicht
   zeigte nur die erste Sorte, der Diagnosebericht zählte beide. Jetzt stehen
   die eigenen Beobachtungen mit ihren Suchmustern oben in der Ansicht.
-  Gemeldet von Xharig-1.
+ 
 
 - **Beim Herstellen lässt sich eine Anzahl angeben.** Wer zehn Stück am Stück
   baut, klickte bisher zehnmal — und beim elften Klick stimmte der Bestand nicht
   mehr, ohne dass es auffiel. Jetzt steht neben dem Knopf ein Feld: Anzahl
   eintragen, einmal klicken, fertig. Danach springt es von selbst auf 1 zurück,
-  damit der nächste Klick nicht unbemerkt wieder zehn abzieht. Vorschlag von
-  Xharig-1.
+  damit der nächste Klick nicht unbemerkt wieder zehn abzieht.
 
 - **Das Lager lässt sich ausgeben und wieder einlesen.** Als Sicherung (`.json`)
   — die kommt hier auch wieder herein — oder als Tabelle (`.csv`) zum Ansehen
@@ -169,7 +166,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 - **Der Reiter „Bestand" heißt jetzt „Bauplan-Bestand".** Seit es „Mein Lager"
   gibt, waren zwei Reiter mit dem Wort Bestand einer zu viel — der eine führt
-  Baupläne, der andere Rohstoffe. Gemeldet von Xharig-1.
+  Baupläne, der andere Rohstoffe.
 
 - **Zwei neue Seiten: „Herstellung" und „Bergbau".** Sie beantworten die Frage,
   die nach dem Bauplan kommt — *was brauche ich dafür, und wo hole ich das?*
@@ -297,12 +294,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Die Liste misst jetzt nach, sobald ein gebauter Abschnitt von der Schätzung
   abweicht, rückt die folgenden nach und verlängert die Rollfläche. Das läuft
   von selbst — es hängt nicht daran, dass jemand an jeder Klickstelle daran
-  denkt. Gemeldet von Xharig-1.
+  denkt.
 
 - ⚠ **Der Zurücksetzen-Knopf der Bauplan-Liste war nicht zu finden.** Es gab
   ihn — als kleinen grauen Unterstrich-Text unten rechts neben dem
-  Trefferzähler. Xharig-1 suchte ihn vergeblich und stellte die Filter von Hand
-  zurück: „nervt auf Dauer". Was man nicht findet, ist nicht da.
+  Trefferzähler. Er wurde vergeblich gesucht und die Filter von Hand zurückgestellt:
+  „nervt auf Dauer". Was man nicht findet, ist nicht da.
 
   Er steht jetzt **oben in der Zustandszeile** neben „alle / habe ich / neu im
   Spiel", ganz rechts und mit Abstand, als Knopf mit Rahmen und ×. Er erscheint
@@ -320,7 +317,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   gerechnet — mit dem Standardwert des Reglers, nicht mit deinem Material. Wer
   das liest, hält den Faktor für sein Ergebnis. Die Überschrift sagt jetzt, was
   sie zeigt: „Was Qualität 500 bringen würde", sobald durchgespielt wird oder
-  nichts im Lager liegt. Gemeldet von Xharig-1.
+  nichts im Lager liegt.
 
 - **Die Suchfelder bei Herstellung und Bergbau merkten sich ihren Inhalt.** Wer
   „titan" gesucht und den Reiter später wieder aufgerufen hatte, sah weiter nur
@@ -335,14 +332,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - ⚠ **Knöpfe schnitten ihre Beschriftung ab** — auf einem Knopf stand „erung
   speichern" statt „Änderung speichern", und im Overlay endete die Auftragszeile
   mitten im Wort. Das ist kein Schönheitsfehler: Wer ein halbes Wort liest,
-  sucht einen Fehler, den es nicht gibt. Xharig-1 dazu: *„sonst suchen die User
+  sucht einen Fehler, den es nicht gibt. *„sonst suchen die User
   Symbole, die sie selber abgeschnitten haben."*
 
   Ursache: Die Fläche wurde mit `measure()` bemessen, gezeichnet wird aber mit
   der Schrift, die das System liefert — und unter **Wayland** steht die erst
   fest, wenn das Fenster angezeigt wird. Jeder Knopf misst jetzt dreimal nach:
   beim Bauen, beim ersten Anzeigen und einmal im Leerlauf. Wächst er, wächst
-  der Rahmen mit. Gilt für alle Knöpfe samt Filterreihen. Gemeldet von Xharig-1.
+  der Rahmen mit. Gilt für alle Knöpfe samt Filterreihen.
 
 - ⚠ **Das Overlay ließ sich schmaler ziehen als seine eigene Symbolleiste.**
   Glocke und die Symbole rechts verschwanden einfach — bei 290 px Breite war
@@ -355,13 +352,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   > Kinder also bewusst nicht weiter und meldete **1 Pixel**. Jetzt werden die
   > Elemente einzeln zusammengezählt.
 
-  Gemeldet von Xharig-1.
+ 
 
 - **Die Auftragszeile im Overlay bricht um, statt abgeschnitten zu werden.**
 
 - ⚠ **Ein offenes Fenster kam unter Wayland nicht nach vorn.** Der Klick aufs
   Overlay schien wirkungslos, und es half nur, das Programm neu zu starten —
-  Xharig-1: *„nen User findet das nervig, und wer's nicht nervig findet, rafft
+  *„nen User findet das nervig, und wer's nicht nervig findet, rafft
   es nicht."* Unter Wayland darf sich ein Fenster nicht selbst vordrängen; was
   der Compositor annimmt, ist ein Fenster, das sich **neu anmeldet**. Genau das
   passiert jetzt — aber nur unter Wayland und nur, wenn das Fenster wirklich
@@ -372,13 +369,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   `measure()` bemessen, gezeichnet wurde aber mit der Schrift, die das System
   wirklich hergibt — weichen die ab, steht der Text über den Rand und wird
   beidseitig gekappt. Jeder Knopf misst jetzt nach dem Setzen seines Textes
-  selbst nach. Betraf alle Knöpfe, nicht nur den einen. Gemeldet von Xharig-1.
+  selbst nach. Betraf alle Knöpfe, nicht nur den einen.
 
 - ⚠ **Der Lagerbestand liess sich nicht berichtigen.** Wer sich vertippt oder
   Material weitergegeben hatte, konnte den Posten nur löschen und neu tippen —
   und beim Neutippen entstand leicht ein zweiter Name für dasselbe Material.
   Jetzt **öffnet ein Klick auf eine Zeile** sie oben in den Feldern: Menge,
-  Qualität und Lagerort ändern, speichern, fertig. Gemeldet von Xharig-1.
+  Qualität und Lagerort ändern, speichern, fertig.
 
   > **Auf- und Abbuchen statt Kopfrechnen.** Bei einem offenen Posten kannst du
   > `+5` oder `-2` tippen, dann wird dazugelegt oder abgezogen. Wer alles

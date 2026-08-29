@@ -24,7 +24,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   > **What cannot be grouped stays on its own** — docking collars and the other
   > one-offs do not vanish into a catch-all.
 
-  The grouping follows the list Xharig-1 has kept by hand for months, and the
+  The grouping follows the list kept by hand for months, and the
   numbers were checked against it blueprint by blueprint. **Blueprint list and
   crafting share one grouping** — same blueprints, so the same way to search.
 
@@ -44,8 +44,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   `0 of 738` although a category and subtype were chosen. The filter itself was
   right — the **drawing** aborted: rebuilding the dropdowns left the old layout
   callback pointing at destroyed widgets (`TclError: bad window path name`).
-  Dead elements are now skipped. Reported by Xharig-1, found through the error
-  log that recorded the crash while the screen showed only an empty list.
+  Dead elements are now skipped. Found through the error log that recorded the crash while the screen showed only an empty list.
 
 - ⚠ **The subtype could not be selected on the crafting page.** The check
   "does this subtype belong to the chosen category?" compared against a list of
@@ -70,11 +69,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   > slot. The colours were tested for months for camouflage; an "almost right"
   > piece is worthless.
 
-  Found by Xharig-1 while proof-reading his own watches.
+  Found while proof-reading the stored watches.
 
 - ⚠ **On "Report a problem" the five buttons stacked vertically.** The window's
   minimum width was 1100 px while the button row needs 869 px in German plus
-  sidebar and margins. It is now 1160 px. Reported by Xharig-1.
+  sidebar and margins. It is now 1160 px.
 
 - **The armour role filter is gone again** — nobody searches by it.
 
@@ -89,7 +88,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
   This works by joining two sources: the catalogue knows the armour body parts,
   the recipe data knows the weapon type. Joined by name — **738 of 738**
-  blueprints match. Suggested by Xharig-1.
+  blueprints match.
 
 - ⭐ **Crafting now has the same filters**: type, subtype or armour role,
   manufacturer, and "blueprint owned / missing". It previously had a search box
@@ -107,13 +106,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   watchlist holds two kinds: blueprints clicked in the catalogue — and your own
   watches with search patterns. The view showed only the first kind while the
   diagnostic report counted both. Your own watches now appear at the top of the
-  view with their patterns. Reported by Xharig-1.
+  view with their patterns.
 
 - **Crafting takes a quantity.** Building ten in a row meant ten clicks — and on
   the eleventh the stock was wrong without anyone noticing. There is now a field
   next to the button: enter the number, click once, done. It resets to 1
-  afterwards so the next click does not quietly deduct ten again. Suggested by
-  Xharig-1.
+  afterwards so the next click does not quietly deduct ten again.
 
 - **The stock list can be exported and loaded back.** As a backup (`.json`),
   which loads again here, or as a spreadsheet (`.csv`) for reading and sharing.
@@ -122,7 +120,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   > only what you typed. Without an export it is gone at the next machine.
 
 - **The "Inventory" tab is now "Blueprint inventory".** With "My stock" next to
-  it, one of the two names had to say which is which. Reported by Xharig-1.
+  it, one of the two names had to say which is which.
 
 - **Two new pages: "Crafting" and "Mining".** They answer the question that
   comes after the blueprint — *what do I need, and where do I get it?*
@@ -246,8 +244,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
   The list now re-measures whenever a built section differs from the estimate,
   shifts the following ones and extends the scroll area. It does this by itself
-  rather than relying on someone remembering it at each click site. Reported by
-  Xharig-1.
+  rather than relying on someone remembering it at each click site.
 
 - ⚠ **The reset control in the blueprint list could not be found.** It existed —
   as a small grey underlined text at the bottom right, next to the result count.
@@ -269,7 +266,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   below — from the slider default, not from your material. Anyone reading that
   takes the factor for their own result. The heading now says what it shows:
   "What quality 500 would give", whenever a value is being tried or the stock
-  holds nothing. Reported by Xharig-1.
+  holds nothing.
 
 - **The search fields on Crafting and Mining kept their contents.** Searching
   for "titan" and returning to the tab later still showed only titanium — easily
@@ -289,7 +286,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   system provides — and under **Wayland** that is only settled once the window
   is shown. Every button now measures itself three times: when built, when first
   shown, and once when idle. If it grows, its frame grows with it. Applies to
-  all buttons including filter rows. Reported by Xharig-1.
+  all buttons including filter rows.
 
 - ⚠ **The overlay could be dragged narrower than its own icon bar**, hiding the
   bell and the icons on the right — at 290 px not one of them was visible. It
@@ -301,7 +298,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   > passing on its children's size, and reported **1 pixel**. The elements are
   > now added up individually.
 
-  Reported by Xharig-1.
+ 
 
 - **The contract line in the overlay wraps instead of being cut off.**
 
@@ -316,13 +313,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   whatever font the system actually provides — where those differ, the text
   runs past the edge and is clipped on both sides. Every button now measures
   itself after its text is set. This affected all buttons, not just one.
-  Reported by Xharig-1.
+ 
 
 - ⚠ **Stock entries could not be corrected.** After a typo or after handing
   material to someone else, the only option was to delete the entry and retype
   it — which easily created a second name for the same material. Now **clicking
   a row** opens it in the fields above: change amount, quality and storage
-  location, save, done. Reported by Xharig-1.
+  location, save, done.
 
   > **Add and subtract instead of doing the maths.** With an entry open you can
   > type `+5` or `-2` to add or remove. Handed everything over? Type the full
