@@ -97,6 +97,35 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠ **Stock entries could not be corrected.** After a typo or after handing
+  material to someone else, the only option was to delete the entry and retype
+  it — which easily created a second name for the same material. Now **clicking
+  a row** opens it in the fields above: change amount, quality and storage
+  location, save, done. Reported by Xharig-1.
+
+  > **Add and subtract instead of doing the maths.** With an entry open you can
+  > type `+5` or `-2` to add or remove. Handed everything over? Type the full
+  > amount with a minus and the entry disappears. You cannot subtract more than
+  > you have; the available amount is shown instead.
+
+- ⚠ **A typo in a material name quietly broke your stock.** The suggestions
+  could be ignored: enter `Aslerite` and the list looked right — but no recipe
+  found the stock, and nobody learned why. Names are now **matched**: case,
+  the mining spelling with brackets (`Aslarite (Raw)`), `Aluminium` versus
+  `Aluminum` and a close typo are pulled onto the correct name and reported. A
+  completely unknown name is **queried** rather than stored — with an "Add
+  anyway" button for the case where you really do have something no recipe
+  lists.
+
+- **The location field said "Location".** That belongs to mining. This is where
+  your material **sits**, so it now says "Storage location" — and stays
+  optional, since not everyone uses several places. **Amount and quality are
+  required:** without quality the watcher cannot work out what your material
+  does to the finished item, which is the whole point of the stock list.
+
+- **Comma and full stop both work for amounts.** Some type `12.5`, others
+  `12,5`. The comma used to raise an error.
+
 - **Clicking the overlay now really brings an open window to the front.** It
   used to stay behind the game, and the click seemed to do nothing. Cause:
   `lift()` alone is ignored under **Wayland** — a window may not raise itself

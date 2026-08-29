@@ -556,6 +556,58 @@ def kennt_rohstoff(name):
     return any(norm_rohstoff(n) == gesucht for n in rohstoffnamen())
 
 
+def offizieller_name(eingabe):
+    """Die verbindliche Schreibweise zu einer Eingabe — oder `None`.
+
+    ⚠ **Der Name ist der Schlüssel.** Steht im Lager `aslarite` oder
+    `Aslerite`, findet kein Rezept den Bestand, und niemand sieht, warum: Die
+    Liste sieht richtig aus, nur die Häkchen bleiben aus. Deshalb wird die
+    Eingabe hier auf einen bekannten Namen gezogen, statt sie zu übernehmen,
+    wie sie getippt wurde.
+
+    Was zusammengeführt wird:
+      * Groß- und Kleinschreibung sowie Leerzeichen am Rand
+      * die Bergbau-Schreibweise mit Klammer (`Aslarite (Raw)`)
+      * `Aluminium` gegen `Aluminum`
+      * ein knapper Vertipper, solange er **eindeutig** einem Namen zuzuordnen
+        ist — bei zwei ähnlich nahen Kandidaten wird nichts geraten
+
+    Gibt `None` zurück, wenn nichts sicher passt. Dann entscheidet die
+    Oberfläche, ob sie nachfragt.
+    """
+    import difflib
+    text = (eingabe or '').strip()
+    if not text:
+        return None
+    alle = rohstoffnamen()
+    if not alle:
+        # ⚠ Keine Rezeptdaten geladen — dann gibt es nichts zu vergleichen.
+        # Hier `None` zu melden hiesse: „kenne ich nicht", und die Oberfläche
+        # wuerde **jede** Eingabe abweisen. Wer beim ersten Start ohne Netz
+        # sein Lager fuellen will, kaeme nicht weiter. Also durchlassen.
+        return text
+    gesucht = norm_rohstoff(text)
+
+    for n in alle:
+        if norm_rohstoff(n) == gesucht:
+            return n
+
+    # Vertipper: hohe Schwelle, und nur wenn der zweitbeste Treffer deutlich
+    # schlechter ist. Sonst macht die Berichtigung aus einem falschen Namen
+    # einen anderen falschen Namen.
+    schluessel = {norm_rohstoff(n): n for n in alle}
+    nahe = difflib.get_close_matches(gesucht, list(schluessel), n=2, cutoff=0.82)
+    if len(nahe) == 1:
+        return schluessel[nahe[0]]
+    if len(nahe) == 2:
+        g = difflib.SequenceMatcher
+        a = g(None, gesucht, nahe[0]).ratio()
+        b = g(None, gesucht, nahe[1]).ratio()
+        if a - b >= 0.08:
+            return schluessel[nahe[0]]
+    return None
+
+
 def aehnliche_rohstoffe(name, hoechstens=3):
     """Vorschläge zu einem Namen, der so nicht bekannt ist.
 

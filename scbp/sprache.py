@@ -1312,8 +1312,7 @@ TEXTE = {
     # Die Skala der Rezepte laeuft 0 bis 1000, NICHT in Prozent. Stand hier
     # als 'Guete %' — wer im Spiel 72 abliest und eintraegt, haette danach
     # lauter falsche Ergebnisse bekommen: sein Erz gaelte als unbrauchbar.
-    's_lg_qualitaet':    ('Qualität 0–1000 (freiwillig)',
-                          'Quality 0–1000 (optional)'),
+    's_lg_qualitaet':    ('Qualität 0–1000', 'Quality 0–1000'),
     # Vorschlaege beim Eintippen — ein freies Feld fuer einen Namen, der exakt
     # passen muss, ist eine stille Fehlerquelle. Wer "Aslerite" schreibt,
     # bekommt nie einen Treffer und erfaehrt auch nicht, warum.
@@ -1333,10 +1332,45 @@ TEXTE = {
                           'This material appears in no recipe. You can still add '
                           'it — it just will not show up when crafting.'),
     's_lg_q_wert':       ('Q %g', 'Q %g'),
-    's_lg_ort':          ('Fundort (freiwillig)', 'Location (optional)'),
+    's_lg_ort':          ('Lagerort (freiwillig)',
+                          'Storage location (optional)'),
     's_lg_eintragen':    ('Eintragen', 'Add'),
     's_lg_leer':         ('Noch nichts eingetragen.', 'Nothing entered yet.'),
     's_lg_weg':          ('Löschen', 'Remove'),
+    # --- Einen vorhandenen Posten berichtigen -----------------------------
+    # ⚠ Eintragen ohne Berichtigen ist halb fertig: Wer sich vertippt oder
+    # Material weitergegeben hat, stand vor einer Liste, die er nur noch
+    # loeschen konnte. Am 29.08.2026 gemeldet: „wenn ich was korrigieren will
+    # geht das gar nicht".
+    's_lg_zeile_klick':  ('Klick auf eine Zeile, um sie zu ändern.',
+                          'Click a row to change it.'),
+    's_lg_bearbeite':    ('Du änderst diesen Posten: %s',
+                          'You are changing this entry: %s'),
+    's_lg_speichern':    ('Änderung speichern', 'Save change'),
+    's_lg_abbrechen':    ('Abbrechen', 'Cancel'),
+    's_lg_geaendert':    ('Geändert: %s · %g SCU', 'Changed: %s · %g SCU'),
+    # Auf- und Abbuchen statt Kopfrechnen: Wer zwei SCU abgibt, soll „-2"
+    # tippen koennen und nicht erst ausrechnen muessen, was uebrig bleibt.
+    's_lg_rechnen':      ('Menge überschreiben — oder +5 bzw. -2 tippen, dann '
+                          'wird auf- oder abgebucht.',
+                          'Overwrite the amount — or type +5 or -2 to add or '
+                          'subtract.'),
+    's_lg_zu_wenig':     ('So viel ist nicht da. Vorhanden: %g SCU',
+                          'You do not have that much. Available: %g SCU'),
+    's_lg_alles_weg':    ('%s ist aufgebraucht — der Posten ist weg.',
+                          '%s is used up — the entry is gone.'),
+    # ⚠ Der Name ist der Schluessel zwischen Lager und Rezept. Ein Vertipper
+    # macht den Bestand still unbrauchbar: Die Liste sieht richtig aus, nur die
+    # Haekchen bleiben aus. Deshalb wird abgeglichen, statt zu uebernehmen.
+    's_lg_name_fremd':   ('„%s" kommt in keinem Rezept vor. Nimm einen '
+                          'Vorschlag — oder trag es bewusst trotzdem ein.',
+                          '"%s" appears in no recipe. Pick a suggestion — or '
+                          'add it anyway on purpose.'),
+    's_lg_trotzdem':     ('Trotzdem eintragen', 'Add anyway'),
+    's_lg_keine_guete':  ('Trag die Qualität ein, eine Zahl von 0 bis 1000',
+                          'Enter the quality, a number from 0 to 1000'),
+    's_lg_berichtigt':   ('Name berichtigt: %s → %s',
+                          'Name corrected: %s → %s'),
     's_lg_summe':        ('%d Posten · %d Rohstoffe', '%d entries · %d resources'),
     # ⚠ Bewusst „dir fehlt", nicht „du kannst nicht bauen" — das Lager wird von
     # Hand gepflegt und ist irgendwann lückenhaft. Ein Hinweis darf danebenliegen,

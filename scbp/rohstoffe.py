@@ -84,6 +84,27 @@ def sichern(posten):
         return False
 
 
+def zahl_lesen(text):
+    """Eine getippte Zahl lesen — Komma und Punkt gelten gleich.
+
+    ⚠ Die einen tippen `12,5`, die anderen `12.5`. Python kennt nur den Punkt,
+    und `float('12,5')` wirft. Ohne diese Stelle haette jeder zweite Nutzer
+    beim Eintragen eine Fehlermeldung bekommen und nicht gewusst, warum.
+
+    Auch das lange Minus vom Ziffernblock (`−`) wird angenommen, sonst
+    scheitert das Abbuchen an einem Zeichen, das man nicht sieht.
+
+    Gibt `None`, wenn es keine Zahl ist — dann meldet die Oberfläche das.
+    """
+    roh = (text or '').strip().replace(',', '.').replace('−', '-')
+    if not roh:
+        return None
+    try:
+        return float(roh)
+    except ValueError:
+        return None
+
+
 def eintragen(material, menge, qualitaet=None, ort=''):
     """Einen Posten hinzufügen. Gibt die neue Gesamtmenge des Materials zurück."""
     posten = laden()
@@ -93,6 +114,27 @@ def eintragen(material, menge, qualitaet=None, ort=''):
                    'ort': (ort or '').strip()})
     sichern(posten)
     return menge_von(material)
+
+
+def aendern(nummer, material, menge, qualitaet=None, ort=''):
+    """Einen vorhandenen Posten überschreiben (Position in der Liste).
+
+    Gebraucht wird das dauernd: Man vertippt sich bei der Menge, gibt jemandem
+    zwei SCU ab oder trägt den Lagerort nach. Ohne diesen Weg blieb nur
+    löschen und neu tippen — und wer beim Tippen den Namen anders schreibt,
+    hat den Posten anschliessend doppelt.
+
+    Gibt True zurück, wenn es die Nummer gab.
+    """
+    posten = laden()
+    if not (0 <= nummer < len(posten)):
+        return False
+    posten[nummer] = {'material': (material or '').strip(),
+                      'menge': float(menge or 0),
+                      'qualitaet': qualitaet,
+                      'ort': (ort or '').strip()}
+    sichern(posten)
+    return True
 
 
 def entfernen(nummer):

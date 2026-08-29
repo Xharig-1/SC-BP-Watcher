@@ -100,6 +100,36 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠ **Der Lagerbestand liess sich nicht berichtigen.** Wer sich vertippt oder
+  Material weitergegeben hatte, konnte den Posten nur löschen und neu tippen —
+  und beim Neutippen entstand leicht ein zweiter Name für dasselbe Material.
+  Jetzt **öffnet ein Klick auf eine Zeile** sie oben in den Feldern: Menge,
+  Qualität und Lagerort ändern, speichern, fertig. Gemeldet von Xharig-1.
+
+  > **Auf- und Abbuchen statt Kopfrechnen.** Bei einem offenen Posten kannst du
+  > `+5` oder `-2` tippen, dann wird dazugelegt oder abgezogen. Wer alles
+  > abgegeben hat, tippt die volle Menge mit Minus — der Posten verschwindet.
+  > Mehr, als da ist, lässt sich nicht abbuchen; dann steht der Bestand da.
+
+- ⚠ **Ein Vertipper im Materialnamen machte den Bestand still unbrauchbar.**
+  Die Vorschläge liessen sich übergehen: Wer `Aslerite` eintrug, sah eine Liste,
+  die richtig aussah — nur fand kein Rezept den Bestand, und niemand erfuhr,
+  warum. Der Name wird jetzt **abgeglichen**: Gross- und Kleinschreibung, die
+  Bergbau-Schreibweise mit Klammer (`Aslarite (Raw)`), `Aluminium` gegen
+  `Aluminum` und ein knapper Vertipper werden auf den richtigen Namen gezogen,
+  sichtbar gemeldet. Ist ein Name gänzlich unbekannt, wird **nachgefragt**
+  statt eingetragen — mit einem Knopf „Trotzdem eintragen" für den Fall, dass
+  du wirklich etwas hast, das in keinem Rezept steht.
+
+- **Das Ortsfeld hiess „Fundort".** Das gehört zum Bergbau. Hier steht, wo dein
+  Material **liegt**, also heisst es jetzt „Lagerort" — und bleibt freiwillig,
+  weil nicht jeder mehrere Lager hat. **Menge und Qualität sind dagegen Pflicht:**
+  Ohne Qualität kann der Watcher nicht rechnen, was dein Material aus dem
+  fertigen Teil macht, und genau dafür ist das Lager da.
+
+- **Komma und Punkt gelten beim Eintragen gleich.** Die einen tippen `12,5`,
+  die anderen `12.5`. Bisher warf das Komma eine Fehlermeldung.
+
 - **Ein Klick auf das Overlay holt ein offenes Fenster jetzt wirklich nach
   vorn.** Bisher blieb es hinter dem Spiel, und der Klick schien nichts zu tun.
   Ursache: `lift()` allein wird unter **Wayland** ignoriert — dort darf sich ein

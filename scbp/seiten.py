@@ -3899,6 +3899,16 @@ def _lager(fenster, rahmen):
     guete = tk.StringVar()
     ort = tk.StringVar()
 
+    # Welche Zeile gerade zum Ändern offen ist. `None` heisst: neuer Posten.
+    # ⚠ Die Nummer ist die Position in der ungefilterten Liste — nicht die
+    # Position in der Anzeige. Sortieren und Filtern duerfen sie nicht
+    # verschieben, sonst berichtigt man den falschen Posten.
+    bearbeitung = {'nummer': None}
+
+    # Ein Name, den der Nutzer trotz Warnung eintragen will. Steht er hier,
+    # laesst ihn der naechste Klick durch — einmal, fuer genau diesen Namen.
+    frei = {'name': None}
+
     vorschlag_rahmen = None
     for beschriftung, var in ((t('s_lg_material'), material),
                               (t('s_lg_menge'), menge),
@@ -4030,7 +4040,11 @@ def _lager(fenster, rahmen):
             return
 
         for nummer, p in sichtbar:
-            z = tk.Frame(liste_rahmen, bg=BG)
+            offen = bearbeitung['nummer'] == nummer
+            # Die offene Zeile bekommt Flaeche unter sich, damit man sieht,
+            # welchen Posten die Felder oben gerade zeigen.
+            z_bg = FLAECHE if offen else BG
+            z = tk.Frame(liste_rahmen, bg=z_bg)
             z.pack(fill='x', pady=1)
             # ⚠ Erst in Variablen holen. `text=p.get('material')` liest
             # `texte_pruefen.py` als festen Oberflächentext „material" und
@@ -4044,16 +4058,62 @@ def _lager(fenster, rahmen):
                     (menge_txt, SPALTEN[1], ACCENT, fenster.f_grund),
                     (q_txt, SPALTEN[2], SUB, fenster.f_klein),
                     (ort_txt, SPALTEN[3], SUB, fenster.f_klein)):
-                tk.Label(z, text=wert, bg=BG, fg=farbe, font=schrift,
-                         width=breite, anchor=anker_).pack(side='left',
-                                                           padx=(0, 8))
-            weg = tk.Label(z, text=t('s_lg_weg'), bg=BG, fg=SUB,
+                tk.Label(z, text=wert, bg=z_bg, fg=farbe, font=schrift,
+                         width=breite, anchor=anker_,
+                         cursor='hand2').pack(side='left', padx=(0, 8))
+
+            # Die ganze Zeile oeffnet den Posten zum Berichtigen. ⚠ Auch jedes
+            # Label einzeln binden — ein Label verschluckt den Klick, sonst
+            # trifft man nur die Luecken dazwischen.
+            z.bind('<Button-1>', lambda _e, n=nummer: bearbeiten(n))
+            for kind in z.winfo_children():
+                kind.bind('<Button-1>', lambda _e, n=nummer: bearbeiten(n))
+
+            weg = tk.Label(z, text=t('s_lg_weg'), bg=z_bg, fg=SUB,
                            font=fenster.f_klein, cursor='hand2', anchor='e')
             weg.pack(side='right', padx=(8, 4))
             weg.bind('<Button-1>',
-                     lambda _e, n=nummer: (lager.entfernen(n), zeichnen()))
+                     lambda _e, n=nummer: (lager.entfernen(n),
+                                           verwerfen(), zeichnen()))
 
     filter_var.trace_add('write', lambda *_: zeichnen())
+
+    def bearbeiten(nummer):
+        """Einen vorhandenen Posten in die Felder oben holen.
+
+        Bewusst dieselben Felder wie beim Eintragen: eine zweite Eingabemaske
+        an anderer Stelle waere ein zweiter Ort zum Suchen.
+        """
+        posten = lager.laden()
+        if not (0 <= nummer < len(posten)):
+            return
+        p = posten[nummer]
+        bearbeitung['nummer'] = nummer
+        material.set(p.get('material') or '')
+        menge.set('%g' % float(p.get('menge') or 0))
+        guete.set('%g' % float(p['qualitaet']) if p.get('qualitaet') else '')
+        ort.set(p.get('ort') or '')
+        # ⚠ Erst in eine Variable. Steht `p.get('material')` direkt im
+        # `text=`-Ausdruck, meldet `texte_pruefen.py` „material" als festen
+        # Oberflächentext — ein Fehlalarm, der die Prüfung rot färbt.
+        offen_txt = p.get('material') or '?'
+        meldung.configure(text=t('s_lg_bearbeite') % offen_txt, fg=ACCENT)
+        # Das Auf- und Abbuchen sieht man dem Feld nicht an — also hinschreiben,
+        # und zwar erst dann, wenn es auch gilt.
+        rechenhinweis.configure(text=t('s_lg_rechnen'))
+        knoepfe_setzen()
+        zeichnen()
+
+    def verwerfen(*_):
+        """Zurueck zum Eintragen — Felder leeren, nichts speichern."""
+        if bearbeitung['nummer'] is None:
+            return
+        bearbeitung['nummer'] = None
+        material.set(''); menge.set(''); guete.set(''); ort.set('')
+        meldung.configure(text='', fg=SUB)
+        rechenhinweis.configure(text='')
+        knoepfe_setzen()
+        zeichnen()
 
     def eintragen(*_):
         name = material.get().strip()
@@ -4062,31 +4122,128 @@ def _lager(fenster, rahmen):
             # passieren sieht, hält das Feld für kaputt.
             meldung.configure(text=t('s_lg_kein_material'), fg=GOLD)
             return
-        try:
-            wert = float((menge.get() or '0').replace(',', '.'))
-        except ValueError:
+
+        # --- Namensabgleich ------------------------------------------------
+        # Ein freies Textfeld für einen Namen, der exakt passen muss, ist eine
+        # stille Fehlerquelle: „Aslerite" sieht in der Liste richtig aus, wird
+        # aber von keinem Rezept gefunden. Vorschlaege allein reichen nicht —
+        # sie lassen sich uebergehen.
+        from . import herstellung as h_modul
+        richtig = h_modul.offizieller_name(name)
+        if richtig is None:
+            if frei['name'] != name:
+                # Erster Versuch mit einem fremden Namen: nicht eintragen,
+                # sondern fragen. Der Ausweg steht als Knopf daneben, damit
+                # niemand festsitzt, der wirklich etwas Unbekanntes hat.
+                frei['name'] = name
+                meldung.configure(text=t('s_lg_name_fremd') % name, fg=GOLD)
+                vorschlaege_zeigen()
+                knoepfe_setzen()
+                return
+            # Zweiter Klick auf „Trotzdem eintragen" — dann eben so.
+        else:
+            if richtig != name:
+                # Berichtigung nicht verschweigen. Wer „Aslerite" tippt und
+                # „Aslarite" in der Liste findet, soll wissen, warum.
+                if richtig.lower() != name.lower():
+                    meldung.configure(text=t('s_lg_berichtigt') % (name, richtig),
+                                      fg=SUB)
+                name = richtig
+            frei['name'] = None
+        # Auf- und Abbuchen: „+5" legt dazu, „-2" nimmt weg. Nur sinnvoll,
+        # solange ein Posten offen ist — bei einem neuen gibt es nichts, worauf
+        # sich das Vorzeichen beziehen koennte, dort zaehlt schlicht die Zahl.
+        roh = (menge.get() or '0').strip().replace('−', '-')
+        rechnend = (bearbeitung['nummer'] is not None
+                    and roh[:1] in ('+', '-'))
+        wert = lager.zahl_lesen(roh)
+        if wert is None:
             # ⚠ Keine Zahl? Dann nichts tun statt abstürzen — jemand tippt
             # „12 SCU" statt „12", und das darf das Fenster nicht kosten.
             # Und die Meldung muss erklären, nicht die Feldbeschriftung
             # wiederholen.
             meldung.configure(text=t('s_lg_keine_menge'), fg=GOLD)
             return
-        if wert <= 0:
+        if rechnend:
+            posten = lager.laden()
+            nr = bearbeitung['nummer']
+            vorher = float(posten[nr].get('menge') or 0) if 0 <= nr < len(posten) else 0.0
+            neu_wert = vorher + wert
+            if neu_wert < 0:
+                # ⚠ Nicht stillschweigend auf 0 setzen. Wer sich um eine Ziffer
+                # vertippt, soll den Bestand sehen, nicht ihn verlieren.
+                meldung.configure(text=t('s_lg_zu_wenig') % vorher, fg=GOLD)
+                return
+            if neu_wert == 0:
+                # Alles abgegeben — dann hat der Posten keinen Zweck mehr.
+                lager.entfernen(nr)
+                bearbeitung['nummer'] = None
+                material.set(''); menge.set(''); guete.set(''); ort.set('')
+                meldung.configure(text=t('s_lg_alles_weg') % name, fg=SUB)
+                knoepfe_setzen()
+                zeichnen()
+                return
+            wert = neu_wert
+        elif wert <= 0:
             # Ein Posten mit 0 SCU ist Ballast in der Liste.
             meldung.configure(text=t('s_lg_keine_menge'), fg=GOLD)
             return
-        try:
-            q = int(guete.get()) if guete.get().strip() else None
-        except ValueError:
-            q = None
-        lager.eintragen(name, wert, q, ort.get())
+        # Qualität ist Pflicht. Ohne sie kann die Herstellung nicht sagen, was
+        # das Material aus dem Produkt macht — und genau dafür ist das Lager da.
+        # Der Lagerort bleibt freiwillig: Wer alles an einem Ort hat, soll das
+        # nicht 40-mal tippen müssen.
+        q_zahl = lager.zahl_lesen(guete.get())
+        if q_zahl is None:
+            meldung.configure(text=t('s_lg_keine_guete'), fg=GOLD)
+            return
+        q = int(round(q_zahl))
+        if not (0 <= q <= 1000):
+            # ⚠ Die Skala der Rezepte ist 0–1000, nicht 0–100. Eine 720 ist
+            # gültig, eine 7200 ist ein Vertipper — und würde die
+            # Wirkungsrechnung still verzerren.
+            meldung.configure(text=t('s_lg_keine_guete'), fg=GOLD)
+            return
+        if bearbeitung['nummer'] is None:
+            lager.eintragen(name, wert, q, ort.get())
+            hinweis = t('s_lg_eingetragen') % (name, wert)
+        else:
+            lager.aendern(bearbeitung['nummer'], name, wert, q, ort.get())
+            hinweis = t('s_lg_geaendert') % (name, wert)
+            bearbeitung['nummer'] = None
         material.set(''); menge.set(''); guete.set(''); ort.set('')
+        frei['name'] = None
         # Bestätigen: Man soll sehen, dass es angekommen ist.
-        meldung.configure(text=t('s_lg_eingetragen') % (name, wert), fg=SUB)
+        meldung.configure(text=hinweis, fg=SUB)
+        rechenhinweis.configure(text='')
+        knoepfe_setzen()
         zeichnen()
 
-    _knopf(fenster, innen, t('s_lg_eintragen'), eintragen).pack(anchor='w',
-                                                                pady=(4, 10))
+    # ⚠ Die Knopfreihe wird neu gebaut, nicht umbeschriftet. Ein Knopf ist ein
+    # Canvas mit fester Breite — „Änderung speichern" passt nicht in die
+    # Breite von „Eintragen" und wuerde abgeschnitten.
+    rechenhinweis = tk.Label(innen, text='', bg=BG, fg=SUB,
+                             font=fenster.f_klein, anchor='w', justify='left')
+    rechenhinweis.pack(fill='x', pady=(0, 4))
+
+    knopf_rahmen = tk.Frame(innen, bg=BG)
+
+    def knoepfe_setzen():
+        for w in knopf_rahmen.winfo_children():
+            w.destroy()
+        if bearbeitung['nummer'] is None:
+            _knopf(fenster, knopf_rahmen, t('s_lg_eintragen'),
+                   eintragen).pack(side='left')
+            if frei['name']:
+                _knopf(fenster, knopf_rahmen, t('s_lg_trotzdem'),
+                       eintragen).pack(side='left', padx=(8, 0))
+        else:
+            _knopf(fenster, knopf_rahmen, t('s_lg_speichern'), eintragen,
+                   stark=True).pack(side='left')
+            _knopf(fenster, knopf_rahmen, t('s_lg_abbrechen'),
+                   verwerfen).pack(side='left', padx=(8, 0))
+
+    knoepfe_setzen()
+    knopf_rahmen.pack(anchor='w', pady=(4, 10))
     meldung.pack(fill='x')
     liste_rahmen.pack(fill='both', expand=True, pady=(6, 0))
     zeichnen()

@@ -3603,6 +3603,104 @@ def main():
     pruefe('- Stanton System' in _neu52en and '- Port Olisar' in _neu52en,
            'englisch: Region und Delivery bleiben unangetastet')
 
+    # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
+    #
+    # Eintragen ohne Berichtigen war halb fertig: Wer sich vertippt oder
+    # Material weitergegeben hatte, konnte den Posten nur loeschen und neu
+    # tippen. Und beim Neutippen entstand leicht ein zweiter Name fuer
+    # dasselbe Material — der Bestand sieht dann richtig aus, wird von den
+    # Rezepten aber nicht mehr gefunden. Am 29.08.2026 gemeldet.
+    print()
+    print('53. Lagerbestand berichtigen und Namen abgleichen')
+    from scbp import rohstoffe as _ro53
+    from scbp import herstellung as _he53
+
+    _alt53 = _ro53.laden()
+    try:
+        _ro53.sichern([])
+        _ro53.eintragen('Aslarite', 10, 500, 'Zuhause')
+        _ro53.eintragen('Quantainium', 4, 800, 'Schiff')
+
+        pruefe(len(_ro53.laden()) == 2, 'zwei Posten liegen im Lager')
+
+        # Menge berichtigen, alles andere behalten
+        _ro53.aendern(0, 'Aslarite', 8, 500, 'Zuhause')
+        _p53 = _ro53.laden()[0]
+        pruefe(_p53.get('menge') == 8, 'die Menge laesst sich berichtigen')
+        pruefe(_p53.get('qualitaet') == 500,
+               'dabei bleibt die Qualitaet stehen')
+
+        # Umlagern und Qualitaet nachtragen
+        _ro53.aendern(1, 'Quantainium', 4, 950, 'Lagerhaus Area18')
+        _p53b = _ro53.laden()[1]
+        pruefe(_p53b.get('ort') == 'Lagerhaus Area18',
+               'der Lagerort laesst sich aendern (umlagern)')
+        pruefe(_p53b.get('qualitaet') == 950,
+               'die Qualitaet laesst sich anpassen')
+
+        # Der Nachbarposten bleibt unberuehrt
+        pruefe(_ro53.laden()[0].get('material') == 'Aslarite',
+               'die andere Zeile bleibt unangetastet')
+
+        # Unsinnige Nummer aendert nichts
+        pruefe(_ro53.aendern(99, 'Irgendwas', 1, 1, '') is False,
+               'eine Nummer ausserhalb der Liste aendert nichts')
+        pruefe(len(_ro53.laden()) == 2,
+               'und legt auch keinen neuen Posten an')
+    finally:
+        _ro53.sichern(_alt53)
+
+    # Komma und Punkt gelten gleich — die einen tippen 12,5, die anderen 12.5
+    pruefe(_ro53.zahl_lesen('12,5') == 12.5, 'ein Komma wird als Zahl gelesen')
+    pruefe(_ro53.zahl_lesen('12.5') == 12.5, 'ein Punkt genauso')
+    pruefe(_ro53.zahl_lesen(' 8 ') == 8.0, 'Leerzeichen stoeren nicht')
+    pruefe(_ro53.zahl_lesen('-2,5') == -2.5, 'ein Minus bleibt erhalten')
+    pruefe(_ro53.zahl_lesen('−2') == -2.0,
+           'auch das lange Minus vom Ziffernblock')
+    pruefe(_ro53.zahl_lesen('12 SCU') is None,
+           'was keine Zahl ist, gibt None statt eines Absturzes')
+    pruefe(_ro53.zahl_lesen('') is None, 'und ein leeres Feld ebenso')
+
+    # Namensabgleich — der Schluessel zwischen Lager und Rezept.
+    # ⚠ Mit eingespeister Namensliste pruefen. Im Wegwerf-Ordner gibt es keine
+    # Rezeptdaten; ohne diesen Griff pruefte man nur, dass nichts geladen ist.
+    _echt53 = _he53.rohstoffnamen
+    _he53.rohstoffnamen = lambda: ['Aslarite', 'Quantainium', 'Aluminum',
+                                   'Agricium', 'Titanium']
+    pruefe(_he53.offizieller_name('aslarite') == 'Aslarite',
+           'Kleinschreibung wird auf den richtigen Namen gezogen')
+    pruefe(_he53.offizieller_name('  ASLARITE  ') == 'Aslarite',
+           'Grossschreibung und Leerzeichen stoeren nicht')
+    pruefe(_he53.offizieller_name('Aslarite (Raw)') == 'Aslarite',
+           'die Bergbau-Schreibweise mit Klammer passt auch')
+    pruefe(_he53.offizieller_name('aslerite') == 'Aslarite',
+           'ein knapper Vertipper wird berichtigt')
+    pruefe(_he53.offizieller_name('Bratkartoffeln') is None,
+           'ein voellig fremder Name wird NICHT geraten')
+    pruefe(_he53.offizieller_name('') is None,
+           'und eine leere Eingabe ergibt nichts')
+    pruefe(_he53.offizieller_name('Aluminium') == 'Aluminum',
+           'die britische Schreibweise trifft die amerikanische')
+    # ⚠ Ohne geladene Rezeptdaten darf NICHTS abgewiesen werden — sonst kann
+    # beim ersten Start ohne Netz niemand sein Lager fuellen.
+    _he53.rohstoffnamen = lambda: []
+    pruefe(_he53.offizieller_name('Irgendwas') == 'Irgendwas',
+           'ohne Rezeptdaten wird die Eingabe durchgelassen')
+    _he53.rohstoffnamen = _echt53
+    for _k53 in ('s_lg_speichern', 's_lg_abbrechen', 's_lg_geaendert',
+                 's_lg_rechnen', 's_lg_zu_wenig', 's_lg_alles_weg',
+                 's_lg_name_fremd', 's_lg_trotzdem', 's_lg_keine_guete',
+                 's_lg_berichtigt', 's_lg_zeile_klick', 's_lg_bearbeite'):
+        _w53 = _sp51.TEXTE.get(_k53)
+        pruefe(bool(_w53) and len(_w53) == 2 and all(_w53),
+               'Text %s gibt es deutsch und englisch' % _k53)
+    # Der Lagerort heisst Lagerort — „Fundort" gehoert zum Bergbau und hat
+    # hier jemanden ratlos gemacht.
+    pruefe('Lagerort' in _sp51.TEXTE['s_lg_ort'][0],
+           'das Ortsfeld heisst Lagerort, nicht Fundort')
+    pruefe('freiwillig' not in _sp51.TEXTE['s_lg_qualitaet'][0],
+           'die Qualitaet ist nicht mehr als freiwillig ausgewiesen')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
