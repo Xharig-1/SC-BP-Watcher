@@ -65,6 +65,7 @@ def bauen(fenster, kennung, rahmen):
         'diagnose':    _diagnose,
         'herstellung': _herstellung,
         'bergbau':     _bergbau,
+        'lager':       _lager,
     }.get(kennung)
     if bauer:
         bauer(fenster, rahmen)
@@ -2903,7 +2904,8 @@ def _danke(fenster, rahmen):
              t('s_dk_bomb_blind') + '\n\n' + t('s_dk_bomb_bugs')
              + '\n\n' + t('s_dk_bomb_dazu')),
             ('Morkhan', 'KRT', t('s_dk_morkhan_idee'),
-             t('s_dk_morkhan_bugs'))):
+             t('s_dk_morkhan_bugs')),
+            ('Horthy', 'Freilanze', t('s_dk_horthy_idee'), '')):
         _person(fenster, innen, name, gruppe, idee, funde)
 
     # --- Marken ---
@@ -3508,7 +3510,14 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
     if eintrag['habe'] is None:
         _fliesstext(block, t('s_he_unklar'), fenster.f_klein, fill='x')
     rez = herst_modul.rezept(eintrag['basis'])
+    from . import rohstoffe as lager
     for stufe in (rez or {}).get('stufen') or []:
+        # ⭐ Was davon liegt im eigenen Lager? (Vorschlag von Horthy | Freilanze™)
+        # ⚠ Gezeigt wird „hast du" bzw. „dir fehlt" — **nie** „du kannst nicht
+        # bauen". Das Lager wird von Hand gepflegt und ist irgendwann
+        # lückenhaft; ein Hinweis darf danebenliegen, eine Behauptung nicht.
+        lage = {m: (br, da, f, zug, mq) for m, br, da, f, zug, mq
+                in lager.pruefen(stufe['zutaten'])}
         for slot, rohstoff, menge, guete in stufe['zutaten']:
             z = tk.Frame(block, bg='#0c1017')
             z.pack(fill='x', padx=12, pady=1)
@@ -3529,6 +3538,25 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
             roh_lbl.bind('<Button-1>', zum_bergbau)
             tk.Label(z, text=t('s_he_menge') % menge, bg='#0c1017', fg=SUB,
                      font=fenster.f_klein, anchor='e').pack(side='right', padx=12)
+            _br, _da, _fehlt, _zu_gering, _mindestq = lage.get(
+                rohstoff, (0, 0, 0, 0, 0))
+            if _fehlt > 0:
+                tk.Label(z, text=t('s_lg_fehlt') % round(_fehlt, 3),
+                         bg='#0c1017', fg=GOLD, font=fenster.f_klein,
+                         anchor='e').pack(side='right', padx=(0, 8))
+            elif _da > 0:
+                tk.Label(z, text=t('s_lg_da') % round(_da, 3), bg='#0c1017',
+                         fg=ACCENT, font=fenster.f_klein,
+                         anchor='e').pack(side='right', padx=(0, 8))
+            # ⚠ Eigener Hinweis, wenn Material zwar daliegt, aber die
+            # geforderte Qualität nicht erreicht. Ohne ihn stünde „dir fehlt
+            # 0,3" da, obwohl 12 SCU im Lager liegen — und niemand käme auf
+            # den Grund.
+            if _zu_gering > 0:
+                tk.Label(z, text=t('s_lg_zu_schlecht')
+                         % (round(_zu_gering, 3), _mindestq),
+                         bg='#0c1017', fg=SUB, font=fenster.f_klein,
+                         anchor='e').pack(side='right', padx=(0, 8))
         if stufe['zeit']:
             z = tk.Frame(block, bg='#0c1017')
             z.pack(fill='x', padx=12, pady=(4, 8))
@@ -3536,6 +3564,59 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                      font=fenster.f_klein, width=18, anchor='w').pack(side='left')
             tk.Label(z, text=_dauer(stufe['zeit']), bg='#0c1017',
                      fg=FG, font=fenster.f_klein).pack(side='left')
+
+        # ⭐ Was käme mit DEINEM Material heraus? (Idee von Xharig-1, 29.08.2026)
+        #
+        # Die Rezepte tragen die Qualitätswirkung mit: mieses Erz macht ein
+        # schlechteres Stück, gutes ein besseres. Das steht in keiner Webseite,
+        # weil dort niemand weiß, was im eigenen Frachtraum liegt.
+        #
+        # ⚠ Nur zeigen, wenn das Lager etwas dazu hergibt — geraten wird nicht.
+        qualitaeten = {}
+        for _slot, _roh, _mg, _gt in stufe['zutaten']:
+            beste = lager.beste_qualitaet(_roh, _gt)
+            if beste is not None:
+                qualitaeten[_roh] = beste
+        werte = (herst_modul.werte_mit_lager(eintrag['basis'], qualitaeten)
+                 if qualitaeten else [])
+        if werte:
+            tk.Label(block, text=t('s_he_werte'), bg='#0c1017', fg=FG,
+                     font=fenster.f_grund, anchor='w').pack(fill='x', padx=12,
+                                                            pady=(10, 2))
+            for w in werte:
+                wz = tk.Frame(block, bg='#0c1017')
+                wz.pack(fill='x', padx=12, pady=1)
+                tk.Label(wz, text=w['eigenschaft'], bg='#0c1017', fg=SUB,
+                         font=fenster.f_klein, width=22,
+                         anchor='w').pack(side='left')
+                tk.Label(wz, text=t('s_he_faktor') % w['faktor'], bg='#0c1017',
+                         fg=(ACCENT if w['faktor'] >= 1 else GOLD),
+                         font=fenster.f_grund).pack(side='left')
+                tk.Label(wz, text=t('s_he_woher') % (w['material'],
+                                                     w['qualitaet']),
+                         bg='#0c1017', fg=SUB, font=fenster.f_klein,
+                         anchor='e').pack(side='right', padx=12)
+            _fliesstext(block, t('s_he_werte_hinweis'), fenster.f_klein,
+                        fill='x')
+
+        # „Das stelle ich jetzt her" — zieht die Zutaten aus dem Lager ab.
+        # Der Kern von Horthys Vorschlag: Die Mengen kennt der Watcher, das
+        # Rechnen soll der Mensch nicht machen.
+        reihe = tk.Frame(block, bg='#0c1017')
+        reihe.pack(fill='x', padx=12, pady=(2, 10))
+        rueck = tk.Label(reihe, text='', bg='#0c1017', fg=SUB,
+                         font=fenster.f_klein, anchor='w')
+
+        def hergestellt(_e=None, zutaten=stufe['zutaten'], lbl=rueck):
+            ok, fehlt = lager.abziehen(zutaten)
+            lbl.configure(
+                text=t('s_lg_abgezogen') if ok
+                else t('s_lg_teilweise') % ', '.join(fehlt),
+                fg=ACCENT if ok else GOLD)
+            neu_zeichnen()
+
+        _knopf(fenster, reihe, t('s_lg_bauen'), hergestellt).pack(side='left')
+        rueck.pack(side='left', padx=(10, 0))
 
 
 # ------------------------------------------------------------------- Bergbau
@@ -3683,3 +3764,104 @@ def _berg_ort(fenster, eltern, ort, offen, neu_zeichnen):
                  anchor='w').pack(side='left')
         tk.Label(z, text=_art_text(ort['erze'][name]), bg='#0c1017', fg=SUB,
                  font=fenster.f_klein, anchor='e').pack(side='right', padx=12)
+
+
+# ------------------------------------------------------------------- Lager
+#
+# Vorschlag von **Horthy | Freilanze™** (29.08.2026): Rohstoffe selbst
+# eintragen, beim Herstellen abziehen lassen.
+#
+# ⚠ **Von Hand, weil es nicht anders geht.** Die `Game.log` sagt nichts über
+# Rohstoffe — in 17 MB Protokollen kommt weder `resource` noch `cargo` vor.
+# Deshalb steht der Hinweis oben auf der Seite: Diese Liste gehört dem Spieler,
+# nicht dem Spiel.
+
+
+def _lager(fenster, rahmen):
+    """Das eigene Rohstoff-Lager: eintragen, ansehen, löschen."""
+    from . import rohstoffe as lager
+    _ueberschrift(fenster, rahmen, t('hf_lager'), t('s_lg_lead'))
+    innen = _rollflaeche(rahmen)
+
+    _fliesstext(innen, t('s_lg_hinweis'), fenster.f_klein, fill='x')
+
+    from .hauptfenster import rundes_feld
+    material = tk.StringVar()
+    menge = tk.StringVar()
+    guete = tk.StringVar()
+    ort = tk.StringVar()
+
+    for beschriftung, var in ((t('s_lg_material'), material),
+                              (t('s_lg_menge'), menge),
+                              (t('s_lg_qualitaet'), guete),
+                              (t('s_lg_ort'), ort)):
+        ziel = _feld(fenster, innen, beschriftung, '')
+        f = rundes_feld(ziel, var, fenster.f_klein, '#0c1017', LINIE, ACCENT, FG)
+        f.halter.pack(fill='x', pady=(4, 8))
+
+    liste_rahmen = tk.Frame(innen, bg=BG)
+    meldung = tk.Label(innen, text='', bg=BG, fg=SUB, font=fenster.f_klein,
+                       anchor='w')
+
+    def zeichnen():
+        for w in liste_rahmen.winfo_children():
+            w.destroy()
+        posten = lager.laden()
+        if not posten:
+            _fliesstext(liste_rahmen, t('s_lg_leer'), fenster.f_klein, fill='x')
+            return
+        arten = len({(p.get('material') or '').lower() for p in posten})
+        tk.Label(liste_rahmen, text=t('s_lg_summe') % (len(posten), arten),
+                 bg=BG, fg=SUB, font=fenster.f_klein,
+                 anchor='w').pack(fill='x', pady=(0, 6))
+        for nummer, p in enumerate(posten):
+            z = tk.Frame(liste_rahmen, bg=BG)
+            z.pack(fill='x', pady=1)
+            # ⚠ Erst in Variablen holen. `text=p.get('material')` liest
+            # `texte_pruefen.py` als festen Oberflächentext „material" und
+            # meldet ihn — ein Fehlalarm, der die Prüfung rot färbt.
+            name_txt = p.get('material') or '?'
+            menge_wert = p.get('menge') or 0
+            tk.Label(z, text=name_txt, bg=BG, fg=FG,
+                     font=fenster.f_grund, anchor='w').pack(side='left')
+            tk.Label(z, text=t('s_he_menge') % menge_wert, bg=BG,
+                     fg=ACCENT, font=fenster.f_klein,
+                     anchor='w').pack(side='left', padx=(10, 0))
+            beiwerk = ' · '.join(x for x in (
+                ('%s %%' % p['qualitaet']) if p.get('qualitaet') else '',
+                p.get('ort') or '') if x)
+            if beiwerk:
+                tk.Label(z, text=beiwerk, bg=BG, fg=SUB, font=fenster.f_klein,
+                         anchor='w').pack(side='left', padx=(10, 0))
+            weg = tk.Label(z, text=t('s_lg_weg'), bg=BG, fg=SUB,
+                           font=fenster.f_klein, cursor='hand2', anchor='e')
+            weg.pack(side='right', padx=(8, 4))
+            weg.bind('<Button-1>',
+                     lambda _e, n=nummer: (lager.entfernen(n), zeichnen()))
+
+    def eintragen(*_):
+        name = material.get().strip()
+        if not name:
+            return
+        try:
+            wert = float((menge.get() or '0').replace(',', '.'))
+        except ValueError:
+            # ⚠ Keine Zahl? Dann nichts tun statt abstürzen — jemand tippt
+            # „12 SCU" statt „12", und das darf das Fenster nicht kosten.
+            meldung.configure(text=t('s_lg_menge'), fg=GOLD)
+            return
+        try:
+            q = int(guete.get()) if guete.get().strip() else None
+        except ValueError:
+            q = None
+        lager.eintragen(name, wert, q, ort.get())
+        material.set(''); menge.set(''); guete.set(''); ort.set('')
+        meldung.configure(text='', fg=SUB)
+        zeichnen()
+
+    _knopf(fenster, innen, t('s_lg_eintragen'), eintragen).pack(anchor='w',
+                                                                pady=(4, 10))
+    meldung.pack(fill='x')
+    liste_rahmen.pack(fill='both', expand=True, pady=(6, 0))
+    zeichnen()
+

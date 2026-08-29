@@ -1312,7 +1312,12 @@ class Hauptfenster:
         # beantworten eine andere Frage („was brauche ich / wo hole ich es")
         # als der eigene Bestand („habe ich das schon"). Die Gruppenüberschrift
         # gibt zugleich den Kontext, deshalb reichen darunter kurze Namen.
+        # ⚠ Die Reihenfolge ist die **Kette, wie man sie im Spiel erlebt**:
+        # Was habe ich → was brauche ich dafür → wo hole ich das. So hat es
+        # Xharig-1 am 29.08.2026 selbst beschrieben, und so liest sich die
+        # Leiste von oben nach unten wie ein Ablauf statt wie eine Sammlung.
         self._gruppe(t('hf_gruppe_herst'))
+        self._reiter('lager', 'bestand', t('hf_lager'))
         self._reiter('herstellung', 'blitz', t('hf_herstellung'))
         self._reiter('bergbau', 'herkunft', t('hf_bergbau'))
 

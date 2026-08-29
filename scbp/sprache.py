@@ -923,6 +923,21 @@ TEXTE = {
                          'des Werkzeugs — einfach so.',
                          'And on top of that a month of Discord Nitro for the '
                          "tool's server — just like that."),
+    's_dk_horthy_idee': ('**Das eigene Rohstoff-Lager** — Material, Menge, '
+                         'Qualität und Lagerort selbst eintragen, und beim '
+                         'Herstellen zieht das Werkzeug die Zutaten ab, statt '
+                         'dass man rechnet. Aus dem Vorschlag ist noch mehr '
+                         'geworden: Weil die Rezepte mittragen, wie die '
+                         'Materialqualität die Werte des fertigen Stücks '
+                         'verändert, steht jetzt auch da, was mit dem eigenen '
+                         'Material herauskäme.',
+                         '**The personal resource stock** — enter material, '
+                         'amount, quality and location yourself, and when you '
+                         'craft, the tool subtracts the ingredients instead of '
+                         'you doing the maths. The suggestion grew: because the '
+                         'recipes carry how material quality changes the values '
+                         'of the finished item, it now also shows what your own '
+                         'material would produce.'),
     's_dk_morkhan_idee': ('**Die Angaben am Gegenstand im Spiel** — dass am '
                           'Traktorstrahl nicht nur der Name steht, sondern auch '
                           'Klasse, Größe und Gütegrad. Dazu: **Star Citizen lässt '
@@ -1284,12 +1299,59 @@ TEXTE = {
     's_he_mehr':         ('… und %d weitere. Grenz die Suche ein.',
                           '… and %d more. Narrow your search.'),
     's_he_nichts':       ('Nichts gefunden.', 'Nothing found.'),
+    # --- Lager (scbp/rohstoffe.py) ------------------------------------------
+    'hf_lager':          ('Mein Lager', 'My stock'),
+    's_lg_lead':         ('Was du an Rohstoffen hast. Trag es selbst ein — das '
+                          'Spiel verrät es nicht. Beim Herstellen zieht der '
+                          'Watcher die Zutaten ab.',
+                          'The resources you hold. Enter them yourself — the '
+                          'game does not reveal them. When you craft, the '
+                          'watcher deducts the ingredients.'),
+    's_lg_material':     ('Rohstoff', 'Resource'),
+    's_lg_menge':        ('Menge (SCU)', 'Amount (SCU)'),
+    's_lg_qualitaet':    ('Güte % (freiwillig)', 'Quality % (optional)'),
+    's_lg_ort':          ('Fundort (freiwillig)', 'Location (optional)'),
+    's_lg_eintragen':    ('Eintragen', 'Add'),
+    's_lg_leer':         ('Noch nichts eingetragen.', 'Nothing entered yet.'),
+    's_lg_weg':          ('Löschen', 'Remove'),
+    's_lg_summe':        ('%d Posten · %d Rohstoffe', '%d entries · %d resources'),
+    # ⚠ Bewusst „dir fehlt", nicht „du kannst nicht bauen" — das Lager wird von
+    # Hand gepflegt und ist irgendwann lückenhaft. Ein Hinweis darf danebenliegen,
+    # eine Behauptung nicht.
+    # Wirkung der Materialqualitaet auf die Werte des Produkts.
+    # 1540 der 1607 Bauplaene haben solche Angaben (gemessen 29.08.2026).
+    's_he_werte':        ('Mit deinem Material', 'With your material'),
+    's_he_faktor':       ('× %.3f', '× %.3f'),
+    's_he_woher':        ('%s · Q %g', '%s · Q %g'),
+    's_he_werte_hinweis': ('Was daraus wird, hängt an der Qualität des '
+                           'Materials. Gerechnet wird mit dem besten Posten, '
+                           'den dein Lager für diesen Bauplan hergibt.',
+                           'What you get depends on the quality of the '
+                           'material. This uses the best entry your stock has '
+                           'for this blueprint.'),
+    's_lg_zu_schlecht':  ('%g SCU da, aber unter Q %g',
+                          '%g SCU on hand, but below Q %g'),
+    's_lg_da':           ('hast du: %g', 'you have: %g'),
+    's_lg_fehlt':        ('dir fehlt: %g', 'you are missing: %g'),
+    's_lg_bauen':        ('Das stelle ich jetzt her', 'I am crafting this now'),
+    's_lg_abgezogen':    ('Abgezogen.', 'Deducted.'),
+    's_lg_teilweise':    ('Abgezogen, so weit vorhanden. Nicht im Lager: %s',
+                          'Deducted as far as available. Not in stock: %s'),
+    's_lg_hinweis':      ('Der Watcher kennt deinen Frachtraum nicht — das hier '
+                          'ist deine eigene Liste. Sie sagt dir, was fehlen '
+                          'könnte, nicht ob du bauen kannst.',
+                          'The watcher cannot see your cargo hold — this is your '
+                          'own list. It tells you what might be missing, not '
+                          'whether you can build.'),
+
     # --- Seite „Bergbau" -----------------------------------------------------
     'm_b_aktuell':       ('Bergbau-Daten sind aktuell (%d Orte)',
                           'Mining data is up to date (%d locations)'),
     'm_b_geladen':       ('%d Orte geladen', '%d locations loaded'),
     'm_b_leer':          ('Die Datei enthält keine Orte.',
                           'The file contains no locations.'),
+    # ⚠ Der Ton: ein Hinweis, keine Behauptung. Siehe `inventar.py`.
+
     's_bg_lead':         ('Wo welches Erz abzubauen ist. Tipp einen Rohstoff ein '
                           'für seine Fundorte — oder einen Ort für alles, was es '
                           'dort gibt.',
@@ -1331,7 +1393,10 @@ TEXTE = {
                           'is sent.'),
     's_melder_leer':     ('nicht angegeben', 'not given'),
     'hf_gruppe_bp':      ('Baupläne', 'Blueprints'),
-    'hf_gruppe_herst':   ('Herstellung & Bergbau', 'Crafting & Mining'),
+    # Hiess frueher Herstellung & Bergbau. Das deckte das Lager nicht ab,
+    # das seit v3.3.0 in derselben Gruppe sitzt; drei Woerter waeren als
+    # Ueberschrift zu lang geworden.
+    'hf_gruppe_herst':   ('Werkstatt', 'Workshop'),
     'hf_herstellung':    ('Herstellung', 'Crafting'),
     'hf_bergbau':        ('Bergbau', 'Mining'),
     'hf_gruppe_einst':   ('Einstellungen', 'Settings'),

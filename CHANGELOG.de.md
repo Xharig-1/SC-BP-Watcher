@@ -38,6 +38,34 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Für Wahrscheinlichkeiten und den Refinery-Vergleich ist **scmdb.net** weiter
   die bessere Adresse; die Seite verweist auch dorthin.
 
+- **Mein Lager — und was deine Materialqualität aus dem Produkt macht.**
+  Vorgeschlagen von **Horthy | Freilanze™** 🙏
+
+  Du trägst ein, was du an Rohstoffen hast: **Material, Menge, Qualität,
+  Lagerort**. Im Rezept steht dann an jeder Zutat, ob sie da ist oder wie viel
+  fehlt — und ein Knopf **„Das stelle ich jetzt her"** zieht die Zutaten ab,
+  ohne dass du rechnen musst.
+
+  **Und die Qualität zählt wirklich.** Die Rezepte tragen mit, wie stark sie die
+  Werte des fertigen Stücks verändert — bei **1.540 der 1.607 Baupläne**.
+  Deshalb steht im Rezept, was mit *deinem* Material herauskäme:
+
+  ```
+  Mit deinem Material
+     Damage Mitigation    × 1,044     Ouratite · Q 720
+     Min Temp             × 1,088     Aslarite · Q 800
+  ```
+
+  Liegt Material da, das die geforderte Qualität nicht erreicht, steht das
+  ausdrücklich dabei — sonst hieße es „dir fehlt 0,3", während 12 SCU im Lager
+  liegen.
+
+  ⚠ **Das Lager wird von Hand geführt**, weil das Spiel nichts darüber verrät:
+  In 17 MB Protokollen steht kein Wort zu Rohstoffen oder Herstellung. Deshalb
+  sagt der Watcher auch nie „du kannst das nicht bauen", sondern nur „dir fehlt
+  Iron". Ein Lager, das zwei Einträge hinterherhinkt, darf nicht zum Lügner
+  werden.
+
 - **Dein Name im Fehlerbericht.** Auf der Seite „Fehler melden" lässt sich ein
   Name eintragen, der oben im Bericht steht. Damit lassen sich Rückfragen
   zuordnen. **Freiwillig** — leer bleibt leer, und vorausgefüllt wird nie etwas.
@@ -59,6 +87,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Absage, kein Wackelkontakt: Das Werkzeug sagt das jetzt klar, arbeitet mit dem
   zuletzt geladenen Stand weiter — und wiederholt den Versuch nicht mehr dreimal
   (das kostete sechs Sekunden für nichts).
+
+### Dank
+
+Die Idee zum Rohstoff-Lager kam von **Horthy | Freilanze™** — und aus ihr ist die Qualitätsrechnung geworden, die jetzt zeigt, was das eigene Material aus einem Bauplan macht. Danke dafür 🙏
+
+Dazu **Krovax** (SCMDB), der auf Anfrage eigens einen öffentlichen Datenspiegel eingerichtet hat, damit Werkzeuge wie dieses eine verlässliche Quelle haben.
 
 ## v3.2.1 - 2026-08-29
 

@@ -383,3 +383,119 @@ def zaehlung(bestand_schluessel):
     sicher = sum(1 for e in liste if e['habe'] is True)
     unklar = sum(1 for e in liste if e['habe'] is None)
     return sicher, len(liste), unklar
+
+
+# ------------------------------------------------- Was die Qualität bewirkt
+#
+# ⭐ **Der Teil, den keine Webseite leisten kann.** Die Rezepte sagen nicht nur,
+# *welches* Material gebraucht wird, sondern auch, **wie stark die Qualität die
+# Werte des Produkts verändert**:
+#
+#     {"startQuality": 0, "endQuality": 1000,
+#      "modifierAtStart": 0.9, "modifierAtEnd": 1.1,
+#      "propertyName": "Damage Mitigation"}
+#
+# Also: mieses Erz → 0,9-fache Schadensminderung, bestes Erz → 1,1-fache.
+# Dazwischen wird linear gerechnet.
+#
+# Gemessen am 29.08.2026: **1.540 von 1.607 Bauplänen (96 %)** haben solche
+# Angaben. Betroffen sind Min/Max Temp, Damage Mitigation, Integrity, Power
+# Pips, Impact Force, Coolant Rating, Schildstärke, Rückstoß und mehr.
+#
+# ⚠ **Die Skala ist 0 bis 1000** — daher stammen auch die `minQuality`-Werte
+# 500 bis 900 in den Rezepten.
+#
+# ⚠ **Es gibt mehrere Spannen je Eigenschaft** (etwa 0–500 und 501–1000): Die
+# Kurve ist stückweise linear, nicht durchgehend. Wer nur die erste Spanne
+# nimmt, rechnet oberhalb davon falsch.
+
+
+def _spanne_fuer(modifikatoren, qualitaet):
+    """Die Spanne, in die diese Qualität fällt — sonst die nächstgelegene."""
+    q = float(qualitaet or 0)
+    for m in modifikatoren:
+        if float(m.get('startQuality', 0)) <= q <= float(m.get('endQuality', 0)):
+            return m
+    # Außerhalb aller Spannen: die mit der nächsten Grenze nehmen, damit das
+    # Ergebnis nicht einfach verschwindet.
+    if not modifikatoren:
+        return None
+    return min(modifikatoren,
+               key=lambda m: min(abs(q - float(m.get('startQuality', 0))),
+                                 abs(q - float(m.get('endQuality', 0)))))
+
+
+def faktor(modifikatoren, qualitaet):
+    """Der Multiplikator für diese Qualität — linear in der passenden Spanne."""
+    m = _spanne_fuer(modifikatoren, qualitaet)
+    if not m:
+        return None
+    start, ende = float(m.get('startQuality', 0)), float(m.get('endQuality', 0))
+    a, b = float(m.get('modifierAtStart', 1)), float(m.get('modifierAtEnd', 1))
+    if ende == start:
+        return b
+    anteil = (float(qualitaet or 0) - start) / (ende - start)
+    anteil = max(0.0, min(1.0, anteil))          # außerhalb nicht extrapolieren
+    return a + anteil * (b - a)
+
+
+def slots(name_oder_tag):
+    """Die Slots eines Bauplans mit Material **und** Qualitätswirkung.
+
+    [{slot, material, menge, mindestguete, wirkungen:[{eigenschaft, key, mods}]}]
+    """
+    gesucht = (name_oder_tag or '').strip().lower()
+    for b in laden().get('blueprints') or []:
+        if gesucht not in ((b.get('productName') or '').lower(),
+                           (b.get('tag') or '').lower()):
+            continue
+        raus = []
+        for t_ in b.get('tiers') or []:
+            for s in t_.get('slots') or []:
+                material = menge = guete = None
+                for o in s.get('options') or []:
+                    if o.get('type') == 'resource' and o.get('resourceName'):
+                        material = o['resourceName']
+                        menge = o.get('quantity') or 0
+                        guete = o.get('minQuality') or 0
+                        break
+                nach_eigenschaft = {}
+                for m in s.get('modifiers') or []:
+                    nach_eigenschaft.setdefault(
+                        (m.get('propertyName'), m.get('propertyKey')),
+                        []).append(m)
+                raus.append({
+                    'slot': s.get('name') or '',
+                    'material': material,
+                    'menge': menge,
+                    'mindestguete': guete,
+                    'wirkungen': [{'eigenschaft': n, 'key': k, 'mods': v}
+                                  for (n, k), v in nach_eigenschaft.items()],
+                })
+        return raus
+    return None
+
+
+def werte_mit_lager(name_oder_tag, qualitaet_je_material):
+    """Was käme mit **diesem** Material heraus?
+
+    `qualitaet_je_material` ist {Material: Qualität} — in der Regel die beste
+    brauchbare Qualität aus dem eigenen Lager
+    (`rohstoffe.beste_qualitaet()`). Materialien ohne Eintrag werden
+    übersprungen; über sie ist nichts bekannt, und geraten wird nicht.
+
+    Gibt [{eigenschaft, material, qualitaet, faktor}] zurück.
+    """
+    raus = []
+    for s in (slots(name_oder_tag) or []):
+        q = (qualitaet_je_material or {}).get(s['material'])
+        if q is None:
+            continue
+        for w in s['wirkungen']:
+            f = faktor(w['mods'], q)
+            if f is None:
+                continue
+            raus.append({'eigenschaft': w['eigenschaft'], 'key': w['key'],
+                         'material': s['material'], 'qualitaet': q,
+                         'faktor': f, 'slot': s['slot']})
+    return raus

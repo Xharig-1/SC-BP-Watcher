@@ -809,7 +809,7 @@ def main():
                 # sucht sie nicht in einem zugeklappten Menü namens
                 # „Fortgeschritten". Seit dem Knopf „Fehlerbericht absenden"
                 # ist sie zudem der Weg, auf dem Meldungen ankommen.
-                pruefe(len(hf.knoepfe) == 13, 'alle Reiter sind wieder da')
+                pruefe(len(hf.knoepfe) == 14, 'alle Reiter sind wieder da')
 
                 # Die Wahl muss festgehalten werden — ohne Speichern-Knopf gibt
                 # es keinen zweiten Versuch. Vorher stand die Markierung

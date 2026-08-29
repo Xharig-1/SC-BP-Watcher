@@ -37,6 +37,32 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   For probabilities and the refinery comparison **scmdb.net** remains the better
   place; the page links there.
 
+- **My stock — and what your material quality makes of the product.**
+  Suggested by **Horthy | Freilanze™** 🙏
+
+  You enter what resources you have: **material, amount, quality, location**.
+  Every ingredient in a recipe then shows whether it is there or how much is
+  missing — and a button **"Crafting this now"** subtracts the ingredients, so
+  you do not have to do the arithmetic.
+
+  **And quality genuinely matters.** The recipes carry how strongly it changes
+  the values of the finished item — for **1,540 of the 1,607 blueprints**. So
+  the recipe shows what *your* material would produce:
+
+  ```
+  With your material
+     Damage Mitigation    × 1.044     Ouratite · Q 720
+     Min Temp             × 1.088     Aslarite · Q 800
+  ```
+
+  If material is on hand but below the required quality, it says so — otherwise
+  you would read "missing 0.3" while 12 SCU sit in your stock.
+
+  ⚠ **The stock is kept by hand**, because the game gives nothing away: 17 MB of
+  logs contain not one word about resources or crafting. That is why the watcher
+  never says "you cannot build this", only "you are missing Iron". A stock that
+  lags two entries behind must not become a liar.
+
 - **Your name in the bug report.** On the "Report a problem" page you can enter
   a name that appears at the top of the report, so follow-up questions can be
   matched to you. **Optional** — empty stays empty, and nothing is ever
@@ -59,6 +85,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   refusal, not a loose cable: the tool now says so plainly, keeps working with
   the data it already has — and no longer retries three times (which cost six
   seconds for nothing).
+
+### Thanks
+
+The idea for the resource stock came from **Horthy | Freilanze™** — and out of it grew the quality calculation that now shows what your own material makes of a blueprint. Thank you 🙏
+
+And **Krovax** (SCMDB), who set up a public data mirror on request so tools like this one have a dependable source.
 
 ## v3.2.1 - 2026-08-29
 

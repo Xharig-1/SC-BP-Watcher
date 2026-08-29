@@ -46,6 +46,7 @@ DATEI = 'gesehen.json'
 NEU_SEIT = {
     'herstellung': '3.3.0',
     'bergbau': '3.3.0',
+    'lager': '3.3.0',
     'liste':       '3.0.0',    # Bauplan-Liste im neuen Fenster
     'fortschritt': '3.0.0',    # Fortschritt je Art
     'bestand':     '3.0.0',    # Bestand einlesen und ausgeben
