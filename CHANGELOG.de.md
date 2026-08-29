@@ -100,6 +100,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠ **Der Qualitäts-Regler ruckelte, weil bei jeder Mausbewegung 4 MB von der
+  Platte gelesen wurden.** Die Rezeptdatei wurde bei **jedem** Zugriff neu
+  eingelesen — 22 ms pro Aufruf, und der Regler ruft bei jedem Pixel. Das waren
+  über 600 ms Rechenzeit pro Sekunde. Jetzt bleiben die Daten im Speicher und
+  werden nur neu gelesen, wenn sich die Datei wirklich ändert: **0,33 ms statt
+  21,9 ms**. Nebenbei werden die Werte beim Ziehen nur noch neu beschriftet
+  statt neu aufgebaut — das nahm den Rest des Flackerns.
+
 - ⚠ **Die neuen Daten kamen bei niemandem an, der schon einen Katalog hatte.**
   Der Abruf brach ab, sobald der Bauplan-Katalog aktuell war — und das ist er
   bei jedem bisherigen Nutzer. Herstellung, Bergbau und Lager wären dauerhaft

@@ -80,21 +80,47 @@ CACHE = 'crafting-blueprints.json'
 # und der Umbau wäre für ihn unsichtbar.
 FORMAT = 1
 
+# Das Geruest, wenn noch nichts geladen ist.
+LEER = {'format': FORMAT, 'build': None, 'blueprints': []}
+
 
 # --------------------------------------------------------------- Holen/Laden
 
 
+# ⚠⚠ **Die Daten bleiben im Speicher.**
+#
+# `laden()` las bis zum 29.08.2026 bei JEDEM Aufruf die ganze Datei von der
+# Platte — bei den Rezepten sind das 4 MB und **22 ms**. Das fiel niemandem
+# auf, solange nur beim Seitenaufbau geladen wurde. Mit dem Qualitäts-Regler
+# wurde daraus ein Ladevorgang **pro Mausbewegung**: über 600 ms Rechenzeit je
+# Sekunde, und der Regler ruckelte so, dass er unbenutzbar war.
+#
+# Gemerkt wird zusammen mit Zeitstempel und Größe der Datei. Ändert sich eine
+# von beiden — etwa weil ein neuer Spiel-Build geladen wurde — wird neu
+# gelesen. Damit bleibt der Zwischenspeicher richtig, ohne dass jemand ihn von
+# Hand leeren muss.
+_gemerkt = {'stand': None, 'daten': None}
+
+
 def laden():
-    """Der abgelegte Stand — oder ein leeres Gerüst, wenn noch keiner da ist."""
+    """Der abgelegte Stand — aus dem Speicher, wenn die Datei unverändert ist."""
+    pfad = pfade.app_datei(CACHE)
     try:
-        with open(pfade.app_datei(CACHE), encoding='utf-8') as f:
+        st = os.stat(pfad)
+        kennung = (st.st_mtime_ns, st.st_size)
+    except OSError:
+        kennung = None
+    if kennung is not None and _gemerkt['stand'] == kennung:
+        return _gemerkt['daten']
+    try:
+        with open(pfad, encoding='utf-8') as f:
             daten = json.load(f)
         if daten.get('format') == FORMAT:
+            _gemerkt['stand'], _gemerkt['daten'] = kennung, daten
             return daten
     except Exception:
         pass
-    return {'format': FORMAT, 'build': None, 'blueprints': []}
-
+    return LEER.copy()
 
 def _sichern(daten):
     ziel = pfade.app_datei(CACHE)
@@ -103,6 +129,9 @@ def _sichern(daten):
         with open(ziel + '.tmp', 'w', encoding='utf-8') as f:
             json.dump(daten, f, ensure_ascii=False)
         os.replace(ziel + '.tmp', ziel)
+        # ⚠ Zwischenspeicher verwerfen: Zeitstempel und Groesse koennen sich
+        # binnen derselben Sekunde wiederholen, dann bliebe der alte Stand.
+        _gemerkt['stand'] = None
         return True
     except Exception as ausnahme:
         fehler.merken('herstellung._sichern', ausnahme)

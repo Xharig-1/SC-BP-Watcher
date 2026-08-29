@@ -3619,34 +3619,70 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
             regler_lbl = tk.Label(block, text='', bg='#0c1017', fg=SUB,
                                   font=fenster.f_klein, anchor='w')
 
+            # ⚠⚠ **Die Zeilen werden EINMAL gebaut, danach nur beschriftet.**
+            #
+            # Vorher wurde bei jeder Reglerbewegung alles zerstört und neu
+            # aufgebaut — bei einem Regler heißt das: bei jedem Pixel. Das
+            # ruckelte und flackerte so stark, dass er nicht bedienbar war
+            # (gemeldet 29.08.2026). Tk-Widgets zu erzeugen ist teuer,
+            # `configure(text=…)` ist billig.
+            #
+            # Damit die Zeilenzahl feststeht, wird die Liste **immer** mit
+            # einer vollständigen Qualitätsvorgabe gebaut; welche Werte darin
+            # stehen, entscheidet erst `werte_setzen()`.
+            grundliste = herst_modul.werte_mit_lager(
+                eintrag['basis'], {m: 500.0 for m in alle_materialien})
+            zeilen_widgets = []
+            for w in grundliste:
+                wz = tk.Frame(werte_rahmen, bg='#0c1017')
+                wz.pack(fill='x', padx=12, pady=1)
+                tk.Label(wz, text=w['eigenschaft'], bg='#0c1017', fg=SUB,
+                         font=fenster.f_klein, width=22,
+                         anchor='w').pack(side='left')
+                faktor_lbl = tk.Label(wz, text='', bg='#0c1017', fg=ACCENT,
+                                      font=fenster.f_grund, width=9,
+                                      anchor='w')
+                faktor_lbl.pack(side='left')
+                herkunft_lbl = tk.Label(wz, text='', bg='#0c1017', fg=SUB,
+                                        font=fenster.f_klein, anchor='e')
+                herkunft_lbl.pack(side='right', padx=12)
+                zeilen_widgets.append((w, faktor_lbl, herkunft_lbl))
+
+            leer_lbl = tk.Label(werte_rahmen, text='', bg='#0c1017', fg=SUB,
+                                font=fenster.f_klein, anchor='w')
+
             def werte_zeichnen(vorgabe=None):
-                """Die Werte neu rechnen — aus dem Lager oder mit Vorgabe."""
-                for w in werte_rahmen.winfo_children():
-                    w.destroy()
+                """Nur die Zahlen austauschen — keine Widgets neu bauen."""
                 if vorgabe is None:
                     qs = dict(qualitaeten)
                 else:
                     # Durchgespielt: dieselbe Qualität für alle Zutaten.
                     qs = {m: float(vorgabe) for m in alle_materialien}
-                liste = herst_modul.werte_mit_lager(eintrag['basis'], qs)
-                for w in liste:
-                    wz = tk.Frame(werte_rahmen, bg='#0c1017')
-                    wz.pack(fill='x', padx=12, pady=1)
-                    tk.Label(wz, text=w['eigenschaft'], bg='#0c1017', fg=SUB,
-                             font=fenster.f_klein, width=22,
-                             anchor='w').pack(side='left')
-                    tk.Label(wz, text=t('s_he_faktor') % w['faktor'],
-                             bg='#0c1017',
-                             fg=(ACCENT if w['faktor'] >= 1 else GOLD),
-                             font=fenster.f_grund).pack(side='left')
-                    herkunft = (t('s_he_woher') % (w['material'], w['qualitaet'])
-                                if vorgabe is None else w['material'])
-                    tk.Label(wz, text=herkunft, bg='#0c1017', fg=SUB,
-                             font=fenster.f_klein,
-                             anchor='e').pack(side='right', padx=12)
-                if not liste:
-                    _fliesstext(werte_rahmen, t('s_he_kein_lager'),
-                                fenster.f_klein, fill='x')
+                aktuell = {(w['eigenschaft'], w['material'], w['slot']): w
+                           for w in herst_modul.werte_mit_lager(
+                               eintrag['basis'], qs)}
+                gezeigt = 0
+                for w0, faktor_lbl, herkunft_lbl in zeilen_widgets:
+                    w = aktuell.get((w0['eigenschaft'], w0['material'],
+                                     w0['slot']))
+                    if not w:
+                        # Kein Lagerstand für dieses Material — Zeile leeren,
+                        # aber stehen lassen: Sonst springt die Höhe.
+                        faktor_lbl.configure(text='')
+                        herkunft_lbl.configure(text='')
+                        continue
+                    gezeigt += 1
+                    faktor_lbl.configure(
+                        text=t('s_he_faktor') % w['faktor'],
+                        fg=(ACCENT if w['faktor'] >= 1 else GOLD))
+                    herkunft_lbl.configure(
+                        text=(t('s_he_woher') % (w['material'], w['qualitaet'])
+                              if vorgabe is None else w['material']))
+                if not gezeigt:
+                    leer_lbl.configure(text=t('s_he_kein_lager'))
+                    leer_lbl.pack(fill='x', padx=12)
+                else:
+                    leer_lbl.pack_forget()
 
             # --- Regler zum Durchspielen ---
             # Dieselbe Frage, die man sonst auf scmdb.net von Hand stellt:

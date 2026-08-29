@@ -97,6 +97,14 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠ **The quality slider stuttered because 4 MB were read from disk on every
+  mouse move.** The recipe file was re-read on **every** access — 22 ms per
+  call, and the slider fires on every pixel. That came to over 600 ms of
+  computing per second. The data now stays in memory and is only re-read when
+  the file actually changes: **0.33 ms instead of 21.9 ms**. On top of that,
+  dragging now only relabels the values instead of rebuilding them, which took
+  care of the remaining flicker.
+
 - ⚠ **The new data never arrived for anyone who already had a catalogue.**
   The fetch stopped as soon as the blueprint catalogue was current — which it is
   for every existing user. Crafting, Mining and Stock would have stayed empty
