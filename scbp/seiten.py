@@ -3518,6 +3518,30 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
         # lückenhaft; ein Hinweis darf danebenliegen, eine Behauptung nicht.
         lage = {m: (br, da, f, zug, mq) for m, br, da, f, zug, mq
                 in lager.pruefen(stufe['zutaten'])}
+
+        # ⭐ **Der Knopf steht GANZ OBEN.** Er stand bis zum 29.08.2026 unter
+        # den Zutaten, der Herstellzeit UND dem Block „Mit deinem Material" —
+        # bei drei Zutaten also gut zehn Zeilen tiefer. Xharig-1 hat ihn selbst
+        # nicht gefunden: „wenn selbst ich es nicht verstehe". Eine Funktion,
+        # die man suchen muss, ist für den Nutzer nicht vorhanden.
+        reihe = tk.Frame(block, bg='#0c1017')
+        reihe.pack(fill='x', padx=12, pady=(8, 2))
+        rueck = tk.Label(reihe, text='', bg='#0c1017', fg=SUB,
+                         font=fenster.f_klein, anchor='w')
+
+        def hergestellt(_e=None, zutaten=stufe['zutaten'], lbl=rueck):
+            ok, fehlt = lager.abziehen(zutaten)
+            lbl.configure(
+                text=t('s_lg_abgezogen') if ok
+                else t('s_lg_teilweise') % ', '.join(fehlt),
+                fg=ACCENT if ok else GOLD)
+            neu_zeichnen()
+
+        _knopf(fenster, reihe, t('s_lg_bauen'), hergestellt).pack(side='left')
+        rueck.pack(side='left', padx=(10, 0))
+        # Eine Zeile, die sagt, was der Knopf tut — sonst rät man.
+        _fliesstext(block, t('s_lg_bauen_hilfe'), fenster.f_klein, fill='x')
+
         for slot, rohstoff, menge, guete in stufe['zutaten']:
             z = tk.Frame(block, bg='#0c1017')
             z.pack(fill='x', padx=12, pady=1)
@@ -3541,7 +3565,12 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
             _br, _da, _fehlt, _zu_gering, _mindestq = lage.get(
                 rohstoff, (0, 0, 0, 0, 0))
             if _fehlt > 0:
-                tk.Label(z, text=t('s_lg_fehlt') % round(_fehlt, 3),
+                # Liegt schon etwas da, gehört das dazu — sonst fliegt jemand
+                # los, um 0,09 zu holen, obwohl ihm nur 0,07 fehlen.
+                txt = (t('s_lg_teil') % (round(_da, 3), round(menge, 3),
+                                         round(_fehlt, 3))
+                       if _da > 0 else t('s_lg_fehlt') % round(_fehlt, 3))
+                tk.Label(z, text=txt,
                          bg='#0c1017', fg=GOLD, font=fenster.f_klein,
                          anchor='e').pack(side='right', padx=(0, 8))
             elif _da > 0:
@@ -3577,46 +3606,89 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
             beste = lager.beste_qualitaet(_roh, _gt)
             if beste is not None:
                 qualitaeten[_roh] = beste
-        werte = (herst_modul.werte_mit_lager(eintrag['basis'], qualitaeten)
-                 if qualitaeten else [])
-        if werte:
+        # ⚠ **Auch ohne Lager anzeigen.** Die Frage „was bringt mir Erz mit
+        # Qualität X?" stellt man, BEVOR man es hat — genau dafür ist der
+        # Regler unten da. Ohne Lagerstand wird mit Q 500 (Mitte) begonnen.
+        alle_materialien = [r for _s, r, _m, _g in stufe['zutaten'] if r]
+        if alle_materialien:
             tk.Label(block, text=t('s_he_werte'), bg='#0c1017', fg=FG,
                      font=fenster.f_grund, anchor='w').pack(fill='x', padx=12,
                                                             pady=(10, 2))
-            for w in werte:
-                wz = tk.Frame(block, bg='#0c1017')
-                wz.pack(fill='x', padx=12, pady=1)
-                tk.Label(wz, text=w['eigenschaft'], bg='#0c1017', fg=SUB,
-                         font=fenster.f_klein, width=22,
-                         anchor='w').pack(side='left')
-                tk.Label(wz, text=t('s_he_faktor') % w['faktor'], bg='#0c1017',
-                         fg=(ACCENT if w['faktor'] >= 1 else GOLD),
-                         font=fenster.f_grund).pack(side='left')
-                tk.Label(wz, text=t('s_he_woher') % (w['material'],
-                                                     w['qualitaet']),
-                         bg='#0c1017', fg=SUB, font=fenster.f_klein,
-                         anchor='e').pack(side='right', padx=12)
+            werte_rahmen = tk.Frame(block, bg='#0c1017')
+            werte_rahmen.pack(fill='x')
+            regler_lbl = tk.Label(block, text='', bg='#0c1017', fg=SUB,
+                                  font=fenster.f_klein, anchor='w')
+
+            def werte_zeichnen(vorgabe=None):
+                """Die Werte neu rechnen — aus dem Lager oder mit Vorgabe."""
+                for w in werte_rahmen.winfo_children():
+                    w.destroy()
+                if vorgabe is None:
+                    qs = dict(qualitaeten)
+                else:
+                    # Durchgespielt: dieselbe Qualität für alle Zutaten.
+                    qs = {m: float(vorgabe) for m in alle_materialien}
+                liste = herst_modul.werte_mit_lager(eintrag['basis'], qs)
+                for w in liste:
+                    wz = tk.Frame(werte_rahmen, bg='#0c1017')
+                    wz.pack(fill='x', padx=12, pady=1)
+                    tk.Label(wz, text=w['eigenschaft'], bg='#0c1017', fg=SUB,
+                             font=fenster.f_klein, width=22,
+                             anchor='w').pack(side='left')
+                    tk.Label(wz, text=t('s_he_faktor') % w['faktor'],
+                             bg='#0c1017',
+                             fg=(ACCENT if w['faktor'] >= 1 else GOLD),
+                             font=fenster.f_grund).pack(side='left')
+                    herkunft = (t('s_he_woher') % (w['material'], w['qualitaet'])
+                                if vorgabe is None else w['material'])
+                    tk.Label(wz, text=herkunft, bg='#0c1017', fg=SUB,
+                             font=fenster.f_klein,
+                             anchor='e').pack(side='right', padx=12)
+                if not liste:
+                    _fliesstext(werte_rahmen, t('s_he_kein_lager'),
+                                fenster.f_klein, fill='x')
+
+            # --- Regler zum Durchspielen ---
+            # Dieselbe Frage, die man sonst auf scmdb.net von Hand stellt:
+            # „Und mit besserem Erz?" Nur dass hier der eigene Lagerstand der
+            # Ausgangspunkt ist.
+            start = int(max(qualitaeten.values())) if qualitaeten else 500
+            reihe_r = tk.Frame(block, bg='#0c1017')
+            reihe_r.pack(fill='x', padx=12, pady=(8, 0))
+            tk.Label(reihe_r, text=t('s_he_durchspielen'), bg='#0c1017',
+                     fg=SUB, font=fenster.f_klein).pack(side='left',
+                                                        padx=(0, 10))
+            from .hauptfenster import regler as schieberegler
+
+            # ⚠ Der Wert MUSS neben dem Regler stehen. Ohne ihn zieht man
+            # blind und weiß nicht, welche Qualität man gerade durchspielt —
+            # genau der Wert, um den es geht. Beim Deckkraft-Regler steht er
+            # aus demselben Grund daneben.
+            q_wert_lbl = tk.Label(reihe_r, text=t('s_lg_q_wert') % start,
+                                  bg='#0c1017', fg=ACCENT,
+                                  font=fenster.f_grund, width=7, anchor='w')
+
+            def q_gezogen(wert, _q=qualitaeten):
+                werte_zeichnen(wert)
+                q_wert_lbl.configure(text=t('s_lg_q_wert') % wert)
+                regler_lbl.configure(text=t('s_he_q_gesetzt') % wert, fg=GOLD)
+
+            schieberegler(reihe_r, 0, 1000, start, q_gezogen, breite=220,
+                          grund='#0c1017').pack(side='left')
+            q_wert_lbl.pack(side='left', padx=(10, 0))
+            zurueck = tk.Label(reihe_r, text=t('s_he_zurueck_lager'),
+                               bg='#0c1017', fg=ACCENT, font=fenster.f_klein,
+                               cursor='hand2')
+            if qualitaeten:
+                zurueck.pack(side='left', padx=(12, 0))
+                zurueck.bind('<Button-1>', lambda _e: (
+                    werte_zeichnen(None),
+                    regler_lbl.configure(text='', fg=SUB)))
+            regler_lbl.pack(fill='x', padx=12)
+            werte_zeichnen(None if qualitaeten else start)
             _fliesstext(block, t('s_he_werte_hinweis'), fenster.f_klein,
                         fill='x')
 
-        # „Das stelle ich jetzt her" — zieht die Zutaten aus dem Lager ab.
-        # Der Kern von Horthys Vorschlag: Die Mengen kennt der Watcher, das
-        # Rechnen soll der Mensch nicht machen.
-        reihe = tk.Frame(block, bg='#0c1017')
-        reihe.pack(fill='x', padx=12, pady=(2, 10))
-        rueck = tk.Label(reihe, text='', bg='#0c1017', fg=SUB,
-                         font=fenster.f_klein, anchor='w')
-
-        def hergestellt(_e=None, zutaten=stufe['zutaten'], lbl=rueck):
-            ok, fehlt = lager.abziehen(zutaten)
-            lbl.configure(
-                text=t('s_lg_abgezogen') if ok
-                else t('s_lg_teilweise') % ', '.join(fehlt),
-                fg=ACCENT if ok else GOLD)
-            neu_zeichnen()
-
-        _knopf(fenster, reihe, t('s_lg_bauen'), hergestellt).pack(side='left')
-        rueck.pack(side='left', padx=(10, 0))
 
 
 # ------------------------------------------------------------------- Bergbau
@@ -3804,8 +3876,10 @@ def _lager(fenster, rahmen):
             # Ohne sie tippt jemand „Aslerite", bekommt nie einen Treffer und
             # sucht den Fehler bei sich. Die Liste ist kurz (26 Materialien),
             # also passt sie unter das Feld statt in ein Auswahlmenü.
+            # ⚠ Nicht sofort packen — ein leerer Rahmen reisst eine Lücke
+            # unter das Feld, die wie ein Fehler aussieht. Er wird erst
+            # eingeblendet, wenn wirklich ein Vorschlag darin steht.
             vorschlag_rahmen = tk.Frame(innen, bg=BG)
-            vorschlag_rahmen.pack(fill='x', pady=(0, 8))
 
     def vorschlaege_zeigen(*_):
         from . import herstellung as h
@@ -3813,9 +3887,11 @@ def _lager(fenster, rahmen):
             return
         for w in vorschlag_rahmen.winfo_children():
             w.destroy()
+        vorschlag_rahmen.pack_forget()
         text = material.get().strip()
         if not text or h.kennt_rohstoff(text):
             return
+        vorschlag_rahmen.pack(fill='x', pady=(0, 8))
         treffer = h.aehnliche_rohstoffe(text)
         if not treffer:
             _fliesstext(vorschlag_rahmen, t('s_lg_unbekannt'), fenster.f_klein,
@@ -3835,6 +3911,18 @@ def _lager(fenster, rahmen):
     meldung = tk.Label(innen, text='', bg=BG, fg=SUB, font=fenster.f_klein,
                        anchor='w')
 
+    # ⚠ Als **Tabelle mit Spalten**, nicht als Fließtext: Bei 26 Materialien
+    # an mehreren Orten wird die Liste lang, und dann sucht man einen Posten,
+    # statt ihn zu sehen. Spaltenköpfe sortieren auf Klick, das Feld darüber
+    # filtert. (Wunsch von Xharig-1, 29.08.2026.)
+    sortier = {'nach': 'material', 'ab': False}
+    filter_var = tk.StringVar()
+
+    SPALTEN = (('material', 's_lg_sp_material', 22, 'w'),
+               ('menge',    's_lg_sp_menge',     9, 'e'),
+               ('qualitaet', 's_lg_sp_q',        9, 'e'),
+               ('ort',      's_lg_sp_ort',      18, 'w'))
+
     def zeichnen():
         for w in liste_rahmen.winfo_children():
             w.destroy()
@@ -3842,46 +3930,114 @@ def _lager(fenster, rahmen):
         if not posten:
             _fliesstext(liste_rahmen, t('s_lg_leer'), fenster.f_klein, fill='x')
             return
+
         arten = len({(p.get('material') or '').lower() for p in posten})
-        tk.Label(liste_rahmen, text=t('s_lg_summe') % (len(posten), arten),
-                 bg=BG, fg=SUB, font=fenster.f_klein,
-                 anchor='w').pack(fill='x', pady=(0, 6))
-        for nummer, p in enumerate(posten):
+        summe_txt = (t('s_lg_summe_eins') % len(posten) if arten == 1
+                     else t('s_lg_summe') % (len(posten), arten))
+        tk.Label(liste_rahmen, text=summe_txt, bg=BG, fg=SUB,
+                 font=fenster.f_klein, anchor='w').pack(fill='x', pady=(0, 6))
+
+        # Filterfeld — erst ab ein paar Posten, vorher ist es nur im Weg.
+        if len(posten) > 5:
+            from .hauptfenster import rundes_feld
+            # ⚠ Mit Beschriftung. Ein leeres Kästchen über einer Tabelle sagt
+            # niemandem, dass es ein Filter ist.
+            fz = tk.Frame(liste_rahmen, bg=BG)
+            fz.pack(fill='x', pady=(0, 8))
+            tk.Label(fz, text=t('s_lg_filter'), bg=BG, fg=SUB,
+                     font=fenster.f_klein).pack(side='left', padx=(0, 10))
+            ff = rundes_feld(fz, filter_var, fenster.f_klein,
+                             '#0c1017', LINIE, ACCENT, FG)
+            ff.halter.pack(side='left', fill='x', expand=True)
+
+        # --- Kopfzeile ---
+        kopf = tk.Frame(liste_rahmen, bg=BG)
+        kopf.pack(fill='x', pady=(0, 2))
+
+        def sortieren(nach):
+            if sortier['nach'] == nach:
+                sortier['ab'] = not sortier['ab']
+            else:
+                sortier['nach'], sortier['ab'] = nach, False
+            zeichnen()
+
+        for schluessel, textkey, breite, anker_ in SPALTEN:
+            pfeil = ''
+            if sortier['nach'] == schluessel:
+                pfeil = ' ▾' if sortier['ab'] else ' ▴'
+            lbl = tk.Label(kopf, text=t(textkey) + pfeil, bg=BG,
+                           fg=(ACCENT if sortier['nach'] == schluessel else SUB),
+                           font=fenster.f_klein, width=breite, anchor=anker_,
+                           cursor='hand2')
+            lbl.pack(side='left', padx=(0, 8))
+            lbl.bind('<Button-1>', lambda _e, k=schluessel: sortieren(k))
+
+        # --- Zeilen ---
+        text = filter_var.get().strip().lower()
+        sichtbar = [(i, p) for i, p in enumerate(posten)
+                    if not text
+                    or text in (p.get('material') or '').lower()
+                    or text in (p.get('ort') or '').lower()]
+
+        def schluessel_von(paar):
+            p = paar[1]
+            wert = p.get(sortier['nach'])
+            if sortier['nach'] in ('menge', 'qualitaet'):
+                return float(wert or 0)
+            return str(wert or '').lower()
+
+        sichtbar.sort(key=schluessel_von, reverse=sortier['ab'])
+
+        if not sichtbar:
+            _fliesstext(liste_rahmen, t('s_lg_nichts_da'), fenster.f_klein,
+                        fill='x')
+            return
+
+        for nummer, p in sichtbar:
             z = tk.Frame(liste_rahmen, bg=BG)
             z.pack(fill='x', pady=1)
             # ⚠ Erst in Variablen holen. `text=p.get('material')` liest
             # `texte_pruefen.py` als festen Oberflächentext „material" und
             # meldet ihn — ein Fehlalarm, der die Prüfung rot färbt.
             name_txt = p.get('material') or '?'
-            menge_wert = p.get('menge') or 0
-            tk.Label(z, text=name_txt, bg=BG, fg=FG,
-                     font=fenster.f_grund, anchor='w').pack(side='left')
-            tk.Label(z, text=t('s_he_menge') % menge_wert, bg=BG,
-                     fg=ACCENT, font=fenster.f_klein,
-                     anchor='w').pack(side='left', padx=(10, 0))
-            beiwerk = ' · '.join(x for x in (
-                # ⚠ Kein Prozent: Die Skala der Rezepte laeuft 0–1000.
-                (t('s_lg_q_wert') % float(p['qualitaet'])) if p.get('qualitaet') else '',
-                p.get('ort') or '') if x)
-            if beiwerk:
-                tk.Label(z, text=beiwerk, bg=BG, fg=SUB, font=fenster.f_klein,
-                         anchor='w').pack(side='left', padx=(10, 0))
+            menge_txt = '%g' % float(p.get('menge') or 0)
+            q_txt = ('%g' % float(p['qualitaet'])) if p.get('qualitaet') else '—'
+            ort_txt = p.get('ort') or '—'
+            for wert, (_k, _tk, breite, anker_), farbe, schrift in (
+                    (name_txt, SPALTEN[0], FG, fenster.f_grund),
+                    (menge_txt, SPALTEN[1], ACCENT, fenster.f_grund),
+                    (q_txt, SPALTEN[2], SUB, fenster.f_klein),
+                    (ort_txt, SPALTEN[3], SUB, fenster.f_klein)):
+                tk.Label(z, text=wert, bg=BG, fg=farbe, font=schrift,
+                         width=breite, anchor=anker_).pack(side='left',
+                                                           padx=(0, 8))
             weg = tk.Label(z, text=t('s_lg_weg'), bg=BG, fg=SUB,
                            font=fenster.f_klein, cursor='hand2', anchor='e')
             weg.pack(side='right', padx=(8, 4))
             weg.bind('<Button-1>',
                      lambda _e, n=nummer: (lager.entfernen(n), zeichnen()))
 
+    filter_var.trace_add('write', lambda *_: zeichnen())
+
     def eintragen(*_):
         name = material.get().strip()
         if not name:
+            # ⚠ Nicht stumm zurückkehren. Wer den Knopf drückt und nichts
+            # passieren sieht, hält das Feld für kaputt.
+            meldung.configure(text=t('s_lg_kein_material'), fg=GOLD)
             return
         try:
             wert = float((menge.get() or '0').replace(',', '.'))
         except ValueError:
             # ⚠ Keine Zahl? Dann nichts tun statt abstürzen — jemand tippt
             # „12 SCU" statt „12", und das darf das Fenster nicht kosten.
-            meldung.configure(text=t('s_lg_menge'), fg=GOLD)
+            # Und die Meldung muss erklären, nicht die Feldbeschriftung
+            # wiederholen.
+            meldung.configure(text=t('s_lg_keine_menge'), fg=GOLD)
+            return
+        if wert <= 0:
+            # Ein Posten mit 0 SCU ist Ballast in der Liste.
+            meldung.configure(text=t('s_lg_keine_menge'), fg=GOLD)
             return
         try:
             q = int(guete.get()) if guete.get().strip() else None
@@ -3889,7 +4045,8 @@ def _lager(fenster, rahmen):
             q = None
         lager.eintragen(name, wert, q, ort.get())
         material.set(''); menge.set(''); guete.set(''); ort.set('')
-        meldung.configure(text='', fg=SUB)
+        # Bestätigen: Man soll sehen, dass es angekommen ist.
+        meldung.configure(text=t('s_lg_eingetragen') % (name, wert), fg=SUB)
         zeichnen()
 
     _knopf(fenster, innen, t('s_lg_eintragen'), eintragen).pack(anchor='w',

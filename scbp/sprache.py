@@ -1317,6 +1317,15 @@ TEXTE = {
     # Vorschlaege beim Eintippen — ein freies Feld fuer einen Namen, der exakt
     # passen muss, ist eine stille Fehlerquelle. Wer "Aslerite" schreibt,
     # bekommt nie einen Treffer und erfaehrt auch nicht, warum.
+    # Ruecmeldungen beim Eintragen. ⚠ Vorher war das Feld stumm, wenn der
+    # Name fehlte — Knopf gedrueckt, nichts passiert, kein Hinweis. Und bei
+    # einer krummen Menge stand die Feldbeschriftung da statt einer Erklaerung.
+    's_lg_kein_material': ('Trag zuerst ein Material ein.',
+                           'Enter a material first.'),
+    's_lg_keine_menge':  ('Trag eine Menge ein, zum Beispiel 12,5',
+                          'Enter an amount, for example 12.5'),
+    's_lg_eingetragen':  ('Eingetragen: %s · %g SCU', 'Added: %s · %g SCU'),
+    's_lg_summe_eins':   ('%d Posten · 1 Rohstoff', '%d entries · 1 material'),
     's_lg_meinst_du':    ('Meintest du:', 'Did you mean:'),
     's_lg_unbekannt':    ('Dieses Material kommt in keinem Rezept vor. Du kannst '
                           'es trotzdem eintragen — dann taucht es nur nicht beim '
@@ -1337,17 +1346,50 @@ TEXTE = {
     's_he_werte':        ('Mit deinem Material', 'With your material'),
     's_he_faktor':       ('× %.3f', '× %.3f'),
     's_he_woher':        ('%s · Q %g', '%s · Q %g'),
+    # Durchspielen: „was käme mit besserem Erz heraus?" — dieselbe Frage,
+    # die man auf scmdb.net von Hand stellt, nur mit dem eigenen Lager als
+    # Ausgangspunkt.
+    's_he_kein_lager':   ('Zieh am Regler, um zu sehen, was eine bestimmte '
+                          'Qualität bringt — oder trag unter „Mein Lager" ein, '
+                          'was du hast.',
+                          'Drag the slider to see what a given quality yields — '
+                          'or add what you have under "My stock".'),
+    's_he_durchspielen': ('Durchspielen', 'Try a quality'),
+    's_he_q_lager':      ('dein Lager', 'your stock'),
+    's_he_q_gesetzt':    ('angenommen: Q %d — nicht dein Lagerstand',
+                          'assumed: Q %d — not your stock'),
+    's_he_zurueck_lager': ('zurück zu deinem Lager', 'back to your stock'),
     's_he_werte_hinweis': ('Was daraus wird, hängt an der Qualität des '
                            'Materials. Gerechnet wird mit dem besten Posten, '
                            'den dein Lager für diesen Bauplan hergibt.',
                            'What you get depends on the quality of the '
                            'material. This uses the best entry your stock has '
                            'for this blueprint.'),
+    # ⚠ Bei einer TEILmenge muss beides dastehen. „dir fehlt 0,07" allein
+    # verschweigt, dass 0,02 schon da sind — und genau das will man wissen,
+    # bevor man losfliegt. (Frage von Xharig-1, 29.08.2026.)
+    # Spaltenkoepfe der Lager-Tabelle — anklickbar zum Sortieren.
+    's_lg_sp_material':  ('Material', 'Material'),
+    's_lg_sp_menge':     ('Menge', 'Amount'),
+    's_lg_sp_q':         ('Qualität', 'Quality'),
+    's_lg_sp_ort':       ('Lagerort', 'Location'),
+    's_lg_filter':       ('Filtern …', 'Filter …'),
+    's_lg_nichts_da':    ('Nichts gefunden.', 'Nothing found.'),
+    's_lg_teil':         ('hast %g von %g · fehlt %g',
+                          'have %g of %g · missing %g'),
     's_lg_zu_schlecht':  ('%g SCU da, aber unter Q %g',
                           '%g SCU on hand, but below Q %g'),
     's_lg_da':           ('hast du: %g', 'you have: %g'),
     's_lg_fehlt':        ('dir fehlt: %g', 'you are missing: %g'),
-    's_lg_bauen':        ('Das stelle ich jetzt her', 'I am crafting this now'),
+    # ⚠ Der Knopf muss sagen, WAS PASSIERT. 'Das stelle ich jetzt her' klang
+    # nach einer Aktion im Spiel; dass dabei das eigene Lager verrechnet wird,
+    # stand nirgends. Xharig-1 hat ihn am 29.08.2026 selbst nicht gefunden.
+    's_lg_bauen':        ('Hergestellt — vom Lager abziehen',
+                          'Crafted — deduct from stock'),
+    's_lg_bauen_hilfe':  ('Du hast es gebaut? Dann nimmt der Watcher die Zutaten '
+                          'aus deinem Lager.',
+                          'Built it? Then the watcher takes the ingredients out '
+                          'of your stock.'),
     's_lg_abgezogen':    ('Abgezogen.', 'Deducted.'),
     's_lg_teilweise':    ('Abgezogen, so weit vorhanden. Nicht im Lager: %s',
                           'Deducted as far as available. Not in stock: %s'),

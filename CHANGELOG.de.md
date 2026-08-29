@@ -64,6 +64,19 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   gibt — 26 Stück aus den Rezepten. Wer „Aslerite" tippt, bekommt „Aslarite"
   angeboten, statt stillschweigend nie einen Treffer zu haben.
 
+  **Das Lager ist eine sortierbare Tabelle**: Spaltenköpfe für Material, Menge,
+  Qualität und Lagerort sortieren auf Klick, ab sechs Posten kommt ein Filter
+  dazu. Zwei Posten desselben Materials an verschiedenen Orten stehen sauber
+  getrennt.
+
+  **Am Rezept steht, was du schon hast** — nicht nur was fehlt: „hast 0,02 von
+  0,09 · fehlt 0,07". Sonst fliegt man los, um 0,09 zu holen, obwohl 0,07
+  reichen.
+
+  **Und du kannst eine Qualität durchspielen.** Ein Regler von 0 bis 1000 zeigt,
+  was mit besserem oder schlechterem Erz herauskäme — dieselbe Frage, die man
+  sonst auf scmdb.net von Hand stellt, nur mit deinem Lager als Ausgangspunkt.
+
   ⚠ **Das Lager wird von Hand geführt**, weil das Spiel nichts darüber verrät:
   In 17 MB Protokollen steht kein Wort zu Rohstoffen oder Herstellung. Deshalb
   sagt der Watcher auch nie „du kannst das nicht bauen", sondern nur „dir fehlt

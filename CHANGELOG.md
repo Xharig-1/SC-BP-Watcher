@@ -62,6 +62,18 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   of them, from the recipes. Type "Aslerite" and you are offered "Aslarite",
   instead of silently never getting a match.
 
+  **The stock is a sortable table**: column headers for material, amount,
+  quality and location sort on click, and from six entries on a filter appears.
+  Two entries of the same material in different places stay cleanly apart.
+
+  **The recipe shows what you already have** — not just what is missing: "have
+  0.02 of 0.09 · missing 0.07". Otherwise you set off to fetch 0.09 when 0.07
+  would do.
+
+  **And you can try out a quality.** A slider from 0 to 1000 shows what better
+  or worse ore would yield — the same question you would otherwise ask by hand
+  on scmdb.net, only with your stock as the starting point.
+
   ⚠ **The stock is kept by hand**, because the game gives nothing away: 17 MB of
   logs contain not one word about resources or crafting. That is why the watcher
   never says "you cannot build this", only "you are missing Iron". A stock that
