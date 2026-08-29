@@ -58,6 +58,15 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠ **Die aufgeklappte Auswahlliste blieb beim Scrollen stehen.** Sie schwebt
+  als eigenes Fenster über der Seite; rollt man die Liste darunter weg, lag sie
+  quer über fremden Zeilen. Ein Fokuswechsel findet dabei nicht statt, und nur
+  darauf hatte sie bisher geachtet.
+
+  Sie schliesst jetzt auch beim **Scrollen**, beim **Verschieben oder
+  Vergrössern des Fensters** und auf **Esc**. Innerhalb der Liste selbst darf
+  weiter gescrollt werden — die gehört ihr.
+
 - ⚠⚠ **„Nichts gefunden", sobald eine Kategorie gewählt war** — jetzt wirklich.
   Der Filter rechnete richtig, aber **eine zweite Stelle** sortierte ganze
   Gruppen vorab aus und verglich dabei Katalog-Art gegen Oberkategorie. Das

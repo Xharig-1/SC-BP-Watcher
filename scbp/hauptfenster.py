@@ -1025,7 +1025,7 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
     """
     grund = grund or BG
     s = _als_schrift(schrift)
-    zustand = {'wert': gewaehlt, 'liste': None, 'zu_seit': 0.0}
+    zustand = {'wert': gewaehlt, 'liste': None, 'zu_seit': 0.0, 'wachen': []}
 
     def beschriftung_zu(wert):
         for w, text in eintraege:
@@ -1054,6 +1054,15 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
         c.itemconfigure(pfeil, fill=ACCENT if gesetzt else SUB)
 
     def zuklappen(_=None):
+        # ⚠ Zuerst die Wachen lösen. Die aufgeklappte Liste ist ein **eigenes
+        # Fenster**; bleiben ihre Bindungen am Hauptfenster hängen, feuern sie
+        # später ins Leere.
+        for ereignis, marke in zustand.get('wachen') or []:
+            try:
+                c.winfo_toplevel().unbind(ereignis, marke)
+            except tk.TclError:
+                pass
+        zustand['wachen'] = []
         if zustand['liste'] is not None:
             try:
                 zustand['liste'].destroy()
@@ -1155,6 +1164,24 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
         def wache_setzen():
             try:
                 fenster.bind('<FocusOut>', zuklappen)
+                fenster.bind('<Escape>', zuklappen)
+                # ⚠⚠ **Scrollen schliesst die Liste auch.** Sie schwebt als
+                # eigenes Fenster an einer festen Stelle des Bildschirms —
+                # rollt man die Seite darunter weg, bleibt sie stehen und legt
+                # sich über fremde Zeilen. Am 29.08.2026 gemeldet: „alles
+                # scrollt mit, wenn ich durch die Liste scrolle." Ein
+                # Fokuswechsel findet dabei nicht statt, `<FocusOut>` greift
+                # also nicht.
+                #
+                # Dasselbe gilt, wenn das Fenster verschoben oder in der Grösse
+                # geändert wird: Die Liste stünde dann neben ihrem Feld.
+                wurzel = c.winfo_toplevel()
+                wachen = []
+                for ereignis in ('<MouseWheel>', '<Button-4>', '<Button-5>',
+                                 '<Configure>'):
+                    wachen.append((ereignis,
+                                   wurzel.bind(ereignis, zuklappen, add='+')))
+                zustand['wachen'] = wachen
             except tk.TclError:
                 pass
 

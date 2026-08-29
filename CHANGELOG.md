@@ -40,6 +40,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠ **The open dropdown stayed put while scrolling.** It floats as its own
+  window above the page, so scrolling the list underneath left it lying across
+  unrelated rows. No focus change happens there, and focus was all it watched.
+
+  It now also closes on **scrolling**, on **moving or resizing the window**, and
+  on **Esc**. Scrolling inside the list itself still works.
+
 - ⚠⚠ **"Nothing found" as soon as a category was selected** — now really fixed.
   The filter was right, but **a second place** discarded whole groups in
   advance, comparing catalogue type against the new top-level category. That
