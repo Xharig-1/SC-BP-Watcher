@@ -128,7 +128,7 @@ def _knopf(fenster, eltern, text, tat, stark=False, gefahr=False):
     breite = schrift.measure(text) + 30
     # ⚠ `gefahr` faerbt **dauerhaft**, nicht erst beim Überfahren. Ein Knopf,
     # der erst rot wird, wenn die Maus schon darauf steht, warnt niemanden —
-    # gesehen hat man ihn dann längst. der Autor am 28.08.2026 zum
+    # gesehen hat man ihn dann längst. am 28.08.2026 gemeldet zum
     # Absende-Knopf: „der Button wird erst beim Überfahren rot."
     farbe = ROT if gefahr else (ACCENT if stark else FG)
     rand = ROT if gefahr else (ACCENT if stark else LINIE)
@@ -417,7 +417,7 @@ def _ohne_marken(text):
 
     Die Danke-Seite entfernte sie schon, die Einstellungszeilen nicht: Auf
     "Texte im Spiel" stand dadurch woertlich `**ganze Spiel**` auf dem
-    Bildschirm (gefunden von der Autor am 28.08.2026 unter rc85). Damit das
+    Bildschirm (gefunden von am 28.08.2026 gemeldet unter rc85). Damit das
     nicht bei jedem neuen Text wieder passiert, geht es jetzt durch diese
     eine Stelle.
     """
@@ -1104,7 +1104,7 @@ def _spiel(fenster, rahmen):
             # Datei stehen (Entfernen scheiterte, oder es wurde von Hand
             # abgeschaltet), sieht der Spieler seine Angaben weiter im Spiel —
             # und der Kasten behauptet, es sei nichts da. Genau daran ist
-            # der Autor am 28.08.2026 im Test hängengeblieben.
+            # am 28.08.2026 gemeldet im Test hängengeblieben.
             if lage['drin']:
                 _status(fenster, kasten, 'offen', t('s_sp_aus_rest'),
                         t('s_sp_aus_rest_h'), farbe=SUB)
@@ -1166,7 +1166,7 @@ def _spiel(fenster, rahmen):
         # musste erst unten „Wieder entfernen“ finden. Der Hinweis darauf stand
         # im Kleingedruckten — und genau das liest niemand.
         #
-        # der Autor am 28.08.2026, nachdem er im eigenen Test darauf hereinfiel:
+        # Am 28.08.2026 fiel auf, nachdem er im eigenen Test darauf hereinfiel:
         # „ich schalte es auf aus, also ist es weg.“
         #
         # Gefahrlos, weil verlustfrei: Der Urtext ist gemerkt
@@ -1207,10 +1207,10 @@ def _spiel(fenster, rahmen):
         #
         # Verschlimmert durch den Kasten darüber: Der sagt „Änderungen wirken beim
         # nächsten Spielstart“ — also genau das, was hier eben NICHT stimmte.
-        # Gemessen am 28.08.2026 (der Autor): Schalter aus, Datei unverändert,
+        # Gemessen am 28.08.2026 (gemessen): Schalter aus, Datei unverändert,
         # 1.217 Angaben standen weiter drin.
         #
-        # der Autor dazu: „ein user erwartet das was er liest und sieht, ist es aus
+        # Dazu: „ein user erwartet das was er liest und sieht, ist es aus
         # angaben weg also muss das auch so sein.“
         #
         # ⚠ Nur wenn wirklich etwas drinsteht und das Schreiben überhaupt
@@ -1327,7 +1327,7 @@ def _bestand(fenster, rahmen):
         ⚠ Hier stand `art='basetool'` **fest verdrahtet**, während der Knopf
         „Einzeln speichern …" hieß. Wer scmdb oder die Vollsicherung einzeln
         wollte, bekam wortlos die Basetool-Version; über den Dialog waren die
-        anderen beiden gar nicht erreichbar. Gemeldet von der Autor am
+        anderen beiden gar nicht erreichbar. Gemeldet am
         27.08.2026 („bei einzeln speichern speichert er nur basetool").
         """
         from . import dateiwahl
@@ -1711,7 +1711,7 @@ def _jetzt_nachsehen(fenster):
     ⚠ Und danach stand hier zeitweise der **Holen**-Ablauf: herunterladen,
     einspielen, abtreten — mit `datei` und `freigabe`, die es in dieser Funktion
     nie gab. Der Knopf antwortete deshalb mit `name 'datei' is not defined`,
-    egal ob eine neue Version da war oder nicht. Gemeldet von der Autor am
+    egal ob eine neue Version da war oder nicht. Gemeldet am
     27.08.2026. Nachsehen ist nachsehen: Dieser Knopf lädt nichts.
 
     Läuft im eigenen Faden — die Abfrage geht ins Netz. Gezeichnet wird nur im
@@ -1845,7 +1845,7 @@ def _holen_moeglich(mit_vorab, eigene=''):
     sind gar keine Aufforderung, sondern eine Zustandsmeldung: „v3.0.0-rc41 ist
     schon da" und „Erst oben auf ‚Jetzt nachsehen' druecken". Der Knopf blieb
     trotzdem ein Knopf — wer auf „ist schon da" drueckte, bekam die laufende
-    Version noch einmal installiert. der Autor am 26.08.2026: „in dem gruenen
+    Version noch einmal installiert. Gemeldet am 26.08.2026: „in dem gruenen
     kasten steht aber rc41 ist schon da, wenn man klickt will er auch direkt
     installieren."
 
@@ -2807,7 +2807,7 @@ def _danke(fenster, rahmen):
 
     Ein **eigener Reiter** statt eines Abschnitts auf „Update & Über": Die Seite
     dort ist mit Version, Katalogzahlen, Update-Kanal und Holen-Knopf schon voll,
-    und wem was gehört, hat mit Updates nichts zu tun. der Autor am 27.08.2026:
+    und wem was gehört, hat mit Updates nichts zu tun. Gemeldet am 27.08.2026:
     „fremdleistungen gehören doch als eigener tab ehr in info oder?"
     """
     _ueberschrift(fenster, rahmen, t('hf_danke'), t('s_dk_lead'))
@@ -2817,7 +2817,7 @@ def _danke(fenster, rahmen):
     # ⚠ Ganz oben und mit Avatar, nicht als eine Zeile unter vielen. Diese Seite
     # nennt fremde Arbeit, und genau deshalb muss die eigene zuerst stehen —
     # sonst schmälert die Aufzählung das, worum es hier eigentlich geht.
-    # der Autor am 27.08.2026: „ich bin zwar dankbar, aber so dankbar nun auch
+    # Gemeldet am 27.08.2026: „ich bin zwar dankbar, aber so dankbar nun auch
     # wieder nicht, zudem wieso sollte ich meine Leistung dadurch schmälern."
     #
     # Der Block stand bis dahin auf „Update & Über" und ist von dort hierher
@@ -2912,7 +2912,7 @@ def _ueber(fenster, rahmen):
     # --- Zustand ---
     # ⚠ Mit dem Programmsymbol daneben. Es stand hier nie — und seit der
     # Autor-Block mit dem Avatar auf „Danke & Lizenzen" gewandert ist, hatte die
-    # Seite gar kein Bild mehr und wirkte nackt. der Autor am 27.08.2026: „bei
+    # Seite gar kein Bild mehr und wirkte nackt. Gemeldet am 27.08.2026: „bei
     # über muss oben zur Version noch das Watcher Logo (icon)".
     karte = _karte(innen, pady=(0, 6))
     kopf = tk.Frame(karte, bg=FLAECHE)
@@ -2958,7 +2958,7 @@ def _ueber(fenster, rahmen):
     #
     # ⚠ **Und er steht ganz oben, direkt unter der Versionskarte.** Vorher kam er
     # erst nach der Knopfreihe und dem Tagesschalter — bei der Mindestgröße des
-    # Fensters lag er damit **unterhalb der Kante**. der Autor am 27.08.2026:
+    # Fensters lag er damit **unterhalb der Kante**. Gemeldet am 27.08.2026:
     # „das nervt User, weil die den Button zum Updaten nicht sofort finden."
     # Das Fenster größer zu machen wäre die falsche Antwort gewesen: Auf einem
     # 1366×768-Laptop passt es dann gar nicht mehr. Der wichtigste Knopf gehört
@@ -3036,7 +3036,7 @@ def _ueber(fenster, rahmen):
     # ⚠ Der Tagesschalter steht **hinter** den Kanal-Kästen, nicht davor. Davor
     # drückte er die Kästen bei der Mindestgröße des Fensters unter die Kante —
     # und in ihnen sitzt der Knopf, mit dem man die stabile Version holt.
-    # der Autor am 27.08.2026: „bei der stable version dann bitte auch."
+    # Gemeldet am 27.08.2026: „bei der stable version dann bitte auch."
     # Der Schalter ist eine Nebeneinstellung, die Kästen sind der Zweck der
     # Seite; also gehören sie nach oben.
     ziel = _feld(fenster, innen, t('s_ub_taeglich'), t('s_ub_taeglich_h'))
@@ -3252,7 +3252,7 @@ def _diagnose(fenster, rahmen):
 
         ⚠ Der Weg für alle, die nicht basteln wollen. Kopieren und in Discord
         einfügen scheitert daran, dass der Bericht zu lang ist und man wissen
-        muss, wohin damit. der Autor am 28.08.2026: „ich will nicht jedem eine
+        muss, wohin damit. Gemeldet am 28.08.2026: „ich will nicht jedem eine
         Stunde erklären, wie ich zu dem Bericht komme."
 
         Gefragt wird trotzdem: Etwas ins Netz zu schicken, ohne dass jemand
@@ -3274,7 +3274,7 @@ def _diagnose(fenster, rahmen):
     # ⚠ **Immer zeigen, auch ohne eingebautes Ziel.** Der erste Anlauf blendete
     # ihn aus, wenn nicht gesendet werden kann — gedacht als „ein Knopf, der
     # nichts tut, ist schlimmer als keiner". In der Praxis trifft das nur den
-    # Quellcode, also den Entwickler selbst. der Autor am 28.08.2026 vor der
+    # Quellcode, also den Entwickler selbst. am 28.08.2026 gemeldet vor der
     # Diagnose-Seite: „nicht mal ICH finde den." Ein Knopf, der fehlt, sieht aus
     # wie ein Fehler; einer, der beim Drücken sagt, was ihm fehlt, erklärt sich.
     _knopfreihe(reihe, [

@@ -93,7 +93,7 @@ CloseApplications=force
 ; nicht dazu. Die beiden Zeilen arbeiten also gegeneinander: `force` ist noetig,
 ; damit das Ersetzen nicht an „code 32" scheitert, und genau deshalb kann der
 ; Neustart hier nicht klappen. Am 26.08.2026 im Test gesehen — das Update lief
-; sauber durch, aber der Watcher blieb unten, und der Autor musste ihn von Hand
+; sauber durch, aber der Watcher blieb unten, und er musste von Hand
 ; starten.
 ;
 ; Den Neustart uebernimmt deshalb der [Run]-Abschnitt. Auf `yes` stehen zu
@@ -194,7 +194,7 @@ Filename: "{app}\SC-BP-Watcher.exe"; \
 [Code]
 { ⚠ Der Restart Manager schliesst das Programm — er haelt es aber nicht unten.
 
-  Gemessen am 28.08.2026 (der Autor, Update rc75 → rc83), im Setup-Protokoll
+  Gemessen am 28.08.2026 (beim Update rc75 → rc83), im Setup-Protokoll
   Zeile fuer Zeile belegt:
 
       05:43:47  RestartManager found an application using one of our files
@@ -276,7 +276,7 @@ end;
   (`scbp/autostart.py`, NAME = 'SC BP Watcher') — und davon weiss der
   Deinstaller nichts.
 
-  Folge, gemessen am 28.08.2026 (der Autor): Nach dem Deinstallieren stand
+  Folge, gemessen am 28.08.2026 (gemessen): Nach dem Deinstallieren stand
 
       HKCU\...\CurrentVersion\Run
         "SC BP Watcher" -> C:\Users\...\Programs\SC BP Watcher\SC-BP-Watcher.exe

@@ -3,7 +3,7 @@
 
 **Warum überhaupt Bilder?** Bis v3.0.0-rc55 waren die Symbole Schriftzeichen
 (`✕ 🗑 ⚙ ⟳ ▶ …`), zwei davon von Hand auf eine Leinwand gemalt. Auslöser der
-Umstellung war ein Satz von der Autor (27.08.2026): „die sollen alle gleich groß
+Umstellung war ein Satz von Gemeldet am 27.08.2026: „die sollen alle gleich groß
 sein, sind aber unterschiedlich groß, und die glocke ist sogar die Größte."
 
 Der Grund stand im Code: Die gemalte Glocke füllte ihr Feld randlos aus, ein
@@ -14,7 +14,7 @@ bloßes Größerstellen nicht lösen ließen:
 * **Der Stil passte nicht.** `🗑` und `▶` sind gefüllte Flächen, `⚙ ⟳ ⏻ ✕` dünne
   Striche, die gemalten wieder gefüllt. Drei Handschriften in einer Leiste.
 * **Jedes System zeigte etwas anderes.** Windows greift zu `Segoe UI Symbol`,
-  macOS und Linux zu etwas ganz anderem. der Autor entwickelt auf allen dreien
+  macOS und Linux zu etwas ganz anderem. Entwickelt wird auf allen dreien
   und sah am Mac buchstäblich andere Zeichen als seine Nutzer unter Windows — er
   konnte am eigenen Rechner nicht beurteilen, was draußen ankommt.
 
@@ -61,7 +61,7 @@ ZEILE = {'klein': 12, 'normal': 14, 'gross': 16, 'sehrgross': 18}
 # ⚠ Eine Stufe groesser als `ZEILE` — fuer Zeichen, die man **treffen** muss.
 # Das ⓘ am rechten Rand der Bauplan-Liste oeffnet den Herkunftskasten; in
 # Zeilengroesse (14 px bei „normal") war es zu klein, um es als Schaltflaeche zu
-# erkennen und sicher zu treffen. Gemeldet von der Autor am 27.08.2026. Ein
+# erkennen und sicher zu treffen. Gemeldet am 27.08.2026. Ein
 # eigener Satz statt eines groesseren `ZEILE`, damit die Statuspunkte im Overlay
 # unveraendert bleiben — die will niemand anklicken.
 ANTIPPBAR = {'klein': 14, 'normal': 16, 'gross': 18, 'sehrgross': 22}

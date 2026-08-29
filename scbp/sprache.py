@@ -413,7 +413,7 @@ TEXTE = {
     # --- Texte der Melde-Leiste (Overlay) ------------------------------------
     # Diese vier standen bis 26.08.2026 fest auf Deutsch im Code. Ergebnis: Wer
     # auf Englisch umstellte, bekam ein englisches Hauptfenster und ein
-    # deutsches Overlay. Gemeldet von der Autor.
+    # deutsches Overlay. Gemeldet.
     'ov_starte':       ('Starte \u2026', 'Starting \u2026'),
     'ov_warte':        ('Warte auf neue Baupl\u00e4ne \u2026',
                         'Waiting for new blueprints \u2026'),
@@ -667,7 +667,7 @@ TEXTE = {
     # ⚠ „Auf GitHub" gehört in den Namen. Vorher hieß der Knopf „Fehler
     # melden …" und stand neben „Fehlerbericht absenden" — zwei Namen, die
     # dasselbe versprechen, während der eine den Browser aufmacht und ein
-    # GitHub-Konto verlangt. der Autor am 28.08.2026: „woher weiß ein User, was
+    # GitHub-Konto verlangt. Gemeldet am 28.08.2026: „woher weiß ein User, was
     # Fehler melden macht?"
     's_di_melden':     ('GitHub Issue …', 'GitHub issue …'),
     's_di_absenden':   ('Fehlerbericht absenden', 'Send error report'),
@@ -725,7 +725,7 @@ TEXTE = {
     # ⚠ Das Feld gab es als Einstellung `spielstarter` schon lange — aber
     # nirgends in der Oberfläche, nur von Hand in der `einstellungen.json`. Für
     # jemanden, der spielen und nicht schrauben will, heißt das: gibt es nicht.
-    # der Autor am 27.08.2026: „einige kennen sich nicht aus und wollen nur was
+    # Gemeldet am 27.08.2026: „einige kennen sich nicht aus und wollen nur was
     # funktionierendes."
     's_or_start':      ('Startbefehl für Star Citizen  —  optional',
                         'Launch command for Star Citizen  —  optional'),
@@ -1239,7 +1239,7 @@ TEXTE = {
     # Bauplan-Angaben in die Auftragstexte. Beides betrifft die Texte der
     # Aufträge, also heißt der Punkt jetzt danach.
     # ⚠ „Texte im Spiel", nicht mehr „Auftragstexte": Der alte Name sagte nicht,
-    # **wo** diese Texte auftauchen. der Autor am 27.08.2026: „das bescheibt es
+    # **wo** diese Texte auftauchen. Gemeldet am 27.08.2026: „das bescheibt es
     # nicht gut genug".
     #
     # „Ingame-Texte" stand kurz zur Wahl und ist unter Spielern gängig — aber

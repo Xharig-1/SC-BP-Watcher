@@ -64,7 +64,7 @@ def befehl():
     Zufallsnamen. Stand die Reihenfolge andersherum, schrieb „Mit System
     starten" genau diesen Wegwerf-Pfad in die Autostart-Datei, und der Watcher
     startete nach einem Neustart **nie** wieder — ohne Fehlermeldung, die Datei
-    sah ja richtig aus. Gefunden am 29.08.2026 auf der Autors Rechner, wo der
+    sah ja richtig aus. Gefunden am 29.08.2026 auf einem Entwicklerrechner, wo der
     Eintrag seit dem Umstieg auf Linux tot dalag. Die Variable `APPIMAGE` setzt
     das AppImage selbst und sie zeigt auf die **echte** Datei."""
     appimage = os.environ.get('APPIMAGE')

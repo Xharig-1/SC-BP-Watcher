@@ -870,7 +870,7 @@ class Watcher(threading.Thread):
     # über hundert), und niemand will danach hunderte Zeilen wegklicken.
     #
     # Nur trifft dieser Fall genau **einmal** zu. Im Alltag findet sie null bis
-    # drei — und die will man sehen. der Autor am 28.08.2026, nachdem ein Bauplan
+    # drei — und die will man sehen. Am 28.08.2026 fiel auf, nachdem ein Bauplan
     # still im Bestand gelandet war: „sonst geht das still in den Bestand wie bei
     # mir heute, und niemand sieht es."
     #
@@ -1310,7 +1310,7 @@ class Overlay:
         # ⚠ Ein Radiergummi, kein Mülleimer. Der Knopf **löscht nichts** — er
         # räumt nur die angezeigten Meldungen weg, die Baupläne bleiben (siehe
         # `hinweis_leeren`). Ein Mülleimer verspricht Vernichtung, und genau
-        # deshalb traut sich niemand, ihn zu drücken. der Autor am 27.08.2026:
+        # deshalb traut sich niemand, ihn zu drücken. Gemeldet am 27.08.2026:
         # „Mülleimer für leeren schon gut, aber gäbe es da was besseres?"
         leeren_lbl = zeichen.knopf(bar, 'leeren', self.clear,
                                    schrift=self.f_title)
@@ -1366,7 +1366,7 @@ class Overlay:
         # Verwaltungsfenster kommt auf Klick dazu.
         # ⚠ Ein Klemmbrett statt der drei Striche. Drei Striche heissen
         # „irgendeine Liste", ein Klemmbrett heisst „deine gesammelten Sachen".
-        # der Autor nach dem Vergleich mit dem SC-Deutsch-Launcher (26.08.2026):
+        # Beim Vergleich mit dem SC-Deutsch-Launcher (26.08.2026):
         # „dieses klemmbrett für die BP ist auch besser."
         #
         # ⚠ Der Knopf bleibt, obwohl er auf den ersten Blick dasselbe tut wie das
@@ -1382,7 +1382,7 @@ class Overlay:
 
         # Das Zahnrad ist der direkte Griff in die Einstellungen. Bis v3.0.0 lag
         # daneben noch ein zweiter Knopf für den Einrichtungs-Assistenten — der
-        # ist am 27.08.2026 entfallen. der Autor: „assitant neu starten, reicht
+        # ist am 27.08.2026 entfallen. Gemeldet: „assitant neu starten, reicht
         # glaube ich in den einstellungen, da gehen die leute eh hin wenn die
         # merken es klemmt etwas." Erreichbar bleibt er über das große Fenster,
         # oben rechts („Einrichtung starten").
@@ -1404,7 +1404,7 @@ class Overlay:
         #
         # ⚠ Eine Rakete, kein Abspielpfeil. Ein `▶` heißt überall „Video ab",
         # nicht „Programm starten"; eine Rakete sagt beides — starten und
-        # Weltraum. der Autor am 27.08.2026: „SC Starten ist das symbol nicht
+        # Weltraum. Gemeldet am 27.08.2026: „SC Starten ist das symbol nicht
         # eindeutig genug".
         if pfade.spielstarter():
             self.start_lbl = zeichen.knopf(bar, 'starten', self._spiel_starten,
@@ -1421,7 +1421,7 @@ class Overlay:
         # ⚠ Eine Glocke statt des `ⓘ`. Ein „i" heisst „hier steht etwas", eine
         # Glocke heisst „fuer dich ist etwas da" — und genau darum geht es hier,
         # denn das Zeichen faerbt sich gruen, wenn eine neue Version bereitsteht.
-        # der Autor (26.08.2026): „Die Glocke für Updates ist auch besser."
+        # Gemeldet am 26.08.2026: „Die Glocke für Updates ist auch besser."
         self.info_lbl = zeichen.knopf(bar, 'glocke',
                                       lambda: self.fenster_oeffnen('ueber'),
                                       schrift=self.f_title)
@@ -1541,7 +1541,7 @@ class Overlay:
     # ---- Erklärtexte, die ihren Zustand kennen ----
     # --------------------------------------------------------- Schriftgrößen
     # ⚠ `f_title` traegt den Titeltext der Leiste. 9 Punkt waren zu klein —
-    # der Autor im Vergleich mit dem SC-Deutsch-Launcher (26.08.2026): „die
+    # Im Vergleich mit dem SC-Deutsch-Launcher (26.08.2026): „die
     # button größe oben, ist auch deutlich angenehmer". Auf einem 4096 Pixel
     # breiten Bildschirm bei 100 % Skalierung ist das keine Geschmacksfrage.
     #
@@ -1732,7 +1732,7 @@ class Overlay:
     # `AttributeError: 'Overlay' object has no attribute '_dx'`.
     #
     # Der Fehler stand am 25.08.2026 in Bomb20s Bericht (rc18) und am 27.08.2026
-    # in der Autors (rc69) — dazwischen nie behoben, weil er nichts kaputt macht,
+    # in im eigenen Lauf (rc69) — dazwischen nie behoben, weil er nichts kaputt macht,
     # was man sieht: Das Ziehen tut einmal nichts, und der Fehler landet
     # lautlos im Protokoll.
     _dx = 0
@@ -1953,7 +1953,7 @@ class Overlay:
         `aktualisierung.nachsehen()` lief damit ins Leere — er begrenzt, wie oft
         gefragt werden *darf*, aber fragen musste jemand. Wer den Watcher
         durchlaufen ließ, erfuhr nie von einer neuen Fassung; sie erschien erst
-        nach einem Neustart. Gemeldet von der Autor am 28.08.2026, als v3.0.1
+        nach einem Neustart. Gemeldet am 28.08.2026, als v3.0.1
         draußen war und der laufende Watcher weiter schwieg — obwohl er die neue
         Fassung längst abgerufen hatte und sie in seinem Zwischenspeicher stand.
         """

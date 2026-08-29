@@ -218,7 +218,7 @@ def aus_beschreibung(text):
     # oder Laser entscheidet, ob sie gegen Schilde etwas ausrichtet. Gemessen
     # haben **342** Waffen nur dieses eine Feld — Größe und Gütegrad gibt es bei
     # FPS-Waffen gar nicht. Eine starre Zwei-Felder-Regel hätte ausgerechnet die
-    # ausgeschlossen, um die es der Autor ging.
+    # ausgeschlossen, um die es ging.
     if klasse in WAFFENKLASSEN and not (groesse or guete):
         return '(%s)' % klasse
 

@@ -225,7 +225,7 @@ def _altbestand_wegraeumen(ordner):
 
     ⚠ Bis rc65 trug jede abgelegte Datei den Tag im Namen. Wer die Ablage ein
     halbes Jahr lang benutzt hat, hat dort dreistellig viele Dateien liegen —
-    der Autor am 27.08.2026: „da liegen eh schon viele drin". Neben den drei
+    Gemeldet am 27.08.2026: „da liegen eh schon viele drin". Neben den drei
     Dateien mit festem Namen wäre nicht mehr zu erkennen, welche die aktuelle
     ist. Genau das Suchen sollte die Ablage abnehmen.
 

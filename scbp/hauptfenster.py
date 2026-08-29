@@ -491,7 +491,7 @@ def rad_anschliessen(leinwand):
             registrierten Rollflächen; ein `tk.Text` ist keine, also ging das
             Rad an die Seite dahinter. Auf der Diagnose-Seite hieß das: Erst
             die ganze Seite nach unten schieben, und **dann** erst ließ sich im
-            Bericht rollen. der Autor am 28.08.2026, nachdem sein Bruder
+            Bericht rollen. Am 28.08.2026 fiel auf, nachdem sein Bruder
             dasselbe gemeldet hatte: „in dem Fehlerbericht-Fenster kann man
             erst scrollen, nachdem die Diagnose-Seite nach unten gescrollt
             ist."
@@ -696,7 +696,7 @@ def rundleiste(eltern, leinwand, grund=None, breite=10):
 #
 # Als Vektor ist es in jeder Größe scharf, braucht keine Datei und hängt an
 # keiner Schriftart. Ein erster Versuch hatte die Form nur **angedeutet**;
-# der Autor am 26.08.2026 dazu: „und wieso nimmst du nicht das original logo, was
+# am 26.08.2026 gemeldet dazu: „und wieso nimmst du nicht das original logo, was
 # schärfer wäre und nicht so pixelig?" — zu Recht.
 _DC_UMRISS = (
 
@@ -777,7 +777,7 @@ def discord_zeichen(leinwand, x, mitte, hoehe, farbe):
         leinwand.create_polygon(strecke(auge), fill=grund, outline=grund)
 
 
-# Von der Autor am 26.08.2026 bestätigt. ⚠ Wer sie ändert, prüft vorher, dass die
+# Von am 26.08.2026 gemeldet bestätigt. ⚠ Wer sie ändert, prüft vorher, dass die
 # Seite wirklich erreichbar ist: Ein Knopf, der ins Leere führt, ist schlimmer
 # als keiner — wer ihn drückt, hält das Werkzeug für kaputt.
 KOFI_ADRESSE = 'https://ko-fi.com/xharig'
@@ -1190,7 +1190,7 @@ class Hauptfenster:
         bleibt stehen: die gezeichneten Rundknöpfe (`_wahl`, `rundknopf`,
         `rundes_feld`) legen ihre Leinwand auf `schrift.measure(text)` fest.
         Bei „sehr groß" ragte der Text deshalb aus dem Kasten heraus und war
-        abgeschnitten — gemeldet von der Autor am 27.08.2026 an der
+        abgeschnitten — gemeldet von am 27.08.2026 gemeldet an der
         Overlay-Wahl („immer sichtbar" / „nur bei einem Neuzugang").
 
         Deshalb dasselbe wie beim Sprachwechsel: einmal neu aufbauen. Jede
@@ -1326,7 +1326,7 @@ class Hauptfenster:
         # ⚠ **Diagnose gehört hierher, nicht unter „Fortgeschritten".** Wer die
         # Seite braucht, hat ein Problem — und sucht sie dann in einem Menü, das
         # zugeklappt ist und „Fortgeschritten" heißt, also nach „nichts für
-        # mich" aussieht. der Autor am 28.08.2026, nachdem sein Bruder den
+        # mich" aussieht. Am 28.08.2026 fiel auf, nachdem sein Bruder den
         # Bericht nicht fand: „ich will nicht jedem eine Stunde erklären, wie
         # ich zu dem Bericht komme."
         #
@@ -1352,7 +1352,7 @@ class Hauptfenster:
         self.klappinhalt = tk.Frame(self.klapp, bg=FLAECHE)
 
         # --- Discord -----------------------------------------------------
-        # Wunsch von der Autor am 26.08.2026, nach dem Vorbild des
+        # Wunsch von am 26.08.2026 gemeldet, nach dem Vorbild des
         # SC-Deutsch-Launchers: „discord Button wäre tatsächlich auch sinnvoll."
         #
         # ⚠ Bewusst **ruhiger** als der Knopf darüber. Star Citizen zu starten
@@ -1397,7 +1397,7 @@ class Hauptfenster:
         # wieder. Danach zog er ins Overlay; sichtbar war er dort nur, solange
         # das Overlay eingeblendet ist.
         #
-        # der Autor am 26.08.2026: „den SC Starten Button sollten wir über für
+        # Gemeldet am 26.08.2026: „den SC Starten Button sollten wir über für
         # Fortgeschrittene packen in dem markanten grün wie jetzt auch, da sieht
         # man ihn sofort." Hier ist er auf **jeder** Seite zu sehen.
         #
@@ -1464,7 +1464,7 @@ class Hauptfenster:
         # wieder. Danach zog er ins Overlay; sichtbar war er dort nur, solange
         # das Overlay eingeblendet ist.
         #
-        # der Autor am 26.08.2026: „den SC Starten Button sollten wir über für
+        # Gemeldet am 26.08.2026: „den SC Starten Button sollten wir über für
         # Fortgeschrittene packen in dem markanten grün wie jetzt auch, da sieht
         # man ihn sofort." Genau hier ist er auf **jeder** Seite zu sehen, ohne
         # dass man ihn suchen muss.
@@ -1779,7 +1779,7 @@ class Hauptfenster:
         # Seitenleiste, und die haengt an der Schrift: Bei „sehr gross" braucht
         # sie mehr Platz, als das Fenster hoch ist — dann fallen „Star Citizen
         # starten", „Kaffee spendieren" und „Discord" unten heraus, weil sie von
-        # unten gepackt werden. Genau so gemeldet von der Autor am 27.08.2026:
+        # unten gepackt werden. Genau so gemeldet von Gemeldet am 27.08.2026:
         # „wenn jemand so schlecht sehen sollte, was ja moeglich ist, dann muss
         # die minimale groesse eben im verhaeltnis mitwachsen."
         #

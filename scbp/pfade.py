@@ -565,7 +565,7 @@ def _launcher_aus_registry():
     r"""Wo der RSI Launcher laut Windows installiert ist — oder None.
 
     ⚠ Feste Pfadlisten gehen genau dann schief, wenn jemand woanders
-    installiert hat. Genau das ist am 26.08.2026 passiert: Bei der Autors Bruder
+    installiert hat. Genau das ist am 26.08.2026 passiert: Auf einem fremden Rechner
     fehlte der Startknopf im Overlay, weil keiner der abgesuchten Orte passte.
 
     Der Eintrag in der Deinstallations-Liste ist verlässlicher, hat aber zwei
@@ -716,7 +716,7 @@ def spielstarter():
 
         # ⚠ **Vor** den festen Orten: Was Windows selbst weiss, schlaegt jede
         # Liste. Wer den Launcher auf ein anderes Laufwerk gelegt hat, faellt
-        # sonst durch — genau so fehlte bei der Autors Bruder der Startknopf.
+        # sonst durch — genau so fehlte auf einem fremden Rechner der Startknopf.
         aus_registry = _launcher_aus_registry()
         if aus_registry:
             orte.append(aus_registry)
@@ -1015,7 +1015,7 @@ ANFUEHRUNG = str.maketrans({
 #
 # Aufgefallen an Morkhan: Er hatte die Baupläne gemeinsam mit der Autor gefarmt,
 # hatte den SC Deutsch Launcher mit gepflegter Datei — und im Spiel standen die
-# Kästchen trotzdem leer. der Autor: „vergleich doch mal die Logik, was habe ich,
+# Kästchen trotzdem leer. Gemeldet: „vergleich doch mal die Logik, was habe ich,
 # mit meiner BP-Liste, und hör auf zu raten."
 #
 # Bewusst eng: Nur die bekannten Kürzel, damit echte Namensklammern wie

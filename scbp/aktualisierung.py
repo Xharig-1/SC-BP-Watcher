@@ -486,7 +486,7 @@ def verpackung():
 #     SC-BP-Watcher-Setup.exe          der Installer  ← der einzige Windows-Weg
 #     SC-BP-Watcher-x86_64.AppImage    Linux
 #
-# ⚠ Die nackte `SC-BP-Watcher.exe` ist bewusst weg (Entscheidung der Autor,
+# ⚠ Die nackte `SC-BP-Watcher.exe` ist bewusst weg (bewusste Entscheidung,
 # 27.08.2026: „ich will die exe ohne install loswerden … sie belastet mich
 # nur"). Sie war eine Maßnahme aus der Anfangszeit — ein unsigniertes Programm
 # ohne Installer wirkt harmloser, und es ging darum, Vertrauen aufzubauen. Das
@@ -828,7 +828,7 @@ def einspielen(neue_datei):
         #
         # v2.0.0 wurde **nur** als nackte `SC-BP-Watcher.exe` ausgeliefert; alle
         # ihre Nutzer laufen zwangsläufig „portabel", ohne es gewollt zu haben.
-        # der Autor am 27.08.2026: „niemand nutzt sowas portabel … niemand
+        # Gemeldet am 27.08.2026: „niemand nutzt sowas portabel … niemand
         # schiebt es auf nen Stick, um an nem anderen PC SC zu spielen."
         #
         # Ohne `/DIR` nimmt Inno seinen Standardordner
@@ -937,7 +937,7 @@ def _tot_melden(rueckgabe):
 
     ⚠ Ohne das steht im Diagnosebericht **gar nichts**: Bis rc69 wurde nur die
     Meldung ins Fenster geschrieben, und wer den Bericht schickte, hatte keinen
-    einzigen Eintrag dazu. der Autor am 27.08.2026 — Neustart klappte nicht,
+    einzigen Eintrag dazu. Am 27.08.2026: Neustart klappte nicht,
     Protokoll leer, Ursache im Dunkeln.
     """
     text = ''
@@ -989,7 +989,7 @@ def neu_starten():
         # mehr gibt. Sie stirbt, bevor ein Fenster kommt.
         #
         # Für den Nutzer sah das so aus: „es geht dann aus aber startet nicht"
-        # (Bomb20, 27.08.2026), von der Autor am selben Tag reproduziert.
+        # (Bomb20, 27.08.2026), am selben Tag nachgestellt.
         #
         # `pfade.saubere_umgebung()` macht genau diese Wäsche — sie war längst da,
         # nur benutzte der Neustart eine eigene, unvollständige Version davon.

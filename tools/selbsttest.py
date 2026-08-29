@@ -1698,7 +1698,7 @@ def main():
         # ⚠ Der erste Anlauf (rc74) hat den Fehler halb wiederholt: Start und
         # Bedienung landeten in EINEM Topf, der Bericht nahm die letzten zwoelf
         # Zeilen — fuenf Klicks genuegten, und der Startverlauf war weg.
-        # der Autors eigener rc74-Bericht zeigte keinen einzigen Startschritt mehr.
+        # Ein rc74-Bericht zeigte keinen einzigen Startschritt mehr.
         import os as os26
         from scbp import fehler as fe26
         from scbp import pfade as pf26
@@ -1837,7 +1837,7 @@ def main():
 
         print()
         print('28. Ohne Launcher: Ordner und user.cfg entstehen selbst')
-        # ⚠ der Autor am 27.08.2026: „das hat bei mir und meinem bruder nur
+        # ⚠ Gemeldet am 27.08.2026: „das hat bei mir und meinem bruder nur
         # geklappt WEIL wir vorher den launcher hatten von sc deutsch." Genau
         # das ist der ungetestete Fall — wer den SC Deutsch Launcher nie hatte,
         # hat **keinen** Ordner `data/Localization/<sprache>/`, und ohne den
@@ -1895,7 +1895,7 @@ def main():
                'die deutsche Quelle bringt den englischen Ton mit')
 
         # StarStrings (MrKraken) ist derselbe Fall — nur mit englischem
-        # Zielordner. der Autor: „ist ja wie die deutsche im grunde."
+        # Zielordner. Gemeldet: „ist ja wie die deutsche im grunde."
         ss28 = os.path.join(basis, 'starstringsprobe', 'LIVE')
         os.makedirs(ss28)
         ziel_ss = ue28.ziel_ini(ue28.QUELLEN['starstrings']['sprache'], ss28)
@@ -1930,7 +1930,7 @@ def main():
         # Gegenstand und gar keine Übersetzung. Der hat **gar keine**
         # `global.ini` auf der Platte, nur die `Data.p4k`. Ohne `g_language`
         # liest Star Citizen eine dort abgelegte Datei nicht einmal an.
-        # der Autor: „sonst kann man das nie ohne eine übersetzung nutzen."
+        # Gemeldet: „sonst kann man das nie ohne eine übersetzung nutzen."
         from scbp import spieltexte as st28
         quelle_st = open(os.path.join(WURZEL, 'scbp', 'spieltexte.py'),
                          encoding='utf-8').read()
@@ -1958,7 +1958,7 @@ def main():
 
         print()
         print('29. Bedienelemente stehen einheitlich — Symmetrie')
-        # ⚠ der Autor am 27.08.2026: „im gleichen tab sind die einstellings
+        # ⚠ Gemeldet am 27.08.2026: „im gleichen tab sind die einstellings
         # schalter mal mittig mal rechts, das muss einheitlich sein, im gesamten
         # projekt gilt das natuerlich." Und: „Symetrie ist fuer mich EXTREM
         # wichtig bei eigentlich allem."
@@ -2015,7 +2015,7 @@ def main():
 
         print()
         print('30. Nur noch der Installer — und v2.0.0 kommt trotzdem mit')
-        # Entscheidung der Autor am 27.08.2026: „ich will die exe ohne install
+        # Entscheidung Gemeldet am 27.08.2026: „ich will die exe ohne install
         # loswerden … sie belastet mich nur und war damals deine Entscheidung,
         # als wir sagten, wir machen es so, um Vertrauen aufzubauen. ABER das
         # haben wir doch schon, nun wollen wir es funktionierend. Und einfach."
@@ -2066,7 +2066,7 @@ def main():
 
         print()
         print('31. Das Schloss holt einen aus dem Durchreichen zurueck')
-        # ⚠ der Autor am 27.08.2026: „der zweite Programmstart ist die denkbar
+        # ⚠ Gemeldet am 27.08.2026: „der zweite Programmstart ist die denkbar
         # duemmste Loesung, weil man dann raustabben muss aus dem Spiel."
         #
         # Und er hat recht: Wer Klicks durchreichen laesst, will im Spiel
@@ -2256,7 +2256,7 @@ def main():
             pruefe(auf_platte33.get('version') == be33.DATEI_VERSION,
                    'der Umzug wird auf die Platte geschrieben, nicht nur gedacht')
             # ⚠ Und der Umzug muss die Sprach-Dublette einsammeln — genau die,
-            # die am 29.08.2026 in der Autors Bestand lag. Nur `namensform()` zu
+            # die am 29.08.2026 in einem echten Bestand lag. Nur `namensform()` zu
             # reparieren haette den gespeicherten Bestand nicht angefasst.
             pruefe(len([k for k in d33['bauplaene']
                         if k.startswith('ravager-212')]) == 1,
@@ -2281,7 +2281,7 @@ def main():
 
         print()
         print('34. Fehlerbericht absenden — ein Knopf statt einer Erklaerstunde')
-        # ⚠ der Autor am 28.08.2026: „ich will nicht jedem eine Stunde erklaeren,
+        # ⚠ Gemeldet am 28.08.2026: „ich will nicht jedem eine Stunde erklaeren,
         # wie ich zu dem Bericht komme, das ist nervenaufreibend." Und sein
         # Bruder, um den es ging: „weil ich kein nerd bin … ich installiere und
         # es funktioniert, wenn nicht, unbrauchbar."
@@ -2461,7 +2461,7 @@ def main():
         # wie "geht aus und kommt nicht wieder".
         #
         # Drei Anlaeufe (rc67, rc68, rc70) haben das nicht geloest, weil geraten
-        # statt gemessen wurde. Der Beweis kam aus der Autors Bericht vom
+        # statt gemessen wurde. Der Beweis kam aus einem Bericht vom
         # 27.08.2026: "neustart_tot, Rueckgabewert 0 — keine Ausgabe". Kein
         # Absturz, sondern ein geordneter Abgang.
         import socket as so24
@@ -2509,7 +2509,7 @@ def main():
         print('23. Bei der Mindestgroesse ist alles Wichtige sichtbar')
         # ⚠ Die Seite „Update & Ueber" ist die einzige, auf der ein nicht
         # gefundener Knopf richtig weh tut: Wer den Update-Knopf nicht sieht,
-        # updatet nicht. der Autor am 27.08.2026: „das nervt user weil die den
+        # updatet nicht. Gemeldet am 27.08.2026: „das nervt user weil die den
         # button zum updaten nicht sofort finden."
         #
         # Geprueft wird bei der MINDESTGROESSE des Fensters (1100x760) — nicht
@@ -2783,7 +2783,7 @@ def main():
 
     print()
     print('40. Der Installer haelt das Programm auch UNTEN, nicht nur zu')
-    # ⚠ Gemessen am 28.08.2026 (der Autor, Update rc75 -> rc83). Im
+    # ⚠ Gemessen am 28.08.2026 (beim Update rc75 -> rc83). Im
     # Setup-Protokoll steht die ganze Kette:
     #
     #     05:43:47  Shutting down applications using our files. (forced)
@@ -2831,13 +2831,13 @@ def main():
 
     print()
     print('41. Ein Schalter, der aus sagt, macht auch aus')
-    # ⚠ Gemessen am 28.08.2026 (der Autor): „Angaben am Gegenstand“ abgeschaltet,
+    # ⚠ Gemessen am 28.08.2026 (gemessen): „Angaben am Gegenstand“ abgeschaltet,
     # Statuszeile meldete „aus“ — und die `global.ini` blieb unangetastet. 1.217
     # Angaben standen weiter drin, das Spiel zeigte sie unverändert.
     #
     # Schlimmer noch der Kasten darüber: „Änderungen wirken beim nächsten
     # Spielstart“ — wer danach neu startete und alles unverändert vorfand, hielt
-    # das Werkzeug für kaputt. der Autor: „ein user erwartet das was er liest und
+    # das Werkzeug für kaputt. Gemeldet: „ein user erwartet das was er liest und
     # sieht, ist es aus angaben weg also muss das auch so sein.“
     #
     # Der Schalter stößt das Neuschreiben jetzt selbst an. Diese Prüfung hält das
@@ -2885,7 +2885,7 @@ def main():
     # Installers (nur bei gewaehltem Haekchen) und vom Programm selbst
     # (`scbp/autostart.py`). `uninsdeletevalue` raeumt nur den ersten Fall weg.
     #
-    # Gemessen am 28.08.2026 (der Autor): Nach dem Deinstallieren stand der Wert
+    # Gemessen am 28.08.2026 (gemessen): Nach dem Deinstallieren stand der Wert
     # weiter in der Registry und zeigte auf eine geloeschte Datei. Windows
     # versucht sie bei jeder Anmeldung zu starten und scheitert still.
     #
@@ -2901,7 +2901,7 @@ def main():
 
     print()
     print('42. Ein eigener Fund ergaenzt einen Patch, er ersetzt ihn nicht')
-    # ⚠ Gemessen am 28.08.2026 (der Autor): Im Filter stand „4.10.0 (3)", und
+    # ⚠ Gemessen am 28.08.2026 (gemessen): Im Filter stand „4.10.0 (3)", und
     # darunter drei Schiffswaffen. Mitgeliefert waren 21 Baupläne für dieselbe
     # Version — der ganze Patch war aus der Anzeige verschwunden.
     #
@@ -2956,7 +2956,7 @@ def main():
 
     print()
     print('43. Das Auswahlfeld verspricht nur, was die Liste zeigen kann')
-    # ⚠ Gemessen am 28.08.2026 (der Autor), direkt nach dem Fix an der Historie:
+    # ⚠ Gemessen am 28.08.2026 (gemessen), direkt nach dem Fix an der Historie:
     # Im Feld stand „4.10.0 (24)", darunter drei Zeilen. Die Zahl in Klammern
     # ist eine Zusage, wie viele Zeilen kommen — und sie kam aus einer anderen
     # Quelle als die Zeilen selbst: `patches()` las die Historie, der Filter
@@ -3269,7 +3269,7 @@ def main():
     # Wer den Launcher hatte, sah dauerhaft Gelb; wer ihn nicht hat, dauerhaft
     # Gruen — bei genau derselben Sicherheit.
     #
-    # der Autor am 28.08.2026: die Bestaetigung wird „nicht nur nicht mehr
+    # Gemeldet am 28.08.2026: die Bestaetigung wird „nicht nur nicht mehr
     # gebraucht, sondern kann auch gar nicht mehr geben".
     #
     # Diese Pruefung haelt fest, dass die Mechanik WEG ist und nicht nur
@@ -3292,7 +3292,7 @@ def main():
 
     print()
     print('47. Protokolle lassen sich erneut einlesen')
-    # ⚠ Gemeldet von der Autor am 28.08.2026, wenige Stunden nach v3.0.0: Ein
+    # ⚠ Gemeldet am 28.08.2026, wenige Stunden nach v3.0.0: Ein
     # Bauplan kam an, waehrend der Watcher zu war und Star Citizen weiterlief.
     # Beim naechsten Start war er weg — und zwar dauerhaft.
     #
@@ -3335,7 +3335,7 @@ def main():
 
     print()
     print('48. Nach einer neuen Fassung wird immer wieder gesehen')
-    # ⚠ Gemeldet von der Autor am 28.08.2026: v3.0.1 war draussen, der laufende
+    # ⚠ Gemeldet am 28.08.2026: v3.0.1 war draussen, der laufende
     # Watcher schwieg — obwohl er die Fassung laengst abgerufen hatte und sie in
     # seinem Zwischenspeicher stand.
     #
@@ -3360,7 +3360,7 @@ def main():
 
     print()
     print('49. Jeder Sprachschluessel, der gerufen wird, gibt es auch')
-    # ⚠ Gemeldet von der Autor am 28.08.2026: Am Raketen-Symbol stand als Hinweis
+    # ⚠ Gemeldet am 28.08.2026: Am Raketen-Symbol stand als Hinweis
     # woertlich `s_sp_start` — der Schluesselname statt des Textes.
     #
     # `t()` gibt den Schluessel zurueck, wenn die Tabelle ihn nicht kennt. Das
@@ -3414,7 +3414,7 @@ def main():
 
     print()
     print('50. Der Autostart merkt sich einen Pfad, den es morgen noch gibt')
-    # ⚠ Gefunden am 29.08.2026 auf der Autors Linux-Rechner: In der Autostart-Datei
+    # ⚠ Gefunden am 29.08.2026 auf einem Linux-Rechner: In der Autostart-Datei
     # stand `Exec=/tmp/.mount_SC-BP-ji95vH/usr/bin/SC-BP-Watcher` — der temporaere
     # Einhaengepunkt des AppImage. Der bekommt bei JEDEM Start einen neuen
     # Zufallsnamen. Folge: Der Watcher startete nach einem Neustart nie wieder,

@@ -198,7 +198,7 @@ def _ablage_nachziehen(daten):
     KRT Profit Basetool, für scmdb.net und die Vollsicherung wurden bisher
     **nur** geschrieben, wenn jemand auf „Alle drei in die Ablage" klickte.
     Wer das einmal gemacht hatte, hielt sie danach für aktuell — sie standen
-    aber für immer auf dem Stand jenes Klicks. der Autor fiel es auf, als er das
+    aber für immer auf dem Stand jenes Klicks. Aufgefallen ist es, als jemand das
     Werkzeug jemandem vorführte und selbst suchen musste, wo die Dateien
     herkommen (27.08.2026): „die werden ja bei drops direkt fortgeschrieben
     oder?" Nein — bis jetzt nicht.

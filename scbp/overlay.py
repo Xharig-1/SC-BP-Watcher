@@ -180,7 +180,7 @@ def durchklickbar_moeglich():
 # ⚠ Warum es das Schloss überhaupt gibt: Wer Klicks durchreichen lässt, kommt an
 # das Overlay nicht mehr heran — auch nicht an den Schalter, mit dem er es
 # wieder abstellt. Der Rückweg war bis dahin, **das Programm ein zweites Mal zu
-# starten**, und dafür muss man aus dem Spiel heraus. der Autor am 27.08.2026:
+# starten**, und dafür muss man aus dem Spiel heraus. Gemeldet am 27.08.2026:
 # „der zweite Programmstart ist die denkbar dümmste Lösung, weil man dann
 # raustabben muss aus dem Spiel." Ryze löst es beim TeamSpeak-Plugin mit einem
 # Schloss, das anklickbar bleibt — denselben Weg gehen wir.

@@ -413,7 +413,7 @@ def _missionen(merged):
     #
     # Jetzt werden alle Varianten **zusammengeführt**: Die Liste zeigt, was der
     # Auftragstyp überhaupt hergibt, das Kästchen sagt, was man davon hat.
-    # der Autor dazu am 28.08.2026: „wenn es den da nicht gibt ist das egal, er
+    # Dazu am 28.08.2026: „wenn es den da nicht gibt ist das egal, er
     # hat ihn, also gehört er abgehakt PUNKT."
     roh = {}
     for vertrag in ((merged.get('contracts') or [])

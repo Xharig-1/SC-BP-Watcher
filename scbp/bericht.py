@@ -390,7 +390,7 @@ def absenden(text, version=''):
     ⚠ **Der einzige Weg, der bei Nicht-Bastlern ankommt.** Kopieren und in
     Discord einfügen scheitert dreifach: Der Bericht steckt unter
     „Fortgeschritten", er ist zu lang für eine Nachricht, und man muss wissen,
-    wohin damit. der Autor am 28.08.2026: „ich will nicht jedem eine Stunde
+    wohin damit. Gemeldet am 28.08.2026: „ich will nicht jedem eine Stunde
     erklären, wie ich zu dem Bericht komme."
 
     Verschickt wird **nur auf Knopfdruck** und erst, nachdem der Nutzer den

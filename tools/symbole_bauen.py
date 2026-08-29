@@ -12,7 +12,7 @@ Kern haben — *die Schrift entscheidet, nicht wir*:
    Striche. Die stammen von verschiedenen Schriftdesignern und passen nicht
    zusammen.
 3. **Je System ein anderes Bild.** Windows greift zu `Segoe UI Symbol`, macOS
-   und Linux zu etwas ganz anderem. der Autor entwickelt auf allen dreien — er
+   und Linux zu etwas ganz anderem. Entwickelt wird auf allen dreien — er
    sah am Mac buchstäblich andere Zeichen als seine Nutzer unter Windows.
 
 Ein PNG kennt diese Probleme nicht: feste Pixel, überall gleich.
@@ -129,7 +129,7 @@ KNOPF_SYMBOLE = {
     'starten':      'rocket',            # ⚠ nicht `play`: ein Abspielpfeil heißt
                                          # „Video ab", nicht „Programm starten".
                                          # Eine Rakete sagt beides — starten und
-                                         # Weltraum. der Autor am 27.08.2026:
+                                         # Weltraum. Gemeldet am 27.08.2026:
                                          # „SC Starten ist das symbol nicht
                                          # eindeutig genug".
     'glocke':       'bell',              # neue Version verfügbar
@@ -205,7 +205,7 @@ ZEILEN_SYMBOLE = {
     # Fenster (groß, in der Leiste), sondern auch Kästen mitten auf einer
     # Seite (klein, in der Zeile) — etwa den Herkunftskasten der Bauplan-
     # Liste. Fehlte die kleine Version, blieb dort eine leere Lücke statt
-    # eines Kreuzes; gemeldet von der Autor am 27.08.2026.
+    # eines Kreuzes; gemeldet von am 27.08.2026 gemeldet.
     'schliessen':   'x',
 }
 
