@@ -36,8 +36,15 @@ Fenster öffnet sich, dann:
 Zum Schluss steht in der Zusammenfassung, welche Beträge angekommen sind.
 Genau die braucht `hauptfenster.rad_anschliessen()`.
 """
+import os
 import sys
-import tkinter as tk
+
+# Siehe unsichtbar.py: nie ein Fenster ueber einem laufenden Spiel.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import unsichtbar                                              # noqa: E402
+unsichtbar.sicherstellen()
+
+import tkinter as tk                                           # noqa: E402
 
 
 def main():

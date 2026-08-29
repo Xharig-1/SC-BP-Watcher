@@ -44,6 +44,13 @@ import time
 WURZEL = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, WURZEL)
 
+# Prueflaeufe bauen echte Fenster. Ohne diese Umleitung blitzen sie ueber
+# einem laufenden Spiel auf und reissen den Fokus mit — siehe unsichtbar.py.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import unsichtbar                                              # noqa: E402
+unsichtbar.sicherstellen()
+
+
 # Die Zeilen, wie Star Citizen sie wirklich schreibt.
 def zeile(text, nummer=1, art='Added'):
     return ('<2026-08-20T21:23:49.123Z> [Notice] <SHUDEvent_OnNotification> '

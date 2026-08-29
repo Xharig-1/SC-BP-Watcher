@@ -39,6 +39,13 @@ import tkinter as tk
 HIER = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, HIER)
 
+# Prueflaeufe bauen echte Fenster. Ohne diese Umleitung blitzen sie ueber
+# einem laufenden Spiel auf und reissen den Fokus mit — siehe unsichtbar.py.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import unsichtbar                                              # noqa: E402
+unsichtbar.sicherstellen()
+
+
 # Eine Wegwerf-Ablage, damit die Prüfung nichts am eigenen Stand ändert.
 os.environ.setdefault('SC_BP_HOME', '/tmp/sc-bp-oberflaechenpruefung')
 os.environ.setdefault('SC_BP_NO_NET', '1')
