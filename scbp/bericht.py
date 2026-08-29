@@ -240,6 +240,19 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
                   % (version or '—', datetime.now().strftime(t('b_datum'))))
     zeilen.append('')
 
+    # ⭐ Wer meldet das? Steht bewusst ganz oben — mit vielen Nutzern ist ein
+    # Bericht ohne Absender kaum zuzuordnen, und Rückfragen laufen ins Leere.
+    # **Freiwillig**: Ist nichts eingetragen, steht hier „nicht angegeben"; der
+    # Watcher füllt das Feld nie von selbst.
+    melder = (pfade.einstellung('melder_name') or '').strip()
+    # ⚠ **Ohne `kuerzen()`.** Jede andere Zeile läuft durch die Anonymisierung,
+    # die Benutzernamen durch `<benutzer>` ersetzt — und genau das traf den
+    # Melder-Namen, wenn er dem Systemkonto gleicht („Xharig"). Ausgerechnet
+    # die einzige Angabe, die der Nutzer BEWUSST macht, verschwand dadurch.
+    # Aufgefallen am 29.08.2026 auf einem Bildschirmfoto, nicht im Test.
+    zeilen.append('%-18s%s' % (t('b_melder'), melder or t('s_melder_leer')))
+    zeilen.append('')
+
     uebersicht = _sicher(pfade.uebersicht, {})
     if not isinstance(uebersicht, dict):
         uebersicht = {}

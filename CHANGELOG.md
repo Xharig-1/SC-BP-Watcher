@@ -6,21 +6,59 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.2.2 - unreleased
+## v3.3.0 - unreleased
+
+### Added
+
+- **Two new pages: "Crafting" and "Mining".** They answer the question that
+  comes after the blueprint — *what do I need, and where do I get it?*
+
+  **Crafting** lists all **1,597** craftable items. One click shows the
+  ingredients with amounts and the craft time. And because the watcher knows
+  your collection, every row says whether you have the blueprint — 403 ticks out
+  of 404 blueprints.
+
+  > **Two** rows show a `?` instead of a tick. Three names cover several
+  > different items ("BroadSpec" exists in S02 and S03, "Main Powerplant" for
+  > Idris and Reclaimer). Your collection only knows the name, not the variant —
+  > so we claim nothing.
+
+  **Mining** answers both directions in one search: type a resource and you get
+  its locations (Iron: 27). Type a location and you get everything found there
+  (Daymar: 14 ores). Each entry says whether it is FPS, vehicle or ship mining.
+
+  **The two are linked:** in a recipe every resource is clickable and jumps
+  straight to its locations.
+
+  ⚠ **What the watcher does not say: whether you can craft it.** It knows your
+  blueprints, not your cargo hold. "Needs 0.3 SCU Iron" — yes. "You can build
+  this now" — never.
+
+  For probabilities and the refinery comparison **scmdb.net** remains the better
+  place; the page links there.
+
+- **Your name in the bug report.** On the "Report a problem" page you can enter
+  a name that appears at the top of the report, so follow-up questions can be
+  matched to you. **Optional** — empty stays empty, and nothing is ever
+  pre-filled.
+
+### Changed
+
+- **Data now comes from the official SCMDB mirror.** Krovax set up a public
+  repository for exactly this purpose
+  ([KrovaxCode/SCMDB_DATA](https://github.com/KrovaxCode/SCMDB_DATA)) — "for
+  programmatic consumers". That is steadier than going through the website,
+  which sits behind bot protection. **scmdb.net stays as a fallback** should the
+  mirror ever be unavailable. Thanks to Krovax 🙏
+- **"Progress" is now "Blueprint progress".** With the new pages the old name
+  would have been ambiguous.
 
 ### Fixed
 
-- **"Network error" where the site had simply refused the request.** SCMDB sits
-  behind bot protection that rejects requests without their own user agent with
-  a **403**. The watcher has always sent its own identifier and is not affected —
-  but if a 403 does happen (protection being tightened, or GitHub's rate limit),
-  all you used to see was "network error". You then go looking at your own
-  connection, where there is nothing to find. Now the tool says plainly that the
-  other side refused, and that it keeps working with the data it already has.
-
-  A 403 is also **no longer retried three times**. A refusal is not a loose
-  cable; that cost about six seconds of waiting for nothing. Now it stops after
-  0.1 seconds.
+- **"Network error" where the site had simply refused the request.** A 403 is a
+  refusal, not a loose cable: the tool now says so plainly, keeps working with
+  the data it already has — and no longer retries three times (which cost six
+  seconds for nothing).
 
 ## v3.2.1 - 2026-08-29
 

@@ -39,7 +39,7 @@ import tkinter as tk
 from . import fehler
 from . import bestand as bestand_datei
 from . import logquelle, pfade, sprache
-from .sprache import t
+from .sprache import t, fenstertitel
 
 BG      = '#10141c'
 FLAECHE = '#161c28'
@@ -81,7 +81,7 @@ class Assistent:
         self.gedeutet = None
 
         self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
-        self.root.title('SC BP Watcher — ' + t('assistent'))
+        self.root.title(fenstertitel('SC BP Watcher — ' + t('assistent')))
         self.root.configure(bg=BG)
         self.root.geometry('640x520')
         self.root.protocol('WM_DELETE_WINDOW', self._abbrechen)
@@ -160,7 +160,7 @@ class Assistent:
     def _sprache(self, wert):
         pfade.einstellung_setzen('sprache', wert)
         sprache.setzen(wert)
-        self.root.title('SC BP Watcher — ' + t('assistent'))
+        self.root.title(fenstertitel('SC BP Watcher — ' + t('assistent')))
         self._zeichnen()
 
     # -------------------------------------------------- 2. Star Citizen

@@ -56,7 +56,7 @@ import time
 import urllib.error
 import urllib.request
 
-from . import patchhistorie, pfade, sprache
+from . import fehler, patchhistorie, pfade, sprache
 from .sprache import t
 
 
@@ -69,7 +69,24 @@ class Abgewiesen(Exception):
     sein — sonst sucht man den Fehler bei sich."""
 
 
-BASIS = 'https://scmdb.net/data'
+# ⭐ **Zwei Adressen für dieselben Daten** (seit 29.08.2026).
+#
+# Krovax (scmdb) hat auf Anfrage einen **öffentlichen Spiegel** eingerichtet,
+# ausdrücklich für Programme: „Public mirror of SCMDB's static data JSONs for
+# programmatic consumers." Der ist die erste Wahl, denn:
+#
+#   * **kein Bot-Schutz davor.** scmdb.net steht hinter Cloudflare; dessen
+#     Regeln können sich ändern, ohne dass hier jemand etwas tut — und dann
+#     stünde die Datenversorgung bei allen Nutzern still.
+#   * GitHub Raw ist für genau diesen Zweck gedacht und stabil.
+#
+# scmdb.net bleibt als **Rückfall** stehen: Fällt der Spiegel aus oder hängt er
+# hinterher, holt der Watcher weiter von der Originaladresse. Zwei Wege sind
+# hier billig zu haben — und der Ausfall einer einzelnen Quelle legt sonst das
+# ganze Werkzeug lahm.
+SPIEGEL = 'https://raw.githubusercontent.com/KrovaxCode/SCMDB_DATA/main/data'
+SCMDB = 'https://scmdb.net/data'
+BASIS = SPIEGEL
 CACHE = 'katalog-cache.json'
 
 # Aufbau-Nummer des Katalogs — **nicht** die Spielversion.
@@ -167,6 +184,26 @@ def _hole(url, zeitlimit=ZEITLIMIT, versuche=VERSUCHE):
             letzter = fehler
             if versuch + 1 < versuche:
                 time.sleep(2 * (versuch + 1))
+    raise letzter
+
+
+def hole_datei(name, zeitlimit=ZEITLIMIT, versuche=3):
+    """Eine Datendatei holen — erst vom Spiegel, dann von scmdb.net.
+
+    **Die eine Stelle**, über die alle drei Datenmodule holen (Katalog,
+    Herstellung, Bergbau). Wer eine Quelle ändert, ändert sie hier — nicht an
+    drei Orten mit drei Schreibweisen.
+    """
+    letzter = None
+    for basis in (SPIEGEL, SCMDB):
+        try:
+            return _hole('%s/%s' % (basis, name), zeitlimit=zeitlimit,
+                         versuche=versuche)
+        except Abgewiesen as ausnahme:
+            # 403 heißt: Diese Quelle mag nicht. Die andere darf es versuchen.
+            letzter = ausnahme
+        except Exception as ausnahme:
+            letzter = ausnahme
     raise letzter
 
 
@@ -741,6 +778,20 @@ def aktualisieren(fortschritt=None):
                            and da.get('format') == FORMAT):
             return False, 0, version or ''
         anzahl, version = erzeugen(version, fortschritt)
+        # Die Rezepte hängen an derselben Spielversion — also im selben Zug
+        # holen. **Ein eigener Versuch mit eigenem `try`**: Scheitert er, soll
+        # der Katalog trotzdem stehen; die Herstellungs-Seite bleibt dann leer
+        # und sagt das, statt den ganzen Abruf zu verlieren.
+        try:
+            from . import herstellung
+            herstellung.aktualisieren(version, fortschritt)
+        except Exception as ausnahme:
+            fehler.merken('katalog.aktualisieren.herstellung', ausnahme)
+        try:
+            from . import bergbau
+            bergbau.aktualisieren(version, fortschritt)
+        except Exception as ausnahme:
+            fehler.merken('katalog.aktualisieren.bergbau', ausnahme)
         return bool(anzahl), anzahl, version
     except Exception:
         return False, 0, ''

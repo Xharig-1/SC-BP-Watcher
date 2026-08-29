@@ -50,7 +50,7 @@ import tkinter as tk
 import tkinter.font as tkfont
 
 from . import bildschirm, fehler, hinweis, neuheiten, pfade, zeichen
-from .sprache import t
+from .sprache import t, fenstertitel
 
 BG      = '#10141c'
 FLAECHE = '#161c28'
@@ -1140,7 +1140,7 @@ class Hauptfenster:
         self.beim_schliessen = beim_schliessen
         self.version = version
         self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
-        self.root.title(t('hf_titel'))
+        self.root.title(fenstertitel(t('hf_titel')))
         self.root.configure(bg=BG)
         # Start = Mindestgröße, mittig auf dem Hauptbildschirm. Mittig, damit das
         # Fenster bei mehreren Monitoren nicht auf einer Kante landet.
@@ -1307,6 +1307,14 @@ class Hauptfenster:
         self._gruppe(t('hf_gruppe_bp'))
         self._reiter('liste', 'liste', t('hf_liste'))
         self._reiter('fortschritt', 'fortschritt', t('hf_fortschritt'))
+
+        # Eigene Gruppe, kein Anhängsel unter „Baupläne": Die beiden Seiten
+        # beantworten eine andere Frage („was brauche ich / wo hole ich es")
+        # als der eigene Bestand („habe ich das schon"). Die Gruppenüberschrift
+        # gibt zugleich den Kontext, deshalb reichen darunter kurze Namen.
+        self._gruppe(t('hf_gruppe_herst'))
+        self._reiter('herstellung', 'blitz', t('hf_herstellung'))
+        self._reiter('bergbau', 'herkunft', t('hf_bergbau'))
 
         self._gruppe(t('hf_gruppe_einst'))
         self._reiter('allgemein', 'einstellungen', t('hf_allgemein'))

@@ -6,22 +6,59 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.2.2 - unveröffentlicht
+## v3.3.0 - unveröffentlicht
+
+### Neu
+
+- **Zwei neue Seiten: „Herstellung" und „Bergbau".** Sie beantworten die Frage,
+  die nach dem Bauplan kommt — *was brauche ich dafür, und wo hole ich das?*
+
+  **Herstellung** listet alle **1.597** herstellbaren Gegenstände. Ein Klick
+  zeigt die Zutaten mit Menge und die Herstellzeit. Und weil der Watcher deinen
+  Bestand kennt, steht an jeder Zeile, ob du den Bauplan hast — bei 404
+  Bauplänen sind das 403 Häkchen.
+
+  > Bei **zwei** Zeilen steht ein `?` statt eines Häkchens. Drei Namen meinen
+  > mehrere verschiedene Gegenstände („BroadSpec" gibt es in S02 und S03, „Main
+  > Powerplant" für Idris und Reclaimer). Der Bestand kennt nur den Namen, nicht
+  > die Variante — dann behaupten wir nichts.
+
+  **Bergbau** beantwortet beide Richtungen in einer Suche: Tipp einen Rohstoff
+  ein, und du bekommst seine Fundorte (Iron: 27 Orte). Tipp einen Ort ein, und
+  du bekommst alles, was es dort gibt (Daymar: 14 Erze). Dazu steht jeweils, ob
+  per FPS, Fahrzeug oder Schiff abgebaut wird.
+
+  **Beides hängt zusammen:** Im Rezept ist jeder Rohstoff anklickbar und springt
+  direkt zu seinen Fundorten.
+
+  ⚠ **Was der Watcher nicht sagt: ob du es herstellen kannst.** Er kennt deine
+  Baupläne, nicht deinen Frachtraum. „Braucht 0,3 SCU Iron" — ja. „Du kannst das
+  jetzt bauen" — nie.
+
+  Für Wahrscheinlichkeiten und den Refinery-Vergleich ist **scmdb.net** weiter
+  die bessere Adresse; die Seite verweist auch dorthin.
+
+- **Dein Name im Fehlerbericht.** Auf der Seite „Fehler melden" lässt sich ein
+  Name eintragen, der oben im Bericht steht. Damit lassen sich Rückfragen
+  zuordnen. **Freiwillig** — leer bleibt leer, und vorausgefüllt wird nie etwas.
+
+### Geändert
+
+- **Die Daten kommen jetzt vom offiziellen SCMDB-Spiegel.** Krovax hat dafür
+  eigens ein öffentliches Repo eingerichtet
+  ([KrovaxCode/SCMDB_DATA](https://github.com/KrovaxCode/SCMDB_DATA)) — „for
+  programmatic consumers". Das ist stabiler als der Weg über die Webseite, vor
+  der ein Bot-Schutz steht. **scmdb.net bleibt als Rückfall**, falls der Spiegel
+  einmal ausfällt. Danke an Krovax 🙏
+- **„Fortschritt" heißt jetzt „Bauplan-Fortschritt".** Mit den neuen Seiten wäre
+  der alte Name mehrdeutig gewesen.
 
 ### Behoben
 
-- **„Netzfehler", wo die Seite den Abruf nur abgelehnt hatte.** scmdb steht
-  hinter einem Bot-Schutz, der Abrufe ohne eigene Kennung mit **403** abweist.
-  Der Watcher schickt zwar seit jeher eine eigene Kennung und ist davon nicht
-  betroffen — aber wenn ein 403 doch einmal kommt (etwa weil ein Schutz
-  nachgeschärft wird, oder bei GitHubs Abruflimit), stand bisher nur „Netzfehler"
-  da. Man sucht dann beim eigenen Anschluss, wo nichts zu finden ist. Jetzt sagt
-  das Werkzeug klar, dass die Gegenseite abgelehnt hat und dass es mit dem
-  zuletzt geladenen Stand weiterarbeitet.
-
-  Nebenbei wird ein 403 **nicht mehr dreimal wiederholt**. Eine Absage ist kein
-  Wackelkontakt; das kostete rund sechs Sekunden Wartezeit für nichts. Jetzt ist
-  nach 0,1 Sekunden Schluss.
+- **„Netzfehler", wo die Seite den Abruf nur abgelehnt hatte.** Ein 403 ist eine
+  Absage, kein Wackelkontakt: Das Werkzeug sagt das jetzt klar, arbeitet mit dem
+  zuletzt geladenen Stand weiter — und wiederholt den Versuch nicht mehr dreimal
+  (das kostete sechs Sekunden für nichts).
 
 ## v3.2.1 - 2026-08-29
 

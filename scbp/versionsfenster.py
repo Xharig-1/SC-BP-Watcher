@@ -33,7 +33,7 @@ import tkinter as tk
 import re
 
 from . import aktualisierung, pfade, sprache
-from .sprache import t
+from .sprache import t, fenstertitel
 
 BG      = '#10141c'
 FLAECHE = '#161c28'
@@ -96,7 +96,7 @@ class Versionsfenster:
         self.neue = aktualisierung.nachsehen(eigene_version)
 
         self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
-        self.root.title('SC BP Watcher — ' + t('was_ist_neu'))
+        self.root.title(fenstertitel('SC BP Watcher — ' + t('was_ist_neu')))
         self.root.configure(bg=BG)
         self.root.geometry('700x740')
         self.root.protocol('WM_DELETE_WINDOW', self.schliessen)

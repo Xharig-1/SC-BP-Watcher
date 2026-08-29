@@ -63,6 +63,8 @@ def bauen(fenster, kennung, rahmen):
         'danke':       _danke,
         'erkennung':   _erkennung,
         'diagnose':    _diagnose,
+        'herstellung': _herstellung,
+        'bergbau':     _bergbau,
     }.get(kennung)
     if bauer:
         bauer(fenster, rahmen)
@@ -3215,6 +3217,23 @@ def _diagnose(fenster, rahmen):
     _ueberschrift(fenster, rahmen, t('hf_diagnose'), t('s_di_lead'))
     innen = _rollflaeche(rahmen)
 
+    # ⭐ Wer meldet? Steht ÜBER dem Bericht, damit man sieht, was mitgeht.
+    #
+    # Anlass (29.08.2026): Das Werkzeug wurde im SCMDB-Discord vorgestellt
+    # (620 Mitglieder). Ohne Absender lässt sich ein Bericht niemandem
+    # zuordnen, und Rückfragen laufen ins Leere.
+    #
+    # ⚠ **Freiwillig und nie vorausgefüllt** — auch nicht mit dem
+    # Benutzernamen des Systems. Das Werkzeug sammelt sonst nichts über den
+    # Nutzer, und in der Ankündigung steht „no telemetry". Ein heimlich
+    # mitgeschickter Name wäre ein Wortbruch.
+    melder_var = tk.StringVar(value=(pfade.einstellung('melder_name') or ''))
+    ziel_melder = _feld(fenster, innen, t('s_melder'), t('s_melder_h'))
+    from .hauptfenster import rundes_feld
+    melder_feld = rundes_feld(ziel_melder, melder_var, fenster.f_klein,
+                              '#0c1017', LINIE, ACCENT, FG)
+    melder_feld.halter.pack(fill='x', pady=(8, 0))
+
     text = ''
     try:
         text = bericht.bauen(version=fenster.version, wurzel=fenster.root)
@@ -3233,6 +3252,29 @@ def _diagnose(fenster, rahmen):
     feld.pack(fill='both', expand=True)
     feld.insert('1.0', text)
     feld.configure(state='disabled')
+
+    def melder_uebernehmen(*_):
+        """Namen sichern und den Bericht neu aufbauen.
+
+        ⚠ Der Bericht wird beim Öffnen der Seite EINMAL gebaut. Ohne dieses
+        Auffrischen stünde der eben eingetippte Name nicht darin — man sähe
+        „nicht angegeben" und hielte das Feld für kaputt."""
+        neu_wert = melder_var.get().strip()
+        if neu_wert == (pfade.einstellung('melder_name') or ''):
+            return
+        pfade.einstellung_setzen('melder_name', neu_wert)
+        try:
+            frisch = bericht.bauen(version=fenster.version, wurzel=fenster.root)
+        except Exception as ausnahme:
+            fehler.merken('seiten.diagnose_melder', ausnahme)
+            return
+        feld.configure(state='normal')
+        feld.delete('1.0', 'end')
+        feld.insert('1.0', frisch)
+        feld.configure(state='disabled')
+
+    melder_feld.bind('<FocusOut>', melder_uebernehmen)
+    melder_feld.bind('<Return>', melder_uebernehmen)
 
     reihe = tk.Frame(innen, bg=BG)
     reihe.pack(fill='x', pady=(12, 0))
@@ -3334,3 +3376,310 @@ def _zahl_bestand():
         return len((bestand_datei.laden().get('bauplaene') or {}))
     except Exception:
         return '—'
+
+
+# --------------------------------------------------------------- Herstellung
+#
+# ⚠ **Nicht scmdb nachbauen.** Die Seite beantwortet genau eine Frage: „Ich will
+# das bauen — was brauche ich?" Keine Wahrscheinlichkeits-Balken, kein
+# Refinery-Vergleich; wer das braucht, ist auf scmdb.net besser aufgehoben.
+# Was diese Seite dagegen kann und die Webseite nicht: Sie **weiß**, welche
+# Baupläne der Spieler hat.
+
+HERST_MAX = 150          # so viele Zeilen auf einmal — mehr macht Tk zäh
+
+
+def _dauer(sekunden):
+    """Herstellzeit lesbar: 45 s · 16 min · 2 h 30 min."""
+    sekunden = int(sekunden or 0)
+    if sekunden < 60:
+        return t('s_he_sekunden') % sekunden
+    if sekunden < 3600:
+        return t('s_he_minuten') % round(sekunden / 60.0)
+    return t('s_he_std_min') % (sekunden // 3600, (sekunden % 3600) // 60)
+
+
+def _herstellung(fenster, rahmen):
+    """Alle herstellbaren Gegenstände, mit Rezept auf Klick."""
+    from . import herstellung as herst_modul
+    _ueberschrift(fenster, rahmen, t('hf_herstellung'), t('s_he_lead'))
+    innen = _rollflaeche(rahmen)
+
+    try:
+        habe = bestand_datei.schluessel(bestand_datei.laden())
+        eintraege = herst_modul.mit_bestand(habe)
+        sicher, gesamt, unklar = herst_modul.zaehlung(habe)
+    except Exception as ausnahme:
+        fehler.merken('seiten.herstellung', ausnahme)
+        eintraege, sicher, gesamt, unklar = [], 0, 0, 0
+
+    if not eintraege:
+        _fliesstext(innen, t('s_he_keine_daten'), fenster.f_klein, fill='x')
+        return
+
+    # Kopfzahl im selben Aufbau wie der Bauplan-Fortschritt — wer die eine
+    # Seite kennt, liest die andere sofort.
+    kopf = tk.Frame(innen, bg=BG)
+    kopf.pack(fill='x', pady=(0, 4))
+    tk.Label(kopf, text=str(sicher), bg=BG, fg=ACCENT,
+             font=fenster.f_titel).pack(side='left')
+    tk.Label(kopf, text=t('s_he_von') % gesamt, bg=BG, fg=SUB,
+             font=fenster.f_klein).pack(side='left')
+
+    from .hauptfenster import rundbalken, rundes_feld
+    rundbalken(innen, 9, sicher / float(gesamt or 1), BG, '#222b3b',
+               ACCENT).pack(fill='x', pady=(6, 14))
+
+    # ⚠ Beschriftetes Feld wie auf den anderen Seiten (siehe „Dein Name" auf
+    # der Diagnose-Seite) — **nicht** das nackte Suchfeld aus der Werkzeugleiste
+    # der Bauplan-Liste. Dort gibt die Leiste den Kontext, hier gäbe ein leeres
+    # Kästchen mitten auf der Seite keinen Hinweis, wofür es da ist.
+    suche_var = tk.StringVar()
+    ziel_suche = _feld(fenster, innen, t('s_he_suche'), '')
+    suchfeld = rundes_feld(ziel_suche, suche_var, fenster.f_klein, '#0c1017',
+                           LINIE, ACCENT, FG)
+    suchfeld.halter.pack(fill='x', pady=(4, 12))
+
+    liste_rahmen = tk.Frame(innen, bg=BG)
+    liste_rahmen.pack(fill='both', expand=True)
+
+    # Welche Zeile ist gerade aufgeklappt? Eine reicht — zwei offene Rezepte
+    # untereinander sind schon wieder die Zettelwirtschaft, die der Umschalter
+    # vermeiden soll.
+    offen = {'name': None}
+
+    def zeichnen(*_):
+        for w in liste_rahmen.winfo_children():
+            w.destroy()
+        text = suche_var.get().strip().lower()
+        treffer = [e for e in eintraege
+                   if not text
+                   or text in e['name'].lower()
+                   or text in (e['hersteller'] or '').lower()
+                   or text in (e['art'] or '').lower()]
+        if not treffer:
+            _fliesstext(liste_rahmen, t('s_he_nichts'), fenster.f_klein,
+                        fill='x')
+            return
+        for e in treffer[:HERST_MAX]:
+            _herstellung_zeile(fenster, liste_rahmen, e, offen, zeichnen)
+        if len(treffer) > HERST_MAX:
+            _fliesstext(liste_rahmen, t('s_he_mehr') % (len(treffer) - HERST_MAX),
+                        fenster.f_klein, fill='x')
+
+    suche_var.trace_add('write', zeichnen)
+    zeichnen()
+
+
+def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
+    """Eine Zeile der Herstellungs-Liste, auf Klick klappt das Rezept auf."""
+    from . import herstellung as herst_modul
+    zeile = tk.Frame(eltern, bg=BG, cursor='hand2')
+    zeile.pack(fill='x', pady=1)
+
+    # Drei Zustände, nicht zwei: habe / fehlt / **unklar**.
+    if eintrag['habe'] is True:
+        zeichen_text, farbe = '✓', ACCENT
+    elif eintrag['habe'] is None:
+        zeichen_text, farbe = '?', GOLD
+    else:
+        zeichen_text, farbe = '·', SUB
+    tk.Label(zeile, text=zeichen_text, bg=BG, fg=farbe, font=fenster.f_grund,
+             width=2).pack(side='left')
+    tk.Label(zeile, text=eintrag['name'], bg=BG, fg=FG, font=fenster.f_grund,
+             anchor='w').pack(side='left', fill='x', expand=True)
+    if eintrag['hersteller']:
+        tk.Label(zeile, text=eintrag['hersteller'], bg=BG, fg=SUB,
+                 font=fenster.f_klein, anchor='e').pack(side='right', padx=(8, 0))
+
+    def umschalten(*_):
+        offen['name'] = None if offen['name'] == eintrag['name'] else eintrag['name']
+        neu_zeichnen()
+
+    for w in (zeile,) + tuple(zeile.winfo_children()):
+        w.bind('<Button-1>', umschalten)
+
+    if offen['name'] != eintrag['name']:
+        return
+
+    # --- aufgeklappt: das Rezept ---
+    block = tk.Frame(eltern, bg='#0c1017')
+    block.pack(fill='x', padx=(24, 0), pady=(2, 8))
+    if eintrag['habe'] is None:
+        _fliesstext(block, t('s_he_unklar'), fenster.f_klein, fill='x')
+    rez = herst_modul.rezept(eintrag['basis'])
+    for stufe in (rez or {}).get('stufen') or []:
+        for slot, rohstoff, menge, guete in stufe['zutaten']:
+            z = tk.Frame(block, bg='#0c1017')
+            z.pack(fill='x', padx=12, pady=1)
+            tk.Label(z, text=slot, bg='#0c1017', fg=SUB, font=fenster.f_klein,
+                     width=18, anchor='w').pack(side='left')
+            # ⭐ Der Sprung: Klick auf den Rohstoff öffnet den Bergbau mit
+            # diesem Namen in der Suche. Das ist der Grund, warum die
+            # Detailfläche kurz bleiben darf — man springt, statt zu stapeln.
+            roh_lbl = tk.Label(z, text=rohstoff, bg='#0c1017', fg=ACCENT,
+                               font=fenster.f_grund, anchor='w',
+                               cursor='hand2')
+            roh_lbl.pack(side='left')
+
+            def zum_bergbau(_e=None, name=rohstoff):
+                fenster.bergbau_suche = name
+                fenster.oeffnen('bergbau')
+
+            roh_lbl.bind('<Button-1>', zum_bergbau)
+            tk.Label(z, text=t('s_he_menge') % menge, bg='#0c1017', fg=SUB,
+                     font=fenster.f_klein, anchor='e').pack(side='right', padx=12)
+        if stufe['zeit']:
+            z = tk.Frame(block, bg='#0c1017')
+            z.pack(fill='x', padx=12, pady=(4, 8))
+            tk.Label(z, text=t('s_he_zeit'), bg='#0c1017', fg=SUB,
+                     font=fenster.f_klein, width=18, anchor='w').pack(side='left')
+            tk.Label(z, text=_dauer(stufe['zeit']), bg='#0c1017',
+                     fg=FG, font=fenster.f_klein).pack(side='left')
+
+
+# ------------------------------------------------------------------- Bergbau
+
+BERG_MAX = 60
+
+
+def _art_text(arten):
+    """Die Abbauarten lesbar: „FPS · Schiff"."""
+    reihenfolge = ('fps', 'fahrzeug', 'schiff', 'schiff_selten')
+    return ' · '.join(t('s_bg_art_' + a) for a in reihenfolge if a in arten)
+
+
+def _bergbau(fenster, rahmen):
+    """Wo welches Erz abzubauen ist — **beide** Richtungen in einer Suche.
+
+    Ohne Eingabe stehen die Orte da (man ist meistens irgendwo). Tippt man
+    einen Rohstoff, kommen dessen Fundorte; tippt man einen Ort, kommt, was es
+    dort gibt. Das sind nicht zwei Ansichten, sondern eine Tabelle mit zwei
+    Eingängen — beides sind echte Fragen, je nachdem ob man gerade fliegen mag
+    oder nicht.
+    """
+    from . import bergbau as berg_modul
+    _ueberschrift(fenster, rahmen, t('hf_bergbau'), t('s_bg_lead'))
+    innen = _rollflaeche(rahmen)
+
+    try:
+        orte = berg_modul.orte()
+        erze = berg_modul.erze()
+    except Exception as ausnahme:
+        fehler.merken('seiten.bergbau', ausnahme)
+        orte, erze = [], []
+
+    if not orte:
+        _fliesstext(innen, t('s_bg_keine_daten'), fenster.f_klein, fill='x')
+        return
+
+    kopf = tk.Frame(innen, bg=BG)
+    kopf.pack(fill='x', pady=(0, 10))
+    tk.Label(kopf, text=t('s_bg_orte') % (len(orte), len(erze)), bg=BG, fg=SUB,
+             font=fenster.f_klein, anchor='w').pack(fill='x')
+
+    from .hauptfenster import rundes_feld
+    # Der Sprung aus einem Rezept setzt hier den Rohstoff hinein.
+    suche_var = tk.StringVar(value=getattr(fenster, 'bergbau_suche', '') or '')
+    fenster.bergbau_suche = ''
+    ziel_suche = _feld(fenster, innen, t('s_bg_suche'), '')
+    feld = rundes_feld(ziel_suche, suche_var, fenster.f_klein, '#0c1017',
+                       LINIE, ACCENT, FG)
+    feld.halter.pack(fill='x', pady=(4, 12))
+
+    liste_rahmen = tk.Frame(innen, bg=BG)
+    liste_rahmen.pack(fill='both', expand=True)
+    offen = {'name': None}
+
+    def zeichnen(*_):
+        for w in liste_rahmen.winfo_children():
+            w.destroy()
+        text = suche_var.get().strip().lower()
+
+        # Erst die Rohstoffe, die passen — wer einen Rohstoff sucht, will die
+        # Orte sehen, nicht eine Ortsliste durchblättern.
+        if text:
+            for e in erze:
+                if text in e['name'].lower():
+                    _berg_erz(fenster, liste_rahmen, e, offen, zeichnen)
+        for o in orte:
+            passt = (not text
+                     or text in o['name'].lower()
+                     or text in (o['system'] or '').lower())
+            if passt:
+                _berg_ort(fenster, liste_rahmen, o, offen, zeichnen)
+
+        if not liste_rahmen.winfo_children():
+            _fliesstext(liste_rahmen, t('s_he_nichts'), fenster.f_klein,
+                        fill='x')
+
+    suche_var.trace_add('write', zeichnen)
+    zeichnen()
+    _fliesstext(innen, t('s_bg_mehr_info'), fenster.f_klein, fill='x')
+
+
+def _berg_kopfzeile(fenster, eltern, links, rechts, farbe, aufklappen):
+    zeile = tk.Frame(eltern, bg=BG, cursor='hand2')
+    zeile.pack(fill='x', pady=1)
+    tk.Label(zeile, text=links, bg=BG, fg=farbe, font=fenster.f_grund,
+             anchor='w').pack(side='left', padx=(4, 0))
+    if rechts:
+        tk.Label(zeile, text=rechts, bg=BG, fg=SUB, font=fenster.f_klein,
+                 anchor='e').pack(side='right', padx=(8, 4))
+    for w in (zeile,) + tuple(zeile.winfo_children()):
+        w.bind('<Button-1>', aufklappen)
+    return zeile
+
+
+def _berg_erz(fenster, eltern, erz, offen, neu_zeichnen):
+    """Ein Rohstoff — aufgeklappt stehen seine Fundorte darunter."""
+    schluessel = 'erz:' + erz['name']
+
+    def umschalten(*_):
+        offen['name'] = None if offen['name'] == schluessel else schluessel
+        neu_zeichnen()
+
+    # ⚠ Hier stand `t('s_bg_orte') % (a, b).split('·')[0]` — das `.split()` lief
+    # auf dem **Tupel**, nicht auf dem Text. Ergebnis: Ausnahme in `zeichnen()`,
+    # und die ganze Liste blieb leer. Der Selbsttest sah es nicht, weil er die
+    # Seite ohne Suchbegriff baut und dieser Zweig nie lief. Gefunden auf einem
+    # Bildschirmfoto (29.08.2026). Jetzt ein eigener Textschlüssel.
+    _berg_kopfzeile(fenster, eltern, erz['name'],
+                    t('s_bg_nur_orte') % len(erz['orte']),
+                    ACCENT, umschalten)
+    if offen['name'] != schluessel:
+        return
+    block = tk.Frame(eltern, bg='#0c1017')
+    block.pack(fill='x', padx=(24, 0), pady=(2, 8))
+    for ort, system, arten in erz['orte']:
+        z = tk.Frame(block, bg='#0c1017')
+        z.pack(fill='x', padx=12, pady=1)
+        tk.Label(z, text=ort, bg='#0c1017', fg=FG, font=fenster.f_grund,
+                 anchor='w').pack(side='left')
+        tk.Label(z, text=system, bg='#0c1017', fg=SUB, font=fenster.f_klein,
+                 anchor='w').pack(side='left', padx=(10, 0))
+        tk.Label(z, text=_art_text(arten), bg='#0c1017', fg=SUB,
+                 font=fenster.f_klein, anchor='e').pack(side='right', padx=12)
+
+
+def _berg_ort(fenster, eltern, ort, offen, neu_zeichnen):
+    """Ein Ort — aufgeklappt steht darunter, was es dort gibt."""
+    schluessel = 'ort:' + ort['name']
+
+    def umschalten(*_):
+        offen['name'] = None if offen['name'] == schluessel else schluessel
+        neu_zeichnen()
+
+    _berg_kopfzeile(fenster, eltern, ort['name'],
+                    '%s · %s' % (ort['system'], ort['typ']), FG, umschalten)
+    if offen['name'] != schluessel:
+        return
+    block = tk.Frame(eltern, bg='#0c1017')
+    block.pack(fill='x', padx=(24, 0), pady=(2, 8))
+    for name in sorted(ort['erze']):
+        z = tk.Frame(block, bg='#0c1017')
+        z.pack(fill='x', padx=12, pady=1)
+        tk.Label(z, text=name, bg='#0c1017', fg=FG, font=fenster.f_grund,
+                 anchor='w').pack(side='left')
+        tk.Label(z, text=_art_text(ort['erze'][name]), bg='#0c1017', fg=SUB,
+                 font=fenster.f_klein, anchor='e').pack(side='right', padx=12)

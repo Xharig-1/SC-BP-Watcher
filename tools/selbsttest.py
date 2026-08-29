@@ -724,13 +724,19 @@ def main():
         os.environ['SC_BP_HOME'] = os.path.join(basis, 'neu2')
         os.makedirs(os.environ['SC_BP_HOME'], exist_ok=True)
         neuheiten.erster_start('2.0.0')
-        offen = sorted(neuheiten.offene('3.0.0'))
+        # ⚠ Gegen die **höchste** Version in NEU_SEIT prüfen, nicht gegen eine
+        # feste Nummer. Sonst schlägt der Test fehl, sobald ein Bereich für eine
+        # spätere Version einträgt (bei „herstellung" = 3.3.0 genau so passiert):
+        # Der Bereich ist bei 3.0.0 zu Recht noch nicht offen.
+        hoechste = max(neuheiten.NEU_SEIT.values(),
+                       key=lambda v: [int(x) for x in v.split('.')])
+        offen = sorted(neuheiten.offene(hoechste))
         pruefe(offen == sorted(neuheiten.NEU_SEIT),
                'wer von 2.0.0 kommt, sieht die neuen Bereiche')
-        neuheiten.gesehen('bestand', '3.0.0')
-        pruefe('bestand' not in neuheiten.offene('3.0.0'),
+        neuheiten.gesehen('bestand', hoechste)
+        pruefe('bestand' not in neuheiten.offene(hoechste),
                'die Marke verschwindet, sobald der Bereich offen war')
-        pruefe(len(neuheiten.offene('3.0.0')) == len(offen) - 1,
+        pruefe(len(neuheiten.offene(hoechste)) == len(offen) - 1,
                'die übrigen Marken bleiben stehen')
         pruefe(not neuheiten.ist_neu('bestand', '2.0.0'),
                'was es in der eigenen Version noch nicht gibt, wird nicht markiert')
@@ -803,7 +809,7 @@ def main():
                 # sucht sie nicht in einem zugeklappten Menü namens
                 # „Fortgeschritten". Seit dem Knopf „Fehlerbericht absenden"
                 # ist sie zudem der Weg, auf dem Meldungen ankommen.
-                pruefe(len(hf.knoepfe) == 11, 'alle Reiter sind wieder da')
+                pruefe(len(hf.knoepfe) == 13, 'alle Reiter sind wieder da')
 
                 # Die Wahl muss festgehalten werden — ohne Speichern-Knopf gibt
                 # es keinen zweiten Versuch. Vorher stand die Markierung

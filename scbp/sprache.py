@@ -1144,6 +1144,14 @@ TEXTE = {
     # `Python-urllib`-Kennung laeuft auf 403, gemessen 29.08.2026). Ohne
     # eigene Meldung stand dort nur "Netzfehler", und man sucht an der
     # falschen Stelle — dieselbe Falle wie beim Zertifikatsfehler.
+    # Rueckmeldungen der Herstellungs-Daten (scbp/herstellung.py).
+    'm_h_aktuell':     ('Rezepte sind aktuell (%d Baupläne)',
+                        'Recipes are up to date (%d blueprints)'),
+    'm_h_geladen':     ('%d Baupläne geladen', '%d blueprints loaded'),
+    'm_h_leer':        ('Die Datei enthält keine Baupläne.',
+                        'The file contains no blueprints.'),
+    'm_h_kein_netz':   ('Netzabrufe sind abgeschaltet (SC_BP_NO_NET).',
+                        'Network access is switched off (SC_BP_NO_NET).'),
     'm_abgewiesen':    ('Die Seite hat den Abruf abgewiesen (403). Ihr Schutz '
                         'blockiert gerade Programme — das liegt nicht an dir. '
                         'Der Watcher arbeitet mit dem zuletzt geladenen Stand '
@@ -1248,12 +1256,92 @@ TEXTE = {
 
     # --- Hauptfenster: Reiter und Rahmen (ab v3.0.0) ---
     'hf_titel':          ('SC BP Watcher', 'SC BP Watcher'),
+    # Zusatz im Fenstertitel, wenn die Testfassung laeuft (SC_BP_TESTFASSUNG).
+    # ⚠ Zwei gleich aussehende Fenster nebeneinander sind eine Falle: Man
+    # verstellt etwas in der falschen Fassung und sucht dann den Fehler.
+    's_testfassung':     ('⚠ TESTFASSUNG', '⚠ TEST BUILD'),
+    # --- Seite „Herstellung" -------------------------------------------------
+    's_he_lead':         ('Was ein Gegenstand zum Herstellen braucht. Klick auf '
+                          'eine Zeile zeigt die Zutaten.',
+                          'What an item needs to be crafted. Click a row to see '
+                          'the ingredients.'),
+    's_he_suche':        ('Suchen …', 'Search …'),
+    's_he_von':          (' von %d herstellbar — davon hast du den Bauplan',
+                          ' of %d craftable — you have the blueprint for these'),
+    's_he_zeit':         ('Herstellzeit', 'Craft time'),
+    # ⚠ Lesbar statt roh: 960 Sekunden sind 16 Minuten, und niemand rechnet
+    # das im Kopf um. Unter einer Minute bleibt es bei Sekunden.
+    's_he_sekunden':     ('%d s', '%d s'),
+    's_he_minuten':      ('%d min', '%d min'),
+    's_he_std_min':      ('%d h %d min', '%d h %d min'),
+    's_he_menge':        ('%g SCU', '%g SCU'),
+    # ⚠ Der unklare Fall — siehe herstellung.mit_bestand().
+    's_he_unklar':       ('Bauplan vorhanden, aber es gibt mehrere Gegenstände '
+                          'dieses Namens — welcher gemeint ist, geht aus den '
+                          'Daten nicht hervor.',
+                          'Blueprint present, but several items share this name '
+                          '— the data does not say which one is meant.'),
+    's_he_mehr':         ('… und %d weitere. Grenz die Suche ein.',
+                          '… and %d more. Narrow your search.'),
+    's_he_nichts':       ('Nichts gefunden.', 'Nothing found.'),
+    # --- Seite „Bergbau" -----------------------------------------------------
+    'm_b_aktuell':       ('Bergbau-Daten sind aktuell (%d Orte)',
+                          'Mining data is up to date (%d locations)'),
+    'm_b_geladen':       ('%d Orte geladen', '%d locations loaded'),
+    'm_b_leer':          ('Die Datei enthält keine Orte.',
+                          'The file contains no locations.'),
+    's_bg_lead':         ('Wo welches Erz abzubauen ist. Tipp einen Rohstoff ein '
+                          'für seine Fundorte — oder einen Ort für alles, was es '
+                          'dort gibt.',
+                          'Where to mine what. Type a resource for its locations '
+                          '— or a location for everything found there.'),
+    's_bg_suche':        ('Rohstoff oder Ort …', 'Resource or location …'),
+    's_bg_nur_orte':     ('%d Orte', '%d locations'),
+    's_bg_orte':         ('%d Orte · %d Rohstoffe',
+                          '%d locations · %d resources'),
+    's_bg_art_fps':      ('FPS', 'FPS'),
+    's_bg_art_schiff':   ('Schiff', 'Ship'),
+    's_bg_art_schiff_selten': ('Schiff (selten)', 'Ship (rare)'),
+    's_bg_art_fahrzeug': ('Fahrzeug', 'Vehicle'),
+    's_bg_mehr_info':    ('Genauer — mit Wahrscheinlichkeiten und Refinery-'
+                          'Vergleich — auf scmdb.net',
+                          'More detail — probabilities and refinery comparison — '
+                          'at scmdb.net'),
+    's_bg_keine_daten':  ('Die Bergbau-Daten sind noch nicht geladen. Sie kommen '
+                          'beim nächsten Katalog-Abruf dazu.',
+                          'The mining data is not loaded yet. It arrives with the '
+                          'next catalogue update.'),
+    's_he_keine_daten':  ('Die Rezepte sind noch nicht geladen. Sie kommen beim '
+                          'nächsten Katalog-Abruf dazu.',
+                          'The recipes are not loaded yet. They arrive with the '
+                          'next catalogue update.'),
+    # Name des Melders im Fehlerbericht — **freiwillig**.
+    # ⚠ Wird NIE vorausgefüllt (auch nicht mit dem Windows-/Linux-Benutzernamen).
+    # Das Werkzeug sammelt sonst nichts über den Nutzer, und im Discord-Post
+    # steht „no telemetry" — ein heimlich mitgeschickter Name wäre ein Bruch.
+    'b_melder':          ('Von', 'From'),
+    's_melder':          ('Dein Name (freiwillig)', 'Your name (optional)'),
+    's_melder_h':        ('Steht im Fehlerbericht, damit sich Rückfragen '
+                          'zuordnen lassen. Am besten der Discord-Name. Leer '
+                          'lassen ist völlig in Ordnung — dann wird nichts '
+                          'mitgeschickt.',
+                          'Appears in the report so follow-up questions can be '
+                          'matched to you. Your Discord name works best. '
+                          'Leaving it empty is perfectly fine — then nothing '
+                          'is sent.'),
+    's_melder_leer':     ('nicht angegeben', 'not given'),
     'hf_gruppe_bp':      ('Baupläne', 'Blueprints'),
+    'hf_gruppe_herst':   ('Herstellung & Bergbau', 'Crafting & Mining'),
+    'hf_herstellung':    ('Herstellung', 'Crafting'),
+    'hf_bergbau':        ('Bergbau', 'Mining'),
     'hf_gruppe_einst':   ('Einstellungen', 'Settings'),
     'hf_fortgeschritten':('Für Fortgeschrittene', 'For advanced users'),
     'hf_gruppe_info':    ('Info', 'Info'),
     'hf_liste':          ('Bauplan-Liste', 'Blueprint list'),
-    'hf_fortschritt':    ('Fortschritt', 'Progress'),
+    # ⚠ „Fortschritt" allein reichte, solange das Fenster nur Baupläne kannte.
+    # Mit den Sichten Herstellung und Bergbau ist es mehrdeutig — es könnte der
+    # Herstellungs- oder Abbaufortschritt sein. (gemeldet 29.08.2026.)
+    'hf_fortschritt':    ('Bauplan-Fortschritt', 'Blueprint progress'),
     'hf_allgemein':      ('Allgemein', 'General'),
     'hf_anzeige':        ('Anzeige', 'Display'),
     'hf_ordner':         ('Pfade', 'Paths'),
@@ -1710,3 +1798,16 @@ if __name__ == '__main__':
         setzen(s)
         print('\n[%s] %s | %s | %s' % (s, t('bauplaene'), t('filter_fehlt'),
                                        t('von_gesamt', 3, 714, 0)))
+
+
+def fenstertitel(text):
+    """Der Fenstertitel, bei der Testfassung mit Warnhinweis.
+
+    Gesetzt wird das ueber die Umgebungsvariable `SC_BP_TESTFASSUNG` — das tut
+    `tools/testfassung_starten.sh`. Laeuft die normale Fassung, kommt der Text
+    unveraendert zurueck.
+    """
+    import os
+    if os.environ.get('SC_BP_TESTFASSUNG', '') not in ('', '0'):
+        return '%s   %s' % (text, t('s_testfassung'))
+    return text

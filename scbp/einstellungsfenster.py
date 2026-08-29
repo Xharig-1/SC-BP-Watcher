@@ -44,7 +44,7 @@ from . import pfade
 from . import spieltexte
 from . import sprache
 from . import uebersetzung
-from .sprache import t
+from .sprache import t, fenstertitel
 
 BG      = '#10141c'
 FLAECHE = '#161c28'
@@ -75,7 +75,7 @@ class Einstellungsfenster:
             self.root.configure(bg=BG)
         else:
             self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
-            self.root.title(t('titel_einstellungen'))
+            self.root.title(fenstertitel(t('titel_einstellungen')))
             self.root.configure(bg=BG)
             self.root.geometry('660x900')
 
