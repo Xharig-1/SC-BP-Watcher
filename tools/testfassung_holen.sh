@@ -41,11 +41,25 @@ echo "Suche den letzten erfolgreichen Bau auf Zweig '$ZWEIG' …"
 LAUF="$(gh run list --workflow "$ABLAUF" --branch "$ZWEIG" --status success --limit 1 \
         --json databaseId --jq '.[0].databaseId')"
 if [ -z "${LAUF:-}" ]; then
-  echo "Auf '$ZWEIG' gibt es keinen erfolgreichen Bau. Zuerst einen anstossen:" >&2
-  echo "  gh workflow run $ABLAUF --ref $ZWEIG" >&2
-  exit 1
+  # ⚠ Ein Bau, der von einem **Tag** ausgeloest wurde, haengt am Tag — nicht am
+  # Zweig. Nach jedem Release oder jeder Testfassung (v3.3.0-rc1 usw.) findet
+  # die Suche nach dem Zweig deshalb nichts, obwohl die Dateien fertig
+  # danebenliegen. Dann den neuesten erfolgreichen Lauf ueberhaupt nehmen und
+  # dazusagen, woher er kommt.
+  echo "  Auf '$ZWEIG' kein Bau — nehme den neuesten erfolgreichen."
+  LAUF="$(gh run list --workflow "$ABLAUF" --status success --limit 1 \
+          --json databaseId --jq '.[0].databaseId')"
+  HER="$(gh run list --workflow "$ABLAUF" --status success --limit 1 \
+         --json headBranch --jq '.[0].headBranch')"
+  if [ -z "${LAUF:-}" ]; then
+    echo "Es gibt gar keinen erfolgreichen Bau. Zuerst einen anstossen:" >&2
+    echo "  gh workflow run $ABLAUF --ref $ZWEIG" >&2
+    exit 1
+  fi
+  echo "  Lauf $LAUF (von '$HER')"
+else
+  echo "  Lauf $LAUF"
 fi
-echo "  Lauf $LAUF"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
