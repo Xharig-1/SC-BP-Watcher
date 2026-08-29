@@ -6,6 +6,73 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.2.1 - 2026-08-29
+
+### Behoben
+
+- **Andere Werkzeuge werden nicht mehr überschrieben.** Drei Programme
+  kennzeichnen Bauplan-Aufträge im Spiel, und alle drei benutzen dieselbe Marke
+  `[BP]`: dieses hier, **MrKrakens StarStrings** und der **SC Deutsch Launcher**
+  (Watcher und Launcher schöpfen sogar aus derselben Datenquelle und schreiben
+  darum wortgleiche Listen). Bisher hat der Watcher nicht unterschieden, was von
+  ihm stammt und was nicht. Alles an der echten Fassung vom 29.08.2026
+  nachgezählt:
+
+  - **17** von MrKrakens Kennzeichnungen wurden beim Eintragen **gelöscht** —
+    und weil sich der Watcher danach den bereits gekürzten Wortlaut als
+    Urfassung merkte, kamen sie auch beim Zurücksetzen nie wieder.
+  - **297** weitere standen danach **doppelt**.
+  - **136** Gegenstandsnamen bekamen ihr Kürzel zweimal:
+    `[CS1] Spark-G Missile (CS1)`.
+  - Wer den **SC Deutsch Launcher** parallel benutzt, hätte die Bauplan-Liste
+    an **336** Aufträgen zweimal untereinander gelesen und beim Zurücksetzen
+    den Stand des Launchers verloren.
+
+  **Die neue Regel ist einfach: Wo schon eine Marke steht, kommt keine zweite
+  dazu.** Und was vor der ersten eigenen Einfügung dastand, gehört dem Spieler —
+  es wird beim Zurücksetzen wiederhergestellt, auch wenn es von einem anderen
+  Werkzeug stammt.
+
+  Beim Launcher geht der Watcher einen Schritt weiter: Seine Liste **ersetzt**
+  dessen Liste, statt eine zweite danebenzusetzen. Denn sie ist dieselbe — nur
+  mit **Kästchen**, also mit dem Abgleich gegen deine eigenen Baupläne. Nimmst du
+  die Angaben zurück, steht seine Liste wieder da, Zeichen für Zeichen.
+
+  Trägt ein Gegenstandsname schon ein Kürzel in eckigen Klammern, bleibt er, wie
+  er ist.
+
+  **Danke an MrKraken** für [StarStrings](https://github.com/MrKraken/StarStrings)
+  und an das Team des **SC Deutsch Launchers** — und Entschuldigung für das
+  Hineinschreiben. 🙏
+
+- **Der Watcher meldete „Angaben stehen im Spiel", wo nichts von ihm stand.**
+  Erkannt wurde die Injektion an der Marke `[BP]` und an der Überschrift der
+  Bauplan-Liste — beides schreiben die anderen beiden Werkzeuge genauso. Jetzt
+  zählt nur, was es ausschließlich beim Watcher gibt: das **Kästchen**.
+
+- **Kästchen standen vor Regionen und Abgabeorten.** Im Spiel las man
+  `[  ] Stanton-System - Gefahr 4-6/10`, als könnte man eine Region besitzen.
+  Ursache: Die Bauplan-Blöcke gliedern mit Überschriften, und unter dreien davon
+  stehen Listen — `# Baupläne` (4.379 Zeilen), `# Abgabe` (323) und `# Region`
+  (239). Angekreuzt wurde jede. Jetzt bekommt nur ein Kästchen, was unter
+  **Baupläne** steht; in einer fertigen Datei fallen damit **838** falsche
+  Kästchen weg. Auf Englisch (`# Blueprints`, `# Delivery`) genauso.
+
+- **Nach dem Einsetzen einer neuen Grundlage wird die Urfassungs-Merkdatei
+  geleert.** Sie gehörte zur alten Datei und hätte auf einen überholten Stand
+  zurückgeschrieben. Zugleich schützt der Vermerk die frische Datei: In etwas,
+  das eben erst eingesetzt wurde, hat der Watcher noch nie geschrieben — also
+  gibt es dort auch nichts von ihm zu entfernen.
+
+### Geändert
+
+- **MrKraken steht jetzt in der Danksagung der Anleitung.** Auf der Seite
+  „Danke & Lizenzen" im Programm stand er längst, in der Anleitung fehlte er.
+- **Die Lizenzangabe zu StarStrings ist berichtigt.** Dort stand
+  „CC BY-NC-SA 4.0". Das Projekt gibt gar keine Lizenz an — weder im Repo noch
+  in seiner Anleitung. Eine Lizenz zuzuschreiben, die der Autor nie vergeben
+  hat, ist falsch; jetzt steht dort „keine Lizenzangabe".
+
 ## v3.2.0 - 2026-08-29
 
 ### Neu

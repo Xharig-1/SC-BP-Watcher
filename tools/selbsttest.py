@@ -2762,9 +2762,22 @@ def main():
         pruefe('NICHT' in _l39 or 'NOT' in _l39,
                'ohne Angaben in der Datei sagt der Bericht das auch')
 
-        # Dieselbe Datei, Angaben drin.
+        # ⚠ MrKrakens Kennzeichnung allein ist KEINE Injektion. Er schreibt in
+        # StarStrings dasselbe blanke `<EM4>[BP]</EM4>` an seine Titel (314 in
+        # der Fassung vom 29.08.2026). Bis dahin meldete der Bericht deshalb
+        # „steht drin", sobald jemand StarStrings frisch eingesetzt hatte.
         with open(_ini39, 'a', encoding='utf-8') as f:
             f.write('mission_b_title=Bounty <EM4>[BP]</EM4>\n')
+        _l39ss = ber39._injektionslage()
+        pruefe('NICHT' in _l39ss or 'NOT' in _l39ss,
+               'MrKrakens blankes [BP] allein gilt NICHT als eigene Injektion')
+
+        # Dieselbe Datei, eigene Angaben drin — die Block-Überschrift ist die
+        # Form, die jede echte Injektion hinterlässt.
+        with open(_ini39, 'a', encoding='utf-8') as f:
+            f.write('mission_c_desc=Deliver cargo.\\n\\n--------------------'
+                    '\\nMÖGLICHE BAUPLÄNE FÜR DIESEN MISSIONSTYP\\n'
+                    '    [x] Atzkav Sniper Rifle\n')
         _l39b = ber39._injektionslage()
         pruefe('NICHT' not in _l39b and 'NOT' not in _l39b,
                'und mit Angaben meldet er sie als eingetragen')
@@ -3535,6 +3548,47 @@ def main():
     pruefe(_lq51.LogTail.new_names.__doc__ and
            'Name, Zusatz' in _lq51.LogTail.new_names.__doc__,
            'new_names() liefert unveraendert (Name, Zusatz)')
+
+    # ------------------------------------------------------------------
+    # 52. Kaestchen nur an Bauplaene — nicht an Regionen und Abgabeorte
+    #
+    # Die Bloecke des SCDL-Teams gliedern mit '#'-Ueberschriften, und unter
+    # dreien davon stehen Listen: '# Baupläne' (4379 Zeilen), '# Abgabe' (323)
+    # und '# Region' (239). Bis zum 29.08.2026 bekam jede davon ein Kaestchen —
+    # im Spiel stand '[  ] Stanton-System - Gefahr 4-6/10', als koennte man eine
+    # Region besitzen. Rund 620 Zeilen in den Rohdaten, 838 in der fertigen
+    # Datei (Bloecke werden mehrfach verwendet).
+    print()
+    print('52. Kaestchen nur an Bauplaenen, nicht an Regionen')
+    from scbp import injektion as _inj52
+    _block52 = ('\\n# Baupläne:\\n    - Atzkav Sniper Rifle\\n    - Aril Arms'
+                '\\n\\n# Region: \\n    - Stanton-System - Gefahr 4-6/10'
+                '\\n    - \\n    - Nyx-System - Gefahr 3-6/10'
+                '\\n\\n# Abgabe:\\n    - Port Olisar')
+    _habe52 = {katalog._norm('Aril Arms')}
+    _neu52, _meine52, _gesamt52 = _inj52._kaestchen_setzen(_block52, _habe52)
+    pruefe('[  ] Atzkav Sniper Rifle' in _neu52,
+           'ein Bauplan, den man nicht hat, bekommt ein leeres Kaestchen')
+    pruefe('[x]' in _neu52 and 'Aril Arms' in _neu52,
+           'ein Bauplan, den man hat, wird angehakt')
+    pruefe('- Stanton-System - Gefahr 4-6/10' in _neu52
+           and '[  ] Stanton-System' not in _neu52,
+           'eine REGION bekommt KEIN Kaestchen')
+    pruefe('- Nyx-System - Gefahr 3-6/10' in _neu52,
+           'auch die zweite Region bleibt unangetastet')
+    pruefe('- Port Olisar' in _neu52 and '[  ] Port Olisar' not in _neu52,
+           'ein ABGABEORT bekommt KEIN Kaestchen')
+    pruefe((_meine52, _gesamt52) == (1, 2),
+           'gezaehlt werden nur die Bauplaene (1 von 2)')
+    # Englisch ist derselbe Aufbau, nur andere Ueberschriften.
+    _en52 = ('\\n# Blueprints:\\n    - Atzkav Sniper Rifle'
+             '\\n\\n# Region: \\n    - Stanton System'
+             '\\n\\n# Delivery:\\n    - Port Olisar')
+    _neu52en, _m52en, _g52en = _inj52._kaestchen_setzen(_en52, set())
+    pruefe('[  ] Atzkav Sniper Rifle' in _neu52en and _g52en == 1,
+           'englisch: nur unter "# Blueprints" wird angekreuzt')
+    pruefe('- Stanton System' in _neu52en and '- Port Olisar' in _neu52en,
+           'englisch: Region und Delivery bleiben unangetastet')
 
     print()
     if fehler:

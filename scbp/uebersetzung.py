@@ -284,4 +284,12 @@ def holen(quelle, fortschritt=None, spielordner=None):
 
     user_cfg_setzen(q['sprache'], q['ton'], spielordner)
     _merk_setzen(quelle, kennung)
+    # ⚠ Hier liegt jetzt eine **fremde, unberührte** Datei. Die gemerkten
+    # Originaltexte gehören zur alten und würden auf einen überholten Stand
+    # zurückschreiben; zugleich wird vermerkt, dass in dieser Datei noch nie
+    # injiziert wurde. Ohne diesen Vermerk schneidet der Formen-Notnagel beim
+    # ersten Lauf fremde Kennzeichnungen heraus — bei StarStrings 17 Stück,
+    # und wegen des dann falsch gemerkten „Urtextes" für immer.
+    from . import injektion
+    injektion.urtext_verwerfen()
     return True, '%s (%s), %.1f MB' % (q['name'], kennung, len(ini) / 1048576.0)

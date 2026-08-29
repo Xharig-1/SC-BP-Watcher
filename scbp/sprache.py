@@ -830,6 +830,7 @@ TEXTE = {
                         'project would not exist. If installed, it confirms finds '
                         'and supplies the German names.'),
     's_dk_freiwillig': ('freiwillig', 'optional'),
+    's_dk_keine_lizenz': ('keine Lizenzangabe', 'no licence stated'),
     's_dk_tester':     ('Tester', 'tester'),
     's_dk_leute':      ('Und Danke an', 'And thanks to'),
     's_dk_leute_h':    ('Wer einen Fehler findet oder einen guten Vorschlag macht, '

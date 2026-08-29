@@ -252,6 +252,10 @@ def holen(sprache='english', spielordner=None, fortschritt=None,
         with open(ziel + '.tmp', 'wb') as f:
             f.write(daten)
         os.replace(ziel + '.tmp', ziel)
+        # Frische Grundlage — die gemerkten Originaltexte gehören zur alten
+        # Datei. Siehe `injektion.urtext_verwerfen()`.
+        from . import injektion
+        injektion.urtext_verwerfen()
         if sprache_eintragen:
             _sprache_eintragen(sprache, spielordner)
         return True, '%.1f MB' % (len(daten) / 1048576.0)

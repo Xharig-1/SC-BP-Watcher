@@ -2868,7 +2868,12 @@ def _danke(fenster, rahmen):
                 pady=(0, 10))
     _dankblock(fenster, innen, 'Star Citizen Mission DataBase',
                'CC BY-NC-ND 4.0', t('s_dk_scmdb'), 'https://scmdb.net')
-    _dankblock(fenster, innen, 'StarStrings (MrKraken)', 'CC BY-NC-SA 4.0',
+    # StarStrings hat KEINE Lizenzangabe - kein LICENSE im Repo, nichts in
+    # der readme, GitHub meldet keine (geprueft 29.08.2026). Hier stand
+    # 'CC BY-NC-SA 4.0'. Das war geraten, vermutlich von scmdb uebernommen,
+    # und es schrieb MrKraken eine Lizenz zu, die er nie vergeben hat.
+    _dankblock(fenster, innen, 'StarStrings (MrKraken)',
+               t('s_dk_keine_lizenz'),
                t('s_dk_ss'), 'https://starstrings.app')
     _dankblock(fenster, innen, 'SC Deutsch Launcher', t('s_dk_freiwillig'),
                t('s_dk_scdl'), 'https://www.sc-deutsch-launcher.de/')

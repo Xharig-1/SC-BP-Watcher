@@ -6,6 +6,70 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.2.1 - 2026-08-29
+
+### Fixed
+
+- **Other tools are no longer written over.** Three programs mark blueprint
+  contracts in the game, and all three use the same `[BP]` mark: this one,
+  **MrKraken's StarStrings** and the **SC Deutsch Launcher** (watcher and
+  launcher even draw on the same data source, so they write word-identical
+  lists). Until now the watcher did not tell its own marks from anyone else's.
+  All counted against the real 29 Aug 2026 release:
+
+  - **17** of MrKraken's marks were **deleted** when details were written — and
+    because the watcher then remembered the already-trimmed wording as the
+    original, they never came back on reset either.
+  - **297** more ended up **twice**.
+  - **136** item names got their tag twice:
+    `[CS1] Spark-G Missile (CS1)`.
+  - Anyone running the **SC Deutsch Launcher** alongside would have read the
+    blueprint list twice over on **336** contracts, and lost the launcher's
+    state on reset.
+
+  **The new rule is simple: where a mark already stands, no second one is
+  added.** And whatever was there before our first insertion belongs to the
+  player — it is restored on reset, even when another tool put it there.
+
+  With the launcher the watcher goes one step further: its list **replaces** the
+  launcher's instead of sitting next to it. Because it is the same list — only
+  with **tick boxes**, the comparison against your own blueprints. Take the
+  details back out and the launcher's list is there again, character for
+  character.
+
+  If an item name already carries a tag in square brackets, it is left alone.
+
+  **Thanks to MrKraken** for [StarStrings](https://github.com/MrKraken/StarStrings)
+  and to the **SC Deutsch Launcher** team — and sorry for writing over your
+  work. 🙏
+
+- **The watcher reported "details are in the game" where none of its own were.**
+  It recognised the injection by the `[BP]` mark and by the blueprint list
+  heading — both of which the other two tools write as well. Now only what is
+  unique to the watcher counts: the **tick box**.
+
+- **Tick boxes appeared in front of regions and delivery points.** In the game
+  you read `[  ] Stanton System - Danger 4-6/10`, as if a region were something
+  you could own. Cause: the blueprint blocks are structured with headings, and
+  three of them carry lists — `# Blueprints` (4,379 lines), `# Delivery` (323)
+  and `# Region` (239). Every one of them got ticked. Now only what sits under
+  **Blueprints** gets a box; that removes **838** wrong boxes from a finished
+  file. Same in German (`# Baupläne`, `# Abgabe`).
+
+- **Installing a new base clears the original-wording file.** It belonged to the
+  old file and would have written back an outdated state. The same note also
+  protects the fresh file: the watcher has never written into something just
+  installed, so there is nothing of its own to remove there.
+
+### Changed
+
+- **MrKraken is now credited in the readme.** He had long been on the "Thanks &
+  Licences" page in the tool, but was missing from the readme.
+- **The licence stated for StarStrings is corrected.** It said "CC BY-NC-SA
+  4.0". The project states no licence at all — not in the repository, not in its
+  readme. Attributing a licence the author never granted is wrong; it now says
+  "no licence stated".
+
 ## v3.2.0 - 2026-08-29
 
 ### Added
