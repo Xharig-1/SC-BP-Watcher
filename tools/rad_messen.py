@@ -42,7 +42,7 @@ import sys
 # Siehe unsichtbar.py: nie ein Fenster ueber einem laufenden Spiel.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import unsichtbar                                              # noqa: E402
-unsichtbar.sicherstellen()
+unsichtbar.sicherstellen(messend=True)
 
 import tkinter as tk                                           # noqa: E402
 

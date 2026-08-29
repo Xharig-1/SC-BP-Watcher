@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # einem laufenden Spiel auf und reissen den Fokus mit — siehe unsichtbar.py.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import unsichtbar                                              # noqa: E402
-unsichtbar.sicherstellen()
+unsichtbar.sicherstellen(messend=True)
 
 
 os.environ.setdefault('SC_BP_HOME', tempfile.mkdtemp(prefix='randpruefung-'))

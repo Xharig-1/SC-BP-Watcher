@@ -29,10 +29,18 @@ Der Ausweg ist ein unsichtbarer Bildschirm (Xvfb). Sich daran zu erinnern hat
 nicht funktioniert, deshalb erledigt es das Werkzeug jetzt selbst: Hängt ein
 echter Bildschirm dran, startet es sich auf einem unsichtbaren neu.
 
+Auf Windows und am Mac gibt es kein Xvfb. Dort wird stattdessen jedes Fenster
+sofort nach dem Bauen versteckt (`withdraw()`), und die drei Befehle, die ein
+Fenster nach vorn holen, laufen ins Leere. Geprueft wird dabei genauso viel —
+die Widgets stehen, die Groessen stimmen —, nur sehen tut man nichts.
+
 Einbau — ganz oben in der `main()` des Werkzeugs, vor dem ersten Fenster:
 
     import unsichtbar
     unsichtbar.sicherstellen()
+
+Werkzeuge, die Groessen messen, rufen `sicherstellen(messend=True)` auf —
+ein verstecktes Fenster liefert keine Geometrie.
 
 Wer die Fenster ausnahmsweise sehen will, setzt `SC_BP_SICHTBAR=1`.
 """
@@ -64,13 +72,96 @@ def noetig():
     return bool(shutil.which('xvfb-run'))
 
 
-def sicherstellen(breite=1400, hoehe=1000):
-    """Startet den eigenen Lauf auf einem unsichtbaren Bildschirm neu.
+def verstecken():
+    """Notlösung ohne Xvfb (Windows, Mac): Fenster bauen, aber nie zeigen.
 
-    Kehrt nur zurück, wenn nichts zu tun ist — sonst endet der Prozess hier
-    mit dem Rückgabewert des Kindprozesses.
+    Jedes frisch gebaute Fenster verschwindet sofort, und die drei Befehle, mit
+    denen ein Fenster sich nach vorn drängt, werden stillgelegt. Sonst holt ein
+    `deiconify()` mitten in der Prüfung alles doch wieder auf den Bildschirm.
+
+    Layout-Prüfungen stört das nicht: Nach `update_idletasks()` stehen Größen
+    und Positionen auch bei einem versteckten Fenster.
     """
+    try:
+        import tkinter as tk
+    except ImportError:
+        return
+
+    for klasse in (tk.Tk, tk.Toplevel):
+        if getattr(klasse, '_scbp_versteckt', False):
+            continue
+        urspruenglich = klasse.__init__
+
+        def bauen(self, *a, _urspruenglich=urspruenglich, **k):
+            _urspruenglich(self, *a, **k)
+            try:
+                self.withdraw()
+            except Exception:
+                pass
+
+        klasse.__init__ = bauen
+        klasse._scbp_versteckt = True
+
+        # Nach-vorn-Holen stilllegen — genau das reisst den Fokus.
+        for name in ('deiconify', 'lift', 'focus_force'):
+            setattr(klasse, name, lambda self, *a, **k: None)
+
+
+def unsichtbar_machen():
+    """Zweite Notlösung für Werkzeuge, die GRÖSSEN messen (Windows, Mac).
+
+    Ein verstecktes Fenster liefert keine echte Geometrie — `winfo_width()`
+    sagt dort 1. Wer messen will, braucht ein aufgebautes Fenster. Also bleibt
+    es aufgebaut, wird aber völlig durchsichtig gestellt und weit neben jeden
+    Monitor geschoben.
+
+    ⚠ Das ist der schwächere Schutz: Das Fenster existiert wirklich, kann in
+    der Fensterliste auftauchen und theoretisch Fokus ziehen. Deshalb nur dort
+    einsetzen, wo gemessen wird — sonst `verstecken()`.
+    """
+    try:
+        import tkinter as tk
+    except ImportError:
+        return
+
+    for klasse in (tk.Tk, tk.Toplevel):
+        if getattr(klasse, '_scbp_beiseite', False):
+            continue
+        urspruenglich = klasse.__init__
+
+        def bauen(self, *a, _urspruenglich=urspruenglich, **k):
+            _urspruenglich(self, *a, **k)
+            try:
+                self.attributes('-alpha', 0.0)
+                self.geometry('+9000+9000')
+            except Exception:
+                pass
+
+        klasse.__init__ = bauen
+        klasse._scbp_beiseite = True
+        # Nach vorn holen bleibt auch hier verboten.
+        for name in ('lift', 'focus_force'):
+            setattr(klasse, name, lambda self, *a, **k: None)
+
+
+def sicherstellen(breite=1400, hoehe=1000, messend=False):
+    """Sorgt dafür, dass dieser Lauf keine Fenster auf den Bildschirm bringt.
+
+    Linux mit Xvfb: startet sich selbst auf einem unsichtbaren Bildschirm neu —
+    dann endet der Prozess hier mit dem Rückgabewert des Kindprozesses.
+    Sonst (Windows, Mac): versteckt die Fenster und kehrt zurück.
+    """
+    if os.environ.get(SICHTBAR_GEWOLLT):
+        return
+    if os.environ.get(SCHON_UNSICHTBAR):
+        return
+
     if not noetig():
+        # Kein Xvfb zur Hand. Hängt trotzdem ein Bildschirm dran, muss der
+        # zweite Weg greifen — sonst blitzt die Prüfung auf dem Bildschirm auf.
+        if os.environ.get('DISPLAY') or os.environ.get('WAYLAND_DISPLAY') \
+                or sys.platform in ('win32', 'darwin'):
+            unsichtbar_machen() if messend else verstecken()
         return
 
     umgebung = dict(os.environ, **{SCHON_UNSICHTBAR: '1'})
