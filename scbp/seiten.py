@@ -3948,6 +3948,24 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
             else:
                 mengen_setzen()
 
+        # ⚠ **Was beim Zerlegen NICHT zurueckkommt.** Sechs Rohstoffe stehen
+        # auf CIGs Sperrliste (Lindinium, Quantainium, Riccite, Ouratite,
+        # Stileron, Savrilium) — wer daraus baut, bekommt sie nie wieder
+        # heraus. Das aendert die Rechnung und gehoert deshalb ans Rezept,
+        # nicht in eine Fussnote. Steht in denselben Rezeptdaten
+        # (`dismantle.blacklistedResources`), kostet also keinen Abruf.
+        try:
+            _sperre, _wirkung, _dauer = herst_modul.zerlege_sperre()
+        except Exception:
+            _sperre, _wirkung = set(), 0.5
+        _betroffen = [r for _s, r, _m, _g in stufe['zutaten']
+                      if r and lager.norm_rohstoff(r) in
+                      {lager.norm_rohstoff(x) for x in _sperre}]
+        if _betroffen:
+            _fliesstext(block, t('s_he_zerlegen') % (_wirkung * 100,
+                                                     ', '.join(dict.fromkeys(_betroffen))),
+                        fenster.f_klein, fill='x')
+
         _knopf(fenster, reihe, t('s_lg_bauen'), hergestellt).pack(side='left')
         tk.Label(reihe, text=t('s_lg_anzahl'), bg='#0c1017', fg=SUB,
                  font=fenster.f_klein).pack(side='left', padx=(12, 6))
@@ -4109,7 +4127,14 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                 herkunft_lbl = tk.Label(wz, text='', bg='#0c1017', fg=SUB,
                                         font=fenster.f_klein, anchor='e')
                 herkunft_lbl.pack(side='right', padx=12)
-                zeilen_widgets.append((w, faktor_lbl, herkunft_lbl))
+                # ⚠ Zweite Zeile darunter: die Spanne. Ein Faktor allein ist
+                # nicht einzuordnen — „× 0.867" sagt nicht, ob noch viel geht.
+                # Erst „×1.2–0.8" daneben macht klar, dass es schon zwei
+                # Drittel des Wegs sind. scmdb zeigt es aus demselben Grund.
+                spanne_lbl = tk.Label(block, text='', bg='#0c1017', fg=SUB,
+                                      font=fenster.f_klein, anchor='w')
+                spanne_lbl.pack(fill='x', padx=(46, 12))
+                zeilen_widgets.append((w, faktor_lbl, herkunft_lbl, spanne_lbl))
 
             leer_lbl = tk.Label(werte_rahmen, text='', bg='#0c1017', fg=SUB,
                                 font=fenster.f_klein, anchor='w')
@@ -4135,12 +4160,13 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                            for w in herst_modul.werte_mit_lager(
                                eintrag['basis'], stand)}
                 gezeigt = 0
-                for w0, faktor_lbl, herkunft_lbl in zeilen_widgets:
+                for w0, faktor_lbl, herkunft_lbl, spanne_lbl in zeilen_widgets:
                     w = aktuell.get((w0['eigenschaft'], w0['material'],
                                      w0['slot']))
                     if not w:
                         faktor_lbl.configure(text='')
                         herkunft_lbl.configure(text='')
+                        spanne_lbl.configure(text='')
                         continue
                     gezeigt += 1
                     # ⚠⚠ **Die Farbe darf nicht an der Zahl haengen.** Bis
@@ -4164,11 +4190,27 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                                else w['faktor'] <= 1)
                         text_wert = t('s_he_faktor') % w['faktor']
                         farbe = ACCENT if gut else GOLD
+                    # ⚠ Prozent dazu. „× 0.867" muss man im Kopf umrechnen,
+                    # „−13,28 %" nicht — und genau das ist die Zahl, die man
+                    # mit anderem Material vergleicht.
+                    if not w.get('absolut'):
+                        text_wert = '%s   %s' % (
+                            text_wert, t('s_he_prozent') % ((w['faktor'] - 1) * 100))
                     faktor_lbl.configure(text=text_wert, fg=farbe)
                     herkunft = t('s_he_woher') % (w['material'], w['qualitaet'])
                     if not w.get('besser_hoch', True):
                         herkunft = '%s · %s' % (t('s_he_weniger_gut'), herkunft)
                     herkunft_lbl.configure(text=herkunft)
+                    sp = w.get('spanne')
+                    if sp:
+                        q_von, q_bis, f_von, f_bis, basis = sp
+                        spanne_lbl.configure(
+                            text=(t('s_he_spanne')
+                                  % (q_von, q_bis, f_von, f_bis, round(basis))
+                                  if basis is not None else
+                                  t('s_he_spanne_ohne') % (q_von, q_bis, f_von, f_bis)))
+                    else:
+                        spanne_lbl.configure(text='')
                 if not gezeigt:
                     leer_lbl.configure(text=t('s_he_kein_lager'))
                     leer_lbl.pack(fill='x', padx=12)

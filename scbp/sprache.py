@@ -1618,6 +1618,17 @@ TEXTE = {
     # diesen Zusatz liest man „× 0.800" als Verschlechterung, obwohl es
     # der bestmoegliche Wert ist.
     's_he_weniger_gut':  ('weniger ist besser', 'lower is better'),
+    # Prozent neben dem Faktor — die Zahl, die man wirklich liest.
+    's_he_prozent':      ('%+.2f %%', '%+.2f %%'),
+    # Was mit diesem Material ueberhaupt erreichbar waere.
+    's_he_spanne':       ('Q %g–%g · ×%g–%g · Nullpunkt %g',
+                          'Q %g–%g · ×%g–%g · base %g'),
+    's_he_spanne_ohne':  ('Q %g–%g · ×%g–%g', 'Q %g–%g · ×%g–%g'),
+    # Zerlegen: Was NICHT zurueckkommt.
+    's_he_zerlegen':     ('Beim Zerlegen kommt %.0f %% des Materials zurück — '
+                          'aber nicht: %s',
+                          'Dismantling returns %.0f %% of the material — '
+                          'except: %s'),
     # ⚠ Power Pips sind Stueckzahlen, keine Multiplikatoren — „× -1.000"
     # war schlicht falsch. Mit Vorzeichen, damit man sieht, ob es
     # dazukommt oder abgeht.

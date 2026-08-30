@@ -152,7 +152,11 @@ def aktualisieren(build, fortschritt=None):
     if AUS:
         return False, t('m_h_kein_netz')
     da = laden()
-    if da.get('build') == build and da.get('blueprints'):
+    # ⚠ `dismantle` fehlt in Ablagen von vor v3.3.0 — dort wurden beim Sichern
+    # nur die Bauplaene behalten. Fehlt der Abschnitt, wird einmal neu geholt;
+    # danach ist er da und es passiert wieder nichts.
+    if (da.get('build') == build and da.get('blueprints')
+            and da.get('dismantle') is not None):
         return True, t('m_h_aktuell') % len(da['blueprints'])
     if fortschritt:
         fortschritt(t('z_laedt') % ('Herstellung', 4.1))
@@ -160,7 +164,12 @@ def aktualisieren(build, fortschritt=None):
     liste = roh.get('blueprints') or []
     if not liste:
         return False, t('m_h_leer')
-    _sichern({'format': FORMAT, 'build': build, 'blueprints': liste})
+    # ⚠ Nicht nur die Bauplaene sichern. Im selben Abruf steht, welche
+    # Rohstoffe beim Zerlegen NICHT zurueckkommen (`dismantle`) — sechs
+    # Stueck, darunter Lindinium und Quantainium. Das gehoert ans Rezept:
+    # Ein Bauteil daraus ist eine Einbahnstrasse.
+    _sichern({'format': FORMAT, 'build': build, 'blueprints': liste,
+              'dismantle': roh.get('dismantle') or {}})
     return True, t('m_h_geladen') % len(liste)
 
 
@@ -634,6 +643,66 @@ def ist_absolut(modifikatoren):
     return False
 
 
+def spanne_von(modifikatoren):
+    """Was ist mit diesem Material überhaupt erreichbar?
+
+    Gibt `(q_von, q_bis, f_von, f_bis, basis)` — die Qualitätsspanne, die
+    Faktorspanne und die Qualität, bei der sich **nichts** ändert (Faktor 1).
+
+    ⚠ **Ohne diese Angabe ist ein Faktor nicht einzuordnen.** `× 0.867` sagt
+    für sich genommen nichts: Ist das nah am Machbaren oder bleibt noch viel?
+    Erst `× 1.2–0.8` daneben macht klar, dass 0.867 schon gut zwei Drittel des
+    Wegs sind. scmdb zeigt das aus demselben Grund unter jeder Zeile.
+
+    `basis` ist der Nullpunkt — die Qualität, ab der es besser statt schlechter
+    wird. Bei fast allen Rezepten liegt er bei 500.
+    """
+    if not modifikatoren:
+        return None
+    erste = min(modifikatoren, key=lambda m: float(m.get('startQuality', 0)))
+    letzte = max(modifikatoren, key=lambda m: float(m.get('endQuality', 0)))
+    q_von = float(erste.get('startQuality', 0))
+    q_bis = float(letzte.get('endQuality', 0))
+    f_von = float(erste.get('modifierAtStart', 1))
+    f_bis = float(letzte.get('modifierAtEnd', 1))
+
+    # Wo ist der Faktor genau 1? Das Teilstück suchen, das die 1 enthält.
+    basis = None
+    for m in sorted(modifikatoren, key=lambda x: float(x.get('startQuality', 0))):
+        a = float(m.get('modifierAtStart', 1))
+        b = float(m.get('modifierAtEnd', 1))
+        if a == b:
+            continue
+        if min(a, b) <= 1.0 <= max(a, b):
+            s = float(m.get('startQuality', 0))
+            e = float(m.get('endQuality', 0))
+            basis = s + (1.0 - a) / (b - a) * (e - s)
+            break
+    return q_von, q_bis, f_von, f_bis, basis
+
+
+def zerlege_sperre():
+    """Rohstoffe, die beim Zerlegen NICHT zurückkommen.
+
+    Steht in den Rezeptdaten unter `dismantle.blacklistedResources`. Wer ein
+    Stück wieder auseinandernimmt, bekommt die Hälfte des Materials zurück
+    (`efficiency` 0.5) — diese sechs aber gar nicht. Das gehört ans Rezept,
+    denn es ändert die Rechnung: Ein Bauteil aus Lindinium ist eine Einbahn-
+    strasse.
+
+    Gibt `(set(Namen), efficiency, sekunden)`.
+    """
+    try:
+        d = laden().get('dismantle') or {}
+    except Exception:
+        return set(), 0.5, 15
+    namen = {r.get('name') for r in (d.get('blacklistedResources') or [])
+             if r.get('name')}
+    namen |= {r.get('name') for r in (d.get('blacklistedEntityClasses') or [])
+              if r.get('name')}
+    return namen, float(d.get('efficiency', 0.5)), int(d.get('dismantleTimeSeconds', 15))
+
+
 def slots(name_oder_tag):
     """Die Slots eines Bauplans mit Material **und** Qualitätswirkung.
 
@@ -698,7 +767,9 @@ def werte_mit_lager(name_oder_tag, qualitaet_je_material):
                          'besser_hoch': besser_ist_hoch(w['mods']),
                          # ⚠ Und ohne diese steht „× -1.000" da, wo „-1 Pip"
                          # hingehoert. Siehe `ist_absolut`.
-                         'absolut': ist_absolut(w['mods'])})
+                         'absolut': ist_absolut(w['mods']),
+                         # Was waere ueberhaupt erreichbar? Siehe `spanne_von`.
+                         'spanne': spanne_von(w['mods'])})
     return raus
 
 
