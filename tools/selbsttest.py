@@ -4095,6 +4095,54 @@ def main():
     for _x52r in _alle52r[:6]:
         print('       ·', _x52r)
 
+    # 52s. Keine privaten Angaben im Projekt
+    #
+    # ⚠⚠ Nicht nur der Klarname (52r). Auch alles andere, was aus dem
+    # Arbeitsalltag stammt und niemanden etwas angeht: die persoenliche
+    # Wissenssammlung und ihr Programm, Adressen im Heimnetz, Passwort- und
+    # Dokumentenverwaltung, die eigene Spielorganisation, Wohnort, Arbeitgeber.
+    # Am 30.08.2026 stand solches im CHANGELOG, in sechzehn Release-Texten und
+    # als fester Pfad im Quelltext.
+    #
+    # ⚠ Die Begriffe stehen hier zusammengesetzt, damit diese Datei nicht
+    # selbst als Treffer gilt.
+    print()
+    print('52s. Keine privaten Angaben im Projekt')
+    _PRIVAT52s = [
+        'obsid' + 'ian', 'va' + 'ult', 'keep' + 'ass', 'paper' + 'less',
+        'xharig' + 'ds', '192.168.' + '178', 'fritz.' + 'box',
+        'kirch' + 'hain', 'gar' + 'the', 'das kar' + 'tell',
+        'staffel ma' + 'mba', 'pi-' + 'hole',
+    ]
+    # Was im Spiel wirklich so heisst, darf nicht anschlagen.
+    _ERLAUBT52s = ('racing helmet obsid', 'helmetobsid')
+    _funde52s = []
+    for _wurzel52s, _o52s, _namen52s in os.walk(_wurzelpfad):
+        if any(_x in _wurzel52s for _x in ('.git', 'assets', 'build', 'dist',
+                                           'daten')):
+            continue
+        for _n52s in _namen52s:
+            if not _n52s.endswith(('.py', '.md', '.yml')):
+                continue
+            _rel52s = os.path.relpath(os.path.join(_wurzel52s, _n52s), _wurzelpfad)
+            if _rel52s.endswith('selbsttest.py'):
+                continue          # hier stehen die Suchbegriffe selbst
+            with open(os.path.join(_wurzel52s, _n52s), encoding='utf-8') as _fh52s:
+                for _nr52s, _zeile52s in enumerate(_fh52s, 1):
+                    _klein52s = _zeile52s.lower()
+                    if any(_e in _klein52s for _e in _ERLAUBT52s):
+                        continue
+                    for _b52s in _PRIVAT52s:
+                        if _b52s in _klein52s:
+                            _funde52s.append('%s:%d %s'
+                                             % (_rel52s, _nr52s,
+                                                _zeile52s.strip()[:60]))
+                            break
+    pruefe(not _funde52s,
+           'keine privaten Angaben im Projekt (%d Stellen)' % len(_funde52s))
+    for _x52s in _funde52s[:6]:
+        print('       ·', _x52s)
+
     # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
     #
     # Eintragen ohne Berichtigen war halb fertig: Wer sich vertippt oder

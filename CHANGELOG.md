@@ -798,7 +798,7 @@ machines and described faults well enough to find them:
 - **Haldjas** (pr0) — pop-up mode and click-through go back to him; so does the
   way **there and back** for click-through, the installer that failed on the
   running file, and the console windows during updates.
-- **Morkhan** (Das Kartell) — the item details in game, and the find that
+- **Morkhan** — the item details in game, and the find that
   several reward tiers of one contract were overwriting each other in the
   catalogue: **797 blueprints** nobody had ever seen before.
 

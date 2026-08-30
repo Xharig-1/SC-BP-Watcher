@@ -288,7 +288,7 @@ jobs:
       #
       # ⚠ Der Beitrag landet nur im EIGENEN Discord. Ob ihn das Kartell sieht,
       # entscheidet weiterhin ein Klick auf „Veroeffentlichen" — genau diese
-      # Bremse ist gewollt (siehe Vault: „SC BP Watcher — Discord").
+      # Die Bremse ist gewollt (siehe Projektnotizen).
       - name: Im Discord melden
         if: always()
         env:

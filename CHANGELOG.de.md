@@ -910,7 +910,7 @@ Rechnern getestet und Fehler so beschrieben, dass sie zu finden waren:
   gehen auf ihn zurück; ebenso der Weg **hin und zurück** zum Durchreichen, das
   Setup, das an der laufenden Datei abbrach, und die Konsolenfenster beim
   Update.
-- **Morkhan** (Das Kartell) — die Angaben am Gegenstand im Spiel, und der Fund,
+- **Morkhan** — die Angaben am Gegenstand im Spiel, und der Fund,
   dass sich mehrere Preisstufen eines Auftrags im Katalog gegenseitig
   überschrieben: **797 Baupläne** hatte davor nie jemand gesehen.
 

@@ -96,7 +96,7 @@ def fuer_discord(text):
     """Changelog-Markdown so umformen, dass Discord es lesbar darstellt."""
     zeilen = []
     for zeile in text.split('\n'):
-        # Obsidian-Callouts kennt Discord nicht — der Titel bleibt, die
+        # Aufklapp-Hinweise im Markdown kennt Discord nicht — der Titel bleibt, die
         # Auszeichnung wird zu einem Zeichen davor.
         m = re.match(r'>\s*\[!(\w+)\]\s*(.*)', zeile)
         if m:
