@@ -6,7 +6,8 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.3.0 - unveröffentlicht
+## v3.3.0 - 2026-08-30
+
 
 ### Neu
 
@@ -228,6 +229,40 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   da ist. Jetzt erscheint es als ganz normale Zeile, mit Info-Zeichen,
   Abgabeort und Ruf. Im vorliegenden Bestand trifft das bereits auf zwei zu:
   `FBL-8u Undersuit SecondWind` und `Warden Backpack Purgatory Camo`.
+
+- **Der Watcher zeigt jetzt, welche Aufträge gerade laufen** — und behält das
+  über einen Neustart hinweg. Bisher war ein angenommener Auftrag nur eine
+  Zeile im Verlauf; nach einem Neustart des Watchers war sie weg.
+
+  Möglich wird das, weil Star Citizen nicht nur die Annahme ins Log schreibt,
+  sondern auch jedes Ende. In den Protokollen eines einzigen Rechners: 701
+  Annahmen, 303 Abschlüsse, 112 Rücknahmen, 57 Fehlschläge — jeweils mit
+  derselben Missions-Kennung. Der Watcher geht das laufende Log einmal durch
+  und führt Buch: angenommen und danach kein Ende gesehen heisst offen.
+
+  > **Abgeschlossene verschwinden.** Wer an einem Abend zehn Aufträge macht,
+  > soll nicht zehn tote Zeilen ansehen. Abschluss, Abbruch und Fehlschlag
+  > nehmen den Auftrag aus der Anzeige — sofort, auch im laufenden Betrieb.
+
+  Auch **geteilte** Aufträge zählen: Wer in der Gruppe einen Auftrag
+  weitergereicht bekommt, sieht genauso, ob darin Baupläne für ihn stecken.
+
+  Zwei Dinge kann das Log nicht wissen, deshalb stehen sie auch nicht da:
+  Nach einem Neustart des **Spiels** beginnt ein frisches Protokoll — was
+  davor lief, wird nicht behauptet. Und geht ein Auftrag durch einen Fehler im
+  Spiel verloren, meldet das Spiel nichts. Für genau den Fall lässt sich jede
+  Zeile mit einem Klick auf das × selbst ausblenden.
+
+### Geändert
+
+- **Die Daten kommen jetzt vom offiziellen SCMDB-Spiegel.** Krovax hat dafür
+  eigens ein öffentliches Repo eingerichtet
+  ([KrovaxCode/SCMDB_DATA](https://github.com/KrovaxCode/SCMDB_DATA)) — „for
+  programmatic consumers". Das ist stabiler als der Weg über die Webseite, vor
+  der ein Bot-Schutz steht. **scmdb.net bleibt als Rückfall**, falls der Spiegel
+  einmal ausfällt. Danke an Krovax 🙏
+- **„Fortschritt" heißt jetzt „Bauplan-Fortschritt".** Mit den neuen Seiten wäre
+  der alte Name mehrdeutig gewesen.
 
 ### Behoben
 
@@ -714,8 +749,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   > *„egal wo, sollte das Bedienkonzept nicht jedes Mal ändern —
   > die Leute wollen es nutzen und nicht erst lernen, wie sie es nutzen."*
 
-### Behoben
-
 - ⚠ **„Du beobachtest noch nichts", obwohl neun Beobachtungen hinterlegt
   waren.** Die Merkliste führt zwei Sorten: angeklickte Baupläne aus dem
   Katalog — und eigene Beobachtungen mit Suchmustern. Die Ansicht
@@ -818,44 +851,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - **Dein Name im Fehlerbericht.** Auf der Seite „Fehler melden" lässt sich ein
   Name eintragen, der oben im Bericht steht. Damit lassen sich Rückfragen
   zuordnen. **Freiwillig** — leer bleibt leer, und vorausgefüllt wird nie etwas.
-
-### Geändert
-
-- **Die Daten kommen jetzt vom offiziellen SCMDB-Spiegel.** Krovax hat dafür
-  eigens ein öffentliches Repo eingerichtet
-  ([KrovaxCode/SCMDB_DATA](https://github.com/KrovaxCode/SCMDB_DATA)) — „for
-  programmatic consumers". Das ist stabiler als der Weg über die Webseite, vor
-  der ein Bot-Schutz steht. **scmdb.net bleibt als Rückfall**, falls der Spiegel
-  einmal ausfällt. Danke an Krovax 🙏
-- **„Fortschritt" heißt jetzt „Bauplan-Fortschritt".** Mit den neuen Seiten wäre
-  der alte Name mehrdeutig gewesen.
-
-### Neu
-
-- **Der Watcher zeigt jetzt, welche Aufträge gerade laufen** — und behält das
-  über einen Neustart hinweg. Bisher war ein angenommener Auftrag nur eine
-  Zeile im Verlauf; nach einem Neustart des Watchers war sie weg.
-
-  Möglich wird das, weil Star Citizen nicht nur die Annahme ins Log schreibt,
-  sondern auch jedes Ende. In den Protokollen eines einzigen Rechners: 701
-  Annahmen, 303 Abschlüsse, 112 Rücknahmen, 57 Fehlschläge — jeweils mit
-  derselben Missions-Kennung. Der Watcher geht das laufende Log einmal durch
-  und führt Buch: angenommen und danach kein Ende gesehen heisst offen.
-
-  > **Abgeschlossene verschwinden.** Wer an einem Abend zehn Aufträge macht,
-  > soll nicht zehn tote Zeilen ansehen. Abschluss, Abbruch und Fehlschlag
-  > nehmen den Auftrag aus der Anzeige — sofort, auch im laufenden Betrieb.
-
-  Auch **geteilte** Aufträge zählen: Wer in der Gruppe einen Auftrag
-  weitergereicht bekommt, sieht genauso, ob darin Baupläne für ihn stecken.
-
-  Zwei Dinge kann das Log nicht wissen, deshalb stehen sie auch nicht da:
-  Nach einem Neustart des **Spiels** beginnt ein frisches Protokoll — was
-  davor lief, wird nicht behauptet. Und geht ein Auftrag durch einen Fehler im
-  Spiel verloren, meldet das Spiel nichts. Für genau den Fall lässt sich jede
-  Zeile mit einem Klick auf das × selbst ausblenden.
-
-### Behoben
 
 - ⚠ **Bei vielen Wegen zu einem Bauplan ließ sich nicht bis nach unten
   rollen.** Wer die Herkunft aufklappte — beim „Hart Scraper Module" sind es

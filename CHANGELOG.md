@@ -6,7 +6,8 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.3.0 - unreleased
+## v3.3.0 - 2026-08-30
+
 
 ### Added
 
@@ -190,6 +191,40 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   filter only checked clicked names — a match on a search pattern stayed
   invisible, so you watched something and were never told it had arrived. It
   now shows as an ordinary row with its info icon, drop-off and reputation.
+
+- **The watcher now shows which contracts are running** — and keeps them across
+  a restart. Until now an accepted contract was only a line in the log view;
+  restarting the watcher lost it.
+
+  This works because Star Citizen writes not just the acceptance to its log but
+  every ending too. Across the logs of a single machine: 701 acceptances, 303
+  completions, 112 withdrawals, 57 failures — each with the same mission id.
+  The watcher walks the running log once and keeps score: accepted with no
+  ending after it means still open.
+
+  > **Finished ones disappear.** Someone running ten contracts in an evening
+  > should not have to look at ten dead lines. Completion, withdrawal and
+  > failure remove the contract from the display, immediately and while
+  > running.
+
+  **Shared** contracts count as well: if someone in your group passes one to
+  you, you see just as clearly whether it holds blueprints for you.
+
+  Two things the log cannot know, so they are not claimed: restarting the
+  **game** starts a fresh log, and nothing is asserted about what ran before.
+  And if a contract is lost to a bug, the game says nothing — for exactly that
+  case every line can be dismissed with a click on the ×.
+
+### Changed
+
+- **Data now comes from the official SCMDB mirror.** Krovax set up a public
+  repository for exactly this purpose
+  ([KrovaxCode/SCMDB_DATA](https://github.com/KrovaxCode/SCMDB_DATA)) — "for
+  programmatic consumers". That is steadier than going through the website,
+  which sits behind bot protection. **scmdb.net stays as a fallback** should the
+  mirror ever be unavailable. Thanks to Krovax 🙏
+- **"Progress" is now "Blueprint progress".** With the new pages the old name
+  would have been ambiguous.
 
 ### Fixed
 
@@ -615,8 +650,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   > All three pages use the same controls as the blueprint list: the way you
   > operate this tool should not change from page to page.
 
-### Fixed
-
 - ⚠ **"You are not watching anything" while nine watches were stored.** The
   watchlist holds two kinds: blueprints clicked in the catalogue — and your own
   watches with search patterns. The view showed only the first kind while the
@@ -710,44 +743,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   a name that appears at the top of the report, so follow-up questions can be
   matched to you. **Optional** — empty stays empty, and nothing is ever
   pre-filled.
-
-### Changed
-
-- **Data now comes from the official SCMDB mirror.** Krovax set up a public
-  repository for exactly this purpose
-  ([KrovaxCode/SCMDB_DATA](https://github.com/KrovaxCode/SCMDB_DATA)) — "for
-  programmatic consumers". That is steadier than going through the website,
-  which sits behind bot protection. **scmdb.net stays as a fallback** should the
-  mirror ever be unavailable. Thanks to Krovax 🙏
-- **"Progress" is now "Blueprint progress".** With the new pages the old name
-  would have been ambiguous.
-
-### Added
-
-- **The watcher now shows which contracts are running** — and keeps them across
-  a restart. Until now an accepted contract was only a line in the log view;
-  restarting the watcher lost it.
-
-  This works because Star Citizen writes not just the acceptance to its log but
-  every ending too. Across the logs of a single machine: 701 acceptances, 303
-  completions, 112 withdrawals, 57 failures — each with the same mission id.
-  The watcher walks the running log once and keeps score: accepted with no
-  ending after it means still open.
-
-  > **Finished ones disappear.** Someone running ten contracts in an evening
-  > should not have to look at ten dead lines. Completion, withdrawal and
-  > failure remove the contract from the display, immediately and while
-  > running.
-
-  **Shared** contracts count as well: if someone in your group passes one to
-  you, you see just as clearly whether it holds blueprints for you.
-
-  Two things the log cannot know, so they are not claimed: restarting the
-  **game** starts a fresh log, and nothing is asserted about what ran before.
-  And if a contract is lost to a bug, the game says nothing — for exactly that
-  case every line can be dismissed with a click on the ×.
-
-### Fixed
 
 - ⚠ **With many sources for one blueprint you could not scroll to the bottom.**
   Expanding the origins — the "Hart Scraper Module" has twelve — left the lower
