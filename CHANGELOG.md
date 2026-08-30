@@ -71,6 +71,35 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠⚠ **The open dropdown lists could not be scrolled** — turning the wheel left
+  the list where it was and moved the **page behind it** instead. As the field
+  slid away, the list closed. The lower entries were therefore **unreachable**:
+  everything past "microTech" among the 48 mining locations, everything past
+  "Greycat Industrial" among the manufacturers.
+
+  Cause: the mouse wheel is handled in one place for the whole program and finds
+  its scroll area by walking up the parent chain from whatever sits under the
+  pointer. The open list is a window of its own, but its parent is the dropdown
+  field — which sits inside the scrollable page. So the chain walked out of the
+  list and into the page behind it.
+
+  The wheel is now caught at the list window itself and stops there; the page
+  never sees it. Measured: against the old build the page moves by 10.3%, against
+  the new one by 0.0%, and the list scrolls through to the last entry. Scrolling
+  **next to** the list still closes it.
+
+- ⚠ **The open list was too long.** It reached from the field to well below the
+  window edge, and was clipped at the screen edge when the window sat low. Until
+  now it was only limited by available *space* — which is vast on a large display.
+
+  It now shows at most **15 rows**, anything beyond scrolls. That also makes the
+  scrollbar visible, so you can tell there is more. For the 48 mining locations
+  that is 497 pixels instead of 1090.
+
+  On top of that a hard ceiling: a dropdown never grows taller than the
+  **smallest possible** window (760 pixels). Otherwise enlarging the window
+  would produce a list that no longer fits once you shrink it again.
+
 - ⚠ **A completed contract kept showing as "accepted".** Reported on
   2026-08-30 for "Retake Platforms From Nine Tails": accepted in game at 01:18,
   completed at 01:59 — and when the watcher started at 02:22 it announced it as

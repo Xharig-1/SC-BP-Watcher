@@ -1004,6 +1004,14 @@ def rundknopf(eltern, text, tat, schrift, grund, fuellung, rand, fg,
     return c
 
 
+# So viele Zeilen zeigt eine aufgeklappte Auswahlliste hoechstens; alles
+# darueber wird gerollt. Nicht aus Platzgruenden — der Bildschirm hat Platz —,
+# sondern damit die Liste ueberschaubar bleibt und die Rollleiste sichtbar
+# wird. Ohne diese Grenze reichte die Ortsliste im Bergbau (48 Eintraege) vom
+# Auswahlfeld bis weit unter das Fenster.
+MAX_WAHLZEILEN = 15
+
+
 def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
              breite=None):
     """Ein Auswahlfeld im Hausstil — Knopf mit ▾, der eine Liste aufklappt.
@@ -1145,12 +1153,37 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
         #
         # Wird sie dadurch kürzer als ihr Inhalt, bekommt sie unten eine
         # Rollleiste — der Code dafür steht bereits da.
+        # ⚠ Maßstab ist die **kleinstmögliche** Fensterhöhe, nicht die
+        # aktuelle. Wer sein Fenster gross zieht, bekaeme sonst eine Liste, die
+        # nach dem Verkleinern nicht mehr hineinpasst — und beim naechsten
+        # Aufklappen unten abgeschnitten waere. Gefordert am 30.08.2026:
+        # „Auswahlfenster duerfen die minimale Fensterhoehe NIE
+        # ueberschreiten." Also gilt immer `MIN_HOEHE`, auch im Vollbild.
         try:
             fenster_hoch = c.winfo_toplevel().winfo_height()
             if fenster_hoch > 200:
-                sicht = min(sicht, fenster_hoch - 40)
+                sicht = min(sicht, min(fenster_hoch, MIN_HOEHE) - 40)
         except tk.TclError:
             pass
+        # ⚠ **Dritte Grenze, und die entscheidende: eine feste Zeilenzahl.**
+        # Die beiden Grenzen darueber messen den Platz — der ist auf einem
+        # grossen Bildschirm riesig. Bei 48 Orten im Bergbau hing die Liste
+        # daraufhin ueber die ganze Fensterhoehe herunter und weit darueber
+        # hinaus ins Bild, ohne dass man ihr ansah, dass sie rollt (30.08.2026).
+        #
+        # Eine Auswahlliste soll man ueberblicken koennen. Mehr als rund
+        # fuenfzehn Zeilen liest ohnehin niemand am Stueck — der Rest gehoert
+        # gerollt, und dann ist auch die Rollleiste sichtbar und sagt, dass da
+        # noch mehr kommt.
+        if len(eintraege) > MAX_WAHLZEILEN:
+            try:
+                kinder = innen.winfo_children()
+                if kinder:
+                    zeilenhoehe = kinder[0].winfo_reqheight()
+                    if zeilenhoehe > 0:
+                        sicht = min(sicht, zeilenhoehe * MAX_WAHLZEILEN)
+            except tk.TclError:
+                pass
         y = (c.winfo_rooty() - sicht - 2) if nach_oben else unten
 
         leinwand.configure(width=gebraucht_breite - 2, height=sicht)
@@ -1162,7 +1195,63 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
         leinwand.configure(scrollregion=(0, 0, gebraucht_breite,
                                          gebraucht_hoehe))
         leinwand.itemconfigure(fenster_id, width=gebraucht_breite - 2)
-        rad_anschliessen(leinwand)
+
+        # ⚠⚠ **Das Rad muss HIER abgefangen werden, sonst rollt die Seite
+        # dahinter.** `rad_anschliessen` haengt global am Programm (`bind_all`)
+        # und sucht sich die Rollflaeche, indem es vom Element unter dem Zeiger
+        # nach oben durch die Elternkette geht. Die aufgeklappte Liste ist zwar
+        # ein eigenes Fenster, ihr Elternteil ist aber das Auswahlfeld — die
+        # Kette laeuft also aus der Liste heraus und findet die Rollflaeche der
+        # Seite darunter. Ergebnis: Man dreht am Rad, die Liste steht still und
+        # die Seite dahinter wandert. Die unteren Eintraege waren so gar nicht
+        # erreichbar. Am 30.08.2026 gemeldet.
+        #
+        # Eine Bindung am Listenfenster selbst greift fuer alle Zeilen darin
+        # (Tk geht Widget → Klasse → Fenster → „all") und laeuft VOR der
+        # globalen. `return 'break'` beendet die Kette — die Seite dahinter
+        # bekommt das Rad gar nicht erst zu sehen.
+        def rad_in_liste(e):
+            if gebraucht_hoehe > sicht:
+                nummer = getattr(e, 'num', 0)
+                if nummer == 4:
+                    schritte = -1
+                elif nummer == 5:
+                    schritte = 1
+                else:
+                    # Nur die Richtung zaehlt, nie der Betrag: Windows meldet
+                    # ±120, macOS ±1. Eine Division durch 120 ergaebe dort 0.
+                    betrag = float(getattr(e, 'delta', 0) or 0)
+                    if not betrag:
+                        return 'break'
+                    schritte = -1 if betrag > 0 else 1
+                try:
+                    leinwand.yview_scroll(schritte, 'units')
+                except tk.TclError:
+                    pass
+            # Auch wenn nichts zu rollen ist: Das Rad darf nicht durchfallen.
+            return 'break'
+
+        def streich_in_liste(e):
+            """Trackpad — beide Richtungen stecken gepackt in einer Zahl."""
+            roh = int(getattr(e, 'delta', 0) or 0)
+            senkrecht = (roh >> 16) & 0xFFFF
+            if senkrecht >= 0x8000:
+                senkrecht -= 0x10000
+            if senkrecht and gebraucht_hoehe > sicht:
+                try:
+                    leinwand.yview_scroll(1 if senkrecht > 0 else -1, 'units')
+                except tk.TclError:
+                    pass
+            return 'break'
+
+        for ereignis in ('<MouseWheel>', '<Button-4>', '<Button-5>'):
+            fenster.bind(ereignis, rad_in_liste)
+        try:
+            fenster.bind('<TouchpadScroll>', streich_in_liste)
+        except tk.TclError:
+            # Tk 8.6 kennt das Ereignis nicht; dort melden sich Trackpads
+            # ohnehin als Button-4/5.
+            pass
 
         fenster.geometry('%dx%d+%d+%d' % (gebraucht_breite, sicht + 2, x, y))
         fenster.lift()

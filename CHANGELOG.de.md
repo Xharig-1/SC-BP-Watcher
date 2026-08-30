@@ -101,6 +101,36 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠⚠ **Die aufgeklappten Auswahllisten liessen sich nicht rollen** — man drehte
+  am Rad, die Liste blieb stehen und stattdessen wanderte die **Seite dahinter**.
+  Weil das Auswahlfeld dabei wegrutschte, klappte die Liste zu. Die unteren
+  Einträge waren dadurch **überhaupt nicht erreichbar**: im Bergbau ab „microTech"
+  bei den 48 Orten, in der Herstellung ab „Greycat Industrial" bei den Herstellern.
+
+  Ursache: Das Mausrad hängt an einer einzigen Stelle für das ganze Programm und
+  sucht sich die Rollfläche, indem es vom Element unter dem Zeiger die Elternkette
+  hinaufgeht. Die aufgeklappte Liste ist zwar ein eigenes Fenster — ihr Elternteil
+  ist aber das Auswahlfeld, und das steht mitten in der rollbaren Seite. Die Kette
+  lief also aus der Liste heraus in die Seite dahinter.
+
+  Das Rad wird jetzt am Listenfenster selbst abgefangen und dort beendet; die Seite
+  dahinter bekommt es gar nicht mehr zu sehen. Gemessen: gegen den alten Stand
+  wandert die Seite um 10,3 %, gegen den neuen um 0,0 %, und die Liste rollt bis
+  zum letzten Eintrag durch. Rollt man **neben** der Liste, klappt sie weiterhin zu.
+
+- ⚠ **Die aufgeklappte Liste war zu lang.** Sie reichte vom Auswahlfeld bis weit
+  unter den Fensterrand; stand das Fenster tief im Bild, wurde sie am Bildrand
+  abgeschnitten. Begrenzt war sie bis dahin nur nach dem verfügbaren *Platz* — und
+  der ist auf einem grossen Bildschirm riesig.
+
+  Jetzt zeigt sie höchstens **15 Zeilen**, alles darüber wird gerollt. Damit ist
+  auch die Rollleiste sichtbar und sagt, dass noch mehr kommt. Bei den 48 Orten
+  im Bergbau sind das 497 statt 1090 Pixel.
+
+  Und eine harte Obergrenze dazu: Eine Auswahlliste wird nie höher als das
+  **kleinstmögliche** Fenster (760 Pixel). Wer sein Fenster gross zieht, bekäme
+  sonst eine Liste, die nach dem Verkleinern nicht mehr hineinpasst.
+
 - ⚠ **Ein abgeschlossener Auftrag stand weiter als „angenommen" da.** Gemeldet
   am 30.08.2026 an „Retake Platforms From Nine Tails": im Spiel um 01:18
   angenommen, um 01:59 abgeschlossen — und als der Watcher um 02:22 startete,

@@ -4353,6 +4353,201 @@ def main():
     pruefe("zeichen.zeile(row, 'ausblenden'" in _ah58,
            'die Zeile traegt dasselbe festgelegte Zeichen wie die Auftragsleiste')
 
+    # ------------------------------------------------------------------
+    # 59. Eine aufgeklappte Auswahlliste bleibt ueberschaubar
+    #
+    # Am 30.08.2026 gemeldet: Die Ortsliste im Bergbau (48 Eintraege) reichte
+    # vom Auswahlfeld bis weit unter das Fenster ins Bild hinein. Die Hoehe war
+    # bis dahin nur nach dem *Platz* begrenzt — und auf einem grossen Bildschirm
+    # ist der riesig. Jetzt gilt zusaetzlich eine feste Zeilenzahl; alles
+    # darueber wird gerollt, und die Rollleiste zeigt, dass mehr kommt.
+    print()
+    print('59. Aufgeklappte Auswahlliste bleibt ueberschaubar')
+    import tkinter as _tk59
+    from scbp import hauptfenster as _hf59
+
+    pruefe(getattr(_hf59, 'MAX_WAHLZEILEN', 0) >= 8,
+           'es gibt eine Obergrenze fuer die Zeilenzahl (%s)'
+           % getattr(_hf59, 'MAX_WAHLZEILEN', '—'))
+
+    _w59 = _tk59.Tk()
+    try:
+        _w59.geometry('1200x1130+0+0')
+        _w59.update_idletasks()
+        _hoehen59 = {}
+        for _n59 in (5, _hf59.MAX_WAHLZEILEN, 48):
+            _ein59 = ([('', 'Alle Orte')] +
+                      [('o%d' % _i59, 'Ort Nummer %d' % _i59)
+                       for _i59 in range(_n59 - 1)])
+            _f59 = _hf59.rundwahl(_w59, _ein59, '', lambda _v: None,
+                                  ('TkDefaultFont', 10))
+            _f59.pack()
+            _w59.update_idletasks()
+            _f59.event_generate('<Button-1>', x=5, y=5)
+            _w59.update_idletasks()
+            _auf59 = [k for k in _f59.winfo_children()
+                      if isinstance(k, _tk59.Toplevel)]
+            _hoehen59[_n59] = (int(_auf59[0].wm_geometry().split('x')[1].split('+')[0])
+                               if _auf59 else 0)
+            for _tl59 in _auf59:
+                _tl59.destroy()
+            _f59.destroy()
+
+        pruefe(_hoehen59[5] > 0, 'eine kurze Liste klappt auf')
+        pruefe(_hoehen59[48] <= _hoehen59[_hf59.MAX_WAHLZEILEN],
+               'eine lange Liste wird NICHT hoeher als die Obergrenze '
+               '(48 Eintraege: %d px, Grenze: %d px)'
+               % (_hoehen59[48], _hoehen59[_hf59.MAX_WAHLZEILEN]))
+        pruefe(_hoehen59[48] < 1090,
+               'und bleibt deutlich unter der Fensterhoehe (%d px)'
+               % _hoehen59[48])
+        pruefe(_hoehen59[5] < _hoehen59[48],
+               'eine kurze Liste wird trotzdem nicht kuenstlich aufgeblaeht')
+
+        # ⚠ Und die harte Grenze: NIE hoeher als das kleinstmoegliche Fenster.
+        # Sonst passt die Liste nach dem Verkleinern nicht mehr hinein und
+        # waere unten abgeschnitten. Geprueft bei GROSSEM Fenster — genau da
+        # war die alte Rechnung grosszuegig.
+        _w59.geometry('1600x1400')
+        _w59.update_idletasks()
+        _ein59 = [('', 'Alle')] + [('o%d' % _i59, 'Eintrag %d' % _i59)
+                                   for _i59 in range(199)]
+        _f59 = _hf59.rundwahl(_w59, _ein59, '', lambda _v: None,
+                              ('TkDefaultFont', 10))
+        _f59.pack()
+        _w59.update_idletasks()
+        _f59.event_generate('<Button-1>', x=5, y=5)
+        _w59.update_idletasks()
+        _auf59 = [k for k in _f59.winfo_children()
+                  if isinstance(k, _tk59.Toplevel)]
+        _hoch59 = (int(_auf59[0].wm_geometry().split('x')[1].split('+')[0])
+                   if _auf59 else 0)
+        pruefe(0 < _hoch59 <= _hf59.MIN_HOEHE,
+               'auch bei 200 Eintraegen und grossem Fenster nie hoeher als das '
+               'kleinstmoegliche Fenster (%d px, Grenze %d px)'
+               % (_hoch59, _hf59.MIN_HOEHE))
+        for _tl59 in _auf59:
+            _tl59.destroy()
+        _f59.destroy()
+    finally:
+        _w59.destroy()
+
+    # ------------------------------------------------------------------
+    # 60. Das Mausrad rollt die aufgeklappte Liste — nicht die Seite dahinter
+    #
+    # Am 30.08.2026 gemeldet: „das dropdown laesst sich NICHT scrollen … wenn
+    # man so wie jeder user es versucht zu scrollen, scrollt das fenster
+    # dahinter und man kann die abgeschnittenen daten NICHT erreichen."
+    #
+    # Ursache: `rad_anschliessen` haengt global am Programm und sucht die
+    # Rollflaeche, indem es vom Element unter dem Zeiger durch die Elternkette
+    # nach oben geht. Die aufgeklappte Liste ist ein eigenes Fenster, ihr
+    # Elternteil ist aber das Auswahlfeld — und das steht mitten in der
+    # rollbaren Seite. Die Kette lief also aus der Liste heraus in die Seite
+    # dahinter. Die rollte weg, das Feld wanderte mit, die Liste klappte zu.
+    #
+    # ⚠ Der Aufbau hier muss das nachstellen: Das Feld MUSS in der Rollflaeche
+    # stecken. Ein Feld daneben zeigt den Fehler nicht — daran ist die erste
+    # Messung vorbeigelaufen.
+    print()
+    print('60. Mausrad rollt die Klappliste, nicht die Seite dahinter')
+    import tkinter as _tk60
+    from scbp import hauptfenster as _hf60
+
+    _w60 = _tk60.Tk()
+    try:
+        _w60.geometry('1200x1000+0+0')
+        _seite60 = _tk60.Canvas(_w60, height=600)
+        _seite60.pack(fill='both', expand=True)
+        _inhalt60 = _tk60.Frame(_seite60)
+        _seite60.create_window((0, 0), window=_inhalt60, anchor='nw')
+
+        _ein60 = [('', 'Alle')] + [('h%d' % _i60, 'Eintrag %d' % _i60)
+                                   for _i60 in range(47)]
+        _feld60 = _hf60.rundwahl(_inhalt60, _ein60, '', lambda _v: None,
+                                 ('TkDefaultFont', 10))
+        _feld60.pack()
+        for _i60 in range(200):
+            _tk60.Label(_inhalt60, text='Zeile %d' % _i60).pack()
+        _w60.update_idletasks()
+        _seite60.configure(scrollregion=(0, 0, 400, _inhalt60.winfo_reqheight()))
+        _hf60.rad_anschliessen(_seite60)
+
+        _w60.update_idletasks()
+        _feld60.event_generate('<Button-1>', x=5, y=5)
+        _w60.update_idletasks()
+        _auf60 = [k for k in _feld60.winfo_children()
+                  if isinstance(k, _tk60.Toplevel)]
+        pruefe(bool(_auf60), 'die Liste klappt auf')
+
+        if _auf60:
+            _auf60[0].update_idletasks()
+
+            def _rollflaeche60(w):
+                if isinstance(w, _tk60.Canvas) and w.winfo_width() > 20:
+                    return w
+                for _k in w.winfo_children():
+                    _t = _rollflaeche60(_k)
+                    if _t is not None:
+                        return _t
+                return None
+
+            def _etiketten60(w, sammlung):
+                if isinstance(w, _tk60.Label):
+                    sammlung.append(w)
+                for _k in w.winfo_children():
+                    _etiketten60(_k, sammlung)
+                return sammlung
+
+            _liste60 = _rollflaeche60(_auf60[0])
+            _zeilen60 = _etiketten60(_auf60[0], [])
+            _ziel60 = _zeilen60[3]
+
+            def _radeln60(male):
+                for _ in range(male):
+                    _ziel60.event_generate(
+                        '<Button-5>', x=5, y=5,
+                        rootx=_ziel60.winfo_rootx() + 5,
+                        rooty=_ziel60.winfo_rooty() + 5)
+                _w60.update_idletasks()
+
+            _vl60, _vs60 = _liste60.yview(), _seite60.yview()
+            _radeln60(5)
+            _nl60, _ns60 = _liste60.yview(), _seite60.yview()
+
+            pruefe(_nl60[0] > _vl60[0],
+                   'das Rad rollt die Klappliste (%.3f -> %.3f)'
+                   % (_vl60[0], _nl60[0]))
+            pruefe(abs(_ns60[0] - _vs60[0]) < 1e-6,
+                   'und die Seite dahinter bleibt stehen (%.3f -> %.3f)'
+                   % (_vs60[0], _ns60[0]))
+
+            _radeln60(80)
+            pruefe(_liste60.yview()[1] > 0.999,
+                   'der letzte Eintrag ist erreichbar (Ende bei %.3f)'
+                   % _liste60.yview()[1])
+            for _tl60 in _auf60:
+                _tl60.destroy()
+    finally:
+        _w60.destroy()
+
+    # Und: Jedes Auswahlfeld im Programm muss ueber `rundwahl` laufen — nur
+    # dort steckt die Rad-Behandlung. Ein selbstgebautes `OptionMenu` oder eine
+    # `ttk.Combobox` haette den Fehler sofort wieder.
+    _fremde60 = []
+    for _p60 in _versionierte_dateien(WURZEL, ('.py',)):
+        if _p60.endswith('selbsttest.py'):
+            continue
+        _q60 = open(_p60, encoding='utf-8', errors='ignore').read()
+        for _muster60 in ('OptionMenu(', 'Combobox('):
+            if _muster60 in _q60:
+                _fremde60.append('%s: %s' % (os.path.relpath(_p60, WURZEL),
+                                             _muster60))
+    pruefe(not _fremde60,
+           'kein Auswahlfeld am Hausstil vorbei (%d gefunden)' % len(_fremde60))
+    for _x60 in _fremde60[:5]:
+        print('       ·', _x60)
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
