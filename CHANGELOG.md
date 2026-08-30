@@ -10,6 +10,46 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- ⭐⭐ **Scan signature — turning the scanner's number into a name.** The mining
+  scanner in game shows a value and does not say what is behind it. Type it into
+  the mining page and the watcher tells you **which ore** it is and **how many
+  rocks** the deposit holds.
+
+  | Input | Meaning |
+  |---|---|
+  | `8600` | this exact value |
+  | `~8600` | ±10 % tolerance |
+  | `12000-13000` | anything in between |
+
+  > ⚠ Without the tilde **nothing** is rounded. If you are off, you get "no ore
+  > has this signature" rather than a match that sends you to the wrong rock.
+
+  Rarity limits how many rocks a deposit can hold — Quantainium is legendary, so
+  at most two. A deposit of three cannot exist, and the tool does not claim one.
+
+- ⭐ **Which refinery gets you the most** — every ore now lists all twenty
+  refineries with their bonus, best first, plus the spread. And the spread is no
+  rounding error: **Bexalite differs by 18 percentage points** between the best
+  and the worst choice, Quartz by 16, Titanium by 15.
+
+  Stations sharing a profile appear on one line (`CRU-L1 +1 others`). Ores where
+  it makes no difference say so instead of showing ten zero rows.
+
+- **What dismantling will NOT give back.** Six resources are on CIG's blacklist —
+  Lindinium, Quantainium, Riccite, Ouratite, Stileron, Savrilium. Everything else
+  returns at half. If a recipe uses one of them it now says so: a part made from
+  it is a one-way street.
+
+- **Percentage and range on every quality effect.** `× 0.867` has to be converted
+  in your head — `−13.28 %` now stands next to it. And below it, what is
+  achievable at all: `Q 0–1000 · ×1.2–0.8 · base 500`. Without that a factor does
+  not tell you whether there is much left to gain.
+
+- **Star Citizen Fan Content** — the official "Made by the Community" badge from
+  the Fankit is now in the readme, and the full notice per the Fankit Agreement
+  is also **inside the program** under "Thanks & Licenses". People who use a tool
+  rarely read its readme.
+
 - **One quality slider per material instead of one for all.** There used to be
   a single slider giving every ingredient the same quality — a situation you
   practically never have. Each material now has its own, starting at your

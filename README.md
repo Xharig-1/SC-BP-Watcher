@@ -424,9 +424,35 @@ Wishes and bug reports are welcome as an [issue](../../issues) or on [Discord](h
 
 ## Star Citizen Fan Content
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/fankit/MadeByTheCommunity_White.png">
+    <img alt="Star Citizen — Made by the Community" src="docs/fankit/MadeByTheCommunity_Black.png" width="150" height="150">
+  </picture>
+</p>
+
 > This is an unofficial Star Citizen fan site, not affiliated with the Cloud Imperium group of
 > companies. All content on this site not authored by its host or users are property of their
 > respective owners.
+
+SC BP Watcher is an unofficial, non-commercial fan project for the *Star Citizen* community.
+It is **not affiliated with, endorsed, sponsored, or approved by** Cloud Imperium Rights LLC,
+Cloud Imperium Rights Ltd., or Roberts Space Industries.
+
+This project makes use of assets from the official
+[Star Citizen Fankit](https://robertsspaceindustries.com/fankit). Those materials are published
+for fan use and may only be used as explained by the terms of the **Fankit Agreement**, the
+**Fan Style Guide**, and the
+[Roberts Space Industries Terms of Service](https://robertsspaceindustries.com/tos) —
+specifically the section on User Generated Content (UGC).
+
+> **Star Citizen®, Roberts Space Industries® and Cloud Imperium® are registered trademarks of
+> Cloud Imperium Rights LLC.**
+
+All other Star Citizen content, artwork, names, logos and trademarks are the property of their
+respective owners. © 2025 Cloud Imperium Rights LLC and Cloud Imperium Rights Ltd.
+
+Official site: **[robertsspaceindustries.com](https://robertsspaceindustries.com)**
 
 ## License
 

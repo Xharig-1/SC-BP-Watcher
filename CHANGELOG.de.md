@@ -10,6 +10,49 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Neu
 
+- ⭐⭐ **Scan-Signatur — aus der Zahl des Scanners wird ein Name.** Der
+  Bergbau-Scanner im Spiel zeigt einen Wert und verrät nicht, was dahintersteckt.
+  Tipp ihn im Bergbau ein, und der Watcher sagt dir, **welches Erz** es ist und
+  aus **wie vielen Brocken** das Vorkommen besteht.
+
+  | Eingabe | Bedeutung |
+  |---|---|
+  | `8600` | genau dieser Wert |
+  | `~8600` | ±10 % Spielraum |
+  | `12000-13000` | alles dazwischen |
+
+  > ⚠ Ohne die Tilde wird **nichts** gerundet. Wer daneben liegt, bekommt „Kein
+  > Erz hat diese Signatur" statt eines Treffers, der ihn zum falschen Brocken
+  > schickt.
+
+  Die Seltenheit begrenzt dabei, wie viele Brocken es überhaupt sein können —
+  Quantainium ist legendär, also höchstens zwei. Ein Vorkommen mit drei kann es
+  nicht geben, und der Rechner behauptet es auch nicht.
+
+- ⭐ **Welche Raffinerie am meisten herausholt** — unter jedem Erz stehen jetzt
+  alle zwanzig Raffinerien mit ihrem Bonus, beste zuerst, dazu die Spannweite.
+  Und die ist kein Rundungsfehler: Bei **Bexalite liegen 18 Prozentpunkte**
+  zwischen der besten und der schlechtesten Wahl, bei Quartz 16, bei Titanium 15.
+
+  Stationen mit gleichem Profil stehen in einer Zeile (`CRU-L1 +1 weitere`).
+  Erze, bei denen es keinen Unterschied macht, sagen das ausdrücklich, statt
+  zehn Nullzeilen zu zeigen.
+
+- **Was beim Zerlegen NICHT zurückkommt.** Sechs Rohstoffe stehen auf CIGs
+  Sperrliste — Lindinium, Quantainium, Riccite, Ouratite, Stileron, Savrilium.
+  Beim Rest bekommt man die Hälfte wieder. Enthält ein Rezept einen davon, steht
+  es jetzt darunter: Ein Bauteil daraus ist eine Einbahnstraße.
+
+- **Prozent und Spanne bei jeder Qualitätswirkung.** `× 0.867` muss man im Kopf
+  umrechnen — daneben steht jetzt `−13,28 %`. Und darunter, was überhaupt
+  erreichbar wäre: `Q 0–1000 · ×1.2–0.8 · Nullpunkt 500`. Ohne das sagt ein
+  Faktor nicht, ob noch viel geht oder fast nichts mehr.
+
+- **Star Citizen Fan Content** — die offizielle „Made by the Community"-Grafik
+  aus dem Fankit steht jetzt in der Anleitung, und der vollständige Hinweis nach
+  dem Fankit Agreement auch **im Programm** unter „Danke & Lizenzen". Wer ein
+  Werkzeug benutzt, liest die Anleitung meist nie.
+
 - **Ein Qualitäts-Regler je Material statt einem für alle.** Bisher gab es
   einen einzigen Regler, der allen Zutaten dieselbe Qualität gab — eine Lage,
   die man praktisch nie hat. Jetzt hat jedes Material seinen eigenen, und jeder

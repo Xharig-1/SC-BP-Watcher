@@ -4077,7 +4077,16 @@ def main():
         for _nr52r, _zeile52r in enumerate(_text52r.splitlines(), 1):
             # ⚠ „Roberts Space Industries" ist der Hersteller im Spiel und
             # muss stehen bleiben.
+            #
+            # ⚠⚠ **Auch halbiert.** In langen Texten bricht der Name ueber
+            # zwei Quelltextzeilen („… or Roberts Space " + "Industries."),
+            # und dann greift die Ausnahme oben nicht mehr — die Pruefung
+            # meldete einen Klarnamen, wo der Hersteller stand. Am 30.08.2026
+            # passiert. Genau derselbe Fehler hat frueher schon einmal den
+            # Herstellernamen in 174 Commits auseinandergerissen, weil jemand
+            # den Fehlalarm „bereinigt" hat.
             _sauber52r = _zeile52r.replace('Roberts Space Industries', '')
+            _sauber52r = _sauber52r.replace('Roberts Space', '')
             if _NAMEN52r.search(_sauber52r):
                 _treffer52r.append('%s:%d %s' % (_datei52r, _nr52r,
                                                  _zeile52r.strip()[:60]))

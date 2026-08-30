@@ -1040,6 +1040,52 @@ TEXTE = {
                         'Cloud Imperium Games. All trademarks and project names '
                         'belong to their respective owners.'),
 
+    # ⚠ Der Fankit-Hinweis gehoert ins Programm, nicht nur in die README.
+    # Wer das Werkzeug benutzt, liest die README meist nie. Der Wortlaut folgt
+    # dem Fankit Agreement und dem UGC-Abschnitt der RSI-Nutzungsbedingungen.
+    's_dk_fankit':     ('Dieses Werkzeug ist ein inoffizielles, '
+                        'nicht-kommerzielles Fan-Projekt für die '
+                        'Star-Citizen-Gemeinschaft. Es steht in keiner Verbindung '
+                        'zu Cloud Imperium Rights LLC, Cloud Imperium Rights '
+                        # ⚠ Den Herstellernamen NIE ueber einen Zeilenumbruch
+                        # trennen. Die Klarnamen-Pruefung (52r) laesst ihn nur
+                        # als Ganzes durch; halbiert bleibt ein Vorname stehen
+                        # und sie schlaegt Alarm. Am 30.08.2026 passiert.
+                        'Ltd. oder Roberts Space Industries und wird von ihnen '
+                        'weder unterstützt noch gebilligt.\n\n'
+                        'Es verwendet Material aus dem offiziellen Star Citizen '
+                        'Fankit. Dieses Material ist für die Verwendung durch Fans '
+                        'veröffentlicht und darf nur nach den Bedingungen des '
+                        'Fankit Agreement, des Fan Style Guide und der '
+                        'RSI-Nutzungsbedingungen verwendet werden — dort besonders '
+                        'der Abschnitt über nutzergenerierte Inhalte (UGC).\n\n'
+                        'Star Citizen®, Roberts Space Industries® und Cloud '
+                        'Imperium® sind eingetragene Marken der Cloud Imperium '
+                        'Rights LLC. Alle übrigen Star-Citizen-Inhalte, Grafiken, '
+                        'Namen, Logos und Marken gehören ihren jeweiligen '
+                        'Eigentümern. © 2025 Cloud Imperium Rights LLC und '
+                        'Cloud Imperium Rights Ltd.',
+
+                        'This tool is an unofficial, non-commercial fan project for '
+                        'the Star Citizen community. It is not affiliated with, '
+                        'endorsed, sponsored, or approved by Cloud Imperium '
+                        'Rights LLC, Cloud Imperium Rights Ltd., or '
+                        'Roberts Space Industries.\n\n'
+                        'It makes use of assets from the official Star Citizen '
+                        'Fankit. Those materials are published for fan use and may '
+                        'only be used as explained by the terms of the Fankit '
+                        'Agreement, the Fan Style Guide, and the '
+                        'Roberts Space Industries Terms of Service — '
+                        'specifically the section on User Generated Content '
+                        '(UGC).\n\n'
+                        'Star Citizen®, Roberts Space Industries® and Cloud '
+                        'Imperium® are registered trademarks of Cloud Imperium '
+                        'Rights LLC. All other Star Citizen content, artwork, '
+                        'names, logos and trademarks are the property of their '
+                        'respective owners. © 2025 Cloud Imperium Rights LLC and '
+                        'Cloud Imperium Rights Ltd.'),
+    's_dk_fankit_kopf': ('Star Citizen Fan Content', 'Star Citizen Fan Content'),
+
     's_ub_lead':       ('Welche Version läuft, wer sie gebaut hat — und ob du Neues vor allen anderen bekommen willst.',
                           'Which version is running, who built it — and whether you want new things before everyone else.'),
     # ⚠ „Jetzt nachsehen" sagte nicht, wonach. Und „Aktualisieren" waere

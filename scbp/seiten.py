@@ -3115,7 +3115,16 @@ def _danke(fenster, rahmen):
 
     # --- Marken ---
     _fliesstext(innen, t('s_dk_marken'), fenster.f_klein, fill='x',
-                pady=(18, 20))
+                pady=(18, 6))
+
+    # --- Star Citizen Fan Content ---
+    # ⚠ Gehoert ins Programm, nicht nur in die README: Wer ein Werkzeug
+    # benutzt, liest die README meist nie. Der Wortlaut folgt dem Fankit
+    # Agreement und dem UGC-Abschnitt der RSI-Nutzungsbedingungen.
+    tk.Label(innen, text=t('s_dk_fankit_kopf'), bg=BG, fg=FG,
+             font=fenster.f_grund, anchor='w').pack(fill='x', pady=(12, 2))
+    _fliesstext(innen, t('s_dk_fankit'), fenster.f_klein, fill='x',
+                pady=(0, 20))
 
 
 def _ueber(fenster, rahmen):

@@ -468,14 +468,34 @@ Wünsche und Fehlermeldungen gern als [Issue](../../issues) oder im [Discord](ht
 
 ## Star Citizen Fan Content
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/fankit/MadeByTheCommunity_White.png">
+    <img alt="Star Citizen — Made by the Community" src="docs/fankit/MadeByTheCommunity_Black.png" width="150" height="150">
+  </picture>
+</p>
+
 > This is an unofficial Star Citizen fan site, not affiliated with the Cloud Imperium group of
 > companies. All content on this site not authored by its host or users are property of their
 > respective owners.
 
-SC BP Watcher ist ein inoffizielles, nicht-kommerzielles Fan-Projekt für die Star-Citizen-Gemeinschaft.
-Star Citizen®, Roberts Space Industries® und Cloud Imperium® sind eingetragene Marken der
-Cloud Imperium Rights LLC. Alle übrigen Star-Citizen-Inhalte, Grafiken, Namen, Logos und Marken
-gehören ihren jeweiligen Eigentümern. © Cloud Imperium Rights LLC und Cloud Imperium Rights Ltd.
+SC BP Watcher ist ein inoffizielles, nicht-kommerzielles Fan-Projekt für die
+Star-Citizen-Gemeinschaft. Es steht in **keiner Verbindung zu** Cloud Imperium Rights LLC,
+Cloud Imperium Rights Ltd. oder Roberts Space Industries und wird von ihnen weder unterstützt
+noch gebilligt.
+
+Dieses Projekt verwendet Material aus dem offiziellen
+[Star Citizen Fankit](https://robertsspaceindustries.com/fankit). Dieses Material ist für die
+Verwendung durch Fans veröffentlicht und darf nur nach den Bedingungen des
+**Fankit Agreement**, des **Fan Style Guide** und der
+[Roberts Space Industries Terms of Service](https://robertsspaceindustries.com/tos) verwendet
+werden — dort besonders der Abschnitt über nutzergenerierte Inhalte (UGC).
+
+> **Star Citizen®, Roberts Space Industries® und Cloud Imperium® sind eingetragene Marken der
+> Cloud Imperium Rights LLC.**
+
+Alle übrigen Star-Citizen-Inhalte, Grafiken, Namen, Logos und Marken gehören ihren jeweiligen
+Eigentümern. © 2025 Cloud Imperium Rights LLC und Cloud Imperium Rights Ltd.
 
 Offizielle Seite: **[robertsspaceindustries.com](https://robertsspaceindustries.com)**
 
