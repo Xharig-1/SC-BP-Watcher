@@ -126,9 +126,24 @@ def _aus_ini(pfad):
                     continue
                 # Format: schluessel,P=Text mit %s   (das ,P ist optional)
                 wert = zeile.split('=', 1)[1].strip() if '=' in zeile else ''
-                vorne = wert.split('%s', 1)[0].strip()
+                vor, _trenner, nach = wert.partition('%s')
+                # ⚠⚠ **Steht Text HINTER dem Namen, muss die ganze Formulierung
+                # erhalten bleiben.** Bisher wurde nur der Teil davor genommen —
+                # bei „Bauplan erhalten: %s" ist das richtig und bleibt es. Eine
+                # umgestellte Übersetzung wie „%s ist eingetroffen" hätte davor
+                # aber gar nichts stehen: `vorne` wäre leer, die Erkennung fiele
+                # auf die mitgelieferte Tabelle zurück und fände **nichts** —
+                # ohne Fehlermeldung, ohne übersprungene Datei, einfach null
+                # Baupläne. Genau diese stille Art zu scheitern ist die
+                # gefährlichste. (Kniff aus dem Bauplan-Ausleser des
+                # KRT-Basetools, GPL-3.0.)
+                #
+                # Heute formuliert keine Sprache so — der Zweig kostet nichts
+                # und deckt den Tag ab, an dem CIG es tut.
+                if nach.strip().strip(':').strip():
+                    return wert.strip() or None
                 # Ein abschließender Doppelpunkt gehört zum Rahmen, nicht zur Phrase
-                vorne = vorne.rstrip(':').strip()
+                vorne = vor.strip().rstrip(':').strip()
                 return vorne or None
     except OSError:
         return None
@@ -232,11 +247,53 @@ def sammeln():
     return phrasen, herkunft
 
 
+def zerlegen(phrase):
+    """Eine Formulierung in Vor- und Nachtext um den Bauplan-Namen herum.
+
+    `Bauplan erhalten: %s`  →  `('Bauplan erhalten', '')`
+    `%s ist eingetroffen`   →  `('', 'ist eingetroffen')`
+    `Bauplan erhalten`      →  `('Bauplan erhalten', '')`  (bloße Beschriftung)
+    """
+    if '%s' not in phrase:
+        return phrase.strip().rstrip(':').strip(), ''
+    vor, _trenner, nach = phrase.partition('%s')
+    return (vor.strip().rstrip(':').strip(),
+            nach.strip().strip(':').strip())
+
+
 def muster(phrasen=None):
-    """Fertiger regulärer Ausdruck für die Log-Zeilen."""
+    """Fertiger regulärer Ausdruck für die Log-Zeilen.
+
+    ⚠ **Der Ausdruck kann mehrere Klammergruppen haben.** Beschriftungen vor
+    dem Namen teilen sich eine (der Normalfall, unverändert); jede umgestellte
+    Formulierung bekommt eine eigene, weil ihr Muster anders gebaut ist.
+    `logquelle._namen_aus_text` nimmt deshalb die **erste gefüllte** Gruppe und
+    nicht stur Gruppe 1.
+    """
     if phrasen is None:
         phrasen, _ = sammeln()
-    return re.compile(RAHMEN % '|'.join(re.escape(p) for p in phrasen))
+    vorne, hinten = [], []
+    for p in phrasen:
+        v, n = zerlegen(p)
+        if n:
+            hinten.append((v, n))
+        elif v:
+            vorne.append(v)
+    teile = []
+    # Der Normalfall — alle Beschriftungen in EINER Alternative, exakt wie
+    # bisher. Solange nichts Umgestelltes dazukommt, ist der Ausdruck
+    # zeichengleich mit dem von vorher.
+    if vorne:
+        teile.append(RAHMEN % '|'.join(re.escape(v) for v in vorne))
+    for v, n in hinten:
+        kopf = (re.escape(v) + r':?\s*') if v else r'\s*'
+        teile.append(r'Added notification "%s(.+?)\s+%s\s*:\s*"'
+                     % (kopf, re.escape(n)))
+    if not teile:
+        # Nichts zu suchen — ein Ausdruck, der nie trifft, ist besser als einer,
+        # der auf jede Meldung passt.
+        return re.compile(r'(?!)')
+    return re.compile('|'.join(teile))
 
 
 def bestaetigt():

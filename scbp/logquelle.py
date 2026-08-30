@@ -92,7 +92,21 @@ def teile_namen(roh):
 
 
 def _namen_aus_text(text, muster):
-    return [teile_namen(m.group(1)) for m in muster.finditer(text)]
+    """Die Bauplan-Namen aus einem Textabschnitt.
+
+    ⚠ **Die erste gefüllte Gruppe zählt, nicht stur Gruppe 1.** Seit
+    `phrasen.muster()` auch umgestellte Formulierungen erkennt („%s ist
+    eingetroffen"), kann der Ausdruck mehrere Klammergruppen haben — je
+    Alternative eine. `m.group(1)` wäre bei einem Treffer der zweiten
+    Alternative `None`.
+    """
+    raus = []
+    for m in muster.finditer(text):
+        for wert in m.groups():
+            if wert:
+                raus.append(teile_namen(wert))
+                break
+    return raus
 
 
 # ------------------------------------------------------------------ Lesestand

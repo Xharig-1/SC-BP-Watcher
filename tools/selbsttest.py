@@ -4949,6 +4949,72 @@ def main():
         pruefe(bool(_w64) and len(_w64) == 2 and all(_w64),
                'Text %s gibt es deutsch und englisch' % _k64)
 
+    # ------------------------------------------------------------------
+    # 65. Auch eine umgestellte Uebersetzung wird erkannt
+    #
+    # Bis v3.3.0-rc37 wurde aus der `global.ini` nur der Teil VOR dem `%s`
+    # genommen. Bei „Bauplan erhalten: %s" ist das richtig. Bei einer
+    # umgestellten Formulierung — „%s ist eingetroffen" — waere davor nichts,
+    # die Erkennung fiele auf die mitgelieferte Tabelle zurueck und faende
+    # NICHTS: keine Fehlermeldung, keine uebersprungene Datei, einfach null
+    # Bauplaene. Die gefaehrlichste Art zu scheitern.
+    #
+    # ⚠⚠ Das ist der Weg, auf dem JEDER Bauplanfund laeuft. Deshalb prueft (a)
+    # zuerst, dass der heutige Fall zeichengleich geblieben ist.
+    print()
+    print('65. Umgestellte Uebersetzung')
+    import re as _re65
+    from scbp import phrasen as _ph65
+    from scbp import logquelle as _lq65
+
+    # a) ⚠ Der Normalfall MUSS unveraendert sein — Zeichen fuer Zeichen.
+    _liste65 = _ph65.sammeln()[0]
+    _alt65 = _ph65.RAHMEN % '|'.join(_re65.escape(_p) for _p in _liste65)
+    pruefe(_ph65.muster().pattern == _alt65,
+           'ohne umgestellte Formulierung ist der Ausdruck zeichengleich '
+           'mit dem alten')
+
+    # b) Zerlegen in Vor- und Nachtext.
+    for _phrase65, _soll65 in (
+            ('Bauplan erhalten: %s', ('Bauplan erhalten', '')),
+            ('%s ist eingetroffen', ('', 'ist eingetroffen')),
+            ('Bauplan: %s erhalten', ('Bauplan', 'erhalten')),
+            ('Received Blueprint', ('Received Blueprint', ''))):
+        pruefe(_ph65.zerlegen(_phrase65) == _soll65,
+               'zerlegen(%r) -> %r' % (_phrase65, _ph65.zerlegen(_phrase65)))
+
+    # c) Und die Erkennung an echten Zeilenformen.
+    _m65 = _ph65.muster(['Bauplan erhalten', '%s ist eingetroffen',
+                         'Bauplan: %s erhalten'])
+    for _zeile65, _soll65 in (
+            ('Added notification "Bauplan erhalten: Yubarev Pistol: " [3] to queue.',
+             'Yubarev Pistol'),
+            ('Added notification "Attrition-5 Repeater ist eingetroffen: " [1] to queue.',
+             'Attrition-5 Repeater'),
+            ('Added notification "Bauplan: Aves Shrike Helmet erhalten: " [2] to queue.',
+             'Aves Shrike Helmet')):
+        _funde65 = _lq65._namen_aus_text(_zeile65, _m65)
+        pruefe(bool(_funde65) and _funde65[0][0] == _soll65,
+               'erkannt: %s' % (_funde65[0][0] if _funde65 else 'NICHTS'))
+
+    # d) ⚠ Auftrags-Meldungen duerfen NICHT mitgehen — sie haben dieselbe
+    #    Zeilenform und wuerden den Bestand mit Auftragsnamen fluten.
+    for _zeile65 in (
+            'Added notification "Auftrag angenommen: Retake Platforms: " [4] to queue.',
+            'Added notification "Neuer Auftrag: Koerper durchsuchen: " [5] to queue.'):
+        pruefe(not _lq65._namen_aus_text(_zeile65, _m65),
+               'eine Auftrags-Meldung loest nichts aus')
+
+    # e) Die schweizerdeutsche Fassung steht in der Rueckfall-Tabelle.
+    pruefe(any('überchoo' in _p for _p in _ph65.TABELLE.get('de', [])),
+           'die live-CH-Formulierung ist dabei')
+
+    # f) Ohne jede Formulierung darf der Ausdruck NIE treffen — ein Muster,
+    #    das auf alles passt, waere schlimmer als gar keines.
+    pruefe(not _ph65.muster([]).findall(
+               'Added notification "Irgendwas: Irgendwer: " [9] to queue.'),
+           'eine leere Liste ergibt einen Ausdruck, der nie trifft')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
