@@ -193,6 +193,22 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠⚠ **The startup trace in the diagnostic report had become useless.** Instead
+  of the startup steps it showed the same line twelve times, "Liste: zeichnen
+  beginnt" — and that section is the only thing left after a hard crash: its
+  last line says how far the program got.
+
+  Two causes, both fixed:
+
+  | What | Before | Now |
+  |---|---|---|
+  | Splitting startup ↔ usage | anything not starting with "Seite " counted as a startup step | split at the line that ends the startup |
+  | Repetitions | every line on its own | summarised as "(12×)" |
+
+  The old way was a list of prefixes — it broke the moment a new trace entry was
+  added anywhere in the program. The new one cannot: whatever happens after
+  startup is necessarily behind the boundary line.
+
 - ⚠ **No contract at all was recognised in Swiss German.** The `live-CH`
   edition writes "**Uftrag** angenommen", "Uftrag abgschlosse", "Uftrag
   fehlgschlage" — without the "A". Read straight from the source, not guessed.

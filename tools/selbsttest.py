@@ -1733,7 +1733,11 @@ def main():
 
             fe26.spur('Start, Version 3.0.0-test, testos')
             fe26.spur('Tk-Wurzel steht')
-            fe26.spur('Hauptschleife laeuft')
+            # ⚠ Genau die Zeile, an der getrennt wird — nicht eine
+            # nachgetippte Fassung davon. Bis rc42 stand hier
+            # „Hauptschleife laeuft" ohne Umlaut; die Pruefung lief gruen,
+            # obwohl das Programm etwas anderes schreibt.
+            fe26.spur(fe26.SPUR_GRENZE)
             for _ in range(40):
                 fe26.spur('Seite liste: bauen beginnt')
                 fe26.spur('Seite liste: steht')
@@ -5660,6 +5664,68 @@ def main():
     if not _geprueft71:
         print('  [–]    keine Datei mit Quellenangabe gefunden — '
               'Gegenprobe uebersprungen')
+
+    # ------------------------------------------------------------------
+    # 72. Der Startverlauf im Bericht bleibt lesbar
+    #
+    # ⚠ Die Spur ist bei einem harten Absturz das Einzige, was uebrig bleibt —
+    # die letzte Zeile sagt, wie weit der Start kam. Im rc42-Bericht stand
+    # davon **kein einziger Schritt** mehr: zwoelfmal „Liste: zeichnen
+    # beginnt" hatte den ganzen Ausschnitt gefuellt. Zwei Ursachen, beide hier
+    # abgesichert:
+    #
+    #   a) Getrennt wurde per Vorsilbe („Seite ") — jeder neue Spur-Aufruf
+    #      irgendwo im Programm galt damit als Startschritt. Jetzt ist die
+    #      Grenze die Zeile, mit der der Start endet.
+    #   b) Wiederholungen wurden Zeile fuer Zeile gezeigt. Jetzt zaehlt der
+    #      Bericht sie zusammen.
+    print()
+    print('72. Der Startverlauf im Bericht bleibt lesbar')
+    from scbp import fehler as _fh72
+    from scbp import bericht as _br72
+
+    # a) Die Grenze muss die Zeile sein, die das Programm wirklich schreibt.
+    _quelle72 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
+                     encoding='utf-8').read()
+    pruefe("fehler.spur('%s')" % _fh72.SPUR_GRENZE in _quelle72,
+           'die Grenzzeile „%s" wird beim Start auch wirklich geschrieben'
+           % _fh72.SPUR_GRENZE)
+
+    # b) Ein Bedien-Ereignis nach der Grenze darf nicht im Start landen —
+    #    auch dann nicht, wenn es nicht mit „Seite " anfaengt.
+    _echt72 = _fh72.letzte_spur
+    try:
+        _spur72 = ['05:10:00  Start, Version 9.9.9, test',
+                   '05:10:01  Tk-Wurzel steht',
+                   '05:10:02  Overlay wird gebaut',
+                   '05:10:03  Overlay steht',
+                   '05:10:04  ' + _fh72.SPUR_GRENZE]
+        _spur72 += ['05:11:%02d  Liste: zeichnen beginnt' % _i
+                    for _i in range(12)]
+        _spur72 += ['05:12:00  Seite lager: zeigen']
+        _fh72.letzte_spur = lambda: _spur72
+        _start72, _bedien72 = _fh72.spur_geteilt()
+    finally:
+        _fh72.letzte_spur = _echt72
+    pruefe(len(_start72) == 5 and _start72[-1].endswith(_fh72.SPUR_GRENZE),
+           'der Startverlauf endet an der Grenzzeile (%d Zeilen)'
+           % len(_start72))
+    pruefe(not [_z for _z in _start72 if 'Liste: zeichnen' in _z],
+           'Bedienung nach dem Start faellt nicht in den Startverlauf')
+
+    # c) Zwoelf gleiche Zeilen werden zu einer mit Zaehler.
+    _knapp72 = _br72._gedraengt(_bedien72)
+    pruefe(len(_knapp72) == 2,
+           'zwoelf gleiche Zeilen werden zusammengefasst (%d Zeilen uebrig)'
+           % len(_knapp72))
+    pruefe('(12×)' in _knapp72[0],
+           'die Zusammenfassung nennt die Anzahl')
+
+    # d) Und der Ausschnitt, den der Bericht zeigt, enthaelt den Start noch.
+    _sichtbar72 = _br72._gedraengt(_start72)[-12:]
+    pruefe(any('Start, Version' in _z for _z in _sichtbar72)
+           and any(_fh72.SPUR_GRENZE in _z for _z in _sichtbar72),
+           'im sichtbaren Ausschnitt stehen erster und letzter Startschritt')
 
     print()
     if fehler:

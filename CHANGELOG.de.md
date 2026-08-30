@@ -231,6 +231,22 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠⚠ **Der Startverlauf im Diagnose-Bericht war unbrauchbar geworden.** Statt
+  der Startschritte stand dort zwölfmal dieselbe Zeile „Liste: zeichnen
+  beginnt" — und genau dieser Abschnitt ist bei einem harten Absturz das
+  Einzige, was übrig bleibt: Seine letzte Zeile sagt, wie weit das Programm kam.
+
+  Zwei Ursachen, beide behoben:
+
+  | Was | Vorher | Jetzt |
+  |---|---|---|
+  | Trennung Start ↔ Bedienung | alles, was nicht mit „Seite " anfing, galt als Startschritt | getrennt wird an der Zeile, mit der der Start endet |
+  | Wiederholungen | jede Zeile einzeln | zusammengefasst als „(12×)" |
+
+  Der alte Weg war eine Liste von Vorsilben — er brach in dem Moment, als
+  irgendwo im Programm ein neuer Eintrag dazukam. Der neue kann das nicht mehr:
+  Was nach dem Start passiert, steht zwangsläufig hinter der Grenzzeile.
+
 - ⚠ **Auf Schweizerdeutsch wurde kein einziger Auftrag erkannt.** Die
   `live-CH`-Fassung schreibt „**Uftrag** angenommen", „Uftrag abgschlosse",
   „Uftrag fehlgschlage" — ohne „A". Direkt in der Quelle nachgesehen, nicht

@@ -70,6 +70,29 @@ def _sicher(f, standard='—'):
         return standard
 
 
+def _gedraengt(eintraege):
+    """Gleiche Zeilen hintereinander zu einer zusammenfassen.
+
+    ⚠ Wozu: Der Bericht zeigt je Topf nur zwölf Zeilen. Eine Liste, die sich
+    beim Tippen immer wieder neu zeichnet, schreibt in Sekunden zwölf gleiche
+    Zeilen — und der Ausschnitt sagt danach nichts mehr aus. Genau so kam der
+    rc42-Bericht an (30.08.2026): zwölfmal „Liste: zeichnen beginnt".
+
+    Zusammengefasst wird nur, was **direkt hintereinander** gleich ist, und die
+    Uhrzeit der ersten Zeile bleibt stehen — sonst ginge die Reihenfolge oder
+    der Zeitpunkt verloren.
+    """
+    heraus = []
+    for eintrag in eintraege:
+        text = eintrag.split('  ', 1)[-1].strip()
+        if heraus and heraus[-1][1] == text:
+            heraus[-1][2] += 1
+            continue
+        heraus.append([eintrag, text, 1])
+    return [zeile if zahl == 1 else '%s  (%d×)' % (zeile, zahl)
+            for zeile, _text, zahl in heraus]
+
+
 def _spielsprache():
     """Wonach im Log gesucht wird — und woher die Formulierung stammt."""
     from . import phrasen as phrasen_modul
@@ -355,6 +378,9 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
     # genügten, und der komplette Startverlauf war aus dem Bericht verdrängt —
     # ausgerechnet der Teil, für den die Spur gebaut wurde.
     start, seiten = _sicher(fehler.spur_geteilt, ([], []))
+    # ⚠ Erst zusammenfassen, dann die letzten zwölf nehmen — andersherum wäre
+    # der Ausschnitt schon leergeräumt, bevor das Zusammenfassen greift.
+    start = _gedraengt(start)
     if start:
         zeilen.append('')
         zeilen.append(t('b_spur'))
@@ -365,6 +391,7 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
     # unfertige Zeile — es sähe jedes Mal so aus, als wäre genau dort Schluss.
     while seiten and 'Seite diagnose' in seiten[-1]:
         seiten.pop()
+    seiten = _gedraengt(seiten)
     if seiten:
         zeilen.append('')
         zeilen.append(t('b_spur_seiten'))

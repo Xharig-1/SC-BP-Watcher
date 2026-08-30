@@ -146,12 +146,14 @@ def _spur_kuerzen(pfad):
             alle = f.readlines()
         if len(alle) <= SPUR_REST:
             return
-        kopf = []
-        for zeile in alle:
-            if _ist_bedienung(zeile.rstrip()):
-                break
-            kopf.append(zeile)
-        rest = alle[len(kopf):]
+        stelle = _grenz_stelle(alle)
+        if stelle is None:
+            # Der Start ist noch nicht durch und schreibt trotzdem schon
+            # hunderte Zeilen — dann steckt die Ursache am Anfang, nicht am
+            # Ende. Hier ausnahmsweise hinten abschneiden.
+            kopf, rest = alle[:SPUR_REST], []
+        else:
+            kopf, rest = alle[:stelle + 1], alle[stelle + 1:]
         with open(pfad, 'w', encoding='utf-8') as f:
             f.writelines(kopf + rest[-SPUR_REST:])
     except OSError:
@@ -159,14 +161,36 @@ def _spur_kuerzen(pfad):
 
 
 
-# Womit eine Bedien-Zeile anfängt. Alles andere gilt als Startschritt.
-SPUR_BEDIENUNG = 'Seite '
+# Die letzte Zeile des Starts. Alles danach ist Bedienung.
+#
+# ⚠ Warum ein fester Satz und keine Liste von Vorsilben: Bis rc42 galt die
+# umgekehrte Regel — „was mit ‚Seite ‘ anfängt, ist Bedienung, alles andere ist
+# Start". Das hält nur, solange niemand woanders im Programm einen neuen
+# Spur-Aufruf einbaut. Genau das passierte: `Liste: zeichnen beginnt` aus der
+# Bauplan-Liste galt als Startschritt und verdrängte mit zwölf gleichen Zeilen
+# den kompletten Startverlauf aus dem Bericht (rc42, 30.08.2026) — ausgerechnet
+# den Teil, für den die Spur gebaut wurde.
+#
+# Der Start endet an genau **einer** Stelle: wenn die Hauptschleife anläuft.
+# Dort wird getrennt. Ein neuer Spur-Aufruf irgendwo im laufenden Programm kann
+# das nicht mehr kaputtmachen — er steht zwangsläufig danach.
+#
+# ⚠ Wer die Zeile in `sc_bp_watcher.py` umbenennt, muss sie hier mitziehen;
+# Prüfung 72 im Selbsttest schlägt sonst an.
+SPUR_GRENZE = 'Hauptschleife läuft'
 
 
-def _ist_bedienung(zeile):
-    """Gehört die Zeile zur Bedienung (Seitenwechsel) statt zum Start?"""
-    teile = zeile.split('  ', 1)
-    return len(teile) == 2 and teile[1].lstrip().startswith(SPUR_BEDIENUNG)
+def _grenz_stelle(zeilen):
+    """Wo der Start endet — Platz der Grenzzeile, oder `None`.
+
+    `None` heißt: Der Start ist gar nicht durchgelaufen. Dann ist alles
+    Startverlauf, und das ist die richtige Antwort — bei einem Absturz während
+    des Starts gibt es keine Bedienung.
+    """
+    for i, zeile in enumerate(zeilen):
+        if zeile.rstrip().endswith(SPUR_GRENZE):
+            return i
+    return None
 
 
 def letzte_spur():
@@ -186,11 +210,14 @@ def spur_geteilt():
     den kompletten Startverlauf hinaus — und genau der ist der Grund, warum es
     die Spur überhaupt gibt. Im ersten rc74-Bericht (27.08.2026) stand kein
     einziger Startschritt mehr. Beide Teile werden deshalb getrennt gedeckelt.
+
+    Getrennt wird an `SPUR_GRENZE` — siehe die Begründung dort.
     """
-    start, seiten = [], []
-    for zeile in letzte_spur():
-        (seiten if _ist_bedienung(zeile) else start).append(zeile)
-    return start, seiten
+    alle = letzte_spur()
+    stelle = _grenz_stelle(alle)
+    if stelle is None:
+        return alle, []
+    return alle[:stelle + 1], alle[stelle + 1:]
 
 
 ABSTURZ_DATEI = 'absturz.txt'
