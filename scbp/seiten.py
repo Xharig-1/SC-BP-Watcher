@@ -3544,18 +3544,38 @@ def _diagnose(fenster, rahmen):
     reihe = tk.Frame(innen, bg=BG)
     reihe.pack(fill='x', pady=(12, 0))
 
+    def aktueller_bericht():
+        """Genau das, was im Kasten steht — und vorher den Namen übernehmen.
+
+        ⚠⚠ **Nicht die Fassung von vorhin.** Bis v3.3.0 arbeiteten alle vier
+        Knöpfe mit `text`, dem Bericht, der beim **Öffnen der Seite** gebaut
+        wurde. Wer seinen Namen eintippte, sah ihn zwar sofort im Kasten
+        (`melder_uebernehmen` zeichnet ihn neu) — kopiert, gespeichert und
+        gesendet wurde trotzdem die alte Fassung, also „Von: nicht angegeben".
+        Genau so am 30.08.2026 passiert: Der Melder hatte seinen Namen
+        eingetragen, im Bericht stand er nicht, und niemand konnte sich
+        erklären, warum.
+
+        Deshalb kommt der Text jetzt **aus dem Kasten**. Der Satz darunter
+        verspricht „Du siehst vorher genau, was du verschickst" — dann muss
+        auch genau das verschickt werden. Und der Name wird vorher übernommen,
+        falls das Feld noch den Tastaturfokus hat.
+        """
+        melder_uebernehmen()
+        return feld.get('1.0', 'end-1c')
+
     def melden():
-        if bericht.issue_oeffnen(text):
+        if bericht.issue_oeffnen(aktueller_bericht()):
             fenster.sagen(t('s_di_browser_ok'))
         else:
             fenster.sagen(t('s_di_browser_weg'))
 
     def kopieren():
-        if bericht.in_die_ablage(text, fenster.root):
+        if bericht.in_die_ablage(aktueller_bericht(), fenster.root):
             fenster.sagen(t('s_di_kopiert'))
 
     def speichern():
-        ziel_datei = bericht.speichern(text)
+        ziel_datei = bericht.speichern(aktueller_bericht())
         fenster.sagen(t('s_di_gespeichert') % os.path.basename(ziel_datei)
                       if ziel_datei else t('s_di_speich_weg'))
 
@@ -3576,7 +3596,7 @@ def _diagnose(fenster, rahmen):
             return
         fenster.sagen(t('s_di_ab_laeuft'))
         fenster.root.update_idletasks()
-        geklappt, grund = bericht.absenden(text, fenster.version)
+        geklappt, grund = bericht.absenden(aktueller_bericht(), fenster.version)
         fenster.sagen(t('s_di_ab_ok') if geklappt
                       else t('s_di_ab_weg') % grund)
 

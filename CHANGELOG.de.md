@@ -6,6 +6,40 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.3.1 - unveröffentlicht
+
+### Behoben
+
+- ⚠⚠ **Der eingetippte Name kam nicht mit.** Wer im Fehlerbericht seinen Namen
+  einträgt, sieht ihn sofort im Kasten — abgeschickt, kopiert und gespeichert
+  wurde trotzdem die Fassung von vorhin, also „Von: nicht angegeben".
+
+  Der Grund: Die vier Knöpfe arbeiteten mit dem Bericht, der beim **Öffnen der
+  Seite** gebaut wurde; das Nachzeichnen änderte nur die Anzeige. Über dem
+  Kasten steht „Du siehst vorher genau, was du verschickst" — dann muss auch
+  genau das rausgehen. Jetzt kommt der Text aus dem Kasten.
+
+  Gemeldet von **Morkhan (KRT)** 🙏 — *„bei mir stehts drin, aber wenn ichs
+  verschicke wohl nicht."*
+
+- ⚠ **Zwei Zahlen für denselben Bestand.** Der Fehlerbericht meldete 315
+  Baupläne, die Bauplan-Liste zeigte 292 — und beide hatten recht: Der Bericht
+  zählt die gespeicherten Einträge, die Liste geht den Katalog durch und hakt
+  ab, was man davon hat. Ein Bauplan, den der Katalog nicht kennt, fehlt in der
+  zweiten Zahl.
+
+  Der Bericht nennt die Differenz jetzt selbst: „315 Baupläne · 292 davon im
+  Katalog, 23 unbekannt". Damit ist es kein Widerspruch mehr, sondern eine
+  Auskunft — und zwar die interessantere.
+
+  Gemeldet von **Morkhan (KRT)** 🙏
+
+### Dank
+
+**Morkhan (KRT)** hat beide Fehler am Tag der Veröffentlichung gefunden, mit
+Bildschirmfotos und einer Beschreibung, die den Fehler auf Anhieb erklärte.
+Danke dafür 🙏
+
 ## v3.3.0 - 2026-08-30
 
 

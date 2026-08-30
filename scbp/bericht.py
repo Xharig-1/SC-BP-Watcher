@@ -93,6 +93,35 @@ def _gedraengt(eintraege):
             for zeile, _text, zahl in heraus]
 
 
+def _bestandzeile():
+    """Wie viele Baupläne — und wie viele davon die Bauplan-Liste zeigt.
+
+    ⚠⚠ **Warum zwei Zahlen.** Der Bericht zählt die Einträge in `bestand.json`,
+    die Bauplan-Liste geht den **Katalog** durch und hakt ab, was man davon hat.
+    Ein Bauplan, den der Katalog nicht kennt, steht also in der einen Zahl und
+    fehlt in der anderen. Am 30.08.2026 gemeldet: Bericht 315, Liste 292 — und
+    beide Zahlen stimmten. Wer das sieht, hält eine davon für kaputt.
+
+    Deshalb steht die Differenz jetzt im Bericht, statt dass sie jemand suchen
+    muss. Sie ist auch die interessantere Angabe: Sie sagt, wie weit Katalog und
+    eigener Stand auseinanderlaufen.
+    """
+    from . import bestand as bestand_modul
+    from . import katalog as katalog_modul
+    daten = bestand_modul.laden()
+    gesamt = bestand_modul.anzahl(daten)
+    try:
+        bekannt = set(katalog_modul.laden().get('bauplaene') or {})
+    except Exception:
+        bekannt = set()
+    if not bekannt:
+        return t('b_n_bauplaene') % gesamt
+    im_katalog = len(bestand_modul.schluessel(daten) & bekannt)
+    if im_katalog == gesamt:
+        return t('b_n_bauplaene') % gesamt
+    return t('b_n_bp_katalog') % (gesamt, im_katalog, gesamt - im_katalog)
+
+
 def _spielsprache():
     """Wonach im Log gesucht wird — und woher die Formulierung stammt."""
     from . import phrasen as phrasen_modul
@@ -318,8 +347,7 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
         .ini_datei()[0] or t('b_inj_keine')))
     zeilen.append('')
 
-    zeile(t('b_bestand'), _sicher(lambda: t('b_n_bauplaene') % _json_groesse(
-        __import__('scbp.bestand', fromlist=['pfad']).pfad(), 'bauplaene')))
+    zeile(t('b_bestand'), _sicher(_bestandzeile))
     zeile(t('b_merkliste'), _sicher(lambda: t('b_n_eintraege') % _json_groesse(
         __import__('scbp.merkliste', fromlist=['pfad']).pfad(), 'eintraege')))
     # ⚠⚠ **Der gespeicherte Stand, kein Netzabruf.** Hier stand

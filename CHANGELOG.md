@@ -6,6 +6,39 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.3.1 - unreleased
+
+### Fixed
+
+- ⚠⚠ **The name you typed did not come along.** Enter your name in the problem
+  report and you see it in the box right away — but what was sent, copied and
+  saved was still the earlier version, so "From: not given".
+
+  The reason: the four buttons worked with the report built when the **page was
+  opened**; redrawing only changed the display. Above the box it says "You see
+  exactly what you are sending" — then exactly that has to go out. The text now
+  comes from the box.
+
+  Reported by **Morkhan (KRT)** 🙏 — *"it's there for me, but apparently not
+  when I send it."*
+
+- ⚠ **Two numbers for the same inventory.** The problem report said 315
+  blueprints, the blueprint list showed 292 — and both were right: the report
+  counts the stored entries, the list walks the catalogue and ticks off what you
+  have. A blueprint the catalogue does not know is missing from the second
+  number.
+
+  The report now states the difference itself: "315 blueprints · 292 of them in
+  the catalogue, 23 unknown". That turns a contradiction into information — and
+  the more useful kind.
+
+  Reported by **Morkhan (KRT)** 🙏
+
+### Thanks
+
+**Morkhan (KRT)** found both bugs on release day, with screenshots and a
+description that explained the fault straight away. Thank you 🙏
+
 ## v3.3.0 - 2026-08-30
 
 

@@ -1051,7 +1051,7 @@ TEXTE = {
                           '(dreimal vergeblich geladen) · die gestreckten Knöpfe, die '
                           'nur die halbe Breite füllten · und die verwirrenden '
                           'Update-Kanäle, aus denen der Knopf „Jetzt die neueste '
-                          'Version holen" wurde.',
+                          'Version holen" wurde. Am Tag der 3.3.0 fand er zwei weitere: dass der eingetippte Name zwar im Kasten stand, aber nicht mitgeschickt wurde — und dass Bericht und Bauplan-Liste zwei verschiedene Zahlen für denselben Bestand nannten.',
                           'Plus his two finds on 28 Aug: a mission promising '
                           '„12 blueprints" in its title and showing none below '
                           '(a mission has more descriptions in game than the '
@@ -1062,7 +1062,7 @@ TEXTE = {
                           'Also: the update from the info window that never arrived '
                           '(downloaded three times in vain) · the stretched buttons '
                           'that filled only half the width · and the confusing update '
-                          'channels that became the "Get the latest version" button.'),
+                          'channels that became the "Get the latest version" button. On release day of 3.3.0 he found two more: that the name you typed showed in the box but was not sent along - and that the report and the blueprint list gave two different numbers for the same inventory.'),
     's_dk_marken':     ('SC BP Watcher ist ein eigenständiges, inoffizielles '
                         'Zusatzwerkzeug und steht in keiner offiziellen Verbindung '
                         'zum SC Deutsch Launcher oder zu Cloud Imperium Games. Alle '
@@ -1252,6 +1252,12 @@ TEXTE = {
     'b_spielsprache':  ('Spielsprache', 'Game language'),
     'b_bestand':       ('Bestand', 'Inventory'),
     'b_n_bauplaene':   ('%s Baupläne', '%s blueprints'),
+    # ⚠ Zwei Zahlen für dieselbe Sache sind schlimmer als eine fehlende. Der
+    # Bericht zählt die Datei, die Bauplan-Liste den Katalog — wer im Bericht
+    # 315 liest und in der Liste 292 sieht, hält eins von beidem für kaputt
+    # (30.08.2026 gemeldet). Jetzt steht die Differenz daneben, mit Grund.
+    'b_n_bp_katalog':  ('%s Baupläne · %s davon im Katalog, %s unbekannt',
+                        '%s blueprints · %s of them in the catalogue, %s unknown'),
     'b_merkliste':     ('Merkliste', 'Watchlist'),
     'b_n_eintraege':   ('%s Einträge', '%s entries'),
     'b_katalog':       ('Katalogstand', 'Catalogue state'),

@@ -6074,6 +6074,55 @@ def main():
     pruefe('Assistent abgebrochen — weiter mit dem Overlay' in _q76,
            'ein Abbruch mit vorhandener Einrichtung wird ebenfalls vermerkt')
 
+    # ------------------------------------------------------------------
+    # 77. Verschickt wird, was im Kasten steht
+    #
+    # ⚠⚠ Gemeldet am 30.08.2026 von **Morkhan (KRT)**: „bei mir stehts drin,
+    # aber wenn ichs verschicke wohl nicht." Er hatte seinen Namen eingetragen,
+    # der Kasten zeigte ihn — im abgesendeten Bericht stand trotzdem
+    # „nicht angegeben".
+    #
+    # Ursache: Alle vier Knoepfe arbeiteten mit `text`, dem Bericht vom
+    # **Oeffnen der Seite**. Das Nachzeichnen des Kastens aenderte nur die
+    # Anzeige. Der Kasten verspricht „Du siehst vorher genau, was du
+    # verschickst" — dann darf darunter nichts anderes rausgehen.
+    print()
+    print('77. Verschickt wird, was im Kasten steht')
+    import ast as _ast77
+    _q77 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                encoding='utf-8').read()
+    _baum77 = _ast77.parse(_q77)
+    _versand77 = {'issue_oeffnen', 'in_die_ablage', 'speichern', 'absenden'}
+    _falsch77 = []
+    _richtig77 = 0
+    for _k77 in _ast77.walk(_baum77):
+        if not (isinstance(_k77, _ast77.Call)
+                and isinstance(_k77.func, _ast77.Attribute)
+                and _k77.func.attr in _versand77
+                and isinstance(_k77.func.value, _ast77.Name)
+                and _k77.func.value.id == 'bericht'):
+            continue
+        if not _k77.args:
+            continue
+        erst = _k77.args[0]
+        # Erlaubt ist nur der frisch geholte Text aus dem Kasten.
+        ok = (isinstance(erst, _ast77.Call)
+              and isinstance(erst.func, _ast77.Name)
+              and erst.func.id == 'aktueller_bericht')
+        if ok:
+            _richtig77 += 1
+        else:
+            _falsch77.append('%s(...) in Zeile %d' % (_k77.func.attr,
+                                                      _k77.lineno))
+    pruefe(_richtig77 >= 4,
+           'alle vier Knoepfe holen den Text aus dem Kasten (%d gefunden)'
+           % _richtig77)
+    pruefe(not _falsch77,
+           'keiner nimmt eine aeltere Fassung (%s)'
+           % (', '.join(_falsch77) or 'keiner'))
+    pruefe('melder_uebernehmen()' in _q77,
+           'und der eingetippte Name wird vorher uebernommen')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
