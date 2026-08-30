@@ -121,6 +121,31 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠ **Swiss German went unrecognised.** There is a separate variant of the
+  German translation (`live-CH`) that says "**Bauplan überchoo**" instead of
+  "Bauplan erhalten". Without the entry the watcher found **zero blueprints in
+  silence** there — no error, no skipped file, just nothing.
+
+  Only affects the fallback: a readable `global.ini` always wins. For a vanilla
+  English install, whose text file sits inside `Data.p4k`, that list is all
+  there is.
+
+- ⚠ **A reordered translation would have blinded the watcher silently.** Only
+  the part **before** the placeholder was taken from the game's text file. For
+  "Received Blueprint: %s" that is right. Were CIG ever to reorder it — "%s has
+  arrived" — nothing would stand in front, and detection would fall back to the
+  bundled list, which then no longer fits. Again without any hint.
+
+  No language phrases it that way today; the branch costs nothing and covers the
+  day it happens.
+
+  > ⚠ This is the path every blueprint find runs on. The self-test therefore
+  > first proves that without a reordered phrasing the search pattern is
+  > **character-identical** to the old one — measured, not claimed.
+
+  Both findings come from the blueprint reader of the **KRT Basetool**
+  (GPL-3.0), which reads the same `Game.log`. Thanks for that!
+
 - ⚠⚠ **The ingredient list lied for more than one unit.** Typing 10 into the
   quantity box still showed the requirement for a single unit — "1.16 SCU" and
   "missing 1.16" while 11.6 were needed. The deduction was right, only the

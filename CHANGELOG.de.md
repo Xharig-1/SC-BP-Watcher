@@ -154,6 +154,32 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠ **Schweizerdeutsch wurde nicht erkannt.** Es gibt eine eigene Fassung der
+  deutschen Übersetzung (`live-CH`), die „**Bauplan überchoo**" schreibt statt
+  „Bauplan erhalten". Ohne den Eintrag fand der Watcher dort **still null
+  Baupläne** — keine Fehlermeldung, keine übersprungene Datei, einfach nichts.
+
+  Betrifft nur den Rückfall: Eine lesbare `global.ini` gewinnt immer. Für eine
+  englische Werksinstallation, deren Textdatei in der `Data.p4k` steckt, ist
+  diese Liste aber das Einzige, was bleibt.
+
+- ⚠ **Eine umgestellte Übersetzung hätte den Watcher lautlos blind gemacht.**
+  Aus der Textdatei des Spiels wurde bisher nur der Teil **vor** dem Platzhalter
+  genommen. Bei „Bauplan erhalten: %s" stimmt das. Würde CIG je umstellen —
+  „%s ist eingetroffen" —, stünde davor nichts, und die Erkennung fiele auf die
+  mitgelieferte Liste zurück, die dann nicht mehr passt. Wieder ohne jeden
+  Hinweis.
+
+  Heute formuliert keine Sprache so; der Zweig kostet nichts und deckt den Tag
+  ab, an dem es passiert.
+
+  > ⚠ Das ist der Weg, auf dem **jeder** Bauplanfund läuft. Der Selbsttest
+  > sichert deshalb zuerst ab, dass der Suchausdruck ohne umgestellte
+  > Formulierung **zeichengleich** mit dem alten ist — gemessen, nicht behauptet.
+
+  Beide Funde stammen aus dem Bauplan-Ausleser des **KRT-Basetools** (GPL-3.0),
+  der dieselbe `Game.log` liest. Danke dafür!
+
 - ⚠⚠ **Bei mehr als einem Stück log die Zutatenliste.** Wer 10 in das
   Stückzahl-Feld tippte, sah weiter den Bedarf für ein einziges Stück — „1.16
   SCU" und „dir fehlt 1.16", obwohl 11,6 gebraucht wurden. Der Abzug rechnete
