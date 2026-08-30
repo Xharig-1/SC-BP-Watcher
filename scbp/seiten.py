@@ -4851,6 +4851,91 @@ def _berg_ort(fenster, eltern, ort, offen, neu_zeichnen):
 # nicht dem Spiel.
 
 
+def _raffinerie_block(fenster, eltern, lager, ort_var, neu_zeichnen, meldung):
+    """Eine ganze Raffinerie-Ausbeute auf einmal eintragen.
+
+    ⚠⚠ **Warum das nicht automatisch geht.** Der Raffinerie-Auftrag steht
+    **nicht** in der `Game.log` — am 30.08.2026 über 22 Protokolle nachgemessen:
+    `Refinery` kommt dort 58-mal vor, ausschliesslich als Ladezeile für die
+    3D-Modelle des Decks; `Aslarite`, `Agricium` und `cSCU` **kein einziges
+    Mal**. Das Spiel hält diese Aufträge serverseitig.
+
+    Bilderkennung wäre der andere Weg und ist bewusst keiner: Sie bräuchte
+    Zusatzpakete, und dieses Werkzeug kommt mit der Standardbibliothek aus.
+
+    Bleibt: das Abtippen erträglich machen. Sechs Posten sind über das Formular
+    oben **24 Eingaben**; hier sind es sechs Zeilen, so wie sie im Terminal
+    stehen.
+    """
+    from . import herstellung as herst_lager
+    from .hauptfenster import rundrahmen
+
+    ziel = _feld(fenster, eltern, t('s_rf_titel'), t('s_rf_hilfe'), breit=True)
+    einheit = tk.StringVar(value='cscu')
+    zeile = tk.Frame(ziel, bg=BG)
+    zeile.pack(fill='x', pady=(6, 4))
+    tk.Label(zeile, text=t('s_rf_einheit'), bg=BG, fg=SUB,
+             font=fenster.f_klein).pack(side='left', padx=(0, 8))
+    from .hauptfenster import rundwahl
+    # ⚠ Reihenfolge: (eltern, eintraege, gewaehlt, beim_waehlen, schrift).
+    rundwahl(zeile, [('cscu', 'cSCU'), ('scu', 'SCU')], 'cscu',
+             lambda k: (einheit.set(k), pruefen()),
+             fenster.f_klein).pack(side='left')
+
+    kasten = rundrahmen(ziel, '#0c1017', LINIE, radius=8, grundfarbe=BG)
+    kasten.halter.pack(fill='x', pady=(4, 6))
+    feld = tk.Text(kasten, bg='#0c1017', fg=FG, font=('Consolas', 10),
+                   height=7, wrap='none', relief='flat', bd=0,
+                   insertbackground=FG, highlightthickness=0)
+    feld.pack(fill='both', expand=True, padx=12, pady=10)
+
+    vorschau = tk.Label(ziel, text=t('s_rf_nichts'), bg=BG, fg=SUB,
+                        font=fenster.f_klein, anchor='w', justify='left')
+    vorschau.pack(fill='x')
+    knopf_platz = tk.Frame(ziel, bg=BG)
+    knopf_platz.pack(anchor='w', pady=(6, 0))
+    stand = {'posten': []}
+
+    def pruefen(*_):
+        """Beim Tippen mitrechnen — man sieht sofort, was hineinginge."""
+        posten, fehlerhaft = lager.raffinerie_zeilen(
+            feld.get('1.0', 'end-1c'), einheit.get())
+        stand['posten'] = posten
+        teile = []
+        for name, menge, guete in posten[:8]:
+            teile.append('%s %s · Q %d' % (name, _menge_text(menge), guete))
+        if len(posten) > 8:
+            teile.append('…')
+        for roh, grund in fehlerhaft[:4]:
+            teile.append('⚠ %s — %s' % (roh, grund))
+        vorschau.configure(
+            text='\n'.join(teile) if teile else t('s_rf_nichts'),
+            fg=GOLD if fehlerhaft else SUB)
+        for w in knopf_platz.winfo_children():
+            w.destroy()
+        if posten:
+            _knopf(fenster, knopf_platz, t('s_rf_knopf') % len(posten),
+                   uebernehmen, stark=True).pack(side='left')
+
+    def uebernehmen():
+        ziel_ort = herst_lager.lager_name((ort_var.get() or '').strip()) or ''
+        for name, menge, guete in stand['posten']:
+            lager.eintragen(name, menge, guete, ziel_ort)
+        anzahl = len(stand['posten'])
+        feld.delete('1.0', 'end')
+        pruefen()
+        neu_zeichnen()
+        meldung.configure(text=t('s_rf_fertig') % anzahl, fg=ACCENT)
+
+    feld.bind('<KeyRelease>', pruefen)
+    return feld
+
+
+def _menge_text(menge):
+    """Eine Menge kurz und ohne Nullen am Ende — 1,88 statt 1,8800."""
+    return ('%g' % round(menge, 4)).replace('.', ',')
+
+
 def _lager(fenster, rahmen):
     """Das eigene Rohstoff-Lager: eintragen, ansehen, löschen."""
     from . import rohstoffe as lager
@@ -5376,6 +5461,8 @@ def _lager(fenster, rahmen):
     knoepfe_setzen()
     knopf_rahmen.pack(anchor='w', pady=(4, 10))
     meldung.pack(fill='x')
+
+    _raffinerie_block(fenster, innen, lager, ort, zeichnen, meldung)
     # ⚠⚠ **Das Suchfeld wird EINMAL gebaut — nicht in `zeichnen()`.** Dort
     # stand es bis rc28, und `zeichnen()` räumt bei jeder Änderung den ganzen
     # Listenbereich leer: Mit jedem getippten Buchstaben zerstörte sich das

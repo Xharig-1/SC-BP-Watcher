@@ -137,6 +137,31 @@ TEXTE = {
     's_fo_lohnt_leer':  ('Kein Auftrag bringt dir noch einen Bauplan, den du '
                          'nicht hast.',
                          'No contract still holds a blueprint you do not have.'),
+    # Raffinerie-Ausbeute in einem Rutsch eintragen
+    's_rf_titel':      ('Raffinerie-Ausbeute eintragen',
+                        'Enter refinery yield'),
+    's_rf_hilfe':      ('Tipp die Zeilen so ab, wie sie im Terminal stehen — '
+                        'Material, Qualität, Menge. Eine Zeile je Posten, der '
+                        'Lagerort gilt für alle.',
+                        'Type the rows as they appear in the terminal — '
+                        'material, quality, amount. One line per entry, the '
+                        'storage location applies to all.'),
+    's_rf_beispiel':   ('Titanium 295 188', 'Titanium 295 188'),
+    's_rf_einheit':    ('Menge in', 'Amount in'),
+    's_rf_knopf':      ('%d Posten eintragen', 'Add %d entries'),
+    's_rf_nichts':     ('Noch nichts eingetippt.', 'Nothing typed yet.'),
+    's_rf_zu_kurz':    ('Zu wenig Angaben — es braucht Material, Qualität und '
+                        'Menge.',
+                        'Too few values — material, quality and amount needed.'),
+    's_rf_keine_zahl': ('Qualität und Menge müssen Zahlen sein.',
+                        'Quality and amount have to be numbers.'),
+    's_rf_unbekannt':  ('„%s" gibt es nicht als Rohstoff.',
+                        '"%s" is not a resource.'),
+    's_rf_qualitaet':  ('Qualität geht nur von 0 bis 1000.',
+                        'Quality only goes from 0 to 1000.'),
+    's_rf_menge':      ('Die Menge muss größer als null sein.',
+                        'The amount has to be greater than zero.'),
+    's_rf_fertig':     ('%d Posten eingetragen.', '%d entries added.'),
     'ff_alle_patches':   ('alle Patches', 'all patches'),
     'neu_leer':          ('Mit dem letzten Patch kam kein neuer Bauplan dazu. '
                           'Sobald CIG welche nachreicht, stehen sie hier.',

@@ -31,6 +31,31 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   as a connection line to CIG's service. So it says "closes at", not "you have
   4,200 left".
 
+- ⭐ **Enter a whole refinery yield at once.** Under "My stock" there is now a
+  field where you type the rows exactly as they appear in game:
+
+  ```
+  Titanium 295 188
+  Aslarite 287 8
+  Heart of the Woods 500 12
+  ```
+
+  As you type, the tool works out what would go in; broken lines are listed
+  individually with the reason. One button, all entries added — the storage
+  location applies to all. Six entries used to be **24 inputs** through the form
+  above; now they are six lines.
+
+  **Unit switchable: cSCU or SCU.** The refinery terminal counts in cSCU
+  ("GEWONNENE MATERIALIEN (cSCU)"), the inventory tooltip in SCU (`0.889 SCU`).
+  Both screens can be typed off this way. Cross-checked: 272 cSCU from the
+  terminal are the same 2.728 SCU as the seven stacks in the inventory.
+
+  ⚠ **Automatic is not possible, and that is measured, not assumed.** The
+  refinery job is **not** in the `Game.log` — checked across 22 logs:
+  `Refinery` appears 58 times, only as a load line for the deck's 3D models;
+  `Aslarite`, `Agricium` and `cSCU` **not once**. Image recognition would need
+  extra packages and is therefore out.
+
 - ⭐ **"What pays off most?" — the next sensible step, below your progress.**
   The percentage tells you where you stand, not what moves you forward. Below it
   are now the ten contracts you are still missing the most blueprints from —

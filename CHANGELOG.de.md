@@ -31,6 +31,32 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   dort taucht der Ruf ausschließlich als Verbindungszeile zu CIGs Dienst auf.
   Deshalb heißt es „ab wann zu" und nicht „dir bleiben noch 4.200".
 
+- ⭐ **Raffinerie-Ausbeute in einem Rutsch eintragen.** Unter „Mein Lager" gibt
+  es jetzt ein Feld, in das du die Zeilen so abtippst, wie sie im Spiel stehen:
+
+  ```
+  Titanium 295 188
+  Aslarite 287 8
+  Heart of the Woods 500 12
+  ```
+
+  Beim Tippen rechnet das Werkzeug mit und zeigt, was hineinginge; kaputte
+  Zeilen stehen einzeln mit Grund daneben. Ein Knopf, alle Posten drin — der
+  Lagerort gilt für alle. Sechs Posten waren über das Formular darüber **24
+  Eingaben**, jetzt sind es sechs Zeilen.
+
+  **Einheit umschaltbar: cSCU oder SCU.** Das Raffinerie-Terminal rechnet in
+  cSCU („GEWONNENE MATERIALIEN (cSCU)"), die Gegenstands-Anzeige im Lager in
+  SCU (`0.889 SCU`). Beide Bildschirme lassen sich so abtippen. Gegengerechnet:
+  272 cSCU aus dem Terminal sind dieselben 2,728 SCU wie die sieben Stapel im
+  Inventar.
+
+  ⚠ **Automatisch geht es nicht, und das ist gemessen, nicht vermutet.** Der
+  Raffinerie-Auftrag steht **nicht** in der `Game.log` — über 22 Protokolle
+  nachgesehen: `Refinery` kommt 58-mal vor, ausschließlich als Ladezeile für
+  die 3D-Modelle des Decks; `Aslarite`, `Agricium` und `cSCU` **kein einziges
+  Mal**. Bilderkennung bräuchte Zusatzpakete und fällt damit aus.
+
 - ⭐ **„Was bringt am meisten?" — der nächste sinnvolle Schritt, unter dem
   Fortschritt.** Die Prozentzahl sagt, wo du stehst, aber nicht, was dich
   weiterbringt. Jetzt stehen darunter die zehn Aufträge, aus denen dir noch die

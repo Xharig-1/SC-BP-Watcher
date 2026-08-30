@@ -328,6 +328,65 @@ _RECHNUNG = re.compile(r'^\s*([\d.,]+)\s*([+-])\s*([\d.,]+)\s*$')
 _BUCHUNG = re.compile(r'^\s*([+\-−])\s*([\d.,]+)\s*$')
 
 
+# Wie viele SCU ein cSCU ist. Das Raffinerie-Terminal im Spiel rechnet in
+# **cSCU** (Hundertstel-SCU) — das Lager in SCU.
+CSCU = 0.01
+
+
+def raffinerie_zeilen(text, einheit='cscu'):
+    """Die Ausbeute eines Raffinerie-Auftrags aus getipptem Text lesen.
+
+    Erwartet je Zeile `Material Qualität Menge`, so wie es im Terminal steht:
+
+        Titanium 295 188
+        Heart of the Woods 500 12
+
+    Gibt `(posten, fehler)` zurück — `posten` als Liste
+    `(material, menge_scu, qualitaet)`, `fehler` als Liste `(zeile, grund)`.
+
+    ⚠⚠ **Die Zahlen von hinten lesen, nicht von vorn.** Fünf der 52
+    einlagerbaren Namen haben Leerzeichen (`Heart of the Woods`,
+    `Pressurized Ice`, …). Wer am ersten Leerzeichen trennt, verliert sie alle.
+    Die letzten beiden Felder sind Qualität und Menge, davor steht der Name —
+    egal wie viele Wörter er hat.
+
+    ⚠ **cSCU ist die Voreinstellung**, weil das Terminal so rechnet
+    („GEWONNENE MATERIALIEN (cSCU)"). Bei der falschen Annahme steht im Lager
+    alles um den Faktor 100 daneben, und die Herstellung rechnet mit Unsinn.
+    """
+    from . import herstellung
+    from .sprache import t
+    posten, fehler = [], []
+    faktor = CSCU if einheit == 'cscu' else 1.0
+    for roh in (text or '').splitlines():
+        zeile = roh.strip()
+        if not zeile:
+            continue
+        teile = zeile.replace('\t', ' ').split()
+        if len(teile) < 3:
+            fehler.append((zeile, t('s_rf_zu_kurz')))
+            continue
+        name = ' '.join(teile[:-2])
+        try:
+            guete = int(float(teile[-2].replace(',', '.')))
+            wert = float(teile[-1].replace(',', '.'))
+        except ValueError:
+            fehler.append((zeile, t('s_rf_keine_zahl')))
+            continue
+        echter = herstellung.lager_name(name)
+        if not echter:
+            fehler.append((zeile, t('s_rf_unbekannt') % name))
+            continue
+        if not 0 <= guete <= 1000:
+            fehler.append((zeile, t('s_rf_qualitaet')))
+            continue
+        if wert <= 0:
+            fehler.append((zeile, t('s_rf_menge')))
+            continue
+        posten.append((echter, round(wert * faktor, 4), guete))
+    return posten, fehler
+
+
 def rechnen(text, vorher=0.0):
     """Was im Mengenfeld steht — als Zahl.
 

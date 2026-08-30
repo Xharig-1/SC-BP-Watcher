@@ -6460,6 +6460,65 @@ def main():
     pruefe('_lohnende_auftraege(fenster, innen, katalog, habe)' in _q82b,
            'die Fortschritt-Seite zeigt es an')
 
+    # ------------------------------------------------------------------
+    # 83. Raffinerie-Ausbeute abtippen
+    #
+    # ⚠ Der Raffinerie-Auftrag steht **nicht** in der `Game.log` — am
+    # 30.08.2026 ueber 22 Protokolle nachgemessen: `Refinery` kommt 58-mal vor,
+    # ausschliesslich als Ladezeile fuer die 3D-Modelle des Decks; `Aslarite`,
+    # `Agricium` und `cSCU` **kein einziges Mal**. Automatisch geht also nichts,
+    # und Bilderkennung braeuchte Zusatzpakete. Bleibt: das Abtippen ertraeglich
+    # machen.
+    #
+    # ⚠⚠ Zwei Fallen, die hier abgesichert werden:
+    #   a) **Die Zahlen von hinten lesen.** Fuenf der 52 einlagerbaren Namen
+    #      haben Leerzeichen (`Heart of the Woods`). Wer am ersten Leerzeichen
+    #      trennt, verliert sie alle.
+    #   b) **cSCU ist die Voreinstellung.** Das Terminal rechnet so. Bei der
+    #      falschen Annahme steht alles um den Faktor 100 daneben.
+    print()
+    print('83. Raffinerie-Ausbeute abtippen')
+    from scbp import rohstoffe as _ro83
+    from scbp import herstellung as _he83
+    from scbp import bergbau as _bg83
+
+    # ⚠ Die Liste der einlagerbaren Namen kommt aus Rezept- und Bergbaudaten —
+    # beides Zwischenspeicher, die es im Wegwerf-Ordner nicht gibt. Ohne eigene
+    # Daten waere hier jeder Name „unbekannt" und die Pruefung gruen, ohne
+    # etwas geprueft zu haben. (Dieselbe Falle wie bei Pruefung 67 und 76.)
+    _echt83 = _he83.einlagerbar
+    _he83.einlagerbar = lambda: ['Titanium', 'Iron', 'Heart of the Woods']
+    try:
+
+        _text83 = ('Titanium 295 188\n'
+                   'Heart of the Woods 500 12\n'
+                   '\n'
+                   'Quatsch 100 5\n'
+                   'Iron 1200 3\n'
+                   'Iron 500\n'
+                   'Iron 500 0')
+        _posten83, _fehl83 = _ro83.raffinerie_zeilen(_text83)
+        pruefe(len(_posten83) == 2,
+               'die gueltigen Zeilen kommen durch (%d)' % len(_posten83))
+        pruefe(('Heart of the Woods', 0.12, 500) in _posten83,
+               'ein Name mit Leerzeichen bleibt heil (%s)' % (_posten83,))
+        pruefe(('Titanium', 1.88, 295) in _posten83,
+               'cSCU wird in SCU umgerechnet (188 -> 1.88)')
+        pruefe(len(_fehl83) == 4,
+               'jede kaputte Zeile wird einzeln gemeldet (%d)' % len(_fehl83))
+
+        _scu83, _ = _ro83.raffinerie_zeilen('Titanium 295 188', 'scu')
+        pruefe(_scu83 == [('Titanium', 188.0, 295)],
+               'in SCU bleibt die Zahl, wie sie ist (%s)' % (_scu83,))
+
+    finally:
+        _he83.einlagerbar = _echt83
+
+    _q83 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                encoding='utf-8').read()
+    pruefe('_raffinerie_block(fenster, innen, lager, ort, zeichnen, meldung)'
+           in _q83, 'die Lager-Seite bietet die Maske an')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
