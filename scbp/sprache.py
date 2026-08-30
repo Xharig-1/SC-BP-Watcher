@@ -1621,10 +1621,26 @@ TEXTE = {
     's_lg_geaendert':    ('Geändert: %s · %g SCU', 'Changed: %s · %g SCU'),
     # Auf- und Abbuchen statt Kopfrechnen: Wer zwei SCU abgibt, soll „-2"
     # tippen koennen und nicht erst ausrechnen muessen, was uebrig bleibt.
-    's_lg_rechnen':      ('Menge überschreiben — oder +5 bzw. -2 tippen, dann '
-                          'wird auf- oder abgebucht.',
-                          'Overwrite the amount — or type +5 or -2 to add or '
-                          'subtract.'),
+    # ⚠⚠ Der alte Satz lautete „Menge überschreiben — oder +5 bzw. -2
+    # tippen, dann wird auf- oder abgebucht." Er beschrieb eine Mechanik,
+    # statt zu zeigen, was zu tun ist: „auf- und abbuchen" ist Buchhalter-
+    # sprache, und WO die Zeichen hingehoeren stand nirgends. Am 30.08.2026
+    # gemeldet: „wie genau es geht kapier ich nicht, steht da auch nicht"
+    # und „didaktisch schon grausam".
+    #
+    # Jetzt: eine Handlung je Zeile, mit Beispiel. Die eigentliche
+    # Erklaerung ist ohnehin die Vorschau neben dem Feld — sie zeigt beim
+    # Tippen, was herauskommt.
+    's_lg_rechnen':      ('Neue Menge eintippen — oder anhängen: '
+                          '»+3« legt 3 dazu, »-3« nimmt 3 weg.',
+                          'Type the new amount — or append: '
+                          '»+3« adds 3, »-3« removes 3.'),
+    # Die Vorschau neben dem Mengenfeld.
+    's_lg_ergibt':       ('ergibt %g SCU', 'makes %g SCU'),
+    's_lg_ergibt_null':  ('ergibt 0 — der Posten wird gelöscht',
+                          'makes 0 — the entry will be removed'),
+    's_lg_ergibt_minus': ('mehr als vorhanden (%g SCU)',
+                          'more than you have (%g SCU)'),
     's_lg_zu_wenig':     ('So viel ist nicht da. Vorhanden: %g SCU',
                           'You do not have that much. Available: %g SCU'),
     's_lg_alles_weg':    ('%s ist aufgebraucht — der Posten ist weg.',
@@ -1666,7 +1682,20 @@ TEXTE = {
     's_he_weniger_gut':  ('weniger ist besser', 'lower is better'),
     # ⚠ „kaufen oder abbauen?" — die Frage, die nach „dir fehlt X" kommt.
     # Ein Kaufpreis von 0 heisst NICHT kaufbar, nicht kostenlos.
-    's_he_kaufen':       ('kaufen: %s aUEC', 'buy: %s aUEC'),
+    # ⚠ Die Qualitaet gehoert an den Preis. Ohne sie liest sich „kaufen"
+    # wie ein gleichwertiger Weg — ist es nicht: Q 500 ist der Nullpunkt,
+    # der Faktor also exakt 1,000 auf alles.
+    's_he_kaufen':       ('kaufen: %s aUEC · Q %d',
+                          'buy: %s aUEC · Q %d'),
+    's_he_kauf_q':       ('Am Terminal gekaufte Ware hat immer Qualität %d '
+                          '— den Nullpunkt. Ein daraus gebauter Gegenstand '
+                          'bekommt auf jede Eigenschaft genau ×1,000. '
+                          'Besser wird er ausschließlich mit selbst '
+                          'abgebautem Erz darüber.',
+                          'Goods bought at a terminal are always quality %d '
+                          '— the base point. An item made from them gets '
+                          'exactly ×1.000 on every property. It only gets '
+                          'better with self-mined ore above that.'),
     's_he_nur_abbau':    ('nicht kaufbar — nur abbaubar',
                           'cannot be bought — mining only'),
     # Raffinerien — die Frage nach „wo baue ich das ab?" ist „und wohin

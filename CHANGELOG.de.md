@@ -24,6 +24,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   > ⚠ „Nicht kaufbar" wird auch so geschrieben — nie als „0 aUEC". Sonst sucht
   > jemand am Terminal nach einem Schnäppchen, das es nie gab.
 
+  > ⭐ **Am Terminal gekaufte Ware hat immer Qualität 500** — den Nullpunkt.
+  > Ein daraus gebauter Gegenstand bekommt auf **jede** Eigenschaft genau
+  > ×1,000. Besser wird er ausschließlich mit selbst abgebautem Erz darüber.
+  > Deshalb steht die Qualität jetzt am Preis: Ohne sie liest sich „kaufen"
+  > wie ein gleichwertiger Weg, der bloß Geld statt Zeit kostet — und das ist
+  > er nicht.
+  >
+  > Gemessen über alle Rezepte des Spielstands 4.10.0: Bei **5.025 von 5.219**
+  > Qualitätswirkungen liegt der Nullpunkt exakt bei Q 500.
+
+
   Die Preise kommen von der [UEX Corp](https://uexcorp.space)-Schnittstelle,
   **höchstens einmal am Tag** und im Hintergrund. ⚠ Sie werden **nicht
   mitgeliefert** — dieselbe Regel wie bei scmdb. Ohne Netz bleibt der letzte
@@ -177,6 +188,28 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   `FBL-8u Undersuit SecondWind` und `Warden Backpack Purgatory Camo`.
 
 ### Behoben
+
+- ⚠⚠ **Im Lager ließ sich die Menge nicht so ändern, wie man es tut.** Beim
+  Bearbeiten steht die aktuelle Menge schon im Feld — wer drei dazulegen will,
+  hängt hinten `+3` an und hat `1.04+3` dastehen. Genau das wurde abgelehnt
+  („Trag eine Menge ein, zum Beispiel 12,5"), weil nur ein **führendes**
+  Vorzeichen zählte.
+
+  Jetzt geht **beides**, und beides ergibt dasselbe: `+3` und `1.04+3` machen
+  aus 1,04 gleichermaßen 4,04. Niemand muss wissen, welche Form gemeint ist.
+
+- ⚠ **Der Hinweis dazu war eine Zumutung.** „Menge überschreiben — oder +5 bzw.
+  -2 tippen, dann wird auf- oder abgebucht" beschrieb eine Mechanik in
+  Buchhaltersprache, ohne zu sagen, wohin die Zeichen gehören.
+
+  Die eigentliche Erklärung ist jetzt keine: **Neben dem Feld steht beim Tippen,
+  was herauskommt** — „ergibt 4,04 SCU", „ergibt 0 — der Posten wird gelöscht",
+  „mehr als vorhanden (1,04 SCU)". Der Hinweistext ist auf eine Zeile mit
+  Beispiel geschrumpft.
+
+- ⚠ **Der Namensvorschlag stand 557 Pixel unter dem Eingabefeld** — unten bei
+  den Knöpfen, während man oben tippt. Ein Vorschlag, den man suchen muss, ist
+  keiner. Er steht jetzt direkt neben dem Feld (15 Pixel), beides gemessen.
 
 - ⚠⚠ **Der ganze Qualitäts-Block war verschwunden** — Regler, Wirkungen und
   sogar der Wert hinter „Herstellzeit". Betraf rc37 und rc38.

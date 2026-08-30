@@ -5080,8 +5080,19 @@ def main():
                     encoding='utf-8').read()
     pruefe('def _preise_tick' in _haupt66 and 'self._preise_tick()' in _haupt66,
            'die Preise werden im Hintergrund-Faden geholt')
+    # ⚠ Die Qualitaet MUSS am Preis stehen. Ohne sie liest sich „kaufen" wie
+    #   ein gleichwertiger Weg, der nur Geld statt Zeit kostet — und das ist
+    #   falsch: Am Terminal gekaufte Ware hat immer Q 500, den Nullpunkt, also
+    #   exakt x1,000 auf jede Eigenschaft.
+    pruefe(_pr66.KAUF_QUALITAET == 500,
+           'die Qualitaet gekaufter Ware ist als 500 festgehalten')
+    pruefe('preis_modul.KAUF_QUALITAET' in _seiten66,
+           'und steht in der Anzeige neben dem Preis')
+    pruefe("t('s_he_kauf_q')" in _seiten66,
+           'dazu der Satz, der die Regler einordnet')
+
     from scbp import sprache as _sp66
-    for _k66 in ('s_he_kaufen', 's_he_nur_abbau'):
+    for _k66 in ('s_he_kaufen', 's_he_nur_abbau', 's_he_kauf_q'):
         _w66 = _sp66.TEXTE.get(_k66)
         pruefe(bool(_w66) and len(_w66) == 2 and all(_w66),
                'Text %s gibt es deutsch und englisch' % _k66)
@@ -5200,6 +5211,119 @@ def main():
            % len(_verdeckt67))
     for _x67 in _verdeckt67[:5]:
         print('       ·', _x67)
+
+    # ------------------------------------------------------------------
+    # 68. Der Namensvorschlag steht NEBEN dem Eingabefeld
+    #
+    # Bis v3.3.0-rc39 hing er ganz unten unter den Knoepfen — 557 Pixel unter
+    # dem Feld, in das getippt wird. Am 30.08.2026 gemeldet: „wenn ich
+    # Savrilium einlagern will, suche ich nicht dort unten nach dem Begriff um
+    # drauf zu klicken." Ein Vorschlag, den man suchen muss, ist keiner.
+    print()
+    print('68. Namensvorschlag am Eingabefeld')
+    import tkinter as _tk68
+    import tkinter.font as _tkfont68
+    from scbp import seiten as _se68
+
+    _w68 = _tk68.Tk()
+    _w68.withdraw()                      # ⚠ kein Fenster ins Bild schieben
+    try:
+        _w68.geometry('1200x900')
+        _s68 = _tkfont68.Font(root=_w68, family='TkDefaultFont', size=10)
+
+        class _Fenster68:
+            f_grund = f_klein = f_item = f_fett = f_titel = f_sub = _s68
+            beim_zeigen = {}
+            bergbau_suche = ''
+
+            def oeffnen(self, _n):
+                pass
+
+            def sagen(self, *_a):
+                pass
+
+        _rahmen68 = _tk68.Frame(_w68)
+        _rahmen68.pack(fill='both', expand=True)
+        _se68._lager(_Fenster68(), _rahmen68)
+        _w68.update_idletasks()
+
+        def _sammeln68(w, art, raus):
+            if isinstance(w, art):
+                raus.append(w)
+            for _k in w.winfo_children():
+                _sammeln68(_k, art, raus)
+            return raus
+
+        def _mit_text68(w, text, raus):
+            try:
+                if text in str(w.cget('text')):
+                    raus.append(w)
+            except Exception:
+                pass
+            for _k in w.winfo_children():
+                _mit_text68(_k, text, raus)
+            return raus
+
+        _felder68 = _sammeln68(_rahmen68, _tk68.Entry, [])
+        pruefe(bool(_felder68), 'die Lager-Seite hat Eingabefelder')
+        # ⚠ Ohne Rezeptdaten gibt es keine Namen, zu denen etwas vorgeschlagen
+        # werden koennte — auf dem Bau-Laeufer ist das der Normalfall.
+        from scbp import herstellung as _he68
+        if _felder68 and _he68.aehnliche_rohstoffe('sa'):
+            _felder68[0].insert(0, 'sa')
+            _w68.update_idletasks()
+            _v68 = _mit_text68(_rahmen68, 'Savrilium', [])
+            pruefe(bool(_v68), 'nach „sa" erscheint ein Vorschlag')
+            if _v68:
+                _abstand68 = abs(_v68[0].winfo_rooty()
+                                 - _felder68[0].winfo_rooty())
+                pruefe(_abstand68 < 80,
+                       'der Vorschlag steht auf Hoehe des Feldes (%d px, '
+                       'vorher 557)' % _abstand68)
+                pruefe(_v68[0].winfo_rootx() < _felder68[0].winfo_rootx(),
+                       'und links davon')
+        elif _felder68:
+            print('  [–]    keine Rezeptdaten — Vorschlagstest uebersprungen')
+
+        # ---- Rechnen im Mengenfeld ----
+        # ⚠⚠ Beim Bearbeiten steht die aktuelle Menge schon im Feld. Wer drei
+        # dazulegen will, tippt hinten „+3" an — und hat „1.04+3" dastehen.
+        # Bis v3.3.0-rc39 zaehlte nur ein FUEHRENDES Vorzeichen; genau die
+        # natuerliche Eingabe wurde abgelehnt („Trag eine Menge ein, zum
+        # Beispiel 12,5"). Am 30.08.2026 gemeldet.
+        from scbp import rohstoffe as _ro68
+        for _eingabe68, _vorher68, _soll68 in (
+                ('4,5', 1.04, 4.5),          # blosse Zahl
+                ('+3', 1.04, 4.04),          # nur Buchung
+                ('1.04+3', 1.04, 4.04),      # angehaengt — das war der Fehler
+                ('1,04+3', 1.04, 4.04),      # mit Komma genauso
+                ('12,5-0,5', 0.0, 12.0),     # Minus mitten drin
+                ('-0,5', 1.04, 0.54)):       # abbuchen
+            _ist68 = _ro68.rechnen(_eingabe68, _vorher68)
+            pruefe(_ist68 is not None and abs(_ist68 - _soll68) < 1e-9,
+                   '%r bei Bestand %g ergibt %s (erwartet %g)'
+                   % (_eingabe68, _vorher68, _ist68, _soll68))
+        # ⚠ Beide Wege muessen dasselbe ergeben — das ist der Punkt: Niemand
+        #   muss wissen, welchen das Programm meint.
+        pruefe(_ro68.rechnen('+3', 1.04) == _ro68.rechnen('1.04+3', 1.04),
+               '„+3" und „1.04+3" ergeben dasselbe')
+        for _unsinn68 in ('12 SCU', '', '+abc', 'abc'):
+            pruefe(_ro68.rechnen(_unsinn68, 1.0) is None,
+                   'Unsinn (%r) ergibt None statt einer Zahl' % _unsinn68)
+
+        # ---- Und der Hinweistext darf nicht wieder abstrakt werden ----
+        from scbp import sprache as _sp68
+        _hinweis68 = _sp68.TEXTE['s_lg_rechnen'][0]
+        pruefe('+3' in _hinweis68 and '-3' in _hinweis68,
+               'der Hinweis nennt die Zeichen konkret')
+        pruefe('abgebucht' not in _hinweis68,
+               'und benutzt keine Buchhaltersprache mehr')
+        for _k68 in ('s_lg_ergibt', 's_lg_ergibt_null', 's_lg_ergibt_minus'):
+            _w68t = _sp68.TEXTE.get(_k68)
+            pruefe(bool(_w68t) and len(_w68t) == 2 and all(_w68t),
+                   'Text %s gibt es deutsch und englisch' % _k68)
+    finally:
+        _w68.destroy()
 
     print()
     if fehler:

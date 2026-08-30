@@ -634,6 +634,12 @@ def _feld(fenster, eltern, bezeichnung, hilfe, breit=False):
             _umbruch(erklaerung, bezug=zeile, neben=rechts, abzug=26)
         _umbruch(beschriftung, bezug=zeile, neben=rechts, abzug=26)
     tk.Frame(eltern, bg=LINIE, height=1).pack(fill='x', pady=(12, 0))
+    # ⚠ Die linke Spalte haengt am Rueckgabewert. Manche Zeilen wollen dort
+    # etwas unterbringen — der Namensvorschlag im Lager etwa gehoert neben das
+    # Eingabefeld, nicht ans Seitenende. Ohne diesen Griff muesste der Aufrufer
+    # sich durch `winfo_children()` hangeln, und das bricht beim naechsten
+    # Umbau still.
+    rechts.links = links
     return rechts
 
 
@@ -4115,8 +4121,12 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                 else:
                     _kauf, _verk, _form = _p
                     if _kauf > 0:
+                        # ⚠ Die Qualitaet MUSS dabeistehen. Ohne sie liest sich
+                        # „kaufen: 22.730 aUEC" wie ein gleichwertiger Weg, der
+                        # nur Geld statt Zeit kostet — und das stimmt nicht.
                         preis_lbl.configure(
-                            text=t('s_he_kaufen') % _geld(_kauf * _fehlt),
+                            text=t('s_he_kaufen') % (_geld(_kauf * _fehlt),
+                                                     preis_modul.KAUF_QUALITAET),
                             fg=SUB)
                     else:
                         # ⚠ NICHT „0 aUEC" — das liest sich wie geschenkt.
@@ -4298,6 +4308,12 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
             tk.Label(block, text=t('s_he_regler_kopf'), bg='#0c1017', fg=FG,
                      font=fenster.f_grund, anchor='w').pack(
                          fill='x', padx=12, pady=(10, 2))
+            # ⭐ Der Satz, der die Regler erst einordnet: Wer kauft, landet
+            # immer bei 500 — dem Nullpunkt. Alles darüber muss man selbst
+            # abbauen. Ohne diesen Hinweis sieht der Regler nach einer freien
+            # Wahl aus, die man am Terminal treffen könnte.
+            _fliesstext(block, t('s_he_kauf_q') % preis_modul.KAUF_QUALITAET,
+                        fenster.f_klein, fill='x')
 
             regler_zeilen = {}
             for _mat in alle_materialien:
@@ -4688,6 +4704,7 @@ def _lager(fenster, rahmen):
     frei = {'name': None}
 
     vorschlag_rahmen = None
+    mengen_vorschau = None
     for beschriftung, var in ((t('s_lg_material'), material),
                               (t('s_lg_menge'), menge),
                               (t('s_lg_qualitaet'), guete),
@@ -4696,14 +4713,31 @@ def _lager(fenster, rahmen):
         f = rundes_feld(ziel, var, fenster.f_klein, '#0c1017', LINIE, ACCENT, FG)
         f.halter.pack(fill='x', pady=(4, 8))
         if var is material:
-            # ⭐ Vorschläge direkt unter dem Materialfeld — anklickbar.
-            # Ohne sie tippt jemand „Aslerite", bekommt nie einen Treffer und
-            # sucht den Fehler bei sich. Die Liste ist kurz (26 Materialien),
-            # also passt sie unter das Feld statt in ein Auswahlmenü.
-            # ⚠ Nicht sofort packen — ein leerer Rahmen reisst eine Lücke
-            # unter das Feld, die wie ein Fehler aussieht. Er wird erst
-            # eingeblendet, wenn wirklich ein Vorschlag darin steht.
-            vorschlag_rahmen = tk.Frame(innen, bg=BG)
+            # ⭐ Vorschläge anklickbar — ohne sie tippt jemand „Aslerite",
+            # bekommt nie einen Treffer und sucht den Fehler bei sich.
+            #
+            # ⚠⚠ **Sie stehen NEBEN dem Eingabefeld, nicht am Seitenende.**
+            # Bis v3.3.0-rc39 hingen sie ganz unten unter den Knöpfen — also
+            # dort, wo niemand hinsieht, während er oben tippt. Am 30.08.2026
+            # gemeldet: „wenn ich Savrilium einlagern will, suche ich nicht
+            # dort unten nach dem Begriff um drauf zu klicken." Ein Vorschlag,
+            # den man suchen muss, ist keiner.
+            #
+            # Er sitzt jetzt in der linken Spalte derselben Zeile, direkt
+            # unter der Beschriftung „Rohstoff" und auf einer Höhe mit dem
+            # Feld — im Blickfeld, ohne die Zeile auseinanderzuziehen.
+            #
+            # ⚠ Nicht sofort packen: Ein leerer Rahmen reisst eine Lücke, die
+            # wie ein Fehler aussieht.
+            vorschlag_rahmen = tk.Frame(ziel.links, bg=BG)
+        elif var is menge:
+            # ⭐⭐ **Die Vorschau ist die eigentliche Erklärung.** Wer beim
+            # Tippen von „1.04+3" daneben „ergibt 4,04 SCU" liest, braucht
+            # keinen Satz über Auf- und Abbuchen mehr. Sie steht aus demselben
+            # Grund neben dem Feld wie der Namensvorschlag: dort, wo hingesehen
+            # wird.
+            mengen_vorschau = tk.Label(ziel.links, text='', bg=BG, fg=ACCENT,
+                                       font=fenster.f_klein, anchor='w')
 
     def vorschlaege_zeigen(*_):
         from . import herstellung as h
@@ -4715,7 +4749,7 @@ def _lager(fenster, rahmen):
         text = material.get().strip()
         if not text or h.kennt_rohstoff(text):
             return
-        vorschlag_rahmen.pack(fill='x', pady=(0, 8))
+        vorschlag_rahmen.pack(fill='x', pady=(4, 0))
         treffer = h.aehnliche_rohstoffe(text)
         if not treffer:
             _fliesstext(vorschlag_rahmen, t('s_lg_unbekannt'), fenster.f_klein,
@@ -4730,6 +4764,44 @@ def _lager(fenster, rahmen):
             lbl.bind('<Button-1>', lambda _e, n=name: material.set(n))
 
     material.trace_add('write', vorschlaege_zeigen)
+
+    def _bestand_vorher():
+        """Wie viel im gerade bearbeiteten Posten liegt — sonst 0."""
+        nr = bearbeitung['nummer']
+        if nr is None:
+            return 0.0
+        posten = lager.laden()
+        return float(posten[nr].get('menge') or 0) if 0 <= nr < len(posten) else 0.0
+
+    def mengen_vorschau_zeigen(*_):
+        """Zeigt beim Tippen, was herauskommt.
+
+        ⚠ Nur bei einer **Rechnung**, nicht bei einer blossen Zahl: Wer „4,5"
+        tippt, weiss, dass 4,5 herauskommt — „ergibt 4,5 SCU" wäre Rauschen.
+        """
+        if mengen_vorschau is None:
+            return
+        roh = (menge.get() or '').strip()
+        rechnung = any(z in roh[1:] for z in '+-−') or roh[:1] in '+-−'
+        if not roh or not rechnung:
+            mengen_vorschau.pack_forget()
+            return
+        vorher = _bestand_vorher()
+        wert = lager.rechnen(roh, vorher)
+        if wert is None:
+            mengen_vorschau.pack_forget()
+            return
+        if wert < 0:
+            mengen_vorschau.configure(text=t('s_lg_ergibt_minus') % vorher,
+                                      fg=GOLD)
+        elif wert == 0:
+            mengen_vorschau.configure(text=t('s_lg_ergibt_null'), fg=GOLD)
+        else:
+            mengen_vorschau.configure(text=t('s_lg_ergibt') % round(wert, 3),
+                                      fg=ACCENT)
+        mengen_vorschau.pack(fill='x', pady=(4, 0))
+
+    menge.trace_add('write', mengen_vorschau_zeigen)
 
     liste_rahmen = tk.Frame(innen, bg=BG)
     meldung = tk.Label(innen, text='', bg=BG, fg=SUB, font=fenster.f_klein,
@@ -4959,10 +5031,16 @@ def _lager(fenster, rahmen):
         # Auf- und Abbuchen: „+5" legt dazu, „-2" nimmt weg. Nur sinnvoll,
         # solange ein Posten offen ist — bei einem neuen gibt es nichts, worauf
         # sich das Vorzeichen beziehen koennte, dort zaehlt schlicht die Zahl.
-        roh = (menge.get() or '0').strip().replace('−', '-')
-        rechnend = (bearbeitung['nummer'] is not None
-                    and roh[:1] in ('+', '-'))
-        wert = lager.zahl_lesen(roh)
+        # ⚠⚠ **Auch „1.04+3" muss gehen.** Beim Bearbeiten steht die aktuelle
+        # Menge schon im Feld — wer drei dazulegen will, tippt hinten „+3" an.
+        # Bis v3.3.0-rc39 zaehlte nur ein FUEHRENDES Vorzeichen, und genau die
+        # natuerliche Eingabe wurde abgelehnt. `lager.rechnen()` kann jetzt
+        # beides und liefert direkt die **neue Menge**.
+        roh = (menge.get() or '0').strip()
+        vorher_menge = _bestand_vorher()
+        rechnend = bool(roh) and (roh[:1] in '+-−'
+                                  or any(z in roh[1:] for z in '+-−'))
+        wert = lager.rechnen(roh, vorher_menge)
         if wert is None:
             # ⚠ Keine Zahl? Dann nichts tun statt abstürzen — jemand tippt
             # „12 SCU" statt „12", und das darf das Fenster nicht kosten.
@@ -4971,16 +5049,15 @@ def _lager(fenster, rahmen):
             meldung.configure(text=t('s_lg_keine_menge'), fg=GOLD)
             return
         if rechnend:
-            posten = lager.laden()
             nr = bearbeitung['nummer']
-            vorher = float(posten[nr].get('menge') or 0) if 0 <= nr < len(posten) else 0.0
-            neu_wert = vorher + wert
+            vorher = vorher_menge
+            neu_wert = wert
             if neu_wert < 0:
                 # ⚠ Nicht stillschweigend auf 0 setzen. Wer sich um eine Ziffer
                 # vertippt, soll den Bestand sehen, nicht ihn verlieren.
                 meldung.configure(text=t('s_lg_zu_wenig') % vorher, fg=GOLD)
                 return
-            if neu_wert == 0:
+            if neu_wert == 0 and nr is not None:
                 # Alles abgegeben — dann hat der Posten keinen Zweck mehr.
                 lager.entfernen(nr)
                 bearbeitung['nummer'] = None

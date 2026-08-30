@@ -48,6 +48,7 @@ Mehrere Posten desselben Materials sind Absicht: 12 SCU Iron von Daymar mit
 80 % Güte sind etwas anderes als 3 SCU aus dem Aaron Halo.
 """
 import json
+import re
 import os
 
 from . import fehler, pfade
@@ -279,6 +280,56 @@ def bestand():
             'menge': (vorher['menge'] if vorher else 0) + (p.get('menge') or 0),
         }
     return raus
+
+
+# Eine Rechnung im Mengenfeld: `1.04+3`, `12,5-0,5`.
+_RECHNUNG = re.compile(r'^\s*([\d.,]+)\s*([+-])\s*([\d.,]+)\s*$')
+# Nur eine Auf-/Abbuchung: `+3`, `-0,5`.
+_BUCHUNG = re.compile(r'^\s*([+\-−])\s*([\d.,]+)\s*$')
+
+
+def rechnen(text, vorher=0.0):
+    """Was im Mengenfeld steht — als Zahl.
+
+    Drei Schreibweisen, alle erlaubt:
+
+    | Eingabe | Bedeutung | Ergebnis bei Bestand 1,04 |
+    |---|---|---|
+    | `4,5` | die neue Menge | 4,5 |
+    | `+3` | dazubuchen | 4,04 |
+    | `1.04+3` | ausrechnen | 4,04 |
+
+    ⚠⚠ **Die dritte Form ist die, die vorher fehlte — und die natürlichste.**
+    Beim Bearbeiten steht die aktuelle Menge bereits im Feld. Wer drei dazu
+    buchen will, tippt hinten `+3` an und hat `1.04+3` dastehen. Genau das
+    wurde bis v3.3.0-rc39 abgelehnt („Trag eine Menge ein, zum Beispiel 12,5"),
+    weil nur ein **führendes** Vorzeichen zählte. Am 30.08.2026 gemeldet:
+    „der Text unten sagt mach +5 wird auf oder -5 abgebucht, gehen tuts aber
+    nicht, wie genau es geht kapier ich nicht."
+
+    Beide Wege kommen aufs Gleiche — das ist kein Zufall, sondern der Punkt:
+    Man muss nicht wissen, welchen das Programm meint.
+
+    Gibt `None`, wenn nichts Sinnvolles dasteht. `vorher` zählt nur bei der
+    reinen Buchung.
+    """
+    roh = (text or '').strip()
+    if not roh:
+        return None
+    m = _BUCHUNG.match(roh)
+    if m:
+        wert = zahl_lesen(m.group(2))
+        if wert is None:
+            return None
+        return float(vorher or 0) + (-wert if m.group(1) in '-−' else wert)
+    m = _RECHNUNG.match(roh)
+    if m:
+        links, zeichen, rechts = (zahl_lesen(m.group(1)), m.group(2),
+                                  zahl_lesen(m.group(3)))
+        if links is None or rechts is None:
+            return None
+        return links - rechts if zeichen == '-' else links + rechts
+    return zahl_lesen(roh)
 
 
 def pruefen(zutaten, anzahl=1):

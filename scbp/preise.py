@@ -76,6 +76,38 @@ ZEITLIMIT = 20
 # Wie lange eine Ablage als frisch gilt. Ein Tag — siehe Kopf.
 HALTBAR = 24 * 60 * 60
 
+# ⭐⭐ **Am Terminal gekaufte Ware hat immer Qualität 500.**
+#
+# Das ist der Punkt, der die Preisangabe erst ehrlich macht. Ohne ihn liest
+# sich „kaufen: 22.730 aUEC" wie ein gleichwertiger Weg, der nur Geld statt
+# Zeit kostet. Ist er nicht: Q 500 ist der **Nullpunkt** der Qualitätswirkung —
+# der Faktor ist dort exakt 1,000, auf jede Eigenschaft. Wer kauft, baut
+# garantiert einen Standard-Gegenstand. Besser wird er ausschliesslich mit
+# selbst abgebautem Erz über 500.
+#
+# Gemessen über alle Rezepte des Spielstands 4.10.0:
+#
+# | Nullpunkt | Wirkungen |
+# |---|---|
+# | **Q 500** | **5.025** |
+# | Q 499 (Rundung) | 12 |
+# | echte Ausreisser (571, 600, 625, 750) | 29 |
+#
+# ⚠ Die beiden Preise bedeuten Verschiedenes, und nur einer taugt hier:
+#
+# | Feld | heisst | Qualität |
+# |---|---|---|
+# | `price_buy` | was das **Terminal verlangt** | immer 500 |
+# | `price_sell` | was das Terminal dir **zahlt** | jede — auch selbst abgebautes |
+#
+# Für „kaufen oder abbauen?" zählt deshalb `price_buy`. Der Verkaufspreis wird
+# nur mitgeführt, weil er zur selben Ware gehört.
+#
+# Der Wert 500 steht nicht in den Handelsdaten — er ergibt sich aus der
+# Bauweise der Rezepte (siehe Tabelle oben) und wurde von einem Spieler
+# bestätigt.
+KAUF_QUALITAET = 500
+
 _gemerkt = {'stand': None, 'daten': None}
 
 

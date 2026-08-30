@@ -24,6 +24,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   > ⚠ "Cannot be bought" is written exactly that way — never as "0 aUEC".
   > Otherwise somebody hunts a terminal for a bargain that never existed.
 
+  > ⭐ **Goods bought at a terminal are always quality 500** — the base point.
+  > An item made from them gets exactly ×1.000 on **every** property. It only
+  > gets better with self-mined ore above that. That is why the quality now
+  > stands next to the price: without it "buy" reads like an equivalent route
+  > that merely costs money instead of time — and it is not.
+  >
+  > Measured across every recipe in build 4.10.0: **5,025 of 5,219** quality
+  > effects have their base point at exactly Q 500.
+
+
   Prices come from the [UEX Corp](https://uexcorp.space) API, **at most once a
   day** and in the background. ⚠ They are **not bundled** — the same rule as
   for scmdb. Without a connection the last state stays; with none at all the
@@ -142,6 +152,27 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   now shows as an ordinary row with its info icon, drop-off and reputation.
 
 ### Fixed
+
+- ⚠⚠ **In the stock list the amount could not be edited the way people do it.**
+  When editing, the current amount is already in the field — to add three you
+  append `+3` and end up with `1.04+3`. That was rejected ("enter an amount,
+  for example 12.5") because only a **leading** sign counted.
+
+  **Both** now work, and both give the same result: `+3` and `1.04+3` each turn
+  1.04 into 4.04. Nobody has to know which form is meant.
+
+- ⚠ **The hint about it was a punishment.** "Overwrite the amount — or type +5
+  or -2 to add or subtract" described a mechanism in accountant's language
+  without saying where the signs belong.
+
+  The real explanation is no longer text: **next to the field it now shows what
+  comes out** while you type — "makes 4.04 SCU", "makes 0 — the entry will be
+  removed", "more than you have (1.04 SCU)". The hint shrank to one line with
+  an example.
+
+- ⚠ **The name suggestion sat 557 pixels below the input field** — down by the
+  buttons while you type at the top. A suggestion you have to hunt for is not
+  one. It now stands right next to the field (15 pixels); both measured.
 
 - ⚠⚠ **The entire quality block had vanished** — sliders, effects, even the
   value behind "craft time". Affected rc37 and rc38.
