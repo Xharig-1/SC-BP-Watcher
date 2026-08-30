@@ -617,12 +617,20 @@ def _ohne_marken(text):
     return text.replace('**', '').replace('`', '') if text else text
 
 
-def _feld(fenster, eltern, bezeichnung, hilfe, breit=False):
-    """Eine Einstellungszeile: Bezeichnung, Erklärung, Platz für das Bedienelement."""
+def _feld(fenster, eltern, bezeichnung, hilfe, breit=False, oben=False):
+    """Eine Einstellungszeile: Bezeichnung, Erklärung, Platz für das Bedienelement.
+
+    `oben=True` heftet die Beschriftung an die **Oberkante** statt sie
+    mittig zu setzen. ⚠ Gebraucht bei Feldern, die im Betrieb wachsen: Klappt
+    ein Auswahlfeld seine Liste auf, wird die Zeile plötzlich zehn Zeilen hoch
+    — und die Beschriftung stand dann auf halber Höhe irgendwo neben der Liste
+    statt neben ihrem Feld.
+    """
     zeile = tk.Frame(eltern, bg=BG)
     zeile.pack(fill='x', pady=(12, 0))
     links = tk.Frame(zeile, bg=BG)
-    links.pack(side='left', fill='x', expand=True)
+    links.pack(side='left', fill='x', expand=True,
+               **({'anchor': 'n'} if oben else {}))
     beschriftung = tk.Label(links, text=bezeichnung, bg=BG, fg=FG,
                             font=fenster.f_fett, anchor='w')
     beschriftung.pack(fill='x')
@@ -649,7 +657,8 @@ def _feld(fenster, eltern, bezeichnung, hilfe, breit=False):
         _umbruch(beschriftung, bezug=zeile, abzug=10)
     else:
         rechts = tk.Frame(zeile, bg=BG)
-        rechts.pack(side='right', padx=(16, 0))
+        rechts.pack(side='right', padx=(16, 0),
+                    **({'anchor': 'n'} if oben else {}))
         # ⚠ Hier NICHT an `links` messen: Der Rahmen ist in genau dem Moment
         # zu breit, in dem der Text überläuft — er würde den Fehler bestätigen
         # statt ihn zu beheben. Gemessen wird am gemeinsamen Elternrahmen
@@ -5049,7 +5058,9 @@ def _lager(fenster, rahmen):
                               (t('s_lg_menge'), menge),
                               (t('s_lg_qualitaet'), guete),
                               (t('s_lg_ort'), ort)):
-        ziel = _feld(fenster, innen, beschriftung, '')
+        # `oben=True` bei allen dreien, damit die Beschriftungen auf gleicher
+        # Höhe stehen — auch wenn daneben gerade eine Liste aufgeklappt ist.
+        ziel = _feld(fenster, innen, beschriftung, '', oben=True)
         if var is menge:
             # Feld und Kästchen in einer Zeile — das Kästchen rechts daneben,
             # damit die Einheit dort steht, wo die Zahl entsteht.
@@ -5747,6 +5758,123 @@ def _alterstext(sekunden):
     return t('s_vk_alter_tage').format(n=int(stunden / 24))
 
 
+def _auswahlfeld(fenster, eltern, var, eintraege_holen, hoechstens=10,
+                 beim_waehlen=None):
+    """Ein Eingabefeld mit Aufklappliste — tippen **oder** aussuchen.
+
+    Gibt `(rahmen, listen_rahmen, neu_zeichnen)` zurück. Der Aufrufer packt
+    beide Rahmen selbst, damit die Liste dort landet, wo sie hingehört.
+
+    ⚠⚠ **Kein `ttk.Combobox`.** Die ist ein Systemelement und sieht auf jedem
+    Betriebssystem anders aus — dieselbe Überlegung wie bei `_kaestchen`, das
+    aus genau diesem Grund kein `tk.Checkbutton` ist. Das Programm hat eine
+    Formensprache; ein Kasten, der unter Windows grau und unter KDE blau ist,
+    fällt sofort als Fremdkörper auf.
+
+    **Zwei Wege zum selben Ziel**, und man muss nicht wissen, welchen das
+    Programm meint:
+
+    | Weg | was passiert |
+    |---|---|
+    | Pfeil anklicken | die ganze Liste klappt auf |
+    | lostippen | dieselbe Liste, auf die Treffer eingedampft |
+
+    ⚠ **Teiltexte, nicht nur Wortanfänge** — dieselbe Erfahrung wie bei den
+    Lagerorten in `orte.py`: Wer `Ore` tippt, sucht `Copper (Ore)`.
+
+    ⚠ Es werden **höchstens zehn** Einträge gezeigt, sonst schiebt eine Liste
+    mit 114 Waren alles andere aus dem Bild. Darunter steht, wie viele noch
+    kommen — verschwiegen wäre schlimmer als abgeschnitten.
+    """
+    from .hauptfenster import rundes_feld
+
+    zeile = tk.Frame(eltern, bg=BG)
+    liste = tk.Frame(eltern, bg=BG)
+    offen = {'ja': False}
+
+    feld = rundes_feld(zeile, var, fenster.f_klein, '#0c1017', LINIE, ACCENT,
+                       FG)
+
+    pfeil = tk.Label(zeile, text='', bg=BG, fg=SUB, font=fenster.f_klein,
+                     cursor='hand2', padx=8)
+
+    def _leeren():
+        for w in liste.winfo_children():
+            w.destroy()
+
+    def zeichnen():
+        _leeren()
+        text = (var.get() or '').strip().lower()
+        alle = eintraege_holen()
+        # Steht genau der gewählte Eintrag im Feld, ist nichts mehr zu suchen.
+        if text and any(text == e.lower() for e in alle) and not offen['ja']:
+            liste.pack_forget()
+            pfeil.configure(text='⌄')
+            return
+        if not text and not offen['ja']:
+            liste.pack_forget()
+            pfeil.configure(text='⌄')
+            return
+        treffer = [e for e in alle if text in e.lower()] if text else list(alle)
+        pfeil.configure(text='⌃' if offen['ja'] else '⌄')
+        if not treffer:
+            liste.pack(fill='x', pady=(4, 0))
+            tk.Label(liste, text=t('s_vk_nichts_gefunden'), bg=BG, fg=SUB,
+                     font=fenster.f_klein, anchor='w').pack(fill='x', pady=3)
+            return
+        liste.pack(fill='x', pady=(4, 0))
+        for name in treffer[:hoechstens]:
+            eintrag = tk.Label(liste, text=name, bg=BG, fg=FG,
+                               font=fenster.f_klein, anchor='w',
+                               cursor='hand2', padx=8, pady=3)
+            eintrag.pack(fill='x')
+            eintrag.bind('<Button-1>', lambda _e, n=name: waehlen(n))
+            eintrag.bind('<Enter>', lambda _e, w=eintrag: w.configure(bg=FLAECHE))
+            eintrag.bind('<Leave>', lambda _e, w=eintrag: w.configure(bg=BG))
+        rest = len(treffer) - hoechstens
+        if rest > 0:
+            tk.Label(liste, text=t('s_af_weitere').format(n=rest), bg=BG,
+                     fg=SUB, font=fenster.f_klein, anchor='w',
+                     padx=8).pack(fill='x', pady=(2, 0))
+
+    def waehlen(name):
+        offen['ja'] = False
+        if beim_waehlen is not None:
+            # Der Verkaufs-Reiter sammelt mehrere Waren: Dort landet der Name
+            # in der Auswahl, und das Feld wird wieder leer. Ohne diesen Weg
+            # müsste der Aufrufer den Eintrag aus dem Feld zurücklesen.
+            beim_waehlen(name)
+        else:
+            var.set(name)
+        zeichnen()
+
+    def umschalten(_=None):
+        offen['ja'] = not offen['ja']
+        zeichnen()
+
+    pfeil.configure(text='⌄')
+    pfeil.bind('<Button-1>', umschalten)
+    pfeil.bind('<Enter>', lambda _e: pfeil.configure(fg=ACCENT))
+    pfeil.bind('<Leave>', lambda _e: pfeil.configure(fg=SUB))
+
+    # ⚠ **Erst den Pfeil packen, dann das Feld.** In `tkinter` bekommt das
+    # zuletzt gepackte Element den übrigen Platz, und ein Feld mit
+    # `expand=True` nimmt sich alles — andersherum schöbe es den Pfeil aus dem
+    # Fenster. Genau der Fehler, der im Werkstatt-Lager beim cSCU-Kästchen
+    # schon einmal auftrat.
+    pfeil.pack(side='right')
+    feld.halter.pack(side='left', fill='both', expand=True)
+
+    # Tippen schliesst das Aufklappen wieder — sonst bliebe die volle Liste
+    # stehen, während schon gefiltert wird.
+    def beim_tippen(*_):
+        offen['ja'] = False
+        zeichnen()
+
+    var.trace_add('write', beim_tippen)
+    return zeile, liste, zeichnen
+
+
 def _verkauf(fenster, rahmen):
     """Wo man seine Ware los wird — die beste Stelle zuerst."""
     import threading
@@ -5766,7 +5894,6 @@ def _verkauf(fenster, rahmen):
 
     ergebnis_rahmen = tk.Frame(innen, bg=BG)
     chip_rahmen = tk.Frame(innen, bg=BG)
-    vorschlag_rahmen = tk.Frame(innen, bg=BG)
 
     # ------------------------------------------------ Kopf: Abruf und Stand
     kopf = tk.Frame(innen, bg=BG)
@@ -5891,9 +6018,13 @@ def _verkauf(fenster, rahmen):
     suchzeile.pack(fill='x', padx=24, pady=(14, 0))
     tk.Label(suchzeile, text=t('s_vk_ware'), bg=BG, fg=SUB,
              font=fenster.f_klein, anchor='w').pack(fill='x')
-    feld = rundes_feld(suchzeile, suche, fenster.f_klein, '#0c1017',
-                       LINIE, ACCENT, FG)
-    feld.halter.pack(fill='x', pady=(4, 0))
+    # Auswahlfeld statt blossem Suchfeld: Wer nicht weiss, wie die Ware bei UEX
+    # heisst, klappt die Liste auf und sucht sie aus.
+    feldzeile, feldliste, such_zeichnen = _auswahlfeld(
+        fenster, suchzeile, suche, preisdaten.waren,
+        beim_waehlen=lambda name: waehlen(name))
+    feldzeile.pack(fill='x', pady=(4, 0))
+    feldliste.pack(fill='x')
 
     def kaestchen_um(an):
         nur_nqa[0] = an
@@ -5907,7 +6038,6 @@ def _verkauf(fenster, rahmen):
            aus_lager).pack(side='right')
 
     chip_rahmen.pack(fill='x', padx=24, pady=(10, 0))
-    vorschlag_rahmen.pack(fill='x', padx=24)
     ergebnis_rahmen.pack(fill='both', expand=True, padx=24, pady=(6, 20))
 
     def _leeren(halter):
@@ -5927,33 +6057,6 @@ def _verkauf(fenster, rahmen):
                              cursor='hand2')
             marke.pack(side='left', padx=(0, 6), pady=2)
             marke.bind('<Button-1>', lambda e, n=name: entfernen(n))
-
-    def _vorschlaege():
-        """Was zum Getippten passt — höchstens acht Treffer.
-
-        ⚠ **Teiltexte, nicht nur Wortanfänge** — dieselbe Erfahrung wie bei den
-        Lagerorten in `orte.py`: Wer `Ore` tippt, sucht `Copper (Ore)`, und wer
-        `medmon` tippt, findet `Golden Medmon` sonst nie.
-        """
-        _leeren(vorschlag_rahmen)
-        text = (suche.get() or '').strip().lower()
-        if not text:
-            return
-        treffer = [n for n in preisdaten.waren()
-                   if text in n.lower() and n not in auswahl][:8]
-        if not treffer:
-            tk.Label(vorschlag_rahmen, text=t('s_vk_nichts_gefunden'), bg=BG,
-                     fg=SUB, font=fenster.f_klein, anchor='w').pack(fill='x',
-                                                                    pady=4)
-            return
-        for name in treffer:
-            zeile = tk.Label(vorschlag_rahmen, text=name, bg=BG, fg=FG,
-                             font=fenster.f_klein, anchor='w', cursor='hand2',
-                             padx=6, pady=3)
-            zeile.pack(fill='x')
-            zeile.bind('<Button-1>', lambda e, n=name: waehlen(n))
-            zeile.bind('<Enter>', lambda e, w=zeile: w.configure(bg=FLAECHE))
-            zeile.bind('<Leave>', lambda e, w=zeile: w.configure(bg=BG))
 
     def _ergebnis():
         _leeren(ergebnis_rahmen)
@@ -5985,10 +6088,9 @@ def _verkauf(fenster, rahmen):
 
     def neu_zeichnen():
         _chips()
-        _vorschlaege()
+        such_zeichnen()
         _ergebnis()
 
-    suche.trace_add('write', lambda *_: (_vorschlaege(), None)[1])
     neu_zeichnen()
     _ticker()
 
@@ -6119,49 +6221,46 @@ def _handelslager(fenster, rahmen):
     # berichtigt man den falschen Posten.
     bearbeitung = {'nummer': None}
 
-    vorschlag_rahmen = tk.Frame(innen, bg=BG)
     liste_rahmen = tk.Frame(innen, bg=BG)
-    ort_vorschlag = None
 
+    # ⭐ Ware und Ort sind **Auswahlfelder**: tippen oder den Pfeil anklicken
+    # und aussuchen. Beide Listen sind geschlossen (siehe `eintragen`), also
+    # soll man sie auch sehen können, statt raten zu müssen, was drinsteht.
+    ware_zeichnen = ort_zeichnen = lambda: None
     for beschriftung, var in ((t('s_hl_ware'), ware),
                               (t('s_hl_menge'), menge),
                               (t('s_hl_ort'), ort)):
-        ziel = _feld(fenster, innen, beschriftung, '')
-        feld = rundes_feld(ziel, var, fenster.f_klein, '#0c1017', LINIE,
-                           ACCENT, FG)
-        feld.halter.pack(pady=(4, 8))
-        if var is ort:
-            # Dieselbe „Meintest du:"-Zeile wie im Werkstatt-Lager. ⚠ Das
-            # Bedienkonzept darf sich zwischen zwei Lagern nicht unterscheiden
-            # — wer das eine bedienen kann, muss das andere blind bedienen
-            # können.
-            ort_vorschlag = tk.Frame(ziel.links, bg=BG)
-
-    def ort_vorschlaege_zeigen(*_):
-        if ort_vorschlag is None:
-            return
-        for w in ort_vorschlag.winfo_children():
-            w.destroy()
-        ort_vorschlag.pack_forget()
-        text = ort.get().strip()
-        if not text or ortsliste.kennt(text):
-            return
-        treffer = ortsliste.aehnliche(text)
-        if not treffer:
-            return
-        ort_vorschlag.pack(fill='x', pady=(4, 0))
-        tk.Label(ort_vorschlag, text=t('s_lg_meinst_du'), bg=BG, fg=SUB,
-                 font=fenster.f_klein).pack(side='left', padx=(0, 8))
-        for name_ in treffer:
-            lbl = tk.Label(ort_vorschlag, text=name_, bg=BG, fg=ACCENT,
-                           font=fenster.f_klein, cursor='hand2')
-            lbl.pack(side='left', padx=(0, 10))
-            lbl.bind('<Button-1>', lambda _e, n=name_: ort.set(n))
-
-    ort.trace_add('write', ort_vorschlaege_zeigen)
+        # ⚠⚠ **Beschriftung ÜBER dem Feld, nicht daneben.** Die Zeilenform aus
+        # `_feld` (Bezeichnung links, Bedienelement rechts) vertraegt sich
+        # nicht mit einem Feld, das im Betrieb waechst: Klappt die Warenliste
+        # auf, wird die Zeile zehn Zeilen hoch, und Tk setzt die Beschriftung
+        # auf halbe Hoehe — „Ware" stand dann mitten neben der Liste statt
+        # neben seinem Feld. Ein `anchor='n'` half nicht (zweimal versucht).
+        #
+        # Der Verkaufs-Reiter macht es ohnehin so („Ware suchen" ueber dem
+        # Feld). Damit sehen beide Seiten des Handels-Bereichs gleich aus.
+        block = tk.Frame(innen, bg=BG)
+        block.pack(fill='x', padx=24, pady=(12, 0))
+        tk.Label(block, text=beschriftung, bg=BG, fg=FG,
+                 font=fenster.f_fett, anchor='w').pack(fill='x')
+        if var is menge:
+            feld = rundes_feld(block, var, fenster.f_klein, '#0c1017', LINIE,
+                               ACCENT, FG)
+            feld.halter.pack(fill='x', pady=(4, 0))
+            continue
+        quelle = (preisdaten.waren if var is ware else ortsliste.alle)
+        zeile, liste, zeichnen_ = _auswahlfeld(fenster, block, var, quelle)
+        zeile.pack(fill='x', pady=(4, 0))
+        # Die Liste sitzt **unter** dem Feld und ist genauso breit — sie gehoert
+        # sichtbar zu ihm.
+        liste.pack(fill='x')
+        if var is ware:
+            ware_zeichnen = zeichnen_
+        else:
+            ort_zeichnen = zeichnen_
 
     schalter = tk.Frame(innen, bg=BG)
-    schalter.pack(fill='x', padx=24, pady=(0, 4))
+    schalter.pack(fill='x', padx=24, pady=(12, 4))
 
     def marke_um(an):
         gestohlen[0] = an
@@ -6296,25 +6395,7 @@ def _handelslager(fenster, rahmen):
         gestohlen[0] = bool(p.get('gestohlen'))
         neu_zeichnen()
 
-    vorschlag_rahmen.pack(fill='x', padx=24)
     liste_rahmen.pack(fill='both', expand=True, padx=24, pady=(12, 20))
-
-    def _vorschlaege():
-        """Passende Warennamen — Teiltreffer, höchstens sechs."""
-        _leeren(vorschlag_rahmen)
-        text = (ware.get() or '').strip().lower()
-        if not text or preisdaten.bekannt(ware.get().strip()):
-            return
-        treffer = [n for n in preisdaten.waren() if text in n.lower()][:6]
-        for name in treffer:
-            zeile = tk.Label(vorschlag_rahmen, text=name, bg=BG, fg=FG,
-                             font=fenster.f_klein, anchor='w', cursor='hand2',
-                             padx=6, pady=3)
-            zeile.pack(fill='x')
-            zeile.bind('<Button-1>', lambda e, n=name: (ware.set(n),
-                                                        _vorschlaege()))
-            zeile.bind('<Enter>', lambda e, w=zeile: w.configure(bg=FLAECHE))
-            zeile.bind('<Leave>', lambda e, w=zeile: w.configure(bg=BG))
 
     def _liste():
         _leeren(liste_rahmen)
@@ -6346,13 +6427,12 @@ def _handelslager(fenster, rahmen):
                      anchor='e').pack(fill='x', pady=(8, 0))
 
     def neu_zeichnen():
-        _vorschlaege()
-        ort_vorschlaege_zeigen()
+        ware_zeichnen()
+        ort_zeichnen()
         vorschau_zeigen()
         knoepfe_setzen()
         _liste()
 
-    ware.trace_add('write', lambda *_: _vorschlaege())
     neu_zeichnen()
 
 

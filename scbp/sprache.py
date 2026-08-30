@@ -1790,6 +1790,8 @@ TEXTE = {
                           'Could not be saved.'),
     's_hl_leer':         ('Noch nichts eingetragen.', 'Nothing entered yet.'),
     's_hl_scu':          ('{menge} SCU', '{menge} SCU'),
+    's_af_weitere':      ('… und {n} weitere — tipp weiter, um einzugrenzen',
+                          '… and {n} more — keep typing to narrow it down'),
     's_hl_sp_ware':      ('Ware', 'Commodity'),
     's_hl_sp_menge':     ('SCU', 'SCU'),
     's_hl_sp_ort':       ('Ort', 'Location'),

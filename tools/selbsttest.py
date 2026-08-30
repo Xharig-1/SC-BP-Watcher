@@ -6673,8 +6673,20 @@ def main():
            'die Ware wird gegen die Warenliste geprueft')
     pruefe('ortsliste.kennt(ort.get())' in _hlseite84,
            'der Lagerort wird gegen die Ortsliste geprueft')
-    pruefe("t('s_lg_meinst_du')" in _hlseite84,
-           'und schlaegt aehnliche Orte vor, wie im Werkstatt-Lager')
+    # ⚠ Seit dem Auswahlfeld gibt es keine „Meintest du"-Zeile mehr: Das Feld
+    # filtert beim Tippen selbst und laesst sich per Pfeil ganz aufklappen.
+    # Geprueft wird deshalb, dass **beide** Felder ihre geschlossene Liste
+    # bekommen — Waren aus den Preisdaten, Orte aus der Ortsliste.
+    pruefe('_auswahlfeld(fenster, block, var, quelle)' in _hlseite84
+           and 'preisdaten.waren if var is ware else ortsliste.alle'
+           in _hlseite84,
+           'Ware und Ort sind Auswahlfelder mit geschlossener Liste')
+    # ⚠ Nicht auf das Wort pruefen — es steht als **Warnung** im Kopf des
+    # Bausteins, und das soll es auch. Geprueft wird der Import: ohne ihn kann
+    # kein Systemelement benutzt werden. (Dieselbe Falle wie bei
+    # `norm_rohstoff` weiter oben — beim ersten Anlauf prompt wieder getappt.)
+    pruefe('import ttk' not in _q84s and 'from tkinter.ttk' not in _q84s,
+           'kein ttk-Systemelement in der Oberflaeche')
     pruefe("'verkauf':     _verkauf," in _q84s
            and "'handelslager': _handelslager," in _q84s,
            'beide Seiten sind angemeldet')
