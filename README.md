@@ -61,6 +61,29 @@ The watcher writes into the game's mission text **which** blueprints a contract 
 </tr>
 </table>
 
+### The workshop
+
+The blueprint is the start. The workshop answers what comes after it: **what do I need, do I have it, and what will it turn into?**
+
+<table>
+<tr>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-herstellung-en.png" alt="Crafting with an expanded recipe" width="100%"><br>
+<sub><b>Crafting</b> — ingredients, craft time and what <i>your</i> material does to the stats</sub>
+</td>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-lager-en.png" alt="My stock with recorded resources" width="100%"><br>
+<sub><b>My stock</b> — material, amount, quality and storage location, kept by hand</sub>
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top" align="center">
+<img src="assets/screenshot-bergbau-en.png" alt="Mining showing where Iron is found" width="100%"><br>
+<sub><b>Mining</b> — type a resource and see where it sits; or enter the scanner reading and see what it found</sub>
+</td>
+</tr>
+</table>
+
 ### The window
 
 > [!NOTE]

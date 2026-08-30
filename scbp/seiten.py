@@ -573,7 +573,7 @@ def _fliesstext(eltern, text, schrift, farbe=SUB, grund=BG, abzug=0, **pack):
 
 
 def _ohne_marken(text):
-    """Die Auszeichnung `**fett**` aus einem Text nehmen.
+    """Die Auszeichnung aus einem Text nehmen — `**fett**` und Rueckstriche.
 
     ⚠ Tk-Labels können kein Mischformat — ein Label ist ganz fett oder gar
     nicht. Die Sternchen in `sprache.py` markieren die Betonung fuer den
@@ -584,8 +584,12 @@ def _ohne_marken(text):
     Bildschirm (gefunden von am 28.08.2026 gemeldet unter rc85). Damit das
     nicht bei jedem neuen Text wieder passiert, geht es jetzt durch diese
     eine Stelle.
+
+    ⚠ Dasselbe gilt fuer die Rueckstriche um Befehle und Werte. Sie kommen aus
+    dem Änderungsprotokoll, das die Seite „Was ist neu" anzeigt, und standen
+    dort bis rc42 mit auf dem Bildschirm.
     """
-    return text.replace('**', '') if text else text
+    return text.replace('**', '').replace('`', '') if text else text
 
 
 def _feld(fenster, eltern, bezeichnung, hilfe, breit=False):
@@ -1901,7 +1905,10 @@ def _saubere_zeile(zeile):
     zeile = re.sub(r'\*\*(.+?)\*\*', r'\1', zeile)
     zeile = re.sub(r'`([^`]+)`', r'\1', zeile)
     zeile = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', zeile)
-    return zeile.strip()
+    # ⚠ Und was danach noch an Rückstrichen übrig ist, fliegt raus. Der
+    # Ausdruck oben nimmt nur **Paare**; ein einzelner Strich — aus einem
+    # halbierten Codeblock etwa — blieb stehen und stand im Fenster.
+    return zeile.replace('`', '').strip()
 
 
 def _karte(eltern, rand=None, **kw):

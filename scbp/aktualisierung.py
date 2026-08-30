@@ -352,7 +352,17 @@ def punkte_nach_art(text):
     """
     art = 'neu'
     heraus = []
+    im_block = False
     for zeile in (text or '').split('\n'):
+        # ⚠ Eingezäunte Codeblöcke (```) überspringen. Sie zeigen im
+        # Änderungsprotokoll, wie etwas auf dem Bildschirm aussieht — als
+        # Fortsetzungszeile an einen Punkt geklebt ergibt das Kauderwelsch,
+        # und die Zaunzeichen selbst standen bis rc42 sichtbar im Fenster.
+        if zeile.strip().startswith('```'):
+            im_block = not im_block
+            continue
+        if im_block:
+            continue
         # ⚠ Die Einrückung muss VOR dem Abschneiden geprüft werden — sonst sind
         # Unterpunkte nicht mehr von Hauptpunkten zu unterscheiden.
         eingerueckt = zeile[:1].isspace()

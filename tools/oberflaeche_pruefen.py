@@ -93,7 +93,12 @@ def pruefe():
     def merken(text):
         if not isinstance(text, str):
             return
-        if '**' in text:
+        # ⚠ Auch **Rueckstriche**. Markdown kennt sie als Auszeichnung fuer
+        # Befehle und Werte — Tk nicht: Es zeigt sie mit. Auf der Bergbau-Seite
+        # stand bis rc42 woertlich »`8600` fuer genau diesen Wert«, samt der
+        # Striche (auf einem Bildschirmfoto aufgefallen, 30.08.2026). In einer
+        # Oberflaeche gehoeren Anfuehrungszeichen dorthin, keine Auszeichnung.
+        if '**' in text or '`' in text:
             marken.add(text.strip())
         if text.strip() in tabelle:
             treffer[text.strip()] = tabelle[text.strip()]
@@ -143,14 +148,14 @@ def main():
     print('  %d Textpaare, die sich unterscheiden' % len(tabelle))
 
     if marken:
-        print('\n%d sichtbare(r) Text(e) mit **-Auszeichnung — Tk zeigt die '
-              'Sternchen mit:' % len(marken))
+        print('\n%d sichtbare(r) Text(e) mit Auszeichnung (** oder `) — Tk '
+              'zeigt die Zeichen mit:' % len(marken))
         for text in sorted(marken):
             print('  · %s' % (text[:100] + ('…' if len(text) > 100 else '')))
         print('\n  → durch _ohne_marken() schicken, bevor der Text ins Label '
               'geht (scbp/seiten.py).')
     else:
-        print('  keine **-Auszeichnung im sichtbaren Text')
+        print('  keine Auszeichnung (** oder `) im sichtbaren Text')
 
     if not treffer:
         print('\nKein deutscher Text in der englischen Oberfläche.')

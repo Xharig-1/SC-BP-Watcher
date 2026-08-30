@@ -231,6 +231,23 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠ **„Bestand zurücksetzen" stand unter „Fehler melden" — dort sucht es
+  niemand.** Es steht jetzt am Ende der Seite **Bauplan-Bestand**, direkt unter
+  „Protokolle erneut einlesen". Nebeneinander wird auch der Unterschied
+  sichtbar, auf den es ankommt: Einlesen **ergänzt**, was fehlt.
+  Zurücksetzen **wirft weg** und baut aus den Protokollen neu auf.
+
+- ⚠ **Im Rezept war nicht mehr zu erkennen, welche Spanne zu welchem Wert
+  gehört.** Die Zeilen „Q 0–1000 · ×0,9–1,1" sammelten sich unter dem letzten
+  Wert, statt jeweils unter ihrem eigenen zu stehen — bei drei Materialien
+  standen dort drei fast gleich aussehende Zeilen ohne erkennbare Zuordnung.
+
+- ⚠ **Im Fenster standen Rückstriche mitten im Text** — „`8600` für genau
+  diesen Wert" statt „8600". Sie stammen aus der Auszeichnung der Textdatei;
+  Tk zeigt sie einfach mit. Betroffen waren der Hilfetext zum Scan-Wert und
+  Absätze unter „Was ist neu". Die Oberflächenprüfung schlägt jetzt auch bei
+  Rückstrichen an, nicht nur bei Sternchen.
+
 - ⚠⚠ **Der Startverlauf im Diagnose-Bericht war unbrauchbar geworden.** Statt
   der Startschritte stand dort zwölfmal dieselbe Zeile „Liste: zeichnen
   beginnt" — und genau dieser Abschnitt ist bei einem harten Absturz das

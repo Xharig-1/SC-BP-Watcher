@@ -193,6 +193,23 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠ **"Reset inventory" sat under "Report a problem" — nobody looks for it
+  there.** It now sits at the end of the **Blueprint inventory** page, right
+  below "Read the logs again". Side by side, the difference that matters also
+  becomes visible: reading again **adds** what is missing. Resetting **throws
+  away** and rebuilds from the logs.
+
+- ⚠ **In a recipe you could no longer tell which range belonged to which
+  value.** The lines "Q 0–1000 · ×0.9–1.1" piled up under the last value
+  instead of sitting under their own — with three materials that meant three
+  near-identical lines with no visible link to anything.
+
+- ⚠ **Backticks showed up in the middle of on-screen text** — "`8600` for an
+  exact match" instead of "8600". They come from the markup in the text file;
+  Tk simply displays them. Affected were the scanner-reading help text and
+  paragraphs under "What's new". The interface check now also trips on
+  backticks, not just on asterisks.
+
 - ⚠⚠ **The startup trace in the diagnostic report had become useless.** Instead
   of the startup steps it showed the same line twelve times, "Liste: zeichnen
   beginnt" — and that section is the only thing left after a hard crash: its

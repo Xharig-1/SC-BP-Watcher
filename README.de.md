@@ -61,6 +61,29 @@ Der Watcher schreibt in die Auftragstexte des Spiels, **welche** Baupläne ein A
 </tr>
 </table>
 
+### Die Werkstatt
+
+Der Bauplan ist der Anfang. Die Werkstatt beantwortet, was danach kommt: **was brauche ich, habe ich das, und was wird daraus?**
+
+<table>
+<tr>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-herstellung.png" alt="Herstellung mit aufgeklapptem Rezept" width="100%"><br>
+<sub><b>Herstellung</b> — Zutaten, Herstellzeit und was <i>dein</i> Material aus den Werten macht</sub>
+</td>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-lager.png" alt="Mein Lager mit eingetragenen Rohstoffen" width="100%"><br>
+<sub><b>Mein Lager</b> — Material, Menge, Qualität und Lagerort, von Hand gepflegt</sub>
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top" align="center">
+<img src="assets/screenshot-bergbau.png" alt="Bergbau mit den Fundorten von Iron" width="100%"><br>
+<sub><b>Bergbau</b> — Rohstoff eintippen und sehen, wo er liegt; oder den Scan-Wert eingeben und sehen, was der Scanner da gefunden hat</sub>
+</td>
+</tr>
+</table>
+
 ### Das Fenster
 
 > [!NOTE]

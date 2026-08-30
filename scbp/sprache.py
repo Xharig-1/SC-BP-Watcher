@@ -1779,17 +1779,17 @@ TEXTE = {
     's_bg_sig_feld':     ('Scan-Wert vom Scanner', 'Scanner reading'),
     's_bg_sig_hilfe':    ('Der Scanner zeigt eine Zahl — hier steht, welches '
                           'Erz dahintersteckt und aus wie vielen Brocken das '
-                          'Vorkommen besteht. `8600` für genau diesen Wert, '
-                          '`~8600` mit 10 % Spielraum, `12000-13000` für alles '
+                          'Vorkommen besteht. „8600" für genau diesen Wert, '
+                          '„~8600" mit 10 % Spielraum, „12000-13000" für alles '
                           'dazwischen.',
                           'The scanner shows a number — this tells you which ore '
-                          'it is and how many rocks the deposit holds. `8600` for '
-                          'an exact match, `~8600` with 10 % tolerance, '
-                          '`12000-13000` for a range.'),
+                          'it is and how many rocks the deposit holds. "8600" for '
+                          'an exact match, "~8600" with 10 % tolerance, '
+                          '"12000-13000" for a range.'),
     's_bg_sig_treffer':  ('%d× %s', '%d× %s'),
-    's_bg_sig_nichts':   ('Kein Erz hat diese Signatur. Mit `~` davor wird mit '
+    's_bg_sig_nichts':   ('Kein Erz hat diese Signatur. Mit „~" davor wird mit '
                           '10 %% Spielraum gesucht.',
-                          'No ore has this signature. Put `~` in front to search '
+                          'No ore has this signature. Put "~" in front to search '
                           'with 10 %% tolerance.'),
     's_bg_sig_anzahl':   ('%d mögliche Treffer', '%d possible matches'),
     's_bg_sig_genau':    ('genau', 'exact'),
@@ -2122,10 +2122,10 @@ TEXTE = {
                           'the game\'s mission texts: which blueprints a contract '
                           'awards, with a tick box for the ones you already have.'),
     'inj_wie':           ('Dafür wird die Textdatei des Spiels verändert '
-                          '(`global.ini`). Am Spiel selbst ändert sich sonst '
+                          '(global.ini). Am Spiel selbst ändert sich sonst '
                           'nichts, und der Schritt lässt sich jederzeit '
                           'zurücknehmen.',
-                          'This modifies the game\'s text file (`global.ini`). '
+                          'This modifies the game\'s text file (global.ini). '
                           'Nothing else about the game changes, and it can be '
                           'undone at any time.'),
     'inj_fremd':         ('Übersetzung und StarStrings sind fremde Projekte. Sie '
