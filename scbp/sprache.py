@@ -157,6 +157,7 @@ TEXTE = {
                         'Quality and amount have to be numbers.'),
     's_rf_unbekannt':  ('„%s" gibt es nicht als Rohstoff.',
                         '"%s" is not a resource.'),
+    's_rf_meintest':   ('Meintest du: %s?', 'Did you mean: %s?'),
     's_rf_qualitaet':  ('Qualität geht nur von 0 bis 1000.',
                         'Quality only goes from 0 to 1000.'),
     's_rf_menge':      ('Die Menge muss größer als null sein.',

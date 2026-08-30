@@ -4948,7 +4948,9 @@ def _lager(fenster, rahmen):
     material = tk.StringVar()
     menge = tk.StringVar()
     guete = tk.StringVar()
-    ort = tk.StringVar()
+    # Der zuletzt benutzte Lagerort steht schon drin — siehe unten beim
+    # Eintragen, warum.
+    ort = tk.StringVar(value=pfade.einstellung('lager_ort') or '')
 
     # Welche Zeile gerade zum Ändern offen ist. `None` heisst: neuer Posten.
     # ⚠ Die Nummer ist die Position in der ungefilterten Liste — nicht die
@@ -5290,7 +5292,8 @@ def _lager(fenster, rahmen):
         if bearbeitung['nummer'] is None:
             return
         bearbeitung['nummer'] = None
-        material.set(''); menge.set(''); guete.set(''); ort.set('')
+        material.set(''); menge.set(''); guete.set('')
+        ort.set(pfade.einstellung('lager_ort') or '')
         meldung.configure(text='', fg=SUB)
         rechenhinweis.configure(text='')
         knoepfe_setzen()
@@ -5378,7 +5381,8 @@ def _lager(fenster, rahmen):
                 # Alles abgegeben — dann hat der Posten keinen Zweck mehr.
                 lager.entfernen(nr)
                 bearbeitung['nummer'] = None
-                material.set(''); menge.set(''); guete.set(''); ort.set('')
+                material.set(''); menge.set(''); guete.set('')
+                ort.set(pfade.einstellung('lager_ort') or '')
                 meldung.configure(text=t('s_lg_alles_weg') % name, fg=SUB)
                 knoepfe_setzen()
                 zeichnen()
@@ -5424,7 +5428,13 @@ def _lager(fenster, rahmen):
             lager.aendern(bearbeitung['nummer'], name, wert, q, ort.get())
             hinweis = t('s_lg_geaendert') % (name, wert)
             bearbeitung['nummer'] = None
-        material.set(''); menge.set(''); guete.set(''); ort.set('')
+        # ⚠ **Der Lagerort bleibt stehen.** Wer eine Raffinerie-Ausbeute
+        # einträgt, trägt sechs Posten am selben Ort ein — ihn jedes Mal neu
+        # zu wählen ist reine Tipparbeit. Material, Menge und Qualität werden
+        # geleert, der Ort nicht; er wird zusätzlich gemerkt, damit er auch
+        # beim nächsten Programmstart noch dasteht.
+        material.set(''); menge.set(''); guete.set('')
+        pfade.einstellung_setzen('lager_ort', ort.get().strip())
         frei['name'] = None
         # Bestätigen: Man soll sehen, dass es angekommen ist.
         meldung.configure(text=hinweis, fg=SUB)

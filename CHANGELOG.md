@@ -50,6 +50,14 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   Both screens can be typed off this way. Cross-checked: 272 cSCU from the
   terminal are the same 2.728 SCU as the seven stacks in the inventory.
 
+  **The storage location stays** — after adding entries and across restarts.
+  Whoever enters a yield enters six items at the same place; picking it again
+  every time was pure typing.
+
+  **A mistyped name shows the most likely match next to it** — "Aslerite" is
+  not a resource. Did you mean: Aslarite? Nothing is matched automatically
+  though; the decision stays with the human.
+
   ⚠ **Automatic is not possible, and that is measured, not assumed.** The
   refinery job is **not** in the `Game.log` — checked across 22 logs:
   `Refinery` appears 58 times, only as a load line for the deck's 3D models;

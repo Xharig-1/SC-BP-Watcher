@@ -51,6 +51,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   272 cSCU aus dem Terminal sind dieselben 2,728 SCU wie die sieben Stapel im
   Inventar.
 
+  **Der Lagerort bleibt stehen** — auch nach dem Eintragen und über den
+  Programmstart hinweg. Wer eine Ausbeute einträgt, trägt sechs Posten am
+  selben Ort ein; ihn jedes Mal neu zu wählen war reine Tipparbeit.
+
+  **Bei einem vertippten Namen steht der wahrscheinlichste Treffer daneben** —
+  „Aslerite" gibt es nicht als Rohstoff. Meintest du: Aslarite? Zugeordnet wird
+  trotzdem nichts von allein; die Entscheidung bleibt beim Menschen.
+
   ⚠ **Automatisch geht es nicht, und das ist gemessen, nicht vermutet.** Der
   Raffinerie-Auftrag steht **nicht** in der `Game.log` — über 22 Protokolle
   nachgesehen: `Refinery` kommt 58-mal vor, ausschließlich als Ladezeile für

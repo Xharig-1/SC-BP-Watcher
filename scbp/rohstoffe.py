@@ -375,7 +375,15 @@ def raffinerie_zeilen(text, einheit='cscu'):
             continue
         echter = herstellung.lager_name(name)
         if not echter:
-            fehler.append((zeile, t('s_rf_unbekannt') % name))
+            # ⚠ Kein stiller Fehlschlag und keine stille Zuordnung: Der Name
+            # wird **nicht** geraten, aber der wahrscheinlichste Treffer steht
+            # daneben. Wer „Aslerite" tippt, soll „Aslarite" lesen und selbst
+            # entscheiden — das Werkzeug entscheidet es nicht für ihn.
+            aehnlich = herstellung.aehnliche_rohstoffe(name, 2)
+            grund = t('s_rf_unbekannt') % name
+            if aehnlich:
+                grund += ' ' + t('s_rf_meintest') % ' · '.join(aehnlich)
+            fehler.append((zeile, grund))
             continue
         if not 0 <= guete <= 1000:
             fehler.append((zeile, t('s_rf_qualitaet')))
