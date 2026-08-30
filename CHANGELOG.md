@@ -10,6 +10,19 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **The author of the German translation is now credited** — with name,
+  repository and licence. It is by **rjcncpt**
+  ([StarCitizen-Deutsch-INI](https://github.com/rjcncpt/StarCitizen-Deutsch-INI))
+  under **CC BY-NC-SA 4.0**, which requires exactly that. Until now only the SC
+  Deutsch Launcher was named — the distributor, not the author.
+
+  Shown under **Thanks & Licenses** and in both readmes.
+
+  The watcher does **not bundle** the translation and never passes on a modified
+  copy: it only extends the file on your own machine, and the **source note in
+  its first line is left untouched** — the author asks for that, so anyone can
+  find their way back to the original translation.
+
 - ⭐⭐ **Only things that actually exist in the game can be stored** — resource
   **and** location. The "Add anyway" button is gone.
 
@@ -179,6 +192,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   now shows as an ordinary row with its info icon, drop-off and reputation.
 
 ### Fixed
+
+- ⚠ **No contract at all was recognised in Swiss German.** The `live-CH`
+  edition writes "**Uftrag** angenommen", "Uftrag abgschlosse", "Uftrag
+  fehlgschlage" — without the "A". Read straight from the source, not guessed.
+  Without those entries the watcher stayed silent there: no message, no skipped
+  file, simply no contracts.
 
 - ⚠⚠ **The percentages were cut off** — "× 1.047  +4.(" instead of "+4.70 %".
   The label had a fixed width of nine characters; when the percentage was added,

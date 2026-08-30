@@ -10,6 +10,20 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Neu
 
+- **Der Urheber der deutschen Übersetzung ist jetzt genannt** — mit Name,
+  Repository und Lizenz. Sie stammt von **rjcncpt**
+  ([StarCitizen-Deutsch-INI](https://github.com/rjcncpt/StarCitizen-Deutsch-INI))
+  und steht unter **CC BY-NC-SA 4.0**; die Lizenz verlangt das ausdrücklich.
+  Bisher stand dort nur der SC Deutsch Launcher — der Verteiler, nicht der Autor.
+
+  Zu finden unter **Danke & Lizenzen** und in beiden Anleitungen.
+
+  Der Watcher **liefert die Übersetzung nicht mit** und gibt auch keine
+  veränderte Fassung weiter: Er ergänzt die Datei ausschließlich auf deinem
+  Rechner, und die **Quellenangabe in ihrer ersten Zeile bleibt unangetastet** —
+  so verlangt es der Autor, damit jeder zur ursprünglichen Übersetzung
+  zurückfindet.
+
 - ⭐⭐ **Ins Lager kommt nur noch, was es im Spiel wirklich gibt** — Rohstoff
   **und** Lagerort. Der Knopf „Trotzdem eintragen" ist weg.
 
@@ -216,6 +230,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   `FBL-8u Undersuit SecondWind` und `Warden Backpack Purgatory Camo`.
 
 ### Behoben
+
+- ⚠ **Auf Schweizerdeutsch wurde kein einziger Auftrag erkannt.** Die
+  `live-CH`-Fassung schreibt „**Uftrag** angenommen", „Uftrag abgschlosse",
+  „Uftrag fehlgschlage" — ohne „A". Direkt in der Quelle nachgesehen, nicht
+  geraten. Ohne diese Einträge blieb der Watcher dort still: keine Meldung,
+  keine übersprungene Datei, einfach keine Aufträge.
 
 - ⚠⚠ **Die Prozentangaben waren abgeschnitten** — „× 1.047  +4.(" statt
   „+4,70 %". Das Etikett hatte eine feste Breite von neun Zeichen; als die
