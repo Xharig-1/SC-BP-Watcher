@@ -86,6 +86,43 @@ def punkte_aus(block):
     return gefunden
 
 
+def vorspann_aus(block):
+    """Der handgeschriebene Kurztext einer Version — oder `''`.
+
+    ⭐⭐ **Der wichtigste Teil dieser Datei.** Am 30.08.2026 kam die
+    Rückmeldung, die Ankündigungen seien „viel zu lang, die liest niemand
+    mehr" — sie sollen kurz sein, Geschmack auf mehr machen und **menschlich**
+    klingen, eher wie ein Werbetext.
+
+    Aus einem Änderungsprotokoll lässt sich so etwas nicht rechnen. Ein
+    Protokoll ist Buchführung: vollständig, sachlich, mit Begründung. Eine
+    Ankündigung ist das Gegenteil — sie darf weglassen, zuspitzen und Lust
+    machen. Wer aus dem einen automatisch das andere erzeugen will, bekommt
+    beides halb.
+
+    Deshalb: **Steht direkt unter der Versionsüberschrift ein Absatz** (vor dem
+    ersten `###`), ist das die Ankündigung, und der Rest des Protokolls bleibt
+    für die, die es genau wissen wollen. Fehlt er, greift wie bisher die
+    Aufzählung der Überschriften.
+
+    So bleibt der Werbetext, was er sein muss: von einem Menschen geschrieben,
+    für Menschen.
+    """
+    zeilen = []
+    for zeile in block.splitlines():
+        if zeile.startswith('### '):
+            break
+        if zeile.startswith('> ') or zeile.startswith('#'):
+            continue
+        zeilen.append(zeile)
+    text = '\n'.join(zeilen).strip()
+    # Ein einzelner Aufzählungspunkt ist kein Vorspann, sondern ein verirrter
+    # Protokolleintrag.
+    if text.startswith('-') or text.startswith('*'):
+        return ''
+    return text
+
+
 def bauen(tag, sprache='de'):
     import release_text
 
@@ -93,6 +130,20 @@ def bauen(tag, sprache='de'):
     block = release_text.abschnitt(os.path.join(WURZEL, datei), tag)
     if not block:
         return ''
+
+    # ⭐ Der handgeschriebene Kurztext hat Vorrang — siehe `vorspann_aus`.
+    vorspann = vorspann_aus(block)
+    if vorspann:
+        if sprache == 'de':
+            return ('## SC BP Watcher %s ist da\n\n%s\n\n'
+                    '**Herunterladen:** <%s/releases/latest>\n'
+                    'Alle Änderungen im Einzelnen: '
+                    '<%s/blob/main/CHANGELOG.de.md>'
+                    % (tag, vorspann, REPO, REPO))
+        return ('## SC BP Watcher %s is out\n\n%s\n\n'
+                '**Download:** <%s/releases/latest>\n'
+                'Every change in detail: <%s/blob/main/CHANGELOG.md>'
+                % (tag, vorspann, REPO, REPO))
 
     punkte = punkte_aus(block)[:PUNKTE]
     # ⚠ Eine reine Fehlerbehebung anzukündigen mit „Was diese Version bringt"

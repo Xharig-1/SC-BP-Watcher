@@ -8,6 +8,15 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ## v3.4.0 - 2026-08-30
 
+Der Laderaum ist voll — und jetzt? Der neue Bereich **Handel** sagt dir, wo du
+deine Ware los wirst und was sie je SCU bringt. Für mehrere Waren auf einmal,
+sortiert danach, wie viele davon ein Ort überhaupt abnimmt: Ein Stopp bringt
+meist mehr als drei.
+
+Dazu: ein eigenes Lager für Handelsware, der Filter **„Kann zugehen"** für
+Baupläne, die du dir unbemerkt verbaust, und die Raffinerie-Ausbeute tippst du
+jetzt in einem Rutsch ab statt in 24 Feldern.
+
 ### Neu
 - ⭐⭐ **„Kann zugehen" — der Filter für das, was du dir unbemerkt verbaust.**
   280 der 353 Aufträge haben eine **Ruf-Obergrenze**: Steigst du bei der

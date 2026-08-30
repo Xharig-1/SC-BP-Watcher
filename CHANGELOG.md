@@ -8,6 +8,14 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ## v3.4.0 - 2026-08-30
 
+Cargo hold full — now what? The new **Trading** section tells you where to
+offload your goods and what they pay per SCU. Several commodities at once,
+sorted by how many of them a place actually takes: one stop usually beats three.
+
+Also in: a separate hold for trade goods, the **"Can close"** filter for
+blueprints you might lock yourself out of, and refinery yields typed in one go
+instead of across 24 fields.
+
 ### Added
 - ⭐⭐ **"Can close" — the filter for what you quietly lock yourself out of.**
   280 of the 353 contracts have a **reputation cap**: rank up past it with that
