@@ -658,7 +658,18 @@ def rundleiste(eltern, leinwand, grund=None, breite=10):
     weiter. `leinwand` ist die Rollfläche, an der sie hängt.
     """
     grund = grund or BG
-    rille_farbe, griff_farbe, griff_hell = BG, '#2b3547', '#3a4658'
+    # ⚠⚠ **Ein Rollbalken, den man nicht sieht, ist keiner.** Der Griff war
+    # `#2b3547` — auf der Fläche einer aufgeklappten Auswahlliste (`#161c28`)
+    # ergibt das einen Kontrast von **1,6 : 1**. Am 30.08.2026 gemeldet: „ah es
+    # ist scrollbar und funktioniert, aber ich sehe keinen Rollbalken, und da
+    # ich mich grad mal dumm stelle wie normale User — wenn ich es nicht sehe,
+    # wie sollen es andere dann checken."
+    #
+    # Jetzt 2,9 : 1 auf der Liste und 3,6 : 1 auf einer Seite, unter der Maus
+    # 3,8 : 1. Dazu eine sichtbare Rille: Erst sie zeigt, dass es überhaupt
+    # eine Bahn gibt, an der etwas entlangläuft — der Griff allein sieht aus
+    # wie ein Strich.
+    rille_farbe, griff_farbe, griff_hell = '#0b0e14', '#5a6b85', '#7d90ad'
     r = breite / 2.0
 
     c = tk.Canvas(eltern, width=breite, bg=grund, highlightthickness=0, bd=0)
@@ -1011,6 +1022,10 @@ def rundknopf(eltern, text, tat, schrift, grund, fuellung, rand, fg,
 # Auswahlfeld bis weit unter das Fenster.
 MAX_WAHLZEILEN = 15
 
+# So breit darf ein geschlossenes Auswahlfeld höchstens werden, in Zeichen.
+# Die aufgeklappte Liste ist davon nicht betroffen — siehe `rundwahl`.
+MAX_FELDZEICHEN = 18
+
 
 def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
              breite=None):
@@ -1041,15 +1056,38 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
                 return text
         return eintraege[0][1] if eintraege else ''
 
+    # ⚠⚠ **Das geschlossene Feld muss NICHT so breit sein wie der längste
+    # Eintrag.** Bis v3.3.0-rc40 war es das — und weil unter den 64
+    # Herstellern „Musashi Industrial & Starflight Concern" steht (39 Zeichen),
+    # war das Feld über 300 Pixel breit. In der Herstellung passte die vierte
+    # Auswahl dadurch nicht mehr in die Zeile und wurde rechts abgeschnitten
+    # („Materia…"). Am 30.08.2026 gemeldet: „obwohl der breiteste Eintrag bei
+    # Hersteller ca. die Hälfte des Dropdowns benötigt."
+    #
+    # Die **aufgeklappte Liste** bleibt so breit, wie ihr längster Eintrag es
+    # verlangt — dort ist der Platz da. Nur das Feld wird gedeckelt; ein zu
+    # langer gewählter Wert bekommt am Ende ein „…".
     if breite is None:
-        breite = max(s.measure(text) for _, text in eintraege) + 42
+        noetig = max(s.measure(text) for _, text in eintraege) + 42
+        breite = min(noetig, s.measure('M' * MAX_FELDZEICHEN) + 42)
     hoehe = s.metrics('linespace') + 14
+
+    def _passend(text):
+        """Text so kürzen, dass er ins geschlossene Feld passt."""
+        platz = breite - 34          # Rand links, Pfeil rechts
+        if s.measure(text) <= platz:
+            return text
+        gekuerzt = text
+        while gekuerzt and s.measure(gekuerzt + '…') > platz:
+            gekuerzt = gekuerzt[:-1]
+        return (gekuerzt + '…') if gekuerzt else text
 
     c = tk.Canvas(eltern, width=breite, height=hoehe, bg=grund,
                   highlightthickness=0, bd=0, cursor='hand2')
     form = _rundes_rechteck(c, 1, 1, breite - 1, hoehe - 1, radius=5,
                             fill='#0c1017', outline=LINIE, width=1)
-    text_id = c.create_text(11, hoehe / 2.0, text=beschriftung_zu(gewaehlt),
+    text_id = c.create_text(11, hoehe / 2.0,
+                            text=_passend(beschriftung_zu(gewaehlt)),
                             fill=FG, font=s, anchor='w')
     pfeil = c.create_text(breite - 12, hoehe / 2.0, text='▾', fill=SUB,
                           font=s, anchor='e')
@@ -1082,7 +1120,7 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
     def waehlen(wert):
         zuklappen()
         zustand['wert'] = wert
-        c.itemconfigure(text_id, text=beschriftung_zu(wert))
+        c.itemconfigure(text_id, text=_passend(beschriftung_zu(wert)))
         faerben()
         beim_waehlen(wert)
 
@@ -1189,7 +1227,9 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
         leinwand.configure(width=gebraucht_breite - 2, height=sicht)
         leinwand.pack(side='left', fill='both', expand=True)
         if gebraucht_hoehe > sicht:
-            leiste = rundleiste(aussen, leinwand, grund=FLAECHE, breite=8)
+            # ⚠ Gleiche Breite wie auf den Seiten. Acht Pixel waren schmaler
+            # als alles andere im Fenster und dadurch noch schwerer zu sehen.
+            leiste = rundleiste(aussen, leinwand, grund=FLAECHE, breite=10)
             leiste.pack(side='right', fill='y')
             leinwand.configure(yscrollcommand=leiste.set)
         leinwand.configure(scrollregion=(0, 0, gebraucht_breite,
