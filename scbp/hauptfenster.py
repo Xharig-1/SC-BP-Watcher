@@ -87,7 +87,12 @@ ROT     = '#e05252'
 # 210 und rund 60 für Ränder und Rollleiste. Bei 1100 brach sie um und die
 # Knöpfe standen untereinander — Xharig-1: „das sieht schrecklich aus."
 # Englisch käme mit 710 aus; massgeblich ist die längere Sprache.
-MIN_BREITE, MIN_HOEHE = 1160, 760
+# ⭐ **Mindesthöhe 380 statt 760** (30.08.2026). Sie hing vorher am Platzbedarf
+# der Seitenleiste — bei 1020 px passte das Fenster auf keinen 1080er
+# Bildschirm mehr, und selbst auf grossen Schirmen liess es sich nicht kleiner
+# ziehen als 1028. Seit die Leiste rollt und ihre Gruppen klappbar sind, geht
+# nichts verloren, wenn das Fenster kürzer ist: Was nicht hinpasst, rollt.
+MIN_BREITE, MIN_HOEHE = 1160, 380
 
 # Startbreite der Seitenleiste. Auch sie ist nur eine Untergrenze: Wie breit
 # „Angaben im Spiel" oder das englische „In-game details" wirklich wird, hängt
@@ -2091,17 +2096,22 @@ class Hauptfenster:
                     self.root.after(60, lambda: self._mindesthoehe_nachziehen(
                         versuch + 1))
                 return
-            bedarf = self._seitenleiste_bedarf()
-            if not self.fortgeschritten_offen:
-                # Platz für die drei Einträge mitrechnen, die beim Aufklappen
-                # dazukommen (Pfade, Erkennung, Bauplan-Bestand). Sie sind so
-                # hoch wie jeder andere Reiter.
-                zeile = self.knoepfe.get('liste')
-                if zeile:
-                    bedarf += 3 * zeile[0].winfo_reqheight()
-            kopf_und_fuss = max(0, self.root.winfo_height()
-                                - self.leisten_flaeche.winfo_height())
-            noetig = max(MIN_HOEHE, bedarf + kopf_und_fuss)
+            # ⚠⚠ **Der Leistenbedarf bestimmt die Mindesthöhe NICHT mehr.**
+            #
+            # Er tat es, solange die Leiste ein fester Rahmen war: Was nicht
+            # ins Fenster passte, war unerreichbar, also musste das Fenster
+            # mitwachsen. Mit jedem neuen Reiter wuchs es weiter — bei der
+            # Gruppe „Handel" auf über 1000 px. Auf einem 1080er Bildschirm
+            # passte es dann gar nicht mehr, und selbst auf grossen Schirmen
+            # liess es sich nicht kleiner ziehen als 1028 px („das fenster ist
+            # zu hoch, kann es nicht kleiner ziehen", 30.08.2026).
+            #
+            # Seit die Leiste rollt (`_korpus`) und ihre Gruppen klappbar sind,
+            # geht bei einem kürzeren Fenster nichts verloren: Was nicht
+            # hinpasst, rollt. Die Mindesthöhe ist deshalb wieder eine feste
+            # Zahl — `_seitenleiste_bedarf()` wird nur noch für den Rollbereich
+            # gebraucht, nicht mehr für die Fenstergrösse.
+            noetig = MIN_HOEHE
             # ⚠⚠ **Die Mindesthöhe darf den Bildschirm nie überschreiten.**
             #
             # Ein `minsize`, das höher ist als der Monitor, lässt sich nicht

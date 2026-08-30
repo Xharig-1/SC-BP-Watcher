@@ -6,149 +6,9 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.4.0 - unveröffentlicht
+## v3.4.0 - 2026-08-30
 
 ### Neu
-
-- ⭐⭐ **Handel — zwei neue Reiter: „Handelslager" und „Verkauf".**
-  Die Frage, die bisher fehlte: *wo werde ich meine Ladung los, und was bringt
-  sie je SCU?*
-
-  **Der Verkaufs-Reiter** beantwortet sie für **mehrere Waren auf einmal**.
-  Sortiert wird nicht nach dem höchsten Preis, sondern danach, **wie viele
-  deiner Waren ein Ort überhaupt abnimmt** — denn das ist der Unterschied, der
-  zählt. Gemessen am 30.08.2026 für 100 SCU Gold, 40 Copper und 25 Iron:
-
-  | Weg | Erlös |
-  |---|---|
-  | alles an **einem** Ort | 3.533.000 aUEC |
-  | jede Ware am je besten Ort | 3.566.000 aUEC |
-
-  **Ein Prozent mehr für zwei zusätzliche Anflüge.** Genau diese Antwort geben
-  die bekannten Handelsseiten nicht, weil sie immer nur eine Ware betrachten.
-
-  **Das Handelslager** ist bewusst vom Werkstatt-Lager getrennt: Das eine ist
-  Baumaterial, das man behält, das andere Ladung, die man loswerden will. Ein
-  Knopf im Verkaufs-Reiter übernimmt den ganzen Bestand in die Auswahl.
-
-  Beide Listen sind echte Tabellen — Ware · Ort · SCU · Preis 1 SCU ·
-  Gesamtpreis, Zahlen rechtsbündig untereinander.
-
-- **Gestohlene Ware.** Statt einer Güte (die beim Verkauf nichts ändert, und
-  erbeutete Ladung hat ohnehin immer Q 0) gibt es im Handelslager den Haken
-  *„als gestohlen markiert"*. Der Verkaufs-Reiter blendet dann auf die
-  **15 Terminals**, die keine Fragen stellen (`is_nqa` bei UEX) — sieben davon
-  mit Ankaufgeboten.
-
-- **Preise selbst auffrischen.** Ein Knopf holt die Preise sofort, statt auf den
-  täglichen Abruf zu warten — **einmal pro Stunde**. Solange die Sperre läuft,
-  zählt der Knopf die Restzeit selbst herunter und wechselt dabei die Farbe
-  (grau → gold → grün). Kein Rot: Der Knopf ist gesperrt, *weil* der Abruf
-  geklappt hat.
-
-- **Im Mengenfeld darf gerechnet werden** — `100+5` ergibt 105. Klickt man eine
-  Zeile an, steht ihre Menge im Feld und lässt sich mit `+5` oder `−12`
-  nachjustieren. Dasselbe Verhalten wie im Werkstatt-Lager.
-
-### Geändert
-
-- **Ware und Lagerort kommen aus geschlossenen Listen** — wie im Werkstatt-Lager.
-  Eingetragen werden kann nur, was UEX auch kennt; zu Vertippern werden
-  ähnliche Namen vorgeschlagen.
-
-- `preise.py` schloss „Preise je Terminal" bisher ausdrücklich aus („weitere
-  2,1 MB Daten und ein anderes Werkzeug"). Der Satz stimmte nicht mehr: Der
-  volle Abzug ist 1,04 MB und aufgeräumt abgelegt 293 KB. Der Kopf der Datei
-  sagt jetzt, wo die Grenze wirklich verläuft.
-
-- ⭐ **Die Gruppen der Seitenleiste lassen sich zuklappen** — Baupläne,
-  Werkstatt, Handel, Einstellungen, Info. Ein Klick auf die Überschrift, der
-  Zustand bleibt bis zum nächsten Start erhalten.
-
-  Das ist der dritte Hebel gegen die Fensterhöhe: Wer Werkstatt, Handel und
-  Einstellungen zuklappt, drückt den Platzbedarf der Leiste von **1020 auf
-  696 Pixel**, und die Mindesthöhe des Fensters geht mit. Vorschlag von
-  **Morkhan (KRT)**.
-
-  ⚠ Öffnet man einen Reiter aus einer zugeklappten Gruppe, klappt sie von
-  selbst auf — sonst stünde man auf einer Seite, deren Eintrag in der Leiste
-  gar nicht zu sehen ist.
-
-- **Die Seitenleiste sieht überall gleich aus.** „Für Fortgeschrittene" hat
-  jetzt denselben Klapp-Pfeil wie die Gruppen und sitzt in der Gruppe
-  „Einstellungen", statt einzeln unten zu kleben — dahinter liegen Pfade,
-  Erkennung und der Bauplan-Bestand, also Dinge, die man einstellt. Alle Klapp-Pfeile benutzen dasselbe Symbol
-  wie der Rest des Programms — vorher waren es Textzeichen, die je nach
-  Systemschrift anders aussahen.
-
-- **„Star Citizen starten", Kaffee und Discord stehen fest am Fuß der Leiste**
-  und rollen nicht mehr mit. Dazu hat die Leiste einen sichtbaren Rollbalken:
-  Ohne ihn wirkte eine aufgeklappte Gruppe leer, wenn ihre Einträge unterhalb
-  des Fensterrands lagen.
-
-- ⭐ **„Bauplan-Bestand" liegt jetzt hinter „Für Fortgeschrittene."** Die Seite
-  schreibt am eigenen Bestand — einlesen, überschreiben, zurücksetzen —, stand
-  aber zwischen lauter harmlosen Einstellungen und wurde im Vorbeigehen
-  angeklickt. Erreichbar bleibt sie, nur nicht mehr nebenbei.
-
-- **Der Knopf „Protokolle erneut einlesen" ist rot.** Er stößt einen Lauf über
-  hunderte Protokolle an und schreibt dabei am Bauplan-Stand. Rot **dauerhaft**,
-  nicht erst beim Überfahren — ein Knopf, der erst warnt, wenn die Maus schon
-  darauf steht, warnt niemanden. Beides gefunden von **Morkhan (KRT)**, nachdem
-  er ihn versehentlich gedrückt hatte.
-
-- **„Mein Lager" bedient sich jetzt wie das Handelslager.** Rohstoff und
-  Lagerort sind Auswahlfelder: tippen **oder** den Pfeil anklicken und
-  aussuchen. Die Beschriftungen stehen über den Feldern statt daneben, damit
-  die aufgeklappte Liste nichts verschiebt. Dieselbe Bedienung an beiden
-  Stellen — wer die eine kann, kann die andere blind.
-
-- ⭐⭐ **Die Raffinerie-Ausbeute verlor ihren Lagerort.** Wer „Levski" gewählt
-  hatte, bekam die ganze Ausbeute **ohne Ort** eingebucht — und damit als eigene
-  Stapel neben dem bereits vorhandenen Bestand. Ursache: Der Ortsname lief durch
-  eine Funktion, die eine Eingabe auf einen bekannten **Rohstoff** zieht; ein
-  Ortsname steht dort nie drin, also kam nichts zurück.
-
-  Dazu hat der Block jetzt ein **eigenes Feld „Lagerort für diese Ausbeute"**.
-  Vorher galt stillschweigend der Ort aus dem Formular weiter oben — das war
-  weder sichtbar noch zu ändern, ohne hochzurollen.
-
-- **„Bitte hol die neue Version selbst" kam zur falschen Zeit.** Wer auf
-  „holen" klickt, während GitHub die Dateien noch baut, wurde auf die
-  Releases-Seite geschickt — wo sie in dem Moment auch nicht liegen. Jetzt steht
-  dort, was wirklich los ist: *„Diese Fassung wird gerade noch gebaut."*
-
-### Behoben
-
-- Ein Knopf, der zur Laufzeit umbeschriftet wird, holte nach dem Überfahren mit
-  der Maus die alte Farbe zurück.
-
-### Behoben
-
-- ⭐ **Das Fenster passte auf 1920×1080 nicht mehr auf den Bildschirm.** Mit der
-  Gruppe „Handel" brauchte die Seitenleiste 1020 Pixel, und daraus wurde eine
-  **Mindesthöhe größer als der Monitor** — die hält Tk dann gegen jedes
-  Verkleinern, das Fenster stand über der Taskleiste hinaus und man kam an
-  alles darunter nicht mehr heran. Gefunden von **Morkhan (KRT)** am ersten Testtag.
-
-  Zwei Änderungen: Die Mindesthöhe wird jetzt auf den Bildschirm gedeckelt, und
-  die **Seitenleiste rollt**, wenn sie nicht ganz hineinpasst — sonst wären die
-  unteren Reiter einfach abgeschnitten gewesen.
-
-- Der **Diagnosebericht** nennt jetzt Fenstergröße und Mindestmaß. Beim Fund
-  oben stand dazu keine einzige Zahl darin, obwohl genau sie den Fehler
-  ausmachte.
-
-### Danke
-
-- **Morkhan (KRT)** für die Idee zu diesem Reiter, für den Fund, dass das
-  Fenster nicht mehr auf den Bildschirm passte, und für den Gedanken, dass
-  ein Ort, der die ganze Ladung nimmt, mehr wert ist als der beste Einzelpreis.
-
-## v3.3.6 - unveröffentlicht
-
-### Neu
-
 - ⭐⭐ **„Kann zugehen" — der Filter für das, was du dir unbemerkt verbaust.**
   280 der 353 Aufträge haben eine **Ruf-Obergrenze**: Steigst du bei der
   Fraktion darüber, werden sie dir nicht mehr angeboten — und ihre Baupläne sind
@@ -233,8 +93,126 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Beides kommt aus CIGs eigenen Vertragsdaten (`canBeShared`,
   `personalCooldownTime`) und war bisher nur in den Rohdaten zu sehen.
 
-### Behoben
 
+- ⭐⭐ **Handel — zwei neue Reiter: „Handelslager" und „Verkauf".**
+  Die Frage, die bisher fehlte: *wo werde ich meine Ladung los, und was bringt
+  sie je SCU?*
+
+  **Der Verkaufs-Reiter** beantwortet sie für **mehrere Waren auf einmal**.
+  Sortiert wird nicht nach dem höchsten Preis, sondern danach, **wie viele
+  deiner Waren ein Ort überhaupt abnimmt** — denn das ist der Unterschied, der
+  zählt. Gemessen am 30.08.2026 für 100 SCU Gold, 40 Copper und 25 Iron:
+
+  | Weg | Erlös |
+  |---|---|
+  | alles an **einem** Ort | 3.533.000 aUEC |
+  | jede Ware am je besten Ort | 3.566.000 aUEC |
+
+  **Ein Prozent mehr für zwei zusätzliche Anflüge.** Genau diese Antwort geben
+  die bekannten Handelsseiten nicht, weil sie immer nur eine Ware betrachten.
+
+  **Das Handelslager** ist bewusst vom Werkstatt-Lager getrennt: Das eine ist
+  Baumaterial, das man behält, das andere Ladung, die man loswerden will. Ein
+  Knopf im Verkaufs-Reiter übernimmt den ganzen Bestand in die Auswahl.
+
+  Beide Listen sind echte Tabellen — Ware · Ort · SCU · Preis 1 SCU ·
+  Gesamtpreis, Zahlen rechtsbündig untereinander.
+
+- **Gestohlene Ware.** Statt einer Güte (die beim Verkauf nichts ändert, und
+  erbeutete Ladung hat ohnehin immer Q 0) gibt es im Handelslager den Haken
+  *„als gestohlen markiert"*. Der Verkaufs-Reiter blendet dann auf die
+  **15 Terminals**, die keine Fragen stellen (`is_nqa` bei UEX) — sieben davon
+  mit Ankaufgeboten.
+
+- **Preise selbst auffrischen.** Ein Knopf holt die Preise sofort, statt auf den
+  täglichen Abruf zu warten — **einmal pro Stunde**. Solange die Sperre läuft,
+  zählt der Knopf die Restzeit selbst herunter und wechselt dabei die Farbe
+  (grau → gold → grün). Kein Rot: Der Knopf ist gesperrt, *weil* der Abruf
+  geklappt hat.
+
+- **Im Mengenfeld darf gerechnet werden** — `100+5` ergibt 105. Klickt man eine
+  Zeile an, steht ihre Menge im Feld und lässt sich mit `+5` oder `−12`
+  nachjustieren. Dasselbe Verhalten wie im Werkstatt-Lager.
+
+### Geändert
+- **Ware und Lagerort kommen aus geschlossenen Listen** — wie im Werkstatt-Lager.
+  Eingetragen werden kann nur, was UEX auch kennt; zu Vertippern werden
+  ähnliche Namen vorgeschlagen.
+
+- `preise.py` schloss „Preise je Terminal" bisher ausdrücklich aus („weitere
+  2,1 MB Daten und ein anderes Werkzeug"). Der Satz stimmte nicht mehr: Der
+  volle Abzug ist 1,04 MB und aufgeräumt abgelegt 293 KB. Der Kopf der Datei
+  sagt jetzt, wo die Grenze wirklich verläuft.
+
+- ⭐ **Die Gruppen der Seitenleiste lassen sich zuklappen** — Baupläne,
+  Werkstatt, Handel, Einstellungen, Info. Ein Klick auf die Überschrift, der
+  Zustand bleibt bis zum nächsten Start erhalten.
+
+  Das ist der dritte Hebel gegen die Fensterhöhe: Wer Werkstatt, Handel und
+  Einstellungen zuklappt, drückt den Platzbedarf der Leiste von **1020 auf
+  696 Pixel**, und die Mindesthöhe des Fensters geht mit. Vorschlag von
+  **Morkhan (KRT)**.
+
+  ⚠ Öffnet man einen Reiter aus einer zugeklappten Gruppe, klappt sie von
+  selbst auf — sonst stünde man auf einer Seite, deren Eintrag in der Leiste
+  gar nicht zu sehen ist.
+
+- **Die Seitenleiste sieht überall gleich aus.** „Für Fortgeschrittene" hat
+  jetzt denselben Klapp-Pfeil wie die Gruppen und sitzt in der Gruppe
+  „Einstellungen", statt einzeln unten zu kleben — dahinter liegen Pfade,
+  Erkennung und der Bauplan-Bestand, also Dinge, die man einstellt. Alle Klapp-Pfeile benutzen dasselbe Symbol
+  wie der Rest des Programms — vorher waren es Textzeichen, die je nach
+  Systemschrift anders aussahen.
+
+- **„Star Citizen starten", Kaffee und Discord stehen fest am Fuß der Leiste**
+  und rollen nicht mehr mit. Dazu hat die Leiste einen sichtbaren Rollbalken:
+  Ohne ihn wirkte eine aufgeklappte Gruppe leer, wenn ihre Einträge unterhalb
+  des Fensterrands lagen.
+
+- ⭐ **„Bauplan-Bestand" liegt jetzt hinter „Für Fortgeschrittene."** Die Seite
+  schreibt am eigenen Bestand — einlesen, überschreiben, zurücksetzen —, stand
+  aber zwischen lauter harmlosen Einstellungen und wurde im Vorbeigehen
+  angeklickt. Erreichbar bleibt sie, nur nicht mehr nebenbei.
+
+- **Der Knopf „Protokolle erneut einlesen" ist rot.** Er stößt einen Lauf über
+  hunderte Protokolle an und schreibt dabei am Bauplan-Stand. Rot **dauerhaft**,
+  nicht erst beim Überfahren — ein Knopf, der erst warnt, wenn die Maus schon
+  darauf steht, warnt niemanden. Beides gefunden von **Morkhan (KRT)**, nachdem
+  er ihn versehentlich gedrückt hatte.
+
+- **„Mein Lager" bedient sich jetzt wie das Handelslager.** Rohstoff und
+  Lagerort sind Auswahlfelder: tippen **oder** den Pfeil anklicken und
+  aussuchen. Die Beschriftungen stehen über den Feldern statt daneben, damit
+  die aufgeklappte Liste nichts verschiebt. Dieselbe Bedienung an beiden
+  Stellen — wer die eine kann, kann die andere blind.
+
+- ⭐⭐ **Die Raffinerie-Ausbeute verlor ihren Lagerort.** Wer „Levski" gewählt
+  hatte, bekam die ganze Ausbeute **ohne Ort** eingebucht — und damit als eigene
+  Stapel neben dem bereits vorhandenen Bestand. Ursache: Der Ortsname lief durch
+  eine Funktion, die eine Eingabe auf einen bekannten **Rohstoff** zieht; ein
+  Ortsname steht dort nie drin, also kam nichts zurück.
+
+  Dazu hat der Block jetzt ein **eigenes Feld „Lagerort für diese Ausbeute"**.
+  Vorher galt stillschweigend der Ort aus dem Formular weiter oben — das war
+  weder sichtbar noch zu ändern, ohne hochzurollen.
+
+- **„Bitte hol die neue Version selbst" kam zur falschen Zeit.** Wer auf
+  „holen" klickt, während GitHub die Dateien noch baut, wurde auf die
+  Releases-Seite geschickt — wo sie in dem Moment auch nicht liegen. Jetzt steht
+  dort, was wirklich los ist: *„Diese Fassung wird gerade noch gebaut."*
+
+- ⭐ **Das Fenster ließ sich nicht mehr kleiner ziehen.** Die Mindesthöhe wurde
+  aus dem Platzbedarf der Seitenleiste gerechnet — mit jedem neuen Reiter wuchs
+  sie mit und lag zuletzt bei **1028 Pixeln**. Jetzt sind es **380**: Seit die
+  Leiste rollt und ihre Gruppen klappbar sind, geht bei einem kürzeren Fenster
+  nichts verloren.
+
+- **Beim Löschen sprang die Liste nach ganz oben.** Wer einen Posten weit unten
+  entfernte, musste sich neu zurechtfinden — die Liste wird beim Löschen neu
+  gezeichnet, und die Rollfläche stand danach wieder am Anfang. Die Stelle
+  bleibt jetzt erhalten, im Werkstatt- wie im Handelslager.
+
+### Behoben
 - **Die Anleitung sagte Falsches über den SC Deutsch Launcher.** Dort stand, er
   „bestätige die Funde" — diese Zwischenstufe gibt es seit v3.0.0 nicht mehr:
   Was in der `Game.log` steht, steht im Spiel, da ist nichts zu bestätigen. Die
@@ -264,6 +242,30 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Das erklärt vermutlich, warum Änderungen an den Auftragstexten monatelang
   nicht ankamen. Betroffen war nur „Original"; die Quellen **Deutsch** und
   **StarStrings** bringen ihre Sprache selbst mit.
+
+
+- Ein Knopf, der zur Laufzeit umbeschriftet wird, holte nach dem Überfahren mit
+  der Maus die alte Farbe zurück.
+
+
+- ⭐ **Das Fenster passte auf 1920×1080 nicht mehr auf den Bildschirm.** Mit der
+  Gruppe „Handel" brauchte die Seitenleiste 1020 Pixel, und daraus wurde eine
+  **Mindesthöhe größer als der Monitor** — die hält Tk dann gegen jedes
+  Verkleinern, das Fenster stand über der Taskleiste hinaus und man kam an
+  alles darunter nicht mehr heran. Gefunden von **Morkhan (KRT)** am ersten Testtag.
+
+  Zwei Änderungen: Die Mindesthöhe wird jetzt auf den Bildschirm gedeckelt, und
+  die **Seitenleiste rollt**, wenn sie nicht ganz hineinpasst — sonst wären die
+  unteren Reiter einfach abgeschnitten gewesen.
+
+- Der **Diagnosebericht** nennt jetzt Fenstergröße und Mindestmaß. Beim Fund
+  oben stand dazu keine einzige Zahl darin, obwohl genau sie den Fehler
+  ausmachte.
+
+### Danke
+- **Morkhan (KRT)** für die Idee zu diesem Reiter, für den Fund, dass das
+  Fenster nicht mehr auf den Bildschirm passte, und für den Gedanken, dass
+  ein Ort, der die ganze Ladung nimmt, mehr wert ist als der beste Einzelpreis.
 
 ## v3.3.5 - 2026-08-30
 

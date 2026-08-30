@@ -2565,7 +2565,15 @@ def main():
         try:
             rahmen23 = tk23.Frame(wurzel23)
             rahmen23.pack(fill='both', expand=True)
-            wurzel23.geometry('%dx%d' % (MB23, MH23))
+            # ⚠ **Feste Probehoehe, nicht `MIN_HOEHE`.** Geprueft wird, ob die
+            # Update-Seite bei vernuenftiger Fenstergroesse vollstaendig
+            # hineinpasst — das hat mit der **Mindest**hoehe nichts zu tun.
+            # Seit die Leiste rollt, darf die bei 380 px liegen (30.08.2026);
+            # die Pruefung schlug daraufhin fehl, obwohl am Fenster nichts
+            # falsch war. 760 war die fruehere Mindesthoehe und bleibt das
+            # sinnvolle Mass fuer „passt die Seite".
+            PROBE_HOEHE23 = 760
+            wurzel23.geometry('%dx%d' % (MB23, PROBE_HOEHE23))
             se23._ueber(_Traeger23(), rahmen23)
             wurzel23.update_idletasks()
             wurzel23.update()
@@ -2592,8 +2600,8 @@ def main():
             # kleiner als die Mindestgroesse, wird die Kanten-Pruefung darunter
             # sogar STRENGER; verlangt wird deshalb nur ein echtes Fenster.
             pruefe(hoehe23 >= 600,
-                   'die Probe hat ein echtes Fenster (%d px, Mindestgroesse %d)'
-                   % (hoehe23, MH23))
+                   'die Probe hat ein echtes Fenster (%d px, Probehoehe %d)'
+                   % (hoehe23, PROBE_HOEHE23))
             pruefe(not abgeschnitten,
                    'kein Knopf der Update-Seite faellt unter die Kante (%s)'
                    % (abgeschnitten or 'keiner'))
@@ -6894,6 +6902,27 @@ def main():
            'der Raffinerie-Block zieht den ORT nicht durch lager_name()')
     pruefe('ort_raff' in _raffblock85 and '_orte_modul.kennt(' in _raffblock85,
            'er hat ein eigenes Ortsfeld und prueft es gegen die Ortsliste')
+
+    # ⚠⚠ **Die Mindesthoehe haengt NICHT mehr am Leistenbedarf.** Sie tat es,
+    # solange die Leiste ein fester Rahmen war; mit jedem neuen Reiter wuchs
+    # das Fenster mit, und am Ende liess es sich nicht mehr kleiner ziehen.
+    from scbp.hauptfenster import MIN_HOEHE as _MH85
+    pruefe(_MH85 <= 400,
+           'die Mindesthoehe ist klein genug zum Kleinerziehen (%d px)' % _MH85)
+    pruefe(_MH85 < _bedarf85,
+           'und liegt unter dem Platzbedarf der Leiste (%d < %d)'
+           % (_MH85, _bedarf85))
+    pruefe('noetig = MIN_HOEHE' in _q85
+           and 'noetig = max(MIN_HOEHE' not in _q85,
+           'die Mindesthoehe wird nicht mehr aus dem Bedarf gerechnet')
+
+    # ⚠ **Rollstelle beim Loeschen halten.** Wer einen Posten weit unten
+    # loescht, soll nicht oben landen.
+    pruefe('_rollstelle_halten(' in _q85p,
+           'Loeschen haelt die Rollstelle')
+    pruefe(_q85p.count('_rollstelle_halten(') >= 4,
+           'an allen Loeschstellen, nicht nur an einer (%d)'
+           % _q85p.count('_rollstelle_halten('))
 
     # ⚠ **„Wird noch gebaut" ist etwas anderes als „hol es selbst".** Wer in der
     # Luecke zwischen Tag und fertigem Bau auf „holen" klickt, findet auf der

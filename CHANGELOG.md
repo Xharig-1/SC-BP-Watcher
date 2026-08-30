@@ -6,143 +6,9 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.4.0 - unreleased
+## v3.4.0 - 2026-08-30
 
 ### Added
-
-- ⭐⭐ **Trading — two new tabs: "Cargo hold" and "Selling".**
-  The question that was missing: *where do I offload my cargo, and what does it
-  pay per SCU?*
-
-  **The selling tab** answers it for **several commodities at once**. It sorts
-  not by the highest price, but by **how many of your goods a place actually
-  takes** — because that is the difference that matters. Measured on 30 Aug
-  2026 for 100 SCU gold, 40 copper and 25 iron:
-
-  | Route | Revenue |
-  |---|---|
-  | everything at **one** place | 3,533,000 aUEC |
-  | each commodity at its own best place | 3,566,000 aUEC |
-
-  **One percent more for two extra approaches.** The known trading sites do not
-  give that answer, because they only ever look at one commodity.
-
-  **The cargo hold** is deliberately kept apart from the workshop stock: one is
-  building material you keep, the other is cargo you want gone. A button in the
-  selling tab pulls the whole hold into the selection.
-
-  Both lists are proper tables — commodity · location · SCU · price per SCU ·
-  total, figures right-aligned below each other.
-
-- **Stolen cargo.** Instead of a quality (which changes nothing when selling,
-  and looted cargo is always Q 0 anyway) the cargo hold has a *"marked as
-  stolen"* tick. The selling tab then narrows down to the **15 terminals** that
-  ask no questions (`is_nqa` at UEX) — seven of them with buy offers.
-
-- **Refresh prices yourself.** A button fetches prices right away instead of
-  waiting for the daily update — **once per hour**. While the lock is running
-  the button counts down itself and changes colour as it goes (grey → gold →
-  green). No red: the button is locked *because* the fetch succeeded.
-
-- **The amount field does maths** — `100+5` makes 105. Click a row and its
-  amount appears in the field, ready to be adjusted with `+5` or `−12`. Same
-  behaviour as in the workshop stock.
-
-### Changed
-
-- **Commodity and storage location come from closed lists** — as in the
-  workshop stock. Only what UEX knows can be entered; near misses get
-  suggestions.
-
-- `preise.py` used to rule out "prices per terminal" explicitly ("another 2.1 MB
-  of data and a different tool"). That was no longer true: the full pull is
-  1.04 MB, and 293 KB once tidied up. The file header now says where the line
-  actually runs.
-
-- ⭐ **Sidebar groups can be collapsed** — Blueprints, Workshop, Trading,
-  Settings, Info. One click on the heading; the state is remembered until the
-  next start.
-
-  This is the third lever against window height: collapsing Workshop, Trading
-  and Settings cuts the sidebar's space requirement from **1020 to 696
-  pixels**, and the window's minimum height follows. Suggested by
-  **Morkhan (KRT)**.
-
-  ⚠ Opening a tab from a collapsed group expands it automatically — otherwise
-  you would stand on a page whose entry is nowhere to be seen.
-
-- **The sidebar now looks the same throughout.** "Advanced" carries the same
-  collapse arrow as the groups and sits inside the "Settings" group instead of
-  clinging to the bottom on its own — behind it are paths, detection and the
-  blueprint stock, things you set. All collapse arrows use the same icon as
-  the rest of the program — previously they were text characters that looked
-  different depending on the system font.
-
-- **"Launch Star Citizen", Coffee and Discord are pinned to the foot of the
-  sidebar** and no longer scroll away. The sidebar also has a visible scrollbar:
-  without it an expanded group looked empty whenever its entries sat below the
-  window edge.
-
-- ⭐ **"Blueprint stock" now sits behind "Advanced".** The page writes to your
-  own stock — reading in, overwriting, resetting — yet stood among harmless
-  settings and got clicked in passing. It stays reachable, just not by accident.
-
-- **The "Read the logs again" button is red.** It starts a run across hundreds
-  of logs and writes to the blueprint stock while doing so. Red **permanently**,
-  not only on hover — a button that warns once the mouse is already on it warns
-  nobody. Both found by **Morkhan (KRT)** after pressing it by accident.
-
-- **"My stock" now works like the cargo hold.** Resource and storage location
-  are dropdown fields: type **or** click the arrow and pick. Labels sit above
-  the fields rather than beside them, so an expanded list shifts nothing. Same
-  handling in both places — learn one, know the other.
-
-- ⭐⭐ **The refinery yield lost its storage location.** Anyone who had picked
-  "Levski" got the whole yield booked in **without a location**, and therefore as
-  separate stacks next to the existing stock. Cause: the location name was run
-  through a function that maps input onto a known **resource**; a location name
-  is never in that list, so nothing came back.
-
-  The block now also has its own **"Storage location for this yield"** field.
-  Previously the location from the form further up applied silently — neither
-  visible nor changeable without scrolling back.
-
-- **"Please download the new version yourself" appeared at the wrong moment.**
-  Clicking "get" while GitHub is still building the files sent you to the
-  releases page — where they are not yet either. It now says what is actually
-  going on: *"This version is still being built."*
-
-### Fixed
-
-- A button relabelled at runtime went back to its old colour once the mouse had
-  passed over it.
-
-### Fixed
-
-- ⭐ **The window no longer fit on a 1920×1080 screen.** With the "Trading"
-  group the sidebar needed 1020 pixels, which produced a **minimum height
-  larger than the monitor** — Tk then holds that against any attempt to shrink
-  the window, it extended past the taskbar and everything below became
-  unreachable. Found by **Morkhan (KRT)** on the first day of testing.
-
-  Two changes: the minimum height is now capped to the screen, and the
-  **sidebar scrolls** when it does not fit — otherwise the lower tabs would
-  simply have been cut off.
-
-- The **diagnostic report** now states window size and minimum size. When the
-  above was found the report contained not a single figure about it, although
-  those were exactly what mattered.
-
-### Thanks
-
-- **Morkhan (KRT)** for the idea behind this tab, for spotting that the
-  window no longer fit the screen, and for the thought that one
-  place taking the whole cargo beats the best single price.
-
-## v3.3.6 - unreleased
-
-### Added
-
 - ⭐⭐ **"Can close" — the filter for what you quietly lock yourself out of.**
   280 of the 353 contracts have a **reputation cap**: rank up past it with that
   faction and they are no longer offered — and their blueprints are gone for
@@ -225,8 +91,118 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   Both come from CIG's own contract data (`canBeShared`,
   `personalCooldownTime`) and were only visible in the raw files until now.
 
-### Fixed
 
+- ⭐⭐ **Trading — two new tabs: "Cargo hold" and "Selling".**
+  The question that was missing: *where do I offload my cargo, and what does it
+  pay per SCU?*
+
+  **The selling tab** answers it for **several commodities at once**. It sorts
+  not by the highest price, but by **how many of your goods a place actually
+  takes** — because that is the difference that matters. Measured on 30 Aug
+  2026 for 100 SCU gold, 40 copper and 25 iron:
+
+  | Route | Revenue |
+  |---|---|
+  | everything at **one** place | 3,533,000 aUEC |
+  | each commodity at its own best place | 3,566,000 aUEC |
+
+  **One percent more for two extra approaches.** The known trading sites do not
+  give that answer, because they only ever look at one commodity.
+
+  **The cargo hold** is deliberately kept apart from the workshop stock: one is
+  building material you keep, the other is cargo you want gone. A button in the
+  selling tab pulls the whole hold into the selection.
+
+  Both lists are proper tables — commodity · location · SCU · price per SCU ·
+  total, figures right-aligned below each other.
+
+- **Stolen cargo.** Instead of a quality (which changes nothing when selling,
+  and looted cargo is always Q 0 anyway) the cargo hold has a *"marked as
+  stolen"* tick. The selling tab then narrows down to the **15 terminals** that
+  ask no questions (`is_nqa` at UEX) — seven of them with buy offers.
+
+- **Refresh prices yourself.** A button fetches prices right away instead of
+  waiting for the daily update — **once per hour**. While the lock is running
+  the button counts down itself and changes colour as it goes (grey → gold →
+  green). No red: the button is locked *because* the fetch succeeded.
+
+- **The amount field does maths** — `100+5` makes 105. Click a row and its
+  amount appears in the field, ready to be adjusted with `+5` or `−12`. Same
+  behaviour as in the workshop stock.
+
+### Changed
+- **Commodity and storage location come from closed lists** — as in the
+  workshop stock. Only what UEX knows can be entered; near misses get
+  suggestions.
+
+- `preise.py` used to rule out "prices per terminal" explicitly ("another 2.1 MB
+  of data and a different tool"). That was no longer true: the full pull is
+  1.04 MB, and 293 KB once tidied up. The file header now says where the line
+  actually runs.
+
+- ⭐ **Sidebar groups can be collapsed** — Blueprints, Workshop, Trading,
+  Settings, Info. One click on the heading; the state is remembered until the
+  next start.
+
+  This is the third lever against window height: collapsing Workshop, Trading
+  and Settings cuts the sidebar's space requirement from **1020 to 696
+  pixels**, and the window's minimum height follows. Suggested by
+  **Morkhan (KRT)**.
+
+  ⚠ Opening a tab from a collapsed group expands it automatically — otherwise
+  you would stand on a page whose entry is nowhere to be seen.
+
+- **The sidebar now looks the same throughout.** "Advanced" carries the same
+  collapse arrow as the groups and sits inside the "Settings" group instead of
+  clinging to the bottom on its own — behind it are paths, detection and the
+  blueprint stock, things you set. All collapse arrows use the same icon as
+  the rest of the program — previously they were text characters that looked
+  different depending on the system font.
+
+- **"Launch Star Citizen", Coffee and Discord are pinned to the foot of the
+  sidebar** and no longer scroll away. The sidebar also has a visible scrollbar:
+  without it an expanded group looked empty whenever its entries sat below the
+  window edge.
+
+- ⭐ **"Blueprint stock" now sits behind "Advanced".** The page writes to your
+  own stock — reading in, overwriting, resetting — yet stood among harmless
+  settings and got clicked in passing. It stays reachable, just not by accident.
+
+- **The "Read the logs again" button is red.** It starts a run across hundreds
+  of logs and writes to the blueprint stock while doing so. Red **permanently**,
+  not only on hover — a button that warns once the mouse is already on it warns
+  nobody. Both found by **Morkhan (KRT)** after pressing it by accident.
+
+- **"My stock" now works like the cargo hold.** Resource and storage location
+  are dropdown fields: type **or** click the arrow and pick. Labels sit above
+  the fields rather than beside them, so an expanded list shifts nothing. Same
+  handling in both places — learn one, know the other.
+
+- ⭐⭐ **The refinery yield lost its storage location.** Anyone who had picked
+  "Levski" got the whole yield booked in **without a location**, and therefore as
+  separate stacks next to the existing stock. Cause: the location name was run
+  through a function that maps input onto a known **resource**; a location name
+  is never in that list, so nothing came back.
+
+  The block now also has its own **"Storage location for this yield"** field.
+  Previously the location from the form further up applied silently — neither
+  visible nor changeable without scrolling back.
+
+- **"Please download the new version yourself" appeared at the wrong moment.**
+  Clicking "get" while GitHub is still building the files sent you to the
+  releases page — where they are not yet either. It now says what is actually
+  going on: *"This version is still being built."*
+
+- ⭐ **The window could no longer be made smaller.** Minimum height was derived
+  from the sidebar's space requirement — it grew with every new tab and ended up
+  at **1028 pixels**. It is now **380**: since the sidebar scrolls and its groups
+  collapse, a shorter window loses nothing.
+
+- **Deleting an entry jumped the list back to the top.** Removing an item far
+  down meant finding your place again — the list is redrawn on delete, and the
+  scroll position reset. It is now kept, in both the workshop and cargo stock.
+
+### Fixed
 - **The README said something wrong about the SC Deutsch Launcher.** It claimed
   the launcher "confirms finds" — that intermediate state has been gone since
   v3.0.0: what is in the `Game.log` is in the game, there is nothing to confirm.
@@ -256,6 +232,30 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   This probably explains why changes to the contract texts did not arrive for
   months. Only "Original" was affected; the **German** and **StarStrings**
   sources carry their own language.
+
+
+- A button relabelled at runtime went back to its old colour once the mouse had
+  passed over it.
+
+
+- ⭐ **The window no longer fit on a 1920×1080 screen.** With the "Trading"
+  group the sidebar needed 1020 pixels, which produced a **minimum height
+  larger than the monitor** — Tk then holds that against any attempt to shrink
+  the window, it extended past the taskbar and everything below became
+  unreachable. Found by **Morkhan (KRT)** on the first day of testing.
+
+  Two changes: the minimum height is now capped to the screen, and the
+  **sidebar scrolls** when it does not fit — otherwise the lower tabs would
+  simply have been cut off.
+
+- The **diagnostic report** now states window size and minimum size. When the
+  above was found the report contained not a single figure about it, although
+  those were exactly what mattered.
+
+### Thanks
+- **Morkhan (KRT)** for the idea behind this tab, for spotting that the
+  window no longer fit the screen, and for the thought that one
+  place taking the whole cargo beats the best single price.
 
 ## v3.3.5 - 2026-08-30
 

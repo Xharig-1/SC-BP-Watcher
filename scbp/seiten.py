@@ -123,7 +123,53 @@ def _rollflaeche(rahmen, rand=24):
 
     from .hauptfenster import rad_anschliessen
     rad_anschliessen(leinwand)
+    # ⭐ Die Leinwand mitgeben. Seiten, die ihre Liste neu zeichnen (Lager,
+    # Handelslager), brauchen sie, um die Rollposition zu halten — siehe
+    # `_rollstelle_halten`.
+    innen_ziel.leinwand = leinwand
     return innen_ziel
+
+
+def _rollstelle_halten(widget, tat):
+    """Etwas neu zeichnen, ohne dass die Seite nach oben springt.
+
+    ⚠⚠ **Wer eine Liste neu aufbaut, verliert die Rollposition.** Beim Löschen
+    eines Postens wird die ganze Tabelle verworfen und neu gezeichnet; die
+    Leinwand steht danach wieder bei null, und wer unten am zwölften Eintrag
+    war, landet oben. Am 30.08.2026 gemeldet: „beim Löschen von Einträgen
+    springt das Fenster immer wieder nach ganz oben."
+
+    Die Stelle wird **vorher** gelesen und **nach** dem Neuzeichnen gesetzt —
+    dazwischen ändert sich die Höhe des Inhalts, deshalb erst nach einem
+    Leerlauf, wenn Tk den neuen Rollbereich kennt.
+    """
+    leinwand = None
+    lauf = widget
+    while lauf is not None and leinwand is None:
+        leinwand = getattr(lauf, 'leinwand', None)
+        lauf = getattr(lauf, 'master', None)
+    if leinwand is None:
+        tat()
+        return
+    try:
+        stelle = leinwand.yview()[0]
+    except Exception:
+        stelle = None
+    tat()
+    if stelle is None:
+        return
+
+    def zurueck():
+        try:
+            if leinwand.winfo_exists():
+                leinwand.yview_moveto(stelle)
+        except Exception:
+            pass
+
+    try:
+        leinwand.after_idle(zurueck)
+    except Exception:
+        pass
 
 
 def _suche_leeren_kreuz(fenster, halter, var):
@@ -5347,9 +5393,13 @@ def _lager(fenster, rahmen):
             weg = tk.Label(z, text=t('s_lg_weg'), bg=z_bg, fg=SUB,
                            font=fenster.f_klein, cursor='hand2', anchor='e')
             weg.pack(side='right', padx=(8, 4))
+            # ⚠ Rollstelle halten — sonst springt die Seite beim Löschen nach
+            # ganz oben, und wer beim zwölften Posten war, sucht sich neu
+            # zurecht (30.08.2026 gemeldet).
             weg.bind('<Button-1>',
-                     lambda _e, n=nummer: (lager.entfernen(n),
-                                           verwerfen(), zeichnen()))
+                     lambda _e, n=nummer: _rollstelle_halten(
+                         weg, lambda: (lager.entfernen(n),
+                                       verwerfen(), zeichnen())))
 
             spalten_labels = []
             for wert, (_k, _tk, breite, anker_), farbe, schrift in (
@@ -5419,9 +5469,8 @@ def _lager(fenster, rahmen):
                              t('s_lg_posten_frage') % (p_.get('material') or '?',
                                                        float(p_.get('menge') or 0))):
             return
-        lager.entfernen(nummer)
-        verwerfen()
-        zeichnen()
+        _rollstelle_halten(innen, lambda: (lager.entfernen(nummer),
+                                           verwerfen(), zeichnen()))
 
     def verwerfen(*_):
         """Zurueck zum Eintragen — Felder leeren, nichts speichern."""
@@ -6412,7 +6461,8 @@ def _handelslager(fenster, rahmen):
                     fill='x', pady=(0, 8))
         gesamt = _handelslager_tabelle(
             fenster, liste_rahmen, posten, preisdaten.bester_preis,
-            lambda n: (lager.entfernen(n), abbrechen()),
+            lambda n: _rollstelle_halten(
+                liste_rahmen, lambda: (lager.entfernen(n), abbrechen())),
             bearbeiten, bearbeitung['nummer'])
         if gesamt:
             # ⚠ „höchstens" ist wörtlich gemeint: der beste bekannte Ankauf je
