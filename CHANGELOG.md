@@ -73,6 +73,15 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠ **The overlay always started at its smallest size**, however large you had
+  dragged it. The size was saved — it was overwritten immediately.
+
+  The cause was the minimum-width check from rc10: shortly after startup Tk
+  reports width **1** for a window that is not shown yet, so the comparison
+  always matched and the overlay was set to the minimum. It now only acts once
+  the window is actually up. Verified: 900×400 stays 900×400, and a window
+  remembered too narrow is still widened.
+
 - ⚠ **In the stock list the search box lost the cursor after every keystroke.**
   The field was built **inside** the redraw routine, which clears the whole list
   area on every change — so each typed character destroyed the field itself. It

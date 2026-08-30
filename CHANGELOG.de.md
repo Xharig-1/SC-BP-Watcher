@@ -105,6 +105,19 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠ **Das Overlay startete immer in der kleinsten Grösse**, egal wie gross man
+  es gezogen hatte. Gespeichert war die Grösse durchaus — sie wurde nur sofort
+  wieder überschrieben.
+
+  Ursache war die Mindestbreite aus rc10: Sie prüft kurz nach dem Start, ob das
+  Fenster schmaler ist als seine Symbolleiste. Zu dem Zeitpunkt meldet Tk für
+  ein noch nicht angezeigtes Fenster aber die Breite **1** — der Vergleich traf
+  also immer zu, und das Overlay wurde auf die Mindestbreite gestellt.
+  Ausgerechnet die Änderung, die die Symbole retten sollte.
+
+  Sie greift jetzt nur, wenn das Fenster wirklich schon steht. Geprüft: 900×400
+  bleibt 900×400, und ein zu schmal gemerktes Fenster wird weiterhin angehoben.
+
 - ⚠ **Im Lager verlor das Suchfeld nach jedem Buchstaben den Cursor.** Man
   musste für jeden weiteren Buchstaben neu hineinklicken.
 

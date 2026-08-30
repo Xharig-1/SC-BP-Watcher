@@ -58,7 +58,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.3.0-rc29'
+__version__ = '3.3.0-rc30'
 
 
 def _mitgeliefert(name):
@@ -1961,7 +1961,19 @@ class Overlay:
         try:
             breite = self._mindestbreite()
             self.root.minsize(breite, 120)
-            if self.root.winfo_width() < breite:
+            # ⚠⚠ **Nur eingreifen, wenn das Fenster wirklich schon steht.**
+            # Beim Start meldet Tk für ein noch nicht angezeigtes Fenster die
+            # Breite `1` — der Vergleich traf dann immer zu, und das Overlay
+            # wurde auf die Mindestbreite gesetzt. Die gemerkte Größe aus dem
+            # letzten Lauf war damit weg: „er startet bei mir immer mit der
+            # kleinsten Größe" (30.08.2026). Eingebaut hatte das ausgerechnet
+            # die Änderung, die die Symbolleiste retten sollte.
+            #
+            # `winfo_ismapped()` allein genügt nicht — auch ein gemapptes
+            # Fenster meldet kurzzeitig 1. Deshalb beides.
+            breit_jetzt = self.root.winfo_width()
+            if (self.root.winfo_ismapped() and breit_jetzt > 1
+                    and breit_jetzt < breite):
                 self.root.geometry('%dx%d' % (
                     breite, max(120, self.root.winfo_height())))
         except Exception as ausnahme:

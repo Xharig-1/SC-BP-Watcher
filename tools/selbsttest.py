@@ -4007,6 +4007,46 @@ def main():
     pruefe('_such_feld' in _lager52p,
            'das Suchfeld entsteht einmal, ausserhalb')
 
+    # 52q. Die gemerkte Fenstergroesse ueberlebt den Start
+    #
+    # Die Mindestbreiten-Pruefung lief ueber `after_idle` — da meldet Tk fuer
+    # ein noch nicht angezeigtes Fenster die Breite 1. Der Vergleich traf immer
+    # zu, das Overlay wurde auf die Mindestbreite gesetzt, und die Groesse aus
+    # dem letzten Lauf war weg: „er startet bei mir immer mit der kleinsten
+    # Groesse" (30.08.2026).
+    print()
+    print('52q. Gemerkte Fenstergroesse bleibt erhalten')
+    _m52q = _m52c            # dasselbe Modul wie in 52c
+    _alt52q = _m52q.load_geometry()
+    try:
+        _m52q.save_geometry('900x400+150+120')
+        _ov52q = _m52q.Overlay()
+        try:
+            _ov52q.root.update_idletasks()
+            _ov52q.root.update()
+            _ov52q.root.update_idletasks()
+            pruefe(_ov52q.root.winfo_width() == 900,
+                   'die gemerkte Breite bleibt (900, ist %d)'
+                   % _ov52q.root.winfo_width())
+            pruefe(_ov52q.root.winfo_height() == 400,
+                   'die gemerkte Hoehe bleibt (400, ist %d)'
+                   % _ov52q.root.winfo_height())
+            # Zu schmal gemerkt? Dann greift die Grenze trotzdem — sobald das
+            # Fenster wirklich steht.
+            _ov52q.root.geometry('300x150')
+            for _ in range(3):
+                _ov52q.root.update_idletasks()
+                _ov52q.root.update()
+            _ov52q._mindestgroesse_setzen()
+            _ov52q.root.update_idletasks()
+            pruefe(_ov52q.root.winfo_width() >= _ov52q._mindestbreite(),
+                   'ein zu schmales Fenster wird weiterhin angehoben')
+        finally:
+            _ov52q.root.destroy()
+    finally:
+        if _alt52q:
+            _m52q.save_geometry(_alt52q)
+
     # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
     #
     # Eintragen ohne Berichtigen war halb fertig: Wer sich vertippt oder
