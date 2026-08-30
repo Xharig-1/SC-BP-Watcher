@@ -5325,6 +5325,128 @@ def main():
     finally:
         _w68.destroy()
 
+    # ------------------------------------------------------------------
+    # 69. Kein abgeschnittener Text im aufgeklappten Rezept
+    #
+    # ⚠⚠ Der Fehler, der diese Pruefung erzwungen hat: Das Etikett fuer den
+    # Qualitaetsfaktor hatte `width=9` — eine **Zusage ueber den Inhalt**. Als
+    # in v3.3.0-rc37 die Prozentzahl in dasselbe Etikett geschrieben wurde,
+    # schnitt Tk sie stumm ab: Auf dem Bildschirm stand „× 1.047  +4.(" statt
+    # „+4,70 %". Kein Fehler, keine Meldung — nur eine halbe Zahl.
+    #
+    # Wer Inhalt zu einem Feld fester Breite dazutut, muss die Breite anfassen.
+    # Diese Pruefung merkt es, wenn er es vergisst — an JEDEM Etikett, nicht
+    # nur an diesem einen.
+    print()
+    print('69. Nichts wird abgeschnitten')
+    import tkinter as _tk69
+    import tkinter.font as _tkfont69
+    from scbp import seiten as _se69
+    from scbp import herstellung as _he69
+
+    _rez69 = _he69.laden().get('blueprints') or []
+    if not _rez69:
+        print('  [–]    keine Rezeptdaten vorhanden — uebersprungen')
+    else:
+        _kandidat69 = None
+        for _b69 in _rez69:
+            for _t69 in _b69.get('tiers') or []:
+                for _s69 in _t69.get('slots') or []:
+                    if _s69.get('modifiers') and _s69.get('options'):
+                        _kandidat69 = _b69.get('productName')
+                        break
+                if _kandidat69:
+                    break
+            if _kandidat69:
+                break
+
+        _w69 = _tk69.Tk()
+        _w69.withdraw()                  # ⚠ kein Fenster ins Bild schieben
+        try:
+            _w69.geometry('1300x1000')
+            _s69f = _tkfont69.Font(root=_w69, family='TkDefaultFont', size=10)
+
+            class _Fenster69:
+                f_grund = f_klein = f_item = f_fett = f_titel = f_sub = _s69f
+                beim_zeigen = {}
+                bergbau_suche = ''
+
+                def oeffnen(self, _n):
+                    pass
+
+                def sagen(self, *_a):
+                    pass
+
+            _rahmen69 = _tk69.Frame(_w69)
+            _rahmen69.pack(fill='both', expand=True)
+            _se69._herstellung_zeile(
+                _Fenster69(), _rahmen69,
+                {'name': _kandidat69, 'basis': _kandidat69, 'habe': True,
+                 'hersteller': 'Behring'},
+                {'name': _kandidat69}, lambda: None)
+            _w69.update_idletasks()
+
+            _kurz69 = []
+
+            def _messen69(w):
+                if isinstance(w, _tk69.Label):
+                    _txt69 = str(w.cget('text'))
+                    # ⚠ Nur Etiketten OHNE Umbruch pruefen. Fliesstext soll
+                    #   umbrechen, nicht in eine Zeile passen.
+                    try:
+                        _umbruch69 = int(w.cget('wraplength') or 0)
+                    except Exception:
+                        _umbruch69 = 0
+                    if _txt69.strip() and not _umbruch69:
+                        _noetig69 = _s69f.measure(_txt69)
+                        # ⚠⚠ **`winfo_width()` taugt hier NICHT.** Das Fenster
+                        # ist bewusst nicht angezeigt (sonst schoebe der Test
+                        # ein Fenster ins Bild); fuer alles Unangezeigte
+                        # liefert Tk stur **1**. Ein Vergleich dagegen
+                        # ueberspringt jede Zeile und die Pruefung meldet
+                        # zufrieden „nichts abgeschnitten", waehrend auf dem
+                        # Bildschirm eine halbe Zahl steht. Genau so lief mein
+                        # erster Anlauf am 30.08.2026 ins Leere.
+                        #
+                        # `winfo_reqwidth()` ist die Breite, die Tk dem
+                        # Etikett geben WIRD — bei `width=9` sind das 76 px,
+                        # der Text braucht 112. Das ist messbar, ohne etwas
+                        # anzuzeigen.
+                        _hat69 = w.winfo_reqwidth()
+                        if _hat69 > 1 and _noetig69 > _hat69:
+                            _kurz69.append('%r braucht %d px, hat %d'
+                                           % (_txt69, _noetig69, _hat69))
+                for _k69 in w.winfo_children():
+                    _messen69(_k69)
+
+            _messen69(_rahmen69)
+            pruefe(not _kurz69,
+                   'kein Etikett im Rezept schneidet seinen Text ab (%d)'
+                   % len(_kurz69))
+            for _x69 in _kurz69[:6]:
+                print('       ·', _x69)
+
+            # Und die Prozentzahl muss VOLLSTAENDIG dastehen — genau die war
+            # es ja.
+            def _prozente69(w, raus):
+                try:
+                    _x = str(w.cget('text'))
+                    if '%' in _x and any(_z in _x for _z in '+-−'):
+                        raus.append(_x)
+                except Exception:
+                    pass
+                for _k in w.winfo_children():
+                    _prozente69(_k, raus)
+                return raus
+
+            _p69 = _prozente69(_rahmen69, [])
+            pruefe(bool(_p69), 'die Prozentangaben stehen da (%d)' % len(_p69))
+            pruefe(all(_x.rstrip().endswith('%') for _x in _p69),
+                   'und enden auf das Prozentzeichen — keine halbe Zahl (%s)'
+                   % (_p69[:2],))
+        finally:
+            _w69.destroy()
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

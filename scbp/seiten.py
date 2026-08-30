@@ -4192,10 +4192,22 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                 tk.Label(wz, text=w['eigenschaft'], bg='#0c1017', fg=SUB,
                          font=fenster.f_klein, width=22,
                          anchor='w').pack(side='left')
+                # ⚠⚠ **Die feste Breite gilt nur für den Faktor.** Als die
+                # Prozentzahl in v3.3.0-rc37 dazukam, wurde sie in dasselbe
+                # Etikett geschrieben — und `width=9` schnitt sie ab: Auf dem
+                # Bildschirm stand „× 1.047  +4.(" statt „+4,70 %". Eine feste
+                # Breite ist eine Zusage über den Inhalt; wer Inhalt dazutut,
+                # muss sie anfassen.
                 faktor_lbl = tk.Label(wz, text='', bg='#0c1017', fg=ACCENT,
                                       font=fenster.f_grund, width=9,
                                       anchor='w')
                 faktor_lbl.pack(side='left')
+                # Eigene Spalte fürs Prozent — so bleiben beide untereinander
+                # bündig, statt sich gegenseitig zu verschieben.
+                prozent_lbl = tk.Label(wz, text='', bg='#0c1017', fg=ACCENT,
+                                       font=fenster.f_grund, width=10,
+                                       anchor='w')
+                prozent_lbl.pack(side='left', padx=(6, 0))
                 herkunft_lbl = tk.Label(wz, text='', bg='#0c1017', fg=SUB,
                                         font=fenster.f_klein, anchor='e')
                 herkunft_lbl.pack(side='right', padx=12)
@@ -4206,7 +4218,8 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                 spanne_lbl = tk.Label(block, text='', bg='#0c1017', fg=SUB,
                                       font=fenster.f_klein, anchor='w')
                 spanne_lbl.pack(fill='x', padx=(46, 12))
-                zeilen_widgets.append((w, faktor_lbl, herkunft_lbl, spanne_lbl))
+                zeilen_widgets.append((w, faktor_lbl, prozent_lbl,
+                                       herkunft_lbl, spanne_lbl))
 
             leer_lbl = tk.Label(werte_rahmen, text='', bg='#0c1017', fg=SUB,
                                 font=fenster.f_klein, anchor='w')
@@ -4232,11 +4245,13 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                            for w in herst_modul.werte_mit_lager(
                                eintrag['basis'], stand)}
                 gezeigt = 0
-                for w0, faktor_lbl, herkunft_lbl, spanne_lbl in zeilen_widgets:
+                for (w0, faktor_lbl, prozent_lbl, herkunft_lbl,
+                     spanne_lbl) in zeilen_widgets:
                     w = aktuell.get((w0['eigenschaft'], w0['material'],
                                      w0['slot']))
                     if not w:
                         faktor_lbl.configure(text='')
+                        prozent_lbl.configure(text='')
                         herkunft_lbl.configure(text='')
                         spanne_lbl.configure(text='')
                         continue
@@ -4262,13 +4277,14 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                                else w['faktor'] <= 1)
                         text_wert = t('s_he_faktor') % w['faktor']
                         farbe = ACCENT if gut else GOLD
-                    # ⚠ Prozent dazu. „× 0.867" muss man im Kopf umrechnen,
-                    # „−13,28 %" nicht — und genau das ist die Zahl, die man
-                    # mit anderem Material vergleicht.
-                    if not w.get('absolut'):
-                        text_wert = '%s   %s' % (
-                            text_wert, t('s_he_prozent') % ((w['faktor'] - 1) * 100))
                     faktor_lbl.configure(text=text_wert, fg=farbe)
+                    # ⚠ Prozent in die eigene Spalte. „× 0.867" muss man im
+                    # Kopf umrechnen, „−13,28 %" nicht — und genau das ist die
+                    # Zahl, die man mit anderem Material vergleicht.
+                    prozent_lbl.configure(
+                        text=('' if w.get('absolut')
+                              else t('s_he_prozent') % ((w['faktor'] - 1) * 100)),
+                        fg=farbe)
                     herkunft = t('s_he_woher') % (w['material'], w['qualitaet'])
                     if not w.get('besser_hoch', True):
                         herkunft = '%s · %s' % (t('s_he_weniger_gut'), herkunft)
