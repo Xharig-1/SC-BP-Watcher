@@ -4379,6 +4379,25 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
             _fliesstext(block, t('s_he_kauf_q') % preis_modul.KAUF_QUALITAET,
                         fenster.f_klein, fill='x')
 
+            # ⚠⚠ **589 Rezept-Slots haben ein Material ohne jede
+            # Qualitaetswirkung** — Titanium in der BUL-H4 Armor etwa. Man
+            # zieht dort am Regler, und es passiert nichts, weil es keine Zeile
+            # dazu gibt. Am 30.08.2026 beim Testen aufgefallen.
+            #
+            # ⚠ Der Regler bleibt trotzdem, und zwar bedienbar — scmdb.net
+            # haelt es genauso: „so sieht der User, egal was er nimmt, es hat
+            # keine Auswirkung." Selbst ausprobieren ueberzeugt mehr als ein
+            # fehlendes Bedienelement, das wie ein Versehen aussieht. Dazu
+            # kommt nur der Hinweis, damit niemand den Fehler bei sich sucht.
+            _wirksam = set()
+            try:
+                for _s in (herst_modul.slots(eintrag['basis']) or []):
+                    if _s.get('material') and _s.get('wirkungen'):
+                        _wirksam.add(_s['material'])
+            except Exception as ausnahme:
+                fehler.merken('seiten.wirksam', ausnahme)
+                _wirksam = set(alle_materialien)
+
             regler_zeilen = {}
             for _mat in alle_materialien:
                 reihe_r = tk.Frame(block, bg='#0c1017')
@@ -4386,6 +4405,7 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                 tk.Label(reihe_r, text=_mat, bg='#0c1017', fg=ACCENT,
                          font=fenster.f_klein, width=16, anchor='w').pack(
                              side='left')
+
                 # ⚠ Der Wert MUSS neben dem Regler stehen. Ohne ihn zieht man
                 # blind und weiß nicht, welche Qualität man gerade
                 # durchspielt — genau der Wert, um den es geht.
@@ -4411,9 +4431,13 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                 _schieber.pack(side='left')
                 _wert_lbl.pack(side='left', padx=(10, 0))
                 # Woher der Startwert kommt: eigener Lagerstand oder Mitte.
+                # ⚠ Bei einem Material ohne Wirkung ist die Herkunft der
+                # Qualitaet gleichgueltig — dort steht der Grund, warum sich
+                # beim Ziehen nichts tut.
                 _quelle_lbl = tk.Label(
                     reihe_r,
-                    text=(t('s_he_regler_lager') if aus_lager[_mat]
+                    text=(t('s_he_ohne_wirkung') if _mat not in _wirksam
+                          else t('s_he_regler_lager') if aus_lager[_mat]
                           else t('s_he_regler_ohne')),
                     bg='#0c1017', fg=SUB, font=fenster.f_klein, anchor='w')
                 _quelle_lbl.pack(side='left', padx=(10, 0))

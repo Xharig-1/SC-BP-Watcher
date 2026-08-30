@@ -1881,6 +1881,13 @@ TEXTE = {
                           'Try qualities — one per material'),
     's_he_regler_lager': ('aus deinem Lager', 'from your stock'),
     's_he_regler_ohne':  ('nichts im Lager', 'nothing in stock'),
+    # ⚠ 589 Rezept-Slots haben ein Material OHNE jede Qualitaetswirkung.
+    # Dort einen Regler anzubieten heisst: Man zieht, und nichts
+    # passiert — ein Bedienelement, das nichts tut, ist schlimmer als
+    # keines. Am 30.08.2026 beim Testen aufgefallen (Titanium in der
+    # BUL-H4 Armor).
+    's_he_ohne_wirkung': ('verändert keine Eigenschaft',
+                          'changes no property'),
     's_lg_hinweis':      ('Der Watcher kennt deinen Frachtraum nicht — das hier '
                           'ist deine eigene Liste. Sie sagt dir, was fehlen '
                           'könnte, nicht ob du bauen kannst.',

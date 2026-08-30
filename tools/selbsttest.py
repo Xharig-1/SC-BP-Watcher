@@ -4707,7 +4707,12 @@ def main():
            and 'neu_zeichnen()' not in _seiten61.split('def mengen_setzen')[1]
            .split('anzahl_var.trace_add')[0],
            'ohne die Seite neu zu bauen (sonst verliert das Feld den Cursor)')
-    _regler61 = _seiten61.split('Ein Regler je Material')[1][:1500]
+    # ⚠ **Nicht auf die ersten 1500 Zeichen begrenzen.** Genau daran ist die
+    # Pruefung am 30.08.2026 gescheitert: Ein Einschub zwischen Kommentar und
+    # Schleife schob die gesuchte Zeile aus dem Fenster, und der Test meldete
+    # einen Fehler, den es nicht gab. Ein Suchfenster mit fester Groesse ist
+    # eine Wette darauf, dass niemand mehr etwas dazwischenschreibt.
+    _regler61 = _seiten61.split('Ein Regler je Material')[1]
     pruefe('for _mat in alle_materialien' in _regler61,
            'es gibt einen Regler JE MATERIAL, nicht einen fuer alle')
 
