@@ -1550,7 +1550,12 @@ TEXTE = {
                           'eine Zeile zeigt die Zutaten.',
                           'What an item needs to be crafted. Click a row to see '
                           'the ingredients.'),
-    's_he_suche':        ('Suchen …', 'Search …'),
+    # ⚠ „Suchen …" verschweigt, WONACH. Seit die Suche auch die Zutaten
+    # kennt, ist das die halbe Funktion: Wer nicht weiss, dass er einen
+    # Rohstoff eintippen darf, findet nie heraus, was daraus wird.
+    # Vorbild ist der Bergbau, der seit jeher „Rohstoff oder Ort …" sagt.
+    's_he_suche':        ('Bauplan oder Rohstoff …',
+                          'Blueprint or resource …'),
     's_he_von':          (' von %d herstellbar — davon hast du den Bauplan',
                           ' of %d craftable — you have the blueprint for these'),
     's_he_zeit':         ('Herstellzeit', 'Craft time'),
