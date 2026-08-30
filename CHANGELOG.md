@@ -50,6 +50,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   Both screens can be typed off this way. Cross-checked: 272 cSCU from the
   terminal are the same 2.728 SCU as the seven stacks in the inventory.
 
+  **And the amount field itself now speaks cSCU.** A checkbox sits right of it:
+  tick it and the row reads "Amount (cSCU)" — then you type the number straight
+  off the refinery screen without dividing by 100. Unticked it stays SCU, the
+  way the inventory tooltip shows it.
+
+  That is the more convenient route: at the refinery terminal all rows are
+  listed below each other, in the inventory you have to hover every stack with
+  the mouse. The setting is remembered, and the label always states which unit
+  applies — otherwise every entry would silently be off by a factor of 100.
+
   **The storage location stays** — after adding entries and across restarts.
   Whoever enters a yield enters six items at the same place; picking it again
   every time was pure typing.

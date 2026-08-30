@@ -1698,6 +1698,13 @@ TEXTE = {
                           'watcher deducts the ingredients.'),
     's_lg_material':     ('Rohstoff', 'Resource'),
     's_lg_menge':        ('Menge (SCU)', 'Amount (SCU)'),
+    # ⚠ Die Beschriftung sagt immer, in welcher Einheit das Feld gerade
+    # rechnet. Ein Kaestchen daneben schaltet um — stuende dort dauerhaft
+    # „(SCU)", waere jede cSCU-Eingabe stillschweigend hundertfach zu gross.
+    's_lg_menge_cscu':   ('Menge (cSCU)', 'Amount (cSCU)'),
+    # Die Einheit selbst heisst in beiden Sprachen gleich — sie steht
+    # trotzdem hier, weil jeder sichtbare Text durch `t()` laeuft.
+    's_lg_cscu':         ('cSCU', 'cSCU'),
     # Die Skala der Rezepte laeuft 0 bis 1000, NICHT in Prozent. Stand hier
     # als 'Guete %' — wer im Spiel 72 abliest und eintraegt, haette danach
     # lauter falsche Ergebnisse bekommen: sein Erz gaelte als unbrauchbar.

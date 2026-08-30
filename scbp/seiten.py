@@ -644,6 +644,11 @@ def _feld(fenster, eltern, bezeichnung, hilfe, breit=False):
     # sich durch `winfo_children()` hangeln, und das bricht beim naechsten
     # Umbau still.
     rechts.links = links
+    # ⚠ Auch die Beschriftung durchreichen. Eine Zeile, deren Einheit sich
+    # umschalten laesst (Menge im Lager: SCU ↔ cSCU), muss ihren eigenen Text
+    # aendern koennen — sonst steht dort „Menge (SCU)", waehrend cSCU gemeint
+    # ist, und die eingetragene Menge ist um den Faktor 100 daneben.
+    rechts.beschriftung = beschriftung
     return rechts
 
 
@@ -4851,6 +4856,47 @@ def _berg_ort(fenster, eltern, ort, offen, neu_zeichnen):
 # nicht dem Spiel.
 
 
+def _kaestchen(eltern, text, an, umschalten, schrift_klein):
+    """Ein anklickbares Kästchen mit Haken — für „ja/nein" neben einem Feld.
+
+    ⚠ Warum kein `tk.Checkbutton`: Der ist ein Systemelement und sieht auf
+    jedem Betriebssystem anders aus. Das Programm hat eine Formensprache; ein
+    graues Aqua-Kästchen mitten in einer sonst dunklen Zeile fällt auf wie ein
+    Fremdkörper. Gezeichnet wird nichts von Hand — der Haken ist das
+    Symbol `abhaken` aus dem Satz.
+    """
+    rahmen = tk.Frame(eltern, bg=BG, cursor='hand2')
+    # ⚠ Nur Symbole aus dem festgelegten Satz — `haken` steht in
+    # `zeichen.ZEILEN_NAMEN`. Ein frei erfundener Name (`abhaken` gibt es nur
+    # als Knopf-Symbol) faellt still auf den Ersatztext zurueck, und die Zeile
+    # sieht dann anders aus als der Rest des Programms.
+    # ⚠⚠ **Nur die festgelegten Farben.** Die Symbole liegen als fertige Bilder
+    # je Farbe im Satz (`grau`, `gruen`, `hell`, `gelb`, `blau`, `rot`) — ein
+    # eigener Farbwert findet kein Bild, und das Symbol fehlt dann **still**.
+    # Genau so passiert: Mit `#2a3446` stand neben „cSCU" gar kein Haken.
+    def _bauen(an_jetzt):
+        for kind in rahmen.winfo_children():
+            kind.destroy()
+        symbol = zeichen.zeile(rahmen, 'haken', grund=BG,
+                               farbe=zeichen.GRUEN if an_jetzt
+                               else zeichen.GRAU)
+        symbol.pack(side='left')
+        lbl = tk.Label(rahmen, text=text, bg=BG,
+                       fg=ACCENT if an_jetzt else SUB, font=schrift_klein)
+        lbl.pack(side='left', padx=(4, 0))
+        for teil in (symbol, lbl):
+            teil.bind('<Button-1>', klick)
+
+    def klick(_=None):
+        an[0] = not an[0]
+        _bauen(an[0])
+        umschalten(an[0])
+
+    _bauen(an[0])
+    rahmen.bind('<Button-1>', klick)
+    return rahmen
+
+
 def _raffinerie_block(fenster, eltern, lager, ort_var, neu_zeichnen, meldung):
     """Eine ganze Raffinerie-Ausbeute auf einmal eintragen.
 
@@ -4951,6 +4997,15 @@ def _lager(fenster, rahmen):
     # Der zuletzt benutzte Lagerort steht schon drin — siehe unten beim
     # Eintragen, warum.
     ort = tk.StringVar(value=pfade.einstellung('lager_ort') or '')
+    # ⭐ In welcher Einheit das Mengenfeld rechnet. Das Raffinerie-Terminal im
+    # Spiel zeigt **cSCU**, die Gegenstands-Anzeige im Lager **SCU** — und vom
+    # Terminal abzutippen ist bequemer, weil man dort nicht jeden Stapel
+    # einzeln mit der Maus anfahren muss (Wunsch vom 30.08.2026). Das Kästchen
+    # neben dem Feld schaltet um; die Beschriftung sagt immer, was gerade gilt.
+    cscu = [pfade.einstellung('lager_einheit') == 'cscu']
+
+    def _faktor():
+        return lager.CSCU if cscu[0] else 1.0
 
     # Welche Zeile gerade zum Ändern offen ist. `None` heisst: neuer Posten.
     # ⚠ Die Nummer ist die Position in der ungefilterten Liste — nicht die
@@ -4970,8 +5025,50 @@ def _lager(fenster, rahmen):
                               (t('s_lg_qualitaet'), guete),
                               (t('s_lg_ort'), ort)):
         ziel = _feld(fenster, innen, beschriftung, '')
-        f = rundes_feld(ziel, var, fenster.f_klein, '#0c1017', LINIE, ACCENT, FG)
-        f.halter.pack(fill='x', pady=(4, 8))
+        if var is menge:
+            # Feld und Kästchen in einer Zeile — das Kästchen rechts daneben,
+            # damit die Einheit dort steht, wo die Zahl entsteht.
+            _mengenzeile = tk.Frame(ziel, bg=BG)
+            _mengenzeile.pack(pady=(4, 8))
+            f = rundes_feld(_mengenzeile, var, fenster.f_klein, '#0c1017',
+                            LINIE, ACCENT, FG)
+            # ⚠⚠ **Die Zeile bleibt so breit wie die anderen — das Feld wird
+            # schmaler, nicht die Zeile breiter.** Ohne das schob das Kästchen
+            # die Zeile um seine eigene Breite nach rechts aus dem Fenster:
+            # Beim schmalsten Fenster stand dort nur noch „cSC" und der Haken
+            # fehlte ganz (gemessen: 393 px Feldbreite in den anderen Zeilen,
+            # 450 px in dieser).
+            #
+            # ⚠ Das `winfo_reqwidth()` wird **vor** `pack_propagate(False)`
+            # gelesen. Danach antwortet der Rahmen mit seiner gesetzten Breite,
+            # und die Messung wäre ein Zirkelschluss.
+            _soll = f.halter.winfo_reqwidth()
+            _mengenzeile.configure(width=_soll,
+                                   height=f.halter.winfo_reqheight())
+            _mengenzeile.pack_propagate(False)
+            mengen_beschriftung = ziel.beschriftung
+
+            def einheit_um(an):
+                mengen_beschriftung.configure(
+                    text=t('s_lg_menge_cscu') if an else t('s_lg_menge'))
+                pfade.einstellung_setzen('lager_einheit',
+                                         'cscu' if an else 'scu')
+                mengen_vorschau_zeigen()
+
+            # ⚠⚠ **Erst das Kästchen packen, dann das Feld.** In `tkinter`
+            # bekommt das zuletzt gepackte Element den übrigen Platz — und ein
+            # Feld mit `expand=True` nimmt sich alles. Andersherum gepackt
+            # schob es das Kästchen aus dem Fenster: Beim schmalsten Fenster
+            # stand rechts nur noch „cSC", der Haken fehlte ganz.
+            _kaestchen(_mengenzeile, t('s_lg_cscu'), cscu, einheit_um,
+                       fenster.f_klein).pack(side='right', padx=(10, 0))
+            f.halter.pack(side='left', fill='both', expand=True)
+            if cscu[0]:
+                ziel.beschriftung.configure(text=t('s_lg_menge_cscu'))
+        else:
+            f = rundes_feld(ziel, var, fenster.f_klein, '#0c1017', LINIE,
+                            ACCENT, FG)
+            f.halter.pack(fill='x', pady=(4, 8))
         if var is material:
             # ⭐ Vorschläge anklickbar — ohne sie tippt jemand „Aslerite",
             # bekommt nie einen Treffer und sucht den Fehler bei sich.
@@ -5078,7 +5175,10 @@ def _lager(fenster, rahmen):
         if not roh or not rechnung:
             mengen_vorschau.pack_forget()
             return
-        vorher = _bestand_vorher()
+        # ⚠ `vorher` kommt aus dem Lager und ist SCU — das Feld rechnet aber
+        # in der gewählten Einheit. Ohne Umrechnung addiert „+3" auf einen
+        # hundertfach zu grossen Ausgangswert.
+        vorher = _bestand_vorher() / _faktor()
         wert = lager.rechnen(roh, vorher)
         if wert is None:
             mengen_vorschau.pack_forget()
@@ -5255,7 +5355,10 @@ def _lager(fenster, rahmen):
         p = posten[nummer]
         bearbeitung['nummer'] = nummer
         material.set(p.get('material') or '')
-        menge.set('%g' % float(p.get('menge') or 0))
+        # ⚠ In der Einheit vorlegen, in der das Feld gerade rechnet — sonst
+        # steht beim Bearbeiten eine SCU-Zahl in einem cSCU-Feld und wird beim
+        # Speichern durch 100 geteilt.
+        menge.set('%g' % round(float(p.get('menge') or 0) / _faktor(), 4))
         guete.set('%g' % float(p['qualitaet']) if p.get('qualitaet') else '')
         ort.set(p.get('ort') or '')
         # ⚠ Erst in eine Variable. Steht `p.get('material')` direkt im
@@ -5421,6 +5524,10 @@ def _lager(fenster, rahmen):
             # Wirkungsrechnung still verzerren.
             meldung.configure(text=t('s_lg_keine_guete'), fg=GOLD)
             return
+        # ⚠ Das Feld rechnet in der Einheit, die daneben steht — das Lager
+        # immer in SCU. Umgerechnet wird erst hier, nach dem Rechnen: Wer in
+        # cSCU „+3" tippt, meint drei cSCU, nicht drei SCU.
+        wert = round(wert * _faktor(), 4)
         if bearbeitung['nummer'] is None:
             lager.eintragen(name, wert, q, ort.get())
             hinweis = t('s_lg_eingetragen') % (name, wert)

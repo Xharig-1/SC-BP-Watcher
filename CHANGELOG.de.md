@@ -51,6 +51,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   272 cSCU aus dem Terminal sind dieselben 2,728 SCU wie die sieben Stapel im
   Inventar.
 
+  **Und das Mengenfeld selbst kann jetzt cSCU.** Rechts daneben sitzt ein
+  Kästchen: Haken rein, und die Zeile heißt „Menge (cSCU)" — dann tippst du die
+  Zahl vom Raffinerie-Bildschirm ab, ohne durch 100 zu teilen. Ohne Haken bleibt
+  es bei SCU, wie es die Gegenstands-Anzeige im Lager zeigt.
+
+  Das ist der bequemere Weg: Am Raffinerie-Terminal stehen alle Zeilen
+  untereinander, im Inventar musst du jeden Stapel einzeln mit der Maus
+  anfahren. Die Einstellung bleibt gemerkt, und die Beschriftung sagt immer,
+  welche Einheit gerade gilt — sonst wäre jede Eingabe stillschweigend
+  hundertfach daneben.
+
   **Der Lagerort bleibt stehen** — auch nach dem Eintragen und über den
   Programmstart hinweg. Wer eine Ausbeute einträgt, trägt sechs Posten am
   selben Ort ein; ihn jedes Mal neu zu wählen war reine Tipparbeit.
