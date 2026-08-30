@@ -453,10 +453,10 @@ def main():
         mk.umschalten('Wunschteil')
         # Muster-Einträge von außen (ein eigenes Werkzeug des Autors schreibt so)
         d = mk.laden()
-        d['eintraege'].append({'titel': 'Staffelrüstung',
+        d['eintraege'].append({'titel': 'Beispielsatz',
                                'muster': ['adp-mk4', 'woodland']})
         mk.speichern(d)
-        pruefe(mk.treffer('ADP-mk4 Woodland Helmet') == 'Staffelrüstung',
+        pruefe(mk.treffer('ADP-mk4 Woodland Helmet') == 'Beispielsatz',
                'Muster von außen greifen weiter')
         pruefe(mk.erledigen('Wunschteil') == 'Wunschteil',
                'erfüllter Wunsch wird ausgetragen')
@@ -3763,7 +3763,7 @@ def main():
     #
     # Die Art-Auswahl hatte dreissig Eintraege — „Ruestung (Arme)",
     # „Ruestung (Beine)", „Helm", „Rucksack" je einzeln. Die Gliederung folgt
-    # jetzt der gepflegten Vault-Liste: sieben Gruppen, darunter die feinen Arten.
+    # jetzt der gepflegten Vergleichsliste: sieben Gruppen, darunter die feinen Arten.
     # Gemessen an echten Daten deckt sie sich mit dieser Liste exakt.
     print()
     print('52f. Ober- und Unterkategorie')
@@ -3816,16 +3816,16 @@ def main():
     print()
     print('52g. Muster treffen nur an Wortgrenzen')
     from scbp import merkliste as _mk52g
-    _eintrag52g = {'titel': 'Probe', 'muster': ['arden-cl backpack archangel']}
-    pruefe(_mk52g._muster_trifft(_eintrag52g, 'arden-cl backpack archangel'),
+    _eintrag52g = {'titel': 'Probe', 'muster': ['xyz-cl backpack beispiel']}
+    pruefe(_mk52g._muster_trifft(_eintrag52g, 'xyz-cl backpack beispiel'),
            'das gesuchte Teil wird erkannt')
     pruefe(not _mk52g._muster_trifft(
-               {'titel': 'P', 'muster': ['arden backpack']},
-               'warden backpack purgatory camo'),
-           'ein Muster mitten im Wort trifft NICHT (Warden vs. arden)')
+               {'titel': 'P', 'muster': ['yz backpack']},
+               'xyz backpack muster camo'),
+           'ein Muster mitten im Wort trifft NICHT')
     pruefe(_mk52g._muster_trifft(
-               {'titel': 'P', 'muster': ['orc-mkv legs grey']},
-               'orc-mkv legs grey'),
+               {'titel': 'P', 'muster': ['abc-mk4 legs grey']},
+               'abc-mk4 legs grey'),
            'Bindestriche und Leerzeichen zaehlen als Grenze')
     pruefe(not _mk52g._muster_trifft({'titel': 'P', 'muster': []}, 'irgendwas'),
            'ein Eintrag ohne Muster trifft nichts')

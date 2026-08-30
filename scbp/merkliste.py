@@ -26,7 +26,7 @@ raus, denn eine Merkliste voller längst erledigter Wünsche ist keine.
 Gepflegt wird sie **im Fenster mit einem Klick** — niemand soll dafür eine
 Datei bearbeiten müssen. Die Datei (`watchlist.json`) bleibt trotzdem lesbar
 und von Hand änderbar, denn ein eigenes Werkzeug des Autors schreibt dort Teile der
-Staffelrüstung hinein.
+Ausrüstungsliste hinein.
 
 Zwei Arten von Einträgen leben nebeneinander:
 
@@ -39,7 +39,7 @@ Format:
 
     {
       "namen": ["Attrition-5 Repeater"],
-      "eintraege": [{"titel": "Mamba-Helm", "muster": ["adp-mk4", "woodland"]}]
+      "eintraege": [{"titel": "Helm meiner Wahl", "muster": ["adp-mk4", "woodland"]}]
     }
 """
 import re
@@ -134,7 +134,7 @@ def eintrag_entfernen(titel, daten=None):
 
     ⚠ Nicht dasselbe wie `entfernen()`. Das nimmt einen Bauplan-Namen heraus
     und wirft dabei jede Muster-Beobachtung mit weg, die auf ihn passt. Hier
-    geht es um die Beobachtung selbst: „Mamba-Staffelrüstung: Helm" abwählen,
+    geht es um die Beobachtung selbst: „Helm meiner Wahl" abwählen,
     weil die Staffel ein anderes Teil nimmt — die Baupläne, die das Muster
     zufällig trifft, gehen niemanden etwas an.
 
@@ -168,7 +168,7 @@ def _muster_trifft(eintrag, name_norm):
 
     Vor und hinter dem Muster darf deshalb kein weiterer Buchstabe und keine
     Ziffer stehen. Bindestriche und Leerzeichen zählen als Grenze, damit
-    `orc-mkv legs grey` weiter passt.
+    `abc-mk4 legs grey` weiter passt.
     """
     muster = [str(m).lower().strip() for m in (eintrag.get('muster') or [])]
     for m in muster:
@@ -183,7 +183,7 @@ def treffer(name, daten=None):
     """Wird auf diesen Bauplan gewartet? Rückgabe: Titel des Eintrags oder None.
 
     Bei einem angeklickten Namen ist der Titel der Name selbst, bei einem
-    Muster-Eintrag dessen Titel („Mamba-Helm")."""
+    Muster-Eintrag dessen Titel („Helm meiner Wahl")."""
     daten = daten or laden()
     k = _norm(name)
     for n in daten['namen']:

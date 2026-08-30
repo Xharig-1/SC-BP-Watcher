@@ -57,9 +57,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   > **What cannot be grouped stays on its own** — docking collars and the other
   > one-offs do not vanish into a catch-all.
 
-  The grouping follows the list kept by hand for months, and the
-  numbers were checked against it blueprint by blueprint. **Blueprint list and
-  crafting share one grouping** — same blueprints, so the same way to search.
+  **Blueprint list and crafting share one grouping** — same blueprints, so the same way to search.
 
 - **The subtype field now says that it is one**: instead of "All subtypes" it
   reads "12 subtypes — refine here" whenever there is something to pick.
@@ -172,7 +170,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   with the one being watched.
 
   Patterns now match at **word boundaries** only — no letter or digit directly
-  before or after. Hyphens and spaces count as boundaries, so `orc-mkv legs
+  before or after. Hyphens and spaces count as boundaries, so `abc-mk4 legs
   grey` still matches.
 
   > **Why this matters here:** a squadron armour set means exactly one item per

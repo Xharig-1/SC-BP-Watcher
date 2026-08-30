@@ -78,16 +78,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   > Frachtmodul und die übrigen Einzelgänger verschwinden nicht in einem
   > Sammeltopf, sie stehen unter den Gruppen.
 
-  **Die Gliederung ist nicht erfunden:** Sie folgt der seit Monaten von Hand gepflegten
-  Vault-Liste. Gegengeprüft — die Zahlen decken
-  sich mit ihr, Bauplan für Bauplan.
-
   **Bauplan-Liste und Herstellung teilen sich dieselbe Einteilung.** Es sind
   dieselben Baupläne, also muss man auf dieselbe Art suchen können; beide
   Seiten fragen dasselbe Modul, damit es keine zwei Wahrheiten gibt.
 
   Die feinen Waffenarten stehen in keinem Datenfeld — sie stecken im Tag der
-  Rezeptdaten (`BP_CRAFT_APAR_BallisticGatling_S4`), so wie im Vault-Skript.
+  Rezeptdaten (`BP_CRAFT_APAR_BallisticGatling_S4`).
 
 - **Das Unterart-Feld sagt jetzt, dass es eines ist.** Statt „Alle Unterarten"
   steht dort „12 Unterarten — hier verfeinern", sobald es etwas zu holen gibt:
@@ -251,12 +247,10 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
   Muster greifen jetzt nur an **Wortgrenzen** — vor und hinter dem Muster darf
   kein Buchstabe und keine Ziffer stehen. Bindestriche und Leerzeichen zählen
-  als Grenze, `orc-mkv legs grey` passt also weiterhin.
+  als Grenze, `abc-mk4 legs grey` passt also weiterhin.
 
-  > **Warum das hier besonders zählt:** Bei einer Staffelrüstung geht es um
-  > genau ein Teil je Platz. Die Farben sind über Monate auf Tarnung getestet —
-  > *„grad im Dunkeln sind wir mit den Farben kaum noch zu erkennen, selbst im
-  > Nahkampf."* Ein „fast passendes" Teil ist da wertlos. beim Gegenlesen der eigenen Beobachtungen.
+  > **Warum das zählt:** Wer ein bestimmtes Ausrüstungsteil beobachtet, meint
+  > genau dieses eine. Ein „fast passendes" ist wertlos.
 
 - ⚠ **Auf „Fehler melden" standen die fünf Knöpfe untereinander.** Die
   Mindestbreite des Fensters war 1100 px, die Knopfreihe braucht auf Deutsch
@@ -299,8 +293,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 - ⚠ **„Du beobachtest noch nichts", obwohl neun Beobachtungen hinterlegt
   waren.** Die Merkliste führt zwei Sorten: angeklickte Baupläne aus dem
-  Katalog — und eigene Beobachtungen mit Suchmustern, etwa
-  „Mamba-Staffelrüstung: Helm" → `morozov-sh helmet redshift`. Die Ansicht
+  Katalog — und eigene Beobachtungen mit Suchmustern. Die Ansicht
   zeigte nur die erste Sorte, der Diagnosebericht zählte beide. Jetzt stehen
   die eigenen Beobachtungen mit ihren Suchmustern oben in der Ansicht.
  

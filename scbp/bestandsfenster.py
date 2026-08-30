@@ -604,7 +604,7 @@ class Bestandsfenster:
         „Rüstung (Arme)", „Rüstung (Beine)", „Rüstung (Torso)", „Helm",
         „Rucksack" … als je eigener Eintrag. Wer eine ganze Rüstung
         zusammenstellt, sucht sich darin einen Wolf. Die Gliederung folgt der
-        Vault-Liste, die Xharig-1 seit Monaten von Hand pflegt.
+        gepflegten Vergleichsliste.
 
         Was sich nicht bündeln lässt, bleibt als eigener Eintrag stehen —
         „nur was man nicht bündeln kann, sollte noch alleine stehen bleiben."
@@ -858,8 +858,7 @@ class Bestandsfenster:
 
         Die Merkliste führt zwei Sorten: angeklickte Baupläne (die stehen im
         Katalog und erscheinen als normale Zeilen) und **eigene Regeln** mit
-        Suchmustern, etwa „Mamba-Staffelrüstung: Helm" → `morozov-sh helmet
-        redshift`. Für die zweite Sorte gibt es keinen Katalogeintrag, den man
+        Suchmustern. Für die zweite Sorte gibt es keinen Katalogeintrag, den man
         anzeigen könnte — also bekommt sie hier eigene Zeilen.
 
         ⚠ Nur unter „beobachtet". In der vollen Liste stünden sie zwischen
@@ -1289,7 +1288,7 @@ class Bestandsfenster:
                     # im Spiel verfügbar, taucht es hier als ganz normale Zeile
                     # auf — mit Info-Zeichen, Abgabeort und Ruf. Vorher prüfte
                     # der Filter nur angeklickte Namen, und ein Treffer auf
-                    # „Mamba-Staffelrüstung: Helm" wäre unsichtbar geblieben:
+                    # ein Muster-Treffer wäre unsichtbar geblieben:
                     # Man beobachtet etwas und erfährt nicht, dass es da ist.
                     if not merk.treffer(e['n']):
                         continue

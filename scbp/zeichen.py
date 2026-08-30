@@ -30,7 +30,7 @@ fertige `.exe` ist dadurch nicht dicker geworden.
 
 **Ein Symbol ändern:** nicht hier — in `tools/symbole_bauen.py`. Dort steht die
 Zuordnung „Bedeutung → Lucide-Vorlage". Dieses Modul lädt nur, was dort
-herauskam. Übersicht aller Symbole: Vault → „Symbole (Lucide)".
+herauskam. Übersicht aller Symbole: siehe Projektnotizen.
 """
 
 import os

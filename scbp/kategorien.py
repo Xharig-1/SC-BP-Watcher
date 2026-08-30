@@ -28,14 +28,14 @@ Laser. Am 29.08.2026 gemeldet: *„da gibt es aber viele, und ich weiß grad nic
 welche Ballistik sind, welche Laser, welche Repeater oder Cannon."*
 
 **Die Gliederung ist nicht erfunden.** Sie folgt der Liste, die Xharig-1 seit
-Monaten von Hand in seiner Vault pflegt (`Blueprint-Alle.md`): sieben
+Hand gepflegten Vergleichsliste: sieben
 Oberkategorien, darunter die feinen Arten. Was sich dort bewährt hat, muss das
 Werkzeug nicht neu erfinden.
 
 **Woher die Angaben kommen** — drei Quellen, in dieser Reihenfolge:
 
 1. **Der Tag der Rezeptdaten** ist am genauesten. `BP_CRAFT_APAR_BallisticGatling_S4`
-   nennt die Waffenart direkt; so unterscheidet auch das Vault-Skript
+   nennt die Waffenart direkt; so wird auch anderswo
    Ballistic Cannon von Ballistic Gatling. Gemessen: 89 Schiffswaffen und
    Werkzeuge tragen sie.
 2. **Die Katalog-Art** (`Char_Armor_Helmet`, `Cooler`) für alles, was
@@ -67,7 +67,7 @@ _TAG_ARTEN = (
 _TAG_MUSTER = re.compile(r'_(%s)(?:_|$)' % '|'.join(_TAG_ARTEN), re.I)
 
 # --- Oberkategorie je feiner Art ------------------------------------------
-# Die sieben Gruppen aus `Blueprint-Alle.md`.
+# Die sieben Gruppen aus einer erprobten Liste.
 SCHIFFSWAFFE = 'schiffswaffe'
 SCHIFFSMODUL = 'schiffsmodul'
 SCHIFFSWERKZEUG = 'schiffswerkzeug'
@@ -77,7 +77,7 @@ RUESTUNG = 'ruestung'
 KLEIDUNG = 'kleidung'
 SONSTIGES = 'sonstiges'
 
-# Reihenfolge im Auswahlfeld — dieselbe wie in der Vault-Notiz.
+# Reihenfolge im Auswahlfeld — dieselbe wie in der Vergleichsliste.
 OBER_REIHE = (SCHIFFSWAFFE, SCHIFFSMODUL, SCHIFFSWERKZEUG, FPS_WAFFE,
               AUSRUESTUNG, RUESTUNG, KLEIDUNG, SONSTIGES)
 
@@ -145,7 +145,7 @@ _AUS_SUB = {
 # Magazine tragen keine eigene Katalog-Art — sie stehen unter
 # `WeaponAttachment` zwischen Zielfernrohren und Griffen. Ihr Tag endet aber
 # immer auf `_mag` (oder `_mag_civilian`). ⚠ Ohne diese Zeile lagen 18 Magazine
-# unter „Waffenaufsatz", während die gepflegte Vault-Liste sie seit Monaten als
+# unter „Waffenaufsatz", während sie andernorts als
 # eigene Gruppe führt.
 _MAGAZIN = re.compile(r'_mag(?:_|$)', re.I)
 

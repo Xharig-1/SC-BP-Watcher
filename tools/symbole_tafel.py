@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Baut die Übersichtstafel aller Symbole — zum Nachschlagen in der Vault.
+"""Baut die Übersichtstafel aller Symbole — zum Nachschlagen in der Sammlung.
 
 Wozu: Wer ein Symbol braucht, muss sehen können, was es gibt. Eine Liste von
 Namen hilft dabei nicht — man erkennt ein Symbol am Bild, nicht am Wort.
@@ -10,7 +10,7 @@ erst `symbole_bauen.py` laufen lassen, dann dieses hier.
 
     python tools/symbole_tafel.py
 
-Ohne Vault (etwa auf einem anderen Rechner) landet die Tafel im Projektordner
+Ohne Sammlung (etwa auf einem anderen Rechner) landet die Tafel im Projektordner
 unter `assets/symbole/uebersicht.png`.
 """
 
@@ -38,8 +38,12 @@ SPALTEN = 6
 ZELLE_B, ZELLE_H = 190, 132
 RAND = 34
 
-VAULT = os.path.expanduser(
-    '~/Obsidian/04 Ressourcen/Branding & Vorlagen/symbole')
+# Wohin die Übersichtstafel zusätzlich gelegt wird — für die eigene
+# Dokumentation. ⚠ **Kein fester privater Pfad im Quelltext**: Der Ordner einer
+# persönlichen Wissenssammlung geht niemanden etwas an, und dieses Repo ist
+# öffentlich. Wer das Ziel nutzen will, setzt `SC_BP_SYMBOLTAFEL`; sonst bleibt
+# die Tafel einfach im Projekt liegen.
+ZUSATZZIEL = os.environ.get('SC_BP_SYMBOLTAFEL') or ''
 
 
 def _schrift(groesse, fett=False):
@@ -97,7 +101,7 @@ def main():
     stift = ImageDraw.Draw(tafel)
 
     # Signature-Element des Xharig-Brandings: dünne grüne Kreisringe, teils aus
-    # dem Rand ragend. Siehe Vault → „Xharig Branding".
+    # dem Rand ragend. Siehe Sammlung → „Xharig Branding".
     for mx, my, r in ((breite - 90, 60, 150), (70, hoehe - 40, 190)):
         stift.ellipse((mx - r, my - r, mx + r, my + r), outline='#1e2a12', width=2)
 
@@ -111,10 +115,12 @@ def main():
     _zellen(tafel, stift, y, ZEILEN_SYMBOLE, 18)
 
     ziele = []
-    if os.path.isdir(os.path.dirname(VAULT)):
-        if not os.path.isdir(VAULT):
-            os.makedirs(VAULT)
-        ziele.append(os.path.join(VAULT, 'symbole-uebersicht.png'))
+    # ⚠ Nur wenn wirklich ein Ziel gesetzt ist — sonst legt ein leerer Pfad
+    # einen Ordner im aktuellen Verzeichnis an.
+    if ZUSATZZIEL and os.path.isdir(os.path.dirname(ZUSATZZIEL)):
+        if not os.path.isdir(ZUSATZZIEL):
+            os.makedirs(ZUSATZZIEL)
+        ziele.append(os.path.join(ZUSATZZIEL, 'symbole-uebersicht.png'))
     ziele.append(os.path.join(ZIEL, 'uebersicht.png'))
 
     for z in ziele:
