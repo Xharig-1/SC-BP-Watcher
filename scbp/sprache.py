@@ -1629,16 +1629,30 @@ TEXTE = {
     # einer krummen Menge stand die Feldbeschriftung da statt einer Erklaerung.
     's_lg_kein_material': ('Trag zuerst ein Material ein.',
                            'Enter a material first.'),
+    # ⚠ Beim Anlegen ist eine negative Menge keine Buchung, sondern
+    # Unsinn — dort darf nicht „So viel ist nicht da" stehen.
+    's_lg_nicht_negativ': ('Eine Menge kann nicht negativ sein.',
+                          'An amount cannot be negative.'),
     's_lg_keine_menge':  ('Trag eine Menge ein, zum Beispiel 12,5',
                           'Enter an amount, for example 12.5'),
     's_lg_eingetragen':  ('Eingetragen: %s · %g SCU', 'Added: %s · %g SCU'),
     's_lg_summe_eins':   ('%d Posten · 1 Rohstoff', '%d entries · 1 material'),
     's_lg_meinst_du':    ('Meintest du:', 'Did you mean:'),
-    's_lg_unbekannt':    ('Dieses Material kommt in keinem Rezept vor. Du kannst '
-                          'es trotzdem eintragen — dann taucht es nur nicht beim '
-                          'Herstellen auf.',
-                          'This material appears in no recipe. You can still add '
-                          'it — it just will not show up when crafting.'),
+    # ⚠⚠ Dieser Satz versprach bis v3.3.0-rc42 „Du kannst es trotzdem
+    # eintragen" — und war damit **falsch**, seit der Knopf dafuer weg ist. Der
+    # Text stand an einer anderen Stelle als die Meldung `s_lg_name_fremd` und
+    # blieb beim Aufraeumen stehen. Auf dem Bildschirm behauptete das Programm
+    # also etwas, das es nicht tut. Am 30.08.2026 aufgefallen.
+    #
+    # ⚠ Wer eine Funktion entfernt, sucht nach ALLEN Stellen, die sie
+    # beschreiben — nicht nur nach dem Knopf.
+    's_lg_unbekannt':    ('Dieses Material gibt es in Star Citizen nicht. '
+                          'Eintragen lassen sich nur Rohstoffe und Pflanzen aus '
+                          'dem Spiel — tipp die ersten Buchstaben, dann kommt '
+                          'der Vorschlag.',
+                          'This material does not exist in Star Citizen. Only '
+                          'resources and plants from the game can be entered — '
+                          'type the first letters and a suggestion appears.'),
     's_lg_q_wert':       ('Q %g', 'Q %g'),
     's_lg_ort':          ('Lagerort (freiwillig)',
                           'Storage location (optional)'),
@@ -1707,7 +1721,6 @@ TEXTE = {
                           'Citizen resources and plants can be entered — '
                           'type the first letters and a suggestion '
                           'appears.'),
-    's_lg_trotzdem':     ('Trotzdem eintragen', 'Add anyway'),
     's_lg_keine_guete':  ('Trag die Qualität ein, eine Zahl von 0 bis 1000',
                           'Enter the quality, a number from 0 to 1000'),
     's_lg_berichtigt':   ('Name berichtigt: %s → %s',

@@ -3625,11 +3625,13 @@ def main():
     try:
         _f52b = _HF52b(_w52b, version='knopfprobe')
         _w52b.update_idletasks()
+        # ⚠ `s_lg_trotzdem` gibt es nicht mehr (der Ausweg ist entfallen).
+        # Statt seiner der laengste verbliebene Lager-Knopf.
         _lang = [_sp51.TEXTE[k][0] for k in
-                 ('s_lg_speichern', 's_lg_abbrechen', 's_lg_trotzdem',
+                 ('s_lg_speichern', 's_lg_abbrechen', 's_lg_posten_weg',
                   's_lg_eintragen')]
         _lang += [_sp51.TEXTE[k][1] for k in
-                  ('s_lg_speichern', 's_lg_trotzdem')]
+                  ('s_lg_speichern', 's_lg_posten_weg')]
         _eng52b = []
         for _txt in _lang:
             _k = _se52b._knopf(_f52b, _w52b, _txt, lambda: None)
@@ -4264,7 +4266,7 @@ def main():
     _he53.rohstoffnamen = _echt53
     for _k53 in ('s_lg_speichern', 's_lg_abbrechen', 's_lg_geaendert',
                  's_lg_rechnen', 's_lg_zu_wenig', 's_lg_alles_weg',
-                 's_lg_name_fremd', 's_lg_trotzdem', 's_lg_keine_guete',
+                 's_lg_name_fremd', 's_lg_keine_guete',
                  's_lg_berichtigt', 's_lg_zeile_klick', 's_lg_bearbeite'):
         _w53 = _sp51.TEXTE.get(_k53)
         pruefe(bool(_w53) and len(_w53) == 2 and all(_w53),
@@ -5469,6 +5471,19 @@ def main():
     _q70 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'), encoding='utf-8').read()
     pruefe("t('s_lg_trotzdem')" not in _q70,
            'es gibt keinen Knopf „Trotzdem eintragen" mehr')
+    # ⚠ Auch der TEXT muss weg. Beim Aufraeumen blieb `s_lg_unbekannt` stehen
+    # und behauptete weiter „Du kannst es trotzdem eintragen" — das Programm
+    # versprach also etwas, das es nicht mehr tut (30.08.2026 aufgefallen).
+    # Wer eine Funktion entfernt, sucht nach ALLEN Stellen, die sie
+    # beschreiben, nicht nur nach dem Knopf.
+    from scbp import sprache as _sp70
+    pruefe('s_lg_trotzdem' not in _sp70.TEXTE,
+           'und keinen Text mehr dafuer')
+    for _k70 in ('s_lg_unbekannt', 's_lg_name_fremd'):
+        _w70 = _sp70.TEXTE.get(_k70) or ('', '')
+        pruefe('trotzdem' not in _w70[0].lower()
+               and 'still add' not in _w70[1].lower(),
+               '%s verspricht keinen Ausweg mehr' % _k70)
     pruefe('h_modul.lager_name(name)' in _q70,
            'der Name wird gegen die Lagerliste geprueft')
     pruefe('orte_modul.offizieller_name(ort.get())' in _q70,

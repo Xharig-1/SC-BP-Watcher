@@ -5168,6 +5168,14 @@ def _lager(fenster, rahmen):
             nr = bearbeitung['nummer']
             vorher = vorher_menge
             neu_wert = wert
+            if neu_wert < 0 and nr is None:
+                # ⚠ Beim ANLEGEN gibt es keinen Bestand, von dem etwas
+                # abgehen könnte. „So viel ist nicht da. Vorhanden: 0 SCU"
+                # las sich dort wie ein Buchhaltungsfehler, dabei ist die
+                # Eingabe schlicht sinnlos. Am 30.08.2026 aufgefallen: „-2"
+                # in ein leeres Formular.
+                meldung.configure(text=t('s_lg_nicht_negativ'), fg=GOLD)
+                return
             if neu_wert < 0:
                 # ⚠ Nicht stillschweigend auf 0 setzen. Wer sich um eine Ziffer
                 # vertippt, soll den Bestand sehen, nicht ihn verlieren.
