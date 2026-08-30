@@ -1587,10 +1587,37 @@ class Hauptfenster:
         # Ein `minsize`, das größer ist als der Bildschirm, lässt sich auch
         # nicht wegdeckeln — Tk hält es gegen jedes `geometry()`. Also muss die
         # Leiste kleiner werden dürfen, ohne dass Einträge unerreichbar werden.
-        self.leisten_flaeche = tk.Canvas(self.root, bg=FLAECHE,
+        # ⚠⚠ **Die Knöpfe unten rollen NICHT mit.** „Star Citizen starten",
+        # Kaffee und Discord sitzen in einem eigenen Fuß unter der Rollfläche —
+        # ein Startknopf, den man erst herunterrollen muss, ist keiner. Deshalb
+        # eine Spalte mit zwei Teilen: unten der feste Fuß, darüber die
+        # rollende Leiste, die sich den Rest nimmt.
+        self.leisten_spalte = tk.Frame(self.root, bg=FLAECHE,
+                                       width=LEISTE_BREITE)
+        self.leisten_spalte.pack(side='left', fill='y')
+        self.leisten_spalte.pack_propagate(False)
+
+        self.leisten_fuss = tk.Frame(self.leisten_spalte, bg=FLAECHE)
+        self.leisten_fuss.pack(side='bottom', fill='x')
+
+        # Zwischenrahmen, damit Rollbalken und Fläche nebeneinander liegen und
+        # der Fuß darunter unberührt bleibt.
+        rollbereich = tk.Frame(self.leisten_spalte, bg=FLAECHE)
+        rollbereich.pack(side='top', fill='both', expand=True)
+        self.leisten_flaeche = tk.Canvas(rollbereich, bg=FLAECHE,
                                          width=LEISTE_BREITE,
                                          highlightthickness=0, bd=0)
-        self.leisten_flaeche.pack(side='left', fill='y')
+        # ⚠ **Ohne sichtbaren Balken sieht die Leiste kaputt aus.** Passt sie
+        # nicht ganz, sind die unteren Einträge einfach weg — eine offene
+        # Gruppe wirkt dann leer, und niemand kommt auf die Idee zu rollen.
+        # Genau so stand „Info" beim ersten Bau da: aufgeklappt und trotzdem
+        # ohne einen einzigen Eintrag.
+        self.leisten_balken = rundleiste(rollbereich, self.leisten_flaeche,
+                                         grund=FLAECHE)
+        self.leisten_flaeche.configure(
+            yscrollcommand=self.leisten_balken.set)
+        self.leisten_balken.pack(side='right', fill='y')
+        self.leisten_flaeche.pack(side='left', fill='both', expand=True)
         self.leiste = tk.Frame(self.leisten_flaeche, bg=FLAECHE)
         self._leisten_fenster = self.leisten_flaeche.create_window(
             0, 0, window=self.leiste, anchor='nw', width=LEISTE_BREITE)
@@ -1684,16 +1711,31 @@ class Hauptfenster:
         # voll, und wem was gehört, hat mit Updates nichts zu tun.
         self._reiter('danke', 'quellen', t('hf_danke'), g_info)
 
-        # Fortgeschrittenes sitzt unten und ist zugeklappt — sichtbar, aber
-        # nicht im Weg. Wer es sucht, findet es; wer es nicht kennt, wird nicht
-        # erschlagen.
-        self.klapp = tk.Frame(self.leiste, bg=FLAECHE)
-        self.klapp.pack(side='bottom', fill='x', pady=(8, 6))
-        self.klappknopf = tk.Label(self.klapp, text=t('hf_fortgeschritten'),
+        # Fortgeschrittenes ist zugeklappt — sichtbar, aber nicht im Weg. Wer
+        # es sucht, findet es; wer es nicht kennt, wird nicht erschlagen.
+        #
+        # ⚠ **Es sitzt in der Gruppe „Info", nicht mehr am unteren Rand.** Dort
+        # klebte es früher zwischen den Knöpfen und war das einzige Element der
+        # Leiste ohne Gruppe — das fiel als Bruch auf, sobald die Gruppen
+        # klappbar wurden (30.08.2026). Jetzt gehört es zu einer Gruppe wie
+        # alles andere und klappt mit ihr weg.
+        self.klapp = tk.Frame(g_info, bg=FLAECHE)
+        self.klapp.pack(fill='x', pady=(6, 4))
+        # ⚠ Aufbau wie eine Gruppenüberschrift: Beschriftung links, Pfeil
+        # rechts, dasselbe Symbol. Es ist dieselbe Handlung — etwas auf- und
+        # zuklappen —, also muss es gleich aussehen (Wunsch vom 30.08.2026:
+        # „gleiches Bild im gesamten Projekt").
+        self.klappkopf = tk.Frame(self.klapp, bg=FLAECHE, cursor='hand2')
+        self.klappkopf.pack(fill='x')
+        self.klapppfeil = zeichen.zeile(self.klappkopf, 'aufklappen',
+                                        grund=FLAECHE, schrift=self.f_klein)
+        self.klapppfeil.pack(side='right', padx=(0, 12))
+        self.klappknopf = tk.Label(self.klappkopf, text=t('hf_fortgeschritten'),
                                    bg=FLAECHE, fg=SUB, font=self.f_klein,
                                    cursor='hand2', anchor='w', padx=16, pady=8)
-        self.klappknopf.pack(fill='x')
-        self.klappknopf.bind('<Button-1>', lambda e: self._klapp_umschalten())
+        self.klappknopf.pack(side='left', fill='x', expand=True)
+        for _teil in (self.klappkopf, self.klappknopf, self.klapppfeil):
+            _teil.bind('<Button-1>', lambda e: self._klapp_umschalten())
         self.klappinhalt = tk.Frame(self.klapp, bg=FLAECHE)
 
         # --- Discord -----------------------------------------------------
@@ -1705,8 +1747,8 @@ class Hauptfenster:
         # Discord ist ein Angebot. Zwei gleich laute Knöpfe nebeneinander nehmen
         # sich gegenseitig die Wirkung — das markante Grün trägt nur, solange es
         # an genau einer Stelle steht.
-        rahmen_dc = tk.Frame(self.leiste, bg=FLAECHE)
-        rahmen_dc.pack(side='bottom', fill='x', padx=12, pady=(0, 2))
+        rahmen_dc = tk.Frame(self.leisten_fuss, bg=FLAECHE)
+        rahmen_dc.pack(side='bottom', fill='x', padx=12, pady=(0, 6))
         self.discordknopf = rundknopf(
             rahmen_dc, t('hf_discord'), self._discord_oeffnen, self.f_klein,
             FLAECHE, FLAECHE, LINIE, SUB, radius=8, polster=(12, 6),
@@ -1728,7 +1770,7 @@ class Hauptfenster:
         # **beiden** Dokumenten verboten bleibt und deshalb hier nie entstehen
         # darf: eine Bezahlschranke, ein Abo, Werbung. Der Knopf führt zu einer
         # freiwilligen Seite, das Werkzeug bleibt vollständig und kostenlos.
-        rahmen_kofi = tk.Frame(self.leiste, bg=FLAECHE)
+        rahmen_kofi = tk.Frame(self.leisten_fuss, bg=FLAECHE)
         rahmen_kofi.pack(side='bottom', fill='x', padx=12, pady=(0, 2))
         self.kofiknopf = rundknopf(
             rahmen_kofi, t('hf_kofi'), self._kofi_oeffnen, self.f_klein,
@@ -1759,7 +1801,7 @@ class Hauptfenster:
         except Exception:
             hat_starter = False
         if hat_starter:
-            rahmen_start = tk.Frame(self.leiste, bg=FLAECHE)
+            rahmen_start = tk.Frame(self.leisten_fuss, bg=FLAECHE)
             rahmen_start.pack(side='bottom', fill='x', padx=12, pady=(8, 2))
             self.spielknopf = rundknopf(
                 rahmen_start, t('s_sp_start_knopf'),
@@ -1836,7 +1878,7 @@ class Hauptfenster:
         except Exception:
             hat_starter = False
         if hat_starter:
-            rahmen_start = tk.Frame(self.leiste, bg=FLAECHE)
+            rahmen_start = tk.Frame(self.leisten_fuss, bg=FLAECHE)
             rahmen_start.pack(side='bottom', fill='x', padx=12, pady=(8, 2))
             self.spielknopf = rundknopf(
                 rahmen_start, t('s_sp_start_knopf'),
@@ -1879,8 +1921,13 @@ class Hauptfenster:
 
         kopf = tk.Frame(self.leiste, bg=FLAECHE, cursor='hand2')
         kopf.pack(fill='x', pady=(10, 0))
-        pfeil = tk.Label(kopf, text='⌄' if offen else '⌃', bg=FLAECHE, fg=SUB,
-                         font=self.f_klein, padx=4)
+        # ⚠ **Dasselbe Symbol wie überall sonst im Programm.** Zuerst standen
+        # hier Textpfeile (`⌄`/`⌃`) — die sehen je nach Systemschrift anders aus
+        # als die gezeichneten Symbole, mit denen sich der Bauplan-Fortschritt
+        # und der Bestand aufklappen. Ein Werkzeug, das dieselbe Handlung an
+        # zwei Stellen verschieden abbildet, muss zweimal gelernt werden.
+        pfeil = zeichen.zeile(kopf, 'zuklappen' if offen else 'aufklappen',
+                              grund=FLAECHE, schrift=self.f_klein)
         pfeil.pack(side='right', padx=(0, 12))
         beschriftung = tk.Label(kopf, text=text.upper(), bg=FLAECHE, fg=SUB,
                                 font=self.f_klein, anchor='w', padx=16, pady=6)
@@ -1916,7 +1963,8 @@ class Hauptfenster:
                 g['inhalt'].pack(fill='x', after=g['kopf'])
             else:
                 g['inhalt'].pack_forget()
-            g['pfeil'].configure(text='⌄' if neu_offen else '⌃')
+            g['pfeil'].symbol_tauschen('zuklappen' if neu_offen
+                                       else 'aufklappen')
             pfade.einstellung_setzen('gruppe_zu_%s' % kennung,
                                      'nein' if neu_offen else 'ja')
         except tk.TclError:
@@ -2006,9 +2054,12 @@ class Hauptfenster:
                 except tk.TclError:
                     pass
                 breiten.append(zeile.winfo_reqwidth() + zusatz)
-            breiten.append(self.klappknopf.winfo_reqwidth())
+            # ⚠ Den **Kopf** messen, nicht nur die Beschriftung: Seit der
+            # Pfeil daneben sitzt, ist die Zeile breiter als ihr Text.
+            breiten.append(self.klappkopf.winfo_reqwidth())
             noetig = max(LEISTE_BREITE, max(breiten) + 12)
-            if noetig != self.leisten_flaeche.winfo_width():
+            if noetig != self.leisten_spalte.winfo_width():
+                self.leisten_spalte.configure(width=noetig)
                 self.leisten_flaeche.configure(width=noetig)
                 self.leisten_flaeche.itemconfigure(self._leisten_fenster,
                                                    width=noetig)
@@ -2117,6 +2168,12 @@ class Hauptfenster:
 
     def _klapp_umschalten(self):
         self.fortgeschritten_offen = not self.fortgeschritten_offen
+        # Der Pfeil zeigt, was ein Klick tut — wie bei den Gruppenüberschriften.
+        try:
+            self.klapppfeil.symbol_tauschen(
+                'zuklappen' if self.fortgeschritten_offen else 'aufklappen')
+        except (AttributeError, tk.TclError):
+            pass
         if self.fortgeschritten_offen:
             self.klappinhalt.pack(fill='x')
             if not self.klappinhalt.winfo_children():

@@ -71,6 +71,17 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   ⚠ Opening a tab from a collapsed group expands it automatically — otherwise
   you would stand on a page whose entry is nowhere to be seen.
 
+- **The sidebar now looks the same throughout.** "Advanced" carries the same
+  collapse arrow as the groups and sits inside the "Info" group instead of
+  clinging to the bottom on its own. All collapse arrows use the same icon as
+  the rest of the program — previously they were text characters that looked
+  different depending on the system font.
+
+- **"Launch Star Citizen", Coffee and Discord are pinned to the foot of the
+  sidebar** and no longer scroll away. The sidebar also has a visible scrollbar:
+  without it an expanded group looked empty whenever its entries sat below the
+  window edge.
+
 ### Fixed
 
 - A button relabelled at runtime went back to its old colour once the mouse had

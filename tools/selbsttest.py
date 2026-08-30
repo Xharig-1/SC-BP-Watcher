@@ -6805,6 +6805,39 @@ def main():
            'zugeklappte Gruppen sparen echte Hoehe (%d -> %d px)'
            % (_offen85, _zu85))
 
+    # ⚠⚠ **Die Knoepfe unten duerfen NICHT mitrollen.** Ein „Star Citizen
+    # starten", das man erst herunterrollen muss, ist keiner.
+    _fuss85 = _fenster85.leisten_fuss
+    _in_fuss85 = []
+
+    def _sammeln85(w):
+        for k in w.winfo_children():
+            _in_fuss85.append(k)
+            _sammeln85(k)
+    _sammeln85(_fuss85)
+    pruefe(_fenster85.discordknopf in _in_fuss85
+           or any(getattr(k, 'master', None) is _fuss85 for k in _in_fuss85),
+           'die Knoepfe sitzen im festen Fuss, nicht in der Rollflaeche')
+    pruefe(_fuss85.master is _fenster85.leisten_spalte,
+           'der Fuss haengt an der Spalte, nicht am rollenden Teil')
+
+    # Ohne sichtbaren Balken sieht eine ueberlaufende Leiste kaputt aus:
+    # Eine offene Gruppe wirkt leer, und niemand kommt auf die Idee zu rollen.
+    pruefe(hasattr(_fenster85, 'leisten_balken'),
+           'die Leiste hat einen sichtbaren Rollbalken')
+
+    # „Fuer Fortgeschrittene" gehoert in eine Gruppe wie alles andere —
+    # sonst ist es das einzige Element der Leiste ohne eine.
+    pruefe(_fenster85.klapp.master is _fenster85.gruppen['info']['inhalt'],
+           'Fortgeschrittenes sitzt in der Gruppe Info')
+    pruefe(hasattr(_fenster85, 'klapppfeil'),
+           'und traegt denselben Klapp-Pfeil wie die Gruppen')
+
+    _q85p = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                 encoding='utf-8').read()
+    pruefe("zeichen.zeile(zeile, 'aufklappen'" in _q85p,
+           'auch das Auswahlfeld nutzt das Klapp-Symbol des Projekts')
+
     # Und der Reiter einer zugeklappten Gruppe muss sie wieder aufmachen —
     # sonst steht man auf einer Seite, deren Eintrag nicht zu sehen ist.
     _fenster85.oeffnen('verkauf')

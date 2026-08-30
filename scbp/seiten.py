@@ -5795,8 +5795,11 @@ def _auswahlfeld(fenster, eltern, var, eintraege_holen, hoechstens=10,
     feld = rundes_feld(zeile, var, fenster.f_klein, '#0c1017', LINIE, ACCENT,
                        FG)
 
-    pfeil = tk.Label(zeile, text='', bg=BG, fg=SUB, font=fenster.f_klein,
-                     cursor='hand2', padx=8)
+    # ⚠ Dasselbe Klapp-Symbol wie überall sonst — nicht ein Textpfeil, der je
+    # nach Systemschrift anders aussieht als die gezeichneten Symbole daneben.
+    pfeil = zeichen.zeile(zeile, 'aufklappen', grund=BG,
+                          schrift=fenster.f_klein)
+    pfeil.configure(cursor='hand2')
 
     def _leeren():
         for w in liste.winfo_children():
@@ -5809,14 +5812,14 @@ def _auswahlfeld(fenster, eltern, var, eintraege_holen, hoechstens=10,
         # Steht genau der gewählte Eintrag im Feld, ist nichts mehr zu suchen.
         if text and any(text == e.lower() for e in alle) and not offen['ja']:
             liste.pack_forget()
-            pfeil.configure(text='⌄')
+            pfeil.symbol_tauschen('aufklappen')
             return
         if not text and not offen['ja']:
             liste.pack_forget()
-            pfeil.configure(text='⌄')
+            pfeil.symbol_tauschen('aufklappen')
             return
         treffer = [e for e in alle if text in e.lower()] if text else list(alle)
-        pfeil.configure(text='⌃' if offen['ja'] else '⌄')
+        pfeil.symbol_tauschen('zuklappen' if offen['ja'] else 'aufklappen')
         if not treffer:
             liste.pack(fill='x', pady=(4, 0))
             tk.Label(liste, text=t('s_vk_nichts_gefunden'), bg=BG, fg=SUB,
@@ -5852,10 +5855,7 @@ def _auswahlfeld(fenster, eltern, var, eintraege_holen, hoechstens=10,
         offen['ja'] = not offen['ja']
         zeichnen()
 
-    pfeil.configure(text='⌄')
     pfeil.bind('<Button-1>', umschalten)
-    pfeil.bind('<Enter>', lambda _e: pfeil.configure(fg=ACCENT))
-    pfeil.bind('<Leave>', lambda _e: pfeil.configure(fg=SUB))
 
     # ⚠ **Erst den Pfeil packen, dann das Feld.** In `tkinter` bekommt das
     # zuletzt gepackte Element den übrigen Platz, und ein Feld mit

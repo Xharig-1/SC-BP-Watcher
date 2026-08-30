@@ -74,6 +74,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   selbst auf — sonst stünde man auf einer Seite, deren Eintrag in der Leiste
   gar nicht zu sehen ist.
 
+- **Die Seitenleiste sieht überall gleich aus.** „Für Fortgeschrittene" hat
+  jetzt denselben Klapp-Pfeil wie die Gruppen und sitzt in der Gruppe „Info",
+  statt einzeln unten zu kleben. Alle Klapp-Pfeile benutzen dasselbe Symbol
+  wie der Rest des Programms — vorher waren es Textzeichen, die je nach
+  Systemschrift anders aussahen.
+
+- **„Star Citizen starten", Kaffee und Discord stehen fest am Fuß der Leiste**
+  und rollen nicht mehr mit. Dazu hat die Leiste einen sichtbaren Rollbalken:
+  Ohne ihn wirkte eine aufgeklappte Gruppe leer, wenn ihre Einträge unterhalb
+  des Fensterrands lagen.
+
 ### Behoben
 
 - Ein Knopf, der zur Laufzeit umbeschriftet wird, holte nach dem Überfahren mit
