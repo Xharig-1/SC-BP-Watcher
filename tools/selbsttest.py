@@ -38,6 +38,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time as _zeit
 import tempfile
 import time
 
@@ -816,7 +817,10 @@ def main():
                 # sucht sie nicht in einem zugeklappten Menü namens
                 # „Fortgeschritten". Seit dem Knopf „Fehlerbericht absenden"
                 # ist sie zudem der Weg, auf dem Meldungen ankommen.
-                pruefe(len(hf.knoepfe) == 14, 'alle Reiter sind wieder da')
+                #
+                # ⚠ Am 30.08.2026 von 14 auf 16: die Gruppe **Handel** mit
+                # „Handelslager" und „Verkauf".
+                pruefe(len(hf.knoepfe) == 16, 'alle Reiter sind wieder da')
 
                 # Die Wahl muss festgehalten werden — ohne Speichern-Knopf gibt
                 # es keinen zweiten Versuch. Vorher stand die Markierung
@@ -6518,6 +6522,178 @@ def main():
                 encoding='utf-8').read()
     pruefe('_raffinerie_block(fenster, innen, lager, ort, zeichnen, meldung)'
            in _q83, 'die Lager-Seite bietet die Maske an')
+
+    # 84. Verkauf — wo die Ware hin soll
+    #
+    # ⚠⚠ Diese Pruefung arbeitet mit **eingeschleusten** Daten, nicht mit einem
+    # echten Abruf. Zwei Gruende: Ohne Netz waere sie sonst stumm gruen (die
+    # Falle aus Pruefung 83), und die beiden Faellen unten lassen sich nur mit
+    # bekannten Zahlen belegen.
+    print()
+    print('84. Verkauf — wo die Ware hin soll')
+    from scbp import verkauf as _vk84
+    from scbp import handelslager as _hl84
+
+    _vk84._sichern({
+        'format': _vk84.FORMAT, 'geholt': _zeit.time(),
+        'terminals': {'1': {'o': 'Area 18', 's': 'Stanton', 'q': 0},
+                      '2': {'o': 'GrimHEX', 's': 'Stanton', 'q': 1},
+                      '3': {'o': 'Ashland', 's': 'Pyro', 'q': 0}},
+        'waren': {
+            # Ein Ort, der alles nimmt, aber schlechter zahlt (1), gegen einen,
+            # der nur eine Ware nimmt und dafuer das Doppelte bietet (3).
+            'Gold':         [{'t': '3', 'n': 'Teuer', 'p': 90000, 'd': 0, 'k': ''},
+                             {'t': '1', 'n': 'Alles', 'p': 30000, 'd': 0, 'k': ''},
+                             {'t': '2', 'n': 'Heiss', 'p': 20000, 'd': 0, 'k': ''}],
+            'Copper':       [{'t': '1', 'n': 'Alles', 'p': 4400, 'd': 0, 'k': ''},
+                             {'t': '2', 'n': 'Heiss', 'p': 3000, 'd': 0, 'k': ''}],
+            'Iron':         [{'t': '1', 'n': 'Alles', 'p': 3400, 'd': 0, 'k': ''}],
+            # Die beiden Fallen, als Daten:
+            'Copper (Ore)': [{'t': '1', 'n': 'Alles', 'p': 1200, 'd': 0, 'k': ''}],
+            'Golden Medmon': [{'t': '1', 'n': 'Alles', 'p': 71000, 'd': 0,
+                               'k': ''}],
+        }})
+
+    # ⭐ Falle 1: UEX filtert Warennamen als Teiltext. Wer `Gold` sucht, bekommt
+    # dort `Golden Medmon` mit — und dessen Preis sieht aus wie ein
+    # sagenhaftes Goldgebot. Hier muss exakt verglichen werden.
+    _treffer84 = [tr['ware'] for e in _vk84.orte_fuer(['Gold'])
+                  for tr in e['treffer']]
+    pruefe(_treffer84 and set(_treffer84) == {'Gold'},
+           'Gold liefert nicht Golden Medmon mit (%s)' % sorted(set(_treffer84)))
+
+    # ⭐ Falle 2: Erz und veredelte Ware sind verschiedene Waren mit
+    # verschiedenen Preisen. `norm_rohstoff()` wuerfe sie zusammen.
+    pruefe(_vk84.bester_preis('Copper') == 4400
+           and _vk84.bester_preis('Copper (Ore)') == 1200,
+           'Copper und Copper (Ore) bleiben getrennt')
+
+    # ⚠ Nicht auf das Wort pruefen — es steht als **Warnung** im Kopf und in
+    # den Kommentaren, und das soll es auch. Geprueft wird, ob die Funktion
+    # ueberhaupt erreichbar ist: ohne Import aus `herstellung` kann sie nicht
+    # benutzt werden.
+    _q84 = open(os.path.join(WURZEL, 'scbp', 'verkauf.py'),
+                encoding='utf-8').read()
+    pruefe('from .herstellung import' not in _q84
+           and 'import herstellung' not in _q84,
+           'verkauf.py kann norm_rohstoff gar nicht erreichen')
+
+    # ⭐ Der Kern des Reiters: mehr abgenommene Waren schlagen den hoeheren
+    # Preis. Gemessen am 30.08.2026 bringt der Umweg ueber mehrere Terminals
+    # nur 2 % mehr — dafuer aber zwei zusaetzliche Anfluege.
+    _orte84 = _vk84.orte_fuer(['Gold', 'Copper', 'Iron'])
+    pruefe(_orte84[0]['terminal'] == 'Alles' and _orte84[0]['anzahl'] == 3,
+           'der Ort mit den meisten Waren steht oben (%s)'
+           % _orte84[0]['terminal'])
+    pruefe(_orte84[1]['terminal'] == 'Heiss',
+           'danach wird nach Preis sortiert (%s)' % _orte84[1]['terminal'])
+
+    _heiss84 = _vk84.orte_fuer(['Gold', 'Copper', 'Iron'], nur_nqa=True)
+    pruefe([e['terminal'] for e in _heiss84] == ['Heiss'],
+           'gestohlene Ware sieht nur Orte ohne Fragen (%s)'
+           % [e['terminal'] for e in _heiss84])
+
+    # Die Stundensperre. ⚠ Gegenprobe gegen den alten Stand: Ohne sie waere
+    # `aktualisieren(erzwingen=True)` sofort wieder durchgelaufen.
+    pruefe(_vk84.wartezeit() > 0, 'nach dem Abruf laeuft die Sperre')
+
+    # ⚠⚠ **Mit Gegenprobe.** Im Selbsttest ist der Netzzugriff abgeschaltet
+    # (`AUS`) — die Pruefung waere also auch dann gruen gewesen, wenn die
+    # Sperre gar nicht griffe, nur eben mit dem Grund `'aus'`. Deshalb wird
+    # `AUS` hier abgeschaltet und `_holen` durch eine Falle ersetzt: Kommt die
+    # Anfrage trotz Sperre durch, fliegt sie und die Pruefung faellt durch.
+    def _falle84(*_a, **_k):
+        raise AssertionError('trotz Sperre ins Netz gegriffen')
+
+    _aus84, _echt84 = _vk84.AUS, _vk84._holen
+    _vk84.AUS, _vk84._holen = False, _falle84
+    try:
+        _ergebnis84 = _vk84.aktualisieren(erzwingen=True)
+    except AssertionError:
+        _ergebnis84 = ('ins Netz gegriffen',)
+    finally:
+        _vk84.AUS, _vk84._holen = _aus84, _echt84
+    pruefe(_ergebnis84 == (False, 'gesperrt'),
+           'der Knopf laesst sich nicht zweimal druecken (%s)' % (_ergebnis84,))
+
+    # Das Handelslager: gleiche Stapel zusammen, markierte getrennt.
+    _hl84.leeren()
+    _hl84.eintragen('Gold', '100', 'Area 18')
+    _hl84.eintragen('Gold', '50', 'Area 18')
+    _hl84.eintragen('Gold', '20', 'Area 18', gestohlen=True)
+    _posten84 = _hl84.laden()
+    pruefe(len(_posten84) == 2 and _posten84[0]['menge'] == 150,
+           'gleiche Posten werden zusammengezaehlt (%d Stapel)' % len(_posten84))
+    pruefe(_hl84.mengen(nur_gestohlen=True) == {'Gold': 20.0},
+           'markierte Ware ist ein eigener Stapel')
+    pruefe(_hl84.eintragen('Gold', 'abc')[1] == 'menge'
+           and _hl84.eintragen('', '5')[1] == 'ware',
+           'unsinnige Eingaben werden abgewiesen')
+
+    # ⚠ **Keine negativen Mengen und keine Null.** Ein Laderaum mit „-40 SCU"
+    # ergibt keinen Sinn, und `zahl_lesen` laesst das Minus bewusst durch (im
+    # Werkstatt-Lager wird damit abgebucht). Hier muss es also abgefangen
+    # werden — auch das lange Minus vom Ziffernblock.
+    _vorher84 = len(_hl84.laden())
+    pruefe(all(_hl84.eintragen('Gold', wert)[1] == 'menge'
+               for wert in ('-40', '−40', '0', '-0,5')),
+           'negative Mengen und Null werden abgewiesen')
+    pruefe(len(_hl84.laden()) == _vorher84,
+           'und es landet nichts davon im Lager')
+
+    # ⭐ Der Rechner im Mengenfeld — dasselbe wie im Werkstatt-Lager.
+    pruefe(_hl84.eintragen('Copper', '100+5')[0]
+           and _hl84.mengen()['Copper'] == 105.0,
+           'im Mengenfeld darf gerechnet werden (100+5)')
+    pruefe(_hl84.eintragen('Iron', '100-40')[0]
+           and _hl84.mengen()['Iron'] == 60.0,
+           'auch mit Minus (100-40 ergibt 60)')
+
+    # ⚠ **Beim Aendern zaehlt die bisherige Menge als Ausgangswert**: `-5` ist
+    # dort eine Buchung („fuenf abbuchen"), kein Fehler. Abgewiesen wird erst,
+    # wenn das **Ergebnis** null oder kleiner waere.
+    _nr84 = [i for i, p in enumerate(_hl84.laden())
+             if p['ware'] == 'Gold' and not p['gestohlen']][0]
+    _stand84 = _hl84.laden()[_nr84]['menge']
+    pruefe(_hl84.aendern(_nr84, 'Gold', '-5')[0]
+           and _hl84.laden()[_nr84]['menge'] == _stand84 - 5,
+           'beim Aendern bucht -5 ab (%s -> %s)'
+           % (_stand84, _hl84.laden()[_nr84]['menge']))
+    pruefe(_hl84.aendern(_nr84, 'Gold', '-9999')[1] == 'menge',
+           'aber nicht unter null')
+    _hl84.leeren()
+
+    # ⚠ **Beide Felder sperren gleich.** Ware und Lagerort kommen aus
+    # geschlossenen Listen — sonst steht in dem einen Feld eine Liste und im
+    # anderen darf jeder tippen, was er will.
+    _q84s = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                 encoding='utf-8').read()
+    _hlseite84 = _q84s.split('def _handelslager(')[-1]
+    pruefe('preisdaten.bekannt(name)' in _hlseite84,
+           'die Ware wird gegen die Warenliste geprueft')
+    pruefe('ortsliste.kennt(ort.get())' in _hlseite84,
+           'der Lagerort wird gegen die Ortsliste geprueft')
+    pruefe("t('s_lg_meinst_du')" in _hlseite84,
+           'und schlaegt aehnliche Orte vor, wie im Werkstatt-Lager')
+    pruefe("'verkauf':     _verkauf," in _q84s
+           and "'handelslager': _handelslager," in _q84s,
+           'beide Seiten sind angemeldet')
+    pruefe("self._reiter('verkauf', 'verkauf'" in open(
+        os.path.join(WURZEL, 'scbp', 'hauptfenster.py'),
+        encoding='utf-8').read(), 'der Reiter steht in der Leiste')
+
+    # ⚠ Kein Rot im herunterzaehlenden Knopf: Der ist gesperrt, *weil* der
+    # Abruf geklappt hat — Rot ist in diesem Programm die Fehlerfarbe.
+    from scbp import seiten as _se84
+    pruefe(_se84._warteton(59 * 60) == _se84.SUB
+           and _se84._warteton(10 * 60) == _se84.GOLD
+           and _se84._warteton(30) == _se84.ACCENT,
+           'der Timer reift von grau ueber gold nach gruen')
+    pruefe(_se84._warteton(59 * 60) != _se84.ROT
+           and _se84._warteton(30) != _se84.ROT,
+           'der Timer wird nie rot')
+    pruefe(_se84._wartetext(3599) == '59:59' and _se84._wartetext(0) == '',
+           'die Restzeit steht als mm:ss da (%s)' % _se84._wartetext(3599))
 
     print()
     if fehler:

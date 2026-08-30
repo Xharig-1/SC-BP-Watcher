@@ -67,6 +67,8 @@ def bauen(fenster, kennung, rahmen):
         'herstellung': _herstellung,
         'bergbau':     _bergbau,
         'lager':       _lager,
+        'verkauf':     _verkauf,
+        'handelslager': _handelslager,
     }.get(kennung)
     if bauer:
         bauer(fenster, rahmen)
@@ -282,7 +284,10 @@ def _knopf(fenster, eltern, text, tat, stark=False, gefahr=False):
 
     def raus(_=None):
         c.itemconfigure(flaeche[0], outline=rand)
-        c.itemconfigure(beschriftung, fill=farbe)
+        # ⚠ `farben['ruhe']`, nicht `farbe`: Wurde der Knopf zwischendurch
+        # umbeschriftet (Verkaufs-Reiter, Restzeit), holte die feste Farbe die
+        # alte zurück, sobald die Maus den Knopf einmal verlassen hatte.
+        c.itemconfigure(beschriftung, fill=farben['ruhe'])
 
     def mitwachsen(_=None):
         """Wird der Knopf gestreckt, muss das gezeichnete Rechteck mit.
@@ -305,10 +310,30 @@ def _knopf(fenster, eltern, text, tat, stark=False, gefahr=False):
         c.delete(punkte)
         c.coords(beschriftung, neue_breite / 2.0, hoehe / 2.0)
 
+    def beschriften(neuer_text, neue_farbe=None):
+        """Text und Farbe im laufenden Betrieb ändern.
+
+        Gebraucht für den herunterzählenden Knopf im Verkaufs-Reiter: Solange
+        die Stundensperre läuft, steht dort die Restzeit statt der Aufschrift.
+
+        ⚠ **Die Breite bleibt, wie sie war.** Sie wurde beim Bauen aus dem
+        längsten Text berechnet — ein kürzerer Text macht den Knopf also nicht
+        schmaler, und beim Herunterzählen springt nichts. Ein *längerer* Text
+        als der ursprüngliche würde abgeschnitten; wer das braucht, baut den
+        Knopf mit dem längeren Text und setzt danach den kurzen.
+        """
+        c.itemconfigure(beschriftung, text=neuer_text,
+                        fill=neue_farbe if neue_farbe else farbe)
+        # Damit `raus()` nach dem Überfahren nicht die alte Farbe zurückholt.
+        farben['ruhe'] = neue_farbe if neue_farbe else farbe
+
+    farben = {'ruhe': farbe}
+
     c.bind('<Configure>', mitwachsen, add='+')
     c.bind('<Enter>', rein)
     c.bind('<Leave>', raus)
     c.bind('<Button-1>', lambda e: tat())
+    c.beschriften = beschriften
     c.ist_knopf = True          # damit tools/randpruefung.py ihn prüft
     return c
 
@@ -5678,3 +5703,740 @@ def _lager(fenster, rahmen):
 
     zeichnen()
 
+
+
+def _wartetext(rest):
+    """Die Restzeit der Sperre als `43:12` — oder `''`, wenn sie abgelaufen ist."""
+    if rest <= 0:
+        return ''
+    return '%d:%02d' % (rest // 60, rest % 60)
+
+
+def _warteton(rest):
+    """Welche Farbe die Restzeit hat.
+
+    ⭐ **Kein Rot.** Der Knopf ist gesperrt, *weil* der Abruf eben geklappt hat —
+    Rot ist in diesem Programm die Fehlerfarbe und würde nach einem Erfolg das
+    Gegenteil melden. Stattdessen „reift" der Knopf von grau nach grün:
+
+    | Restzeit | Farbe | liest sich als |
+    |---|---|---|
+    | über 30 Min | grau | weit weg, egal |
+    | 30 – 5 Min | gold | tut sich was |
+    | unter 5 Min | grün | gleich wieder da |
+
+    Gelb und Orange getrennt anzubieten hätte nichts gebracht: Die Palette hat
+    dafür nur `GOLD`, zwei Töne davon unterscheidet im Betrieb niemand.
+    """
+    if rest > 30 * 60:
+        return SUB
+    if rest > 5 * 60:
+        return GOLD
+    return ACCENT
+
+
+def _alterstext(sekunden):
+    """Wie alt eine Meldung ist, in Worten — `None` ergibt `''`."""
+    if sekunden is None:
+        return ''
+    stunden = sekunden / 3600.0
+    if stunden < 1:
+        return t('s_vk_alter_frisch')
+    if stunden < 24:
+        return t('s_vk_alter_stunden').format(n=int(stunden))
+    return t('s_vk_alter_tage').format(n=int(stunden / 24))
+
+
+def _verkauf(fenster, rahmen):
+    """Wo man seine Ware los wird — die beste Stelle zuerst."""
+    import threading
+
+    from . import handelslager, verkauf as preisdaten
+    from .hauptfenster import rundes_feld
+
+    _ueberschrift(fenster, rahmen, t('hf_verkauf'), t('s_vk_lead'))
+    innen = _rollflaeche(rahmen)
+
+    # Die ausgewählten Waren. Liste statt Menge, damit die Reihenfolge der
+    # Auswahl erhalten bleibt — wer zuerst Gold eintippt, sieht Gold zuerst.
+    auswahl = []
+    suche = tk.StringVar()
+    nur_nqa = [False]
+    meldung = {'text': '', 'farbe': SUB}
+
+    ergebnis_rahmen = tk.Frame(innen, bg=BG)
+    chip_rahmen = tk.Frame(innen, bg=BG)
+    vorschlag_rahmen = tk.Frame(innen, bg=BG)
+
+    # ------------------------------------------------ Kopf: Abruf und Stand
+    kopf = tk.Frame(innen, bg=BG)
+    kopf.pack(fill='x', padx=24, pady=(4, 0))
+
+    stand_label = tk.Label(kopf, text='', bg=BG, fg=SUB,
+                           font=fenster.f_klein, anchor='w')
+
+    laeuft = {'ja': False}
+
+    def abrufen():
+        """Der Knopf. Holt die Preise — **im Hintergrund**.
+
+        ⚠⚠ **Nicht im Oberflächen-Thread abrufen.** Der Abruf darf bis zu 30
+        Sekunden dauern (`ZEITLIMIT`), und solange stünde das ganze Fenster
+        still: kein Rollen, kein Umschalten, nichts. Für jemanden, der nebenbei
+        spielt, sieht ein eingefrorenes Fenster nach Absturz aus.
+
+        Dasselbe Muster wie beim Update-Knopf weiter oben: Arbeit im Thread,
+        Rückkehr über `root.after(0, …)`.
+        """
+        if laeuft['ja']:
+            return
+        rest = preisdaten.wartezeit()
+        if rest:
+            meldung['text'], meldung['farbe'] = t('s_vk_gesperrt'), GOLD
+            neu_zeichnen()
+            return
+        laeuft['ja'] = True
+        knopf.beschriften(t('s_vk_holt'), SUB)
+
+        def arbeit():
+            try:
+                ok, grund = preisdaten.aktualisieren(erzwingen=True)
+            except Exception as ausnahme:
+                fehler.merken('seiten.verkauf_abruf', ausnahme)
+                ok, grund = False, 'netz'
+
+            def melden():
+                laeuft['ja'] = False
+                if ok:
+                    meldung['text'], meldung['farbe'] = t('s_vk_geholt'), ACCENT
+                elif grund == 'gesperrt':
+                    meldung['text'], meldung['farbe'] = t('s_vk_gesperrt'), GOLD
+                elif grund == 'aus':
+                    meldung['text'], meldung['farbe'] = (t('s_vk_kein_netz_aus'),
+                                                         SUB)
+                else:
+                    meldung['text'], meldung['farbe'] = t('s_vk_fehler'), ROT
+                try:
+                    if ergebnis_rahmen.winfo_exists():
+                        neu_zeichnen()
+                except Exception:
+                    pass
+
+            try:
+                fenster.root.after(0, melden)
+            except Exception:
+                laeuft['ja'] = False
+
+        threading.Thread(target=arbeit, daemon=True).start()
+
+    knopf = _knopf(fenster, kopf, t('s_vk_holen'), abrufen)
+    knopf.pack(side='left')
+    stand_label.pack(side='left', padx=(12, 0))
+
+    def _ticker():
+        """Zählt die Sperre im Knopf herunter — einmal pro Sekunde.
+
+        ⚠ **Prüft, ob es den Knopf noch gibt.** Beim Seitenwechsel wird der
+        Rahmen zerstört, der `after`-Auftrag läuft aber weiter. Ohne diese
+        Prüfung greift er auf ein totes Widget zu und das Programm stürzt beim
+        Umschalten ab — der Grund, warum hier kein Aufräum-Register nötig ist.
+        """
+        try:
+            if not knopf.winfo_exists():
+                return
+        except Exception:
+            return
+        rest = preisdaten.wartezeit()
+        if rest:
+            knopf.beschriften(_wartetext(rest), _warteton(rest))
+        else:
+            knopf.beschriften(t('s_vk_holen'), None)
+        alter = preisdaten.alter()
+        stand_label.configure(
+            text=(t('s_vk_stand').format(alter=_alterstext(alter))
+                  if alter is not None else t('s_vk_kein_stand')))
+        knopf.after(1000, _ticker)
+
+    # ------------------------------------------------------- Warenauswahl
+    def waehlen(name):
+        if name not in auswahl:
+            auswahl.append(name)
+        suche.set('')
+        neu_zeichnen()
+
+    def entfernen(name):
+        if name in auswahl:
+            auswahl.remove(name)
+        neu_zeichnen()
+
+    def aus_lager():
+        """Die Waren aus dem Handelslager übernehmen — die Brücke zum Lager."""
+        genommen = 0
+        for ware in handelslager.waren_im_lager():
+            # ⚠ Nur übernehmen, was die Preisdaten auch kennen. Sonst steht ein
+            # Name in der Auswahl, zu dem es nie ein Ergebnis geben kann, und
+            # der Nutzer sucht den Fehler bei sich.
+            if preisdaten.bekannt(ware) and ware not in auswahl:
+                auswahl.append(ware)
+                genommen += 1
+        if handelslager.hat_gestohlenes():
+            nur_nqa[0] = True
+        if not genommen:
+            meldung['text'] = t('s_vk_lager_leer')
+            meldung['farbe'] = SUB
+        neu_zeichnen()
+
+    # ------------------------------------------------------- Suchfeld
+    suchzeile = tk.Frame(innen, bg=BG)
+    suchzeile.pack(fill='x', padx=24, pady=(14, 0))
+    tk.Label(suchzeile, text=t('s_vk_ware'), bg=BG, fg=SUB,
+             font=fenster.f_klein, anchor='w').pack(fill='x')
+    feld = rundes_feld(suchzeile, suche, fenster.f_klein, '#0c1017',
+                       LINIE, ACCENT, FG)
+    feld.halter.pack(fill='x', pady=(4, 0))
+
+    def kaestchen_um(an):
+        nur_nqa[0] = an
+        neu_zeichnen()
+
+    schalterzeile = tk.Frame(innen, bg=BG)
+    schalterzeile.pack(fill='x', padx=24, pady=(10, 0))
+    _kaestchen(schalterzeile, t('s_vk_nur_nqa'), nur_nqa, kaestchen_um,
+               fenster.f_klein).pack(side='left')
+    _knopf(fenster, schalterzeile, t('s_vk_aus_lager'),
+           aus_lager).pack(side='right')
+
+    chip_rahmen.pack(fill='x', padx=24, pady=(10, 0))
+    vorschlag_rahmen.pack(fill='x', padx=24)
+    ergebnis_rahmen.pack(fill='both', expand=True, padx=24, pady=(6, 20))
+
+    def _leeren(halter):
+        for kind in halter.winfo_children():
+            kind.destroy()
+
+    def _chips():
+        """Die gewählten Waren als anklickbare Marken — Klick entfernt sie."""
+        _leeren(chip_rahmen)
+        if not auswahl:
+            return
+        reihe = tk.Frame(chip_rahmen, bg=BG)
+        reihe.pack(fill='x')
+        for name in auswahl:
+            marke = tk.Label(reihe, text=name + '  ×', bg=FLAECHE, fg=FG,
+                             font=fenster.f_klein, padx=8, pady=3,
+                             cursor='hand2')
+            marke.pack(side='left', padx=(0, 6), pady=2)
+            marke.bind('<Button-1>', lambda e, n=name: entfernen(n))
+
+    def _vorschlaege():
+        """Was zum Getippten passt — höchstens acht Treffer.
+
+        ⚠ **Teiltexte, nicht nur Wortanfänge** — dieselbe Erfahrung wie bei den
+        Lagerorten in `orte.py`: Wer `Ore` tippt, sucht `Copper (Ore)`, und wer
+        `medmon` tippt, findet `Golden Medmon` sonst nie.
+        """
+        _leeren(vorschlag_rahmen)
+        text = (suche.get() or '').strip().lower()
+        if not text:
+            return
+        treffer = [n for n in preisdaten.waren()
+                   if text in n.lower() and n not in auswahl][:8]
+        if not treffer:
+            tk.Label(vorschlag_rahmen, text=t('s_vk_nichts_gefunden'), bg=BG,
+                     fg=SUB, font=fenster.f_klein, anchor='w').pack(fill='x',
+                                                                    pady=4)
+            return
+        for name in treffer:
+            zeile = tk.Label(vorschlag_rahmen, text=name, bg=BG, fg=FG,
+                             font=fenster.f_klein, anchor='w', cursor='hand2',
+                             padx=6, pady=3)
+            zeile.pack(fill='x')
+            zeile.bind('<Button-1>', lambda e, n=name: waehlen(n))
+            zeile.bind('<Enter>', lambda e, w=zeile: w.configure(bg=FLAECHE))
+            zeile.bind('<Leave>', lambda e, w=zeile: w.configure(bg=BG))
+
+    def _ergebnis():
+        _leeren(ergebnis_rahmen)
+        if meldung['text']:
+            tk.Label(ergebnis_rahmen, text=meldung['text'], bg=BG,
+                     fg=meldung['farbe'], font=fenster.f_klein,
+                     anchor='w').pack(fill='x', pady=(0, 8))
+            meldung['text'] = ''
+        if not auswahl:
+            _fliesstext(ergebnis_rahmen, t('s_vk_leer_hinweis'),
+                        fenster.f_klein, fill='x')
+            return
+        orte = preisdaten.orte_fuer(auswahl, nur_nqa=nur_nqa[0])
+        if not orte:
+            _fliesstext(ergebnis_rahmen, t('s_vk_keine_orte'),
+                        fenster.f_klein, fill='x')
+            return
+        # Mengen aus dem Handelslager — nur dann wird ein echter Erlös gezeigt.
+        # ⚠ Ohne Mengen **keine Summe**: Sie wäre eine Behauptung über eine
+        # Ladung, die das Werkzeug nicht kennt (siehe `orte_fuer`).
+        lagermengen = handelslager.mengen()
+        for nummer, ort in enumerate(orte[:40]):
+            # ⚠ Die Spaltenüberschrift steht **nur über dem ersten Kasten**.
+            # In jedem zu wiederholen war der erste Bau: Bei 40 Orten stand
+            # „Ware · SCU · Preis 1 SCU · Gesamtpreis" vierzigmal da und machte
+            # die Liste unruhiger, statt sie zu erklären.
+            _verkauf_zeile(fenster, ergebnis_rahmen, ort, len(auswahl),
+                           lagermengen, mit_kopf=(nummer == 0))
+
+    def neu_zeichnen():
+        _chips()
+        _vorschlaege()
+        _ergebnis()
+
+    suche.trace_add('write', lambda *_: (_vorschlaege(), None)[1])
+    neu_zeichnen()
+    _ticker()
+
+    # ℹ Der stille Abruf steht **nicht** hier, sondern beim Programmstart
+    # (`sc_bp_watcher.py`, neben `preise` und `orte`). Wer die Seite öffnet,
+    # soll Daten vorfinden und nicht auf einen Abruf warten — und eine Seite,
+    # die beim Betreten von sich aus ins Netz greift, tut das bei jedem
+    # Umschalten erneut.
+
+
+def _verkauf_zeile(fenster, eltern, ort, gesucht, lagermengen,
+                   mit_kopf=False):
+    """Ein Ankaufsort: wie viele Waren er nimmt, was er zahlt, wie alt das ist."""
+    kasten = tk.Frame(eltern, bg=FLAECHE, highlightthickness=1,
+                      highlightbackground=LINIE)
+    kasten.pack(fill='x', pady=(0, 6))
+    innen = tk.Frame(kasten, bg=FLAECHE)
+    innen.pack(fill='x', padx=12, pady=8)
+
+    kopf = tk.Frame(innen, bg=FLAECHE)
+    kopf.pack(fill='x')
+
+    # ⭐ Die Trefferzahl steht **vorn und farbig**. Sie ist die eigentliche
+    # Antwort des Reiters: Ein Ort, der die ganze Ladung nimmt, spart einen
+    # Anflug — und das ist mehr wert als ein paar Prozent Aufpreis anderswo
+    # (gemessen: 2 % Mehrerlös für zwei zusätzliche Stopps).
+    voll = ort['anzahl'] >= gesucht
+    tk.Label(kopf, text='%d/%d' % (ort['anzahl'], gesucht), bg=FLAECHE,
+             fg=ACCENT if voll else SUB, font=fenster.f_klein,
+             width=5, anchor='w').pack(side='left')
+
+    name = ort['terminal']
+    beiwerk = ' · '.join(x for x in (ort.get('ort'), ort.get('system')) if x)
+    tk.Label(kopf, text=name, bg=FLAECHE, fg=FG, font=fenster.f_klein,
+             anchor='w').pack(side='left')
+    if beiwerk:
+        tk.Label(kopf, text='  ' + beiwerk, bg=FLAECHE, fg=SUB,
+                 font=fenster.f_klein, anchor='w').pack(side='left')
+    if ort.get('nqa'):
+        # Keine Wertung, nur eine Auskunft: Hier wird nicht nach der Herkunft
+        # gefragt. Für saubere Ware ist das weder gut noch schlecht.
+        tk.Label(kopf, text='  ' + t('s_vk_nqa_marke'), bg=FLAECHE, fg=GOLD,
+                 font=fenster.f_klein, anchor='w').pack(side='left')
+
+    alterstext = _alterstext(ort.get('alter'))
+    if alterstext:
+        # ⚠ Alte Meldungen werden **abgesetzt, nicht versteckt**. Wer eine 10
+        # Tage alte Angabe sieht, kann selbst entscheiden, ob ihm das reicht;
+        # eine Zeile, die stillschweigend fehlt, lässt ihn das Werkzeug für
+        # kaputt halten.
+        zu_alt = (ort.get('alter') or 0) > 7 * 24 * 3600
+        tk.Label(kopf, text=alterstext, bg=FLAECHE, fg=GOLD if zu_alt else SUB,
+                 font=fenster.f_klein, anchor='e').pack(side='right')
+
+    # ⚠ Dasselbe Raster wie im Handelslager: Ware | SCU | Preis 1 SCU |
+    # Gesamtpreis. Zwei Ansichten desselben Werkzeugs dürfen ihre Zahlen nicht
+    # verschieden anordnen — wer die eine lesen kann, muss die andere blind
+    # lesen können.
+    zeilen = tk.Frame(innen, bg=FLAECHE)
+    zeilen.pack(fill='x', pady=(4, 0))
+    # ⚠⚠ **Feste Mindestbreiten, sonst steht jeder Kasten anders.** Jeder Ort
+    # ist ein eigenes Raster, und Tk richtet Spalten nur **innerhalb** eines
+    # Rasters aus. Ohne feste Breiten war der erste Kasten schmaler als die
+    # folgenden — allein, weil über ihm die Spaltenüberschrift steht und die
+    # breiter ist als die Zahlen darunter. Untereinander standen die Beträge
+    # dann versetzt.
+    #
+    # Die Werte sind grosszuegig gewaehlt: Ein Betrag, der breiter wird als
+    # seine Spalte, schiebt die Ausrichtung wieder auseinander.
+    zeilen.grid_columnconfigure(0, weight=1, minsize=140)
+    for _spalte, _breite in ((1, 80), (2, 120), (3, 150)):
+        zeilen.grid_columnconfigure(_spalte, weight=0, minsize=_breite)
+
+    if mit_kopf:
+        hat_mengen = any(lagermengen.get(tr['ware']) for tr in ort['treffer'])
+        kopf_zeile = ('', t('s_hl_sp_menge') if hat_mengen else '',
+                      t('s_hl_sp_je_scu'),
+                      t('s_hl_sp_gesamt') if hat_mengen else '')
+        for spalte, titel in enumerate(kopf_zeile):
+            tk.Label(zeilen, text=titel, bg=FLAECHE, fg=SUB, padx=8,
+                     font=fenster.f_klein,
+                     anchor='w' if spalte == 0 else 'e').grid(
+                row=0, column=spalte, sticky='ew')
+
+    erloes = 0.0
+    for reihe, treffer in enumerate(ort['treffer'], start=1):
+        menge = lagermengen.get(treffer['ware'])
+        summe = (menge or 0) * treffer['preis']
+        erloes += summe
+        felder = (
+            (treffer['ware'], SUB, 'w'),
+            (_menge_text(menge) if menge else '', FG, 'e'),
+            (_geld(treffer['preis']), FG, 'e'),
+            (_geld(summe) if menge else '', FG, 'e'),
+        )
+        for spalte, (text, farbe, seite) in enumerate(felder):
+            tk.Label(zeilen, text=text, bg=FLAECHE, fg=farbe, padx=8,
+                     font=fenster.f_klein, anchor=seite).grid(
+                row=reihe, column=spalte, sticky='ew')
+
+    # ⚠⚠ **Eine Summe gibt es nur mit Mengen aus dem Handelslager.** Ohne sie
+    # wäre jede Zahl hier eine Behauptung über eine Ladung, die das Werkzeug
+    # nicht kennt — siehe `verkauf.orte_fuer`.
+    if erloes:
+        tk.Label(innen, text=t('s_vk_erloes').format(summe=_geld(erloes)),
+                 bg=FLAECHE, fg=ACCENT, font=fenster.f_klein,
+                 anchor='e').pack(fill='x', pady=(4, 0))
+
+
+def _handelslager(fenster, rahmen):
+    """Was zum Verkauf im Laderaum liegt — eintragen, ansehen, löschen."""
+    from . import handelslager as lager, orte as ortsliste
+    from . import verkauf as preisdaten
+    from .hauptfenster import rundes_feld
+
+    _ueberschrift(fenster, rahmen, t('hf_handelslager'), t('s_hl_lead'))
+    innen = _rollflaeche(rahmen)
+    _fliesstext(innen, t('s_hl_hinweis'), fenster.f_klein, fill='x')
+
+    ware = tk.StringVar()
+    menge = tk.StringVar()
+    ort = tk.StringVar(value=pfade.einstellung('handel_ort') or '')
+    gestohlen = [False]
+    meldung = {'text': '', 'farbe': SUB}
+    # Welche Zeile gerade zum Ändern offen ist. `None` heisst: neuer Posten.
+    # ⚠ Die Nummer ist die Position in `lager.laden()` — dieselbe Vorsicht wie
+    # im Werkstatt-Lager: Sortieren darf sie nicht verschieben, sonst
+    # berichtigt man den falschen Posten.
+    bearbeitung = {'nummer': None}
+
+    vorschlag_rahmen = tk.Frame(innen, bg=BG)
+    liste_rahmen = tk.Frame(innen, bg=BG)
+    ort_vorschlag = None
+
+    for beschriftung, var in ((t('s_hl_ware'), ware),
+                              (t('s_hl_menge'), menge),
+                              (t('s_hl_ort'), ort)):
+        ziel = _feld(fenster, innen, beschriftung, '')
+        feld = rundes_feld(ziel, var, fenster.f_klein, '#0c1017', LINIE,
+                           ACCENT, FG)
+        feld.halter.pack(pady=(4, 8))
+        if var is ort:
+            # Dieselbe „Meintest du:"-Zeile wie im Werkstatt-Lager. ⚠ Das
+            # Bedienkonzept darf sich zwischen zwei Lagern nicht unterscheiden
+            # — wer das eine bedienen kann, muss das andere blind bedienen
+            # können.
+            ort_vorschlag = tk.Frame(ziel.links, bg=BG)
+
+    def ort_vorschlaege_zeigen(*_):
+        if ort_vorschlag is None:
+            return
+        for w in ort_vorschlag.winfo_children():
+            w.destroy()
+        ort_vorschlag.pack_forget()
+        text = ort.get().strip()
+        if not text or ortsliste.kennt(text):
+            return
+        treffer = ortsliste.aehnliche(text)
+        if not treffer:
+            return
+        ort_vorschlag.pack(fill='x', pady=(4, 0))
+        tk.Label(ort_vorschlag, text=t('s_lg_meinst_du'), bg=BG, fg=SUB,
+                 font=fenster.f_klein).pack(side='left', padx=(0, 8))
+        for name_ in treffer:
+            lbl = tk.Label(ort_vorschlag, text=name_, bg=BG, fg=ACCENT,
+                           font=fenster.f_klein, cursor='hand2')
+            lbl.pack(side='left', padx=(0, 10))
+            lbl.bind('<Button-1>', lambda _e, n=name_: ort.set(n))
+
+    ort.trace_add('write', ort_vorschlaege_zeigen)
+
+    schalter = tk.Frame(innen, bg=BG)
+    schalter.pack(fill='x', padx=24, pady=(0, 4))
+
+    def marke_um(an):
+        gestohlen[0] = an
+
+    # ⭐ Das Kästchen steht dort, wo im Werkstatt-Lager die Güte steht. Es ist
+    # ihr Ersatz: Der Ankaufpreis hängt nicht an der Qualität (`quality` ist im
+    # ganzen UEX-Abzug 0), und erbeutete Ware hat ohnehin immer Q 0 — die
+    # Frage, die beim Verkauf wirklich zählt, ist eine andere.
+    _kaestchen(schalter, t('s_hl_gestohlen'), gestohlen, marke_um,
+               fenster.f_klein).pack(side='left')
+
+    def _leeren(halter):
+        for kind in halter.winfo_children():
+            kind.destroy()
+
+    def eintragen():
+        name = (ware.get() or '').strip()
+        # ⚠⚠ **Geschlossene Liste, kein Freitext** — dieselbe Regel wie beim
+        # Lagerort. Angenommen wird nur, was UEX kennt; sonst steht am Ende ein
+        # ausgedachter oder beleidigender Name im Werkzeug, und ein Bildschirm-
+        # foto davon macht die Runde.
+        if not preisdaten.bekannt(name):
+            meldung['text'], meldung['farbe'] = t('s_hl_unbekannt'), ROT
+            neu_zeichnen()
+            return
+        # ⚠⚠ **Der Ort wird genauso gesperrt wie die Ware.** Sonst steht in
+        # dem einen Feld eine geschlossene Liste und im anderen darf jeder
+        # tippen, was er will — und der Missbrauchsfall (etwas Beleidigendes
+        # eintragen, Bildschirmfoto machen, verbreiten) steht wieder offen.
+        #
+        # ℹ `orte.kennt()` lässt Leeres durch und meldet ohne Ortsliste alles
+        # als gültig — der Lagerort ist freiwillig, und beim ersten Start ohne
+        # Netz darf das Feld nicht blockieren.
+        if not ortsliste.kennt(ort.get()):
+            meldung['text'], meldung['farbe'] = t('s_hl_ort_unbekannt'), ROT
+            neu_zeichnen()
+            return
+        if bearbeitung['nummer'] is None:
+            ok, grund = lager.eintragen(name, menge.get(), ort.get(),
+                                        gestohlen[0])
+        else:
+            ok, grund = lager.aendern(bearbeitung['nummer'], name,
+                                      menge.get(), ort.get(), gestohlen[0])
+        if ok:
+            bearbeitung['nummer'] = None
+            # Der Lagerort bleibt stehen: Wer eine Ladung bucht, bucht meist
+            # mehrere Posten am selben Ort. Dasselbe Verhalten wie im
+            # Werkstatt-Lager.
+            pfade.einstellung_setzen('handel_ort', ort.get() or '')
+            ware.set('')
+            menge.set('')
+            meldung['text'], meldung['farbe'] = t('s_hl_gebucht'), ACCENT
+        else:
+            meldung['text'] = {'ware': t('s_hl_fehlt_ware'),
+                               'menge': t('s_hl_fehlt_menge')}.get(
+                                   grund, t('s_hl_fehler'))
+            meldung['farbe'] = ROT
+        neu_zeichnen()
+
+    # Zeigt beim Tippen, was aus einer Rechnung herauskommt.
+    # ⚠ Nur bei einer **Rechnung**, nicht bei einer blossen Zahl: Wer „40"
+    # tippt, weiss, dass 40 herauskommt — „ergibt 40 SCU" wäre Rauschen.
+    # Dieselbe Regel wie im Werkstatt-Lager.
+    vorschau = tk.Label(innen, text='', bg=BG, fg=SUB, font=fenster.f_klein,
+                        anchor='w')
+    vorschau.pack(fill='x', padx=24)
+
+    def _bestand_vorher():
+        nr = bearbeitung['nummer']
+        if nr is None:
+            return 0.0
+        posten = lager.laden()
+        return (float(posten[nr].get('menge') or 0)
+                if 0 <= nr < len(posten) else 0.0)
+
+    def vorschau_zeigen(*_):
+        roh = (menge.get() or '').strip()
+        rechnung = any(z in roh[1:] for z in '+-−') or roh[:1] in '+-−'
+        if not roh or not rechnung:
+            vorschau.configure(text='')
+            return
+        wert = lager.rechnen(roh, _bestand_vorher())
+        if wert is None:
+            vorschau.configure(text=t('s_hl_rechnung_kaputt'), fg=GOLD)
+        elif wert <= 0:
+            # ⚠ Sagen, was **passieren würde** — nicht nur „geht nicht". Wer
+            # `100-200` tippt, soll sehen, warum das abgelehnt wird.
+            vorschau.configure(text=t('s_hl_unter_null'), fg=ROT)
+        else:
+            vorschau.configure(text=t('s_hl_ergibt').format(
+                menge=_menge_text(wert)), fg=SUB)
+
+    menge.trace_add('write', vorschau_zeigen)
+
+    knopf_rahmen = tk.Frame(innen, bg=BG)
+    knopf_rahmen.pack(fill='x', padx=24, pady=(8, 0))
+
+    def abbrechen():
+        bearbeitung['nummer'] = None
+        ware.set(''); menge.set(''); gestohlen[0] = False
+        neu_zeichnen()
+
+    def knoepfe_setzen():
+        # ⚠ Die Knopfreihe wird **neu gebaut, nicht umbeschriftet**: Ein Knopf
+        # ist eine Leinwand fester Breite, und „Änderung speichern" passt nicht
+        # in die Breite von „Eintragen". Genau wie im Werkstatt-Lager.
+        for w in knopf_rahmen.winfo_children():
+            w.destroy()
+        if bearbeitung['nummer'] is None:
+            _knopf(fenster, knopf_rahmen, t('s_hl_buchen'), eintragen,
+                   stark=True).pack(side='left')
+        else:
+            _knopf(fenster, knopf_rahmen, t('s_hl_speichern'), eintragen,
+                   stark=True).pack(side='left')
+            _knopf(fenster, knopf_rahmen, t('s_hl_abbrechen'),
+                   abbrechen).pack(side='left', padx=(8, 0))
+
+    def bearbeiten(nummer):
+        """Einen Posten ins Formular holen — dann lässt er sich mit `+5`
+        oder `-20` nachjustieren."""
+        posten = lager.laden()
+        if not 0 <= nummer < len(posten):
+            return
+        p = posten[nummer]
+        bearbeitung['nummer'] = nummer
+        ware.set(p.get('ware') or '')
+        # ⭐ Die aktuelle Menge steht **im Feld**. Wer fünf dazubuchen will,
+        # tippt hinten `+5` an und hat `40+5` dastehen — die natürlichste
+        # Schreibweise, und `rechnen()` versteht sie.
+        menge.set(_menge_text(p.get('menge') or 0))
+        ort.set(p.get('ort') or '')
+        gestohlen[0] = bool(p.get('gestohlen'))
+        neu_zeichnen()
+
+    vorschlag_rahmen.pack(fill='x', padx=24)
+    liste_rahmen.pack(fill='both', expand=True, padx=24, pady=(12, 20))
+
+    def _vorschlaege():
+        """Passende Warennamen — Teiltreffer, höchstens sechs."""
+        _leeren(vorschlag_rahmen)
+        text = (ware.get() or '').strip().lower()
+        if not text or preisdaten.bekannt(ware.get().strip()):
+            return
+        treffer = [n for n in preisdaten.waren() if text in n.lower()][:6]
+        for name in treffer:
+            zeile = tk.Label(vorschlag_rahmen, text=name, bg=BG, fg=FG,
+                             font=fenster.f_klein, anchor='w', cursor='hand2',
+                             padx=6, pady=3)
+            zeile.pack(fill='x')
+            zeile.bind('<Button-1>', lambda e, n=name: (ware.set(n),
+                                                        _vorschlaege()))
+            zeile.bind('<Enter>', lambda e, w=zeile: w.configure(bg=FLAECHE))
+            zeile.bind('<Leave>', lambda e, w=zeile: w.configure(bg=BG))
+
+    def _liste():
+        _leeren(liste_rahmen)
+        if meldung['text']:
+            tk.Label(liste_rahmen, text=meldung['text'], bg=BG,
+                     fg=meldung['farbe'], font=fenster.f_klein,
+                     anchor='w').pack(fill='x', pady=(0, 8))
+            meldung['text'] = ''
+        posten = lager.laden()
+        if not posten:
+            _fliesstext(liste_rahmen, t('s_hl_leer'), fenster.f_klein,
+                        fill='x')
+            return
+        # ⚠ Erst zeigen, wenn etwas dasteht: Ein Hinweis „Zeile anklicken", wo
+        # keine Zeile ist, erklärt etwas, das man gar nicht tun kann.
+        _fliesstext(liste_rahmen, t('s_hl_aendern_hinweis'), fenster.f_klein,
+                    fill='x', pady=(0, 8))
+        gesamt = _handelslager_tabelle(
+            fenster, liste_rahmen, posten, preisdaten.bester_preis,
+            lambda n: (lager.entfernen(n), abbrechen()),
+            bearbeiten, bearbeitung['nummer'])
+        if gesamt:
+            # ⚠ „höchstens" ist wörtlich gemeint: der beste bekannte Ankauf je
+            # Ware, ohne Rücksicht darauf, ob ein einzelner Ort alles nimmt.
+            # Der Verkaufs-Reiter rechnet die belastbare Zahl je Ort.
+            tk.Label(liste_rahmen,
+                     text=t('s_hl_gesamt').format(summe=_geld(gesamt)),
+                     bg=BG, fg=ACCENT, font=fenster.f_klein,
+                     anchor='e').pack(fill='x', pady=(8, 0))
+
+    def neu_zeichnen():
+        _vorschlaege()
+        ort_vorschlaege_zeigen()
+        vorschau_zeigen()
+        knoepfe_setzen()
+        _liste()
+
+    ware.trace_add('write', lambda *_: _vorschlaege())
+    neu_zeichnen()
+
+
+def _handelslager_tabelle(fenster, eltern, posten, preis_von, loeschen,
+                          bearbeiten, offen_nr):
+    """Das Lager als echte Tabelle. Gibt den Gesamtwert zurück.
+
+    ⚠⚠ **Ein gemeinsames Raster, nicht ein Rahmen je Zeile.** Vorher war jede
+    Zeile ein eigener Kasten mit `pack` — dabei richtet sich nichts aneinander
+    aus: Die Beträge standen rechtsbündig irgendwo, und man musste raten,
+    welche Zahl wozu gehört. Mit `grid` in **einem** Rahmen legt Tk die Spalten
+    über alle Zeilen gleich breit an, und die Zuordnung ist zu sehen statt zu
+    erraten. Am 30.08.2026 so gewünscht: „wie ne Tabelle aufgebaut bitte, damit
+    man die zuordnung zahlen text erkennt".
+
+    Die Zahlenspalten stehen rechtsbündig (`sticky='e'`) — so steht Tausender
+    unter Tausender, und ungleich lange Beträge bleiben vergleichbar.
+    """
+    tabelle = tk.Frame(eltern, bg=BG)
+    tabelle.pack(fill='x')
+
+    # Die Ware dehnt sich, alles andere bleibt so breit wie sein Inhalt.
+    tabelle.grid_columnconfigure(0, weight=1, minsize=140)
+    for spalte, breite in ((1, 120), (2, 80), (3, 120), (4, 150), (5, 0)):
+        tabelle.grid_columnconfigure(spalte, weight=0, minsize=breite)
+
+    # Reihenfolge: Ware | Ort | SCU | Preis 1 SCU | Gesamtpreis. Die beiden
+    # Texte stehen links beieinander, die drei Zahlen rechts — so muss das Auge
+    # nicht zwischen Wort und Zahl hin und her springen.
+    kopf = (t('s_hl_sp_ware'), t('s_hl_sp_ort'), t('s_hl_sp_menge'),
+            t('s_hl_sp_je_scu'), t('s_hl_sp_gesamt'), '')
+    for spalte, titel in enumerate(kopf):
+        tk.Label(tabelle, text=titel, bg=BG, fg=SUB, font=fenster.f_klein,
+                 padx=8, anchor='e' if spalte in (2, 3, 4) else 'w').grid(
+            row=0, column=spalte, sticky='ew', pady=(0, 4))
+
+    gesamt = 0.0
+    for nummer, p in enumerate(posten):
+        preis = preis_von(p['ware'])
+        wert = preis * float(p.get('menge') or 0)
+        gesamt += wert
+        # Zebra-Streifen statt Kästen: Die Zeilen bleiben unterscheidbar, ohne
+        # dass jede ihren eigenen Rahmen und damit ihre eigene Breite bekommt.
+        offen = (nummer == offen_nr)
+        grund = ACCENT if offen else (FLAECHE if nummer % 2 == 0 else BG)
+        vorne = BG if offen else FG
+        blass = BG if offen else SUB
+
+        felder = (
+            (p['ware'], vorne, 'w'),
+            (p.get('ort') or '—', blass, 'w'),
+            # ⚠ Nur die Zahl — die Einheit steht in der Spaltenüberschrift.
+            # „100 SCU" in jeder Zeile wiederholt, was darüber schon steht,
+            # und schiebt die Zahlen auseinander.
+            (_menge_text(p.get('menge') or 0), vorne, 'e'),
+            (_geld(preis) if preis else '—', blass, 'e'),
+            (_geld(wert) if wert else '—', vorne, 'e'),
+        )
+        zellen = []
+        for spalte, (text, farbe, seite) in enumerate(felder):
+            # ⚠⚠ **Der Spaltenabstand gehört ins Label (`padx=`), nicht ins
+            # Raster.** Mit `grid(padx=…)` liegt zwischen den Zellen eine Lücke
+            # in der Seitenfarbe — der Zebra-Streifen zerfällt dann in einzelne
+            # Flecken statt einer durchgehenden Zeile. So gesehen im ersten
+            # Bau der Tabelle.
+            lbl = tk.Label(tabelle, text=text, bg=grund, fg=farbe, padx=8,
+                           font=fenster.f_klein, anchor=seite, cursor='hand2')
+            lbl.grid(row=nummer + 1, column=spalte, sticky='ew', ipady=3)
+            zellen.append(lbl)
+
+        if p.get('gestohlen'):
+            # Die Marke hängt an der Ware, nicht in einer eigenen Spalte — sonst
+            # bliebe bei sauberer Ladung eine leere Spalte über die ganze Breite.
+            zellen[0].configure(text=p['ware'] + '  · ' + t('s_hl_marke'),
+                                fg=BG if offen else GOLD)
+
+        for lbl in zellen:
+            lbl.bind('<Button-1>', lambda _e, n=nummer: bearbeiten(n))
+
+        kreuz = tk.Label(tabelle, text='×', bg=grund, fg=blass,
+                         font=fenster.f_klein, cursor='hand2', padx=8)
+        kreuz.grid(row=nummer + 1, column=5, sticky='ew', ipady=3)
+        kreuz.bind('<Button-1>', lambda _e, n=nummer: loeschen(n))
+        kreuz.bind('<Enter>', lambda _e, w=kreuz: w.configure(fg=ROT))
+        kreuz.bind('<Leave>', lambda _e, w=kreuz, f=blass: w.configure(fg=f))
+
+    return gesamt

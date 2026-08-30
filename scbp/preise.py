@@ -54,9 +54,18 @@ Absturz — die Herstellung funktioniert ohne Preise genauso wie vorher.
 
 ## Was hier bewusst NICHT steht
 
-Keine Handelsrouten, keine Preise je Terminal, keine Frachtplanung. Das sind
-weitere 2,1 MB Daten und ein anderes Werkzeug — der Watcher beantwortet die
-Frage „kaufen oder abbauen?", nicht „wo am teuersten verkaufen?".
+Keine Handelsrouten, keine Frachtplanung. Dieses Modul beantwortet **eine**
+Frage: „kaufen oder abbauen?"
+
+⚠ **Die Preise je Terminal stehen seit v3.4.0 in `verkauf.py`** — bis dahin
+waren sie hier ausdrücklich ausgeschlossen („weitere 2,1 MB Daten und ein
+anderes Werkzeug"). Der Satz stimmte nicht mehr: Gemessen am 30.08.2026 ist
+der volle Abzug 1,04 MB und aufgeräumt abgelegt 293 KB, und die Frage „wo werde
+ich das los" gehört zum Handelslager, das der Watcher ohnehin führt.
+
+Getrennt bleiben die beiden trotzdem, und zwar an der Bedeutung von
+`price_buy` und `price_sell` (siehe `KAUF_QUALITAET` weiter unten): Hier zählt,
+was das Terminal **verlangt**, dort, was es **zahlt**.
 """
 import json
 import os

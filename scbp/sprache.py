@@ -1106,11 +1106,19 @@ TEXTE = {
                           'Traktorstrahl nicht nur der Name steht, sondern auch '
                           'Klasse, Größe und Gütegrad. Dazu: **Star Citizen lässt '
                           'sich aus dem Werkzeug heraus starten**, über den Weg, den '
-                          'man ohnehin benutzt.',
+                          'man ohnehin benutzt. Und seit v3.4.0: **der '
+                          'Verkaufs-Reiter** — wo man Gold, Copper und Iron '
+                          'los wird und was sie je SCU bringen. Dass ein Ort, '
+                          'der die ganze Ladung nimmt, mehr wert ist als der '
+                          'beste Einzelpreis, war sein Gedanke.',
                           '**Item details in game** — that the tractor beam shows '
                           'more than just the name: class, size and grade. Plus: '
                           '**launching Star Citizen from the tool**, using the '
-                          'launcher you already use anyway.'),
+                          'launcher you already use anyway. And since v3.4.0: '
+                          '**the selling tab** — where to offload gold, copper '
+                          'and iron, and what they pay per SCU. That one place '
+                          'taking the whole cargo beats the best single price '
+                          'was his idea.'),
     's_dk_morkhan_bugs': ('Dazu die beiden Funde vom 28.08.: dass eine Mission '
                           '„12 Baupläne" im Titel versprach und darunter keine '
                           'zeigte (eine Mission hat im Spiel mehr '
@@ -1690,6 +1698,106 @@ TEXTE = {
     's_he_nichts':       ('Nichts gefunden.', 'Nothing found.'),
     # --- Lager (scbp/rohstoffe.py) ------------------------------------------
     'hf_lager':          ('Mein Lager', 'My stock'),
+    # ---------------------------------------------------- Reiter „Verkauf"
+    's_vk_lead':         ('Wo du deine Ware los wirst — und was sie je SCU '
+                          'bringt. Mehrere Waren auf einmal: Orte, die alles '
+                          'nehmen, stehen oben.',
+                          'Where to sell your cargo — and what it pays per '
+                          'SCU. Pick several goods at once: places that take '
+                          'all of them come first.'),
+    's_vk_ware':         ('Ware suchen', 'Search commodity'),
+    's_vk_holen':        ('Preise aktualisieren', 'Refresh prices'),
+    's_vk_holt':         ('holt …', 'fetching …'),
+    's_vk_geholt':       ('Preise sind aktuell.', 'Prices are up to date.'),
+    's_vk_gesperrt':     ('Gerade erst geholt — der Knopf zeigt, wann es '
+                          'wieder geht.',
+                          'Just fetched — the button shows when it is ready '
+                          'again.'),
+    's_vk_fehler':       ('Die Preise konnten nicht geholt werden. Der letzte '
+                          'Stand bleibt stehen.',
+                          'Could not fetch prices. The previous data is kept.'),
+    's_vk_kein_netz_aus': ('Netzzugriff ist abgeschaltet (SC_BP_NO_NET).',
+                           'Network access is switched off (SC_BP_NO_NET).'),
+    's_vk_stand':        ('Stand: {alter}', 'Updated: {alter}'),
+    's_vk_kein_stand':   ('Noch keine Preise geholt.', 'No prices fetched yet.'),
+    's_vk_nur_nqa':      ('nur Orte ohne Fragen (gestohlene Ware)',
+                          'only no-questions-asked places (stolen cargo)'),
+    's_vk_aus_lager':    ('Aus meinem Handelslager', 'From my cargo hold'),
+    's_vk_lager_leer':   ('Im Handelslager liegt nichts, wofür es Preise gibt.',
+                          'Nothing in the cargo hold has known prices.'),
+    's_vk_leer_hinweis': ('Such oben eine Ware — oder übernimm gleich alles '
+                          'aus deinem Handelslager.',
+                          'Search for a commodity above — or take everything '
+                          'from your cargo hold at once.'),
+    's_vk_keine_orte':   ('Für diese Auswahl ist kein Ankäufer bekannt.',
+                          'No buyer known for this selection.'),
+    's_vk_nichts_gefunden': ('Keine Ware mit diesem Namen.',
+                             'No commodity by that name.'),
+    's_vk_nqa_marke':    ('keine Fragen', 'no questions'),
+    's_vk_je_scu':       ('{preis} je SCU', '{preis} per SCU'),
+    's_vk_aus_lager_zeile': ('{menge} SCU → {summe}', '{menge} SCU → {summe}'),
+    's_vk_erloes':       ('Ladung hier: {summe}', 'Cargo here: {summe}'),
+    's_vk_alter_frisch': ('gerade eben', 'just now'),
+    's_vk_alter_stunden': ('vor {n} Std.', '{n}h ago'),
+    's_vk_alter_tage':   ('vor {n} Tagen', '{n}d ago'),
+    # ----------------------------------------------- Reiter „Handelslager"
+    's_hl_lead':         ('Was du zum Verkauf im Laderaum hast. Getrennt vom '
+                          'Werkstatt-Lager: Das hier willst du loswerden, '
+                          'nicht verbauen.',
+                          'What you carry to sell. Kept apart from the '
+                          'workshop stock: this is cargo you want to get rid '
+                          'of, not to build with.'),
+    's_hl_hinweis':      ('Keine Qualität — der Ankaufpreis hängt nicht daran, '
+                          'und erbeutete Ware hat ohnehin immer Q 0. Setz '
+                          'stattdessen den Haken, wenn die Ladung als '
+                          'gestohlen markiert ist.',
+                          'No quality here — the buy price does not depend on '
+                          'it, and looted cargo is always Q 0 anyway. Tick the '
+                          'box instead if the cargo is marked as stolen.'),
+    's_hl_ware':         ('Ware', 'Commodity'),
+    's_hl_menge':        ('Menge in SCU', 'Amount in SCU'),
+    's_hl_ort':          ('Lagerort (freiwillig)', 'Storage location (optional)'),
+    's_hl_gestohlen':    ('als gestohlen markiert', 'marked as stolen'),
+    's_hl_buchen':       ('Eintragen', 'Add'),
+    's_hl_speichern':    ('Änderung speichern', 'Save change'),
+    's_hl_abbrechen':    ('Abbrechen', 'Cancel'),
+    's_hl_ergibt':       ('ergibt {menge} SCU', 'makes {menge} SCU'),
+    's_hl_rechnung_kaputt': ('Das ist keine Rechnung, die ich verstehe. '
+                             'Erlaubt sind + und −, zum Beispiel 100+5.',
+                             'That is not a calculation I understand. Use + '
+                             'and −, for example 100+5.'),
+    's_hl_unter_null':   ('Das ergibt null oder weniger — trag eine Menge über '
+                          'null ein.',
+                          'That comes out at zero or less — enter an amount '
+                          'above zero.'),
+    's_hl_aendern_hinweis': ('Zeile anklicken zum Ändern. Im Mengenfeld darfst '
+                             'du rechnen: 40+5 oder 40−12.',
+                             'Click a row to edit it. The amount field does '
+                             'maths: 40+5 or 40−12.'),
+    's_hl_gebucht':      ('Eingetragen.', 'Added.'),
+    's_hl_unbekannt':    ('Diese Ware kennt der Handel nicht. Nimm einen '
+                          'Vorschlag aus der Liste.',
+                          'That commodity is not traded. Pick one from the '
+                          'suggestions.'),
+    's_hl_ort_unbekannt': ('Diesen Lagerort gibt es nicht. Nimm einen '
+                           'Vorschlag — oder lass das Feld leer.',
+                           'No such storage location. Pick a suggestion — or '
+                           'leave the field empty.'),
+    's_hl_fehlt_ware':   ('Es fehlt die Ware.', 'The commodity is missing.'),
+    's_hl_fehlt_menge':  ('Die Menge muss eine Zahl über null sein.',
+                          'The amount must be a number above zero.'),
+    's_hl_fehler':       ('Konnte nicht gespeichert werden.',
+                          'Could not be saved.'),
+    's_hl_leer':         ('Noch nichts eingetragen.', 'Nothing entered yet.'),
+    's_hl_scu':          ('{menge} SCU', '{menge} SCU'),
+    's_hl_sp_ware':      ('Ware', 'Commodity'),
+    's_hl_sp_menge':     ('SCU', 'SCU'),
+    's_hl_sp_ort':       ('Ort', 'Location'),
+    's_hl_sp_je_scu':    ('Preis 1 SCU', 'Price per SCU'),
+    's_hl_sp_gesamt':    ('Gesamtpreis', 'Total'),
+    's_hl_marke':        ('gestohlen', 'stolen'),
+    's_hl_wert':         ('höchstens {summe}', 'up to {summe}'),
+    's_hl_gesamt':       ('Ladung höchstens: {summe}', 'Cargo up to: {summe}'),
     's_lg_lead':         ('Was du an Rohstoffen hast. Trag es selbst ein — das '
                           'Spiel verrät es nicht. Beim Herstellen zieht der '
                           'Watcher die Zutaten ab.',
@@ -2050,6 +2158,10 @@ TEXTE = {
     'hf_gruppe_herst':   ('Werkstatt', 'Workshop'),
     'hf_herstellung':    ('Herstellung', 'Crafting'),
     'hf_bergbau':        ('Bergbau', 'Mining'),
+    # --- Gruppe „Handel" (v3.4.0) ---
+    'hf_gruppe_handel':  ('Handel', 'Trading'),
+    'hf_verkauf':        ('Verkauf', 'Selling'),
+    'hf_handelslager':   ('Handelslager', 'Cargo hold'),
     'hf_gruppe_einst':   ('Einstellungen', 'Settings'),
     'hf_fortgeschritten':('Für Fortgeschrittene', 'For advanced users'),
     'hf_gruppe_info':    ('Info', 'Info'),

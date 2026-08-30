@@ -51,7 +51,7 @@ from scbp import (
                   bestand as bestand_datei, bestandsfenster as bestandsfenster_modul,
                   einstellungsfenster, hinweis, injektion,
                   katalog as katalog_modul, logquelle, merkliste,
-                  pfade, phrasen, ton, uebersetzung)
+                  pfade, phrasen, ton, uebersetzung, verkauf)
 
 try:
     import winsound                      # nur Windows; unter Linux übernimmt tkinter
@@ -743,6 +743,14 @@ class Watcher(threading.Thread):
             orte.aktualisieren()
         except Exception as ausnahme:
             fehler.merken('watcher.orte', ausnahme)
+        # Und die Ankaufpreise je Terminal fuer den Verkaufs-Reiter — ebenfalls
+        # hoechstens einmal am Tag. ⚠ Bewusst **hier** und nicht beim Oeffnen
+        # der Seite: Wer den Reiter aufmacht, soll Daten vorfinden statt auf
+        # einen Abruf zu warten.
+        try:
+            verkauf.aktualisieren()
+        except Exception as ausnahme:
+            fehler.merken('watcher.verkauf', ausnahme)
 
     # ---- Bauplan-Katalog holen und frisch halten ----
     def _katalog_tick(self):

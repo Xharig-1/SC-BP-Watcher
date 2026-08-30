@@ -1595,6 +1595,18 @@ class Hauptfenster:
         self._reiter('herstellung', 'blitz', t('hf_herstellung'))
         self._reiter('bergbau', 'herkunft', t('hf_bergbau'))
 
+        # ⚠ **Eigene Gruppe, nicht an „Werkstatt" angehängt.** Die Kette dort
+        # endet beim Bauen („was habe ich → was brauche ich → wo hole ich es").
+        # Handel ist die Gegenrichtung: Ware, die man **loswerden** will. Wer
+        # verkauft, denkt nicht an Rezepte — und wer baut, will sein Baumaterial
+        # nicht in einer Verkaufsliste sehen.
+        #
+        # Reihenfolge wie in der Werkstatt-Gruppe: erst der Bestand, dann was
+        # man damit tut.
+        self._gruppe(t('hf_gruppe_handel'))
+        self._reiter('handelslager', 'handelslager', t('hf_handelslager'))
+        self._reiter('verkauf', 'verkauf', t('hf_verkauf'))
+
         self._gruppe(t('hf_gruppe_einst'))
         self._reiter('allgemein', 'einstellungen', t('hf_allgemein'))
         self._reiter('anzeige', 'anzeige', t('hf_anzeige'))

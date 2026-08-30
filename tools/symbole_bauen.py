@@ -186,6 +186,12 @@ KNOPF_SYMBOLE = {
     'neustart':     'rotate-cw',
     'herunterladen': 'download',
     'zurueck':      'undo-2',            # auf eine ältere Version zurück
+    # --- Gruppe „Handel" (v3.4.0) ---
+    # Münzen für den Verkauf, Lagerhalle für den Handelsbestand. Bewusst
+    # **nicht** dasselbe `package` wie das Werkstatt-Lager: Zwei Reiter mit
+    # demselben Bild sind in einer Leiste nicht auseinanderzuhalten.
+    'verkauf':      'coins',
+    'handelslager': 'warehouse',
 }
 
 ZEILEN_SYMBOLE = {

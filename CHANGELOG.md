@@ -6,6 +6,69 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.4.0 - unreleased
+
+### Added
+
+- ⭐⭐ **Trading — two new tabs: "Cargo hold" and "Selling".**
+  The question that was missing: *where do I offload my cargo, and what does it
+  pay per SCU?*
+
+  **The selling tab** answers it for **several commodities at once**. It sorts
+  not by the highest price, but by **how many of your goods a place actually
+  takes** — because that is the difference that matters. Measured on 30 Aug
+  2026 for 100 SCU gold, 40 copper and 25 iron:
+
+  | Route | Revenue |
+  |---|---|
+  | everything at **one** place | 3,533,000 aUEC |
+  | each commodity at its own best place | 3,566,000 aUEC |
+
+  **One percent more for two extra approaches.** The known trading sites do not
+  give that answer, because they only ever look at one commodity.
+
+  **The cargo hold** is deliberately kept apart from the workshop stock: one is
+  building material you keep, the other is cargo you want gone. A button in the
+  selling tab pulls the whole hold into the selection.
+
+  Both lists are proper tables — commodity · location · SCU · price per SCU ·
+  total, figures right-aligned below each other.
+
+- **Stolen cargo.** Instead of a quality (which changes nothing when selling,
+  and looted cargo is always Q 0 anyway) the cargo hold has a *"marked as
+  stolen"* tick. The selling tab then narrows down to the **15 terminals** that
+  ask no questions (`is_nqa` at UEX) — seven of them with buy offers.
+
+- **Refresh prices yourself.** A button fetches prices right away instead of
+  waiting for the daily update — **once per hour**. While the lock is running
+  the button counts down itself and changes colour as it goes (grey → gold →
+  green). No red: the button is locked *because* the fetch succeeded.
+
+- **The amount field does maths** — `100+5` makes 105. Click a row and its
+  amount appears in the field, ready to be adjusted with `+5` or `−12`. Same
+  behaviour as in the workshop stock.
+
+### Changed
+
+- **Commodity and storage location come from closed lists** — as in the
+  workshop stock. Only what UEX knows can be entered; near misses get
+  suggestions.
+
+- `preise.py` used to rule out "prices per terminal" explicitly ("another 2.1 MB
+  of data and a different tool"). That was no longer true: the full pull is
+  1.04 MB, and 293 KB once tidied up. The file header now says where the line
+  actually runs.
+
+### Fixed
+
+- A button relabelled at runtime went back to its old colour once the mouse had
+  passed over it.
+
+### Thanks
+
+- **Morkhan (KRT)** for the idea behind this tab — and for the thought that one
+  place taking the whole cargo beats the best single price.
+
 ## v3.3.6 - unreleased
 
 ### Added

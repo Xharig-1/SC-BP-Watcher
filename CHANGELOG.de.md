@@ -6,6 +6,71 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.4.0 - unveröffentlicht
+
+### Neu
+
+- ⭐⭐ **Handel — zwei neue Reiter: „Handelslager" und „Verkauf".**
+  Die Frage, die bisher fehlte: *wo werde ich meine Ladung los, und was bringt
+  sie je SCU?*
+
+  **Der Verkaufs-Reiter** beantwortet sie für **mehrere Waren auf einmal**.
+  Sortiert wird nicht nach dem höchsten Preis, sondern danach, **wie viele
+  deiner Waren ein Ort überhaupt abnimmt** — denn das ist der Unterschied, der
+  zählt. Gemessen am 30.08.2026 für 100 SCU Gold, 40 Copper und 25 Iron:
+
+  | Weg | Erlös |
+  |---|---|
+  | alles an **einem** Ort | 3.533.000 aUEC |
+  | jede Ware am je besten Ort | 3.566.000 aUEC |
+
+  **Ein Prozent mehr für zwei zusätzliche Anflüge.** Genau diese Antwort geben
+  die bekannten Handelsseiten nicht, weil sie immer nur eine Ware betrachten.
+
+  **Das Handelslager** ist bewusst vom Werkstatt-Lager getrennt: Das eine ist
+  Baumaterial, das man behält, das andere Ladung, die man loswerden will. Ein
+  Knopf im Verkaufs-Reiter übernimmt den ganzen Bestand in die Auswahl.
+
+  Beide Listen sind echte Tabellen — Ware · Ort · SCU · Preis 1 SCU ·
+  Gesamtpreis, Zahlen rechtsbündig untereinander.
+
+- **Gestohlene Ware.** Statt einer Güte (die beim Verkauf nichts ändert, und
+  erbeutete Ladung hat ohnehin immer Q 0) gibt es im Handelslager den Haken
+  *„als gestohlen markiert"*. Der Verkaufs-Reiter blendet dann auf die
+  **15 Terminals**, die keine Fragen stellen (`is_nqa` bei UEX) — sieben davon
+  mit Ankaufgeboten.
+
+- **Preise selbst auffrischen.** Ein Knopf holt die Preise sofort, statt auf den
+  täglichen Abruf zu warten — **einmal pro Stunde**. Solange die Sperre läuft,
+  zählt der Knopf die Restzeit selbst herunter und wechselt dabei die Farbe
+  (grau → gold → grün). Kein Rot: Der Knopf ist gesperrt, *weil* der Abruf
+  geklappt hat.
+
+- **Im Mengenfeld darf gerechnet werden** — `100+5` ergibt 105. Klickt man eine
+  Zeile an, steht ihre Menge im Feld und lässt sich mit `+5` oder `−12`
+  nachjustieren. Dasselbe Verhalten wie im Werkstatt-Lager.
+
+### Geändert
+
+- **Ware und Lagerort kommen aus geschlossenen Listen** — wie im Werkstatt-Lager.
+  Eingetragen werden kann nur, was UEX auch kennt; zu Vertippern werden
+  ähnliche Namen vorgeschlagen.
+
+- `preise.py` schloss „Preise je Terminal" bisher ausdrücklich aus („weitere
+  2,1 MB Daten und ein anderes Werkzeug"). Der Satz stimmte nicht mehr: Der
+  volle Abzug ist 1,04 MB und aufgeräumt abgelegt 293 KB. Der Kopf der Datei
+  sagt jetzt, wo die Grenze wirklich verläuft.
+
+### Behoben
+
+- Ein Knopf, der zur Laufzeit umbeschriftet wird, holte nach dem Überfahren mit
+  der Maus die alte Farbe zurück.
+
+### Danke
+
+- **Morkhan (KRT)** für die Idee zu diesem Reiter — und für den Gedanken, dass
+  ein Ort, der die ganze Ladung nimmt, mehr wert ist als der beste Einzelpreis.
+
 ## v3.3.6 - unveröffentlicht
 
 ### Neu
