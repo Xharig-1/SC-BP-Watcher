@@ -97,6 +97,12 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   darauf steht, warnt niemanden. Beides gefunden von **Morkhan (KRT)**, nachdem
   er ihn versehentlich gedrückt hatte.
 
+- **„Mein Lager" bedient sich jetzt wie das Handelslager.** Rohstoff und
+  Lagerort sind Auswahlfelder: tippen **oder** den Pfeil anklicken und
+  aussuchen. Die Beschriftungen stehen über den Feldern statt daneben, damit
+  die aufgeklappte Liste nichts verschiebt. Dieselbe Bedienung an beiden
+  Stellen — wer die eine kann, kann die andere blind.
+
 ### Behoben
 
 - Ein Knopf, der zur Laufzeit umbeschriftet wird, holte nach dem Überfahren mit

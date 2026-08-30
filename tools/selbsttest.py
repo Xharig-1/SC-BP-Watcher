@@ -6863,6 +6863,17 @@ def main():
     pruefe("zeichen.zeile(zeile, 'aufklappen'" in _q85p,
            'auch das Auswahlfeld nutzt das Klapp-Symbol des Projekts')
 
+    # ⚠ **Ein Bild im ganzen Programm**: Werkstatt-Lager und Handelslager
+    # benutzen denselben Baustein fuer Ware/Rohstoff und Lagerort.
+    # ⚠ Beim naechsten **Modul**-`def` schneiden (Zeilenanfang), nicht beim
+    # naechsten `def` ueberhaupt: Die Lager-Seite hat innere Funktionen, und
+    # der Block endete sonst vor der Stelle, die geprueft werden soll.
+    _lagerseite85 = _q85p.split('def _lager(')[-1].split('\ndef ')[0]
+    pruefe('_auswahlfeld(fenster, block, var,' in _lagerseite85,
+           'auch „Mein Lager" nutzt das Auswahlfeld')
+    pruefe('vorschlag_rahmen' not in _lagerseite85,
+           'und nicht mehr die alte Vorschlagszeile daneben')
+
     # Und der Reiter einer zugeklappten Gruppe muss sie wieder aufmachen —
     # sonst steht man auf einer Seite, deren Eintrag nicht zu sehen ist.
     _fenster85.oeffnen('verkauf')

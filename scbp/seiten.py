@@ -5057,38 +5057,58 @@ def _lager(fenster, rahmen):
     # laesst ihn der naechste Klick durch — einmal, fuer genau diesen Namen.
     frei = {'name': None}
 
-    vorschlag_rahmen = None
-    ort_vorschlag = None
     mengen_vorschau = None
+    # ⚠⚠ **Beschriftung ÜBER dem Feld** — dasselbe Bild wie im Handelslager
+    # (Wunsch vom 30.08.2026: „damit wir überall das gleiche Bild haben").
+    # Die alte Zeilenform (Bezeichnung links, Feld rechts) verträgt sich nicht
+    # mit einem Feld, das im Betrieb wächst: Klappt die Auswahlliste auf, wird
+    # die Zeile zehn Zeilen hoch und Tk setzt die Beschriftung auf halbe Höhe.
+    ware_zeichnen = ort_zeichnen = lambda: None
+    mengen_beschriftung = None
     for beschriftung, var in ((t('s_lg_material'), material),
                               (t('s_lg_menge'), menge),
                               (t('s_lg_qualitaet'), guete),
                               (t('s_lg_ort'), ort)):
-        # `oben=True` bei allen dreien, damit die Beschriftungen auf gleicher
-        # Höhe stehen — auch wenn daneben gerade eine Liste aufgeklappt ist.
-        ziel = _feld(fenster, innen, beschriftung, '', oben=True)
+        block = tk.Frame(innen, bg=BG)
+        block.pack(fill='x', padx=24, pady=(12, 0))
+        kopf_label = tk.Label(block, text=beschriftung, bg=BG, fg=FG,
+                              font=fenster.f_fett, anchor='w')
+        kopf_label.pack(fill='x')
+
+        if var is material or var is ort:
+            # ⭐ Auswahlfeld: tippen **oder** den Pfeil anklicken und aussuchen.
+            # Ohne Vorschläge tippt jemand „Aslerite", bekommt nie einen
+            # Treffer und sucht den Fehler bei sich.
+            if var is material:
+                from . import herstellung as _h_lg
+
+                def _quelle_material():
+                    try:
+                        return sorted(_h_lg.einlagerbar())
+                    except Exception:
+                        return []
+                quelle = _quelle_material
+            else:
+                from . import orte as _o_lg
+                quelle = _o_lg.alle
+            zeile_, liste_, zeichnen_ = _auswahlfeld(fenster, block, var,
+                                                     quelle)
+            zeile_.pack(fill='x', pady=(4, 0))
+            liste_.pack(fill='x')
+            if var is material:
+                ware_zeichnen = zeichnen_
+            else:
+                ort_zeichnen = zeichnen_
+            continue
+
         if var is menge:
             # Feld und Kästchen in einer Zeile — das Kästchen rechts daneben,
             # damit die Einheit dort steht, wo die Zahl entsteht.
-            _mengenzeile = tk.Frame(ziel, bg=BG)
-            _mengenzeile.pack(pady=(4, 8))
+            _mengenzeile = tk.Frame(block, bg=BG)
+            _mengenzeile.pack(fill='x', pady=(4, 0))
             f = rundes_feld(_mengenzeile, var, fenster.f_klein, '#0c1017',
                             LINIE, ACCENT, FG)
-            # ⚠⚠ **Die Zeile bleibt so breit wie die anderen — das Feld wird
-            # schmaler, nicht die Zeile breiter.** Ohne das schob das Kästchen
-            # die Zeile um seine eigene Breite nach rechts aus dem Fenster:
-            # Beim schmalsten Fenster stand dort nur noch „cSC" und der Haken
-            # fehlte ganz (gemessen: 393 px Feldbreite in den anderen Zeilen,
-            # 450 px in dieser).
-            #
-            # ⚠ Das `winfo_reqwidth()` wird **vor** `pack_propagate(False)`
-            # gelesen. Danach antwortet der Rahmen mit seiner gesetzten Breite,
-            # und die Messung wäre ein Zirkelschluss.
-            _soll = f.halter.winfo_reqwidth()
-            _mengenzeile.configure(width=_soll,
-                                   height=f.halter.winfo_reqheight())
-            _mengenzeile.pack_propagate(False)
-            mengen_beschriftung = ziel.beschriftung
+            mengen_beschriftung = kopf_label
 
             def einheit_um(an):
                 mengen_beschriftung.configure(
@@ -5100,101 +5120,27 @@ def _lager(fenster, rahmen):
             # ⚠⚠ **Erst das Kästchen packen, dann das Feld.** In `tkinter`
             # bekommt das zuletzt gepackte Element den übrigen Platz — und ein
             # Feld mit `expand=True` nimmt sich alles. Andersherum gepackt
-            # schob es das Kästchen aus dem Fenster: Beim schmalsten Fenster
-            # stand rechts nur noch „cSC", der Haken fehlte ganz.
+            # schob es das Kästchen aus dem Fenster.
             _kaestchen(_mengenzeile, t('s_lg_cscu'), cscu, einheit_um,
                        fenster.f_klein).pack(side='right', padx=(10, 0))
             f.halter.pack(side='left', fill='both', expand=True)
             if cscu[0]:
-                ziel.beschriftung.configure(text=t('s_lg_menge_cscu'))
-        else:
-            f = rundes_feld(ziel, var, fenster.f_klein, '#0c1017', LINIE,
-                            ACCENT, FG)
-            f.halter.pack(fill='x', pady=(4, 8))
-        if var is material:
-            # ⭐ Vorschläge anklickbar — ohne sie tippt jemand „Aslerite",
-            # bekommt nie einen Treffer und sucht den Fehler bei sich.
-            #
-            # ⚠⚠ **Sie stehen NEBEN dem Eingabefeld, nicht am Seitenende.**
-            # Bis v3.3.0-rc39 hingen sie ganz unten unter den Knöpfen — also
-            # dort, wo niemand hinsieht, während er oben tippt. Am 30.08.2026
-            # gemeldet: „wenn ich Savrilium einlagern will, suche ich nicht
-            # dort unten nach dem Begriff um drauf zu klicken." Ein Vorschlag,
-            # den man suchen muss, ist keiner.
-            #
-            # Er sitzt jetzt in der linken Spalte derselben Zeile, direkt
-            # unter der Beschriftung „Rohstoff" und auf einer Höhe mit dem
-            # Feld — im Blickfeld, ohne die Zeile auseinanderzuziehen.
-            #
-            # ⚠ Nicht sofort packen: Ein leerer Rahmen reisst eine Lücke, die
-            # wie ein Fehler aussieht.
-            vorschlag_rahmen = tk.Frame(ziel.links, bg=BG)
-        elif var is ort:
-            # ⭐ Dieselbe Hilfe wie beim Rohstoff, an derselben Stelle: neben
-            # dem Feld. Die Liste kommt aus den Spieldaten (158 Stationen,
-            # Städte und Aussenposten) — siehe `orte.py`.
-            ort_vorschlag = tk.Frame(ziel.links, bg=BG)
-        elif var is menge:
+                kopf_label.configure(text=t('s_lg_menge_cscu'))
             # ⭐⭐ **Die Vorschau ist die eigentliche Erklärung.** Wer beim
             # Tippen von „1.04+3" daneben „ergibt 4,04 SCU" liest, braucht
-            # keinen Satz über Auf- und Abbuchen mehr. Sie steht aus demselben
-            # Grund neben dem Feld wie der Namensvorschlag: dort, wo hingesehen
-            # wird.
-            mengen_vorschau = tk.Label(ziel.links, text='', bg=BG, fg=ACCENT,
+            # keinen Satz über Auf- und Abbuchen mehr.
+            mengen_vorschau = tk.Label(block, text='', bg=BG, fg=ACCENT,
                                        font=fenster.f_klein, anchor='w')
+            mengen_vorschau.pack(fill='x')
+        else:
+            f = rundes_feld(block, var, fenster.f_klein, '#0c1017', LINIE,
+                            ACCENT, FG)
+            f.halter.pack(fill='x', pady=(4, 0))
 
-    def vorschlaege_zeigen(*_):
-        from . import herstellung as h
-        if vorschlag_rahmen is None:
-            return
-        for w in vorschlag_rahmen.winfo_children():
-            w.destroy()
-        vorschlag_rahmen.pack_forget()
-        text = material.get().strip()
-        # ⚠ Gegen die **Lager**-Liste prüfen, nicht gegen die Rezepte: Pflanzen
-        # und Mineralien ohne Rezept sind einlagerbar, kämen sonst aber als
-        # „unbekannt" daher.
-        if not text or h.darf_ins_lager(text):
-            return
-        vorschlag_rahmen.pack(fill='x', pady=(4, 0))
-        treffer = h.aehnliche_lagernamen(text)
-        if not treffer:
-            _fliesstext(vorschlag_rahmen, t('s_lg_unbekannt'), fenster.f_klein,
-                        fill='x')
-            return
-        tk.Label(vorschlag_rahmen, text=t('s_lg_meinst_du'), bg=BG, fg=SUB,
-                 font=fenster.f_klein).pack(side='left', padx=(0, 8))
-        for name in treffer:
-            lbl = tk.Label(vorschlag_rahmen, text=name, bg=BG, fg=ACCENT,
-                           font=fenster.f_klein, cursor='hand2')
-            lbl.pack(side='left', padx=(0, 10))
-            lbl.bind('<Button-1>', lambda _e, n=name: material.set(n))
-
-    material.trace_add('write', vorschlaege_zeigen)
-
-    def ort_vorschlaege_zeigen(*_):
-        from . import orte as orte_modul
-        if ort_vorschlag is None:
-            return
-        for w in ort_vorschlag.winfo_children():
-            w.destroy()
-        ort_vorschlag.pack_forget()
-        text = ort.get().strip()
-        if not text or orte_modul.kennt(text):
-            return
-        treffer = orte_modul.aehnliche(text)
-        if not treffer:
-            return
-        ort_vorschlag.pack(fill='x', pady=(4, 0))
-        tk.Label(ort_vorschlag, text=t('s_lg_meinst_du'), bg=BG, fg=SUB,
-                 font=fenster.f_klein).pack(side='left', padx=(0, 8))
-        for name_ in treffer:
-            lbl = tk.Label(ort_vorschlag, text=name_, bg=BG, fg=ACCENT,
-                           font=fenster.f_klein, cursor='hand2')
-            lbl.pack(side='left', padx=(0, 10))
-            lbl.bind('<Button-1>', lambda _e, n=name_: ort.set(n))
-
-    ort.trace_add('write', ort_vorschlaege_zeigen)
+    # ℹ Die früheren „Meintest du:"-Zeilen für Rohstoff und Lagerort sind
+    # entfallen: Das Auswahlfeld filtert beim Tippen selbst und zeigt auf
+    # Knopfdruck die ganze Liste. Zwei Wege für dieselbe Hilfe nebeneinander
+    # wären eine Bedienung zu viel.
 
     def _bestand_vorher():
         """Wie viel im gerade bearbeiteten Posten liegt — sonst 0."""
@@ -5476,7 +5422,7 @@ def _lager(fenster, rahmen):
             # Spieldaten (`herstellung.einlagerbar()`). Fehlt etwas, wird die
             # LISTE ergaenzt — nicht die Sperre gelockert.
             meldung.configure(text=t('s_lg_name_fremd') % name, fg=GOLD)
-            vorschlaege_zeigen()
+            ware_zeichnen()
             return
         if richtig != name:
             # Berichtigung nicht verschweigen. Wer „Aslerite" tippt und
@@ -5547,7 +5493,7 @@ def _lager(fenster, rahmen):
         if ort_richtig is None:
             meldung.configure(text=t('s_lg_ort_fremd') % ort.get().strip(),
                               fg=GOLD)
-            ort_vorschlaege_zeigen()
+            ort_zeichnen()
             return
         ort.set(ort_richtig)
 

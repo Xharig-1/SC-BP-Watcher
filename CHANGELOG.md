@@ -92,6 +92,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   not only on hover — a button that warns once the mouse is already on it warns
   nobody. Both found by **Morkhan (KRT)** after pressing it by accident.
 
+- **"My stock" now works like the cargo hold.** Resource and storage location
+  are dropdown fields: type **or** click the arrow and pick. Labels sit above
+  the fields rather than beside them, so an expanded list shifts nothing. Same
+  handling in both places — learn one, know the other.
+
 ### Fixed
 
 - A button relabelled at runtime went back to its old colour once the mouse had
