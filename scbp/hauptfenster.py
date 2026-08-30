@@ -1344,6 +1344,26 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
         faerben()
 
     c.bind('<Button-1>', aufklappen)
+    # ⚠⚠ **Beim Seitenwechsel muss die Liste mitgehen.** Sie ist ein eigenes,
+    # rahmenloses Fenster und hängt an keiner Seite: Wer sie in der Herstellung
+    # aufklappt und dann links auf „Mein Lager" klickt, hatte sie bis
+    # v3.3.0-rc40 weiter über dem Lager schweben. Am 30.08.2026 gemeldet.
+    #
+    # Die vorhandenen Wachen greifen dort nicht: Ein Seitenwechsel ist kein
+    # Fokuswechsel (`<FocusOut>`), kein Rollen und keine Größenänderung des
+    # Fensters — es wird nur eine Fläche gegen eine andere getauscht.
+    #
+    # Also am Feld selbst horchen: Wird es ausgeblendet (`<Unmap>`) oder
+    # abgeräumt (`<Destroy>`), ist die Liste dazu gegenstandslos.
+    def _weg_mit_der_liste(ereignis=None):
+        # ⚠ Nur auf das Feld selbst hören. `<Destroy>` kommt auch für jedes
+        # Kind und würde sonst beim Abräumen der Liste selbst wieder feuern.
+        if ereignis is not None and ereignis.widget is not c:
+            return
+        zuklappen()
+
+    c.bind('<Unmap>', _weg_mit_der_liste)
+    c.bind('<Destroy>', _weg_mit_der_liste)
     faerben()
     c.setzen = waehlen
     c.stumm_setzen = stumm_setzen
@@ -1895,8 +1915,44 @@ class Hauptfenster:
             if self.root.winfo_height() < noetig or self.root.winfo_width() < breit:
                 self.root.geometry('%dx%d' % (max(breit, self.root.winfo_width()),
                                               max(noetig, self.root.winfo_height())))
+            self._auf_den_schirm_holen()
         except tk.TclError:
             pass
+
+    def _auf_den_schirm_holen(self):
+        """Das Fenster auf dem Bildschirm halten, auf dem es gerade steht.
+
+        ⚠⚠ **Bei „Sehr groß" wuchs das Fenster über den Monitor hinaus.** Die
+        Schriftgröße vergrößert Schrift, Symbole und Knöpfe; daraus folgt eine
+        größere Mindesthöhe, und die wurde gesetzt, ohne zu fragen, ob sie
+        überhaupt auf den Bildschirm passt. Bei zwei übereinander stehenden
+        49-Zoll-Monitoren lief das Fenster in den zweiten hinein. Am 30.08.2026
+        gemeldet.
+
+        ⚠ Tk hilft hier nicht: `winfo_screenheight()` meldet die Höhe **aller**
+        Bildschirme zusammen — bei zwei übereinander also das Doppelte. Für
+        „passt das?" ist das die falsche Zahl. `bildschirm.schirm_fuer()`
+        liefert den Monitor, auf dem das Fenster wirklich steht.
+
+        Verschoben wird nur, was muss: Wer sein Fenster selbst irgendwohin
+        zieht, soll es dort wiederfinden.
+        """
+        from . import bildschirm as _bs
+        try:
+            x, y = self.root.winfo_x(), self.root.winfo_y()
+            b, h = self.root.winfo_width(), self.root.winfo_height()
+            if b < 50 or h < 50:              # noch nicht angezeigt
+                return
+            sx, sy, sb, sh = _bs.schirm_fuer(self.root, x, y)
+            # ⚠ Erst die Größe deckeln, dann die Lage — sonst schiebt man ein
+            # zu großes Fenster hin und her und es ragt trotzdem heraus.
+            neu_b, neu_h = min(b, sb), min(h, sh)
+            neu_x = max(sx, min(x, sx + sb - neu_b))
+            neu_y = max(sy, min(y, sy + sh - neu_h))
+            if (neu_b, neu_h, neu_x, neu_y) != (b, h, x, y):
+                self.root.geometry('%dx%d+%d+%d' % (neu_b, neu_h, neu_x, neu_y))
+        except (tk.TclError, ValueError, TypeError) as ausnahme:
+            fehler.merken('hauptfenster.schirm', ausnahme)
 
     def _klapp_umschalten(self):
         self.fortgeschritten_offen = not self.fortgeschritten_offen

@@ -403,6 +403,8 @@ As a base for the blueprint details you can pick **[StarStrings](https://github.
 
 **The watcher gets along with other tools.** StarStrings and the SC Deutsch Launcher mark blueprint contracts too, with the same `[BP]` mark. So the watcher adds **no second mark where one already stands**, and leaves any item name alone that already carries a tag. With the launcher its blueprint list **replaces** the launcher's instead of sitting beside it — it is the same list, only with the **tick boxes** for your own collection. Take the details back out and the other tool's state is there again, character for character.
 
+**Resource prices** come from **[UEX Corp](https://uexcorp.space)** — a data project maintained by players. That is what puts a price next to every missing ingredient, or says it cannot be bought at all. These data are **not bundled** either; they are fetched on your machine, at most once a day. **Thanks** to UEX Corp! 🙏
+
 The interface symbols come from the **[Lucide](https://lucide.dev)** set (ISC licence) — all drawn on the same grid with the same stroke width, which is why they look identical on Windows, Linux and macOS. **Thanks** to the Lucide community! 🙏 The licence text ships with the tool (`assets/symbole/LIZENZ.txt`) and is shown under **Thanks & Licenses**.
 
 SC BP Watcher is an independent, unofficial companion tool with **no** official connection to the SC Deutsch Launcher or Cloud Imperium Games. All brand and project names belong to their respective owners.

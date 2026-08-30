@@ -10,6 +10,34 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Neu
 
+- ⭐⭐ **Ins Lager kommt nur noch, was es im Spiel wirklich gibt** — Rohstoff
+  **und** Lagerort. Der Knopf „Trotzdem eintragen" ist weg.
+
+  Der Grund ist kein Ordnungssinn: Ein freies Textfeld heißt, dass jemand
+  Schimpfwörter, Religiöses oder Politisches einträgt, ein Bildschirmfoto macht
+  und es verbreitet. Am Ende fragt niemand, wer getippt hat — es steht in diesem
+  Werkzeug.
+
+  | Feld | Auswahl | Quelle |
+  |---|---|---|
+  | Rohstoff | **52 Namen** — 39 Mineralien, 13 Pflanzen | Spieldaten |
+  | Lagerort | **158 Stationen, Städte und Außenposten** | UEX Corp |
+  | Qualität | 0–1000, alles andere wird abgelehnt | |
+
+  Der Lagerort bleibt **freiwillig** — leer ist weiterhin erlaubt. Und liegt
+  noch keine Ortsliste vor (erster Start ohne Netz), blockiert das Feld nicht.
+
+- ⭐ **Die 13 Pflanzen sind neu dabei** — Flareweed, Heart of the Woods, Sunset
+  Berry, Golden Medmon und die übrigen. Der Watcher kannte sie nicht: Sie stehen
+  nicht bei den Mineralien, sondern als Vorkommen an den Fundorten. Sie werden
+  von Hand geerntet und lassen sich jetzt mit Qualität einlagern.
+
+- ⭐ **Die Suche in der Herstellung findet auch die Zutat.** „ric" brachte
+  „Lo**ric**a" und „Fab**ric**ation" — Zufallstreffer — und nie die 83 Baupläne
+  mit Riccite. Und wo nichts herauskommt, steht das jetzt da: **26 der 52**
+  Rohstoffe kommen in keinem Rezept vor, alle Pflanzen darunter. Das Suchfeld
+  heißt deshalb jetzt „Bauplan oder Rohstoff …" statt „Suchen …".
+
 - ⭐ **„Kaufen oder abbauen?" — die Frage, die nach „dir fehlt" kommt.** Neben
   jeder fehlenden Zutat steht jetzt, was das Zukaufen kosten würde — oder dass
   es **gar nicht geht**.
@@ -188,6 +216,47 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   `FBL-8u Undersuit SecondWind` und `Warden Backpack Purgatory Camo`.
 
 ### Behoben
+
+- ⚠⚠ **Die Prozentangaben waren abgeschnitten** — „× 1.047  +4.(" statt
+  „+4,70 %". Das Etikett hatte eine feste Breite von neun Zeichen; als die
+  Prozentzahl dazukam, schnitt Tk sie stumm ab. Prozent hat jetzt eine eigene
+  Spalte, und der Selbsttest misst **jedes** Etikett im Rezept gegen die Breite,
+  die es bekommt.
+
+- ⚠ **Gleiches Material, gleiche Qualität, gleicher Ort wird zusammengezählt**
+  statt ein zweites Mal in die Liste gestellt. Wer nach jedem Abbauflug nachträgt,
+  hatte sonst nach einer Woche zehn Zeilen desselben Stapels.
+
+- ⚠ **„Löschen" in der Lagertabelle war abgeschnitten** („chen"). Es wurde nach
+  den Spalten gepackt und bekam nur den Rest.
+
+- ⚠ **Ein aufgeklapptes Auswahlmenü blieb beim Seitenwechsel stehen** — offen in
+  der Herstellung, dann auf „Mein Lager" geklickt, und die Liste schwebte weiter
+  über der neuen Seite. Sie hört jetzt darauf, dass ihr Feld ausgeblendet wird.
+
+- ⚠ **Der Rollbalken war praktisch unsichtbar** — Kontrast **1,6 : 1** auf einer
+  aufgeklappten Liste. Jetzt 2,9 : 1 dort, 3,6 : 1 auf einer Seite, dazu eine
+  sichtbare Bahn und 10 statt 8 Pixel. Gilt für jede Rollfläche.
+
+- ⚠ **Die Auswahlfelder waren so breit wie ihr längster Eintrag.** Unter den 64
+  Herstellern steht „Musashi Industrial & Starflight Concern" — das Feld wurde
+  314 Pixel breit, und die vierte Auswahl passte nicht mehr in die Zeile. Jetzt
+  gedeckelt; die aufgeklappte Liste bleibt voll breit.
+
+- ⚠ **Das Fenster verließ bei großer Schrift den Bildschirm.** Bei zwei
+  übereinander stehenden Monitoren lief es in den zweiten hinein. Es bleibt jetzt
+  auf seinem Monitor, solange man es nicht selbst zieht. **„Sehr groß" ist als
+  Schriftgröße entfallen** — die Stufe machte das Fenster größer, als ein
+  Bildschirm hoch ist.
+
+- ⚠ **Im Lager ließ sich die Menge nicht so ändern, wie man es tut.** Beim
+  Bearbeiten steht die Menge schon im Feld; wer drei dazulegen will, hängt `+3`
+  an und hat `1.04+3` dastehen — genau das wurde abgelehnt. Jetzt geht beides,
+  und beides ergibt dasselbe. Daneben steht beim Tippen, was herauskommt:
+  „ergibt 4,04 SCU".
+
+- ⚠ **Der Namensvorschlag stand 557 Pixel unter dem Eingabefeld**, unten bei den
+  Knöpfen. Jetzt 15 Pixel daneben — beides gemessen.
 
 - ⚠⚠ **Im Lager ließ sich die Menge nicht so ändern, wie man es tut.** Beim
   Bearbeiten steht die aktuelle Menge schon im Feld — wer drei dazulegen will,

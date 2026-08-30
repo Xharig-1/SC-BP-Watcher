@@ -909,9 +909,20 @@ def _anzeige(fenster, rahmen):
 
     ziel = _feld(fenster, innen, t('hf_schrift'), t('hf_schrift_hilfe'),
                  breit=True)
+    # ⚠⚠ **„Sehr groß" ist bewusst NICHT mehr dabei.** Die Stufe vergrösserte
+    # Schrift, Symbole und Knöpfe so weit, dass die daraus folgende
+    # Mindesthöhe grösser wurde als ein Bildschirm — bei zwei übereinander
+    # stehenden Monitoren lief das Fenster in den zweiten hinein (30.08.2026
+    # gemeldet). Das Fenster wird jetzt zwar auf seinem Monitor gehalten
+    # (`_auf_den_schirm_holen`), aber dann wäre es randvoll und der Inhalt
+    # trotzdem beschnitten. Eine Einstellung, die das Fenster unbrauchbar
+    # macht, gehört nicht angeboten.
+    #
+    # ⚠ Der Wert bleibt im Programm gültig (`STUFEN`, `zeichen.py`): Wer ihn
+    # gespeichert hat, verliert nichts — er kann ihn nur nicht neu wählen.
     wahl = _wahl(fenster, ziel,
                  [(s, t('hf_s_' + s))
-                  for s in ('klein', 'normal', 'gross', 'sehrgross')],
+                  for s in ('klein', 'normal', 'gross')],
                  pfade.einstellung('schriftgroesse') or 'normal',
                  # ⚠ Nur noch der eine Aufruf. `schriftgroesse_setzen()` baut
                  # das Fenster neu auf — damit zeichnet sich die Wahl selbst
@@ -3082,6 +3093,10 @@ def _danke(fenster, rahmen):
                 pady=(0, 10))
     _dankblock(fenster, innen, 'Star Citizen Mission DataBase',
                'CC BY-NC-ND 4.0', t('s_dk_scmdb'), 'https://scmdb.net')
+    # ⚠ Seit v3.3.0-rc39 kommen die Rohstoffpreise von hier. Wer eine Quelle
+    # benutzt, nennt sie — sie stand bis rc40 nirgends.
+    _dankblock(fenster, innen, 'UEX Corp',
+               t('s_dk_keine_lizenz'), t('s_dk_uex'), 'https://uexcorp.space')
     # StarStrings hat KEINE Lizenzangabe - kein LICENSE im Repo, nichts in
     # der readme, GitHub meldet keine (geprueft 29.08.2026). Hier stand
     # 'CC BY-NC-SA 4.0'. Das war geraten, vermutlich von scmdb uebernommen,
@@ -4747,6 +4762,7 @@ def _lager(fenster, rahmen):
     frei = {'name': None}
 
     vorschlag_rahmen = None
+    ort_vorschlag = None
     mengen_vorschau = None
     for beschriftung, var in ((t('s_lg_material'), material),
                               (t('s_lg_menge'), menge),
@@ -4773,6 +4789,11 @@ def _lager(fenster, rahmen):
             # ⚠ Nicht sofort packen: Ein leerer Rahmen reisst eine Lücke, die
             # wie ein Fehler aussieht.
             vorschlag_rahmen = tk.Frame(ziel.links, bg=BG)
+        elif var is ort:
+            # ⭐ Dieselbe Hilfe wie beim Rohstoff, an derselben Stelle: neben
+            # dem Feld. Die Liste kommt aus den Spieldaten (158 Stationen,
+            # Städte und Aussenposten) — siehe `orte.py`.
+            ort_vorschlag = tk.Frame(ziel.links, bg=BG)
         elif var is menge:
             # ⭐⭐ **Die Vorschau ist die eigentliche Erklärung.** Wer beim
             # Tippen von „1.04+3" daneben „ergibt 4,04 SCU" liest, braucht
@@ -4810,6 +4831,30 @@ def _lager(fenster, rahmen):
             lbl.bind('<Button-1>', lambda _e, n=name: material.set(n))
 
     material.trace_add('write', vorschlaege_zeigen)
+
+    def ort_vorschlaege_zeigen(*_):
+        from . import orte as orte_modul
+        if ort_vorschlag is None:
+            return
+        for w in ort_vorschlag.winfo_children():
+            w.destroy()
+        ort_vorschlag.pack_forget()
+        text = ort.get().strip()
+        if not text or orte_modul.kennt(text):
+            return
+        treffer = orte_modul.aehnliche(text)
+        if not treffer:
+            return
+        ort_vorschlag.pack(fill='x', pady=(4, 0))
+        tk.Label(ort_vorschlag, text=t('s_lg_meinst_du'), bg=BG, fg=SUB,
+                 font=fenster.f_klein).pack(side='left', padx=(0, 8))
+        for name_ in treffer:
+            lbl = tk.Label(ort_vorschlag, text=name_, bg=BG, fg=ACCENT,
+                           font=fenster.f_klein, cursor='hand2')
+            lbl.pack(side='left', padx=(0, 10))
+            lbl.bind('<Button-1>', lambda _e, n=name_: ort.set(n))
+
+    ort.trace_add('write', ort_vorschlaege_zeigen)
 
     def _bestand_vorher():
         """Wie viel im gerade bearbeiteten Posten liegt — sonst 0."""
@@ -5136,6 +5181,20 @@ def _lager(fenster, rahmen):
             # Ein Posten mit 0 SCU ist Ballast in der Liste.
             meldung.configure(text=t('s_lg_keine_menge'), fg=GOLD)
             return
+        # --- Lagerort ------------------------------------------------------
+        # ⚠⚠ Geschlossene Liste, wie beim Rohstoffnamen — und aus demselben
+        # Grund: Ein freies Textfeld lässt sich mit allem füllen, was man
+        # danach als Bildschirmfoto verbreiten kann. Leer bleiben darf es, das
+        # Feld ist freiwillig.
+        from . import orte as orte_modul
+        ort_richtig = orte_modul.offizieller_name(ort.get())
+        if ort_richtig is None:
+            meldung.configure(text=t('s_lg_ort_fremd') % ort.get().strip(),
+                              fg=GOLD)
+            ort_vorschlaege_zeigen()
+            return
+        ort.set(ort_richtig)
+
         # Qualität ist Pflicht. Ohne sie kann die Herstellung nicht sagen, was
         # das Material aus dem Produkt macht — und genau dafür ist das Lager da.
         # Der Lagerort bleibt freiwillig: Wer alles an einem Ort hat, soll das

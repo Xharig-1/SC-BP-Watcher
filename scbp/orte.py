@@ -1,0 +1,191 @@
+# -*- coding: utf-8 -*-
+#
+# SC BP Watcher — zeigt live neue Star-Citizen-Baupläne an.
+# Copyright (C) 2026 Xharig
+#
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+Lagerorte — Stationen, Städte und Aussenposten aus Star Citizen.
+
+Das Lager fragt nach einem Lagerort. Der war bis v3.3.0-rc40 ein **freies
+Textfeld** — und damit dasselbe Problem wie beim Rohstoffnamen: Jemand tippt
+etwas Beleidigendes hinein, macht ein Bildschirmfoto und verbreitet es. Am Ende
+fragt niemand, wer getippt hat; es steht in diesem Werkzeug.
+
+⚠⚠ **Also auch hier eine geschlossene Liste.** Am 30.08.2026 festgelegt:
+„Lagerort gilt exakt das Gleiche." Und: „Bei Oma im Keller ist eben keine
+Location mit Lager in SC."
+
+## Woher
+
+[UEX Corp](https://uexcorp.space) API 2.0, Endpunkt `terminals` — 826 Terminals
+mit Angabe der Raumstation, Stadt oder des Aussenpostens, an dem sie stehen.
+Daraus werden die **158 verschiedenen Orte** gezogen; die Terminals selbst
+(„Casaba Outlet - Area 18") interessieren nicht.
+
+⚠ **Vollständig geprüft**: Orison, Area 18, Lorville, New Babbage, Baijini
+Point, Everus Harbor, Ruin Station — alle dabei. Was auf den ersten Blick
+fehlte, heisst dort nur anders: `Pyro Gateway (Stanton)` statt „Pyro Gateway",
+`Checkmate Station` statt „Checkmate". Deshalb muss der Vorschlag Teiltexte
+finden, nicht nur Wortanfänge.
+
+⚠ Die Daten werden **nicht mitgeliefert**, sondern auf dem Rechner des Nutzers
+geholt — wie bei scmdb und den Preisen. Und **höchstens einmal pro Woche**:
+Stationen kommen mit einem Spiel-Patch dazu, nicht über Nacht.
+
+⚠ Ohne Netz passiert nichts Schlimmes: Liegt eine alte Ablage da, wird sie
+benutzt. Liegt gar keine da, bleibt der Lagerort ein freiwilliges Feld ohne
+Prüfung — lieber ohne Vorschlagsliste weiterarbeiten als gar nichts eintragen
+können.
+"""
+import json
+import os
+import time
+import urllib.error
+import urllib.request
+
+from . import fehler, pfade
+from .katalog import AUS, KENNUNG
+
+QUELLE = 'https://api.uexcorp.uk/2.0/terminals'
+CACHE = 'orte.json'
+FORMAT = 1
+ZEITLIMIT = 30
+
+# Eine Woche. Stationen kommen mit einem Patch, nicht über Nacht.
+HALTBAR = 7 * 24 * 60 * 60
+
+# Aus diesen Feldern wird der Ortsname gezogen — in dieser Reihenfolge.
+FELDER = ('space_station_name', 'city_name', 'outpost_name')
+
+_gemerkt = {'stand': None, 'daten': None}
+
+
+def laden():
+    """Der abgelegte Stand — aus dem Speicher, wenn die Datei unverändert ist."""
+    pfad = pfade.app_datei(CACHE)
+    try:
+        st = os.stat(pfad)
+        kennung = (st.st_mtime_ns, st.st_size)
+    except OSError:
+        return {}
+    if _gemerkt['stand'] == kennung:
+        return _gemerkt['daten']
+    try:
+        with open(pfad, encoding='utf-8') as f:
+            daten = json.load(f)
+        if daten.get('format') == FORMAT:
+            _gemerkt['stand'], _gemerkt['daten'] = kennung, daten
+            return daten
+    except Exception:
+        pass
+    return {}
+
+
+def alle():
+    """Alle bekannten Lagerorte, alphabetisch — oder eine leere Liste."""
+    return (laden() or {}).get('orte') or []
+
+
+def alter():
+    """Wie alt die Ablage ist, in Sekunden — oder None."""
+    geholt = (laden() or {}).get('geholt')
+    return (time.time() - float(geholt)) if geholt else None
+
+
+def aktualisieren():
+    """Die Ortsliste holen, wenn sie fehlt oder älter als eine Woche ist."""
+    if AUS:
+        return False
+    a = alter()
+    if a is not None and a < HALTBAR:
+        return True
+    try:
+        req = urllib.request.Request(QUELLE, headers={'User-Agent': KENNUNG})
+        with urllib.request.urlopen(req, timeout=ZEITLIMIT) as r:
+            roh = json.loads(r.read().decode('utf-8'))
+    except Exception as ausnahme:
+        fehler.merken('orte.holen', ausnahme)
+        return False
+    namen = set()
+    for x in roh.get('data') or []:
+        for feld in FELDER:
+            n = (x.get(feld) or '').strip()
+            if n:
+                namen.add(n)
+    if not namen:
+        return False
+    _sichern({'format': FORMAT, 'geholt': time.time(),
+              'orte': sorted(namen, key=str.lower)})
+    return True
+
+
+def _sichern(daten):
+    ziel = pfade.app_datei(CACHE)
+    try:
+        os.makedirs(os.path.dirname(ziel), exist_ok=True)
+        with open(ziel + '.tmp', 'w', encoding='utf-8') as f:
+            json.dump(daten, f, ensure_ascii=False)
+        os.replace(ziel + '.tmp', ziel)
+        _gemerkt['stand'] = None
+        return True
+    except Exception as ausnahme:
+        fehler.merken('orte._sichern', ausnahme)
+        return False
+
+
+def kennt(name):
+    """Gibt es diesen Ort? Ohne Ortsliste gilt **alles** als gültig.
+
+    ⚠ Das ist Absicht: Liegt keine Liste vor (erster Start ohne Netz), darf das
+    Feld nicht blockieren. Der Lagerort ist freiwillig — ohne ihn ist das Lager
+    weiter benutzbar, mit einer Sperre ohne Liste wäre es das nicht.
+    """
+    if not (name or '').strip():
+        return True                      # leer ist erlaubt, das Feld ist freiwillig
+    liste = alle()
+    if not liste:
+        return True
+    gesucht = (name or '').strip().lower()
+    return any(o.lower() == gesucht for o in liste)
+
+
+def offizieller_name(eingabe):
+    """Die verbindliche Schreibweise — oder `None`, wenn unbekannt."""
+    gesucht = (eingabe or '').strip().lower()
+    if not gesucht:
+        return ''
+    for o in alle():
+        if o.lower() == gesucht:
+            return o
+    return None
+
+
+def aehnliche(name, hoechstens=4):
+    """Vorschläge zu einer Eingabe.
+
+    ⚠ **Teiltext, nicht nur Wortanfang.** Wer „pyro" tippt, meint
+    `Pyro Gateway (Stanton)`; wer „checkmate" tippt, `Checkmate Station`. Ein
+    Vorschlag, der nur auf den Anfang schaut, findet beide nicht.
+    """
+    import difflib
+    text = (name or '').strip().lower()
+    if not text:
+        return []
+    liste = alle()
+    treffer = [o for o in liste if text in o.lower()]
+    if treffer:
+        return treffer[:hoechstens]
+    return difflib.get_close_matches(text, liste, n=hoechstens, cutoff=0.6)

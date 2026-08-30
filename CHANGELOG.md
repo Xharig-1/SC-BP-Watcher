@@ -10,6 +10,33 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- ⭐⭐ **Only things that actually exist in the game can be stored** — resource
+  **and** location. The "Add anyway" button is gone.
+
+  The reason is not tidiness: a free text field means somebody can enter slurs,
+  religious or political text, take a screenshot and spread it. In the end nobody
+  asks who typed it — it stands in this tool.
+
+  | Field | Choice | Source |
+  |---|---|---|
+  | Resource | **52 names** — 39 minerals, 13 plants | game data |
+  | Location | **158 stations, cities and outposts** | UEX Corp |
+  | Quality | 0–1000, anything else is rejected | |
+
+  The location stays **optional** — empty is still fine. And if no location list
+  has arrived yet (first start without a connection), the field does not block.
+
+- ⭐ **The 13 plants are new** — Flareweed, Heart of the Woods, Sunset Berry,
+  Golden Medmon and the rest. The watcher did not know them: they are not listed
+  with the minerals but as deposits at the locations. They are hand-harvested and
+  can now be stored with a quality.
+
+- ⭐ **Crafting search now finds the ingredient too.** "ric" returned "Lo**ric**a"
+  and "Fab**ric**ation" — accidents — and never the 83 blueprints using Riccite.
+  And where nothing comes of it, it now says so: **26 of the 52** resources appear
+  in no recipe, all plants among them. The search box is therefore labelled
+  "Blueprint or resource …" instead of "Search …".
+
 - ⭐ **"Buy or mine?" — the question that follows "you are missing".** Next to
   every missing ingredient it now says what buying it would cost — or that it
   **cannot be bought at all**.
@@ -152,6 +179,44 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   now shows as an ordinary row with its info icon, drop-off and reputation.
 
 ### Fixed
+
+- ⚠⚠ **The percentages were cut off** — "× 1.047  +4.(" instead of "+4.70 %".
+  The label had a fixed width of nine characters; when the percentage was added,
+  Tk truncated it silently. Percentage now has its own column, and the self-test
+  measures **every** label in a recipe against the width it gets.
+
+- ⚠ **Same material, same quality, same location is now added up** instead of
+  becoming a second row. Adding after every mining run otherwise left ten rows of
+  the same pile within a week.
+
+- ⚠ **"Remove" in the stock table was cut off** ("move"). It was packed after the
+  columns and only got the leftovers.
+
+- ⚠ **An open dropdown stayed put when switching pages** — opened in Crafting,
+  then a click on "My stock", and the list kept floating above the new page. It
+  now listens for its field being hidden.
+
+- ⚠ **The scrollbar was practically invisible** — contrast **1.6 : 1** on an open
+  list. Now 2.9 : 1 there, 3.6 : 1 on a page, plus a visible track and 10 instead
+  of 8 pixels. Applies to every scroll area.
+
+- ⚠ **Dropdown fields were as wide as their longest entry.** Among the 64
+  manufacturers stands "Musashi Industrial & Starflight Concern" — the field grew
+  to 314 pixels and the fourth filter no longer fitted the row. Now capped; the
+  open list stays full width.
+
+- ⚠ **The window left the monitor at large font sizes.** With two stacked
+  monitors it ran into the second one. It now stays on its monitor unless you drag
+  it. **"Very large" has been removed** as a font size — that step made the window
+  taller than a screen.
+
+- ⚠ **The stock amount could not be edited the way people do it.** When editing,
+  the amount is already in the field; to add three you append `+3` and end up with
+  `1.04+3` — which was rejected. Both work now and give the same result. Next to
+  the field it shows what comes out while you type: "makes 4.04 SCU".
+
+- ⚠ **The name suggestion sat 557 pixels below the input field**, down by the
+  buttons. Now 15 pixels next to it — both measured.
 
 - ⚠⚠ **In the stock list the amount could not be edited the way people do it.**
   When editing, the current amount is already in the field — to add three you

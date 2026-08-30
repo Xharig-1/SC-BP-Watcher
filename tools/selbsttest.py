@@ -5447,6 +5447,76 @@ def main():
         finally:
             _w69.destroy()
 
+    # ------------------------------------------------------------------
+    # 70. Nur Echtes ins Lager — Rohstoff UND Lagerort
+    #
+    # ⚠⚠ Der Grund ist nicht Ordnungssinn. Ein freies Textfeld heisst, dass
+    # jemand Schimpfwoerter, Religioeses oder Politisches eintraegt, ein
+    # Bildschirmfoto macht und es verbreitet — und am Ende fragt niemand, wer
+    # getippt hat: Es steht in diesem Werkzeug. Am 30.08.2026 festgelegt:
+    # „NUR was auch in der Rohstoff-Liste ist darf speicherbar sein, sonst
+    # nichts." Und: „Lagerort gilt exakt das Gleiche."
+    print()
+    print('70. Nur Echtes ins Lager')
+    from scbp import herstellung as _he70
+    from scbp import orte as _or70
+
+    # a) Der Ausweg-Knopf ist WEG und darf nicht zurueckkommen.
+    _q70 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'), encoding='utf-8').read()
+    pruefe("t('s_lg_trotzdem')" not in _q70,
+           'es gibt keinen Knopf „Trotzdem eintragen" mehr')
+    pruefe('h_modul.lager_name(name)' in _q70,
+           'der Name wird gegen die Lagerliste geprueft')
+    pruefe('orte_modul.offizieller_name(ort.get())' in _q70,
+           'und der Lagerort gegen die Ortsliste')
+
+    # b) Die Liste selbst.
+    _liste70 = _he70.einlagerbar()
+    if len(_liste70) > 30:
+        pruefe(len(_liste70) >= 39,
+               'die Lagerliste hat %d Namen (Mineralien + Pflanzen)' % len(_liste70))
+        for _pflanze70 in ('Flareweed', 'Heart of the Woods', 'Sunset Berry'):
+            pruefe(_he70.darf_ins_lager(_pflanze70),
+                   'Pflanze %s ist einlagerbar' % _pflanze70)
+        for _erz70 in ('Sadaryx', 'Saldynium', 'Jaclium'):
+            pruefe(_he70.darf_ins_lager(_erz70),
+                   'Mineral ohne Rezept (%s) ist einlagerbar' % _erz70)
+        for _mist70 in ('savratum', 'Bei Oma im Keller', 'Politik', 'xyz123'):
+            pruefe(not _he70.darf_ins_lager(_mist70),
+                   '%r wird abgelehnt' % _mist70)
+        # ⚠ Vorschlaege muessen aus der GANZEN Liste kommen. Sadaryx kam nicht,
+        #   weil sie nur aus den Rezept-Materialien stammten.
+        pruefe(_he70.aehnliche_lagernamen('Sad') == ['Sadaryx'],
+               'Sadaryx wird vorgeschlagen (kam frueher nicht)')
+    else:
+        print('  [–]    keine Rezept-/Bergbaudaten — Listentest uebersprungen')
+
+    # c) Der Lagerort.
+    if _or70.alle():
+        pruefe(len(_or70.alle()) > 100,
+               'die Ortsliste hat %d Eintraege' % len(_or70.alle()))
+        pruefe(_or70.kennt('Orison') and _or70.kennt('Lorville'),
+               'bekannte Orte werden erkannt')
+        pruefe(not _or70.kennt('Bei Oma im Keller'),
+               'ein erfundener Ort wird abgelehnt')
+        pruefe(_or70.kennt(''), 'leer bleibt erlaubt — das Feld ist freiwillig')
+        # ⚠ Teiltext, nicht nur Wortanfang: UEX schreibt „Pyro Gateway
+        #   (Stanton)" und „Checkmate Station".
+        pruefe(any('Pyro Gateway' in o for o in _or70.aehnliche('pyro')),
+               '„pyro" schlaegt die Gateways vor')
+        pruefe(_or70.aehnliche('checkmate') == ['Checkmate Station'],
+               '„checkmate" findet die Station')
+    else:
+        # ⚠ Ohne Liste darf NICHTS blockieren — sonst laesst sich bei einem
+        #   ersten Start ohne Netz gar nichts eintragen.
+        pruefe(_or70.kennt('Irgendwo'),
+               'ohne Ortsliste blockiert das Feld nicht')
+        print('  [–]    keine Ortsliste vorhanden — Rest uebersprungen')
+
+    # d) Qualitaet: nur 0 bis 1000.
+    pruefe('0 <= q <= 1000' in _q70,
+           'die Qualitaet ist auf 0–1000 begrenzt')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

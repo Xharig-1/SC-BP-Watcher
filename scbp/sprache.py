@@ -880,6 +880,19 @@ TEXTE = {
                         'hobby project that prepares the game data and makes it '
                         'freely available. Fetched sparingly: only when a new game '
                         'version appears.'),
+    # ⚠⚠ **Wer eine Quelle benutzt, nennt sie.** Die Rohstoffpreise kamen
+    # ab v3.3.0-rc39 von UEX Corp, standen aber nirgends auf dieser Seite.
+    # Am 30.08.2026 gemeldet: „UEX Corp liefert uns nun auch Daten. Sieht
+    # aber niemand — nix sagen ist wie klauen." Genau so ist es.
+    's_dk_uex':        ('Kauf- und Verkaufspreise der Rohstoffe. Damit steht '
+                        'neben jeder fehlenden Zutat, was sie kostet — oder '
+                        'dass sie sich gar nicht kaufen lässt. Ein von '
+                        'Spielern gepflegtes Datenprojekt. Abgerufen wird '
+                        'höchstens einmal am Tag.',
+                        'Buy and sell prices for resources. That is what puts '
+                        'a price next to every missing ingredient — or says it '
+                        'cannot be bought at all. A data project maintained by '
+                        'players. Fetched at most once a day.'),
     's_dk_ss':         ('Aufgeräumte englische Spieltexte — eine der Grundlagen, '
                         'in die die Bauplan-Angaben geschrieben werden können.',
                         'Cleaned-up English game text — one of the bases the '
@@ -1657,6 +1670,15 @@ TEXTE = {
     # als gaebe es einen. „Du kannst es trotzdem eintragen" stand hier
     # bis v3.3.0-rc40 und war die Einladung, ein freies Textfeld zu
     # benutzen. Grund fuer die Sperre: siehe `herstellung.einlagerbar()`.
+    # ⚠ Auch der Lagerort ist eine geschlossene Liste — aus demselben Grund
+    # wie der Rohstoffname. „Bei Oma im Keller ist eben keine Location mit
+    # Lager in SC." (30.08.2026)
+    's_lg_ort_fremd':    ('„%s" gibt es in Star Citizen nicht. Tipp die '
+                          'ersten Buchstaben einer Station oder Stadt, dann '
+                          'kommt der Vorschlag — oder lass das Feld leer.',
+                          '„%s" does not exist in Star Citizen. Type the '
+                          'first letters of a station or city and a '
+                          'suggestion appears — or leave the field empty.'),
     's_lg_name_fremd':   ('„%s" gibt es im Spiel nicht. Es lassen sich nur '
                           'Rohstoffe und Pflanzen aus Star Citizen '
                           'eintragen — tipp die ersten Buchstaben, dann '

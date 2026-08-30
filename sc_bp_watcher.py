@@ -46,7 +46,7 @@ from scbp import zeichen
 from scbp import fehler
 from scbp import hinweis
 from scbp import (
-    auftraege,ablagesymbol, aktualisierung, assistent, autostart, preise,
+    auftraege,ablagesymbol, aktualisierung, assistent, autostart, orte, preise,
                   bildschirm, overlay,
                   bestand as bestand_datei, bestandsfenster as bestandsfenster_modul,
                   einstellungsfenster, hinweis, injektion,
@@ -58,7 +58,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.3.0-rc40'
+__version__ = '3.3.0-rc41'
 
 
 def _mitgeliefert(name):
@@ -725,6 +725,11 @@ class Watcher(threading.Thread):
             preise.aktualisieren()
         except Exception as ausnahme:
             fehler.merken('watcher.preise', ausnahme)
+        # Die Lagerorte dazu — hoechstens einmal pro Woche, siehe `orte.py`.
+        try:
+            orte.aktualisieren()
+        except Exception as ausnahme:
+            fehler.merken('watcher.orte', ausnahme)
 
     # ---- Bauplan-Katalog holen und frisch halten ----
     def _katalog_tick(self):
