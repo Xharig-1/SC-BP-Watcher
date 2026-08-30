@@ -1258,6 +1258,11 @@ TEXTE = {
     # (30.08.2026 gemeldet). Jetzt steht die Differenz daneben, mit Grund.
     'b_n_bp_katalog':  ('%s Baupläne · %s davon im Katalog, %s unbekannt',
                         '%s blueprints · %s of them in the catalogue, %s unknown'),
+    # ⚠ Die Zahl allein sagt „da stimmt was nicht" und sonst nichts. Erst die
+    # Namen sagen, WAS fehlt — und ob es an einer Schreibweise liegt oder an
+    # einem Katalog, der ein ganzes Rüstungsset nicht kennt.
+    'b_unbekannt':     ('Nicht im Katalog', 'Not in the catalogue'),
+    'b_und_weitere':   ('… und %s weitere', '… and %s more'),
     'b_merkliste':     ('Merkliste', 'Watchlist'),
     'b_n_eintraege':   ('%s Einträge', '%s entries'),
     'b_katalog':       ('Katalogstand', 'Catalogue state'),

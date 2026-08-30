@@ -122,6 +122,40 @@ def _bestandzeile():
     return t('b_n_bp_katalog') % (gesamt, im_katalog, gesamt - im_katalog)
 
 
+# Wie viele Namen der Bericht höchstens aufzählt. Mehr macht ihn unlesbar,
+# und für die Frage „woran liegt es" reicht eine Handvoll Beispiele.
+UNBEKANNT_MAX = 12
+
+
+def _unbekannte_bauplaene():
+    """Die Baupläne im eigenen Bestand, die der Katalog nicht kennt.
+
+    ⚠ Die Zahl allein („23 unbekannt") sagt nur, dass etwas nicht zusammenpasst.
+    Die Namen sagen, **was** — und meistens auch gleich, warum: ein ganzes
+    Rüstungsset, das der Katalog noch nicht führt, oder eine abweichende
+    Schreibweise. Ohne sie muss jemand die Datei von Hand mit dem Katalog
+    vergleichen; damit ist die Angabe im Bericht wertlos.
+    """
+    from . import bestand as bestand_modul
+    from . import katalog as katalog_modul
+    try:
+        bekannt = set(katalog_modul.laden().get('bauplaene') or {})
+    except Exception:
+        return ''
+    if not bekannt:
+        return ''
+    daten = bestand_modul.laden()
+    fehlend = sorted((e.get('name') or k)
+                     for k, e in daten['bauplaene'].items() if k not in bekannt)
+    if not fehlend:
+        return ''
+    gezeigt = fehlend[:UNBEKANNT_MAX]
+    text = ' · '.join(gezeigt)
+    if len(fehlend) > UNBEKANNT_MAX:
+        text += '  ' + t('b_und_weitere') % (len(fehlend) - UNBEKANNT_MAX)
+    return text
+
+
 def _spielsprache():
     """Wonach im Log gesucht wird — und woher die Formulierung stammt."""
     from . import phrasen as phrasen_modul
@@ -348,6 +382,9 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
     zeilen.append('')
 
     zeile(t('b_bestand'), _sicher(_bestandzeile))
+    _unbekannt = _sicher(_unbekannte_bauplaene, '')
+    if _unbekannt and _unbekannt != '—':
+        zeile(t('b_unbekannt'), _unbekannt)
     zeile(t('b_merkliste'), _sicher(lambda: t('b_n_eintraege') % _json_groesse(
         __import__('scbp.merkliste', fromlist=['pfad']).pfad(), 'eintraege')))
     # ⚠⚠ **Der gespeicherte Stand, kein Netzabruf.** Hier stand

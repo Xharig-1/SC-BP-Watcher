@@ -6,6 +6,18 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.3.2 - unreleased
+
+### Added
+
+- **The report now also says *which* blueprints the catalogue does not know** —
+  not just how many. Up to twelve names, then "… and N more".
+
+  The number alone only says that something does not line up. The names usually
+  say why as well: a whole armour set the catalogue does not carry yet, or a
+  different spelling. Without them somebody would have to compare the file with
+  the catalogue by hand — which makes the line in the report worthless.
+
 ## v3.3.1 - 2026-08-30
 
 ### Fixed

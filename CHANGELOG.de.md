@@ -6,6 +6,19 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.3.2 - unveröffentlicht
+
+### Neu
+
+- **Der Bericht sagt jetzt auch, *welche* Baupläne der Katalog nicht kennt** —
+  nicht nur, wie viele. Bis zu zwölf Namen, danach „… und N weitere".
+
+  Die Zahl allein sagt nur, dass etwas nicht zusammenpasst. Die Namen sagen
+  meistens auch gleich, warum: ein ganzes Rüstungsset, das der Katalog noch
+  nicht führt, oder eine abweichende Schreibweise. Ohne sie müsste jemand die
+  Datei von Hand mit dem Katalog vergleichen — dann ist die Angabe im Bericht
+  wertlos.
+
 ## v3.3.1 - 2026-08-30
 
 ### Behoben
