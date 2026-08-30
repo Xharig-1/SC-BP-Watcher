@@ -6,6 +6,8 @@
 
 SC BP Watcher is a small overlay that shows, while you play Star Citizen, when a new blueprint is unlocked — on **Windows and Linux**, from a shared codebase.
 
+Since v3.3.0 there is a **workshop** on top of that: what you can craft from a blueprint, what you are missing for it, where the materials are mined and what sits in your storage. The blueprint is still the starting point — the workshop answers the question that follows it: *and now what?*
+
 Four things are deliberate and will stay that way:
 
 - **Lightweight.** Plain Python standard library, no extra packages. What has no dependency cannot lose one.
@@ -34,6 +36,11 @@ Four things are deliberate and will stay that way:
 | ✅ | Collapse the overlay, for anyone on a single screen |
 | ✅ | **Tray icon**: next to the clock on Windows, in the application menu on Linux — the way back to the list and the settings while the overlay stays out of sight |
 | ✅ | **Item details in game** — class, size and grade at the tractor beam, seeker type for missiles |
+| ✅ | **Crafting**: for every craftable item the ingredients, the duration and the stats — including whether you own the blueprint for it |
+| ✅ | **Material quality matters** — one slider per ingredient shows what *your* material would yield, and the range the value can reach at all |
+| ✅ | **My storage**: record material, amount, quality and location; the recipe then shows what is missing, and a button deducts the ingredients |
+| ✅ | **Mining** both ways: material → where it is found, location → what is found there, with mining type, refinery comparison and scan signature |
+| ✅ | **Prices** from UEX Corp — what a material costs and what it sells for, so "what am I missing" also answers "what will it cost me" |
 
 ## What is being worked on
 

@@ -1597,6 +1597,34 @@ def _bestand(fenster, rahmen):
 
     _knopf(fenster, ziel, t('s_be_neu'), neu_einlesen).pack()
 
+    # ⚠ **Bestand zurücksetzen — hier und nicht unter „Fehler melden".** Dort
+    # stand es bis rc42, und dort sucht es niemand: Wer seinen Bauplan-Stand
+    # neu aufbauen will, geht auf die Seite, die seinen Bauplan-Stand verwaltet.
+    #
+    # Der Platz direkt unter „Protokolle erneut einlesen" ist Absicht — die
+    # beiden gehören zusammen und der Unterschied wird erst nebeneinander
+    # sichtbar: Einlesen **ergänzt**, was fehlt. Zurücksetzen **wirft weg** und
+    # baut neu auf. Wer das falsche nimmt, verliert seinen Stand; getrennt auf
+    # zwei Seiten sieht man diesen Unterschied nie.
+    ziel = _feld(fenster, innen, t('s_be_reset'), t('s_be_reset_h'))
+
+    def zuruecksetzen():
+        from . import pfade
+        from .hauptfenster import frage_stellen
+        if not frage_stellen(fenster.root, t('s_be_reset'),
+                             t('s_be_reset_frage')):
+            return
+        try:
+            os.remove(pfade.app_datei('bestand.json'))
+            fenster.sagen(t('s_be_reset_ok'))
+        except OSError as ausnahme:
+            fehler.merken('seiten.bestand.zuruecksetzen', ausnahme)
+
+    _knopf(fenster, ziel, t('s_zuruecksetzen'), zuruecksetzen, gefahr=True).pack()
+
+    _status(fenster, innen, '!', t('s_be_reset_warn'), t('s_be_reset_warn_h'),
+            farbe=GOLD)
+
 
 def _leere_vorschau(fenster, eltern):
     """Der Vorschau-Kasten, bevor eine Datei gewählt wurde."""
@@ -3588,23 +3616,6 @@ def _diagnose(fenster, rahmen):
     schiebeschalter(ziel, pfade.einstellung_wahrheit('fehler_mitschreiben', True),
                     mitschreiben_um).pack()
 
-    ziel = _feld(fenster, innen, t('s_di_reset'), t('s_di_reset_h'))
-
-    def zuruecksetzen():
-        from .hauptfenster import frage_stellen
-        if not frage_stellen(fenster.root, t('s_di_reset'),
-                             t('s_di_reset_frage')):
-            return
-        try:
-            os.remove(pfade.app_datei('bestand.json'))
-            fenster.sagen(t('s_di_reset_ok'))
-        except OSError as ausnahme:
-            fehler.merken('seiten.diagnose.zuruecksetzen', ausnahme)
-
-    _knopf(fenster, ziel, t('s_zuruecksetzen'), zuruecksetzen, gefahr=True).pack()
-
-    _status(fenster, innen, '!', t('s_di_reset_warn'), t('s_di_reset_warn_h'),
-            farbe=GOLD)
 
 
 def _zahl_katalog():
@@ -4263,8 +4274,17 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                 # nicht einzuordnen — „× 0.867" sagt nicht, ob noch viel geht.
                 # Erst „×1.2–0.8" daneben macht klar, dass es schon zwei
                 # Drittel des Wegs sind. scmdb zeigt es aus demselben Grund.
-                spanne_lbl = tk.Label(block, text='', bg='#0c1017', fg=SUB,
-                                      font=fenster.f_klein, anchor='w')
+                #
+                # ⚠⚠ **In `werte_rahmen`, direkt hinter die eigene Zeile.**
+                # Bis rc42 stand hier `block` — der Behälter eine Ebene höher.
+                # Dadurch rutschten *alle* Spannen ans Ende des Blocks und
+                # standen dort als gleich aussehende Zeilen untereinander,
+                # während die Werte, zu denen sie gehören, weiter oben blieben.
+                # Auf dem Bildschirm war nicht mehr zu erkennen, welche Spanne
+                # zu welchem Wert gehört. Der Elternteil bestimmt hier die
+                # Zuordnung — nicht nur den Ort.
+                spanne_lbl = tk.Label(werte_rahmen, text='', bg='#0c1017',
+                                      fg=SUB, font=fenster.f_klein, anchor='w')
                 spanne_lbl.pack(fill='x', padx=(46, 12))
                 zeilen_widgets.append((w, faktor_lbl, prozent_lbl,
                                        herkunft_lbl, spanne_lbl))

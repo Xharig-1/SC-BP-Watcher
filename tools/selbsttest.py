@@ -5134,6 +5134,48 @@ def main():
     from scbp import seiten as _se67
     from scbp import herstellung as _he67
 
+    # ⚠⚠ **Notfalls eigene Daten hinlegen.** Die Rezepte sind ein
+    # heruntergeladener Zwischenspeicher im Ablageordner — der Selbsttest
+    # arbeitet in einem Wegwerf-Ordner, dort liegt keiner. Bis rc42 hiess das:
+    # Diese Pruefung wurde **immer uebersprungen**, auf jedem frischen Rechner
+    # und im Bau-Lauf sowieso. Sie war fuer den `_dauer`-Fehler gebaut worden,
+    # der zwei ausgelieferte Fassungen unbrauchbar gemacht hat — und lief nie.
+    # Eine Pruefung, die nur bei ihrem Autor anschlaegt, ist keine.
+    if not (_he67.laden().get('blueprints') or []):
+        _mini67 = {
+            'format': _he67.FORMAT, 'build': 'selbsttest',
+            'blueprints': [{
+                'tag': 'BP_TEST_Pruefung67', 'productName': 'Testgegenstand',
+                'manufacturer': 'Behring', 'gear': 'fpsgear',
+                'type': 'armour', 'subtype': 'combat',
+                'tiers': [{'craftTimeSeconds': 200, 'slots': [
+                    {'name': 'Armored Carapace',
+                     'options': [{'type': 'resource', 'quantity': 0.04,
+                                  'minQuality': 0, 'resourceName': 'Iron'}],
+                     'modifiers': [{'startQuality': 0, 'endQuality': 1000,
+                                    'modifierAtStart': 0.9,
+                                    'modifierAtEnd': 1.1,
+                                    'propertyName': 'Damage Mitigation',
+                                    'propertyKey': 'armor_damagemitigation'}]},
+                    {'name': 'Insulative Liner',
+                     'options': [{'type': 'resource', 'quantity': 0.02,
+                                  'minQuality': 0, 'resourceName': 'Aslarite'}],
+                     'modifiers': [{'startQuality': 0, 'endQuality': 1000,
+                                    'modifierAtStart': 0.8,
+                                    'modifierAtEnd': 1.2,
+                                    'propertyName': 'Min Temp',
+                                    'propertyKey': 'armor_temperaturemin'},
+                                   {'startQuality': 0, 'endQuality': 1000,
+                                    'modifierAtStart': 0.8,
+                                    'modifierAtEnd': 1.2,
+                                    'propertyName': 'Max Temp',
+                                    'propertyKey': 'armor_temperaturemax'}]}]}]}],
+            'dismantle': {'returnPercentage': 50, 'blacklistedResources': []}}
+        from scbp import pfade as _pf67
+        with open(_pf67.app_datei(_he67.CACHE), 'w', encoding='utf-8') as _f67:
+            json.dump(_mini67, _f67)
+        _he67.vergessen()
+
     _rez67 = _he67.laden().get('blueprints') or []
     if not _rez67:
         print('  [–]    keine Rezeptdaten vorhanden — uebersprungen')
@@ -5207,6 +5249,54 @@ def main():
                        'die Ueberschrift der Qualitaetsregler steht da')
                 pruefe('Q ' in _alle67 or '×' in _alle67,
                        'und die Spannen-Angaben darunter')
+
+                # ⚠⚠ Und JEDE Spanne steht unter IHRER Zeile.
+                #
+                # Bis rc42 bekam das Spannen-Etikett den Behaelter eine Ebene
+                # hoeher als Elternteil. Es baute sich fehlerfrei auf, es stand
+                # auch alles da — nur sammelten sich alle Spannen am Ende des
+                # Blocks, waehrend die Werte oben blieben. Drei gleich
+                # aussehende Zeilen `Q 0-1000 · x0.9-1.1`, und keine sagte mehr,
+                # zu welchem Wert sie gehoert. Kein Absturz, keine Ausnahme —
+                # nur eine Anzeige, die nichts mehr aussagt.
+                #
+                # Der Massstab ist deshalb die **Reihenfolge**: Im Behaelter der
+                # Wertezeilen muessen sich Zeile (Frame) und Spanne (Label)
+                # abwechseln.
+                def _ist_wertezeile67(w):
+                    # Eine Wertezeile ist ein Rahmen aus genau vier Etiketten:
+                    # Eigenschaft, Faktor, Prozent, Herkunft. Nichts sonst
+                    # darin — sonst waere es ein Behaelter, kein Zeile.
+                    kinder = w.winfo_children()
+                    return (w.winfo_class() == 'Frame' and len(kinder) == 4
+                            and all(_x.winfo_class() == 'Label'
+                                    for _x in kinder))
+
+                def _wertebehaelter67(w):
+                    for _k in w.winfo_children():
+                        if _ist_wertezeile67(_k):
+                            return _k.master
+                        _tiefer = _wertebehaelter67(_k)
+                        if _tiefer is not None:
+                            return _tiefer
+                    return None
+
+                _halter67 = _wertebehaelter67(_rahmen67)
+                pruefe(_halter67 is not None,
+                       'der Behaelter mit den Wertezeilen ist auffindbar')
+                if _halter67 is not None:
+                    _folge67 = [_s.winfo_class() for _s in _halter67.pack_slaves()]
+                    _zeilen67 = _folge67.count('Frame')
+                    _spannen67 = _folge67.count('Label')
+                    # Nach jeder Zeile genau ein Etikett — dann wechseln sich
+                    # Frame und Label ab, und keine Spanne ist verrutscht.
+                    _wechsel67 = _folge67[:2 * _zeilen67] == (
+                        ['Frame', 'Label'] * _zeilen67)
+                    pruefe(_zeilen67 > 0 and _wechsel67,
+                           'jede Spanne steht direkt unter ihrer Wertezeile '
+                           '(%d Zeilen, %d Spannen: %s)'
+                           % (_zeilen67, _spannen67,
+                              ' '.join(_folge67[:6]) or 'leer'))
             finally:
                 _w67.destroy()
 

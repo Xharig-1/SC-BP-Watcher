@@ -6,6 +6,8 @@
 
 SC BP Watcher ist ein kleines Overlay, das beim Spielen von Star Citizen live anzeigt, sobald ein neuer Bauplan freigeschaltet wird — unter **Windows und Linux**, aus einer gemeinsamen Codebasis.
 
+Seit v3.3.0 kommt eine **Werkstatt** dazu: Was du aus einem Bauplan herstellen kannst, was dafür fehlt, wo die Rohstoffe liegen und was in deinem Lager steht. Der Bauplan bleibt der Ausgangspunkt — die Werkstatt beantwortet die Frage, die danach kommt: *und jetzt?*
+
 Vier Dinge sind Absicht und bleiben so:
 
 - **Leichtgewichtig.** Reine Python-Standardbibliothek, keine Zusatzpakete. Was keine Abhängigkeit hat, kann auch keine verlieren.
@@ -34,6 +36,11 @@ Vier Dinge sind Absicht und bleiben so:
 | ✅ | Overlay einklappen, für alle mit einem Bildschirm |
 | ✅ | **Ablage-Symbol**: neben der Uhr unter Windows, im Startmenü unter Linux — der Weg zurück zu Liste und Einstellungen, während sich das Overlay zurückhält |
 | ✅ | **Angaben am Gegenstand im Spiel** — Klasse, Größe und Gütegrad am Traktorstrahl, bei Raketen der Suchkopf |
+| ✅ | **Herstellung**: zu jedem herstellbaren Gegenstand die Zutaten, die Dauer und die Werte — samt der Frage, ob du den Bauplan dafür hast |
+| ✅ | **Materialqualität wirkt sich aus** — ein Regler je Zutat zeigt, was mit *deinem* Material herauskäme, und in welcher Spanne der Wert überhaupt liegen kann |
+| ✅ | **Mein Lager**: Material, Menge, Qualität und Lagerort eintragen; im Rezept steht dann, was fehlt, und ein Knopf zieht die Zutaten ab |
+| ✅ | **Bergbau** in beide Richtungen: Rohstoff → Fundorte, Ort → was es dort gibt, mit Abbauart, Raffinerie-Vergleich und Scan-Signatur |
+| ✅ | **Preise** von UEX Corp — was ein Rohstoff kostet und was er einbringt, damit „was fehlt mir" auch „was kostet mich das" beantwortet |
 
 ## Woran gearbeitet wird
 
