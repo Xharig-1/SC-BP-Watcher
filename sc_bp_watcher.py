@@ -58,7 +58,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.3.2'
+__version__ = '3.3.3'
 
 
 def _mitgeliefert(name):
@@ -689,6 +689,19 @@ class Watcher(threading.Thread):
         # Zeilen da, von denen neun erledigt sind.
         self._offene_auftraege = {}
         self.bestand = bestand_datei.laden()   # der eigene, dauerhafte Bestand
+        # ⚠ Einmal beim Start die Namen an den Katalog angleichen. Was der
+        # Watcher vor v3.3.3 aus dem Log gelesen hat, trägt womöglich die
+        # Angaben aus dem Spiel im Namen („Balandin (S3 B Military)") und galt
+        # dadurch als unbekannt — siehe `bestand.katalogname`. Ohne diesen
+        # Durchlauf bliebe der alte Stand für immer schief.
+        try:
+            berichtigt = bestand_datei.angleichen(self.bestand)
+            if berichtigt:
+                bestand_datei.speichern(self.bestand)
+                fehler.spur('Bestand: %d Namen an den Katalog angeglichen'
+                            % berichtigt)
+        except Exception as ausnahme:
+            fehler.merken('watcher.bestand_angleichen', ausnahme)
         self._neu_einlesen = False            # Auftrag von außen, siehe unten
         self.running = True
         self.cat_next = 0.0     # nächster Katalog-Check (Zeitstempel)

@@ -6,6 +6,42 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.3.3 - 2026-08-30
+
+### Fixed
+
+- ⚠⚠ **The tool was spoiling its own detection.** Anyone with the in-game item
+  details switched on — class, size and grade in the item name — had every
+  newly unlocked blueprint **stored wrongly** from then on.
+
+  The reason: the game reports a blueprint under the name that currently sits in
+  its text file. And since the insertion that is no longer "Balandin" but
+  **"Balandin (S3 B Military)"**. That is exactly what got stored. The catalogue
+  does not know that name — the blueprint counted as **not owned**, the tick was
+  missing from the list, progress stayed too low, and every further find made it
+  worse.
+
+  For one reporter it was **twelve** blueprints. It only came to light because
+  since v3.3.2 the report says which names the catalogue does not know — the
+  list read like an excerpt from the game, only with a suffix.
+
+  **Fixed both ways:** new finds are stored under their catalogue name, and the
+  existing inventory is corrected once on the next start. Nothing is lost and
+  nobody has to do anything.
+
+  ⚠ The bracket is only removed **when it is the cause**: 39 blueprints are
+  named that way themselves ("A03 Sniper Rifle Magazine (15 cap)", "Artimex
+  Arms (Modified)"). The rule applies only when the full name is unknown and the
+  shortened one is known — so it also covers a suffix that does not exist yet.
+
+  Reported by **Morkhan (KRT)** 🙏
+
+### Thanks
+
+**Morkhan (KRT)** found three things that day, and the last was the heaviest: a
+bug that affects every user with the item details switched on, and that drifts
+further apart over time. Thank you 🙏
+
 ## v3.3.2 - 2026-08-30
 
 ### Added

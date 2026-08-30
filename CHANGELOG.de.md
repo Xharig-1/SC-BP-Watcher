@@ -6,6 +6,43 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.3.3 - 2026-08-30
+
+### Behoben
+
+- ⚠⚠ **Das Werkzeug hat sich die eigene Erkennung verdorben.** Wer die Angaben
+  am Gegenstand eingeschaltet hat — Klasse, Größe, Gütegrad im Spielnamen —,
+  bekam ab dann jeden neu freigeschalteten Bauplan **falsch gespeichert**.
+
+  Der Grund: Das Spiel meldet den Bauplan mit dem Namen, der gerade in seiner
+  Textdatei steht. Und dort steht seit der Einfügung nicht mehr „Balandin",
+  sondern **„Balandin (S3 B Military)"**. Genau das wurde abgelegt. Der Katalog
+  kennt den Namen nicht — der Bauplan galt als **nicht vorhanden**, in der
+  Liste fehlte das Häkchen, der Fortschritt blieb zu niedrig, und mit jedem
+  weiteren Fund wurde es schlimmer.
+
+  Bei einem Melder waren es **zwölf** Baupläne. Aufgefallen ist es erst, weil
+  seit v3.3.2 im Bericht steht, welche Namen der Katalog nicht kennt — die
+  Liste las sich wie ein Auszug aus dem Spiel, nur mit Anhang.
+
+  **Behoben in beide Richtungen:** Neue Funde werden unter ihrem Katalognamen
+  abgelegt, und der vorhandene Stand wird beim nächsten Start einmal
+  angeglichen. Es geht nichts verloren und niemand muss etwas tun.
+
+  ⚠ Die Klammer wird dabei **nur** abgeschnitten, wenn sie die Ursache ist:
+  39 Baupläne heißen selbst so („A03 Sniper Rifle Magazine (15 cap)",
+  „Artimex Arms (Modified)"). Die Regel greift nur, wenn der volle Name
+  unbekannt und der gekürzte bekannt ist — damit auch bei einem Anhang, den es
+  heute noch gar nicht gibt.
+
+  Gemeldet von **Morkhan (KRT)** 🙏
+
+### Dank
+
+**Morkhan (KRT)** ist an diesem Tag dreimal fündig geworden, und der letzte
+Fund war der schwerste: ein Fehler, der jeden Nutzer mit eingeschalteten
+Angaben betrifft und mit der Zeit immer weiter auseinanderläuft. Danke 🙏
+
 ## v3.3.2 - 2026-08-30
 
 ### Neu

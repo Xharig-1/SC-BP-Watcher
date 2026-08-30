@@ -6123,6 +6123,92 @@ def main():
     pruefe('melder_uebernehmen()' in _q77,
            'und der eingetippte Name wird vorher uebernommen')
 
+    # ------------------------------------------------------------------
+    # 78. Die Angaben im Spiel duerfen die Erkennung nicht vergiften
+    #
+    # ⚠⚠ Der schwerste Fund des Tages, gemeldet von **Morkhan (KRT)**:
+    # Das Werkzeug schreibt Klasse, Groesse und Guetegrad an die
+    # Gegenstandsnamen im Spiel. Schaltet man danach frei, steht in der
+    # `Game.log` „Balandin (S3 B Military)" statt „Balandin" — und genau das
+    # wurde gespeichert. Der Katalog kennt den Namen nicht, der Bauplan galt
+    # als **nicht vorhanden**, der Fortschritt blieb zu niedrig. Bei ihm zwoelf
+    # Stueck, und mit jedem neuen Fund einer mehr.
+    #
+    # ⚠ Die Klammer darf NICHT blind abgeschnitten werden: 39 Katalognamen
+    # tragen selbst eine („A03 Sniper Rifle Magazine (15 cap)").
+    print()
+    print('78. Angaben im Namen verderben den Abgleich nicht')
+    from scbp import bestand as _bd78
+    from scbp import katalog as _ka78
+
+    _heim78 = os.environ.get('SC_BP_HOME')
+    _ordner78 = os.path.join(basis, 'angleich78')
+    os.makedirs(_ordner78, exist_ok=True)
+    try:
+        os.environ['SC_BP_HOME'] = _ordner78
+        # Ein kleiner eigener Katalog — kein Netz, keine Nutzerdaten.
+        # ⚠ Die Schluessel mit `norm()` bilden, nicht von Hand tippen: Es
+        # kuerzt mehr als nur Kleinschreibung (aus „(15 cap)" wird „(15)").
+        # Ein selbst getippter Schluessel passt dann nirgends, und die Pruefung
+        # misst am Ende nur ihren eigenen Tippfehler.
+        _kat78 = {'format': 2, 'stand': 'test', 'bauplaene': {
+            _bd78.norm('Balandin'): {'n': 'Balandin', 'a': 'WeaponGun'},
+            _bd78.norm('Cirrus'): {'n': 'Cirrus', 'a': 'WeaponGun'},
+            _bd78.norm('A03 Sniper Rifle Magazine (15 cap)'): {
+                'n': 'A03 Sniper Rifle Magazine (15 cap)',
+                'a': 'Ammunition'}}}
+        with open(_ka78.pfad() if hasattr(_ka78, 'pfad')
+                  else os.path.join(_ordner78, 'katalog-cache.json'),
+                  'w', encoding='utf-8') as _f78:
+            json.dump(_kat78, _f78)
+        _ka78.vergessen() if hasattr(_ka78, 'vergessen') else None
+
+        pruefe(bool(_ka78.laden().get('bauplaene')),
+               'der Testkatalog wird gelesen')
+
+        # a) Beim Eintragen wird der Anhang abgeschnitten …
+        _d78 = _bd78.leer()
+        _bd78.hinzufuegen(_d78, 'Balandin (S3 B Military)', 'log')
+        pruefe(_bd78.norm('Balandin') in _d78['bauplaene'],
+               'ein Bauplan mit angehaengten Angaben landet unter seinem '
+               'Katalognamen')
+
+        # b) … aber nur, wenn die Klammer die Ursache ist.
+        _bd78.hinzufuegen(_d78, 'A03 Sniper Rifle Magazine (15 cap)', 'log')
+        pruefe(_bd78.norm('A03 Sniper Rifle Magazine (15 cap)')
+               in _d78['bauplaene'],
+               'ein Katalogname MIT Klammer bleibt unangetastet')
+
+        # c) Was der Katalog gar nicht kennt, bleibt wie gefunden.
+        _bd78.hinzufuegen(_d78, 'Voellig Unbekannt (Irgendwas)', 'log')
+        pruefe(_bd78.norm('Voellig Unbekannt (Irgendwas)')
+               in _d78['bauplaene'],
+               'ein unbekannter Name wird nicht auf Verdacht gekuerzt')
+
+        # d) Und der alte Stand wird nachtraeglich angeglichen.
+        _alt78 = _bd78.leer()
+        _alt78['bauplaene']['balandin (s3 b military)'] = {
+            'name': 'Balandin (S3 B Military)', 'quelle': 'log',
+            'zeit': '2026-08-01'}
+        _alt78['bauplaene']['cirrus (s2 c stealth)'] = {
+            'name': 'Cirrus (S2 C Stealth)', 'quelle': 'log',
+            'zeit': '2026-08-02'}
+        _zahl78 = _bd78.angleichen(_alt78)
+        pruefe(_zahl78 == 2 and sorted(_alt78['bauplaene'])
+               == sorted([_bd78.norm('Balandin'), _bd78.norm('Cirrus')]),
+               'ein alter Stand wird beim Start angeglichen (%d berichtigt)'
+               % _zahl78)
+    finally:
+        if _heim78 is None:
+            os.environ.pop('SC_BP_HOME', None)
+        else:
+            os.environ['SC_BP_HOME'] = _heim78
+        _ka78.vergessen() if hasattr(_ka78, 'vergessen') else None
+
+    _q78 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'), encoding='utf-8').read()
+    pruefe('bestand_datei.angleichen(self.bestand)' in _q78,
+           'und der Watcher stoesst das beim Start an')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

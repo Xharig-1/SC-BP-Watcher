@@ -1051,7 +1051,7 @@ TEXTE = {
                           '(dreimal vergeblich geladen) · die gestreckten Knöpfe, die '
                           'nur die halbe Breite füllten · und die verwirrenden '
                           'Update-Kanäle, aus denen der Knopf „Jetzt die neueste '
-                          'Version holen" wurde. Am Tag der 3.3.0 fand er zwei weitere: dass der eingetippte Name zwar im Kasten stand, aber nicht mitgeschickt wurde — und dass Bericht und Bauplan-Liste zwei verschiedene Zahlen für denselben Bestand nannten.',
+                          'Version holen" wurde. Am Tag der 3.3.0 fand er drei weitere: dass der eingetippte Name zwar im Kasten stand, aber nicht mitgeschickt wurde — und dass Bericht und Bauplan-Liste zwei verschiedene Zahlen für denselben Bestand nannten. Der letzte Fund war der schwerste: Wer die Angaben am Gegenstand eingeschaltet hat, bekam jeden neuen Bauplan mit dem Anhang im Namen gespeichert — und damit als nicht vorhanden gezählt.',
                           'Plus his two finds on 28 Aug: a mission promising '
                           '„12 blueprints" in its title and showing none below '
                           '(a mission has more descriptions in game than the '
@@ -1062,7 +1062,7 @@ TEXTE = {
                           'Also: the update from the info window that never arrived '
                           '(downloaded three times in vain) · the stretched buttons '
                           'that filled only half the width · and the confusing update '
-                          'channels that became the "Get the latest version" button. On release day of 3.3.0 he found two more: that the name you typed showed in the box but was not sent along - and that the report and the blueprint list gave two different numbers for the same inventory.'),
+                          'channels that became the "Get the latest version" button. On release day of 3.3.0 he found two more: that the name you typed showed in the box but was not sent along - and that the report and the blueprint list gave two different numbers for the same inventory. The last find was the heaviest: with the in-game item details switched on, every new blueprint was stored with the suffix in its name - and therefore counted as not owned.'),
     's_dk_marken':     ('SC BP Watcher ist ein eigenständiges, inoffizielles '
                         'Zusatzwerkzeug und steht in keiner offiziellen Verbindung '
                         'zum SC Deutsch Launcher oder zu Cloud Imperium Games. Alle '

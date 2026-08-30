@@ -221,11 +221,77 @@ def _ablage_nachziehen(daten):
         fehler.merken('bestand.ablage_nachziehen', ausnahme)
 
 
+ANHANG_RE = __import__('re').compile(r'\s*\([^()]*\)\s*$')
+
+
+def katalogname(name):
+    """Den Namen so, wie ihn der Katalog kennt — ohne angehängte Angaben.
+
+    ⚠⚠ **Warum das nötig ist: Wir vergiften uns die eigene Erkennung.** Das
+    Werkzeug (und der SC Deutsch Launcher) schreiben Klasse, Größe und Gütegrad
+    an die Gegenstandsnamen im Spiel. Schaltet das Spiel danach frei, steht in
+    der `Game.log` nicht mehr „Balandin", sondern **„Balandin (S3 B Military)"**
+    — und genau das wurde gespeichert. Der Katalog kennt den Namen nicht, also
+    tauchte der Bauplan in der Liste **nie als vorhanden** auf, der Fortschritt
+    blieb zu niedrig, und mit jedem Fund wurde es schlimmer.
+
+    Gemeldet am 30.08.2026 von **Morkhan (KRT)**: 315 gespeicherte Baupläne,
+    davon 23 dem Katalog unbekannt — zwölf davon nur wegen des Anhangs.
+
+    ⚠ **Die Klammer wird nur abgeschnitten, wenn sie die Ursache ist.** 39
+    Katalognamen tragen selbst eine — „A03 Sniper Rifle Magazine (15 cap)",
+    „Artimex Arms (Modified)". Deshalb die Bedingung: der volle Name ist
+    unbekannt **und** der gekürzte bekannt. Damit greift die Regel auch bei
+    einem Anhang, den es heute noch gar nicht gibt.
+    """
+    if not name:
+        return name
+    from . import katalog
+    try:
+        bekannt = katalog.laden().get('bauplaene') or {}
+    except Exception:
+        return name
+    if not bekannt or norm(name) in bekannt:
+        return name
+    ohne = ANHANG_RE.sub('', name).strip()
+    if ohne and ohne != name and norm(ohne) in bekannt:
+        return ohne
+    return name
+
+
+def angleichen(daten):
+    """Gespeicherte Namen nachträglich an den Katalog angleichen.
+
+    Für alles, was vor dieser Berichtigung schon mit Anhang abgelegt wurde.
+    Gibt die Zahl der berichtigten Einträge zurück; `0` heißt „nichts zu tun".
+    """
+    berichtigt = 0
+    for schluessel in list(daten['bauplaene']):
+        eintrag = daten['bauplaene'][schluessel]
+        alt_name = eintrag.get('name') or schluessel
+        neu_name = katalogname(alt_name)
+        if neu_name == alt_name:
+            continue
+        daten['bauplaene'].pop(schluessel)
+        neuer = norm(neu_name)
+        # Gibt es den Bauplan schon unter dem richtigen Namen, bleibt der
+        # ältere Eintrag stehen — er hat den früheren Fundzeitpunkt.
+        if neuer not in daten['bauplaene']:
+            eintrag['name'] = neu_name
+            daten['bauplaene'][neuer] = eintrag
+        berichtigt += 1
+    return berichtigt
+
+
 def hinzufuegen(daten, name, quelle='log', zeit=None):
     """Einen Bauplan aufnehmen. Gibt True zurück, wenn er vorher nicht drin war.
 
     Ein schon bekannter Bauplan wird nicht doppelt angelegt; steht die neue
-    Quelle höher (z. B. `launcher` statt `log`), wird sie nachgetragen."""
+    Quelle höher (z. B. `launcher` statt `log`), wird sie nachgetragen.
+
+    ⚠ Der Name läuft vorher durch `katalogname()` — siehe dort, warum.
+    """
+    name = katalogname(name)
     schluessel = norm(name)
     if not schluessel:
         return False
