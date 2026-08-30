@@ -66,7 +66,18 @@ INI_SCHLUESSEL = 'crafting_hud_notification_received_blueprint'
 # es in der eigenen Sprache nicht gibt, kann keinen Fehltreffer erzeugen — die
 # Zeilenform drumherum ist zu eigen, als dass sie zufällig entstünde.
 TABELLE = {
-    'de': ['Bauplan erhalten'],                     # gemessen
+    # ⚠ Schweizerdeutsch ist eine **eigene Fassung** derselben Übersetzung
+    # (`live-CH`) und formuliert anders. Ohne den Eintrag scheitert der Watcher
+    # dort **still**: keine Fehlermeldung, keine übersprungene Datei, einfach
+    # null Baupläne. Belegt über den Bauplan-Ausleser des KRT-Basetools
+    # (GPL-3.0), der ihn seinerseits gegen `rjcncpt/StarCitizen-Deutsch-INI`
+    # geprüft hat — die Quelle, die auch der SC Deutsch Launcher einspielt.
+    #
+    # Greift nur als Rückfall: Liegt eine lesbare `global.ini` vor, gewinnt die
+    # immer. Für eine englische Werksinstallation (deren Textdatei in der
+    # `Data.p4k` steckt) ist diese Liste aber das Einzige, was bleibt.
+    'de': ['Bauplan erhalten',                      # gemessen
+           'Bauplan überchoo'],                     # live-CH
     # 'Received Blueprint' ist seit 24.08.2026 **gemessen** — an einem echten
     # englischen Client, Zeile:
     #   Added notification "Received Blueprint: Aves Shrike Helmet: "
