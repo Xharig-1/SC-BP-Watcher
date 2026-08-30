@@ -2368,7 +2368,20 @@ def _fassung_holen(fenster, mit_vorab):
         return
     datei = aktualisierung.passende_datei(freigabe)
     if not datei:
-        fenster.sagen(t('selbst_holen'))
+        # ⚠⚠ **Zwei verschiedene Lagen, zwei verschiedene Antworten.**
+        #
+        # Hängt an der Freigabe **gar keine** Datei, wird sie gerade noch
+        # gebaut: Der Tag ist da, GitHub Actions braucht danach ein bis zwei
+        # Minuten für Installer und AppImage. Wer in dieser Lücke klickt, bekam
+        # bisher „Bitte hol die neue Version selbst von der Releases-Seite" —
+        # und dort ist sie dann auch nicht. Am 30.08.2026 gemeldet: „wieso
+        # steht das da?"; nach einem Neustart lief es von allein.
+        #
+        # Sind Dateien da, aber keine passende, stimmt die alte Meldung.
+        if not (freigabe.get('dateien') or []):
+            fenster.sagen(t('s_ub_wird_gebaut'))
+        else:
+            fenster.sagen(t('selbst_holen'))
         return
 
     fenster.sagen(t('s_ub_holen_laeuft') % freigabe.get('version'))

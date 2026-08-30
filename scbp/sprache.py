@@ -313,6 +313,11 @@ TEXTE = {
                           'Downloaded. Restart now so the new version takes over.'),
     'update_fehler':     ('Das hat nicht geklappt: %s',
                           'That did not work: %s'),
+    's_ub_wird_gebaut':  ('Diese Fassung wird gerade noch gebaut — die Dateien '
+                          'hängen in ein bis zwei Minuten dran. Dann noch '
+                          'einmal versuchen.',
+                          'This version is still being built — the files will '
+                          'be attached in a minute or two. Try again then.'),
     'selbst_holen':      ('Bitte hol die neue Version selbst von der '
                           'Releases-Seite.',
                           'Please download the new version yourself from the '

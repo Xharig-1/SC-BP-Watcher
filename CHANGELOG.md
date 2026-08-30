@@ -107,6 +107,11 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   Previously the location from the form further up applied silently — neither
   visible nor changeable without scrolling back.
 
+- **"Please download the new version yourself" appeared at the wrong moment.**
+  Clicking "get" while GitHub is still building the files sent you to the
+  releases page — where they are not yet either. It now says what is actually
+  going on: *"This version is still being built."*
+
 ### Fixed
 
 - A button relabelled at runtime went back to its old colour once the mouse had

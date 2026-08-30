@@ -113,6 +113,11 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Vorher galt stillschweigend der Ort aus dem Formular weiter oben — das war
   weder sichtbar noch zu ändern, ohne hochzurollen.
 
+- **„Bitte hol die neue Version selbst" kam zur falschen Zeit.** Wer auf
+  „holen" klickt, während GitHub die Dateien noch baut, wurde auf die
+  Releases-Seite geschickt — wo sie in dem Moment auch nicht liegen. Jetzt steht
+  dort, was wirklich los ist: *„Diese Fassung wird gerade noch gebaut."*
+
 ### Behoben
 
 - Ein Knopf, der zur Laufzeit umbeschriftet wird, holte nach dem Überfahren mit

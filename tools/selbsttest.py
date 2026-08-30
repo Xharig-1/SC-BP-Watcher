@@ -6895,6 +6895,15 @@ def main():
     pruefe('ort_raff' in _raffblock85 and '_orte_modul.kennt(' in _raffblock85,
            'er hat ein eigenes Ortsfeld und prueft es gegen die Ortsliste')
 
+    # ⚠ **„Wird noch gebaut" ist etwas anderes als „hol es selbst".** Wer in der
+    # Luecke zwischen Tag und fertigem Bau auf „holen" klickt, findet auf der
+    # Releases-Seite auch nichts — die alte Meldung schickte ihn ins Leere.
+    _q85u = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                 encoding='utf-8').read()
+    pruefe("if not (freigabe.get('dateien') or []):" in _q85u
+           and "t('s_ub_wird_gebaut')" in _q85u,
+           'eine Freigabe ohne Dateien meldet „wird noch gebaut"')
+
     # Und der Reiter einer zugeklappten Gruppe muss sie wieder aufmachen —
     # sonst steht man auf einer Seite, deren Eintrag nicht zu sehen ist.
     _fenster85.oeffnen('verkauf')
