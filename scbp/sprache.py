@@ -1401,7 +1401,7 @@ TEXTE = {
     'he_sub_light': ('Leicht', 'Light'),
     'he_sub_medium': ('Mittel', 'Medium'),
     # --- Zwei Ebenen: Oberkategorie und Unterart ---------------------------
-    # ⚠ Die Gliederung folgt einer erprobten Vergleichsliste, die
+    # ⚠ Die Gliederung folgt der Vault-Liste `Blueprint-Alle.md`, die
     # seit Monaten von Hand pflegt. Was sich dort bewaehrt hat, erfindet das
     # Werkzeug nicht neu.
     'kat_ober_schiffswaffe':    ('Schiffswaffen', 'Ship weapons'),

@@ -145,7 +145,7 @@ _AUS_SUB = {
 # Magazine tragen keine eigene Katalog-Art — sie stehen unter
 # `WeaponAttachment` zwischen Zielfernrohren und Griffen. Ihr Tag endet aber
 # immer auf `_mag` (oder `_mag_civilian`). ⚠ Ohne diese Zeile lagen 18 Magazine
-# unter „Waffenaufsatz", während sie andernorts als
+# unter „Waffenaufsatz", während die gepflegte Vault-Liste sie seit Monaten als
 # eigene Gruppe führt.
 _MAGAZIN = re.compile(r'_mag(?:_|$)', re.I)
 

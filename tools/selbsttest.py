@@ -3763,7 +3763,7 @@ def main():
     #
     # Die Art-Auswahl hatte dreissig Eintraege — „Ruestung (Arme)",
     # „Ruestung (Beine)", „Helm", „Rucksack" je einzeln. Die Gliederung folgt
-    # jetzt der gepflegten Vergleichsliste: sieben Gruppen, darunter die feinen Arten.
+    # jetzt der gepflegten Vault-Liste: sieben Gruppen, darunter die feinen Arten.
     # Gemessen an echten Daten deckt sie sich mit dieser Liste exakt.
     print()
     print('52f. Ober- und Unterkategorie')
@@ -4046,6 +4046,54 @@ def main():
     finally:
         if _alt52q:
             _m52q.save_geometry(_alt52q)
+
+    # 52r. Kein Entwicklername im CHANGELOG
+    #
+    # ⚠ Die Regel „jeden Fehlerfinder namentlich nennen" gilt fuer Tester von
+    # aussen, nicht fuer den Entwickler selbst — es ist sein Projekt. Zweimal
+    # aufgeraeumt, zweimal wieder hineingerutscht: Beim ersten Mal war nur nach
+    # nur nach dem Pseudonym gesucht worden — die Stellen mit dem Klarnamen
+    # blieben stehen. Diese Pruefung sucht nach dem Klarnamen, und zwar im
+    # ganzen Projekt statt nur in zwei Dateien.
+    print()
+    print('52r. Kein Klarname im ganzen Projekt')
+    import re as _re52r
+    # ⚠ `Xharig` allein ist erlaubt: Copyright-Zeile, Repo-Adresse, der
+    # Autoren-Block der README. Der **Klarname** ist es nie.
+    _NAMEN52r = _re52r.compile(r'\bRoberts?\b')
+    _alle52r = []
+    # ⚠⚠ **Der Klarname gehoert NIRGENDS hin** — nicht in den CHANGELOG, nicht
+    # in Kommentare, nicht in die Danksagung: „es geht niemanden was an, wie
+    # ich heisse" (30.08.2026). Deshalb sucht diese Pruefung im ganzen Projekt,
+    # nicht nur in zwei Dateien. Beim ersten Aufraeumen war nur der CHANGELOG
+    # geprueft worden — im Quelltext standen danach noch dreizehn Stellen.
+    _zu_pruefen52r = []
+    for _wurzel52r, _ordner52r, _namen52r in os.walk(_wurzelpfad):
+        if any(_x in _wurzel52r for _x in ('.git', 'assets', 'build', 'dist')):
+            continue
+        for _n52r in _namen52r:
+            if _n52r.endswith(('.py', '.md', '.yml')):
+                _zu_pruefen52r.append(
+                    os.path.relpath(os.path.join(_wurzel52r, _n52r), _wurzelpfad))
+    for _datei52r in sorted(_zu_pruefen52r):
+        _pfad52r = os.path.join(_wurzelpfad, _datei52r)
+        if not os.path.exists(_pfad52r):
+            continue
+        with open(_pfad52r, encoding='utf-8') as _fh52r:
+            _text52r = _fh52r.read()
+        _treffer52r = []
+        for _nr52r, _zeile52r in enumerate(_text52r.splitlines(), 1):
+            # ⚠ „Roberts Space Industries" ist der Hersteller im Spiel und
+            # muss stehen bleiben.
+            _sauber52r = _zeile52r.replace('Roberts Space Industries', '')
+            if _NAMEN52r.search(_sauber52r):
+                _treffer52r.append('%s:%d %s' % (_datei52r, _nr52r,
+                                                 _zeile52r.strip()[:60]))
+        _alle52r.extend(_treffer52r)
+    pruefe(not _alle52r,
+           'kein Klarname im Projekt (%d Stellen)' % len(_alle52r))
+    for _x52r in _alle52r[:6]:
+        print('       ·', _x52r)
 
     # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
     #
