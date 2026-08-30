@@ -95,15 +95,23 @@ def bauen(tag, sprache='de'):
         return ''
 
     punkte = punkte_aus(block)[:PUNKTE]
+    # ⚠ Eine reine Fehlerbehebung anzukündigen mit „Was diese Version bringt"
+    # liest sich schief: Darunter stehen dann Sätze wie „Der eingetippte Name
+    # kam nicht mit" — also das Problem, nicht die Neuerung. Bei einer Fassung
+    # ohne neue Funktionen sagt die Zeile deshalb, was sie ist.
+    nur_behoben = bool(re.search(r'(?m)^### (Behoben|Fixed)\s*$', block)) and \
+        not re.search(r'(?m)^### (Neu|Added|Geändert|Changed)\s*$', block)
     if sprache == 'de':
         kopf = '## SC BP Watcher %s ist da' % tag
-        rest = ('Was diese Version bringt:' if punkte else '')
+        rest = (('Behoben in dieser Fassung:' if nur_behoben
+                 else 'Was diese Version bringt:') if punkte else '')
         fuss = ('\n**Herunterladen:** <%s/releases/latest>\n'
                 'Fehler gefunden oder eine Frage? Ab damit in die passenden Kanäle — '
                 'hier bleibt es bei den Versionsmeldungen.' % REPO)
     else:
         kopf = '## SC BP Watcher %s is out' % tag
-        rest = ('What this version brings:' if punkte else '')
+        rest = (('Fixed in this build:' if nur_behoben
+                 else 'What this version brings:') if punkte else '')
         fuss = ('\n**Download:** <%s/releases/latest>\n'
                 'Found a bug or have a question? Please use the matching channels — '
                 'this one stays version announcements only.' % REPO)
