@@ -6000,6 +6000,73 @@ def main():
     else:
         print('  [–]    Umgebungsprobe nur unter Linux sinnvoll')
 
+    # ------------------------------------------------------------------
+    # 76. „Protokolle neu einlesen" darf nicht die Einrichtung zuruecksetzen
+    #
+    # ⚠⚠ Gemeldet am 30.08.2026, und es kostete beinahe die Veroeffentlichung:
+    # Nach einem Klick auf „alte Protokolle neu einlesen" kam beim naechsten
+    # Start der **komplette Einrichtungsassistent** — bei einem Werkzeug, das
+    # seit Wochen eingerichtet war. Wer ihn dann zumachte, hatte gar nichts
+    # mehr: Das Programm beendete sich wortlos, ohne Overlay, ohne Meldung, und
+    # im Fehlerbericht stand keine Zeile.
+    #
+    # Zwei Fehler in einer Kette:
+    #   a) `noetig()` nahm das Fehlen von `logstand.json` als „erster Start" —
+    #      dabei ist das der **Lesestand**, und genau den loescht der Knopf.
+    #   b) Abbrechen beendete das Programm **immer**, nicht nur beim ersten Mal.
+    print()
+    print('76. Der Lesestand ist kein Einrichtungsmerkmal')
+    from scbp import assistent as _as76
+    from scbp import pfade as _pf76
+
+    _heim76 = os.environ.get('SC_BP_HOME')
+    _ordner76 = os.path.join(basis, 'einrichtung76')
+    os.makedirs(_ordner76, exist_ok=True)
+    try:
+        os.environ['SC_BP_HOME'] = _ordner76
+        # Ein eingerichtetes Werkzeug: Spielordner eingetragen, Lesestand da.
+        _pf76.einstellung_setzen('spiel_ordner', _ordner76)
+        with open(_pf76.app_datei('logstand.json'), 'w', encoding='utf-8') as _f76:
+            _f76.write('{}')
+        pruefe(not _as76.noetig(),
+               'ein eingerichtetes Werkzeug meldet keinen Assistenten')
+
+        # Und jetzt genau das, was der Knopf tut.
+        os.remove(_pf76.app_datei('logstand.json'))
+        pruefe(_as76.eingerichtet(),
+               'ohne Lesestand gilt es weiterhin als eingerichtet')
+        pruefe(not _as76.noetig(),
+               'nach „Protokolle neu einlesen" kommt KEIN Assistent')
+
+        # Gegenprobe: ein wirklich frischer Ordner meldet ihn sehr wohl.
+        _frisch76 = os.path.join(basis, 'frisch76')
+        os.makedirs(_frisch76, exist_ok=True)
+        os.environ['SC_BP_HOME'] = _frisch76
+        _wurzeln76 = _pf76._spiel_wurzeln
+        _pf76._spiel_wurzeln = lambda: []
+        try:
+            pruefe(_as76.noetig(),
+                   'beim echten ersten Start meldet er sich weiterhin')
+        finally:
+            _pf76._spiel_wurzeln = _wurzeln76
+    finally:
+        if _heim76 is None:
+            os.environ.pop('SC_BP_HOME', None)
+        else:
+            os.environ['SC_BP_HOME'] = _heim76
+
+    # b) Abbrechen darf nur beim echten ersten Start beenden.
+    _q76 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'), encoding='utf-8').read()
+    pruefe('if not fertig and not assistent.eingerichtet():' in _q76,
+           'Abbrechen beendet nur, wenn noch nichts eingerichtet ist')
+    # ⚠ Nicht alle `sys.exit(0)` zaehlen — der zweite ist die zweite Instanz,
+    # die dem laufenden Fenster Bescheid sagt und sich dann verabschiedet. Der
+    # gehoert dahin. Geprueft wird der Ausstieg des Assistenten, an seiner Spur.
+    pruefe(_q76.count('Assistent abgebrochen — erster Start, Ende') == 1,
+           'und der Abbruch hinterlaesst eine Spur, bevor er beendet')
+    pruefe('Assistent abgebrochen — weiter mit dem Overlay' in _q76,
+           'ein Abbruch mit vorhandener Einrichtung wird ebenfalls vermerkt')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

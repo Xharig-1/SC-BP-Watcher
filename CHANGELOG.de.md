@@ -231,6 +231,23 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠⚠ **Ein Klick auf „alte Protokolle neu einlesen" holte beim nächsten Start
+  den kompletten Einrichtungsassistenten zurück** — bei einem Werkzeug, das
+  längst eingerichtet war. Und wer ihn dann zumachte, hatte gar nichts mehr:
+  Das Programm beendete sich **wortlos**, kein Overlay, keine Meldung, nichts
+  im Fehlerbericht.
+
+  Zwei Fehler in einer Kette:
+
+  | | |
+  |---|---|
+  | Woran „erster Start" erkannt wurde | am Fehlen des **Lesestands** (`logstand.json`) — genau der Datei, die der Knopf mit Absicht löscht |
+  | Was Abbrechen tat | das Programm beenden, **immer** — auch bei fertiger Einrichtung |
+
+  Jetzt merkt sich das Werkzeug die abgeschlossene Einrichtung selbst, und
+  Abbrechen beendet nur beim **echten** ersten Start. Wer den Assistenten
+  wegklickt, will weiterarbeiten — nicht aufhören.
+
 - ⚠⚠ **„Kaffee spendieren" und „Discord" taten gar nichts.** Beide Knöpfe unten
   links meldeten „wird geöffnet", und dann passierte nie etwas — auch im
   Fehlerbericht stand dazu keine Zeile.

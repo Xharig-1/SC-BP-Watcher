@@ -447,6 +447,14 @@ class Assistent:
         if self.schritt == 2:
             pfade.einstellung_setzen('spiel_ordner', self.gedeutet)
         if self.schritt >= SCHRITTE:
+            # ⚠ Hier wird festgehalten, dass die Einrichtung durch ist — und
+            # zwar in einer eigenen Einstellung. Vorher galt die Datei
+            # `logstand.json` als Beleg dafür; die ist aber der **Lesestand im
+            # Spielprotokoll**, kein Einrichtungsmerkmal, und ein Knopf im
+            # Programm löscht sie absichtlich („alte Protokolle neu einlesen").
+            # Wer den drückte, bekam beim nächsten Start den ganzen Assistenten
+            # vorgesetzt (30.08.2026 gemeldet).
+            pfade.einstellung_setzen('einrichtung_fertig', True)
             self._beenden()
             return
         self.schritt += 1
@@ -473,6 +481,28 @@ class Assistent:
         return not self.abgebrochen
 
 
+def eingerichtet():
+    """Ist dieses Werkzeug hier schon einmal eingerichtet worden?
+
+    ⚠⚠ **Nicht am Lesestand festmachen.** Bis rc44 galt: keine `logstand.json`,
+    also erster Start. Das ist der Lesestand im Spielprotokoll — und unter
+    *Erkennung* gibt es einen Knopf, der ihn **mit Absicht** löscht, damit die
+    alten Protokolle noch einmal durchgegangen werden. Wer ihn drückte, bekam
+    beim nächsten Start den kompletten Einrichtungsassistenten vorgesetzt,
+    obwohl nichts fehlte (30.08.2026 gemeldet).
+
+    Der Beleg ist jetzt die Einstellung `einrichtung_fertig`. Wer schon vorher
+    eingerichtet war, hat sie noch nicht — deshalb zählt zusätzlich ein
+    **eingetragener** Spielordner. Der steht nur in der Einstellungsdatei, wenn
+    ihn jemand bestätigt hat (Assistent oder die Seite *Erkennung*); ein bloß
+    automatisch gefundener zählt nicht, sonst bekäme ein neuer Nutzer mit
+    installiertem Spiel den Assistenten nie zu sehen.
+    """
+    if pfade.einstellung_wahrheit('einrichtung_fertig', False):
+        return True
+    return bool(pfade.einstellung('spiel_ordner'))
+
+
 def noetig():
     """Muss der Assistent laufen? Beim ersten Mal, oder wenn das Spiel fehlt.
 
@@ -483,8 +513,7 @@ def noetig():
     """
     if pfade.einstellung_wahrheit('einrichtung_ohne_spiel', False):
         return False
-    return (not os.path.exists(pfade.app_datei('logstand.json'))
-            or not pfade.spiel_ordner())
+    return not eingerichtet() or not pfade.spiel_ordner()
 
 
 def starten(eltern=None):

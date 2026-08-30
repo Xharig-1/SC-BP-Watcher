@@ -3196,8 +3196,21 @@ if __name__ == '__main__':
         fehler.spur('Assistent beginnt')
         fertig, zeige_liste = assistent.starten(eltern=wurzel)
         fehler.spur('Assistent fertig (Liste zeigen: %s)' % zeige_liste)
+        if not fertig and not assistent.eingerichtet():
+            # ⚠⚠ **Abbrechen beendet nur beim ECHTEN ersten Start.**
+            # Bis rc44 beendete jeder Abbruch das Programm — und zwar
+            # wortlos. Wer schon eingerichtet war und den unerwarteten
+            # Assistenten einfach zumachte, hatte danach gar nichts: kein
+            # Overlay, keine Meldung, nichts im Fehlerbericht. Genau so am
+            # 30.08.2026 gemeldet („nun läuft er, sehe ihn aber nirgends" —
+            # er lief nicht mehr).
+            #
+            # Ist das Werkzeug schon eingerichtet, ist der Assistent nur ein
+            # Angebot. Wer ihn wegklickt, will weiterarbeiten, nicht aufhören.
+            fehler.spur('Assistent abgebrochen — erster Start, Ende')
+            sys.exit(0)
         if not fertig:
-            sys.exit(0)                 # Nutzer hat abgebrochen
+            fehler.spur('Assistent abgebrochen — weiter mit dem Overlay')
     fehler.spur('Overlay wird gebaut')
     fenster = Overlay(wurzel=wurzel)
     fehler.spur('Overlay steht')

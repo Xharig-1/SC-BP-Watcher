@@ -193,6 +193,22 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠⚠ **Clicking "read the old logs again" brought back the full setup wizard on
+  the next start** — on a tool that had been set up for weeks. And closing that
+  wizard left you with nothing at all: the program quit **silently**, no overlay,
+  no message, not a line in the problem report.
+
+  Two mistakes in a chain:
+
+  | | |
+  |---|---|
+  | How "first start" was detected | by the missing **read position** (`logstand.json`) — the very file that button deletes on purpose |
+  | What cancelling did | quit the program, **always** — even with the setup complete |
+
+  The tool now records a completed setup itself, and cancelling only quits on a
+  **genuine** first start. Someone who dismisses the wizard wants to keep
+  working, not to stop.
+
 - ⚠⚠ **"Buy me a coffee" and "Discord" did nothing at all.** Both buttons at the
   bottom left said "opening", and then nothing ever happened — not even a line
   in the problem report.
