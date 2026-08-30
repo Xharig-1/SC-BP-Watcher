@@ -84,6 +84,23 @@ The blueprint is the start. The workshop answers what comes after it: **what do 
 </tr>
 </table>
 
+### Trading
+
+Cargo hold full — now what? **Where do I offload it, and what does it pay per SCU?**
+
+<table>
+<tr>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-handelslager-en.png" alt="Cargo hold with entered goods" width="100%"><br>
+<sub><b>Cargo hold</b> — what you carry to sell, kept apart from the workshop stock</sub>
+</td>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-verkauf-en.png" alt="Selling tab with the best buyers" width="100%"><br>
+<sub><b>Selling</b> — the best buyers, sorted by how many of your goods a place takes</sub>
+</td>
+</tr>
+</table>
+
 ### The window
 
 > [!NOTE]

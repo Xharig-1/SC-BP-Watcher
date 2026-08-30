@@ -84,6 +84,23 @@ Der Bauplan ist der Anfang. Die Werkstatt beantwortet, was danach kommt: **was b
 </tr>
 </table>
 
+### Handel
+
+Der Laderaum ist voll — und jetzt? **Wo werde ich die Ladung los, und was bringt sie je SCU?**
+
+<table>
+<tr>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-handelslager.png" alt="Handelslager mit eingetragener Ladung" width="100%"><br>
+<sub><b>Handelslager</b> — was zum Verkauf im Laderaum liegt, getrennt vom Werkstatt-Lager</sub>
+</td>
+<td width="50%" valign="top" align="center">
+<img src="assets/screenshot-verkauf.png" alt="Verkauf mit den besten Ankaufsorten" width="100%"><br>
+<sub><b>Verkauf</b> — die besten Ankäufer, sortiert danach, wie viele deiner Waren ein Ort abnimmt</sub>
+</td>
+</tr>
+</table>
+
 ### Das Fenster
 
 > [!NOTE]
