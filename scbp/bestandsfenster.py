@@ -420,7 +420,8 @@ class Bestandsfenster:
                                  ('habe', t('filter_habe')),
                                  ('fehlt', t('filter_fehlt')),
                                  ('merk', t('filter_merk')),
-                                 ('neu', t('filter_neu'))):
+                                 ('neu', t('filter_neu')),
+                                 ('deckel', t('filter_deckel'))):
             from .hauptfenster import rundknopf
             k = rundknopf(knopfzeile, text, None, schrift(10), BG, FLAECHE,
                           LINIE, SUB)
@@ -1294,6 +1295,13 @@ class Bestandsfenster:
                         continue
                 if self.filter == 'neu' and k not in neu_im_spiel:
                     continue
+                # ⚠ „kann zugehen": nur was **fehlt** und **nur** ueber
+                # Auftraege mit Ruf-Obergrenze zu bekommen ist. Was man schon
+                # hat, kann nicht mehr verloren gehen; und ein einziger Weg
+                # ohne Deckel genuegt, damit nichts in Gefahr ist.
+                if self.filter == 'deckel':
+                    if drin or not katalog_modul.ruf_deckel(self.katalog, k):
+                        continue
                 if text and not art_passt and not _passt(e, text):
                     continue
                 if not self._fein_passt(e):
@@ -1405,6 +1413,7 @@ class Bestandsfenster:
         if not gruppen and not (self.filter == 'merk'
                                 and (merk.laden().get('eintraege') or [])):
             leer = (t('merkliste_leer') if self.filter == 'merk'
+                    else t('deckel_leer') if self.filter == 'deckel'
                     else t('neu_leer') if self.filter == 'neu'
                     else t('nichts_gefunden'))
             tk.Label(self.inhalt, text=leer, bg=BG, fg=SUB, font=schrift(11),
@@ -1856,6 +1865,21 @@ class Bestandsfenster:
         tk.Label(kasten, text=' · '.join(teile), bg=FLAECHE, fg=SUB,
                  font=schrift(9), anchor='w').pack(fill='x', padx=14,
                                                    pady=(0, 8))
+
+        # ⚠⚠ Die Ruf-Obergrenze — die einzige Stelle, an der man etwas
+        # **verlieren** kann, ohne es zu merken. Steht in Gold direkt unter den
+        # Angaben, nicht irgendwo unten: Wer den Bauplan noch nicht hat, muss es
+        # sehen, bevor er weiterliest.
+        if not bestand_datei.enthaelt(self.bestand, eintrag['n']):
+            deckel = katalog_modul.ruf_deckel(
+                self.katalog, katalog_modul._norm(eintrag['n']))
+            if deckel:
+                grenze, rang = deckel
+                tk.Label(kasten,
+                         text='⚠ ' + t('deckel_zeile') % (
+                             rang or '—', '{:,}'.format(grenze).replace(',', '.')),
+                         bg=FLAECHE, fg=GELB, font=schrift(9, True),
+                         anchor='w').pack(fill='x', padx=14, pady=(0, 8))
 
         if not quellen:
             if eintrag.get('start'):

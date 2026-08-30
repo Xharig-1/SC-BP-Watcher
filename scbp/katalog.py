@@ -109,6 +109,43 @@ AUS = os.environ.get('SC_BP_NO_NET', '') not in ('', '0')
 # Die Bezeichnungen der Arten stehen im Sprachmodul — sie sind Oberflächentext
 # und müssen mit umschalten. „Char_Armor_Helmet" ist nichts, was ein Mensch
 # lesen sollte, und „Helm" nichts, was in einer englischen Liste stehen darf.
+def ruf_deckel(katalog_daten, bauplan_schluessel):
+    """Kann man sich diesen Bauplan durch **zu hohen Ruf** aussperren?
+
+    Gibt `(rep_max, rang_max)` des großzügigsten Auftrags zurück — oder `None`,
+    wenn mindestens ein Weg ohne Obergrenze bleibt.
+
+    ⚠⚠ **Warum das jemand wissen will.** 280 der 353 Aufträge haben eine
+    Ruf-OBERGRENZE (`maxStanding`): Steigt der Ruf bei der Fraktion darüber,
+    wird der Auftrag **nicht mehr angeboten** — und seine Baupläne sind für
+    diesen Spielstand endgültig weg. Wer fleißig Aufträge läuft, steigt im Rang
+    und verliert dabei still den Zugang zu Bauplänen, die er noch nicht hat.
+    Im Spiel steht das nirgends.
+
+    ⚠ **Maßgeblich ist der großzügigste Weg.** Führen fünf Aufträge zu einem
+    Bauplan und einer davon hat keine Obergrenze, ist nichts in Gefahr — dann
+    gibt es hier `None`. Nur wenn **alle** Wege gedeckelt sind, zählt der
+    höchste; bis dahin ist Zeit.
+
+    ⚠ Der **eigene** Ruf-Stand steht nicht in der `Game.log` — nachgemessen am
+    30.08.2026 über 22 Protokolle: Dort taucht `reputation` ausschließlich als
+    Verbindungszeile zu CIGs `ReputationService` auf, nie ein Wert. Deshalb
+    sagt diese Auskunft „ab wann zu", nicht „dir bleiben noch 4.200".
+    """
+    wege = []
+    for mission in (katalog_daten.get('missionen') or {}).values():
+        for name in mission.get('bp') or []:
+            if _norm(name) == bauplan_schluessel:
+                wege.append(mission)
+                break
+    if not wege:
+        return None
+    if any(not w.get('rep_max') for w in wege):
+        return None                      # ein offener Weg genügt
+    hoechster = max(wege, key=lambda w: w.get('rep_max') or 0)
+    return hoechster.get('rep_max'), hoechster.get('rang_max')
+
+
 def art_lesbar(roh):
     """Aus 'Char_Armor_Helmet' wird 'Helm' bzw. 'Helmet'."""
     return sprache.art(ART_ZUSAMMEN.get(roh, roh))

@@ -8,6 +8,29 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ## v3.3.6 - unveröffentlicht
 
+### Neu
+
+- ⭐⭐ **„Kann zugehen" — der Filter für das, was du dir unbemerkt verbaust.**
+  280 der 353 Aufträge haben eine **Ruf-Obergrenze**: Steigst du bei der
+  Fraktion darüber, werden sie dir nicht mehr angeboten — und ihre Baupläne sind
+  für diesen Spielstand weg. Im Spiel steht das nirgends.
+
+  Der neue Filter in der Bauplan-Liste zeigt genau die Baupläne, die dir fehlen
+  und **nur** über solche Aufträge zu bekommen sind. In einem echten Bestand
+  waren das **199 von 738**.
+
+  Bei jedem betroffenen Bauplan steht die Grenze jetzt auch in der Herkunft:
+  *„⚠ Zu ab Elite Contractor (95.250 Ruf)"*.
+
+  ⚠ **Ein offener Weg genügt.** Führen fünf Aufträge zu einem Bauplan und einer
+  davon hat keine Obergrenze, wird nicht gewarnt — sonst stünde die Warnung
+  überall und niemand nähme sie noch ernst.
+
+  ⚠ **Was das Werkzeug NICHT sagt: wie weit du noch weg bist.** Der eigene
+  Ruf-Stand steht nicht in der `Game.log` — nachgemessen über 22 Protokolle,
+  dort taucht der Ruf ausschließlich als Verbindungszeile zu CIGs Dienst auf.
+  Deshalb heißt es „ab wann zu" und nicht „dir bleiben noch 4.200".
+
 ### Behoben
 
 - ⚠⚠ **Bei der Textquelle „Original" wurde in die falsche Datei geschrieben.**

@@ -6368,6 +6368,51 @@ def main():
         else:
             os.environ['SC_INSTALL_DIR'] = _altspiel81
 
+    # ------------------------------------------------------------------
+    # 82. Ruf-Obergrenze: was man sich verbauen kann
+    #
+    # ⚠⚠ 280 der 353 Auftraege haben eine Ruf-OBERGRENZE (`maxStanding`).
+    # Steigt der Ruf bei der Fraktion darueber, wird der Auftrag **nicht mehr
+    # angeboten** — und seine Bauplaene sind fuer diesen Spielstand weg. Im
+    # Spiel steht das nirgends, und man merkt es erst, wenn es zu spaet ist.
+    #
+    # ⚠ Der EIGENE Ruf steht nicht in der `Game.log` — am 30.08.2026 ueber 22
+    # Protokolle nachgemessen: `reputation` kommt dort ausschliesslich als
+    # Verbindungszeile zu CIGs Dienst vor, nie ein Wert. Deshalb sagt die
+    # Auskunft „ab wann zu", nicht „dir bleiben noch 4.200".
+    #
+    # Die Regel, die hier abgesichert wird: **Ein offener Weg genuegt.** Fuehren
+    # fuenf Auftraege zu einem Bauplan und einer davon hat keine Obergrenze,
+    # ist nichts in Gefahr.
+    print()
+    print('82. Ruf-Obergrenze wird nur bei echter Gefahr gemeldet')
+    from scbp import katalog as _ka82
+
+    _kat82 = {'bauplaene': {}, 'missionen': {
+        'nur_gedeckelt': {'bp': ['Testteil A'], 'rep_max': 15000,
+                          'rang_max': 'Veteran Contractor'},
+        'auch_gedeckelt': {'bp': ['Testteil A', 'Testteil B'],
+                           'rep_max': 95250, 'rang_max': 'Elite Contractor'},
+        'ohne_deckel': {'bp': ['Testteil B']},
+    }}
+    _a82 = _ka82.ruf_deckel(_kat82, _ka82._norm('Testteil A'))
+    pruefe(_a82 == (95250, 'Elite Contractor'),
+           'alle Wege gedeckelt -> der grosszuegigste zaehlt (%s)' % (_a82,))
+    pruefe(_ka82.ruf_deckel(_kat82, _ka82._norm('Testteil B')) is None,
+           'ein Weg ohne Obergrenze genuegt -> keine Warnung')
+    pruefe(_ka82.ruf_deckel(_kat82, _ka82._norm('Gibt es nicht')) is None,
+           'ein Bauplan ohne Auftrag meldet nichts')
+
+    # Und der Filter muss in der Liste angeboten werden.
+    _q82 = open(os.path.join(WURZEL, 'scbp', 'bestandsfenster.py'),
+                encoding='utf-8').read()
+    pruefe("('deckel', t('filter_deckel'))" in _q82,
+           'die Bauplan-Liste bietet den Filter an')
+    pruefe("if self.filter == 'deckel':" in _q82,
+           'und filtert danach')
+    pruefe('drin or not katalog_modul.ruf_deckel' in _q82,
+           'was man schon hat, taucht dabei nicht auf')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

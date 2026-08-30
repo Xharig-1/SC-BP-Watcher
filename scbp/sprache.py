@@ -93,6 +93,26 @@ TEXTE = {
     'alle_dateien':      ('Alle Dateien', 'All files'),
     'filter_merk':       ('beobachtet', 'watching'),
     'filter_neu':        ('neu im Spiel', 'new in game'),
+    # ⚠ Der Filter, der die unsichtbarste Falle sichtbar macht: 280 der 353
+    # Auftraege haben eine Ruf-OBERGRENZE. Wer darueber steigt, bekommt sie nicht
+    # mehr angeboten — und ihre Bauplaene sind fuer diesen Spielstand weg.
+    'filter_deckel':   ('kann zugehen', 'can close'),
+    'deckel_leer':     ('Kein fehlender Bauplan hängt nur an Aufträgen mit '
+                        'Ruf-Obergrenze. Nichts, was dir durch Aufsteigen '
+                        'verloren gehen kann.',
+                        'No missing blueprint depends solely on contracts with '
+                        'a reputation cap. Nothing you can lose by ranking up.'),
+    'deckel_zeile':    ('Zu ab %s (%s Ruf)', 'Closes at %s (%s reputation)'),
+    'deckel_hilfe':    ('Aufträge haben oft eine Ruf-Obergrenze: Steigst du bei '
+                        'der Fraktion darüber, werden sie dir nicht mehr '
+                        'angeboten — und ihre Baupläne sind weg. Hier stehen die '
+                        'Baupläne, die dir fehlen und **nur** über solche '
+                        'Aufträge zu bekommen sind.',
+                        'Contracts often have a reputation cap: rank up past it '
+                        'with that faction and they are no longer offered — and '
+                        'their blueprints are gone. Listed here are the '
+                        'blueprints you are missing that are **only** available '
+                        'from such contracts.'),
     'ff_alle_patches':   ('alle Patches', 'all patches'),
     'neu_leer':          ('Mit dem letzten Patch kam kein neuer Bauplan dazu. '
                           'Sobald CIG welche nachreicht, stehen sie hier.',

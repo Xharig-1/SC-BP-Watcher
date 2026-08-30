@@ -8,6 +8,29 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ## v3.3.6 - unreleased
 
+### Added
+
+- ⭐⭐ **"Can close" — the filter for what you quietly lock yourself out of.**
+  280 of the 353 contracts have a **reputation cap**: rank up past it with that
+  faction and they are no longer offered — and their blueprints are gone for
+  that save. The game says nothing about it.
+
+  The new filter in the blueprint list shows exactly the blueprints you are
+  missing that are **only** available from such contracts. In a real inventory
+  that was **199 of 738**.
+
+  For every affected blueprint the limit now also appears under its origin:
+  *"⚠ Closes at Elite Contractor (95,250 reputation)"*.
+
+  ⚠ **One open route is enough.** If five contracts lead to a blueprint and one
+  of them has no cap, there is no warning — otherwise it would appear everywhere
+  and nobody would take it seriously.
+
+  ⚠ **What the tool does NOT say: how far away you are.** Your own standing is
+  not in the `Game.log` — measured across 22 logs, reputation appears there only
+  as a connection line to CIG's service. So it says "closes at", not "you have
+  4,200 left".
+
 ### Fixed
 
 - ⚠⚠ **With the "Original" text source, the wrong file was written.** If your
