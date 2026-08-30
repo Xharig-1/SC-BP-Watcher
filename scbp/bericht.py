@@ -256,7 +256,24 @@ def _bildschirme(wurzel):
     hoehe = wurzel.winfo_screenheight()
     # 72 Punkte je Zoll ist Tks Bezug; daraus wird die Skalierung lesbar.
     skalierung = round(float(wurzel.tk.call('tk', 'scaling')) * 72 / 96 * 100)
-    return t('b_skalierung') % (breite, hoehe, skalierung)
+    zeile = t('b_skalierung') % (breite, hoehe, skalierung)
+    # ⭐ **Fenstermaße dazu.** Am 30.08.2026 meldete ein Nutzer, das Fenster sei
+    # zu groß und er komme „nicht mehr an alles ran" — im Bericht stand dazu
+    # keine einzige Zahl. Sichtbar war nur der Bildschirm, nicht das Fenster
+    # darauf und schon gar nicht das `minsize`, das den Fehler ausmachte:
+    # Ist die Mindesthöhe größer als der Bildschirm, hält Tk sie gegen jedes
+    # Verkleinern. Genau diese drei Zahlen nebeneinander beantworten die Frage
+    # in einer Zeile.
+    try:
+        fb, fh = wurzel.winfo_width(), wurzel.winfo_height()
+        mb, mh = wurzel.minsize()
+        if fb > 50 and fh > 50:
+            zeile += t('b_fenstermass') % (fb, fh, mb, mh)
+            if mh > hoehe:
+                zeile += t('b_fenster_zu_hoch')
+    except Exception:
+        pass
+    return zeile
 
 
 def _spielstarter():

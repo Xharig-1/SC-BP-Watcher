@@ -66,9 +66,26 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 - Ein Knopf, der zur Laufzeit umbeschriftet wird, holte nach dem Überfahren mit
   der Maus die alte Farbe zurück.
 
+### Behoben
+
+- ⭐ **Das Fenster passte auf 1920×1080 nicht mehr auf den Bildschirm.** Mit der
+  Gruppe „Handel" brauchte die Seitenleiste 1020 Pixel, und daraus wurde eine
+  **Mindesthöhe größer als der Monitor** — die hält Tk dann gegen jedes
+  Verkleinern, das Fenster stand über der Taskleiste hinaus und man kam an
+  alles darunter nicht mehr heran. Gefunden von **Morkhan (KRT)** am ersten Testtag.
+
+  Zwei Änderungen: Die Mindesthöhe wird jetzt auf den Bildschirm gedeckelt, und
+  die **Seitenleiste rollt**, wenn sie nicht ganz hineinpasst — sonst wären die
+  unteren Reiter einfach abgeschnitten gewesen.
+
+- Der **Diagnosebericht** nennt jetzt Fenstergröße und Mindestmaß. Beim Fund
+  oben stand dazu keine einzige Zahl darin, obwohl genau sie den Fehler
+  ausmachte.
+
 ### Danke
 
-- **Morkhan (KRT)** für die Idee zu diesem Reiter — und für den Gedanken, dass
+- **Morkhan (KRT)** für die Idee zu diesem Reiter, für den Fund, dass das
+  Fenster nicht mehr auf den Bildschirm passte, und für den Gedanken, dass
   ein Ort, der die ganze Ladung nimmt, mehr wert ist als der beste Einzelpreis.
 
 ## v3.3.6 - unveröffentlicht

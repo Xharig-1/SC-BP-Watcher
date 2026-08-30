@@ -1119,7 +1119,7 @@ TEXTE = {
                           'and iron, and what they pay per SCU. That one place '
                           'taking the whole cargo beats the best single price '
                           'was his idea.'),
-    's_dk_morkhan_bugs': ('Dazu die beiden Funde vom 28.08.: dass eine Mission '
+    's_dk_morkhan_bugs': ('Am ersten Testtag der 3.4.0 fand er, dass das Fenster auf 1920×1080 nicht mehr auf den Bildschirm passte — die neue Gruppe „Handel" hatte die Seitenleiste so lang gemacht, dass die Mindesthöhe über den Monitor hinausging und man an alles darunter nicht mehr herankam. Dazu die beiden Funde vom 28.08.: dass eine Mission '
                           '„12 Baupläne" im Titel versprach und darunter keine '
                           'zeigte (eine Mission hat im Spiel mehr '
                           'Beschreibungen, als der Katalog kennt) · und die '
@@ -1130,7 +1130,7 @@ TEXTE = {
                           'nur die halbe Breite füllten · und die verwirrenden '
                           'Update-Kanäle, aus denen der Knopf „Jetzt die neueste '
                           'Version holen" wurde. Am Tag der 3.3.0 fand er drei weitere: dass der eingetippte Name zwar im Kasten stand, aber nicht mitgeschickt wurde — und dass Bericht und Bauplan-Liste zwei verschiedene Zahlen für denselben Bestand nannten. Der letzte Fund war der schwerste: Wer die Angaben am Gegenstand eingeschaltet hat, bekam jeden neuen Bauplan mit dem Anhang im Namen gespeichert — und damit als nicht vorhanden gezählt.',
-                          'Plus his two finds on 28 Aug: a mission promising '
+                          'On the first day of testing 3.4.0 he found that the window no longer fit a 1920×1080 screen — the new "Trading" group had made the sidebar so long that the minimum height exceeded the monitor, putting everything below out of reach. Plus his two finds on 28 Aug: a mission promising '
                           '„12 blueprints" in its title and showing none below '
                           '(a mission has more descriptions in game than the '
                           'catalogue knows) · and the question why blueprints '
@@ -1790,6 +1790,10 @@ TEXTE = {
                           'Could not be saved.'),
     's_hl_leer':         ('Noch nichts eingetragen.', 'Nothing entered yet.'),
     's_hl_scu':          ('{menge} SCU', '{menge} SCU'),
+    'b_fenstermass':     (' · Fenster %d×%d, mindestens %d×%d',
+                          ' · window %d×%d, minimum %d×%d'),
+    'b_fenster_zu_hoch': (' ⚠ Mindesthöhe größer als der Bildschirm',
+                          ' ⚠ minimum height exceeds the screen'),
     's_af_weitere':      ('… und {n} weitere — tipp weiter, um einzugrenzen',
                           '… and {n} more — keep typing to narrow it down'),
     's_hl_sp_ware':      ('Ware', 'Commodity'),

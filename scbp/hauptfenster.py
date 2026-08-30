@@ -1571,9 +1571,51 @@ class Hauptfenster:
     def _korpus(self):
         # 210 ist nur der Startwert — die wirkliche Breite wird gemessen, sobald
         # die Einträge stehen (siehe `_leistenbreite_nachziehen`).
-        self.leiste = tk.Frame(self.root, bg=FLAECHE, width=LEISTE_BREITE)
-        self.leiste.pack(side='left', fill='y')
-        self.leiste.pack_propagate(False)
+        # ⚠⚠ **Die Leiste rollt, wenn sie nicht ganz auf den Bildschirm passt.**
+        #
+        # Vorher war sie ein fester Rahmen, und ihre Höhe bestimmte die
+        # Mindesthöhe des Fensters (`_mindestmass_nachziehen`). Mit jedem neuen
+        # Reiter wuchs das Fenster mit — bei der Gruppe „Handel" (v3.4.0)
+        # brauchte sie 1020 px und das Fenster passte auf einem 1080er
+        # Bildschirm nicht mehr: unten stand es über der Taskleiste hinaus, und
+        # man kam an den Inhalt darunter nicht mehr heran. Am 30.08.2026 so
+        # gemeldet: „das Einstellungsfenster ist zu groß, er kommt nicht mehr
+        # an alles ran."
+        #
+        # Ein `minsize`, das größer ist als der Bildschirm, lässt sich auch
+        # nicht wegdeckeln — Tk hält es gegen jedes `geometry()`. Also muss die
+        # Leiste kleiner werden dürfen, ohne dass Einträge unerreichbar werden.
+        self.leisten_flaeche = tk.Canvas(self.root, bg=FLAECHE,
+                                         width=LEISTE_BREITE,
+                                         highlightthickness=0, bd=0)
+        self.leisten_flaeche.pack(side='left', fill='y')
+        self.leiste = tk.Frame(self.leisten_flaeche, bg=FLAECHE)
+        self._leisten_fenster = self.leisten_flaeche.create_window(
+            0, 0, window=self.leiste, anchor='nw', width=LEISTE_BREITE)
+
+        def _leiste_nachmessen(_=None):
+            """Rollbereich auf den Inhalt setzen — und nur rollen, wenn nötig."""
+            try:
+                hoch = self.leiste.winfo_reqheight()
+                self.leisten_flaeche.configure(scrollregion=(0, 0, 0, hoch))
+                # Passt alles, steht die Leiste still — sonst würde ein
+                # Mausrad-Dreh die Einträge grundlos verschieben.
+                if hoch <= self.leisten_flaeche.winfo_height():
+                    self.leisten_flaeche.yview_moveto(0)
+            except tk.TclError:
+                pass
+
+        self.leiste.bind('<Configure>', _leiste_nachmessen)
+        self.leisten_flaeche.bind('<Configure>', _leiste_nachmessen)
+
+        # ⭐ **Mausrad über die vorhandene Stelle**, nicht selbst gebaut:
+        # `rad_anschliessen` kennt bereits alle Fallen, die hier schon einmal
+        # Arbeit gekostet haben — Trackpad-Streichgesten, macOS mit ±1 statt
+        # ±120, und vor allem `bind_all` **ohne** `add='+'`, das jede andere
+        # Bindung im Fenster stillschweigend ersetzt. Ein zweiter Eigenbau
+        # daneben hätte genau das wieder aufgerissen.
+        rad_anschliessen(self.leisten_flaeche)
+        self._leiste_nachmessen = _leiste_nachmessen
 
         self.inhalt = tk.Frame(self.root, bg=BG)
         self.inhalt.pack(side='right', fill='both', expand=True)
@@ -1892,8 +1934,10 @@ class Hauptfenster:
                 breiten.append(zeile.winfo_reqwidth() + zusatz)
             breiten.append(self.klappknopf.winfo_reqwidth())
             noetig = max(LEISTE_BREITE, max(breiten) + 12)
-            if noetig != self.leiste.winfo_width():
-                self.leiste.configure(width=noetig)
+            if noetig != self.leisten_flaeche.winfo_width():
+                self.leisten_flaeche.configure(width=noetig)
+                self.leisten_flaeche.itemconfigure(self._leisten_fenster,
+                                                   width=noetig)
             return noetig
         except (tk.TclError, ValueError):
             return LEISTE_BREITE
@@ -1914,7 +1958,7 @@ class Hauptfenster:
         nicht so weit, wird es kurz darauf noch einmal versucht.
         """
         try:
-            if self.leiste.winfo_height() < 50:
+            if self.leisten_flaeche.winfo_height() < 50:
                 if versuch < 10:
                     self.root.after(60, lambda: self._mindesthoehe_nachziehen(
                         versuch + 1))
@@ -1927,8 +1971,29 @@ class Hauptfenster:
                 if zeile:
                     bedarf += 2 * zeile[0].winfo_reqheight()
             kopf_und_fuss = max(0, self.root.winfo_height()
-                                - self.leiste.winfo_height())
+                                - self.leisten_flaeche.winfo_height())
             noetig = max(MIN_HOEHE, bedarf + kopf_und_fuss)
+            # ⚠⚠ **Die Mindesthöhe darf den Bildschirm nie überschreiten.**
+            #
+            # Ein `minsize`, das höher ist als der Monitor, lässt sich nicht
+            # mehr wegdeckeln: Tk hält es gegen jedes `geometry()`, auch gegen
+            # `_auf_den_schirm_holen()` weiter unten. Das Fenster stand dann
+            # über die Taskleiste hinaus, und an alles darunter kam man nicht
+            # mehr heran (30.08.2026 gemeldet, nachdem die Gruppe „Handel" die
+            # Leiste auf 1020 px gebracht hatte).
+            #
+            # Seit die Seitenleiste rollt (siehe `_korpus`), ist ein Fenster,
+            # das kürzer ist als ihr Bedarf, auch kein Verlust mehr — man
+            # kommt weiterhin an jeden Eintrag.
+            from . import bildschirm as _bs
+            try:
+                _, _, _, schirm_hoch = _bs.schirm_fuer(
+                    self.root, self.root.winfo_x(), self.root.winfo_y())
+                if schirm_hoch and schirm_hoch > 200:
+                    noetig = min(noetig, schirm_hoch)
+            except Exception as ausnahme:
+                # Lieber die alte, womöglich zu große Höhe als gar kein Fenster.
+                fehler.merken('hauptfenster.schirmhoehe', ausnahme)
             # Wird die Leiste breiter, braucht auch das Fenster mehr — sonst geht
             # der Platz auf Kosten des Inhalts daneben.
             leiste_breit = self._leistenbreite_nachziehen()

@@ -6707,6 +6707,95 @@ def main():
     pruefe(_se84._wartetext(3599) == '59:59' and _se84._wartetext(0) == '',
            'die Restzeit steht als mm:ss da (%s)' % _se84._wartetext(3599))
 
+    # 85. Das Fenster passt auf den Bildschirm
+    #
+    # ⚠⚠ Am 30.08.2026 gemeldet: „das Einstellungsfenster ist zu gross, er
+    # kommt nicht mehr an alles ran." Mit der Gruppe „Handel" brauchte die
+    # Seitenleiste 1020 px; daraus wurde eine Mindesthoehe groesser als der
+    # 1080er Bildschirm — und ein `minsize` haelt Tk gegen **jedes**
+    # `geometry()`, auch gegen das Zurechtruecken beim Start.
+    print()
+    print('85. Das Fenster passt auf den Bildschirm')
+    from scbp import bildschirm as _bs85
+    from scbp import hauptfenster as _hf85
+
+    # ⚠ **`Hauptfenster` legt ein eigenes Toplevel an** — `hf.root` ist nicht
+    # das uebergebene Fenster. Wer die uebergebene Wurzel misst, liest immer
+    # `minsize (1, 1)` und haelt die Pruefung faelschlich fuer gruen.
+    _wurzel85 = _wurzel()
+    _wurzel85.geometry('1160x760+0+0')
+    _fenster85 = _hf85.Hauptfenster(_wurzel85)
+    _echt_fenster85 = _fenster85.root
+    _echt_fenster85.deiconify()
+    for _ in range(8):
+        _wurzel85.update()
+        _wurzel85.update_idletasks()
+
+    _bedarf85 = _fenster85._seitenleiste_bedarf()
+    pruefe(_bedarf85 > 400,
+           'die Seitenleiste braucht messbar Platz (%d px)' % _bedarf85)
+
+    # ⭐ Ein **kleiner** Bildschirm wird vorgegaukelt. Ohne die Deckelung wuerde
+    # die Mindesthoehe aus dem Leistenbedarf gesetzt und waere sofort groesser.
+    # ⚠⚠ **Erst pruefen, ob die Rechnung ueberhaupt lief.** `_mindesthoehe_
+    # nachziehen` steigt aus, solange die Leiste noch nicht gezeichnet ist, und
+    # `minsize` bleibt dann auf 1 — die Pruefung waere gruen gewesen, ohne
+    # irgendetwas geprueft zu haben. Genau die Falle aus Pruefung 83.
+    _echt85 = _bs85.schirm_fuer
+    _bs85.schirm_fuer = lambda *_a, **_k: (0, 0, 1280, 700)
+    try:
+        for _versuch85 in range(40):
+            _fenster85._mindesthoehe_nachziehen()
+            for _ in range(3):
+                _wurzel85.update()
+                _wurzel85.update_idletasks()
+            if _echt_fenster85.minsize()[1] > 1:
+                break
+        _mb85, _mh85 = _echt_fenster85.minsize()
+    finally:
+        _bs85.schirm_fuer = _echt85
+
+    pruefe(_mh85 > 1,
+           'die Mindesthoehe wurde ueberhaupt gesetzt (%d)' % _mh85)
+    pruefe(1 < _mh85 <= 700,
+           'die Mindesthoehe bleibt auf dem Schirm (%d von 700)' % _mh85)
+
+    # Gegenprobe: **ohne** die Deckelung waere sie groesser als der Schirm
+    # gewesen. Sonst belegt nichts, dass die Deckelung die Ursache ist.
+    _kopf85 = max(0, _echt_fenster85.winfo_height()
+                  - _fenster85.leisten_flaeche.winfo_height())
+    pruefe(_bedarf85 + _kopf85 > 700,
+           'ohne Deckelung waere sie ueber dem Schirm gewesen (%d > 700)'
+           % (_bedarf85 + _kopf85))
+
+    # Und weil die Leiste dann nicht mehr ganz hineinpasst: Sie muss rollen,
+    # sonst waeren die unteren Reiter unerreichbar — das Problem waere nur
+    # verschoben statt behoben.
+    _roll85 = str(_fenster85.leisten_flaeche.cget('scrollregion') or '')
+    _teile85 = _roll85.split()
+    pruefe(len(_teile85) == 4 and float(_teile85[3]) > 100,
+           'die Seitenleiste hat einen Rollbereich (%s)' % _roll85)
+    pruefe(hasattr(_fenster85, 'leisten_flaeche')
+           and _fenster85.leisten_flaeche.winfo_class() == 'Canvas',
+           'die Leiste sitzt auf einer Rollflaeche')
+
+    _q85 = open(os.path.join(WURZEL, 'scbp', 'hauptfenster.py'),
+                encoding='utf-8').read()
+    pruefe('rad_anschliessen(self.leisten_flaeche)' in _q85,
+           'das Mausrad haengt an der gemeinsamen Stelle, nicht am Eigenbau')
+
+    # Der Bericht muss den Fehler zeigen koennen — sonst raet man beim
+    # naechsten Mal wieder.
+    _q85b = open(os.path.join(WURZEL, 'scbp', 'bericht.py'),
+                 encoding='utf-8').read()
+    pruefe("t('b_fenstermass')" in _q85b and "t('b_fenster_zu_hoch')" in _q85b,
+           'der Bericht nennt Fenstermass und Mindestmass')
+
+    try:
+        _wurzel85.destroy()
+    except Exception:
+        pass
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

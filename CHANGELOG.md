@@ -64,9 +64,26 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 - A button relabelled at runtime went back to its old colour once the mouse had
   passed over it.
 
+### Fixed
+
+- ⭐ **The window no longer fit on a 1920×1080 screen.** With the "Trading"
+  group the sidebar needed 1020 pixels, which produced a **minimum height
+  larger than the monitor** — Tk then holds that against any attempt to shrink
+  the window, it extended past the taskbar and everything below became
+  unreachable. Found by **Morkhan (KRT)** on the first day of testing.
+
+  Two changes: the minimum height is now capped to the screen, and the
+  **sidebar scrolls** when it does not fit — otherwise the lower tabs would
+  simply have been cut off.
+
+- The **diagnostic report** now states window size and minimum size. When the
+  above was found the report contained not a single figure about it, although
+  those were exactly what mattered.
+
 ### Thanks
 
-- **Morkhan (KRT)** for the idea behind this tab — and for the thought that one
+- **Morkhan (KRT)** for the idea behind this tab, for spotting that the
+  window no longer fit the screen, and for the thought that one
   place taking the whole cargo beats the best single price.
 
 ## v3.3.6 - unreleased
