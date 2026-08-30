@@ -1608,7 +1608,21 @@ TEXTE = {
     # gesehen: „dir fehlt: 1.2" bei Borase, darunter „Mit deinem Material".
     's_he_werte_probe':  ('Was Qualität %g bringen würde',
                           'What quality %g would give'),
+    # ⚠ Seit es je Material einen eigenen Regler gibt, waere EINE Zahl in
+    # der Ueberschrift eine Luege — es sind mehrere. Also nur der
+    # Hinweis, dass gerechnet und nicht gemessen wird.
+    's_he_werte_probe_je': ('Durchgespielt — nicht dein Lagerstand',
+                          'Simulated — not your stock'),
     's_he_faktor':       ('× %.3f', '× %.3f'),
+    # ⚠ Bei Rueckstoss und Treibstoffverbrauch ist WENIGER besser. Ohne
+    # diesen Zusatz liest man „× 0.800" als Verschlechterung, obwohl es
+    # der bestmoegliche Wert ist.
+    's_he_weniger_gut':  ('weniger ist besser', 'lower is better'),
+    # ⚠ Power Pips sind Stueckzahlen, keine Multiplikatoren — „× -1.000"
+    # war schlicht falsch. Mit Vorzeichen, damit man sieht, ob es
+    # dazukommt oder abgeht.
+    's_he_absolut':      ('%+g', '%+g'),
+    's_he_absolut_null': ('±0', '±0'),
     's_he_woher':        ('%s · Q %g', '%s · Q %g'),
     # Durchspielen: „was käme mit besserem Erz heraus?" — dieselbe Frage,
     # die man auf scmdb.net von Hand stellt, nur mit dem eigenen Lager als
@@ -1655,8 +1669,18 @@ TEXTE = {
                           'Built it? Then the watcher takes the ingredients out '
                           'of your stock.'),
     's_lg_abgezogen':    ('Abgezogen.', 'Deducted.'),
-    's_lg_teilweise':    ('Abgezogen, so weit vorhanden. Nicht im Lager: %s',
-                          'Deducted as far as available. Not in stock: %s'),
+    # ⚠ Nichts wird abgezogen, wenn etwas fehlt — der Text muss das sagen.
+    # „Abgezogen, so weit vorhanden" stand hier bis v3.3.0-rc35 und
+    # beschrieb ein Verhalten, das ein halb leeres Lager hinterliess.
+    's_lg_teilweise':    ('Nichts abgezogen — es fehlt: %s',
+                          'Nothing deducted — missing: %s'),
+    's_lg_fehlt_paar':   ('%s (%g)', '%s (%g)'),
+    # Die Mengen in der Zutatenliste, wenn mehr als ein Stueck gebaut wird.
+    's_he_menge_n':      ('%g SCU  (%g × %d)', '%g SCU  (%g × %d)'),
+    's_he_regler_kopf':  ('Qualität durchspielen — je Material einzeln',
+                          'Try qualities — one per material'),
+    's_he_regler_lager': ('aus deinem Lager', 'from your stock'),
+    's_he_regler_ohne':  ('nichts im Lager', 'nothing in stock'),
     's_lg_hinweis':      ('Der Watcher kennt deinen Frachtraum nicht — das hier '
                           'ist deine eigene Liste. Sie sagt dir, was fehlen '
                           'könnte, nicht ob du bauen kannst.',

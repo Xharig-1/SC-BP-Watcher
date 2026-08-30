@@ -10,6 +10,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **One quality slider per material instead of one for all.** There used to be
+  a single slider giving every ingredient the same quality — a situation you
+  practically never have. Each material now has its own, starting at your
+  actual stock value.
+
+  That makes the real question askable: "I have 500 Iron — what do I get with
+  900, and what does that change about the Riccite value?" A material that
+  raises three properties still has just **one** slider; its three rows move
+  together.
+
 - **The stock list shows how a material is mined** — hand, vehicle or ship, as
   its own column.
 
@@ -70,6 +80,47 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   now shows as an ordinary row with its info icon, drop-off and reputation.
 
 ### Fixed
+
+- ⚠⚠ **The ingredient list lied for more than one unit.** Typing 10 into the
+  quantity box still showed the requirement for a single unit — "1.16 SCU" and
+  "missing 1.16" while 11.6 were needed. The deduction was right, only the
+  display was not. It now recalculates as you type and shows where the figure
+  comes from: `11.6 SCU (1.16 × 10)`.
+
+- ⚠⚠ **If material is short, NOTHING is deducted any more.** Previously it took
+  what it could and reported the rest. Clicking with "quantity 10" while having
+  material for three left you with an emptied stock and none of the ten items.
+
+  If an ingredient is missing the item was never craftable — the click was a
+  slip or a typo. The **shortfall** is now reported, not just the name, and the
+  quantity you typed stays so you can correct it. (Stock could never go
+  negative, but "swept to zero" is nearly as bad.)
+
+- ⚠⚠ **Good values were shown in the warning colour.** The display coloured by
+  the bare number: green from `× 1.000` up, gold below. For **852 of the 6524**
+  quality effects in build 4.10.0 that is exactly backwards — there better
+  quality lowers the number, and that is the improvement:
+
+  | Property | Cases |
+  |---|---|
+  | Recoil Smoothness / Handling / Kick | 245 each |
+  | Quantum Fuel Burn | 114 |
+  | Damage Mitigation | 3 |
+
+  On the FS-9 LMG the best possible recoil (`× 0.800`) sat in the warning
+  colour and the worst (`× 1.200`) in green. The direction is now read **from
+  the game data itself** rather than guessed from property names, so it holds
+  even where the same property runs both ways. Rows where lower is better now
+  say so.
+
+  Cross-check: at quality 0 every value is now gold, at quality 1000 every
+  value is green.
+
+- ⚠ **"Power Pips" are not multipliers.** They appeared as `× -1.000` — a
+  factor that cannot exist. They are in fact counts from **−3 to +3** in fixed
+  quality bands, and they affect every power plant (598 of 6524 effects). They
+  now read `-1` and `+3`, with sign. Detected by the value, not the name: a
+  multiplier is always above zero.
 
 - ⚠⚠ **The open dropdown lists could not be scrolled** — turning the wheel left
   the list where it was and moved the **page behind it** instead. As the field

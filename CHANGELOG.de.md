@@ -10,6 +10,16 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Neu
 
+- **Ein Qualitäts-Regler je Material statt einem für alle.** Bisher gab es
+  einen einzigen Regler, der allen Zutaten dieselbe Qualität gab — eine Lage,
+  die man praktisch nie hat. Jetzt hat jedes Material seinen eigenen, und jeder
+  startet bei deinem tatsächlichen Lagerwert.
+
+  Damit lässt sich die Frage stellen, um die es wirklich geht: „Ich habe 500er
+  Iron — was kommt raus, wenn ich 900er nähme, und was ändert sich dadurch am
+  Riccite-Wert?" Ein Material, das drei Eigenschaften anhebt, hat trotzdem nur
+  **einen** Regler; die drei Zeilen bewegen sich gemeinsam.
+
 - **Das Lager zeigt, womit man den Rohstoff holt** — Hand, Fahrzeug oder
   Schiff, als eigene Spalte. Die Angabe steckt in den Bergbaudaten und
   beantwortet die Frage, die nach „habe ich genug?" kommt: „und wie komme ich
@@ -100,6 +110,50 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   `FBL-8u Undersuit SecondWind` und `Warden Backpack Purgatory Camo`.
 
 ### Behoben
+
+- ⚠⚠ **Bei mehr als einem Stück log die Zutatenliste.** Wer 10 in das
+  Stückzahl-Feld tippte, sah weiter den Bedarf für ein einziges Stück — „1.16
+  SCU" und „dir fehlt 1.16", obwohl 11,6 gebraucht wurden. Der Abzug rechnete
+  richtig, nur die Anzeige nicht. Sie rechnet jetzt beim Tippen mit und zeigt
+  zusätzlich, woraus sich die Menge ergibt: `11.6 SCU (1.16 × 10)`.
+
+- ⚠⚠ **Reicht das Material nicht, wird jetzt GAR NICHTS abgezogen.** Bisher
+  wurde genommen, so weit es reichte, und der Rest gemeldet. Wer mit „Anzahl
+  10" klickte und Material für drei hatte, stand danach mit einem leergeräumten
+  Lager und ohne die zehn Stück da.
+
+  Fehlt eine Zutat, war der Gegenstand überhaupt nicht herstellbar — der Klick
+  war ein Versehen oder ein Vertipper. Gemeldet wird jetzt die **Fehlmenge**,
+  nicht nur der Name, und die eingegebene Stückzahl bleibt stehen, damit man
+  sie berichtigen kann. (Ins Minus konnte der Bestand nie geraten, aber „auf
+  null geräumt" ist fast so schlimm.)
+
+- ⚠⚠ **Gute Werte standen in der Warnfarbe.** Die Anzeige färbte stur nach der
+  Zahl: alles ab `× 1.000` grün, alles darunter gold. Bei **852 der 6524**
+  Qualitätswirkungen im Spielstand 4.10.0 ist das genau verkehrt — dort senkt
+  bessere Qualität den Wert, und das ist die Verbesserung:
+
+  | Eigenschaft | Fälle |
+  |---|---|
+  | Recoil Smoothness / Handling / Kick | je 245 |
+  | Quantum Fuel Burn | 114 |
+  | Damage Mitigation | 3 |
+
+  Beim FS-9 LMG stand der bestmögliche Rückstoß (`× 0.800`) in Warnfarbe und
+  der schlechteste (`× 1.200`) in Grün. Die Richtung wird jetzt **aus den
+  Spieldaten selbst** gelesen, nicht nach Eigenschaftsnamen geraten — damit
+  stimmt sie auch dort, wo dieselbe Eigenschaft mal so und mal anders läuft.
+  Zeilen, bei denen weniger besser ist, sagen das jetzt auch.
+
+  Gegenprobe: Bei Qualität 0 ist nun **jeder** Wert gold, bei Qualität 1000
+  **jeder** grün.
+
+- ⚠ **„Power Pips" sind keine Multiplikatoren.** Sie standen als `× -1.000`
+  da — ein Faktor, den es nicht geben kann. In Wirklichkeit sind es
+  Stückzahlen von **−3 bis +3** in festen Qualitätsstufen; das betrifft
+  sämtliche Kraftwerke (598 der 6524 Wirkungen). Jetzt steht dort `-1` bzw.
+  `+3`, mit Vorzeichen. Erkannt wird das an der Zahl, nicht am Namen: Ein
+  Multiplikator liegt immer über null.
 
 - ⚠⚠ **Die aufgeklappten Auswahllisten liessen sich nicht rollen** — man drehte
   am Rad, die Liste blieb stehen und stattdessen wanderte die **Seite dahinter**.

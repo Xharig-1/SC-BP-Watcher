@@ -4596,6 +4596,222 @@ def main():
     for _x60 in _fremde60[:5]:
         print('       ·', _x60)
 
+    # ------------------------------------------------------------------
+    # 61. Stueckzahl, Abzug und die Grenze des Lagers
+    #
+    # Am 30.08.2026 gemeldet, drei Fragen auf einmal:
+    #   „10 als Menge eingegeben sollte auch 10fache Menge an benoetigtem
+    #    Material sein, angezeigt wird es nicht — wuerde es ueberhaupt richtig
+    #    abgezogen? Kann der Bestand im Lager ins Minus gehen? (Darf er nicht,
+    #    wenn was fehlt ist es ja nicht herstellbar.)"
+    #
+    # Der Abzug rechnete richtig, die Anzeige nicht. Ins Minus konnte der
+    # Bestand nie geraten — aber er wurde LEERGERAEUMT, wenn etwas fehlte.
+    print()
+    print('61. Stueckzahl, Abzug und die Grenze des Lagers')
+    from scbp import rohstoffe as _ro61
+
+    _sichern61 = _ro61.laden()
+    try:
+        _zut61 = [('Frame', 'Iron', 1.16, 0), ('Cycler', 'Riccite', 0.17, 0)]
+
+        # a) Die ANZEIGE muss die Stueckzahl mitrechnen. Genau das fehlte.
+        _ro61.sichern([])
+        _eins61 = {m: br for m, br, _da, _f, _zg, _mq
+                   in _ro61.pruefen(_zut61, 1)}
+        _zehn61 = {m: br for m, br, _da, _f, _zg, _mq
+                   in _ro61.pruefen(_zut61, 10)}
+        pruefe(abs(_eins61['Iron'] - 1.16) < 1e-6,
+               'ein Stueck braucht 1,16 Iron')
+        pruefe(abs(_zehn61['Iron'] - 11.6) < 1e-6,
+               'zehn Stueck brauchen das Zehnfache (%.2f)' % _zehn61['Iron'])
+        _fehl61 = {m: f for m, _br, _da, f, _zg, _mq
+                   in _ro61.pruefen(_zut61, 10)}
+        pruefe(abs(_fehl61['Iron'] - 11.6) < 1e-6,
+               'und bei leerem Lager fehlt auch das Zehnfache')
+
+        # b) Der ABZUG rechnet die Stueckzahl mit — das war schon richtig.
+        _ro61.sichern([{'material': 'Iron', 'menge': 20.0, 'qualitaet': 500,
+                        'ort': ''},
+                       {'material': 'Riccite', 'menge': 5.0, 'qualitaet': 500,
+                        'ort': ''}])
+        _ok61, _weg61 = _ro61.abziehen(_zut61, 10)
+        pruefe(_ok61, 'zehn Stueck lassen sich abziehen, wenn genug da ist')
+        pruefe(abs(_ro61.menge_von('Iron') - 8.4) < 1e-6,
+               '20 - 10x1,16 = 8,40 Iron bleiben (%.2f)'
+               % _ro61.menge_von('Iron'))
+
+        # c) ⚠⚠ Reicht es NICHT, wird GAR NICHTS genommen.
+        _ro61.sichern([{'material': 'Iron', 'menge': 3.0, 'qualitaet': 500,
+                        'ort': ''},
+                       {'material': 'Riccite', 'menge': 5.0, 'qualitaet': 500,
+                        'ort': ''}])
+        _ok61, _weg61 = _ro61.abziehen(_zut61, 10)
+        pruefe(not _ok61, 'zehn Stueck aus zu wenig Material gehen NICHT')
+        pruefe(abs(_ro61.menge_von('Iron') - 3.0) < 1e-6,
+               'das Iron bleibt UNANGETASTET im Lager (%.2f statt 0)'
+               % _ro61.menge_von('Iron'))
+        pruefe(abs(_ro61.menge_von('Riccite') - 5.0) < 1e-6,
+               'und das Riccite auch — kein halber Abzug (%.2f)'
+               % _ro61.menge_von('Riccite'))
+        pruefe(any(n == 'Iron' and abs(f - 8.6) < 1e-6 for n, f in _weg61),
+               'gemeldet wird die FEHLMENGE, nicht nur der Name (%s)'
+               % (_weg61,))
+
+        # d) Und nie ins Minus — auch nicht bei einer unsinnigen Stueckzahl.
+        _ro61.sichern([{'material': 'Iron', 'menge': 3.0, 'qualitaet': 500,
+                        'ort': ''}])
+        _ro61.abziehen([('Frame', 'Iron', 1.0, 0)], 9999)
+        pruefe(_ro61.menge_von('Iron') >= 0,
+               'der Bestand kann nicht negativ werden (%.2f)'
+               % _ro61.menge_von('Iron'))
+        pruefe(abs(_ro61.menge_von('Iron') - 3.0) < 1e-6,
+               'und bleibt bei 9999 Stueck unberuehrt stehen')
+
+        # e) Zutat zweimal im Rezept: die Summe zaehlt, nicht jede fuer sich.
+        _ro61.sichern([{'material': 'Iron', 'menge': 3.0, 'qualitaet': 500,
+                        'ort': ''}])
+        _ok61, _weg61 = _ro61.abziehen(
+            [('A', 'Iron', 2.0, 0), ('B', 'Iron', 2.0, 0)], 1)
+        pruefe(not _ok61,
+               'zweimal 2 aus 3 im Lager geht nicht — die Summe zaehlt')
+        pruefe(abs(_ro61.menge_von('Iron') - 3.0) < 1e-6,
+               'und auch hier bleibt alles liegen')
+    finally:
+        _ro61.sichern(_sichern61)
+
+    # f) Die Oberflaeche muss die Stueckzahl wirklich durchreichen — und je
+    #    Material einen eigenen Regler bauen.
+    _seiten61 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                     encoding='utf-8').read()
+    pruefe('lager.pruefen(stufe[\'zutaten\'], wie_viele)' in _seiten61,
+           'die Zutatenliste rechnet mit der eingegebenen Stueckzahl')
+    pruefe("anzahl_var.trace_add('write', mengen_setzen)" in _seiten61,
+           'und rechnet sofort neu, wenn man die Zahl aendert')
+    pruefe('def mengen_setzen' in _seiten61
+           and 'neu_zeichnen()' not in _seiten61.split('def mengen_setzen')[1]
+           .split('anzahl_var.trace_add')[0],
+           'ohne die Seite neu zu bauen (sonst verliert das Feld den Cursor)')
+    _regler61 = _seiten61.split('Ein Regler je Material')[1][:1500]
+    pruefe('for _mat in alle_materialien' in _regler61,
+           'es gibt einen Regler JE MATERIAL, nicht einen fuer alle')
+
+    # ------------------------------------------------------------------
+    # 62. Nicht jede Eigenschaft wird durch eine hoehere Zahl besser
+    #
+    # Am 30.08.2026 gemeldet: „ist es realistisch das sich bei niedrigerer
+    # Qualitaet die Werte erhoehen? Und bei besserer Qualitaet die Werte
+    # verschlechtern?"
+    #
+    # Die Daten sind in Ordnung, die Anzeige war es nicht. Bei 852 der 6524
+    # Modifikatoren (Spielstand 4.10.0) SINKT der Faktor mit steigender
+    # Qualitaet — Rueckstoss, Quantum-Treibstoff — und genau das ist dort die
+    # Verbesserung. Die Anzeige faerbte stur „>= 1 ist gut": Der bestmoegliche
+    # Rueckstoss (x 0.800) stand in der Warnfarbe, der schlechteste (x 1.200)
+    # in Gruen.
+    print()
+    print('62. Richtung der Qualitaetswirkung')
+    from scbp import herstellung as _he62
+
+    # a) Die Richtung kommt aus dem Modifikator, nicht aus dem Namen.
+    _hoch62 = [{'startQuality': 0, 'endQuality': 1000,
+                'modifierAtStart': 0.925, 'modifierAtEnd': 1.075}]
+    _runter62 = [{'startQuality': 0, 'endQuality': 1000,
+                  'modifierAtStart': 1.2, 'modifierAtEnd': 0.8}]
+    pruefe(_he62.besser_ist_hoch(_hoch62) is True,
+           'steigt der Faktor mit der Qualitaet, ist hoeher besser')
+    pruefe(_he62.besser_ist_hoch(_runter62) is False,
+           'faellt er, ist NIEDRIGER besser (Rueckstoss, Treibstoff)')
+
+    # b) Mehrteilige Spannen beschreiben EINE Kurve — Anfang gegen Ende.
+    #    Ein flaches Teilstueck in der Mitte darf die Richtung nicht drehen.
+    _geteilt62 = [{'startQuality': 501, 'endQuality': 1000,
+                   'modifierAtStart': 1.0, 'modifierAtEnd': 0.8},
+                  {'startQuality': 0, 'endQuality': 500,
+                   'modifierAtStart': 1.2, 'modifierAtEnd': 1.0}]
+    pruefe(_he62.besser_ist_hoch(_geteilt62) is False,
+           'ueber mehrere Spannen zaehlt die Gesamtrichtung (1,2 -> 0,8)')
+    pruefe(_he62.besser_ist_hoch([]) is True,
+           'ohne Modifikator wird nichts behauptet (Vorgabe: hoeher ist besser)')
+
+    # c) Und die Probe aufs Ganze an echten Daten, wenn welche da sind:
+    #    Bei Qualitaet 0 muss JEDER Wert schlecht sein, bei 1000 JEDER gut.
+    #    Ein Rezept, bei dem das nicht gilt, waere ein Widerspruch.
+    def _gut62(w):
+        return (w['faktor'] >= 1 if w.get('besser_hoch', True)
+                else w['faktor'] <= 1)
+
+    _daten62 = _he62.laden().get('blueprints') or []
+    if _daten62:
+        _schlecht62 = _falsch62 = 0
+        _geprueft62 = 0
+        for _b62 in _daten62[:400]:
+            _name62 = _b62.get('productName')
+            _mats62 = {}
+            for _t62 in _b62.get('tiers') or []:
+                for _s62 in _t62.get('slots') or []:
+                    for _o62 in _s62.get('options') or []:
+                        if _o62.get('resourceName'):
+                            _mats62[_o62['resourceName']] = 0
+            if not _mats62:
+                continue
+            _unten62 = _he62.werte_mit_lager(
+                _name62, {m: 0 for m in _mats62})
+            _oben62 = _he62.werte_mit_lager(
+                _name62, {m: 1000 for m in _mats62})
+            if not _unten62:
+                continue
+            _geprueft62 += 1
+            for _w62 in _unten62:
+                if _gut62(_w62):
+                    _schlecht62 += 1
+            for _w62 in _oben62:
+                if not _gut62(_w62):
+                    _falsch62 += 1
+        pruefe(_geprueft62 > 0,
+               'es liessen sich %d Bauplaene durchrechnen' % _geprueft62)
+        pruefe(_schlecht62 == 0,
+               'bei Qualitaet 0 gilt KEIN Wert als gut (%d Ausreisser)'
+               % _schlecht62)
+        pruefe(_falsch62 == 0,
+               'bei Qualitaet 1000 gilt JEDER Wert als gut (%d Ausreisser)'
+               % _falsch62)
+    else:
+        print('  [–]    keine Rezeptdaten vorhanden — uebersprungen')
+
+    # d) ⚠ Nicht jede Wirkung ist ueberhaupt ein Multiplikator.
+    #    „Power Pips" (itemresource_powergeneration) fuehrt Werte von -3 bis
+    #    +3 in festen Qualitaetsstufen — Stueckzahlen. Als Faktor gelesen stand
+    #    dort „× -1.000", ein Multiplikator, den es nicht geben kann. 598 der
+    #    6524 Modifikatoren im Spielstand 4.10.0 sind so gebaut, das betrifft
+    #    saemtliche Kraftwerke.
+    pruefe(_he62.ist_absolut([{'modifierAtStart': -1.0,
+                               'modifierAtEnd': -1.0}]) is True,
+           'ein negativer Wert kann kein Multiplikator sein')
+    pruefe(_he62.ist_absolut([{'modifierAtStart': 0.0,
+                               'modifierAtEnd': 0.0}]) is True,
+           'eine Null auch nicht (sie wuerde den Wert ausloeschen)')
+    pruefe(_he62.ist_absolut([{'modifierAtStart': 0.925,
+                               'modifierAtEnd': 1.075}]) is False,
+           'ein Wert um 1 herum dagegen schon')
+    pruefe(_he62.ist_absolut([]) is False,
+           'ohne Angaben wird nichts behauptet')
+
+    # e) Die Anzeige muss die Richtung auch benutzen.
+    _seiten62 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                     encoding='utf-8').read()
+    pruefe("w.get('besser_hoch', True)" in _seiten62,
+           'die Anzeige faerbt nach der Richtung, nicht stur nach der Zahl')
+    pruefe("fg=(ACCENT if w['faktor'] >= 1 else GOLD)" not in _seiten62,
+           'die alte Regel „groesser als 1 ist gut" steht nicht mehr da')
+    pruefe("w.get('absolut')" in _seiten62,
+           'und unterscheidet Stueckzahl von Multiplikator')
+    from scbp import sprache as _sp62
+    for _k62 in ('s_he_weniger_gut', 's_he_absolut', 's_he_absolut_null'):
+        _w62 = _sp62.TEXTE.get(_k62)
+        pruefe(bool(_w62) and len(_w62) == 2 and all(_w62),
+               'Text %s gibt es deutsch und englisch' % _k62)
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

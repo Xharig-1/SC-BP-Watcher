@@ -281,20 +281,29 @@ def bestand():
     return raus
 
 
-def pruefen(zutaten):
-    """Was fehlt für dieses Rezept?
+def pruefen(zutaten, anzahl=1):
+    """Was fehlt für dieses Rezept — bei `anzahl` Stück?
 
     [(Material, gebraucht, da, fehlt, zu_geringe_qualitaet, mindestqualitaet)]
 
     `zutaten` ist die Liste aus `herstellung.rezept()` — (Slot, Material,
     Menge, Güte). Zurück kommt **jede** Zutat, auch die vorhandenen: Die
-    Anzeige soll zeigen, was da ist, nicht nur was fehlt."""
-    vorrat = bestand()
+    Anzeige soll zeigen, was da ist, nicht nur was fehlt.
+
+    ⚠ **`anzahl` muss hier durch, nicht nur beim Abziehen.** Wer 10 in das
+    Stückzahl-Feld tippt, sieht sonst weiter den Bedarf für ein einziges Stück
+    — und daneben „dir fehlt nichts", während in Wirklichkeit das Zehnfache
+    gebraucht wird. Am 30.08.2026 gemeldet: „10 als Menge eingegeben sollte
+    auch 10fache Menge an benötigtem Material sein, angezeigt wird es nicht."
+    Die zurückgegebene `gebraucht`-Menge ist deshalb bereits multipliziert.
+    """
     raus = []
+    faktor = max(1, int(anzahl or 1))
     gebraucht = {}
     for _slot, material, menge, _guete in zutaten:
         schluessel = norm_rohstoff(material)
-        gebraucht[schluessel] = gebraucht.get(schluessel, 0) + (menge or 0)
+        gebraucht[schluessel] = (gebraucht.get(schluessel, 0)
+                                 + (menge or 0) * faktor)
     for _slot, material, menge, guete in zutaten:
         schluessel = norm_rohstoff(material)
         # ⚠ Seit 29.08.2026 zählt nur, was die geforderte Qualität erreicht.
@@ -302,8 +311,8 @@ def pruefen(zutaten):
         # als brauchbar, das für dieses Rezept zu schlecht ist.
         passend, zu_gering = menge_mit_guete(material, guete)
         noetig = gebraucht[schluessel]
-        raus.append((material, menge, passend, max(0.0, noetig - passend),
-                     zu_gering, guete))
+        raus.append((material, (menge or 0) * faktor, passend,
+                     max(0.0, noetig - passend), zu_gering, guete))
     return raus
 
 
@@ -315,37 +324,69 @@ def abziehen(zutaten, anzahl=1):
     mehr, ohne dass es auffällt. Am 29.08.2026 genau so gemeldet: „ich klicke
     dann aber sogar 11 mal, weil ich mich verzählt habe."
 
+    Gibt `(True, [])` zurück, wenn alles da war — sonst `(False, [(Material,
+    Fehlmenge), …])`.
 
-    Gibt `(True, [])` zurück, wenn alles da war — sonst `(False, [Material, …])`
-    mit dem, was fehlte. **Abgezogen wird trotzdem, so weit es reicht**: Wer
-    etwas hergestellt hat, hat die Rohstoffe verbraucht; das Lager soll danach
-    nicht mehr behaupten, sie lägen noch da.
+    ⚠⚠ **Reicht das Lager nicht, wird GAR NICHTS abgezogen.** Bis
+    v3.3.0-rc35 wurde genommen, so weit es reichte, und der Rest gemeldet.
+    Das ist falsch: Fehlt eine Zutat, war der Gegenstand überhaupt nicht
+    herstellbar — der Klick war ein Versehen oder ein Vertipper in der
+    Stückzahl. Wer mit „Anzahl 10" klickte und Material für drei hatte, stand
+    danach mit einem leergeräumten Lager und ohne die zehn Stück da, und der
+    Bestand liess sich nur von Hand wieder zusammensuchen. Am 30.08.2026
+    festgelegt: „Kann der Bestand im Lager ins Minus gehen? Darf er nicht,
+    wenn was fehlt ist es ja nicht herstellbar."
+
+    Ins Minus konnte er dabei nie geraten (`min(vorhanden, gebraucht)`) —
+    aber „auf null geräumt" ist fast so schlimm. Deshalb erst rechnen, dann
+    nehmen: Es wird in zwei Durchgängen gearbeitet, und der erste fasst nichts
+    an.
 
     ⚠ Abgezogen wird vom **ältesten** Posten zuerst. Wer zwei Posten desselben
     Materials führt (verschiedene Güte oder Fundort), soll den älteren zuerst
     leer sehen — sonst bleiben lauter Reste stehen.
     """
     posten = laden()
-    fehlt = []
     faktor = max(1, int(anzahl or 1))
+
+    # Mehrfach dieselbe Zutat im Rezept? Dann zaehlt die Summe, sonst wuerde
+    # jeder Durchgang fuer sich pruefen und beide fuer machbar halten.
+    bedarf = {}
     for _slot, material, menge, guete in zutaten:
-        offen = float(menge or 0) * faktor
-        gesucht = norm_rohstoff(material)
-        # Nur Posten, die die geforderte Qualität erreichen — schlechteres Erz
-        # wurde für dieses Rezept ja auch nicht verbraucht.
-        for p in [x for x in posten
-                  if float(x.get('qualitaet') or 0) >= float(guete or 0)]:
-            if offen <= 0:
+        schluessel = (norm_rohstoff(material), float(guete or 0))
+        bedarf[schluessel] = (bedarf.get(schluessel, (material, 0.0))[0],
+                              bedarf.get(schluessel, (material, 0.0))[1]
+                              + float(menge or 0) * faktor)
+
+    # --- Erster Durchgang: nur rechnen. Nichts wird angefasst. ---
+    fehlt = []
+    for (gesucht, mindest), (name, gebraucht) in bedarf.items():
+        da = 0.0
+        for p in posten:
+            if (norm_rohstoff(p.get('material')) == gesucht
+                    and float(p.get('qualitaet') or 0) >= mindest):
+                da += float(p.get('menge') or 0)
+        if da + 1e-9 < gebraucht:
+            fehlt.append((name, round(gebraucht - da, 6)))
+    if fehlt:
+        # Nichts angefasst, nichts gespeichert — das Lager bleibt, wie es war.
+        return False, fehlt
+
+    # --- Zweiter Durchgang: jetzt wirklich nehmen. ---
+    for (gesucht, mindest), (_name, gebraucht) in bedarf.items():
+        offen = gebraucht
+        for p in posten:
+            if offen <= 1e-9:
                 break
             if norm_rohstoff(p.get('material')) != gesucht:
+                continue
+            if float(p.get('qualitaet') or 0) < mindest:
                 continue
             da = float(p.get('menge') or 0)
             weg = min(da, offen)
             p['menge'] = round(da - weg, 6)
             offen -= weg
-        if offen > 1e-9:
-            fehlt.append(material)
     # Leere Posten verschwinden — sonst füllt sich die Liste mit Nullen.
     posten = [p for p in posten if (p.get('menge') or 0) > 1e-9]
     sichern(posten)
-    return (not fehlt), fehlt
+    return True, []

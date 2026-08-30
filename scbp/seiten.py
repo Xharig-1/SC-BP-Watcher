@@ -3901,8 +3901,9 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
         # ⚠ Gezeigt wird „hast du" bzw. „dir fehlt" — **nie** „du kannst nicht
         # bauen". Das Lager wird von Hand gepflegt und ist irgendwann
         # lückenhaft; ein Hinweis darf danebenliegen, eine Behauptung nicht.
-        lage = {m: (br, da, f, zug, mq) for m, br, da, f, zug, mq
-                in lager.pruefen(stufe['zutaten'])}
+        # ⚠ Die Lage wird jetzt bei JEDER Änderung der Stückzahl neu gerechnet
+        # (siehe `mengen_setzen` weiter unten) — deshalb hier nur der
+        # Startwert für ein Stück.
 
         # ⭐ **Der Knopf steht GANZ OBEN.** Er stand bis zum 29.08.2026 unter
         # den Zutaten, der Herstellzeit UND dem Block „Mit deinem Material" —
@@ -3930,11 +3931,22 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                 text = (t('s_lg_abgezogen') if wie_oft == 1
                         else t('s_lg_abgezogen_n') % wie_oft)
             else:
-                text = t('s_lg_teilweise') % ', '.join(fehlt)
+                # ⚠ Mit der Fehlmenge, nicht nur dem Namen. „Es fehlt: Iron"
+                # lässt einen raten, ob 0,1 oder 10 fehlen — und genau danach
+                # richtet sich, ob man losfliegt.
+                text = t('s_lg_teilweise') % ', '.join(
+                    t('s_lg_fehlt_paar') % (name, round(menge, 3))
+                    for name, menge in fehlt)
             lbl.configure(text=text, fg=ACCENT if ok else GOLD)
-            var.set('1')          # zurück auf 1, damit der nächste Klick nicht
-                                  # unbemerkt wieder zehn abzieht
-            neu_zeichnen()
+            # ⚠ Die Stückzahl bleibt NUR stehen, wenn nichts abgezogen wurde —
+            # dann will man sie berichtigen, nicht neu tippen. Nach einem
+            # erfolgreichen Abzug zurück auf 1, damit der nächste Klick nicht
+            # unbemerkt wieder zehn nimmt.
+            if ok:
+                var.set('1')
+                neu_zeichnen()
+            else:
+                mengen_setzen()
 
         _knopf(fenster, reihe, t('s_lg_bauen'), hergestellt).pack(side='left')
         tk.Label(reihe, text=t('s_lg_anzahl'), bg='#0c1017', fg=SUB,
@@ -3948,6 +3960,16 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
         # Eine Zeile, die sagt, was der Knopf tut — sonst rät man.
         _fliesstext(block, t('s_lg_bauen_hilfe'), fenster.f_klein, fill='x')
 
+        # ⚠⚠ **Die Zutatenzeilen werden EINMAL gebaut, danach nur neu
+        # beschriftet.** Sie hängen an der Stückzahl, und die ändert sich beim
+        # Tippen. Würde bei jedem Tastendruck die Seite neu aufgebaut, verlöre
+        # das Stückzahl-Feld den Cursor — derselbe Fehler wie im Lager-Suchfeld
+        # (v3.3.0-rc21). Also: Widgets stehen lassen, nur `configure(text=…)`.
+        #
+        # Aus demselben Grund werden ALLE Etiketten angelegt, auch die für
+        # „dir fehlt" und „zu schlechte Qualität". Sie werden je nach Lage
+        # ein- und ausgeblendet statt neu erzeugt — sonst springt die Höhe.
+        zutat_widgets = []
         for slot, rohstoff, menge, guete in stufe['zutaten']:
             z = tk.Frame(block, bg='#0c1017')
             z.pack(fill='x', padx=12, pady=1)
@@ -3966,32 +3988,63 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                 fenster.oeffnen('bergbau')
 
             roh_lbl.bind('<Button-1>', zum_bergbau)
-            tk.Label(z, text=t('s_he_menge') % menge, bg='#0c1017', fg=SUB,
-                     font=fenster.f_klein, anchor='e').pack(side='right', padx=12)
-            _br, _da, _fehlt, _zu_gering, _mindestq = lage.get(
-                rohstoff, (0, 0, 0, 0, 0))
-            if _fehlt > 0:
-                # Liegt schon etwas da, gehört das dazu — sonst fliegt jemand
-                # los, um 0,09 zu holen, obwohl ihm nur 0,07 fehlen.
-                txt = (t('s_lg_teil') % (round(_da, 3), round(menge, 3),
-                                         round(_fehlt, 3))
-                       if _da > 0 else t('s_lg_fehlt') % round(_fehlt, 3))
-                tk.Label(z, text=txt,
-                         bg='#0c1017', fg=GOLD, font=fenster.f_klein,
-                         anchor='e').pack(side='right', padx=(0, 8))
-            elif _da > 0:
-                tk.Label(z, text=t('s_lg_da') % round(_da, 3), bg='#0c1017',
-                         fg=ACCENT, font=fenster.f_klein,
-                         anchor='e').pack(side='right', padx=(0, 8))
-            # ⚠ Eigener Hinweis, wenn Material zwar daliegt, aber die
-            # geforderte Qualität nicht erreicht. Ohne ihn stünde „dir fehlt
-            # 0,3" da, obwohl 12 SCU im Lager liegen — und niemand käme auf
-            # den Grund.
-            if _zu_gering > 0:
-                tk.Label(z, text=t('s_lg_zu_schlecht')
-                         % (round(_zu_gering, 3), _mindestq),
-                         bg='#0c1017', fg=SUB, font=fenster.f_klein,
-                         anchor='e').pack(side='right', padx=(0, 8))
+            menge_lbl = tk.Label(z, text='', bg='#0c1017', fg=SUB,
+                                 font=fenster.f_klein, anchor='e')
+            menge_lbl.pack(side='right', padx=12)
+            lage_lbl = tk.Label(z, text='', bg='#0c1017', fg=GOLD,
+                                font=fenster.f_klein, anchor='e')
+            guete_lbl = tk.Label(z, text='', bg='#0c1017', fg=SUB,
+                                 font=fenster.f_klein, anchor='e')
+            zutat_widgets.append((rohstoff, menge, menge_lbl, lage_lbl,
+                                  guete_lbl))
+
+        def mengen_setzen(*_):
+            """Mengen und Lage neu beschriften — für die aktuelle Stückzahl.
+
+            ⚠ **Hier steckt der Grund, warum es die Funktion gibt.** Bis
+            v3.3.0-rc35 zeigte die Zutatenliste immer den Bedarf für EIN
+            Stück. Wer 10 eintippte, sah weiter „1.16 SCU" und „dir fehlt
+            1.16" — obwohl 11,6 gebraucht wurden. Der Abzug rechnete richtig,
+            die Anzeige log. Am 30.08.2026 gemeldet.
+            """
+            wie_viele = lager.zahl_lesen(anzahl_var.get())
+            wie_viele = 1 if not wie_viele or wie_viele < 1 else int(wie_viele)
+            neue_lage = {m: (br, da, f, zug, mq) for m, br, da, f, zug, mq
+                         in lager.pruefen(stufe['zutaten'], wie_viele)}
+            for rohstoff, menge, menge_lbl, lage_lbl, guete_lbl in zutat_widgets:
+                noetig = (menge or 0) * wie_viele
+                menge_lbl.configure(
+                    text=(t('s_he_menge') % noetig if wie_viele == 1
+                          else t('s_he_menge_n') % (noetig, menge, wie_viele)))
+                _br, _da, _fehlt, _zu_gering, _mindestq = neue_lage.get(
+                    rohstoff, (0, 0, 0, 0, 0))
+                if _fehlt > 0:
+                    # Liegt schon etwas da, gehört das dazu — sonst fliegt
+                    # jemand los, um 0,09 zu holen, obwohl ihm nur 0,07 fehlen.
+                    txt = (t('s_lg_teil') % (round(_da, 3), round(noetig, 3),
+                                             round(_fehlt, 3))
+                           if _da > 0 else t('s_lg_fehlt') % round(_fehlt, 3))
+                    lage_lbl.configure(text=txt, fg=GOLD)
+                    lage_lbl.pack(side='right', padx=(0, 8))
+                elif _da > 0:
+                    lage_lbl.configure(text=t('s_lg_da') % round(_da, 3),
+                                       fg=ACCENT)
+                    lage_lbl.pack(side='right', padx=(0, 8))
+                else:
+                    lage_lbl.pack_forget()
+                # ⚠ Eigener Hinweis, wenn Material zwar daliegt, aber die
+                # geforderte Qualität nicht erreicht. Ohne ihn stünde „dir
+                # fehlt 0,3" da, obwohl 12 SCU im Lager liegen — und niemand
+                # käme auf den Grund.
+                if _zu_gering > 0:
+                    guete_lbl.configure(text=t('s_lg_zu_schlecht')
+                                        % (round(_zu_gering, 3), _mindestq))
+                    guete_lbl.pack(side='right', padx=(0, 8))
+                else:
+                    guete_lbl.pack_forget()
+
+        anzahl_var.trace_add('write', mengen_setzen)
+        mengen_setzen()
         if stufe['zeit']:
             z = tk.Frame(block, bg='#0c1017')
             z.pack(fill='x', padx=12, pady=(4, 8))
@@ -4061,89 +4114,151 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
             leer_lbl = tk.Label(werte_rahmen, text='', bg='#0c1017', fg=SUB,
                                 font=fenster.f_klein, anchor='w')
 
-            def werte_zeichnen(vorgabe=None):
+            # ⚠⚠ **Je Material ein eigener Wert.** Bis v3.3.0-rc35 gab es
+            # EINEN Regler, der allen Zutaten dieselbe Qualität gab. Das ist
+            # praktisch nie die Wirklichkeit: „jedes Material hat man so gut
+            # wie nie in der gleichen Qualität da" (30.08.2026). Und weil jede
+            # Zutat eine ANDERE Eigenschaft anhebt, ist die eigentliche Frage
+            # ohnehin eine andere: „ich habe 500er Iron — was kommt raus, wenn
+            # ich 900er nähme, und was ändert sich dadurch am Riccite-Wert?"
+            # Mit einem gemeinsamen Regler liess sie sich gar nicht stellen.
+            #
+            # `stand` hält die aktuelle Qualität je Material. Startwert ist
+            # der eigene Lagerstand, sonst die Mitte.
+            stand = {m: float(qualitaeten.get(m, 500.0))
+                     for m in alle_materialien}
+            aus_lager = {m: (m in qualitaeten) for m in alle_materialien}
+
+            def werte_zeichnen():
                 """Nur die Zahlen austauschen — keine Widgets neu bauen."""
-                if vorgabe is None:
-                    qs = dict(qualitaeten)
-                else:
-                    # Durchgespielt: dieselbe Qualität für alle Zutaten.
-                    qs = {m: float(vorgabe) for m in alle_materialien}
                 aktuell = {(w['eigenschaft'], w['material'], w['slot']): w
                            for w in herst_modul.werte_mit_lager(
-                               eintrag['basis'], qs)}
+                               eintrag['basis'], stand)}
                 gezeigt = 0
                 for w0, faktor_lbl, herkunft_lbl in zeilen_widgets:
                     w = aktuell.get((w0['eigenschaft'], w0['material'],
                                      w0['slot']))
                     if not w:
-                        # Kein Lagerstand für dieses Material — Zeile leeren,
-                        # aber stehen lassen: Sonst springt die Höhe.
                         faktor_lbl.configure(text='')
                         herkunft_lbl.configure(text='')
                         continue
                     gezeigt += 1
-                    faktor_lbl.configure(
-                        text=t('s_he_faktor') % w['faktor'],
-                        fg=(ACCENT if w['faktor'] >= 1 else GOLD))
-                    herkunft_lbl.configure(
-                        text=(t('s_he_woher') % (w['material'], w['qualitaet'])
-                              if vorgabe is None else w['material']))
+                    # ⚠⚠ **Die Farbe darf nicht an der Zahl haengen.** Bis
+                    # v3.3.0-rc35 galt „>= 1 ist gut". Bei Rueckstoss und
+                    # Quantum-Treibstoff ist WENIGER besser — dort stand der
+                    # bestmoegliche Wert (× 0.800) in der Warnfarbe und der
+                    # schlechteste (× 1.200) in Gruen. 852 von 6524
+                    # Modifikatoren im Spielstand 4.10.0 laufen so.
+                    if w.get('absolut'):
+                        # ⚠ Power Pips: eine Stueckzahl, kein Faktor. Bis
+                        # v3.3.0-rc35 stand hier „× -1.000" — ein
+                        # Multiplikator, den es nicht geben kann. 598 der 6524
+                        # Modifikatoren sind so gebaut (alle Kraftwerke).
+                        gut = w['faktor'] > 0
+                        text_wert = (t('s_he_absolut_null') if not w['faktor']
+                                     else t('s_he_absolut') % w['faktor'])
+                        farbe = (ACCENT if w['faktor'] > 0
+                                 else GOLD if w['faktor'] < 0 else SUB)
+                    else:
+                        gut = (w['faktor'] >= 1 if w.get('besser_hoch', True)
+                               else w['faktor'] <= 1)
+                        text_wert = t('s_he_faktor') % w['faktor']
+                        farbe = ACCENT if gut else GOLD
+                    faktor_lbl.configure(text=text_wert, fg=farbe)
+                    herkunft = t('s_he_woher') % (w['material'], w['qualitaet'])
+                    if not w.get('besser_hoch', True):
+                        herkunft = '%s · %s' % (t('s_he_weniger_gut'), herkunft)
+                    herkunft_lbl.configure(text=herkunft)
                 if not gezeigt:
                     leer_lbl.configure(text=t('s_he_kein_lager'))
                     leer_lbl.pack(fill='x', padx=12)
                 else:
                     leer_lbl.pack_forget()
 
-                # Ueberschrift der Lage anpassen: „dein Material" nur, wenn
-                # wirklich etwas davon im Lager liegt und nichts durchgespielt
-                # wird.
-                if vorgabe is None and qualitaeten:
+                # Überschrift: „mit deinem Material" nur, solange nichts
+                # verstellt wurde. Sobald ein Regler von seinem Lagerwert
+                # abweicht, ist es ein Durchspielen und keine Aussage mehr.
+                verstellt = any(
+                    abs(stand[m] - float(qualitaeten.get(m, 500.0))) > 0.5
+                    or not aus_lager[m] for m in alle_materialien)
+                if not verstellt and qualitaeten:
                     werte_kopf.configure(text=t('s_he_werte'))
                 else:
-                    gewaehlt = float(vorgabe if vorgabe is not None
-                                     else (max(qualitaeten.values())
-                                           if qualitaeten else 500))
-                    werte_kopf.configure(
-                        text=t('s_he_werte_probe') % gewaehlt)
+                    werte_kopf.configure(text=t('s_he_werte_probe_je'))
 
-            # --- Regler zum Durchspielen ---
+            # --- Ein Regler je Material ---
             # Dieselbe Frage, die man sonst auf scmdb.net von Hand stellt:
             # „Und mit besserem Erz?" Nur dass hier der eigene Lagerstand der
-            # Ausgangspunkt ist.
-            start = int(max(qualitaeten.values())) if qualitaeten else 500
-            reihe_r = tk.Frame(block, bg='#0c1017')
-            reihe_r.pack(fill='x', padx=12, pady=(8, 0))
-            tk.Label(reihe_r, text=t('s_he_durchspielen'), bg='#0c1017',
-                     fg=SUB, font=fenster.f_klein).pack(side='left',
-                                                        padx=(0, 10))
+            # Ausgangspunkt ist — je Material einzeln.
             from .hauptfenster import regler as schieberegler
+            tk.Label(block, text=t('s_he_regler_kopf'), bg='#0c1017', fg=FG,
+                     font=fenster.f_grund, anchor='w').pack(
+                         fill='x', padx=12, pady=(10, 2))
 
-            # ⚠ Der Wert MUSS neben dem Regler stehen. Ohne ihn zieht man
-            # blind und weiß nicht, welche Qualität man gerade durchspielt —
-            # genau der Wert, um den es geht. Beim Deckkraft-Regler steht er
-            # aus demselben Grund daneben.
-            q_wert_lbl = tk.Label(reihe_r, text=t('s_lg_q_wert') % start,
-                                  bg='#0c1017', fg=ACCENT,
-                                  font=fenster.f_grund, width=7, anchor='w')
+            regler_zeilen = {}
+            for _mat in alle_materialien:
+                reihe_r = tk.Frame(block, bg='#0c1017')
+                reihe_r.pack(fill='x', padx=12, pady=2)
+                tk.Label(reihe_r, text=_mat, bg='#0c1017', fg=ACCENT,
+                         font=fenster.f_klein, width=16, anchor='w').pack(
+                             side='left')
+                # ⚠ Der Wert MUSS neben dem Regler stehen. Ohne ihn zieht man
+                # blind und weiß nicht, welche Qualität man gerade
+                # durchspielt — genau der Wert, um den es geht.
+                _wert_lbl = tk.Label(reihe_r, text=t('s_lg_q_wert')
+                                     % int(stand[_mat]),
+                                     bg='#0c1017', fg=ACCENT,
+                                     font=fenster.f_grund, width=7, anchor='w')
 
-            def q_gezogen(wert, _q=qualitaeten):
-                werte_zeichnen(wert)
-                q_wert_lbl.configure(text=t('s_lg_q_wert') % wert)
-                regler_lbl.configure(text=t('s_he_q_gesetzt') % wert, fg=GOLD)
+                def gezogen(wert, mat=_mat):
+                    stand[mat] = float(wert)
+                    regler_zeilen[mat][0].configure(
+                        text=t('s_lg_q_wert') % int(wert))
+                    regler_zeilen[mat][1].configure(
+                        text=(t('s_he_regler_lager')
+                              if (aus_lager[mat]
+                                  and abs(float(wert)
+                                          - float(qualitaeten.get(mat, -1))) < 0.5)
+                              else ''))
+                    werte_zeichnen()
 
-            schieberegler(reihe_r, 0, 1000, start, q_gezogen, breite=220,
-                          grund='#0c1017').pack(side='left')
-            q_wert_lbl.pack(side='left', padx=(10, 0))
-            zurueck = tk.Label(reihe_r, text=t('s_he_zurueck_lager'),
+                _schieber = schieberegler(reihe_r, 0, 1000, int(stand[_mat]),
+                                          gezogen, breite=200, grund='#0c1017')
+                _schieber.pack(side='left')
+                _wert_lbl.pack(side='left', padx=(10, 0))
+                # Woher der Startwert kommt: eigener Lagerstand oder Mitte.
+                _quelle_lbl = tk.Label(
+                    reihe_r,
+                    text=(t('s_he_regler_lager') if aus_lager[_mat]
+                          else t('s_he_regler_ohne')),
+                    bg='#0c1017', fg=SUB, font=fenster.f_klein, anchor='w')
+                _quelle_lbl.pack(side='left', padx=(10, 0))
+                regler_zeilen[_mat] = (_wert_lbl, _quelle_lbl, _schieber)
+
+            # Alles wieder auf den eigenen Lagerstand zurückstellen.
+            zurueck = tk.Label(block, text=t('s_he_zurueck_lager'),
                                bg='#0c1017', fg=ACCENT, font=fenster.f_klein,
                                cursor='hand2')
+
+            def zurueck_zum_lager(_e=None):
+                for _m in alle_materialien:
+                    stand[_m] = float(qualitaeten.get(_m, 500.0))
+                    _w, _q, _s = regler_zeilen[_m]
+                    _w.configure(text=t('s_lg_q_wert') % int(stand[_m]))
+                    _q.configure(text=(t('s_he_regler_lager') if aus_lager[_m]
+                                       else t('s_he_regler_ohne')))
+                    # `regler()` gibt seine Zeichenfunktion mit heraus —
+                    # damit steht der Knopf wieder an der richtigen Stelle.
+                    try:
+                        _s.zeichnen(stand[_m])
+                    except Exception:
+                        pass
+                werte_zeichnen()
+
             if qualitaeten:
-                zurueck.pack(side='left', padx=(12, 0))
-                zurueck.bind('<Button-1>', lambda _e: (
-                    werte_zeichnen(None),
-                    regler_lbl.configure(text='', fg=SUB)))
-            regler_lbl.pack(fill='x', padx=12)
-            werte_zeichnen(None if qualitaeten else start)
+                zurueck.pack(anchor='w', padx=12, pady=(2, 0))
+                zurueck.bind('<Button-1>', zurueck_zum_lager)
+            werte_zeichnen()
             _fliesstext(block, t('s_he_werte_hinweis'), fenster.f_klein,
                         fill='x')
 

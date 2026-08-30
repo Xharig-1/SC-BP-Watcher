@@ -574,6 +574,66 @@ def faktor(modifikatoren, qualitaet):
     return a + anteil * (b - a)
 
 
+def besser_ist_hoch(modifikatoren):
+    """Hebt bessere Qualität diesen Wert — oder senkt sie ihn?
+
+    ⚠ **Nicht jede Eigenschaft wird durch eine höhere Zahl besser.** Gemessen
+    an allen 6524 Modifikatoren des Spielstands 4.10.0: Bei **852** sinkt der
+    Faktor mit steigender Qualität, und dort ist genau das die Verbesserung —
+    weniger Rückstoß, weniger Quantum-Treibstoff:
+
+    | Eigenschaft | Fälle |
+    |---|---|
+    | Recoil Smoothness / Handling / Kick | je 245 |
+    | Quantum Fuel Burn | 114 |
+    | Damage Mitigation | 3 (Ausreisser in den Quelldaten) |
+
+    Ohne diese Unterscheidung stand ein Rückstoss von `× 0.800` — der
+    bestmögliche Wert — in der Warnfarbe da, als wäre er schlecht, und
+    `× 1.080` bei mieser Qualität in Grün. Am 30.08.2026 gemeldet: „ist es
+    realistisch das sich bei niedrigerer Qualität die Werte erhöhen?"
+
+    ⚠ Die Richtung steht **im Modifikator selbst** und wird nicht nach
+    Eigenschaftsnamen geraten: `modifierAtEnd` gegen `modifierAtStart`. Damit
+    stimmt sie auch dort, wo dieselbe Eigenschaft mal so und mal anders läuft —
+    `armor_damagemitigation` tut das.
+
+    Mehrteilige Spannen (0–500 / 501–1000) beschreiben EINE Kurve. Verglichen
+    wird deshalb der Anfang der ersten mit dem Ende der letzten; ein flaches
+    Teilstück in der Mitte würde sonst die Richtung verfälschen.
+    """
+    if not modifikatoren:
+        return True
+    erste = min(modifikatoren, key=lambda m: float(m.get('startQuality', 0)))
+    letzte = max(modifikatoren, key=lambda m: float(m.get('endQuality', 0)))
+    return (float(letzte.get('modifierAtEnd', 1))
+            >= float(erste.get('modifierAtStart', 1)))
+
+
+def ist_absolut(modifikatoren):
+    """Ist das ein Multiplikator — oder eine glatte Zahl?
+
+    ⚠ **Nicht jede Wirkung ist ein Faktor.** `itemresource_powergeneration`
+    („Power Pips") führt in den Spieldaten Werte von **−3 bis +3**, in festen
+    Qualitätsstufen: unter Q250 gibt es −3 Pips, ab Q900 +3. Das sind
+    Stückzahlen, keine Multiplikatoren.
+
+    Als Faktor gelesen stand dort `× -1.000` — eine Zahl, die es nicht gibt:
+    Ein Multiplikator von −1 würde den Wert umkehren, einer von 0 ihn
+    auslöschen. 598 der 6524 Modifikatoren im Spielstand 4.10.0 sind so.
+
+    ⚠ Erkannt wird das **an der Zahl, nicht am Namen**: Ein Multiplikator liegt
+    immer über null. Taucht irgendwo im Satz eine Null oder ein negativer Wert
+    auf, kann es keiner sein. Damit stimmt die Erkennung auch für Eigenschaften,
+    die es heute noch nicht gibt.
+    """
+    for m in modifikatoren or []:
+        if (float(m.get('modifierAtStart', 1)) <= 0
+                or float(m.get('modifierAtEnd', 1)) <= 0):
+            return True
+    return False
+
+
 def slots(name_oder_tag):
     """Die Slots eines Bauplans mit Material **und** Qualitätswirkung.
 
@@ -632,7 +692,13 @@ def werte_mit_lager(name_oder_tag, qualitaet_je_material):
                 continue
             raus.append({'eigenschaft': w['eigenschaft'], 'key': w['key'],
                          'material': s['material'], 'qualitaet': q,
-                         'faktor': f, 'slot': s['slot']})
+                         'faktor': f, 'slot': s['slot'],
+                         # ⚠ Ohne diese Angabe faerbt die Anzeige einen guten
+                         # Wert als Warnung. Siehe `besser_ist_hoch`.
+                         'besser_hoch': besser_ist_hoch(w['mods']),
+                         # ⚠ Und ohne diese steht „× -1.000" da, wo „-1 Pip"
+                         # hingehoert. Siehe `ist_absolut`.
+                         'absolut': ist_absolut(w['mods'])})
     return raus
 
 
