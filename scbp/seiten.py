@@ -3315,9 +3315,7 @@ def _danke(fenster, rahmen):
             # ⚠ Zwei Bausteine hintereinander: die Funde und der Nitro-Dank.
             # `_person` nimmt einen Text — also hier zusammensetzen, statt die
             # Funktion für einen Sonderfall umzubauen.
-            ('Bomb20', 'pr0', t('s_dk_bomb_idee'),
-             t('s_dk_bomb_blind') + '\n\n' + t('s_dk_bomb_bugs')
-             + '\n\n' + t('s_dk_bomb_dazu')),
+            ('Bomb20', 'pr0', t('s_dk_bomb_idee'), t('s_dk_bomb_bugs')),
             ('Morkhan', 'KRT', t('s_dk_morkhan_idee'),
              t('s_dk_morkhan_bugs')),
             ('Horthy', 'KRT', t('s_dk_horthy_idee'), '')):

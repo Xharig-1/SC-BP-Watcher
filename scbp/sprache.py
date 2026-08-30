@@ -1018,140 +1018,47 @@ TEXTE = {
     's_dk_beitraege':  ('%d Beiträge', '%d contributions'),
     's_dk_aufklappen': ('Klick auf einen Namen zeigt, was daraus geworden ist.',
                         'Click a name to see what came of it.'),
-    's_dk_haldjas_idee': ('**Der Aufblend-Betrieb und die durchgereichten '
-                          'Mausklicks.** Sein Hinweis war, dass ein Overlay, das '
-                          'dauernd im Bild steht und Klicks abfängt, im Kampf mehr '
-                          'stört als hilft. Beides gäbe es ohne ihn nicht.',
-                          '**The pop-up mode and click-through.** He pointed out '
-                          'that an overlay permanently in view, swallowing clicks, '
-                          'gets in the way during combat. Neither would exist '
-                          'without him.'),
-    's_dk_haldjas_bugs': ('Dazu: der Weg zurück UND hin zum Durchklicken · '
-                          'das Schloss, das nach dem Start neben dem Overlay '
-                          'stand statt darauf · '
-                          'das Setup, das an der laufenden Datei abbrach · '
-                          'die Konsolenfenster beim Update · das verschwundene '
-                          'Symbol neben der Uhr · der Absturz nach dem Neustart · '
-                          'die Schriftgröße, die das Overlay nicht erreichte · die '
-                          'vergessene Textquelle im Assistenten · und der Fund, der '
-                          'alles erklärte: „da bleibt er bei rc25".',
-                          'Also: the way back AND forth to click-through · '
-                          'the lock that sat beside the overlay after a restart instead of on it · '
-                          'the installer that failed on the running file · the '
-                          'console windows during updates · the tray symbol that '
-                          'vanished · the crash after restarting · the font size that '
-                          'never reached the overlay · the forgotten text source in '
-                          'the assistant · and the find that explained everything: '
-                          '"it stays on rc25".'),
+    's_dk_haldjas_idee':     ('**Aufblend-Betrieb und durchgereichte Mausklicks** — damit ein'
+                              'Overlay im Kampf hilft statt zu stören.',
+                              '**Fade mode and click-through** — so an overlay helps in a'
+                              'fight instead of getting in the way.'),
+    's_dk_haldjas_bugs':     ('Dazu ein Dutzend Funde rund um Overlay, Einrichtung und'
+                              'Update.',
+                              'Plus a dozen finds around the overlay, setup and updating.'),
     # ⚠ **Diese Seite mitziehen, nicht nur den CHANGELOG.** Am 27.08.2026 hat
     # Bomb20 an einem Vormittag vier Fehler gefunden, die alle am Samstag jeden
     # Nutzer getroffen hätten — und hier stand weiter nur sein Fund vom 25.08.
     # Der Dank im CHANGELOG ist das eine; diese Seite ist das, was die Leute im
     # Programm sehen. Wer einen Melder hier vergisst, hat ihm nicht gedankt.
-    's_dk_bomb_idee':   ('**Das Werkzeug war unter Linux nicht auf dem Laufenden zu '
-                         'halten** — und niemand wusste, warum. Er ist drangeblieben, '
-                         'als es längst nach Bedienfehler aussah, und hat mit drei '
-                         'Diagnoseberichten an einem Vormittag drei Fehler '
-                         'freigelegt: dass Star Citizen sich nicht aus dem Werkzeug '
-                         'starten ließ, dass der Neustart nach dem Update nie kam, '
-                         'und dass beim Holen einer neuen Version gar nichts '
-                         'geschah. Alle drei hätten am Ausliefertag jeden getroffen.',
-                         '**The tool could not be kept up to date on Linux** — and '
-                         'nobody knew why. He stuck with it long after it looked like '
-                         'user error, and with three diagnostic reports in one '
-                         'morning uncovered three bugs: that Star Citizen could not '
-                         'be launched from the tool, that the restart after an update '
-                         'never came, and that fetching a new version did nothing at '
-                         'all. All three would have hit everyone on release day.'),
+    's_dk_bomb_idee':        ('**Updates kamen unter Linux nicht an** — er ist drangeblieben,'
+                              'als es längst nach Bedienfehler aussah, bis der Grund gefunden'
+                              'war.',
+                              '**Updates never arrived on Linux** — he kept at it long after'
+                              'it looked like user error, until the cause was found.'),
     # ⚠ Der vierte Fund ist kein behobener Fehler, und genau so steht er da.
     # Wer „behoben" schreibt, wo nur „sichtbar gemacht" stimmt, belügt den
     # nächsten Melder.
-    's_dk_bomb_blind':  ('Am selben Abend legte er eine Lücke frei, die gar keine '
-                         'Fehlermeldung war: Sein Absturz beim Öffnen von „Was ist '
-                         'neu" stand im Diagnosebericht **überhaupt nicht drin**. '
-                         'Harte Abbrüche hinterließen bis dahin keine Spur — seit '
-                         'rc74 tun sie es.',
-                         'That same evening he exposed a gap that was not a bug '
-                         "report at all: his crash when opening “What's new” did "
-                         'not appear in the diagnostic report **at all**. Hard '
-                         'crashes left no trace until then — since rc74 they do.'),
-    's_dk_bomb_bugs':   ('Davor: **der Absturz beim allerersten Start** — der Fehler, '
-                         'den sonst nur neue Nutzer je gesehen hätten und der Autor '
-                         'nie · der wirkungslose Knopf „Jetzt nachsehen" · der '
-                         'Hinweis, dass die Textquelle „Deutsch" das **ganze** Spiel '
-                         'übersetzt, nicht nur die Bauplan-Angaben · die veraltete '
-                         'Versionsnummer auf dem Knopf („ich krieg noch 67 '
-                         'angezeigt") · und der Fehler beim Verschieben des '
-                         'Overlays, der zwei Tage lang in Berichten stand, ohne dass '
-                         'ihn jemand ernst nahm.',
-                         'Before that: **the crash on the very first start** — the bug '
-                         'only new users would ever have seen, and the author never · '
-                         'the "Check now" button that did nothing · the note that the '
-                         'text source "German" translates the **whole** game, not just '
-                         'the blueprint details · the stale version number on the '
-                         'button ("I still get 67 shown") · and the overlay drag error '
-                         'that sat in reports for two days without anyone taking it '
-                         'seriously.'),
+    's_dk_bomb_bugs':        ('Dazu der Absturz beim allerersten Start, harte Abbrüche, die'
+                              'im Bericht gar nicht auftauchten — und ein Monat Discord Nitro'
+                              'für den Server.',
+                              'Plus the crash on the very first start, hard aborts that never'
+                              'showed up in the report — and a month of Discord Nitro for the'
+                              'server.'),
     # ⚠ Ein Geschenk, kein Fund — und trotzdem hierhin. Wer ein kostenloses
     # Werkzeug testet UND dem Autor etwas schenkt, gehört genannt.
-    's_dk_bomb_dazu':   ('Und obendrein einen Monat Discord Nitro für den Server '
-                         'des Werkzeugs — einfach so.',
-                         'And on top of that a month of Discord Nitro for the '
-                         "tool's server — just like that."),
-    's_dk_horthy_idee': ('**Das eigene Rohstoff-Lager** — Material, Menge, '
-                         'Qualität und Lagerort selbst eintragen, und beim '
-                         'Herstellen zieht das Werkzeug die Zutaten ab, statt '
-                         'dass man rechnet. Aus dem Vorschlag ist noch mehr '
-                         'geworden: Weil die Rezepte mittragen, wie die '
-                         'Materialqualität die Werte des fertigen Stücks '
-                         'verändert, steht jetzt auch da, was mit dem eigenen '
-                         'Material herauskäme.',
-                         '**The personal resource stock** — enter material, '
-                         'amount, quality and location yourself, and when you '
-                         'craft, the tool subtracts the ingredients instead of '
-                         'you doing the maths. The suggestion grew: because the '
-                         'recipes carry how material quality changes the values '
-                         'of the finished item, it now also shows what your own '
-                         'material would produce.'),
-    's_dk_morkhan_idee': ('**Die Angaben am Gegenstand im Spiel** — dass am '
-                          'Traktorstrahl nicht nur der Name steht, sondern auch '
-                          'Klasse, Größe und Gütegrad. Dazu: **Star Citizen lässt '
-                          'sich aus dem Werkzeug heraus starten**, über den Weg, den '
-                          'man ohnehin benutzt. Und seit v3.4.0: **der '
-                          'Verkaufs-Reiter** — wo man Gold, Copper und Iron '
-                          'los wird und was sie je SCU bringen. Dass ein Ort, '
-                          'der die ganze Ladung nimmt, mehr wert ist als der '
-                          'beste Einzelpreis, war sein Gedanke.',
-                          '**Item details in game** — that the tractor beam shows '
-                          'more than just the name: class, size and grade. Plus: '
-                          '**launching Star Citizen from the tool**, using the '
-                          'launcher you already use anyway. And since v3.4.0: '
-                          '**the selling tab** — where to offload gold, copper '
-                          'and iron, and what they pay per SCU. That one place '
-                          'taking the whole cargo beats the best single price '
-                          'was his idea.'),
-    's_dk_morkhan_bugs': ('Am ersten Testtag der 3.4.0 fand er, dass das Fenster auf 1920×1080 nicht mehr auf den Bildschirm passte — die neue Gruppe „Handel" hatte die Seitenleiste so lang gemacht, dass die Mindesthöhe über den Monitor hinausging und man an alles darunter nicht mehr herankam. Dazu die beiden Funde vom 28.08.: dass eine Mission '
-                          '„12 Baupläne" im Titel versprach und darunter keine '
-                          'zeigte (eine Mission hat im Spiel mehr '
-                          'Beschreibungen, als der Katalog kennt) · und die '
-                          'Frage, warum überhaupt Baupläne angezeigt werden, '
-                          'wo keine fallen können — daraus wurde das Rufzeichen '
-                          'im Titel. Sein hartnäckigster Fund: dass ein Auftrag mit mehreren Preisstufen nur die Baupläne EINER Stufe zeigte — daran hingen 797 Baupläne, die niemand je zu sehen bekam. Und weil er meldete, er sehe die Angaben im Spiel nicht mehr, sagt der Bericht jetzt selbst, ob sie überhaupt eingetragen sind — vorher ließ sich das nur erraten. Außerdem: das Update über das Infofenster, das nie ankam '
-                          '(dreimal vergeblich geladen) · die gestreckten Knöpfe, die '
-                          'nur die halbe Breite füllten · und die verwirrenden '
-                          'Update-Kanäle, aus denen der Knopf „Jetzt die neueste '
-                          'Version holen" wurde. Am Tag der 3.3.0 fand er drei weitere: dass der eingetippte Name zwar im Kasten stand, aber nicht mitgeschickt wurde — und dass Bericht und Bauplan-Liste zwei verschiedene Zahlen für denselben Bestand nannten. Der letzte Fund war der schwerste: Wer die Angaben am Gegenstand eingeschaltet hat, bekam jeden neuen Bauplan mit dem Anhang im Namen gespeichert — und damit als nicht vorhanden gezählt.',
-                          'On the first day of testing 3.4.0 he found that the window no longer fit a 1920×1080 screen — the new "Trading" group had made the sidebar so long that the minimum height exceeded the monitor, putting everything below out of reach. Plus his two finds on 28 Aug: a mission promising '
-                          '„12 blueprints" in its title and showing none below '
-                          '(a mission has more descriptions in game than the '
-                          'catalogue knows) · and the question why blueprints '
-                          'are shown at all where none can drop — which became '
-                          'the exclamation mark in the title. '
-                          'His most persistent find: a contract with several payout tiers only showed the blueprints of ONE tier — 797 blueprints hung on that, and nobody ever saw them. And because he reported that he could no longer see the notes in game, the report now says for itself whether they are in place at all — before, that could only be guessed. '
-                          'Also: the update from the info window that never arrived '
-                          '(downloaded three times in vain) · the stretched buttons '
-                          'that filled only half the width · and the confusing update '
-                          'channels that became the "Get the latest version" button. On release day of 3.3.0 he found two more: that the name you typed showed in the box but was not sent along - and that the report and the blueprint list gave two different numbers for the same inventory. The last find was the heaviest: with the in-game item details switched on, every new blueprint was stored with the suffix in its name - and therefore counted as not owned.'),
+    's_dk_horthy_idee':      ('**Das eigene Rohstoff-Lager** — eintragen statt rechnen, und'
+                              'beim Herstellen zieht das Werkzeug die Zutaten ab.',
+                              '**Your own resource stock** — enter it instead of doing the'
+                              'maths; crafting deducts the ingredients for you.'),
+    's_dk_morkhan_idee':     ('**Angaben am Gegenstand im Spiel**, **Star Citizen aus dem'
+                              'Werkzeug starten** — und seit v3.4.0 der **Verkaufs-Reiter**.',
+                              '**Item details in game**, **launching Star Citizen from the'
+                              'tool** — and since v3.4.0 the **selling tab**.'),
+    's_dk_morkhan_bugs':     ('Dazu über zwanzig Funde, darunter 797 Baupläne, die niemand zu'
+                              'sehen bekam, und ein Fenster, das nicht mehr auf den'
+                              'Bildschirm passte.',
+                              'Plus more than twenty finds, among them 797 blueprints nobody'
+                              'ever got to see, and a window that no longer fit the screen.'),
     's_dk_marken':     ('SC BP Watcher ist ein eigenständiges, inoffizielles '
                         'Zusatzwerkzeug und steht in keiner offiziellen Verbindung '
                         'zum SC Deutsch Launcher oder zu Cloud Imperium Games. Alle '

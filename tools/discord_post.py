@@ -44,6 +44,12 @@ def punkte_aus(block):
     brachte". Sechs von sechs Punkten abgeschnitten, in einer Nachricht, die an
     mehrere hundert Leute geht (30.08.2026 aufgefallen).
     """
+    # ⚠ **Der Dank gehört nicht in die Ankündigung.** Er steht im Programm auf
+    # der Seite „Danke & Lizenzen" — dort sucht ihn, wer ihn sehen will. In
+    # einer Versionsmeldung ist er Ballast und verdrängt das, worum es geht:
+    # was das Werkzeug jetzt kann.
+    block = re.split(r'(?m)^### (?:Danke|Thanks)\s*$', block)[0]
+
     gefunden = []
     puffer = [None]
 
@@ -89,24 +95,21 @@ def punkte_aus(block):
 def vorspann_aus(block):
     """Der handgeschriebene Kurztext einer Version — oder `''`.
 
-    ⭐⭐ **Der wichtigste Teil dieser Datei.** Am 30.08.2026 kam die
-    Rückmeldung, die Ankündigungen seien „viel zu lang, die liest niemand
-    mehr" — sie sollen kurz sein, Geschmack auf mehr machen und **menschlich**
-    klingen, eher wie ein Werbetext.
+    ⭐⭐ **Der wichtigste Teil dieser Datei.**
 
-    Aus einem Änderungsprotokoll lässt sich so etwas nicht rechnen. Ein
-    Protokoll ist Buchführung: vollständig, sachlich, mit Begründung. Eine
-    Ankündigung ist das Gegenteil — sie darf weglassen, zuspitzen und Lust
-    machen. Wer aus dem einen automatisch das andere erzeugen will, bekommt
-    beides halb.
+    Eine Ankündigung ist kein Änderungsprotokoll. Das Protokoll ist
+    Buchführung: vollständig, sachlich, mit Begründung. Die Ankündigung ist das
+    Gegenteil — sie darf weglassen, zuspitzen und Lust auf mehr machen. Wer aus
+    dem einen automatisch das andere erzeugt, bekommt beides halb: eine Liste,
+    die zu lang zum Lesen und zu knapp zum Verstehen ist.
 
     Deshalb: **Steht direkt unter der Versionsüberschrift ein Absatz** (vor dem
     ersten `###`), ist das die Ankündigung, und der Rest des Protokolls bleibt
-    für die, die es genau wissen wollen. Fehlt er, greift wie bisher die
-    Aufzählung der Überschriften.
+    für die, die es genau wissen wollen. Fehlt er, greift die Aufzählung der
+    Überschriften.
 
-    So bleibt der Werbetext, was er sein muss: von einem Menschen geschrieben,
-    für Menschen.
+    So bleibt der Text, was er sein muss: von einem Menschen geschrieben, für
+    Menschen.
     """
     zeilen = []
     for zeile in block.splitlines():
