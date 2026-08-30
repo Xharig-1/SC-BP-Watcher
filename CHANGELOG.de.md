@@ -76,8 +76,8 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 - **Die Seitenleiste sieht überall gleich aus.** „Für Fortgeschrittene" hat
   jetzt denselben Klapp-Pfeil wie die Gruppen und sitzt in der Gruppe
-  „Einstellungen", statt einzeln unten zu kleben — dahinter liegen Spielordner
-  und Erkennung, also Dinge, die man einstellt. Alle Klapp-Pfeile benutzen dasselbe Symbol
+  „Einstellungen", statt einzeln unten zu kleben — dahinter liegen Pfade,
+  Erkennung und der Bauplan-Bestand, also Dinge, die man einstellt. Alle Klapp-Pfeile benutzen dasselbe Symbol
   wie der Rest des Programms — vorher waren es Textzeichen, die je nach
   Systemschrift anders aussahen.
 
@@ -85,6 +85,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   und rollen nicht mehr mit. Dazu hat die Leiste einen sichtbaren Rollbalken:
   Ohne ihn wirkte eine aufgeklappte Gruppe leer, wenn ihre Einträge unterhalb
   des Fensterrands lagen.
+
+- ⭐ **„Bauplan-Bestand" liegt jetzt hinter „Für Fortgeschrittene."** Die Seite
+  schreibt am eigenen Bestand — einlesen, überschreiben, zurücksetzen —, stand
+  aber zwischen lauter harmlosen Einstellungen und wurde im Vorbeigehen
+  angeklickt. Erreichbar bleibt sie, nur nicht mehr nebenbei.
+
+- **Der Knopf „Protokolle erneut einlesen" ist rot.** Er stößt einen Lauf über
+  hunderte Protokolle an und schreibt dabei am Bauplan-Stand. Rot **dauerhaft**,
+  nicht erst beim Überfahren — ein Knopf, der erst warnt, wenn die Maus schon
+  darauf steht, warnt niemanden. Beides gefunden von **Morkhan (KRT)**, nachdem
+  er ihn versehentlich gedrückt hatte.
 
 ### Behoben
 

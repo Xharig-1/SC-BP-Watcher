@@ -1683,7 +1683,6 @@ class Hauptfenster:
         self._reiter('allgemein', 'einstellungen', t('hf_allgemein'), g_einst)
         self._reiter('anzeige', 'anzeige', t('hf_anzeige'), g_einst)
         self._reiter('spiel', 'auftragstexte', t('hf_spiel'), g_einst)
-        self._reiter('bestand', 'bestand', t('hf_bestand'), g_einst)
 
         # „Was ist neu" und „Über" stellen nichts ein — sie erzählen etwas.
         # Unter der Überschrift „Einstellungen" waren sie falsch einsortiert.
@@ -1719,10 +1718,10 @@ class Hauptfenster:
         # einzige Element der Leiste ohne Gruppe — ein Bruch, sobald die
         # Gruppen klappbar wurden (30.08.2026).
         #
-        # ⚠ Und zwar **Einstellungen**, nicht „Info": Dahinter liegen
-        # Spielordner und Erkennung, also Dinge, die man **einstellt**. „Info"
-        # erzählt etwas (Was ist neu, Über, Serverstatus, Danke) — dort wäre es
-        # thematisch falsch einsortiert, auch wenn es optisch passte.
+        # ⚠ Und zwar **Einstellungen**, nicht „Info": Dahinter liegen Pfade,
+        # Erkennung und der Bauplan-Bestand, also Dinge, die man **einstellt**.
+        # „Info" erzählt etwas (Was ist neu, Über, Serverstatus, Danke) — dort
+        # wäre es thematisch falsch einsortiert, auch wenn es optisch passte.
         self.klapp = tk.Frame(g_einst, bg=FLAECHE)
         self.klapp.pack(fill='x', pady=(6, 4))
         # ⚠ Aufbau wie eine Gruppenüberschrift: Beschriftung links, Pfeil
@@ -2094,11 +2093,12 @@ class Hauptfenster:
                 return
             bedarf = self._seitenleiste_bedarf()
             if not self.fortgeschritten_offen:
-                # Platz für die zwei Einträge mitrechnen, die beim Aufklappen
-                # dazukommen. Sie sind so hoch wie jeder andere Reiter.
+                # Platz für die drei Einträge mitrechnen, die beim Aufklappen
+                # dazukommen (Pfade, Erkennung, Bauplan-Bestand). Sie sind so
+                # hoch wie jeder andere Reiter.
                 zeile = self.knoepfe.get('liste')
                 if zeile:
-                    bedarf += 2 * zeile[0].winfo_reqheight()
+                    bedarf += 3 * zeile[0].winfo_reqheight()
             kopf_und_fuss = max(0, self.root.winfo_height()
                                 - self.leisten_flaeche.winfo_height())
             noetig = max(MIN_HOEHE, bedarf + kopf_und_fuss)
@@ -2188,6 +2188,17 @@ class Hauptfenster:
                 # den fast niemand braucht, steht oben nur im Weg.
                 self._reiter('ordner', 'ordner', t('hf_ordner'), self.klappinhalt)
                 self._reiter('erkennung', 'erkennung', t('hf_erkennung'), self.klappinhalt)
+                # ⚠ **Bauplan-Bestand gehört hierher, nicht in die offene
+                # Liste.** Die Seite schreibt am eigenen Bestand — einlesen,
+                # überschreiben, zurücksetzen. Am 30.08.2026 hat sie genau
+                # deshalb schon einen Fehler ausgelöst: Sie stand zwischen
+                # „Anzeige" und „Texte im Spiel", also zwischen lauter
+                # harmlosen Seiten, und wurde nebenbei angeklickt.
+                #
+                # Hinter dem zugeklappten „Für Fortgeschrittene" ist sie
+                # weiterhin erreichbar, aber nicht mehr im Vorbeigehen.
+                self._reiter('bestand', 'bestand', t('hf_bestand'),
+                             self.klappinhalt)
             self.klappknopf.configure(text=t('hf_fortgeschritten'))
         else:
             self.klappinhalt.pack_forget()

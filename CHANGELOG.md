@@ -73,8 +73,8 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 - **The sidebar now looks the same throughout.** "Advanced" carries the same
   collapse arrow as the groups and sits inside the "Settings" group instead of
-  clinging to the bottom on its own — behind it are the game folder and
-  detection, things you set. All collapse arrows use the same icon as
+  clinging to the bottom on its own — behind it are paths, detection and the
+  blueprint stock, things you set. All collapse arrows use the same icon as
   the rest of the program — previously they were text characters that looked
   different depending on the system font.
 
@@ -82,6 +82,15 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   sidebar** and no longer scroll away. The sidebar also has a visible scrollbar:
   without it an expanded group looked empty whenever its entries sat below the
   window edge.
+
+- ⭐ **"Blueprint stock" now sits behind "Advanced".** The page writes to your
+  own stock — reading in, overwriting, resetting — yet stood among harmless
+  settings and got clicked in passing. It stays reachable, just not by accident.
+
+- **The "Read the logs again" button is red.** It starts a run across hundreds
+  of logs and writes to the blueprint stock while doing so. Red **permanently**,
+  not only on hover — a button that warns once the mouse is already on it warns
+  nobody. Both found by **Morkhan (KRT)** after pressing it by accident.
 
 ### Fixed
 

@@ -1688,7 +1688,13 @@ def _bestand(fenster, rahmen):
         fenster.sagen(t('s_be_neu_los') if ov.neu_einlesen_anstossen()
                       else t('s_be_neu_kein'))
 
-    _knopf(fenster, ziel, t('s_be_neu'), neu_einlesen).pack()
+    # ⚠⚠ **Rot, weil der Knopf etwas anrichtet.** Er wirft den Bestand nicht
+    # weg, aber er stösst einen Lauf über hunderte Protokolle an und schreibt
+    # dabei am Bauplan-Stand — am 30.08.2026 hat ihn jemand im Vorbeigehen
+    # gedrückt und es hat einen Fehler ausgelöst. `gefahr=True` färbt
+    # **dauerhaft**, nicht erst beim Überfahren: Ein Knopf, der erst rot wird,
+    # wenn die Maus schon darauf steht, warnt niemanden.
+    _knopf(fenster, ziel, t('s_be_neu'), neu_einlesen, gefahr=True).pack()
 
     # ⚠ **Bestand zurücksetzen — hier und nicht unter „Fehler melden".** Dort
     # stand es bis rc42, und dort sucht es niemand: Wer seinen Bauplan-Stand

@@ -819,8 +819,11 @@ def main():
                 # ist sie zudem der Weg, auf dem Meldungen ankommen.
                 #
                 # ⚠ Am 30.08.2026 von 14 auf 16: die Gruppe **Handel** mit
-                # „Handelslager" und „Verkauf".
-                pruefe(len(hf.knoepfe) == 16, 'alle Reiter sind wieder da')
+                # „Handelslager" und „Verkauf". Kurz darauf zurueck auf 15:
+                # **Bauplan-Bestand** ist hinter „Fuer Fortgeschrittene"
+                # gewandert, weil die Seite am eigenen Bestand schreibt und im
+                # Vorbeigehen angeklickt wurde.
+                pruefe(len(hf.knoepfe) == 15, 'alle Reiter sind wieder da')
 
                 # Die Wahl muss festgehalten werden — ohne Speichern-Knopf gibt
                 # es keinen zweiten Versuch. Vorher stand die Markierung
@@ -6835,6 +6838,25 @@ def main():
            'Fortgeschrittenes sitzt in der Gruppe Einstellungen')
     pruefe(hasattr(_fenster85, 'klapppfeil'),
            'und traegt denselben Klapp-Pfeil wie die Gruppen')
+
+    # ⚠ **Bauplan-Bestand steht NICHT in der offenen Liste.** Die Seite
+    # schreibt am eigenen Bestand; sie stand zwischen harmlosen Einstellungen
+    # und wurde im Vorbeigehen angeklickt (30.08.2026).
+    pruefe('bestand' not in _fenster85.knoepfe,
+           'Bauplan-Bestand liegt hinter „Fuer Fortgeschrittene"')
+    _fenster85._klapp_umschalten()
+    for _ in range(4):
+        _wurzel85.update()
+        _wurzel85.update_idletasks()
+    pruefe('bestand' in _fenster85.knoepfe,
+           'und ist nach dem Aufklappen da')
+
+    # Und der Knopf, der den Lauf anstoesst, warnt dauerhaft — nicht erst,
+    # wenn die Maus schon darauf steht.
+    _q85s = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                 encoding='utf-8').read()
+    pruefe("t('s_be_neu'), neu_einlesen, gefahr=True" in _q85s,
+           'der Knopf „Protokolle erneut einlesen" ist rot')
 
     _q85p = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
                  encoding='utf-8').read()
