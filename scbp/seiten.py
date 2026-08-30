@@ -4454,21 +4454,7 @@ def _lager(fenster, rahmen):
         tk.Label(liste_rahmen, text=summe_txt, bg=BG, fg=SUB,
                  font=fenster.f_klein, anchor='w').pack(fill='x', pady=(0, 6))
 
-        # ⚠ **Immer sichtbar, nicht erst ab fünf Posten.** Wer viel im Lager
-        # hat, findet sonst nichts mehr — und wer wenig hat, sieht am leeren
-        # Feld, dass es Suchen gibt, sobald es mehr wird. Ein Bedienelement,
-        # das ab einer Zahl erscheint, überrascht nur.
-        if posten:
-            from .hauptfenster import rundes_feld
-            # ⚠ Mit Beschriftung. Ein leeres Kästchen über einer Tabelle sagt
-            # niemandem, dass es ein Filter ist.
-            fz = tk.Frame(liste_rahmen, bg=BG)
-            fz.pack(fill='x', pady=(0, 8))
-            tk.Label(fz, text=t('s_lg_filter'), bg=BG, fg=SUB,
-                     font=fenster.f_klein).pack(side='left', padx=(0, 10))
-            ff = rundes_feld(fz, filter_var, fenster.f_klein,
-                             '#0c1017', LINIE, ACCENT, FG)
-            ff.halter.pack(side='left', fill='x', expand=True)
+        # (Das Suchfeld steht ausserhalb dieser Funktion — siehe dort.)
 
         # --- Kopfzeile ---
         kopf = tk.Frame(liste_rahmen, bg=BG)
@@ -4744,6 +4730,24 @@ def _lager(fenster, rahmen):
     knoepfe_setzen()
     knopf_rahmen.pack(anchor='w', pady=(4, 10))
     meldung.pack(fill='x')
+    # ⚠⚠ **Das Suchfeld wird EINMAL gebaut — nicht in `zeichnen()`.** Dort
+    # stand es bis rc28, und `zeichnen()` räumt bei jeder Änderung den ganzen
+    # Listenbereich leer: Mit jedem getippten Buchstaben zerstörte sich das
+    # Feld selbst, der Tastaturfokus ging verloren, und man musste für den
+    # nächsten Buchstaben neu hineinklicken. Am 30.08.2026 gemeldet: „im Lager
+    # bei Eingabe im Suchfeld tabt man automatisch raus".
+    #
+    # Alles, woran ein Cursor stehen kann, gehört ausserhalb der Zeichenroutine.
+    from .hauptfenster import rundes_feld as _rf_suche
+    _such_zeile = tk.Frame(innen, bg=BG)
+    _such_zeile.pack(fill='x', pady=(6, 0))
+    tk.Label(_such_zeile, text=t('s_lg_filter'), bg=BG, fg=SUB,
+             font=fenster.f_klein).pack(side='left', padx=(0, 10))
+    _such_feld = _rf_suche(_such_zeile, filter_var, fenster.f_klein,
+                           '#0c1017', LINIE, ACCENT, FG)
+    _such_feld.halter.pack(side='left', fill='x', expand=True)
+    _suche_leeren_kreuz(fenster, _such_zeile, filter_var)
+
     liste_rahmen.pack(fill='both', expand=True, pady=(6, 0))
 
     # --- Sichern und zurueckholen --------------------------------------

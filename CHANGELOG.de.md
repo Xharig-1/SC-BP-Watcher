@@ -105,6 +105,15 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠ **Im Lager verlor das Suchfeld nach jedem Buchstaben den Cursor.** Man
+  musste für jeden weiteren Buchstaben neu hineinklicken.
+
+  Ursache: Das Feld wurde **in** der Zeichenfunktion gebaut, und die räumt bei
+  jeder Änderung den ganzen Listenbereich leer — mit jedem getippten Buchstaben
+  zerstörte sich das Feld also selbst. Es entsteht jetzt einmal, ausserhalb.
+  Prüfung 52p hält fest, dass dort kein Eingabefeld mehr gebaut wird: Alles,
+  woran ein Cursor stehen kann, gehört ausserhalb der Zeichenroutine.
+
 - ⚠⚠ **Ohne Internet liess sich „Fehler melden" nicht mehr öffnen** — das
   Fenster blieb starr, bis ein Netz-Timeout ablief. Ausgerechnet die Seite, die
   man bei Störungen braucht.

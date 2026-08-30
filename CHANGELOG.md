@@ -73,6 +73,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠ **In the stock list the search box lost the cursor after every keystroke.**
+  The field was built **inside** the redraw routine, which clears the whole list
+  area on every change — so each typed character destroyed the field itself. It
+  is now created once, outside. Anything that can hold a cursor belongs outside
+  the redraw.
+
 - ⚠⚠ **"Report a problem" could not be opened without internet** — the window
   froze until a network timeout expired. Precisely the page you need when
   something is wrong. The diagnostic report asked scmdb.net for the current game

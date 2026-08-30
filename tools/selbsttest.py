@@ -3984,6 +3984,29 @@ def main():
     pruefe('if len(posten) > 5:' not in _qu52n,
            'das Suchfeld im Lager haengt nicht mehr an einer Postenzahl')
 
+    # 52p. Eingabefelder ueberleben das Neuzeichnen
+    #
+    # Das Suchfeld im Lager stand IN der Zeichenfunktion, und die raeumt bei
+    # jeder Aenderung den Listenbereich leer: Mit jedem getippten Buchstaben
+    # zerstoerte sich das Feld selbst und der Cursor war weg — „im Lager bei
+    # Eingabe im Suchfeld tabt man automatisch raus" (30.08.2026).
+    print()
+    print('52p. Suchfelder werden nicht beim Zeichnen neu gebaut')
+    with open(os.path.join(_wurzelpfad, 'scbp', 'seiten.py'),
+              encoding='utf-8') as _fh52p:
+        _qu52p = _fh52p.read()
+    # Der Lager-Abschnitt: zwischen `def _lager(` und der naechsten Seite.
+    _von52p = _qu52p.index('def _lager(')
+    _lager52p = _qu52p[_von52p:]
+    _zeichnen52p = _lager52p[_lager52p.index('    def zeichnen():'):]
+    # Bis zum Ende der Zeichenfunktion — der naechste Ausdruck auf gleicher
+    # Ebene ist die Anmeldung des Filters.
+    _zeichnen52p = _zeichnen52p.split('filter_var.trace_add')[0]
+    pruefe('rundes_feld' not in _zeichnen52p,
+           'im Lager baut die Zeichenfunktion kein Eingabefeld mehr')
+    pruefe('_such_feld' in _lager52p,
+           'das Suchfeld entsteht einmal, ausserhalb')
+
     # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
     #
     # Eintragen ohne Berichtigen war halb fertig: Wer sich vertippt oder
