@@ -286,9 +286,9 @@ jobs:
       # hinterlegten Schluessel passiert nichts und der Bau bleibt gruen: Eine
       # Chat-Meldung darf eine fertige Veroeffentlichung nicht rot faerben.
       #
-      # ⚠ Der Beitrag landet nur im EIGENEN Discord. Ob ihn das Kartell sieht,
-      # entscheidet weiterhin ein Klick auf „Veroeffentlichen" — genau diese
-      # Die Bremse ist gewollt (siehe Projektnotizen).
+      # ⚠ Der Beitrag landet nur im EIGENEN Discord. Ob ihn jemand anderes
+      # sieht, entscheidet weiterhin ein Klick auf „Veroeffentlichen" — diese
+      # Bremse ist gewollt (siehe Projektnotizen).
       - name: Im Discord melden
         if: always()
         env:

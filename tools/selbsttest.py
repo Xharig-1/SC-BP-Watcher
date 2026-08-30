@@ -4067,15 +4067,7 @@ def main():
     # ich heisse" (30.08.2026). Deshalb sucht diese Pruefung im ganzen Projekt,
     # nicht nur in zwei Dateien. Beim ersten Aufraeumen war nur der CHANGELOG
     # geprueft worden — im Quelltext standen danach noch dreizehn Stellen.
-    _zu_pruefen52r = []
-    for _wurzel52r, _ordner52r, _namen52r in os.walk(_wurzelpfad):
-        if any(_x in _wurzel52r for _x in ('.git', 'assets', 'build', 'dist')):
-            continue
-        for _n52r in _namen52r:
-            if _n52r.endswith(('.py', '.md', '.yml')):
-                _zu_pruefen52r.append(
-                    os.path.relpath(os.path.join(_wurzel52r, _n52r), _wurzelpfad))
-    for _datei52r in sorted(_zu_pruefen52r):
+    for _datei52r in sorted(_versionierte_dateien(_wurzelpfad)):
         _pfad52r = os.path.join(_wurzelpfad, _datei52r)
         if not os.path.exists(_pfad52r):
             continue
@@ -4117,27 +4109,25 @@ def main():
     # Was im Spiel wirklich so heisst, darf nicht anschlagen.
     _ERLAUBT52s = ('racing helmet obsid', 'helmetobsid')
     _funde52s = []
-    for _wurzel52s, _o52s, _namen52s in os.walk(_wurzelpfad):
-        if any(_x in _wurzel52s for _x in ('.git', 'assets', 'build', 'dist',
-                                           'daten')):
+    for _rel52s in sorted(_versionierte_dateien(_wurzelpfad)):
+        if _rel52s.endswith('selbsttest.py'):
+            continue              # hier stehen die Suchbegriffe selbst
+        if _rel52s.startswith('daten' + os.sep) or _rel52s.startswith('daten/'):
+            continue              # Spieldaten — dort heisst ein Helm wirklich so
+        _voll52s = os.path.join(_wurzelpfad, _rel52s)
+        if not os.path.exists(_voll52s):
             continue
-        for _n52s in _namen52s:
-            if not _n52s.endswith(('.py', '.md', '.yml')):
-                continue
-            _rel52s = os.path.relpath(os.path.join(_wurzel52s, _n52s), _wurzelpfad)
-            if _rel52s.endswith('selbsttest.py'):
-                continue          # hier stehen die Suchbegriffe selbst
-            with open(os.path.join(_wurzel52s, _n52s), encoding='utf-8') as _fh52s:
-                for _nr52s, _zeile52s in enumerate(_fh52s, 1):
-                    _klein52s = _zeile52s.lower()
-                    if any(_e in _klein52s for _e in _ERLAUBT52s):
-                        continue
-                    for _b52s in _PRIVAT52s:
-                        if _b52s in _klein52s:
-                            _funde52s.append('%s:%d %s'
-                                             % (_rel52s, _nr52s,
-                                                _zeile52s.strip()[:60]))
-                            break
+        with open(_voll52s, encoding='utf-8') as _fh52s:
+            for _nr52s, _zeile52s in enumerate(_fh52s, 1):
+                _klein52s = _zeile52s.lower()
+                if any(_e in _klein52s for _e in _ERLAUBT52s):
+                    continue
+                for _b52s in _PRIVAT52s:
+                    if _b52s in _klein52s:
+                        _funde52s.append('%s:%d %s'
+                                         % (_rel52s, _nr52s,
+                                            _zeile52s.strip()[:60]))
+                        break
     pruefe(not _funde52s,
            'keine privaten Angaben im Projekt (%d Stellen)' % len(_funde52s))
     for _x52s in _funde52s[:6]:
@@ -4281,6 +4271,37 @@ def main():
         return 1
     print('Alle Prüfungen bestanden.')
     return 0
+
+
+def _versionierte_dateien(wurzel, endungen=('.py', '.md', '.yml')):
+    """Die Dateien, die wirklich veroeffentlicht werden — laut Git.
+
+    ⚠ **Nicht `os.walk`.** Der Maßstab ist nicht, was auf der Platte liegt,
+    sondern was im Repo landet: Eine Anleitung, die per `.gitignore`
+    ausgeschlossen ist, darf privates Beiwerk enthalten — sie geht niemanden
+    an, weil sie nirgends hinkommt. Am 30.08.2026 meldete die Pruefung genau
+    so eine Datei, waehrend der Bau-Laeufer sie gar nicht kannte: lokal rot,
+    im Bau gruen. Zwei verschiedene Wahrheiten ueber dieselbe Frage.
+
+    Ohne Git (entpacktes Archiv) faellt die Pruefung auf das Dateisystem
+    zurueck — dann lieber zu viel pruefen als zu wenig.
+    """
+    import subprocess
+    try:
+        roh = subprocess.run(['git', '-C', wurzel, 'ls-files'],
+                             capture_output=True, text=True, timeout=30)
+        if roh.returncode == 0 and roh.stdout.strip():
+            return [z for z in roh.stdout.splitlines() if z.endswith(endungen)]
+    except Exception:
+        pass
+    raus = []
+    for ordner, _o, namen in os.walk(wurzel):
+        if any(x in ordner for x in ('.git', 'assets', 'build', 'dist')):
+            continue
+        for n in namen:
+            if n.endswith(endungen):
+                raus.append(os.path.relpath(os.path.join(ordner, n), wurzel))
+    return raus
 
 
 def _wurzel():
