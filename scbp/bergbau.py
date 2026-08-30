@@ -190,6 +190,28 @@ def orte():
     return raus
 
 
+def abbauart(name):
+    """Wie wird dieser Rohstoff abgebaut? — Menge aus `fps`, `fahrzeug`, `schiff`.
+
+    ⚠ Gebraucht im Lager: Wer „Iron" einträgt, will auf einen Blick sehen, ob
+    er dafür mit dem Multi-Tool loszieht oder ein Schiff braucht. Die Angabe
+    steckt in den Bergbaudaten an jedem Fundort; hier werden sie über alle Orte
+    des Rohstoffs zusammengefasst.
+
+    `schiff_selten` zählt als `schiff` — für die Frage „womit hole ich das?"
+    macht die Seltenheit keinen Unterschied.
+    """
+    gesucht = norm_rohstoff(name)
+    arten = set()
+    for e in erze():
+        if norm_rohstoff(e.get('name')) != gesucht:
+            continue
+        for eintrag in e.get('orte') or []:
+            for art in (eintrag[2] if len(eintrag) > 2 else ()):
+                arten.add('schiff' if art.startswith('schiff') else art)
+    return arten
+
+
 def erze():
     """Alle Erze: [{name, orte:[(Ort, System, {Art})]}] — die Gegenrichtung."""
     sammlung = {}

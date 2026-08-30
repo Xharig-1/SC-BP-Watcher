@@ -457,6 +457,17 @@ TEXTE = {
     # liegt — kein Log, keine Datenquelle, nur die eigenen Eingaben. Ein
     # versehentlicher Klick waere unwiederbringlich.
     's_lg_leeren':       ('Lager löschen', 'Clear stock'),
+    # Abbauart im Lager: Wer „Iron" einträgt, will sehen, ob er dafür mit dem
+    # Multi-Tool loszieht oder ein Schiff braucht.
+    's_lg_sp_abbau':     ('Abbau', 'Mining'),
+    's_lg_abbau_fps':    ('Hand', 'Hand'),
+    's_lg_abbau_fahrzeug': ('Fahrzeug', 'Vehicle'),
+    's_lg_abbau_schiff': ('Schiff', 'Ship'),
+    's_lg_suche':        ('Im Lager suchen …', 'Search stock …'),
+    's_lg_posten_weg':   ('Diesen Posten löschen', 'Delete this entry'),
+    's_lg_posten_frage_t': ('Posten löschen?', 'Delete entry?'),
+    's_lg_posten_frage': ('%s (%g SCU) wird aus dem Lager genommen.',
+                          '%s (%g SCU) will be removed from your stock.'),
     's_lg_leeren_frage_t': ('Wirklich das ganze Lager löschen?',
                             'Really clear the whole stock?'),
     's_lg_leeren_frage': ('%d Posten werden entfernt. Das lässt sich nicht '
@@ -1465,6 +1476,12 @@ TEXTE = {
     's_bg_alle_erze':    ('Alle Rohstoffe', 'All materials'),
     's_bg_alle_orte':    ('Alle Orte', 'All locations'),
     'ff_alle_zustaende': ('Bauplan: alle', 'Blueprint: all'),
+    # ⭐ Zweiter Filter auf der Herstellung: Reicht mein Material?
+    # ⚠ „laut deinem Lager" steht bewusst dabei — der Watcher kennt den
+    # Frachtraum nicht, er kennt nur die eigene Liste.
+    'ff_alle_material':  ('Material: alle', 'Material: all'),
+    'ff_material_reicht': ('Material reicht', 'Have the material'),
+    'ff_material_fehlt': ('Material fehlt', 'Material missing'),
     'ff_zustand_habe':  ('Bauplan vorhanden', 'Blueprint owned'),
     'ff_zustand_fehlt': ('Bauplan fehlt', 'Blueprint missing'),
     'ff_groesse':      ('Größe %s', 'Size %s'),

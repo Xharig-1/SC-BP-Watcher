@@ -3653,6 +3653,7 @@ def _herstellung(fenster, rahmen):
         suche_var.set('')
         for schluessel in wahl:
             wahl[schluessel] = ''
+        _material_merker.clear()
         filter_bauen()
         zeichnen()
 
@@ -3665,7 +3666,8 @@ def _herstellung(fenster, rahmen):
     # ⚠ Die Werte kommen aus den **vorhandenen** Einträgen, nicht aus einer
     # festen Liste. Bringt ein Patch eine neue Waffenart, steht sie am nächsten
     # Tag im Feld, ohne dass jemand etwas nachträgt.
-    wahl = {'art': '', 'unterart': '', 'hersteller': '', 'zustand': ''}
+    wahl = {'art': '', 'unterart': '', 'hersteller': '', 'zustand': '',
+            'material': ''}
 
     # ⚠⚠ **Dieselbe Gliederung wie in der Bauplan-Liste.** Xharig-1:
     # „BP und Herstellung sind ja die gleichen BP, also muss man auf die
@@ -3751,6 +3753,13 @@ def _herstellung(fenster, rahmen):
              [(h_, h_) for h_ in _werte('hersteller')]),
             ('zustand', t('ff_alle_zustaende'),
              [('habe', t('ff_zustand_habe')), ('fehlt', t('ff_zustand_fehlt'))]),
+            # ⭐ „Was kann ich gerade wirklich bauen?" — gerechnet gegen das
+            # eigene Lager. ⚠ Der Watcher kennt den Frachtraum nicht; er
+            # rechnet mit der von Hand gepflegten Liste, und das steht auch
+            # oben auf der Seite.
+            ('material', t('ff_alle_material'),
+             [('reicht', t('ff_material_reicht')),
+              ('fehlt', t('ff_material_fehlt'))]),
         ]
         _filterleiste(fenster, filter_rahmen, felder, gewechselt, wahl)
 
@@ -3777,6 +3786,31 @@ def _herstellung(fenster, rahmen):
     # vermeiden soll.
     offen = {'name': None}
 
+    _material_merker = {}
+
+    def _material_reicht(e):
+        """Reicht das Lager für die erste Stufe dieses Bauplans?
+
+        ⚠ Einmal je Bauplan gerechnet und gemerkt. Ohne das würde bei jedem
+        Filterklick für 1597 Einträge das Lager durchgegangen.
+        """
+        name = e.get('basis') or e.get('name') or ''
+        if name in _material_merker:
+            return _material_merker[name]
+        wert = False
+        try:
+            rez = herst_modul.rezept(name) or {}
+            stufen = rez.get('stufen') or []
+            if stufen:
+                from . import rohstoffe as lager_modul
+                fehlt = [z for z in lager_modul.pruefen(stufen[0]['zutaten'])
+                         if z[3]]          # z[3] = „fehlt"
+                wert = not fehlt
+        except Exception:
+            wert = False
+        _material_merker[name] = wert
+        return wert
+
     def passt(e):
         if wahl['art'] or wahl['unterart']:
             ober, unter = _kategorie(e)
@@ -3792,6 +3826,12 @@ def _herstellung(fenster, rahmen):
             return False
         if wahl['zustand'] == 'fehlt' and e.get('habe') is not False:
             return False
+        if wahl['material']:
+            reicht = _material_reicht(e)
+            if wahl['material'] == 'reicht' and not reicht:
+                return False
+            if wahl['material'] == 'fehlt' and reicht:
+                return False
         return True
 
     def zeichnen(*_):
@@ -4379,7 +4419,26 @@ def _lager(fenster, rahmen):
     SPALTEN = (('material', 's_lg_sp_material', 22, 'w'),
                ('menge',    's_lg_sp_menge',     9, 'e'),
                ('qualitaet', 's_lg_sp_q',        9, 'e'),
-               ('ort',      's_lg_sp_ort',      18, 'w'))
+               # ⭐ Womit man das holt — Hand, Fahrzeug oder Schiff. Steht in
+               # den Bergbaudaten und beantwortet die Frage, die nach „habe
+               # ich genug?" kommt: „und wie komme ich an mehr?"
+               ('abbau',    's_lg_sp_abbau',    10, 'w'),
+               ('ort',      's_lg_sp_ort',      16, 'w'))
+
+    def _abbau_text(material):
+        """Hand / Fahrzeug / Schiff — oder leer, wenn die Daten fehlen."""
+        try:
+            from . import bergbau as berg
+            arten = berg.abbauart(material)
+        except Exception:
+            return ''
+        namen = []
+        for schluessel, text_ in (('fps', 's_lg_abbau_fps'),
+                                  ('fahrzeug', 's_lg_abbau_fahrzeug'),
+                                  ('schiff', 's_lg_abbau_schiff')):
+            if schluessel in arten:
+                namen.append(t(text_))
+        return ' · '.join(namen)
 
     def zeichnen():
         for w in liste_rahmen.winfo_children():
@@ -4395,8 +4454,11 @@ def _lager(fenster, rahmen):
         tk.Label(liste_rahmen, text=summe_txt, bg=BG, fg=SUB,
                  font=fenster.f_klein, anchor='w').pack(fill='x', pady=(0, 6))
 
-        # Filterfeld — erst ab ein paar Posten, vorher ist es nur im Weg.
-        if len(posten) > 5:
+        # ⚠ **Immer sichtbar, nicht erst ab fünf Posten.** Wer viel im Lager
+        # hat, findet sonst nichts mehr — und wer wenig hat, sieht am leeren
+        # Feld, dass es Suchen gibt, sobald es mehr wird. Ein Bedienelement,
+        # das ab einer Zahl erscheint, überrascht nur.
+        if posten:
             from .hauptfenster import rundes_feld
             # ⚠ Mit Beschriftung. Ein leeres Kästchen über einer Tabelle sagt
             # niemandem, dass es ein Filter ist.
@@ -4464,12 +4526,14 @@ def _lager(fenster, rahmen):
             name_txt = p.get('material') or '?'
             menge_txt = '%g' % float(p.get('menge') or 0)
             q_txt = ('%g' % float(p['qualitaet'])) if p.get('qualitaet') else '—'
+            abbau_txt = _abbau_text(name_txt) or '—'
             ort_txt = p.get('ort') or '—'
             for wert, (_k, _tk, breite, anker_), farbe, schrift in (
                     (name_txt, SPALTEN[0], FG, fenster.f_grund),
                     (menge_txt, SPALTEN[1], ACCENT, fenster.f_grund),
                     (q_txt, SPALTEN[2], SUB, fenster.f_klein),
-                    (ort_txt, SPALTEN[3], SUB, fenster.f_klein)):
+                    (abbau_txt, SPALTEN[3], SUB, fenster.f_klein),
+                    (ort_txt, SPALTEN[4], SUB, fenster.f_klein)):
                 tk.Label(z, text=wert, bg=z_bg, fg=farbe, font=schrift,
                          width=breite, anchor=anker_,
                          cursor='hand2').pack(side='left', padx=(0, 8))
@@ -4514,6 +4578,24 @@ def _lager(fenster, rahmen):
         # und zwar erst dann, wenn es auch gilt.
         rechenhinweis.configure(text=t('s_lg_rechnen'))
         knoepfe_setzen()
+        zeichnen()
+
+    def posten_weg(*_):
+        """Den gerade offenen Posten löschen — mit Rückfrage."""
+        from .hauptfenster import frage_stellen
+        nummer = bearbeitung['nummer']
+        if nummer is None:
+            return
+        alle = lager.laden()
+        if not (0 <= nummer < len(alle)):
+            return
+        p_ = alle[nummer]
+        if not frage_stellen(fenster.root, t('s_lg_posten_frage_t'),
+                             t('s_lg_posten_frage') % (p_.get('material') or '?',
+                                                       float(p_.get('menge') or 0))):
+            return
+        lager.entfernen(nummer)
+        verwerfen()
         zeichnen()
 
     def verwerfen(*_):
@@ -4653,6 +4735,11 @@ def _lager(fenster, rahmen):
                    stark=True).pack(side='left')
             _knopf(fenster, knopf_rahmen, t('s_lg_abbrechen'),
                    verwerfen).pack(side='left', padx=(8, 0))
+            # ⭐ Löschen genau dieses Postens — man hat ihn ja gerade offen.
+            # Das „Löschen" an der Zeile bleibt daneben bestehen; hier ist es
+            # der Weg für den, der schon in der Bearbeitung steckt.
+            _knopf(fenster, knopf_rahmen, t('s_lg_posten_weg'), posten_weg,
+                   gefahr=True).pack(side='left', padx=(24, 0))
 
     knoepfe_setzen()
     knopf_rahmen.pack(anchor='w', pady=(4, 10))

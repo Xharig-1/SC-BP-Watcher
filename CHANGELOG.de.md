@@ -10,6 +10,29 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Neu
 
+- **Das Lager zeigt, womit man den Rohstoff holt** — Hand, Fahrzeug oder
+  Schiff, als eigene Spalte. Die Angabe steckt in den Bergbaudaten und
+  beantwortet die Frage, die nach „habe ich genug?" kommt: „und wie komme ich
+  an mehr?"
+
+- **Das Lager ist durchsuchbar** — das Suchfeld ist jetzt immer da, nicht erst
+  ab fünf Posten. Wer viel eingetragen hat, findet sonst nichts mehr; wer wenig
+  hat, sieht am leeren Feld, dass es Suchen gibt.
+
+- **Einen einzelnen Posten löschen**, während man ihn bearbeitet — roter Knopf
+  neben „Änderung speichern", mit Rückfrage samt Name und Menge.
+
+- **Die Herstellung filtert nach dem Material:** „Material reicht" oder
+  „Material fehlt", gerechnet gegen dein Lager. Bei 1597 Bauplänen und dem
+  aktuellen Lagerstand sind das 19 gegen 1573 — die Liste wird damit erst
+  benutzbar.
+
+  > ⚠ Gerechnet wird mit **deiner Liste**, nicht mit deinem Frachtraum. Den
+  > kennt der Watcher nicht, und das steht auch oben auf der Seite.
+
+  Dazu weiterhin der Filter „Bauplan vorhanden / fehlt" — beides zusammen
+  beantwortet „was kann ich jetzt sofort bauen?".
+
 - **Ein roter Knopf „Lager löschen"** — mit Rückfrage, damit niemand
   versehentlich seinen Bestand verliert. In der Frage steht, **wie viele
   Posten** verschwinden; „4 Posten werden entfernt" wiegt anders als „wirklich

@@ -3950,6 +3950,40 @@ def main():
     finally:
         _ov52m.root.destroy()
 
+    # 52n. Abbauart im Lager und die neuen Filter
+    print()
+    print('52n. Abbauart und Herstellungs-Filter')
+    from scbp import bergbau as _bg52n
+    _echt52n = _bg52n.erze
+    _bg52n.erze = lambda: [
+        {'name': 'Iron (Ore)', 'orte': [('Daymar', 'Stanton', {'schiff'}),
+                                        ('Yela', 'Stanton', {'schiff_selten'})]},
+        {'name': 'Aphorite', 'orte': [('Daymar', 'Stanton', {'fps'})]},
+    ]
+    try:
+        pruefe(_bg52n.abbauart('Iron') == {'schiff'},
+               'Schiffsabbau wird erkannt — auch aus schiff_selten')
+        pruefe(_bg52n.abbauart('Aphorite') == {'fps'},
+               'Handabbau ebenso')
+        pruefe(_bg52n.abbauart('Gibtsnicht') == set(),
+               'ein unbekannter Rohstoff ergibt keine Art')
+    finally:
+        _bg52n.erze = _echt52n
+    for _k52n in ('s_lg_sp_abbau', 's_lg_abbau_fps', 's_lg_abbau_fahrzeug',
+                  's_lg_abbau_schiff', 's_lg_posten_weg', 's_lg_posten_frage',
+                  's_lg_leeren', 's_lg_leeren_frage', 's_lg_geleert',
+                  'ff_alle_material', 'ff_material_reicht', 'ff_material_fehlt'):
+        _w52n = _sp51.TEXTE.get(_k52n)
+        pruefe(bool(_w52n) and len(_w52n) == 2 and all(_w52n),
+               'Text %s gibt es deutsch und englisch' % _k52n)
+    # ⚠ Das Suchfeld im Lager erscheint nicht mehr erst ab fuenf Posten — wer
+    # viel hat, findet sonst nichts mehr.
+    with open(os.path.join(_wurzelpfad, 'scbp', 'seiten.py'),
+              encoding='utf-8') as _fh52n:
+        _qu52n = _fh52n.read()
+    pruefe('if len(posten) > 5:' not in _qu52n,
+           'das Suchfeld im Lager haengt nicht mehr an einer Postenzahl')
+
     # 53. Lagerbestand berichtigen — und Namen, die wirklich passen
     #
     # Eintragen ohne Berichtigen war halb fertig: Wer sich vertippt oder

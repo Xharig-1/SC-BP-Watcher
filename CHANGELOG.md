@@ -10,6 +10,22 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- **The stock list shows how a material is mined** — hand, vehicle or ship, as
+  its own column.
+
+- **The stock list is searchable** — the search box is always there now, not
+  only from five entries on.
+
+- **Delete a single entry** while editing it — a red button next to "Save
+  change", with a confirmation naming the entry and amount.
+
+- **Crafting filters by material:** "have the material" or "material missing",
+  calculated against your stock. With 1597 blueprints that is 19 against 1573 —
+  which is what makes the list usable.
+
+  > ⚠ Calculated from **your list**, not your cargo hold. The watcher does not
+  > know the latter.
+
 - **A red "Clear stock" button** — with a confirmation, so nobody loses their
   stock by accident. The question names **how many entries** will go. Your
   stock is handwork that exists nowhere else, and the export button sits right
