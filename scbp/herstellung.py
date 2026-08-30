@@ -139,6 +139,12 @@ def _sichern(daten):
         return False
 
 
+def vergessen():
+    """Zwischenspeicher leeren — nach einem Rezept-Update aufzurufen."""
+    global _nach_material
+    _nach_material = {}
+
+
 def stand():
     """Für welchen Spiel-Build liegen die Rezepte hier? Oder None."""
     return laden().get('build')
@@ -170,6 +176,7 @@ def aktualisieren(build, fortschritt=None):
     # Ein Bauteil daraus ist eine Einbahnstrasse.
     _sichern({'format': FORMAT, 'build': build, 'blueprints': liste,
               'dismantle': roh.get('dismantle') or {}})
+    vergessen()
     return True, t('m_h_geladen') % len(liste)
 
 
@@ -791,12 +798,84 @@ def rohstoffnamen():
     return sorted(namen, key=lambda x: x.lower())
 
 
+def einlagerbar():
+    """**Alles**, was im Lager stehen darf — die abschliessende Liste.
+
+    Drei Quellen, alle aus den Spieldaten:
+
+    | Quelle | Anzahl | wofür |
+    |---|---|---|
+    | Rezept-Materialien | 26 | was zum Herstellen gebraucht wird |
+    | Mineralien aus den Bergbaudaten | 39 | auch was (noch) in keinem Rezept steht |
+    | Pflanzen (`Harvestables`) | 13 | von Hand geerntet, mit Qualität |
+
+    ⚠⚠ **Diese Liste ist eine Zusage, keine Empfehlung.** Was nicht darin
+    steht, lässt sich nicht eintragen — auch nicht „trotzdem". Der Grund ist
+    kein Ordnungssinn: Ein freies Textfeld heisst, dass jemand Schimpfwörter,
+    Religiöses oder Politisches eintragen, ein Bildschirmfoto machen und es
+    verbreiten kann. Am Ende fragt niemand, wer das getippt hat — es steht in
+    diesem Werkzeug, also kommt es scheinbar von dessen Autor. Am 30.08.2026
+    unmissverständlich festgelegt: „NUR was auch in der Rohstoff-Liste ist darf
+    speicherbar sein, sonst nichts."
+
+    Fehlt etwas in der Liste, wird die **Liste** ergänzt (sie kommt aus den
+    Daten), nicht die Sperre gelockert.
+    """
+    # ⚠ Nach dem **angeglichenen** Namen zusammenfassen. „Agricium" und
+    # „Agricium (Ore)" sind für uns dasselbe; beide anzubieten macht die
+    # Vorschlagsliste doppelt so lang und die Auswahl zur Ratefrage.
+    #
+    # Vorrang hat die Schreibweise aus den Rezepten — die steht auch in der
+    # Herstellung, und zwei Schreibweisen für einen Stapel wären genau der
+    # Fehler, den die Liste verhindern soll.
+    nach_schluessel = {}
+    for n in rohstoffnamen():
+        nach_schluessel.setdefault(norm_rohstoff(n), n)
+    try:
+        from . import bergbau
+        weitere = [(e.get('name') or '').strip()
+                   for e in (bergbau.laden().get('elemente') or {}).values()]
+        weitere += bergbau.pflanzen()
+        for n in weitere:
+            if n:
+                nach_schluessel.setdefault(norm_rohstoff(n), n)
+    except Exception as ausnahme:
+        # Ohne Bergbaudaten bleibt es bei den Rezept-Materialien. Weniger
+        # Auswahl ist hinnehmbar — ein offenes Textfeld nicht.
+        fehler.merken('herstellung.einlagerbar', ausnahme)
+    return sorted(nach_schluessel.values(), key=str.lower)
+
+
 def kennt_rohstoff(name):
     """Ist dieser Name einem Rezept-Material zuzuordnen?"""
     if not (name or '').strip():
         return False
     gesucht = norm_rohstoff(name)
     return any(norm_rohstoff(n) == gesucht for n in rohstoffnamen())
+
+
+def darf_ins_lager(name):
+    """Darf dieser Name im Lager stehen? Siehe `einlagerbar()`."""
+    if not (name or '').strip():
+        return False
+    gesucht = norm_rohstoff(name)
+    return any(norm_rohstoff(n) == gesucht for n in einlagerbar())
+
+
+def lager_name(eingabe):
+    """Die verbindliche Schreibweise für das Lager — oder `None`.
+
+    ⚠ Damit landet nie die Tippweise des Nutzers im Lager, sondern immer der
+    Name aus den Spieldaten. Sonst stehen „orison-savrilium" und „Savrilium"
+    als zwei Stapel da.
+    """
+    gesucht = norm_rohstoff(eingabe)
+    if not gesucht:
+        return None
+    for n in einlagerbar():
+        if norm_rohstoff(n) == gesucht:
+            return n
+    return None
 
 
 def offizieller_name(eingabe):
@@ -849,6 +928,57 @@ def offizieller_name(eingabe):
         if a - b >= 0.08:
             return schluessel[nahe[0]]
     return None
+
+
+_nach_material = {}
+
+
+def bauplaene_mit(rohstoff):
+    """Welche Baupläne brauchen diesen Rohstoff? Namen, alphabetisch.
+
+    ⭐ **Die Gegenrichtung, die gefehlt hat.** Die Suche schaute nur auf
+    Bauplan-NAMEN. Wer „sad" tippte, um zu sehen, was aus Sadaryx wird, bekam
+    „Cru*sad*er Edition" — und nie eine Antwort. Am 30.08.2026 gemeldet:
+    „Was kann ich aus Sadaryx herstellen? Meine User werden es nie erfahren."
+
+    ⚠ Eine **leere Liste ist auch eine Antwort**, und zwar oft die richtige:
+    26 der 52 einlagerbaren Namen kommen in keinem einzigen Rezept vor — alle
+    13 Pflanzen und 13 Mineralien, darunter Sadaryx. Das muss dastehen, statt
+    dass jemand weitersucht.
+    """
+    global _nach_material
+    if not _nach_material:
+        for b in laden().get('blueprints') or []:
+            name = b.get('productName')
+            if not name:
+                continue
+            for t_ in b.get('tiers') or []:
+                for s in _zutaten(t_):
+                    _rohstoff = s[1]
+                    if _rohstoff:
+                        _nach_material.setdefault(norm_rohstoff(_rohstoff),
+                                                  set()).add(name)
+    return sorted(_nach_material.get(norm_rohstoff(rohstoff)) or (),
+                  key=str.lower)
+
+
+def aehnliche_lagernamen(name, hoechstens=4):
+    """Vorschläge aus der **Lager**-Liste — Mineralien und Pflanzen.
+
+    Wie `aehnliche_rohstoffe`, nur über `einlagerbar()`. ⚠ Eigene Funktion
+    statt eines Schalters: Die Rezept-Vorschläge in der Herstellung dürfen
+    keine Pflanzen anbieten, die dort nie vorkommen.
+    """
+    import difflib
+    text = (name or '').strip().lower()
+    if not text:
+        return []
+    alle = einlagerbar()
+    # Erst, was den Text enthält — „ran" soll „Laranite" und „Taranite" finden.
+    treffer = [n for n in alle if text in n.lower()]
+    if treffer:
+        return treffer[:hoechstens]
+    return difflib.get_close_matches(text, alle, n=hoechstens, cutoff=0.6)
 
 
 def aehnliche_rohstoffe(name, hoechstens=3):

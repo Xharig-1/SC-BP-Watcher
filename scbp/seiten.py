@@ -3853,15 +3853,42 @@ def _herstellung(fenster, rahmen):
         for w in liste_rahmen.winfo_children():
             w.destroy()
         text = suche_var.get().strip().lower()
+
+        # ⭐⭐ **Auch nach der ZUTAT suchen.** Bis v3.3.0-rc40 sah die Suche
+        # nur auf Bauplan-Namen. Wer „ric" tippte, um zu sehen, was aus Riccite
+        # wird, bekam „Lo*ric*a" und „Fab*ric*ation" — Zufallstreffer — und nie
+        # die 84 Baupläne, die Riccite wirklich brauchen. Am 30.08.2026
+        # gemeldet: „Was kann ich aus Sadaryx herstellen? Meine User werden es
+        # nie erfahren."
+        material_treffer, aus_material = [], set()
+        if text:
+            for name_ in herst_modul.einlagerbar():
+                if text in name_.lower():
+                    material_treffer.append(name_)
+                    aus_material.update(herst_modul.bauplaene_mit(name_))
+
         treffer = [e for e in eintraege
                    if passt(e)
                    and (not text
                         or text in e['name'].lower()
                         or text in (e['hersteller'] or '').lower()
-                        or text in (e['art'] or '').lower())]
+                        or text in (e['art'] or '').lower()
+                        or e['name'] in aus_material)]
+
+        # ⚠ Eine **leere Liste ist auch eine Antwort** — und oft die richtige:
+        # 26 der 52 einlagerbaren Namen kommen in keinem Rezept vor, alle 13
+        # Pflanzen darunter. Das muss dastehen, sonst sucht jemand weiter.
+        for name_ in material_treffer[:3]:
+            anzahl = len(herst_modul.bauplaene_mit(name_))
+            _fliesstext(liste_rahmen,
+                        (t('s_he_aus') % (name_, anzahl) if anzahl
+                         else t('s_he_aus_keine') % name_),
+                        fenster.f_klein, fill='x')
+
         if not treffer:
-            _fliesstext(liste_rahmen, t('s_he_nichts'), fenster.f_klein,
-                        fill='x')
+            if not material_treffer:
+                _fliesstext(liste_rahmen, t('s_he_nichts'), fenster.f_klein,
+                            fill='x')
             return
         for e in treffer[:HERST_MAX]:
             _herstellung_zeile(fenster, liste_rahmen, e, offen, zeichnen)
@@ -4763,10 +4790,13 @@ def _lager(fenster, rahmen):
             w.destroy()
         vorschlag_rahmen.pack_forget()
         text = material.get().strip()
-        if not text or h.kennt_rohstoff(text):
+        # ⚠ Gegen die **Lager**-Liste prüfen, nicht gegen die Rezepte: Pflanzen
+        # und Mineralien ohne Rezept sind einlagerbar, kämen sonst aber als
+        # „unbekannt" daher.
+        if not text or h.darf_ins_lager(text):
             return
         vorschlag_rahmen.pack(fill='x', pady=(4, 0))
-        treffer = h.aehnliche_rohstoffe(text)
+        treffer = h.aehnliche_lagernamen(text)
         if not treffer:
             _fliesstext(vorschlag_rahmen, t('s_lg_unbekannt'), fenster.f_klein,
                         fill='x')
@@ -4928,29 +4958,42 @@ def _lager(fenster, rahmen):
             q_txt = ('%g' % float(p['qualitaet'])) if p.get('qualitaet') else '—'
             abbau_txt = _abbau_text(name_txt) or '—'
             ort_txt = p.get('ort') or '—'
-            for wert, (_k, _tk, breite, anker_), farbe, schrift in (
-                    (name_txt, SPALTEN[0], FG, fenster.f_grund),
-                    (menge_txt, SPALTEN[1], ACCENT, fenster.f_grund),
-                    (q_txt, SPALTEN[2], SUB, fenster.f_klein),
-                    (abbau_txt, SPALTEN[3], SUB, fenster.f_klein),
-                    (ort_txt, SPALTEN[4], SUB, fenster.f_klein)):
-                tk.Label(z, text=wert, bg=z_bg, fg=farbe, font=schrift,
-                         width=breite, anchor=anker_,
-                         cursor='hand2').pack(side='left', padx=(0, 8))
-
-            # Die ganze Zeile oeffnet den Posten zum Berichtigen. ⚠ Auch jedes
-            # Label einzeln binden — ein Label verschluckt den Klick, sonst
-            # trifft man nur die Luecken dazwischen.
-            z.bind('<Button-1>', lambda _e, n=nummer: bearbeiten(n))
-            for kind in z.winfo_children():
-                kind.bind('<Button-1>', lambda _e, n=nummer: bearbeiten(n))
-
+            # ⚠⚠ **„Löschen" MUSS vor den Spalten gepackt werden.** Tk gibt
+            # den Platz in der Reihenfolge des Packens: Was links zuerst
+            # kommt, nimmt sich seine Breite, und der rechte Rest bekommt, was
+            # übrig ist — bei fünf Spalten mit fester Breite also unter
+            # Umständen nichts. Auf dem Bildschirm stand deshalb „chen" statt
+            # „Löschen" (30.08.2026 gemeldet). Zuerst gepackt, reserviert es
+            # seinen Platz, und die Spalten teilen sich den Rest.
             weg = tk.Label(z, text=t('s_lg_weg'), bg=z_bg, fg=SUB,
                            font=fenster.f_klein, cursor='hand2', anchor='e')
             weg.pack(side='right', padx=(8, 4))
             weg.bind('<Button-1>',
                      lambda _e, n=nummer: (lager.entfernen(n),
                                            verwerfen(), zeichnen()))
+
+            spalten_labels = []
+            for wert, (_k, _tk, breite, anker_), farbe, schrift in (
+                    (name_txt, SPALTEN[0], FG, fenster.f_grund),
+                    (menge_txt, SPALTEN[1], ACCENT, fenster.f_grund),
+                    (q_txt, SPALTEN[2], SUB, fenster.f_klein),
+                    (abbau_txt, SPALTEN[3], SUB, fenster.f_klein),
+                    (ort_txt, SPALTEN[4], SUB, fenster.f_klein)):
+                lbl = tk.Label(z, text=wert, bg=z_bg, fg=farbe, font=schrift,
+                               width=breite, anchor=anker_, cursor='hand2')
+                lbl.pack(side='left', padx=(0, 8))
+                spalten_labels.append(lbl)
+
+            # Die ganze Zeile oeffnet den Posten zum Berichtigen. ⚠ Auch jedes
+            # Label einzeln binden — ein Label verschluckt den Klick, sonst
+            # trifft man nur die Luecken dazwischen.
+            #
+            # ⚠ **Nur die Spalten**, nicht „Löschen": Das hat seine eigene
+            # Aufgabe. Frueher ergab sich das von selbst, weil es nach dieser
+            # Schleife entstand — jetzt wird es ausdruecklich ausgelassen.
+            z.bind('<Button-1>', lambda _e, n=nummer: bearbeiten(n))
+            for kind in spalten_labels:
+                kind.bind('<Button-1>', lambda _e, n=nummer: bearbeiten(n))
 
     filter_var.trace_add('write', lambda *_: zeichnen())
 
@@ -5023,27 +5066,33 @@ def _lager(fenster, rahmen):
         # aber von keinem Rezept gefunden. Vorschlaege allein reichen nicht —
         # sie lassen sich uebergehen.
         from . import herstellung as h_modul
-        richtig = h_modul.offizieller_name(name)
+        richtig = h_modul.lager_name(name)
         if richtig is None:
-            if frei['name'] != name:
-                # Erster Versuch mit einem fremden Namen: nicht eintragen,
-                # sondern fragen. Der Ausweg steht als Knopf daneben, damit
-                # niemand festsitzt, der wirklich etwas Unbekanntes hat.
-                frei['name'] = name
-                meldung.configure(text=t('s_lg_name_fremd') % name, fg=GOLD)
-                vorschlaege_zeigen()
-                knoepfe_setzen()
-                return
-            # Zweiter Klick auf „Trotzdem eintragen" — dann eben so.
-        else:
-            if richtig != name:
-                # Berichtigung nicht verschweigen. Wer „Aslerite" tippt und
-                # „Aslarite" in der Liste findet, soll wissen, warum.
-                if richtig.lower() != name.lower():
-                    meldung.configure(text=t('s_lg_berichtigt') % (name, richtig),
-                                      fg=SUB)
-                name = richtig
-            frei['name'] = None
+            # ⚠⚠ **HIER endet es. Es gibt keinen Ausweg, und das ist Absicht.**
+            #
+            # Bis v3.3.0-rc40 stand daneben ein Knopf „Trotzdem eintragen".
+            # Damit war das Feld faktisch frei — und ein freies Textfeld heisst,
+            # dass jemand Schimpfwoerter, Religioeses oder Politisches
+            # eintraegt, ein Bildschirmfoto macht und es verbreitet. Am Ende
+            # fragt niemand, wer das getippt hat: Es steht in diesem Werkzeug,
+            # also kommt es scheinbar von dessen Autor.
+            #
+            # Am 30.08.2026 unmissverstaendlich festgelegt: „NUR was auch in
+            # der Rohstoff-Liste ist darf speicherbar sein, sonst nichts."
+            #
+            # Die Liste umfasst alle 39 Mineralien und 13 Pflanzen aus den
+            # Spieldaten (`herstellung.einlagerbar()`). Fehlt etwas, wird die
+            # LISTE ergaenzt — nicht die Sperre gelockert.
+            meldung.configure(text=t('s_lg_name_fremd') % name, fg=GOLD)
+            vorschlaege_zeigen()
+            return
+        if richtig != name:
+            # Berichtigung nicht verschweigen. Wer „Aslerite" tippt und
+            # „Aslarite" in der Liste findet, soll wissen, warum.
+            if richtig.lower() != name.lower():
+                meldung.configure(text=t('s_lg_berichtigt') % (name, richtig),
+                                  fg=SUB)
+            name = richtig
         # Auf- und Abbuchen: „+5" legt dazu, „-2" nimmt weg. Nur sinnvoll,
         # solange ein Posten offen ist — bei einem neuen gibt es nichts, worauf
         # sich das Vorzeichen beziehen koennte, dort zaehlt schlicht die Zahl.
@@ -5132,9 +5181,6 @@ def _lager(fenster, rahmen):
         if bearbeitung['nummer'] is None:
             _knopf(fenster, knopf_rahmen, t('s_lg_eintragen'),
                    eintragen).pack(side='left')
-            if frei['name']:
-                _knopf(fenster, knopf_rahmen, t('s_lg_trotzdem'),
-                       eintragen).pack(side='left', padx=(8, 0))
         else:
             _knopf(fenster, knopf_rahmen, t('s_lg_speichern'), eintragen,
                    stark=True).pack(side='left')

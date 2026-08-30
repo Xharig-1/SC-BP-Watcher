@@ -1648,10 +1648,18 @@ TEXTE = {
     # ⚠ Der Name ist der Schluessel zwischen Lager und Rezept. Ein Vertipper
     # macht den Bestand still unbrauchbar: Die Liste sieht richtig aus, nur die
     # Haekchen bleiben aus. Deshalb wird abgeglichen, statt zu uebernehmen.
-    's_lg_name_fremd':   ('„%s" kommt in keinem Rezept vor. Nimm einen '
-                          'Vorschlag — oder trag es bewusst trotzdem ein.',
-                          '"%s" appears in no recipe. Pick a suggestion — or '
-                          'add it anyway on purpose.'),
+    # ⚠⚠ Es gibt keinen Ausweg mehr — der Text darf also nicht klingen,
+    # als gaebe es einen. „Du kannst es trotzdem eintragen" stand hier
+    # bis v3.3.0-rc40 und war die Einladung, ein freies Textfeld zu
+    # benutzen. Grund fuer die Sperre: siehe `herstellung.einlagerbar()`.
+    's_lg_name_fremd':   ('„%s" gibt es im Spiel nicht. Es lassen sich nur '
+                          'Rohstoffe und Pflanzen aus Star Citizen '
+                          'eintragen — tipp die ersten Buchstaben, dann '
+                          'kommt der Vorschlag.',
+                          '„%s" does not exist in the game. Only Star '
+                          'Citizen resources and plants can be entered — '
+                          'type the first letters and a suggestion '
+                          'appears.'),
     's_lg_trotzdem':     ('Trotzdem eintragen', 'Add anyway'),
     's_lg_keine_guete':  ('Trag die Qualität ein, eine Zahl von 0 bis 1000',
                           'Enter the quality, a number from 0 to 1000'),
@@ -1680,6 +1688,12 @@ TEXTE = {
     # diesen Zusatz liest man „× 0.800" als Verschlechterung, obwohl es
     # der bestmoegliche Wert ist.
     's_he_weniger_gut':  ('weniger ist besser', 'lower is better'),
+    # ⭐ Suche nach Zutat: „was kann ich aus X bauen?"
+    's_he_aus':          ('Aus %s: %d Baupläne', 'From %s: %d blueprints'),
+    's_he_aus_keine':    ('%s kommt in keinem Rezept vor — daraus lässt '
+                          'sich nichts herstellen.',
+                          '%s appears in no recipe — nothing can be made '
+                          'from it.'),
     # ⚠ „kaufen oder abbauen?" — die Frage, die nach „dir fehlt X" kommt.
     # Ein Kaufpreis von 0 heisst NICHT kaufbar, nicht kostenlos.
     # ⚠ Die Qualitaet gehoert an den Preis. Ohne sie liest sich „kaufen"

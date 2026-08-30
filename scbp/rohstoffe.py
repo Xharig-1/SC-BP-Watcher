@@ -167,9 +167,49 @@ def zahl_lesen(text):
         return None
 
 
+def gleicher_posten(a_material, a_guete, a_ort, b):
+    """Sind das zwei Eintragungen für **denselben** Stapel?
+
+    Gleich heisst: gleiches Material, gleiche Qualität, gleicher Lagerort. Nur
+    dann darf zusammengezählt werden — unterschiedliche Qualität ist ein
+    anderer Stapel, und was in Orison liegt, hilft in Pyro nicht.
+
+    ⚠ Verglichen wird über `norm_rohstoff` und ohne Rücksicht auf Gross- und
+    Kleinschreibung: „orison" und „Orison" sind derselbe Ort, „Iron (Ore)" und
+    „Iron" dasselbe Material.
+    """
+    if norm_rohstoff(a_material) != norm_rohstoff(b.get('material')):
+        return False
+    if (a_ort or '').strip().lower() != (b.get('ort') or '').strip().lower():
+        return False
+    a_q = None if a_guete is None else int(round(float(a_guete)))
+    b_q = b.get('qualitaet')
+    b_q = None if b_q is None else int(round(float(b_q)))
+    return a_q == b_q
+
+
 def eintragen(material, menge, qualitaet=None, ort=''):
-    """Einen Posten hinzufügen. Gibt die neue Gesamtmenge des Materials zurück."""
+    """Einen Posten hinzufügen. Gibt die neue Gesamtmenge des Materials zurück.
+
+    ⚠⚠ **Gleiches Material, gleiche Qualität, gleicher Ort wird
+    ZUSAMMENGEZÄHLT**, nicht ein zweites Mal in die Liste gestellt. Wer zweimal
+    Savrilium Q 600 in Orison einträgt, hat einen Stapel mit der Summe — keine
+    zwei Zeilen, die gleich aussehen und einzeln gepflegt werden müssten.
+
+    Am 30.08.2026 gemeldet, mit Ansage: „ich hab mich mal extra dumm gestellt,
+    weil das sind die Fälle wie es passieren wird." Genau so: Man trägt nach
+    jedem Abbauflug nach und weiss nicht mehr, ob der Stapel schon dasteht.
+
+    Ohne das Zusammenfassen zerfällt ein Lager mit der Zeit in Dutzende
+    Zeilen desselben Materials, und die Herstellung rechnet zwar richtig, aber
+    niemand findet mehr etwas.
+    """
     posten = laden()
+    for p in posten:
+        if gleicher_posten(material, qualitaet, ort, p):
+            p['menge'] = round(float(p.get('menge') or 0) + float(menge or 0), 6)
+            sichern(posten)
+            return menge_von(material)
     posten.append({'material': (material or '').strip(),
                    'menge': float(menge or 0),
                    'qualitaet': qualitaet,

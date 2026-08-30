@@ -54,6 +54,7 @@ mal); nur Wrackteile tragen dort einen Namen. Wer darüber verknüpft, bekommt
 derselben Liste, sind aber Wracks und Pflanzen.
 """
 import json
+import re
 import os
 
 from . import fehler, pfade
@@ -316,6 +317,50 @@ def signatur_suchen(eingabe):
                 treffer.append((name, anzahl, gesamt, ab))
     treffer.sort(key=lambda x: (abs(x[3]), x[0]))
     return treffer
+
+
+def pflanzen():
+    """Die Pflanzen, die man von Hand ernten kann — mit lesbarem Namen.
+
+    ⚠ Sie stehen **nicht** bei den Mineralien (`mineableElements`), sondern als
+    Vorkommen mit `presetName` an den Fundorten, in Gruppen namens
+    `Harvestables`. Der Watcher hat sie deshalb nie gekannt: Er las nur
+    Vorkommen mit `compositionGuid` und ueberging alle anderen — 661 von 1.025.
+
+    Die Namen stehen dort zusammengeschrieben (`Plant HeartoftheWoods`); hier
+    werden sie auseinandergenommen zu „Heart of the Woods", so wie das Spiel
+    sie zeigt.
+
+    Gibt eine alphabetische Liste.
+    """
+    da = laden()
+    raus = set()
+    for o in da.get('locations') or []:
+        for g in o.get('groups') or []:
+            if g.get('groupName') != 'Harvestables':
+                continue
+            for dep in g.get('deposits') or []:
+                name = (dep.get('presetName') or '').strip()
+                if not name.startswith('Plant '):
+                    continue
+                raus.add(_lesbar(name[len('Plant '):]))
+    return sorted(raus, key=str.lower)
+
+
+def _lesbar(zusammen):
+    """`HeartoftheWoods` wird zu `Heart of the Woods`.
+
+    ⚠ Die kleinen Bindewoerter stehen in den Daten klein und mitten im Wort;
+    sie an jedem Grossbuchstaben zu trennen ergaebe „Heart of the Woods" nur
+    zufaellig richtig. Deshalb erst die bekannten Woerter herausloesen, dann an
+    Grossbuchstaben trennen.
+    """
+    # ⚠ Das Bindewort darf auch von einem KLEINBUCHSTABEN gefolgt sein.
+    # „HeartoftheWoods" ist genau so gebaut: auf „of" folgt „the". Mit
+    # `(?=[A-Z])` blieb daraus „Heartof the Woods".
+    text = re.sub(r'(?<=[a-z])(of|the|and)(?=[a-zA-Z])', r' \1 ', zusammen)
+    text = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', text)
+    return ' '.join(text.split())
 
 
 def raffinerien_fuer(rohstoff):
