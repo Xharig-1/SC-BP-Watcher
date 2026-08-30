@@ -96,14 +96,30 @@ INI_ENDE = (
 # (aus echten Log-Sicherungen, 29.08.2026: 701 Annahmen, 303 Abschluesse, 112
 # Ruecknahmen, 57 Fehlschlaege).
 TABELLE = {
-    'de': ['Auftrag angenommen', 'Auftrag geteilt'],
+    # ⚠ Schweizerdeutsch ist eine **eigene Fassung** derselben Übersetzung
+    # (`live-CH`) und schreibt „Uftrag" statt „Auftrag". Am 30.08.2026 direkt
+    # in der Quelle nachgesehen (`rjcncpt/StarCitizen-Deutsch-INI`, Ordner
+    # `live-CH`) — nicht geraten:
+    #
+    #     mobiGlas_ui_MissionEvent_Activated=Uftrag angenommen: %s
+    #     mobiGlas_ui_MissionEvent_Complete=Uftrag abgschlosse: %s
+    #
+    # Ohne diese Einträge erkennt der Watcher dort **keinen einzigen Auftrag** —
+    # still, ohne Fehlermeldung. Greift nur als Rückfall: Liegt eine lesbare
+    # `global.ini` vor, gewinnt die immer.
+    'de': ['Auftrag angenommen', 'Auftrag geteilt',
+           'Uftrag angenommen', 'Uftrag geteilt'],          # live-CH
     'en': ['Contract Accepted', 'Contract Shared'],
 }
 
 # ⚠ „Auftrag geteilt" gehoert NICHT hierher — das ist ein Anfang, kein Ende.
 TABELLE_ENDE = {
+    # ⚠ Auch hier die Schweizer Fassung — und die weicht bei JEDEM der drei
+    # Enden ab: „abgschlosse", „fehlgschlage". Nur „zurückgezogen" ist gleich.
     'de': ['Auftrag abgeschlossen', 'Auftrag zurückgezogen',
-           'Auftrag fehlgeschlagen'],
+           'Auftrag fehlgeschlagen',
+           'Uftrag abgschlosse', 'Uftrag zurückgezogen',
+           'Uftrag fehlgschlage'],                          # live-CH
     'en': ['Contract Complete', 'Contract Withdrawn', 'Contract Failed'],
 }
 

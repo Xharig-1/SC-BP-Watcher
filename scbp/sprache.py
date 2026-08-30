@@ -903,6 +903,26 @@ TEXTE = {
                         'Was the only data source at the start — without it this '
                         'project would not exist. If installed, it confirms finds '
                         'and supplies the German names.'),
+    # ⚠⚠ Die deutsche Übersetzung selbst hat einen eigenen Urheber und eine
+    # eigene Lizenz. Die verlangt ausdrücklich **Name UND Repository** — bis
+    # v3.3.0-rc41 stand hier nur „SC Deutsch Launcher", also der Verteiler,
+    # nicht der Autor. Am 30.08.2026 nachgereicht.
+    's_dk_ini':        ('Die deutsche Übersetzung des Spiels selbst — die '
+                        'Grundlage, in die der Watcher seine Bauplan-Angaben '
+                        'schreibt. Es gibt sie auch auf Schweizerdeutsch; beide '
+                        'Fassungen erkennt der Watcher.\n\n'
+                        'Die Datei wird nur auf deinem Rechner ergänzt und '
+                        'nirgendwohin weitergegeben. Die Quellenangabe in ihrer '
+                        'ersten Zeile bleibt dabei unangetastet — so verlangt es '
+                        'der Autor, und so findet jeder zur ursprünglichen '
+                        'Übersetzung zurück.',
+                        'The German translation of the game itself — the base the '
+                        'watcher writes its blueprint notes into. There is a Swiss '
+                        'German edition too; the watcher recognises both.\n\n'
+                        'The file is only extended on your own machine and is never '
+                        'passed on. The source note in its first line stays '
+                        'untouched — the author asks for that, and it is how anyone '
+                        'finds their way back to the original translation.'),
     's_dk_freiwillig': ('freiwillig', 'optional'),
     's_dk_keine_lizenz': ('keine Lizenzangabe', 'no licence stated'),
     's_dk_tester':     ('Tester', 'tester'),

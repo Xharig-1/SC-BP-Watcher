@@ -1263,6 +1263,10 @@ def main():
             # Wortlaut des SPIELS, mit dem im Log GESUCHT wird — angezeigt
             # wird er nie. Rueckfall, falls die `global.ini` fehlt.
             ('scbp/auftraege.py', 'Auftrag zurückgezogen'),
+            # ⚠ Die schweizerdeutsche Fassung (live-CH) derselben
+            # Rueckfall-Tabelle. Kein Anzeigetext, sondern ein Suchmuster
+            # fuer die Log-Zeile.
+            ('scbp/auftraege.py', 'Uftrag zurückgezogen'),
             # Datenfeld der Übersetzungsquellen, nirgends angezeigt (geprüft)
             ('scbp/uebersetzung.py', 'Deutsche Übersetzung (rjcncpt)'),
             ('scbp/uebersetzung.py', 'StarStrings (aufgeräumte englische Texte)'),
@@ -5516,6 +5520,126 @@ def main():
     # d) Qualitaet: nur 0 bis 1000.
     pruefe('0 <= q <= 1000' in _q70,
            'die Qualitaet ist auf 0–1000 begrenzt')
+
+    # ------------------------------------------------------------------
+    # 71. Keine fremde Uebersetzung im Paket
+    #
+    # ⚠⚠ Die deutsche Uebersetzung des Spiels stammt von rjcncpt
+    # (StarCitizen-Deutsch-INI) und steht unter **CC BY-NC-SA 4.0**. Der Autor
+    # setzt das durch: Am 10.04.2025 wurde ein Repository nach einer
+    # DMCA-Beschwerde von GitHub entfernt — Grund war „nicht-konforme
+    # Weitergabe unter CC-BY-NC-SA-4.0" und fehlende Namensnennung.
+    #
+    # Der Watcher ist davon nicht betroffen, weil er die Uebersetzung **nicht
+    # weitergibt**: Er liest die Datei auf dem Rechner des Nutzers und ergaenzt
+    # sie dort. Damit das so bleibt, prueft das hier bei jedem Bau nach — eine
+    # mitgelieferte `global.ini` waere genau der Fehler, der ein Repo kostet.
+    print()
+    print('71. Keine fremde Uebersetzung im Paket')
+    _versioniert71 = _versionierte_dateien(WURZEL, ('.ini', '.json', '.txt'))
+    _verdaechtig71 = []
+    for _p71 in _versioniert71:
+        _rel71 = os.path.relpath(_p71, WURZEL)
+        if _rel71.endswith('.ini'):
+            _verdaechtig71.append('%s (eine .ini gehoert nicht ins Repo)' % _rel71)
+            continue
+        if not _rel71.endswith('.json'):
+            continue
+        try:
+            _txt71 = open(_p71, encoding='utf-8', errors='ignore').read()
+        except OSError:
+            continue
+        # ⚠ Deutsche Spieltexte erkennt man an Umlauten und ß. Ein Katalog aus
+        #   der ENGLISCHEN global.ini (CIGs eigene Datei) hat davon keinen.
+        _umlaute71 = sum(_txt71.count(_z) for _z in 'äöüßÄÖÜ')
+        if _umlaute71 > 40:
+            _verdaechtig71.append('%s (%d Umlaute — uebersetzte Spieltexte?)'
+                                  % (_rel71, _umlaute71))
+    pruefe(not _verdaechtig71,
+           'keine fremde Uebersetzung im Repo (%d Funde)' % len(_verdaechtig71))
+    for _x71 in _verdaechtig71[:5]:
+        print('       ·', _x71)
+
+    # Der mitgelieferte Katalog muss sagen, woher er stammt — und das muss die
+    # ENGLISCHE Datei sein.
+    _kat71 = os.path.join(WURZEL, 'daten', 'katalog.json')
+    if os.path.exists(_kat71):
+        import json as _json71
+        _d71 = _json71.load(open(_kat71, encoding='utf-8'))
+        pruefe('englisch' in str(_d71.get('quelle', '')).lower(),
+               'der mitgelieferte Katalog stammt aus der englischen Datei (%r)'
+               % _d71.get('quelle'))
+        pruefe(_d71.get('weitergabe') is True,
+               'und ist ausdruecklich als weitergebbar gekennzeichnet')
+
+    # Und der Urheber muss genannt sein — Name UND Repository, so verlangt es
+    # die Lizenz.
+    _q71 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'), encoding='utf-8').read()
+    pruefe('rjcncpt' in _q71,
+           'der Urheber der Uebersetzung ist im Programm genannt')
+    pruefe('CC BY-NC-SA 4.0' in _q71,
+           'mit seiner Lizenz')
+    pruefe('github.com/rjcncpt/StarCitizen-Deutsch-INI' in _q71,
+           'und mit seinem Repository')
+    for _readme71 in ('README.md', 'README.de.md'):
+        _r71 = open(os.path.join(WURZEL, _readme71), encoding='utf-8').read()
+        pruefe('rjcncpt' in _r71 and 'CC BY-NC-SA' in _r71,
+               '%s nennt Urheber und Lizenz' % _readme71)
+
+    # ⚠⚠ **Die erste Zeile der `global.ini` muss stehen bleiben.** Der Autor
+    # verlangt das ausdruecklich: „belasse in der global.ini-Datei die erste
+    # Zeile mit der Angabe zur Ursprungsuebersetzung bestehen. Das hilft
+    # anderen Spielern ohne Umwege an die urspruengliche Uebersetzung zu
+    # gelangen."
+    #
+    # Bisher blieb sie stehen, weil die Injektion den Schluessel schlicht nicht
+    # anfasst — also zufaellig. Diese Pruefung macht daraus eine Zusage.
+    _inj71 = open(os.path.join(WURZEL, 'scbp', 'injektion.py'),
+                  encoding='utf-8').read()
+    pruefe('Frontend_PU_Version' not in _inj71
+           or 'nicht anfassen' in _inj71,
+           'die Injektion fasst die Quellenangabe nicht an')
+
+    # Und am echten Fall gegengeprueft — an **jeder** vorhandenen Sprachdatei.
+    #
+    # ⚠ Nur Dateien mit einer Quellenangabe zaehlen. Die englische `global.ini`
+    # ist CIGs eigene und traegt keine; sie mit zu pruefen hiesse, einen Fehler
+    # zu melden, wo keiner sein kann. Genau so lief mein erster Anlauf: Er nahm
+    # die erste Datei im Ordner — die englische — und schlug an.
+    from scbp import pfade as _pf71
+    _dateien71 = []
+    try:
+        _basis71 = os.path.join(_pf71.spiel_ordner() or '', 'data', 'Localization')
+        for _ordner71 in (sorted(os.listdir(_basis71))
+                          if os.path.isdir(_basis71) else []):
+            _kandidat71 = os.path.join(_basis71, _ordner71, 'global.ini')
+            if os.path.isfile(_kandidat71):
+                _dateien71.append((_ordner71, _kandidat71))
+    except Exception:
+        _dateien71 = []
+
+    _geprueft71 = 0
+    for _name71, _pfad71 in _dateien71:
+        with open(_pfad71, encoding='utf-8-sig', errors='ignore') as _fh71:
+            _zeile1_71 = _fh71.readline()
+            _rest71 = _fh71.read()
+        # Eine Quellenangabe erkennt man am Schluessel UND daran, dass sie auf
+        # die Herkunft verweist.
+        if not _zeile1_71.startswith('Frontend_PU_Version'):
+            continue
+        _geprueft71 += 1
+        _marken71 = _rest71.count('[SCBPW]') + _rest71.count('<EM4>')
+        pruefe('[SCBPW]' not in _zeile1_71 and '<EM4>' not in _zeile1_71,
+               '%s: die Quellenangabe traegt keine unserer Marken '
+               '(%d Marken in der Datei)' % (_name71, _marken71))
+        pruefe('sc-deutsch-launcher' in _zeile1_71.lower()
+               or 'übersetzung' in _zeile1_71.lower()
+               or 'übersetzig' in _zeile1_71.lower(),
+               '%s: der Verweis auf die Ursprungsuebersetzung steht noch da'
+               % _name71)
+    if not _geprueft71:
+        print('  [–]    keine Datei mit Quellenangabe gefunden — '
+              'Gegenprobe uebersprungen')
 
     print()
     if fehler:

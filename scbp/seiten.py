@@ -3106,6 +3106,12 @@ def _danke(fenster, rahmen):
                t('s_dk_ss'), 'https://starstrings.app')
     _dankblock(fenster, innen, 'SC Deutsch Launcher', t('s_dk_freiwillig'),
                t('s_dk_scdl'), 'https://www.sc-deutsch-launcher.de/')
+    # ⚠⚠ Die Übersetzung selbst hat einen eigenen Urheber und eine eigene
+    # Lizenz (CC BY-NC-SA 4.0). Die verlangt ausdrücklich Name UND Repository —
+    # der Verteiler allein genügt nicht.
+    _dankblock(fenster, innen, 'StarCitizen-Deutsch-INI (rjcncpt)',
+               'CC BY-NC-SA 4.0', t('s_dk_ini'),
+               'https://github.com/rjcncpt/StarCitizen-Deutsch-INI')
 
     # --- Menschen ---
     # ⚠ Aufklappbar, und zwar mit Absicht: Die Liste wird wachsen. der Autor am
