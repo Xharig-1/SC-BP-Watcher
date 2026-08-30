@@ -215,6 +215,41 @@ def ziel_ini(sprache, spielordner=None):
     return os.path.join(wurzel, 'data', 'Localization', sprache, 'global.ini')
 
 
+def spielsprache(spielordner=None):
+    """Welche Sprache das Spiel wirklich liest — aus der `user.cfg`.
+
+    Gibt den Sprachordner zurück (`german_(germany)`, `english`, …) oder `None`,
+    wenn nichts eingetragen ist. Ohne Eintrag startet Star Citizen auf Englisch.
+
+    ⚠⚠ **Warum es das braucht.** Das Werkzeug **schrieb** `g_language` schon
+    lange (`user_cfg_setzen`), gelesen hat es die Zeile nie. Bei der Textquelle
+    „Original" nahm `injektion.ini_datei()` deshalb eine feste Reihenfolge —
+    erst `english`, dann `german_(germany)` — und beide Dateien gibt es fast
+    immer. Ergebnis: Wir schrieben in die englische, das Spiel las die deutsche.
+    Eingetragen wurde also korrekt, angekommen ist nie etwas, und die Statuszeile
+    meldete trotzdem Erfolg. Am 29.08.2026 gemeldet; es erklärt vermutlich
+    monatelang nicht ankommende Auftragstexte.
+    """
+    wurzel = spielordner or pfade.spiel_ordner()
+    if not wurzel:
+        return None
+    pfad = os.path.join(wurzel, 'user.cfg')
+    try:
+        with open(pfad, encoding='utf-8', errors='ignore') as f:
+            zeilen = f.read().splitlines()
+    except OSError:
+        return None
+    for z in zeilen:
+        if z.split('=', 1)[0].strip() != 'g_language':
+            continue
+        wert = z.split('=', 1)[1].strip() if '=' in z else ''
+        # Kommentare hinter dem Wert abschneiden — die `user.cfg` erlaubt sie.
+        wert = wert.split(';', 1)[0].split('--', 1)[0].strip().strip('"\'')
+        if wert:
+            return wert
+    return None
+
+
 def user_cfg_setzen(sprache, ton=None, spielordner=None):
     """`g_language` in der `user.cfg` setzen — **ergänzend**, nicht ersetzend.
 

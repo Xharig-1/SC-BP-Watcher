@@ -6,6 +6,28 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.3.6 - unveröffentlicht
+
+### Behoben
+
+- ⚠⚠ **Bei der Textquelle „Original" wurde in die falsche Datei geschrieben.**
+  Wer sein Spiel auf Deutsch stellt, bekam die Angaben in die **englische**
+  `global.ini` — die das Spiel nie liest. Eingetragen wurde korrekt, angekommen
+  ist nichts, und die Statuszeile meldete trotzdem Erfolg.
+
+  Der Grund: Das Werkzeug ging eine feste Reihenfolge durch — erst `english`,
+  dann `german_(germany)` — und nahm die erste Datei, die es gab. Beide gibt es
+  fast immer, also gewann **immer Englisch**. Welche Sprache das Spiel wirklich
+  liest, steht in der `user.cfg` (`g_language`) — die Zeile hat das Werkzeug
+  seit jeher selbst **geschrieben**, aber nie gelesen.
+
+  Jetzt entscheidet `g_language`. Steht dort nichts, bleibt es bei Englisch —
+  ohne den Eintrag startet Star Citizen ohnehin so.
+
+  Das erklärt vermutlich, warum Änderungen an den Auftragstexten monatelang
+  nicht ankamen. Betroffen war nur „Original"; die Quellen **Deutsch** und
+  **StarStrings** bringen ihre Sprache selbst mit.
+
 ## v3.3.5 - 2026-08-30
 
 ### Behoben

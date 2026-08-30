@@ -6294,6 +6294,80 @@ def main():
            'die Tabelle kennt alle gaengigen Anfuehrungszeichen (%s)'
            % (', '.join('U+%04X' % ord(c) for c in _fehlend80) or 'alle'))
 
+    # ------------------------------------------------------------------
+    # 81. Geschrieben wird in die Datei, die das Spiel LIEST
+    #
+    # ⚠⚠ Gemeldet am 29.08.2026: Bei der Textquelle „Original" nahm
+    # `ini_datei()` eine feste Reihenfolge (`english`, dann `german_(germany)`)
+    # und die erste vorhandene Datei. Beide gibt es fast immer — also immer
+    # Englisch. Wer sein Spiel auf Deutsch stellt, bekam die Angaben in eine
+    # Datei geschrieben, die das Spiel nie liest: eingetragen korrekt,
+    # angekommen nichts, Statuszeile trotzdem gruen. Erklaert vermutlich
+    # monatelang nicht ankommende Auftragstexte.
+    #
+    # Massgeblich ist `g_language` in der `user.cfg`. Das Werkzeug **schrieb**
+    # die Zeile seit jeher — gelesen hat es sie nie.
+    print()
+    print('81. Die Spielsprache entscheidet ueber die Zieldatei')
+    from scbp import injektion as _in81
+    from scbp import uebersetzung as _ue81
+    from scbp import pfade as _pf81
+
+    _spiel81 = os.path.join(basis, 'spiel81', 'LIVE')
+    for _s81 in ('english', 'german_(germany)'):
+        _o81 = os.path.join(_spiel81, 'data', 'Localization', _s81)
+        os.makedirs(_o81, exist_ok=True)
+        with open(os.path.join(_o81, 'global.ini'), 'w', encoding='utf-8') as _f81:
+            _f81.write('item_Name_test=Test\n')
+    with open(os.path.join(_spiel81, 'Game.log'), 'w', encoding='utf-8') as _f81:
+        _f81.write('')
+
+    _altspiel81 = os.environ.get('SC_INSTALL_DIR')
+    _altquelle81 = None
+    try:
+        os.environ['SC_INSTALL_DIR'] = _spiel81
+        _altquelle81 = _pf81.einstellung('inj_quelle')
+        _pf81.einstellung_setzen('inj_quelle', 'original')
+
+        def _cfg81(wert):
+            with open(os.path.join(_spiel81, 'user.cfg'), 'w',
+                      encoding='utf-8') as _f:
+                _f.write('g_languageAudio = english\n')
+                if wert:
+                    _f.write('g_language = %s\n' % wert)
+
+        _cfg81('german_(germany)')
+        pruefe(_ue81.spielsprache() == 'german_(germany)',
+               'g_language wird aus der user.cfg gelesen (%s)'
+               % _ue81.spielsprache())
+        _pfad81, _spr81, _ = _in81.ini_datei()
+        pruefe(_spr81 == 'german_(germany)',
+               'deutsches Spiel -> deutsche global.ini (%s)' % _spr81)
+
+        # Gegenprobe: englisches Spiel, dieselben zwei Dateien.
+        _cfg81('english')
+        _pfad81, _spr81, _ = _in81.ini_datei()
+        pruefe(_spr81 == 'english',
+               'englisches Spiel -> englische global.ini (%s)' % _spr81)
+
+        # Ohne Eintrag bleibt es beim Rueckfall — ohne g_language startet
+        # Star Citizen auf Englisch.
+        _cfg81(None)
+        pruefe(_ue81.spielsprache() is None,
+               'ohne Eintrag meldet die Sprache sich als unbekannt')
+        _pfad81, _spr81, _ = _in81.ini_datei()
+        pruefe(_spr81 == 'english',
+               'ohne Eintrag gilt der Rueckfall Englisch (%s)' % _spr81)
+    finally:
+        if _altquelle81 is None:
+            _pf81.einstellung_setzen('inj_quelle', None)
+        else:
+            _pf81.einstellung_setzen('inj_quelle', _altquelle81)
+        if _altspiel81 is None:
+            os.environ.pop('SC_INSTALL_DIR', None)
+        else:
+            os.environ['SC_INSTALL_DIR'] = _altspiel81
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

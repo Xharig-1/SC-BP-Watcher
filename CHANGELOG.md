@@ -6,6 +6,28 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.3.6 - unreleased
+
+### Fixed
+
+- ⚠⚠ **With the "Original" text source, the wrong file was written.** If your
+  game is set to German, the details went into the **English** `global.ini` —
+  which the game never reads. Writing succeeded, nothing ever arrived, and the
+  status line reported success anyway.
+
+  The reason: the tool walked a fixed order — `english` first, then
+  `german_(germany)` — and took the first file that existed. Both almost always
+  exist, so **English always won**. Which language the game actually reads is in
+  `user.cfg` (`g_language`) — a line the tool has always **written** itself, but
+  never read.
+
+  Now `g_language` decides. If it is not set, English stays the default — that
+  is how Star Citizen starts without it anyway.
+
+  This probably explains why changes to the contract texts did not arrive for
+  months. Only "Original" was affected; the **German** and **StarStrings**
+  sources carry their own language.
+
 ## v3.3.5 - 2026-08-30
 
 ### Fixed

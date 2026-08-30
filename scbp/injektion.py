@@ -1041,6 +1041,28 @@ def ist_drin(ini_pfad):
 #
 # Jetzt stehen sie frei, und Fenster wie Bericht fragen dieselbe Stelle.
 
+def _sprachreihenfolge(rueckfall=('english', 'german_(germany)')):
+    """In welcher Reihenfolge die Sprachordner geprüft werden.
+
+    Vorn steht, was in der `user.cfg` als `g_language` eingetragen ist — das
+    ist die Datei, die das Spiel wirklich liest. Steht dort nichts, bleibt es
+    beim Rückfall: Ohne Eintrag startet Star Citizen auf Englisch, dann ist die
+    bisherige Reihenfolge richtig.
+    """
+    from . import uebersetzung
+    ordnung = list(rueckfall)
+    try:
+        sprache = uebersetzung.spielsprache()
+    except Exception as ausnahme:
+        fehler.merken('injektion.spielsprache', ausnahme)
+        return ordnung
+    if not sprache:
+        return ordnung
+    if sprache in ordnung:
+        ordnung.remove(sprache)
+    return [sprache] + ordnung
+
+
 def ini_datei():
     """Die `global.ini`, um die es geht. (Pfad, Sprachordner, Quelle).
 
@@ -1060,7 +1082,15 @@ def ini_datei():
     elif gewaehlt == 'original':
         # Die Originaltexte kommen aus dem Spiel selbst, nicht aus einem
         # fremden Projekt — dort gibt es keine Version zu vermerken.
-        for sprache_ordner in ('english', 'german_(germany)'):
+        #
+        # ⚠⚠ **Die Spielsprache entscheidet, nicht die Reihenfolge.** Hier stand
+        # fest `('english', 'german_(germany)')`, und die erste vorhandene Datei
+        # gewann — beide gibt es fast immer, also **immer Englisch**. Wer sein
+        # Spiel auf Deutsch stellt (`g_language = german_(germany)` in der
+        # `user.cfg`), bekam die Angaben in die englische Datei geschrieben, die
+        # das Spiel nie liest. Eingetragen wurde korrekt, angekommen ist nichts,
+        # und die Statuszeile meldete trotzdem Erfolg. Am 29.08.2026 gemeldet.
+        for sprache_ordner in _sprachreihenfolge():
             pfad = uebersetzung.ziel_ini(sprache_ordner)
             if pfad and os.path.isfile(pfad):
                 return pfad, sprache_ordner, None
@@ -1068,8 +1098,11 @@ def ini_datei():
         if uebersetzung.installiert(quelle):
             sprache_ordner = uebersetzung.QUELLEN[quelle]['sprache']
             return uebersetzung.ziel_ini(sprache_ordner), sprache_ordner, quelle
-    # Nichts vermerkt: dann die Datei nehmen, die tatsächlich daliegt.
-    for sprache_ordner in ('german_(germany)', 'english'):
+    # Nichts vermerkt: dann die Datei nehmen, die tatsächlich daliegt — aber in
+    # der Reihenfolge, die das Spiel vorgibt. Hier stand `german_(germany)`
+    # zuerst; für dieses eine Haus richtig, für jeden mit englischem Spiel
+    # falsch. Geraten wird nicht mehr.
+    for sprache_ordner in _sprachreihenfolge(('german_(germany)', 'english')):
         p = uebersetzung.ziel_ini(sprache_ordner)
         if p and os.path.isfile(p):
             return p, sprache_ordner, None
