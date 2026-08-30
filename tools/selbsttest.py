@@ -6021,11 +6021,22 @@ def main():
 
     _heim76 = os.environ.get('SC_BP_HOME')
     _ordner76 = os.path.join(basis, 'einrichtung76')
+    _spiel76 = os.path.join(basis, 'spiel76')
     os.makedirs(_ordner76, exist_ok=True)
+    os.makedirs(_spiel76, exist_ok=True)
+    # ⚠ Der eingetragene Ordner muss eine **echte** `Game.log` enthalten —
+    # `pfade.spiel_ordner()` prueft das und raet nicht. Ein leerer Wegwerf-Ordner
+    # reicht nicht: Auf dem Entwicklungsrechner sprang dann die automatische
+    # Suche ein und fand die echte Installation, im Bau-Laeufer nicht. Die
+    # Pruefung war gruen, wo sie nichts prueft, und rot, wo sie zaehlt.
+    with open(os.path.join(_spiel76, 'Game.log'), 'w', encoding='utf-8') as _f76:
+        _f76.write('')
+    _wurzeln76 = _pf76._spiel_wurzeln
+    _pf76._spiel_wurzeln = lambda: []      # keine automatische Suche dazwischen
     try:
         os.environ['SC_BP_HOME'] = _ordner76
         # Ein eingerichtetes Werkzeug: Spielordner eingetragen, Lesestand da.
-        _pf76.einstellung_setzen('spiel_ordner', _ordner76)
+        _pf76.einstellung_setzen('spiel_ordner', _spiel76)
         with open(_pf76.app_datei('logstand.json'), 'w', encoding='utf-8') as _f76:
             _f76.write('{}')
         pruefe(not _as76.noetig(),
@@ -6042,14 +6053,10 @@ def main():
         _frisch76 = os.path.join(basis, 'frisch76')
         os.makedirs(_frisch76, exist_ok=True)
         os.environ['SC_BP_HOME'] = _frisch76
-        _wurzeln76 = _pf76._spiel_wurzeln
-        _pf76._spiel_wurzeln = lambda: []
-        try:
-            pruefe(_as76.noetig(),
-                   'beim echten ersten Start meldet er sich weiterhin')
-        finally:
-            _pf76._spiel_wurzeln = _wurzeln76
+        pruefe(_as76.noetig(),
+               'beim echten ersten Start meldet er sich weiterhin')
     finally:
+        _pf76._spiel_wurzeln = _wurzeln76
         if _heim76 is None:
             os.environ.pop('SC_BP_HOME', None)
         else:
