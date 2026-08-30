@@ -663,6 +663,64 @@ def saubere_umgebung():
     return umgebung
 
 
+def browser_befehle(adresse):
+    """Die Wege, eine Adresse zu öffnen — in der Reihenfolge, in der es
+    versucht wird. Getrennt von `im_browser()`, damit sich das **prüfen** lässt,
+    ohne dabei einen Browser aufzureißen: Ein Prüflauf, der Fenster öffnet,
+    reißt den Tastaturfokus mit und wirft den Spieler aus dem Spiel.
+    """
+    if sys.platform.startswith('linux'):
+        return [['xdg-open', adresse], ['gio', 'open', adresse]]
+    if sys.platform == 'darwin':
+        return [['open', adresse]]
+    return []                      # Windows: `webbrowser` macht es richtig
+
+
+def im_browser(adresse):
+    """Eine Adresse im Browser aufmachen. Gibt zurück, ob es geklappt hat.
+
+    ⚠⚠ **Warum nicht einfach `webbrowser.open()`.** Im AppImage zeigen
+    `LD_LIBRARY_PATH` und `PYTHONHOME` in unser entpacktes Paket. Jedes daraus
+    gestartete Systemprogramm lädt unsere Bibliotheken statt seiner eigenen und
+    stirbt sofort — `webbrowser.open()` meldet trotzdem Erfolg, weil es nur das
+    Starten prüft, nicht das Überleben. Für den Nutzer sieht das aus, als täte
+    der Knopf **gar nichts**: Genau so gemeldet am 30.08.2026 für „Kaffee
+    spendieren" und „Discord", und im Fehlerbericht stand dazu **keine Zeile**,
+    weil auch keine Ausnahme flog.
+
+    Deshalb: `xdg-open` selbst starten, mit der Umgebung von `saubere_umgebung()`,
+    und kurz nachsehen, ob es überlebt. Erst danach `webbrowser` als Rückfall.
+    """
+    import subprocess
+    import webbrowser
+    umgebung = saubere_umgebung()
+    for befehl in browser_befehle(adresse):
+        try:
+            lauf = subprocess.Popen(befehl, env=umgebung,
+                                    stdout=subprocess.DEVNULL,
+                                    stderr=subprocess.DEVNULL)
+        except OSError:
+            continue               # Programm gibt es hier nicht — nächstes
+        try:
+            # Läuft es nach einer knappen Sekunde noch, hat es die Adresse
+            # angenommen. Beendet es sich mit einem Fehler, war es nichts.
+            if lauf.wait(1.0) != 0:
+                continue
+        except subprocess.TimeoutExpired:
+            pass
+        return True
+    alt = dict(os.environ)
+    try:
+        os.environ.clear()
+        os.environ.update(umgebung)
+        return bool(webbrowser.open(adresse))
+    except Exception:
+        return False
+    finally:
+        os.environ.clear()
+        os.environ.update(alt)
+
+
 def spielstarter():
     """Womit sich Star Citizen starten lässt — oder `None`.
 

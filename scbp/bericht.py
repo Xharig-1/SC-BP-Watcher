@@ -569,10 +569,13 @@ def issue_adresse(text, titel='', vorlage=None):
 
 
 def issue_oeffnen(text, titel=''):
-    """Das vorausgefüllte Formular im Browser öffnen. True, wenn es startete."""
+    """Das vorausgefüllte Formular im Browser öffnen. True, wenn es startete.
+
+    ⚠ Über `pfade.im_browser`, nicht über `webbrowser.open()` — im AppImage
+    öffnet das nichts und meldet trotzdem Erfolg (Begründung dort).
+    """
     try:
-        import webbrowser
-        return bool(webbrowser.open(issue_adresse(text, titel)))
+        return pfade.im_browser(issue_adresse(text, titel))
     except Exception:
         return False
 

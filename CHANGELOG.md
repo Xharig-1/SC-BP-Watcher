@@ -193,6 +193,22 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠⚠ **"Buy me a coffee" and "Discord" did nothing at all.** Both buttons at the
+  bottom left said "opening", and then nothing ever happened — not even a line
+  in the problem report.
+
+  The cause sits in the Linux build: inside the AppImage the library paths point
+  into our own unpacked bundle. Any system program started from there loads our
+  libraries instead of its own and dies immediately. Python's `webbrowser`
+  reports success anyway — it only checks that it **started** something, not
+  that it survived.
+
+  Half the links in the program already had the countermeasure, the other half
+  did not. They all go through one place now: clean environment, `xdg-open`
+  first, `webbrowser` only as a fallback — and if it really fails, the address
+  appears in the status line instead of the button staying silent. The self-test
+  no longer lets a direct `webbrowser` call through.
+
 - ⚠⚠ **`SC_BP_NO_NET=1` did not switch off everything it promised.** The
   catalogue, prices, storage locations, server status and the update check
   honoured it — the **translation sources** and the **contract data** did not.

@@ -1711,13 +1711,7 @@ class Hauptfenster:
 
     def _kofi_oeffnen(self):
         """Die Ko-fi-Seite im Browser aufmachen."""
-        import webbrowser
-        self.sagen(t('hf_kofi_auf'))
-        try:
-            webbrowser.open(KOFI_ADRESSE)
-        except Exception as ausnahme:
-            from . import fehler
-            fehler.merken('hauptfenster.kofi', ausnahme)
+        self._adresse_auf(KOFI_ADRESSE, t('hf_kofi_auf'), 'hauptfenster.kofi')
 
     def _discord_oeffnen(self):
         """Die Einladung im Browser aufmachen.
@@ -1726,13 +1720,29 @@ class Hauptfenster:
         (`CODE_OF_CONDUCT.md` nennt dieselbe). Ein Link, der irgendwann abläuft,
         führt Leute auf eine Fehlerseite und niemand merkt es.
         """
-        import webbrowser
-        self.sagen(t('hf_discord_auf'))
+        self._adresse_auf('https://discord.gg/g2E7e6XxZC',
+                          t('hf_discord_auf'), 'hauptfenster.discord')
+
+    def _adresse_auf(self, adresse, meldung, stelle):
+        """Eine Adresse aufmachen — und **sagen**, wenn es nicht geklappt hat.
+
+        ⚠ Beide Knöpfe riefen bis rc43 `webbrowser.open()` direkt auf. Im
+        AppImage öffnet das nichts (siehe `pfade.im_browser`), meldet aber auch
+        keinen Fehler: Die Statuszeile sagte „wird geöffnet", und dann passierte
+        nie etwas. Ein Knopf, der schweigend nichts tut, ist schlimmer als einer,
+        der sagt, dass er nicht kann — dann steht wenigstens die Adresse da.
+        """
+        from . import pfade as pfade_browser
+        self.sagen(meldung)
+        self.root.update_idletasks()
         try:
-            webbrowser.open('https://discord.gg/g2E7e6XxZC')
+            geklappt = pfade_browser.im_browser(adresse)
         except Exception as ausnahme:
             from . import fehler
-            fehler.merken('hauptfenster.discord', ausnahme)
+            fehler.merken(stelle, ausnahme, adresse)
+            geklappt = False
+        if not geklappt:
+            self.sagen(t('s_ub_auf_nein') % adresse)
 
     def _spiel_starten(self):
         """Star Citizen aus dem Werkzeug heraus hochfahren."""

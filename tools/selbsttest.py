@@ -5924,6 +5924,82 @@ def main():
            'jedes Modul mit Netzabruf kennt den Schalter (%s)'
            % (', '.join(_offen74) or 'alle'))
 
+    # ------------------------------------------------------------------
+    # 75. Verweise gehen ueber EINEN Weg — und der wäscht die Umgebung
+    #
+    # ⚠⚠ Gemeldet am 30.08.2026: „Kaffee spendieren" und „Discord" taten
+    # **nichts**. Kein Fehler im Bericht, keine Ausnahme — `webbrowser.open()`
+    # meldet Erfolg, sobald es ein Programm gestartet hat, und im AppImage
+    # stirbt genau dieses Programm sofort an unseren Bibliothekspfaden.
+    #
+    # Die Hälfte der Verweise hatte die Umgebungswaesche schon, die andere
+    # nicht. Deshalb geht jetzt **alles** durch `pfade.im_browser` — und hier
+    # wird nachgezaehlt, dass kein `webbrowser.open()` daran vorbei geht.
+    #
+    # ⚠ Geprueft wird **ohne** irgendetwas zu oeffnen: `browser_befehle` liefert
+    # nur die Liste, und `im_browser` bekommt ein untergeschobenes `Popen`.
+    print()
+    print('75. Verweise gehen ueber pfade.im_browser')
+    from scbp import pfade as _pf75
+
+    # ⚠ Über den Syntaxbaum, nicht über Textsuche: In den Kommentaren steht
+    # `webbrowser.open()` mehrfach als Begründung, warum es NICHT benutzt wird.
+    # Eine Textsuche meldet genau die Erklärung als Verstoß.
+    import ast as _ast75
+    _direkt75 = []
+    for _name75 in sorted(os.listdir(os.path.join(WURZEL, 'scbp'))):
+        if not _name75.endswith('.py') or _name75 == 'pfade.py':
+            continue
+        _baum75 = _ast75.parse(open(os.path.join(WURZEL, 'scbp', _name75),
+                                    encoding='utf-8').read())
+        for _k75 in _ast75.walk(_baum75):
+            if (isinstance(_k75, _ast75.Call)
+                    and isinstance(_k75.func, _ast75.Attribute)
+                    and _k75.func.attr == 'open'
+                    and isinstance(_k75.func.value, _ast75.Name)
+                    and _k75.func.value.id == 'webbrowser'):
+                _direkt75.append('%s:%d' % (_name75, _k75.lineno))
+    pruefe(not _direkt75,
+           'kein Modul ruft webbrowser.open() direkt (%s)'
+           % (', '.join(_direkt75) or 'alle über pfade.im_browser'))
+
+    _befehle75 = _pf75.browser_befehle('https://example.invalid/x')
+    if sys.platform.startswith('linux'):
+        pruefe(_befehle75 and _befehle75[0][0] == 'xdg-open',
+               'unter Linux wird zuerst xdg-open versucht (%s)' % _befehle75)
+    else:
+        pruefe(True, 'Befehlsliste für %s: %s' % (sys.platform, _befehle75))
+
+    # Und die Umgebung, mit der gestartet wird, darf unsere Pfade nicht tragen.
+    class _Lauf75:
+        def __init__(self, *_a, **_kw):
+            _Lauf75.gesehen = _kw.get('env') or {}
+
+        def wait(self, _zeit):
+            return 0
+
+    import subprocess as _sp75
+    _echt75 = _sp75.Popen
+    _altumg75 = dict(os.environ)
+    try:
+        os.environ['LD_LIBRARY_PATH'] = '/pfad/im/appimage'
+        os.environ['PYTHONHOME'] = '/pfad/im/appimage'
+        _sp75.Popen = _Lauf75
+        _geklappt75 = _pf75.im_browser('https://example.invalid/x')
+    finally:
+        _sp75.Popen = _echt75
+        os.environ.clear()
+        os.environ.update(_altumg75)
+
+    if sys.platform.startswith('linux'):
+        pruefe(_geklappt75, 'ein laufender Öffner gilt als Erfolg')
+        _umg75 = getattr(_Lauf75, 'gesehen', {})
+        pruefe('LD_LIBRARY_PATH' not in _umg75 and 'PYTHONHOME' not in _umg75,
+               'der Öffner bekommt eine saubere Umgebung (%d Variablen, '
+               'ohne unsere Pfade)' % len(_umg75))
+    else:
+        print('  [–]    Umgebungsprobe nur unter Linux sinnvoll')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

@@ -34,7 +34,7 @@ import time
 import tkinter as tk
 
 from . import bericht, bestand as bestand_datei, fehler, katalog as katalog_modul
-from . import zeichen
+from . import pfade, zeichen
 from .sprache import t
 
 BG      = '#10141c'
@@ -2720,11 +2720,11 @@ def _quellink(fenster, eltern, text, adresse):
     link.pack(fill='x', pady=(10, 4))
 
     def oeffnen(_=None):
-        import webbrowser
-        try:
-            webbrowser.open(adresse)
-        except Exception as ausnahme:
-            fehler.merken('seiten.quelle_oeffnen', ausnahme)
+        # ⚠ Über `pfade.im_browser` — nie `webbrowser.open()` direkt. Warum:
+        # siehe die Begründung dort (im AppImage öffnet es nichts und meldet
+        # trotzdem Erfolg).
+        if not pfade.im_browser(adresse):
+            fenster.sagen(t('s_ub_auf_nein') % adresse)
 
     link.bind('<Button-1>', oeffnen)
     link.bind('<Enter>', lambda e: link.configure(fg=FG))
@@ -2749,11 +2749,8 @@ def _quellzeile(fenster, eltern, bez, adresse):
     link.pack(side='left')
 
     def oeffnen(_=None):
-        import webbrowser
-        try:
-            webbrowser.open(adresse)
-        except Exception as ausnahme:
-            fehler.merken('seiten.quelle_oeffnen', ausnahme)
+        if not pfade.im_browser(adresse):
+            fenster.sagen(t('s_ub_auf_nein') % adresse)
 
     link.bind('<Button-1>', oeffnen)
 
@@ -2993,11 +2990,8 @@ def _dankblock(fenster, eltern, name, lizenz, was, adresse=None):
         link.pack(fill='x', padx=16, pady=(0, 12))
 
         def oeffnen(_=None):
-            import webbrowser
-            try:
-                webbrowser.open(adresse)
-            except Exception as ausnahme:
-                fehler.merken('seiten.danke_link', ausnahme)
+            if not pfade.im_browser(adresse):
+                fenster.sagen(t('s_ub_auf_nein') % adresse)
 
         link.bind('<Button-1>', oeffnen)
         link.bind('<Enter>', lambda e: link.configure(fg=FG))
@@ -3354,19 +3348,12 @@ def _adresse(fenster, eltern, text, ziel, grund=None):
     lbl.pack(fill='x', pady=(4, 0))
 
     def oeffnen(_=None):
-        import webbrowser
+        # Die saubere Umgebung und der Rückfall auf `xdg-open` stecken jetzt in
+        # `pfade.im_browser` — an EINER Stelle, damit nicht die Hälfte der
+        # Verweise sie hat und die andere nicht. Genau daran hingen „Kaffee
+        # spendieren" und „Discord" (30.08.2026 gemeldet).
         try:
-            # Im AppImage zeigen unsere eigenen Bibliothekspfade auf das entpackte
-            # Paket; ein daraus gestarteter Browser stirbt sofort. Deshalb dieselbe
-            # saubere Umgebung wie beim Ordner-Öffnen.
-            umgebung_alt = dict(os.environ)
-            os.environ.clear()
-            os.environ.update(saubere_umgebung())
-            try:
-                geklappt = webbrowser.open(ziel)
-            finally:
-                os.environ.clear()
-                os.environ.update(umgebung_alt)
+            geklappt = pfade.im_browser(ziel)
         except Exception as ausnahme:
             fehler.merken('seiten.adresse', ausnahme, ziel)
             geklappt = False

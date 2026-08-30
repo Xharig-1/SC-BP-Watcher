@@ -231,6 +231,22 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠⚠ **„Kaffee spendieren" und „Discord" taten gar nichts.** Beide Knöpfe unten
+  links meldeten „wird geöffnet", und dann passierte nie etwas — auch im
+  Fehlerbericht stand dazu keine Zeile.
+
+  Der Grund steckt in der Linux-Fassung: Im AppImage zeigen die
+  Bibliothekspfade in unser eigenes entpacktes Paket. Jedes daraus gestartete
+  Systemprogramm lädt unsere Bibliotheken statt seiner eigenen und stirbt
+  sofort. Pythons `webbrowser` meldet trotzdem Erfolg — es prüft nur, ob es
+  etwas **gestartet** hat, nicht ob es überlebt.
+
+  Die Hälfte der Verweise im Programm hatte die Gegenmaßnahme schon, die andere
+  nicht. Jetzt gehen **alle** durch dieselbe Stelle: saubere Umgebung, `xdg-open`
+  zuerst, `webbrowser` nur als Rückfall — und wenn es wirklich nicht klappt,
+  steht die Adresse in der Statuszeile, statt dass der Knopf schweigt. Der
+  Selbsttest lässt keinen direkten `webbrowser`-Aufruf mehr durch.
+
 - ⚠⚠ **`SC_BP_NO_NET=1` hat nicht alles abgeschaltet, was es versprochen hat.**
   Katalog, Preise, Lagerorte, Serverstatus und die Update-Frage hielten sich
   daran — die **Übersetzungsquellen** und die **Auftragsdaten** nicht. Wer den
