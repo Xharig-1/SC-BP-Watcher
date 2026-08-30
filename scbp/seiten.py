@@ -722,6 +722,56 @@ def _fortschritt(fenster, rahmen):
         _fortschritt_bereich(fenster, innen, t('gruppe_' + bereich), gesamt,
                              meine, zaehler)
 
+    _lohnende_auftraege(fenster, innen, katalog, habe)
+
+
+def _lohnende_auftraege(fenster, eltern, katalog, habe):
+    """„Was bringt am meisten?" — die Aufträge mit den meisten fehlenden BPs.
+
+    ⚠ Die Frage nach dem Fortschritt endet sonst bei „55 Prozent" und lässt
+    einen damit allein. Hier steht, **was als Nächstes den größten Schritt
+    macht**: ein einziger Auftrag bringt bis zu 44 fehlende Baupläne auf einmal.
+    Gerechnet wird auf Daten, die ohnehin geladen sind — kein Netz, kein
+    weiterer Datenweg.
+    """
+    try:
+        lohnend = katalog_modul.lohnende_auftraege(katalog, habe)
+    except Exception as ausnahme:
+        fehler.merken('seiten.lohnende_auftraege', ausnahme)
+        return
+
+    tk.Label(eltern, text=t('s_fo_lohnt'), bg=BG, fg=FG,
+             font=fenster.f_grund, anchor='w').pack(fill='x', pady=(22, 2))
+    _fliesstext(eltern, t('s_fo_lohnt_hilfe'), fenster.f_klein, fill='x')
+
+    if not lohnend:
+        _fliesstext(eltern, t('s_fo_lohnt_leer'), fenster.f_klein,
+                    fill='x', pady=(8, 0))
+        return
+
+    from .hauptfenster import rundrahmen
+    kasten = rundrahmen(eltern, FLAECHE, LINIE, radius=8, grundfarbe=BG)
+    kasten.halter.pack(fill='x', pady=(10, 0))
+    # ⚠ Nur die ersten zehn. Es sind 170 — eine vollständige Liste wäre keine
+    # Antwort auf „was mache ich als Nächstes", sondern die nächste Suchaufgabe.
+    for titel, fraktion, anzahl, uec, rang, wo in lohnend[:10]:
+        zeile = tk.Frame(kasten, bg=FLAECHE)
+        zeile.pack(fill='x', padx=14, pady=3)
+        tk.Label(zeile, text=str(anzahl), bg=FLAECHE, fg=ACCENT,
+                 font=fenster.f_grund, width=3, anchor='e').pack(side='left')
+        rechts = tk.Frame(zeile, bg=FLAECHE)
+        rechts.pack(side='left', fill='x', expand=True, padx=(10, 0))
+        tk.Label(rechts, text=titel, bg=FLAECHE, fg=FG, font=fenster.f_klein,
+                 anchor='w').pack(fill='x')
+        teile = [fraktion] if fraktion else []
+        if uec:
+            teile.append('%s aUEC' % '{:,}'.format(uec).replace(',', '.'))
+        if rang:
+            teile.append(rang)
+        tk.Label(rechts, text=' · '.join(teile), bg=FLAECHE, fg=SUB,
+                 font=fenster.f_klein, anchor='w').pack(fill='x')
+    tk.Label(kasten, text='', bg=FLAECHE).pack(pady=2)
+
 
 def _fortschritt_bereich(fenster, eltern, titel, gesamt, meine, kategorien):
     """Ein Bereich mit Gesamtbalken — die Kategorien darin klappen auf."""

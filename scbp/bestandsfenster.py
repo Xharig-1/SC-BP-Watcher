@@ -254,6 +254,23 @@ def auftraege_zu(text, katalog):
     return sorted(zaehler.items(), key=lambda p: (-p[1], p[0].lower()))
 
 
+def _dauer_text(minuten):
+    """Minuten lesbar machen — 15 Min, 2 Std 30 Min, 7 Tagen.
+
+    ⚠ Die Werte reichen von 1 bis 10.080 (eine Woche). „10080 Min" liest
+    niemand; deshalb ab 24 Stunden in Tagen.
+    """
+    minuten = int(minuten)
+    if minuten < 60:
+        return t('zeit_min') % minuten
+    if minuten < 24 * 60:
+        std, rest = divmod(minuten, 60)
+        return (t('zeit_std') % std if not rest
+                else t('zeit_std_min') % (std, rest))
+    tage = round(minuten / (24 * 60))
+    return (t('zeit_tag') if tage == 1 else t('zeit_tage')) % tage
+
+
 class Bestandsfenster:
     """Eigenständiges Fenster. Wird von der Melde-Leiste aus geöffnet."""
 
@@ -1880,6 +1897,23 @@ class Bestandsfenster:
                              rang or '—', '{:,}'.format(grenze).replace(',', '.')),
                          bg=FLAECHE, fg=GELB, font=schrift(9, True),
                          anchor='w').pack(fill='x', padx=14, pady=(0, 8))
+
+        # Zwei Angaben, die ebenfalls in CIGs Vertragsdaten stehen und sonst
+        # nirgends auftauchen: teilbar und Wiederholsperre.
+        merkmale = katalog_modul.auftragsmerkmale(
+            self.katalog, katalog_modul._norm(eintrag['n']))
+        stichworte = []
+        if merkmale['teilbar'] is True:
+            stichworte.append('👥 ' + t('hk_teilbar'))
+        elif merkmale['teilbar'] is False:
+            stichworte.append('👤 ' + t('hk_nicht_teilbar'))
+        if merkmale['sperre']:
+            stichworte.append('⏱ ' + t('hk_sperre') % _dauer_text(
+                merkmale['sperre']))
+        if stichworte:
+            tk.Label(kasten, text='  ·  '.join(stichworte), bg=FLAECHE, fg=SUB,
+                     font=schrift(9), anchor='w').pack(fill='x', padx=14,
+                                                       pady=(0, 8))
 
         if not quellen:
             if eintrag.get('start'):

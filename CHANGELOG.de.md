@@ -31,6 +31,24 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   dort taucht der Ruf ausschließlich als Verbindungszeile zu CIGs Dienst auf.
   Deshalb heißt es „ab wann zu" und nicht „dir bleiben noch 4.200".
 
+- ⭐ **„Was bringt am meisten?" — der nächste sinnvolle Schritt, unter dem
+  Fortschritt.** Die Prozentzahl sagt, wo du stehst, aber nicht, was dich
+  weiterbringt. Jetzt stehen darunter die zehn Aufträge, aus denen dir noch die
+  meisten Baupläne fehlen — mit Fraktion, Belohnung und nötigem Rang.
+
+  Der oberste bringt in einem echten Bestand **44 fehlende Baupläne auf einen
+  Schlag**. Gerechnet wird auf Daten, die ohnehin geladen sind.
+
+- **Zwei Angaben an jedem Bauplan, die es sonst nirgends gibt:**
+
+  | | |
+  |---|---|
+  | 👥 **Im Team teilbar** | „den könnt ihr zu fünft laufen, jeder bekommt die Baupläne". ⚠ Steht nur da, wenn **alle** Wege teilbar sind — sonst stünde die Staffel am falschen Auftrag |
+  | ⏱ **Wiederholsperre** | „Wieder verfügbar nach 2 Std 30 Min". Werte von einer Minute bis zu einer Woche; genannt wird die kürzeste |
+
+  Beides kommt aus CIGs eigenen Vertragsdaten (`canBeShared`,
+  `personalCooldownTime`) und war bisher nur in den Rohdaten zu sehen.
+
 ### Behoben
 
 - ⚠⚠ **Bei der Textquelle „Original" wurde in die falsche Datei geschrieben.**

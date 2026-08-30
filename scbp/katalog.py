@@ -146,6 +146,66 @@ def ruf_deckel(katalog_daten, bauplan_schluessel):
     return hoechster.get('rep_max'), hoechster.get('rang_max')
 
 
+def auftragsmerkmale(katalog_daten, bauplan_schluessel):
+    """Was die Aufträge zu diesem Bauplan noch hergeben.
+
+    Gibt `{'teilbar': bool|None, 'sperre': Minuten|None}` zurück — beides aus
+    CIGs eigenen Vertragsdaten (`canBeShared`, `personalCooldownTime`).
+
+    ⚠ **Teilbar nur, wenn ALLE Wege es sind.** „Den könnt ihr zu fünft laufen"
+    darf nicht dastehen, wenn es nur für einen von vier Aufträgen gilt — dann
+    steht die Staffel am falschen Auftrag. 334 der 353 sind teilbar, die
+    Ausnahme ist also selten und genau deshalb wichtig.
+
+    ⚠ **Die Sperre ist die kürzeste.** Sie sagt, wie schnell man es erneut
+    versuchen kann; der langsamste Weg interessiert dabei niemanden.
+    """
+    wege = []
+    for mission in (katalog_daten.get('missionen') or {}).values():
+        for name in mission.get('bp') or []:
+            if _norm(name) == bauplan_schluessel:
+                wege.append(mission)
+                break
+    if not wege:
+        return {'teilbar': None, 'sperre': None}
+    sperren = [w['cooldown'] for w in wege if w.get('cooldown')]
+    return {'teilbar': all(w.get('teilbar') for w in wege),
+            'sperre': min(sperren) if sperren else None}
+
+
+def lohnende_auftraege(katalog_daten, habe):
+    """Welcher Auftrag bringt die meisten **fehlenden** Baupläne?
+
+    Liste aus `(titel, fraktion, anzahl, uec, rang, wo)`, absteigend nach der
+    Zahl der fehlenden Baupläne.
+
+    ⚠ **Gezählt wird über die Bezugsquellen der Baupläne, nicht über
+    `missionen`.** Die Missionsliste führt ihre Aufträge nur unter dem
+    Textschlüssel (`headhunters_eliminateall_cfp_M_title_001`) — daraus wird
+    ohne die Sprachdatei des Spiels kein lesbarer Titel. Die Bezugsquellen am
+    Bauplan tragen den **aufgelösten** Titel bereits, samt Fraktion, Rang,
+    Belohnung und Annahmeort. Gleiche Auskunft, kein zusätzlicher Datenweg.
+    """
+    auftraege = {}
+    for schluessel, eintrag in (katalog_daten.get('bauplaene') or {}).items():
+        if schluessel in habe:
+            continue                      # was man hat, lohnt nicht mehr
+        for quelle in eintrag.get('q') or []:
+            titel = quelle.get('auftrag')
+            if not titel:
+                continue
+            kennung = (titel, quelle.get('fraktion') or '')
+            eintrag_a = auftraege.setdefault(kennung, {
+                'anzahl': 0, 'uec': 0, 'rang': quelle.get('rang'),
+                'wo': quelle.get('wo')})
+            eintrag_a['anzahl'] += 1
+            eintrag_a['uec'] = max(eintrag_a['uec'], quelle.get('uec') or 0)
+    raus = [(titel, fraktion, w['anzahl'], w['uec'], w['rang'], w['wo'])
+            for (titel, fraktion), w in auftraege.items()]
+    raus.sort(key=lambda x: (-x[2], -x[3], x[0]))
+    return raus
+
+
 def art_lesbar(roh):
     """Aus 'Char_Armor_Helmet' wird 'Helm' bzw. 'Helmet'."""
     return sprache.art(ART_ZUSAMMEN.get(roh, roh))

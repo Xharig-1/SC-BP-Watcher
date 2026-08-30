@@ -6413,6 +6413,53 @@ def main():
     pruefe('drin or not katalog_modul.ruf_deckel' in _q82,
            'was man schon hat, taucht dabei nicht auf')
 
+    # --- Die drei uebrigen Auskuenfte aus denselben Vertragsdaten ---
+    #
+    # ⚠ „Teilbar" nur, wenn ALLE Wege es sind: „den koennt ihr zu fuenft laufen"
+    # darf nicht dastehen, wenn es fuer einen von vier Auftraegen gilt — dann
+    # steht die Staffel am falschen Auftrag.
+    _kat82['missionen']['nicht_teilbar'] = {'bp': ['Testteil C'],
+                                            'teilbar': False, 'cooldown': 60}
+    _kat82['missionen']['nur_gedeckelt']['teilbar'] = True
+    _kat82['missionen']['nur_gedeckelt']['cooldown'] = 15
+    _kat82['missionen']['auch_gedeckelt']['teilbar'] = True
+    _kat82['missionen']['auch_gedeckelt']['cooldown'] = 240
+
+    _m82 = _ka82.auftragsmerkmale(_kat82, _ka82._norm('Testteil A'))
+    pruefe(_m82['teilbar'] is True and _m82['sperre'] == 15,
+           'teilbar wenn alle Wege es sind, Sperre ist die kuerzeste (%s)'
+           % _m82)
+    _m82 = _ka82.auftragsmerkmale(_kat82, _ka82._norm('Testteil C'))
+    pruefe(_m82['teilbar'] is False,
+           'ein nicht teilbarer Weg genuegt fuer „nicht teilbar"')
+
+    # „Was bringt am meisten" — gezaehlt wird ueber die Bezugsquellen der
+    # Bauplaene, weil nur die den aufgeloesten Auftragstitel tragen.
+    _kat82['bauplaene'] = {
+        _ka82._norm('Fehlt A'): {'n': 'Fehlt A', 'q': [
+            {'auftrag': 'Grosser Auftrag', 'fraktion': 'Testfraktion',
+             'uec': 1000, 'rang': 'Contractor'}]},
+        _ka82._norm('Fehlt B'): {'n': 'Fehlt B', 'q': [
+            {'auftrag': 'Grosser Auftrag', 'fraktion': 'Testfraktion',
+             'uec': 2000, 'rang': 'Contractor'}]},
+        _ka82._norm('Habe ich'): {'n': 'Habe ich', 'q': [
+            {'auftrag': 'Kleiner Auftrag', 'fraktion': 'Testfraktion',
+             'uec': 500}]},
+    }
+    _lohnt82 = _ka82.lohnende_auftraege(_kat82, {_ka82._norm('Habe ich')})
+    pruefe(len(_lohnt82) == 1 and _lohnt82[0][0] == 'Grosser Auftrag'
+           and _lohnt82[0][2] == 2,
+           'der Auftrag mit den meisten FEHLENDEN Bauplaenen steht oben (%s)'
+           % (_lohnt82,))
+    pruefe(_lohnt82[0][3] == 2000,
+           'die hoechste Belohnung des Auftrags wird genannt (%s)'
+           % _lohnt82[0][3])
+
+    _q82b = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                 encoding='utf-8').read()
+    pruefe('_lohnende_auftraege(fenster, innen, katalog, habe)' in _q82b,
+           'die Fortschritt-Seite zeigt es an')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

@@ -113,6 +113,30 @@ TEXTE = {
                         'their blueprints are gone. Listed here are the '
                         'blueprints you are missing that are **only** available '
                         'from such contracts.'),
+    # Die drei uebrigen Missions-Auskuenfte aus CIGs Vertragsdaten.
+    'hk_teilbar':      ('Im Team teilbar — jeder bekommt die Baupläne',
+                        'Shareable in a group — everyone gets the blueprints'),
+    'hk_nicht_teilbar': ('Nicht teilbar — jeder muss ihn selbst laufen',
+                         'Not shareable — everyone has to run it themselves'),
+    'hk_sperre':       ('Wieder verfügbar nach %s',
+                        'Available again after %s'),
+    'zeit_min':        ('%d Min', '%d min'),
+    'zeit_std':        ('%d Std', '%d h'),
+    'zeit_std_min':    ('%d Std %d Min', '%d h %d min'),
+    'zeit_tag':        ('%d Tag', '%d day'),
+    'zeit_tage':       ('%d Tagen', '%d days'),
+    # „Was lohnt sich" auf der Fortschritt-Seite
+    's_fo_lohnt':      ('Was bringt am meisten?', 'What pays off most?'),
+    's_fo_lohnt_hilfe': ('Die Aufträge, aus denen dir noch die meisten Baupläne '
+                         'fehlen. Oben steht der, der auf einen Schlag am '
+                         'meisten bringt.',
+                         'The contracts you are still missing the most '
+                         'blueprints from. Top of the list gives you the most '
+                         'in one go.'),
+    's_fo_lohnt_zeile': ('%d fehlende Baupläne', '%d missing blueprints'),
+    's_fo_lohnt_leer':  ('Kein Auftrag bringt dir noch einen Bauplan, den du '
+                         'nicht hast.',
+                         'No contract still holds a blueprint you do not have.'),
     'ff_alle_patches':   ('alle Patches', 'all patches'),
     'neu_leer':          ('Mit dem letzten Patch kam kein neuer Bauplan dazu. '
                           'Sobald CIG welche nachreicht, stehen sie hier.',

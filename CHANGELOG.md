@@ -31,6 +31,24 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   as a connection line to CIG's service. So it says "closes at", not "you have
   4,200 left".
 
+- ⭐ **"What pays off most?" — the next sensible step, below your progress.**
+  The percentage tells you where you stand, not what moves you forward. Below it
+  are now the ten contracts you are still missing the most blueprints from —
+  with faction, payout and required rank.
+
+  The top one gives **44 missing blueprints in one go** in a real inventory.
+  Calculated on data that is loaded anyway.
+
+- **Two details on every blueprint that exist nowhere else:**
+
+  | | |
+  |---|---|
+  | 👥 **Shareable in a group** | "you can run this as five, everyone gets the blueprints". ⚠ Only shown when **all** routes are shareable — otherwise the group would line up at the wrong contract |
+  | ⏱ **Repeat lockout** | "Available again after 2 h 30 min". Values from one minute to a week; the shortest is shown |
+
+  Both come from CIG's own contract data (`canBeShared`,
+  `personalCooldownTime`) and were only visible in the raw files until now.
+
 ### Fixed
 
 - ⚠⚠ **With the "Original" text source, the wrong file was written.** If your
