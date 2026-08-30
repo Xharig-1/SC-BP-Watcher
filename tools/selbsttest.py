@@ -4429,6 +4429,40 @@ def main():
         for _tl59 in _auf59:
             _tl59.destroy()
         _f59.destroy()
+
+        # ⚠ Und der Fall, der den Fehler ueberhaupt sichtbar gemacht hat:
+        # Fenster buendig am unteren Bildschirmrand. Dann ist unter dem Feld
+        # kein Platz — die Liste MUSS nach oben aufklappen, sonst laege sie
+        # unter dem Bildrand und waere abgeschnitten.
+        _schirm59 = _w59.winfo_screenheight()
+        _w59.geometry('1200x760+0+%d' % max(0, _schirm59 - 762))
+        _w59.update_idletasks()
+        _unten59 = _tk59.Frame(_w59)
+        _unten59.pack(side='bottom', fill='x')
+        _ein59 = [('', 'Alle')] + [('o%d' % _i59, 'Ort %d' % _i59)
+                                   for _i59 in range(47)]
+        _f59 = _hf59.rundwahl(_unten59, _ein59, '', lambda _v: None,
+                              ('TkDefaultFont', 10))
+        _f59.pack()
+        _w59.update_idletasks()
+        _f59.event_generate('<Button-1>', x=5, y=5)
+        _w59.update_idletasks()
+        _auf59 = [k for k in _f59.winfo_children()
+                  if isinstance(k, _tk59.Toplevel)]
+        if _auf59:
+            _g59 = _auf59[0].wm_geometry().split('+')
+            _bh59 = int(_g59[0].split('x')[1])
+            _oben59 = int(_g59[2])
+            pruefe(_oben59 < _f59.winfo_rooty(),
+                   'am unteren Bildrand klappt die Liste nach OBEN auf')
+            pruefe(_oben59 + _bh59 <= _f59.winfo_rooty() + 4,
+                   'und endet ueber dem Feld statt unter dem Bildrand '
+                   '(y=%d bis %d, Feld bei %d)'
+                   % (_oben59, _oben59 + _bh59, _f59.winfo_rooty()))
+            for _tl59 in _auf59:
+                _tl59.destroy()
+        _f59.destroy()
+        _unten59.destroy()
     finally:
         _w59.destroy()
 
@@ -4503,12 +4537,26 @@ def main():
             _zeilen60 = _etiketten60(_auf60[0], [])
             _ziel60 = _zeilen60[3]
 
+            # ⚠ **Das Rad heisst auf jedem System anders.** Linux meldet es
+            # als Maustaste 4/5, Windows und macOS als `<MouseWheel>` mit einem
+            # Ausschlag — unter Windows ±120, auf dem Mac ±1. Ein Test, der nur
+            # `<Button-5>` schickt, faellt unter Windows durch, obwohl das
+            # Programm dort in Ordnung ist. Genau so am 30.08.2026 im Bau-Lauf
+            # passiert: Linux gruen, Windows rot.
             def _radeln60(male):
                 for _ in range(male):
-                    _ziel60.event_generate(
-                        '<Button-5>', x=5, y=5,
-                        rootx=_ziel60.winfo_rootx() + 5,
-                        rooty=_ziel60.winfo_rooty() + 5)
+                    if sys.platform.startswith('linux'):
+                        _ziel60.event_generate(
+                            '<Button-5>', x=5, y=5,
+                            rootx=_ziel60.winfo_rootx() + 5,
+                            rooty=_ziel60.winfo_rooty() + 5)
+                    else:
+                        _ziel60.event_generate(
+                            '<MouseWheel>',
+                            delta=(-1 if sys.platform == 'darwin' else -120),
+                            x=5, y=5,
+                            rootx=_ziel60.winfo_rootx() + 5,
+                            rooty=_ziel60.winfo_rooty() + 5)
                 _w60.update_idletasks()
 
             _vl60, _vs60 = _liste60.yview(), _seite60.yview()
