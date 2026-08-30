@@ -51,6 +51,18 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- **The README said something wrong about the SC Deutsch Launcher.** It claimed
+  the launcher "confirms finds" — that intermediate state has been gone since
+  v3.0.0: what is in the `Game.log` is in the game, there is nothing to confirm.
+  The English version had been right for a while, the German one had not.
+
+  What stands there instead is the point that actually matters: **both write
+  into the same game text file.** That is not a problem — the watcher replaces
+  the launcher's list with the same list plus checkboxes instead of adding a
+  second one, and undoing the notes brings the launcher's state back. But if the
+  launcher runs afterwards, the checkboxes are gone until the watcher has been
+  through again (six hours at the latest, immediately via *Refresh*).
+
 - ⚠⚠ **With the "Original" text source, the wrong file was written.** If your
   game is set to German, the details went into the **English** `global.ini` —
   which the game never reads. Writing succeeded, nothing ever arrived, and the

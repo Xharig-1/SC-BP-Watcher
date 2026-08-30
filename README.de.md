@@ -29,7 +29,7 @@ Ein kleines, randloses Overlay, das beim Spielen **in Echtzeit** meldet, sobald 
 
 > 🧪 **Testversionen ausprobieren.** Vor jeder Veröffentlichung gibt es **Vorabversionen** (`-rc`) unter [Releases](../../releases) — dort steht bei jeder, was sie bringt und was sich seit der vorigen geändert hat. Sie werden **niemandem als Update angeboten**: Wer sie will, lädt sie dort herunter. Wer eine ausprobiert und etwas findet, macht bitte ein [Issue](../../issues) auf — genau dafür sind sie da.
 
-> ℹ️ **Der SC Deutsch Launcher ist nicht mehr Voraussetzung.** Die eigentliche Quelle ist die `Game.log` von Star Citizen — dort steht jeder freigeschaltete Bauplan im Klartext. Ist der Launcher da, wird er weiter genutzt: Er bestätigt die Funde und liefert deutsche Bezeichnungen. Ist er nicht da (unter Linux immer), läuft der Watcher trotzdem.
+> ℹ️ **Der SC Deutsch Launcher ist nicht mehr Voraussetzung.** Die eigentliche Quelle ist die `Game.log` von Star Citizen — dort steht jeder freigeschaltete Bauplan im Klartext. Ist der Launcher da, wird er weiter genutzt: Er liefert deutsche Bezeichnungen und meldet nach, was in den Protokollen nicht mehr steht. Ist er nicht da (unter Linux immer), läuft der Watcher trotzdem.
 
 <table>
 <tr>
@@ -196,7 +196,11 @@ Dazu: Klasse, Größe und Gütegrad stehen direkt in der Zeile (`M/1/A`), die Ob
 
 Sonst nichts. Kein Python, kein Konto — und ob du installieren willst, entscheidest du (siehe unten).
 
-**Optional:** der **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** (nur Windows). Mit ihm werden Funde zusätzlich bestätigt und die Bezeichnungen kommen auf Deutsch.
+**Optional:** der **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** (nur Windows). Mit ihm kommen die Bezeichnungen auf Deutsch, und was in den Protokollen nicht mehr steht, wird nachgemeldet.
+
+> ⚠️ **Beide schreiben in dieselbe Textdatei des Spiels.** Das ist kein Problem, aber man sollte es wissen: Wo der Launcher schon eine Bauplan-Liste in einen Auftrag gesetzt hat, **ersetzt** der Watcher sie durch dieselbe Liste **mit Kästchen** — er stellt keine zweite daneben. Nimmst du die Angaben zurück, steht der Stand des Launchers wieder da, Zeichen für Zeichen.
+>
+> Läuft der Launcher **danach** noch einmal, schreibt er seine eigene Fassung zurück und die Kästchen sind weg. Der Watcher merkt das von selbst und trägt sie wieder ein — spätestens beim nächsten Blick (alle sechs Stunden), sofort über *Texte im Spiel → Auffrischen*.
 
 ## Start
 
@@ -321,7 +325,7 @@ Was die Farbpunkte in der Liste bedeuten:
 ```text
 …\StarCitizen\LIVE\Game.log                 (Spiel — die eigentliche Quelle)
 …\StarCitizen\LIVE\logbackups\             (frühere Sitzungen, beim Start nachgelesen)
-…\sc-deutsch-launcher\blueprints\           (optional: bestätigt und liefert deutsche Namen)
+…\sc-deutsch-launcher\blueprints\           (optional: deutsche Namen, füllt Lücken)
 ```
 
 Eigene Dateien (Bestand, Einstellungen, Zwischenspeicher) liegen hier:

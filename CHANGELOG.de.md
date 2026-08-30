@@ -51,6 +51,18 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- **Die Anleitung sagte Falsches über den SC Deutsch Launcher.** Dort stand, er
+  „bestätige die Funde" — diese Zwischenstufe gibt es seit v3.0.0 nicht mehr:
+  Was in der `Game.log` steht, steht im Spiel, da ist nichts zu bestätigen. Die
+  englische Fassung war längst richtig, die deutsche nicht.
+
+  Neu steht dafür der Punkt da, der wirklich zählt: **Beide schreiben in
+  dieselbe Textdatei des Spiels.** Das ist kein Problem — der Watcher ersetzt
+  die Liste des Launchers durch dieselbe mit Kästchen, statt eine zweite
+  danebenzustellen, und beim Zurücknehmen steht dessen Stand wieder da. Läuft
+  der Launcher aber danach noch einmal, sind die Kästchen weg, bis der Watcher
+  wieder dran war (spätestens nach sechs Stunden, sofort über *Auffrischen*).
+
 - ⚠⚠ **Bei der Textquelle „Original" wurde in die falsche Datei geschrieben.**
   Wer sein Spiel auf Deutsch stellt, bekam die Angaben in die **englische**
   `global.ini` — die das Spiel nie liest. Eingetragen wurde korrekt, angekommen
