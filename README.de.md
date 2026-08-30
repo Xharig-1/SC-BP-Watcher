@@ -470,8 +470,8 @@ Wünsche und Fehlermeldungen gern als [Issue](../../issues) oder im [Discord](ht
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/fankit/MadeByTheCommunity_White.png">
-    <img alt="Star Citizen — Made by the Community" src="docs/fankit/MadeByTheCommunity_Black.png" width="150" height="150">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/fankit/MadeByTheCommunity_White.png">
+    <img alt="Star Citizen — Made by the Community" src="assets/fankit/MadeByTheCommunity_Black.png" width="150" height="150">
   </picture>
 </p>
 
