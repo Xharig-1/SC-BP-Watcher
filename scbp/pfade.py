@@ -1056,9 +1056,31 @@ if __name__ == '__main__':
 # Alle Anführungszeichen, die in Bauplan-Namen vorkommen — gerade,
 # typografische und die französischen. Beim Vergleichen werden sie auf ein
 # einfaches `'` gezogen.
+#
+# ⚠⚠ **Vollständig halten — eine Lücke fällt nie von allein auf.** Bis zum
+# 30.08.2026 fehlte ausgerechnet das **öffnende** typografische
+# Anführungszeichen `\u201c`. Aus `SW16BR1 “Buzzsaw” Repeater` wurde dadurch
+# `sw16br1 “buzzsaw' repeater` — das schließende war angeglichen, das öffnende
+# nicht. Drei Baupläne im Katalog tragen es, und keiner von ihnen konnte je zu
+# einem Fund aus einer anderen Quelle passen. Gefunden beim Abgleich
+# einer von Hand geführten Bauplanliste gegen den Katalog, nicht durch eine
+# Meldung: Der Bauplan gilt einfach als „fehlt", und niemand kommt auf die Idee,
+# dass ein Anführungszeichen daran schuld ist.
+#
+# Prüfung 80 im Selbsttest zieht alle hier gelisteten Zeichen durch
+# `namensform()` und verlangt dasselbe Ergebnis.
 ANFUEHRUNG = str.maketrans({
-    '"': "'", '„': "'", '"': "'", '”': "'",
-    '‘': "'", '’': "'", '«': "'", '»': "'",
+    '"': "'",
+    '\u201c': "'",      # “  oeffnend, typografisch — fehlte bis 30.08.2026
+    '\u201d': "'",      # ”  schliessend, typografisch
+    '\u201e': "'",      # „  deutsches oeffnendes unten
+    '\u2018': "'",      # ‘  einfach, oeffnend
+    '\u2019': "'",      # ’  einfach, schliessend (auch Apostroph)
+    '\u201a': "'",      # ‚  einfach unten
+    '\u00ab': "'",      # «  franzoesisch
+    '\u00bb': "'",      # »  franzoesisch
+    '\u2039': "'",      # ‹  franzoesisch, einfach
+    '\u203a': "'",      # ›  franzoesisch, einfach
 })
 
 
@@ -1071,7 +1093,7 @@ ANFUEHRUNG = str.maketrans({
 # gingen ungeschnitten in den Bestand — und `XL-1 (Mil/2/A)` findet `XL-1` nie.
 # Der Bauplan galt als fehlend, obwohl er dastand.
 #
-# Aufgefallen an Morkhan: Er hatte die Baupläne gemeinsam mit der Autor gefarmt,
+# Aufgefallen an Morkhan: Er hatte die Baupläne gemeinsam mit dem Autor gefarmt,
 # hatte den SC Deutsch Launcher mit gepflegter Datei — und im Spiel standen die
 # Kästchen trotzdem leer. Gemeldet: „vergleich doch mal die Logik, was habe ich,
 # mit meiner BP-Liste, und hör auf zu raten."

@@ -6258,6 +6258,42 @@ def main():
             os.environ['SC_BP_HOME'] = _heim79
         _ka78.vergessen() if hasattr(_ka78, 'vergessen') else None
 
+    # ------------------------------------------------------------------
+    # 80. Anfuehrungszeichen duerfen Namen nicht trennen
+    #
+    # ⚠⚠ Bis zum 30.08.2026 fehlte in `pfade.ANFUEHRUNG` ausgerechnet das
+    # **oeffnende** typografische Anfuehrungszeichen. Aus
+    # `SW16BR1 “Buzzsaw” Repeater` wurde `sw16br1 “buzzsaw' repeater` — das
+    # schliessende angeglichen, das oeffnende nicht. Drei Katalog-Bauplaene
+    # tragen es; keiner konnte je zu einem Fund aus einer anderen Quelle passen.
+    #
+    # Aufgefallen ist es beim Abgleich einer von Hand gefuehrten Liste gegen den
+    # Katalog — **nicht** durch eine Meldung. Der Bauplan gilt einfach als
+    # „fehlt", und niemand vermutet ein Anfuehrungszeichen dahinter.
+    print()
+    print('80. Anfuehrungszeichen trennen keine Namen')
+    from scbp import pfade as _pf80
+
+    _formen80 = ['SW16BR1 "Buzzsaw" Repeater']
+    for _paar80 in (('\u201c', '\u201d'), ('\u2018', '\u2019'),
+                    ('\u201e', '\u201c'), ('\u00ab', '\u00bb'),
+                    ('\u2039', '\u203a'), ("'", "'")):
+        _formen80.append('SW16BR1 %sBuzzsaw%s Repeater' % _paar80)
+    _keys80 = {_pf80.namensform(_f80) for _f80 in _formen80}
+    pruefe(len(_keys80) == 1,
+           'alle Anfuehrungs-Schreibweisen ergeben denselben Schluessel (%d '
+           'verschiedene: %s)' % (len(_keys80), sorted(_keys80)[:3]))
+
+    # Und die Tabelle muss jedes Zeichen kennen, das ueberhaupt als
+    # Anfuehrungszeichen auftreten kann — sonst faellt die naechste Luecke
+    # genauso lange nicht auf.
+    _fehlend80 = [c for c in '\u201c\u201d\u201e\u2018\u2019\u201a'
+                            '\u00ab\u00bb\u2039\u203a"'
+                  if ord(c) not in _pf80.ANFUEHRUNG]
+    pruefe(not _fehlend80,
+           'die Tabelle kennt alle gaengigen Anfuehrungszeichen (%s)'
+           % (', '.join('U+%04X' % ord(c) for c in _fehlend80) or 'alle'))
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

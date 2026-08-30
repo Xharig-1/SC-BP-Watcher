@@ -6,6 +6,23 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.3.5 - unreleased
+
+### Fixed
+
+- ⚠ **Three blueprints could never find each other.** Quotation marks are
+  levelled when names are compared — straight, typographic, French. The table
+  was missing the **opening** typographic one: `SW16BR1 “Buzzsaw” Repeater`
+  became `sw16br1 “buzzsaw' repeater`, closing levelled, opening not.
+
+  Affected are the three `SW16BR…` repeaters. Anyone who had them from another
+  source — log, launcher, import — saw them as permanently **missing**, even
+  though they were in the inventory.
+
+  Found by comparing a hand-kept list against the catalogue, not through a
+  report: nobody suspects a quotation mark. The self-test now runs every common
+  quotation mark through the comparison form and requires the same result.
+
 ## v3.3.4 - 2026-08-30
 
 ### Fixed

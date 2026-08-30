@@ -6,6 +6,25 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.3.5 - unveröffentlicht
+
+### Behoben
+
+- ⚠ **Drei Baupläne konnten nie zueinander finden.** Beim Vergleichen werden
+  Anführungszeichen angeglichen — gerade, typografische, französische. In der
+  Tabelle fehlte ausgerechnet das **öffnende** typografische:
+  `SW16BR1 “Buzzsaw” Repeater` wurde zu `sw16br1 “buzzsaw' repeater`, das
+  schließende angeglichen, das öffnende nicht.
+
+  Betroffen sind die drei `SW16BR…`-Repeater. Wer sie aus einer anderen Quelle
+  hatte — Log, Launcher, Import —, bei dem galten sie dauerhaft als **fehlend**,
+  obwohl sie im Bestand standen.
+
+  Aufgefallen beim Abgleich einer von Hand geführten Liste gegen den Katalog,
+  nicht durch eine Meldung: Niemand vermutet ein Anführungszeichen dahinter.
+  Der Selbsttest zieht jetzt alle gängigen Anführungszeichen durch die
+  Vergleichsform und verlangt dasselbe Ergebnis.
+
 ## v3.3.4 - 2026-08-30
 
 ### Behoben
