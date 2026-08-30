@@ -6,6 +6,32 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.3.4 - 2026-08-30
+
+### Behoben
+
+- **Baupläne, die im Spiel einmal anders hießen, werden wiedererkannt.** Die
+  Übersetzung benennt Gegenstände gelegentlich um. Wer den Bauplan vorher bekam,
+  trug den alten Namen für immer im Bestand — und der Katalog kannte ihn nicht.
+
+  | Im Bestand | Heute im Katalog |
+  |---|---|
+  | `BlackFire Racing Flight Suit` | `Neutrino Racing Flight Suit BlackFire` |
+  | `BlueFlame Racing Helmet` | `Neutrino Racing Helmet BlueFlame` |
+
+  Dieselben Wörter, andere Reihenfolge, ein Reihenname mehr — ein
+  Zeichenketten-Vergleich fängt das nie.
+
+  ⚠ **Zugeordnet wird nur, wenn es eindeutig ist:** wenn **genau ein**
+  Katalogeintrag sämtliche Wörter des alten Namens enthält, und der Name
+  mindestens zwei Wörter hat. `Parallax` allein steckt in fünf Einträgen und
+  bleibt deshalb stehen. Ein falsch zugeordneter Bauplan wäre schlimmer als
+  einer, der offen als unbekannt ausgewiesen ist.
+
+  Der vorhandene Stand wird beim nächsten Start mit angeglichen.
+
+  Gefunden an den Daten von **Morkhan (KRT)** 🙏
+
 ## v3.3.3 - 2026-08-30
 
 ### Behoben

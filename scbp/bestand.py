@@ -256,7 +256,41 @@ def katalogname(name):
     ohne = ANHANG_RE.sub('', name).strip()
     if ohne and ohne != name and norm(ohne) in bekannt:
         return ohne
-    return name
+    return _eindeutiger_treffer(name, bekannt)
+
+
+# Ab so vielen Wörtern darf über die Wortmenge zugeordnet werden.
+MINDEST_WOERTER = 2
+
+
+def _eindeutiger_treffer(name, bekannt):
+    """Ein Altname, dessen Wörter in **genau einem** Katalognamen stecken.
+
+    ⚠ Wozu: Die Übersetzung benennt Gegenstände gelegentlich um. Wer den
+    Bauplan vorher bekommen hat, trägt den alten Namen für immer im Bestand —
+    `BlackFire Racing Flight Suit`, während der Katalog heute
+    `Neutrino Racing Flight Suit BlackFire` sagt. Dieselben Wörter, andere
+    Reihenfolge, ein zusätzlicher Reihenname. Ein Zeichenketten-Vergleich fängt
+    das nie.
+
+    ⚠⚠ **Und deshalb wird hier nicht geraten.** Zugeordnet wird nur, wenn
+    **genau ein** Katalogeintrag sämtliche Wörter enthält. `Parallax` allein
+    steckt in fünf Einträgen — bleibt also stehen, statt willkürlich einem
+    davon zugeschlagen zu werden. Ein falsch zugeordneter Bauplan ist schlimmer
+    als ein offen ausgewiesener.
+
+    ⚠ Mindestens **zwei** Wörter. Ein einzelnes Wort steckt schnell in einem
+    fremden Namen (`Tailwind` in `Tailwind Flight Suit`), und dann wäre die
+    Eindeutigkeit nur Zufall.
+    """
+    woerter = set(norm(name).split())
+    if len(woerter) < MINDEST_WOERTER:
+        return name
+    treffer = [k for k in bekannt if woerter <= set(k.split())]
+    if len(treffer) != 1:
+        return name
+    eintrag = bekannt[treffer[0]]
+    return (eintrag.get('n') if isinstance(eintrag, dict) else None) or treffer[0]
 
 
 def angleichen(daten):

@@ -6,6 +6,33 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.3.4 - 2026-08-30
+
+### Fixed
+
+- **Blueprints that were once named differently in game are recognised again.**
+  The translation occasionally renames items. Anyone who got the blueprint before
+  carried the old name in their inventory forever — and the catalogue did not
+  know it.
+
+  | In the inventory | In the catalogue today |
+  |---|---|
+  | `BlackFire Racing Flight Suit` | `Neutrino Racing Flight Suit BlackFire` |
+  | `BlueFlame Racing Helmet` | `Neutrino Racing Helmet BlueFlame` |
+
+  Same words, different order, one series name more — a string comparison never
+  catches that.
+
+  ⚠ **A match is only made when it is unambiguous:** when **exactly one**
+  catalogue entry contains all the words of the old name, and the name has at
+  least two words. `Parallax` alone sits inside five entries and therefore stays
+  as it is. A wrongly matched blueprint would be worse than one openly listed as
+  unknown.
+
+  The existing inventory is corrected on the next start.
+
+  Found in the data of **Morkhan (KRT)** 🙏
+
 ## v3.3.3 - 2026-08-30
 
 ### Fixed

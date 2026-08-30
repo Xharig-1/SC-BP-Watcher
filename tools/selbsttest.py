@@ -6209,6 +6209,55 @@ def main():
     pruefe('bestand_datei.angleichen(self.bestand)' in _q78,
            'und der Watcher stoesst das beim Start an')
 
+    # ------------------------------------------------------------------
+    # 79. Altnamen zuordnen — aber nur, wenn es eindeutig ist
+    #
+    # ⚠ Die Uebersetzung benennt Gegenstaende gelegentlich um. Wer den Bauplan
+    # vorher bekommen hat, traegt den alten Namen fuer immer im Bestand:
+    # `BlackFire Racing Flight Suit`, waehrend der Katalog heute
+    # `Neutrino Racing Flight Suit BlackFire` sagt. In der echten deutschen
+    # `global.ini` kommt die alte Wortstellung **0 mal** vor, die neue 2 mal —
+    # es ist also ein Altbestand, kein aktueller Fehler.
+    #
+    # ⚠⚠ **Hier darf nicht geraten werden.** `Parallax` allein steckt in fuenf
+    # Katalognamen. Ein falsch zugeordneter Bauplan ist schlimmer als ein offen
+    # ausgewiesener — deshalb: genau ein Treffer, sonst gar keiner.
+    print()
+    print('79. Altnamen nur bei Eindeutigkeit zuordnen')
+    _heim79 = os.environ.get('SC_BP_HOME')
+    _ordner79 = os.path.join(basis, 'altnamen79')
+    os.makedirs(_ordner79, exist_ok=True)
+    try:
+        os.environ['SC_BP_HOME'] = _ordner79
+        _kat79 = {'format': 2, 'stand': 'test', 'bauplaene': {}}
+        for _n79 in ('Neutrino Racing Flight Suit BlackFire',
+                     'Neutrino Racing Helmet BlackFire',
+                     'Parallax Energy Assault Rifle',
+                     'Parallax "Sanguine" Energy Assault Rifle',
+                     'Tailwind Flight Suit'):
+            _kat79['bauplaene'][_bd78.norm(_n79)] = {'n': _n79, 'a': 'Armor'}
+        with open(os.path.join(_ordner79, 'katalog-cache.json'),
+                  'w', encoding='utf-8') as _f79:
+            json.dump(_kat79, _f79)
+        _ka78.vergessen() if hasattr(_ka78, 'vergessen') else None
+
+        pruefe(_bd78.katalogname('BlackFire Racing Flight Suit')
+               == 'Neutrino Racing Flight Suit BlackFire',
+               'ein eindeutiger Altname wird zugeordnet')
+        pruefe(_bd78.katalogname('Parallax') == 'Parallax',
+               'ein mehrdeutiger Altname bleibt stehen (Parallax passt auf zwei)')
+        pruefe(_bd78.katalogname('Tailwind Flight Suit') == 'Tailwind Flight Suit',
+               'ein Name, den es genau so gibt, wird nicht angefasst')
+        pruefe(_bd78.katalogname('Voellig Fremder Gegenstand')
+               == 'Voellig Fremder Gegenstand',
+               'ein Name ohne jeden Treffer bleibt, wie er ist')
+    finally:
+        if _heim79 is None:
+            os.environ.pop('SC_BP_HOME', None)
+        else:
+            os.environ['SC_BP_HOME'] = _heim79
+        _ka78.vergessen() if hasattr(_ka78, 'vergessen') else None
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
