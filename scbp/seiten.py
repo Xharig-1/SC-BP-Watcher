@@ -4459,6 +4459,53 @@ def _berg_erz(fenster, eltern, erz, offen, neu_zeichnen):
         tk.Label(z, text=_art_text(arten), bg='#0c1017', fg=SUB,
                  font=fenster.f_klein, anchor='e').pack(side='right', padx=12)
 
+    # ⭐ **Wohin damit?** Die Frage nach dem Fundort ist nur die halbe. Zwanzig
+    # Raffinerien teilen sich zehn Profile, und der Unterschied ist kein
+    # Rundungsfehler: Bei Bexalite liegen 18 Prozentpunkte zwischen der besten
+    # und der schlechtesten Wahl, bei Quartz 16. Wer das nicht weiß, verschenkt
+    # jeden Flug ein Stück Ausbeute.
+    #
+    # ⚠ Die Daten stehen in denselben Bergbaudaten (`refineries` +
+    # `refineryProfiles`) und kosten keinen zusätzlichen Abruf. Gegengerechnet
+    # gegen die Tabelle auf scmdb.net: alle zehn ARC-L1-Werte identisch.
+    from . import bergbau as berg_modul
+    try:
+        raff = berg_modul.raffinerien_fuer(erz['name'])
+    except Exception as ausnahme:
+        fehler.merken('seiten.raffinerie', ausnahme)
+        raff = []
+    if raff:
+        tk.Label(block, text=t('s_bg_raff_kopf'), bg='#0c1017', fg=FG,
+                 font=fenster.f_grund, anchor='w').pack(
+                     fill='x', padx=12, pady=(10, 2))
+        spanne = raff[0][2] - raff[-1][2]
+        if not spanne:
+            _fliesstext(block, t('s_bg_raff_egal'), fenster.f_klein, fill='x')
+        else:
+            for namen, system, bonus in raff:
+                z = tk.Frame(block, bg='#0c1017')
+                z.pack(fill='x', padx=12, pady=1)
+                # Nur das Kürzel — „ARC-L1 Wide Forest Station" dreimal
+                # untereinander ist eine Wand aus Text. Und bei mehreren
+                # Stationen mit demselben Profil nur die erste plus Zähler:
+                # Ein Profil deckt acht Stationen ab, ausgeschrieben sprengt
+                # das jede Zeile.
+                _kuerzel = list(dict.fromkeys(n.split(' ')[0] for n in namen))
+                kurz = (_kuerzel[0] if len(_kuerzel) == 1
+                        else t('s_bg_raff_weitere') % (_kuerzel[0],
+                                                       len(_kuerzel) - 1))
+                tk.Label(z, text=kurz, bg='#0c1017', fg=FG,
+                         font=fenster.f_grund, anchor='w').pack(side='left')
+                tk.Label(z, text=system or '', bg='#0c1017', fg=SUB,
+                         font=fenster.f_klein, anchor='w').pack(
+                             side='left', padx=(10, 0))
+                tk.Label(z, text=t('s_bg_raff_zeile') % bonus, bg='#0c1017',
+                         fg=(ACCENT if bonus > 0 else GOLD if bonus < 0 else SUB),
+                         font=fenster.f_grund, anchor='e').pack(
+                             side='right', padx=12)
+            _fliesstext(block, t('s_bg_raff_spanne') % spanne,
+                        fenster.f_klein, fill='x')
+
 
 def _berg_ort(fenster, eltern, ort, offen, neu_zeichnen):
     """Ein Ort — aufgeklappt steht darunter, was es dort gibt."""

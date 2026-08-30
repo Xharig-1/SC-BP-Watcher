@@ -4812,6 +4812,64 @@ def main():
         pruefe(bool(_w62) and len(_w62) == 2 and all(_w62),
                'Text %s gibt es deutsch und englisch' % _k62)
 
+    # ------------------------------------------------------------------
+    # 63. Raffinerien — wohin mit dem Erz?
+    #
+    # Die Bergbau-Seite beantwortete nur die halbe Frage. Zwanzig Raffinerien
+    # teilen sich zehn Profile, und der Unterschied ist kein Rundungsfehler:
+    # Bei Bexalite liegen 18 Prozentpunkte zwischen bester und schlechtester
+    # Wahl. Die Daten standen die ganze Zeit im selben Abruf — der Watcher hat
+    # sie beim Sichern weggeworfen.
+    print()
+    print('63. Raffinerien')
+    from scbp import bergbau as _bg63
+
+    _daten63 = _bg63.laden()
+    if not _daten63.get('refineryProfiles'):
+        print('  [–]    keine Raffineriedaten vorhanden — uebersprungen')
+    else:
+        # Gegen die Tabelle auf scmdb.net gerechnet (Stand 4.10.0):
+        _soll63 = {'Quartz': ('ARC-L1', 11), 'Titanium': ('MIC-L5', 13),
+                   'Bexalite': ('MIC-L5', 12)}
+        for _erz63, (_beste63, _bonus63) in _soll63.items():
+            _r63 = _bg63.raffinerien_fuer(_erz63)
+            pruefe(bool(_r63), '%s findet Raffinerien' % _erz63)
+            if _r63:
+                _namen63, _sys63, _wert63 = _r63[0]
+                pruefe(_wert63 == _bonus63,
+                       '%s: bester Bonus %+d %% (erwartet %+d)'
+                       % (_erz63, _wert63, _bonus63))
+                pruefe(any(n.startswith(_beste63) for n in _namen63),
+                       '%s: beste Raffinerie ist %s' % (_erz63, _beste63))
+        # ⚠ Was nicht im Profil steht, ist 0 % — nicht „unbekannt".
+        _r63 = _bg63.raffinerien_fuer('Riccite')
+        pruefe(_r63 and all(w == 0 for _n, _s, w in _r63),
+               'ein Erz ohne Profileintrag steht ueberall auf 0 %')
+        # ⚠ Schreibweisen: Profile sagen „Aluminum (Ore)", Rezepte „Aluminium".
+        pruefe(bool(_bg63.raffinerien_fuer('Aluminium')),
+               'die britische Schreibweise findet dieselben Raffinerien')
+        # Und die Reihenfolge: beste zuerst.
+        _r63 = _bg63.raffinerien_fuer('Bexalite')
+        pruefe(all(_r63[i][2] >= _r63[i+1][2] for i in range(len(_r63)-1)),
+               'die Liste steht nach Bonus sortiert, beste zuerst')
+
+    # Die Daten muessen beim Sichern erhalten bleiben — genau daran lag es.
+    _q63 = open(os.path.join(WURZEL, 'scbp', 'bergbau.py'), encoding='utf-8').read()
+    pruefe("'refineries': roh.get('refineries')" in _q63,
+           'die Raffinerien werden beim Sichern behalten')
+    pruefe("da.get('refineries') is not None" in _q63,
+           'und eine alte Ablage ohne sie wird einmal neu geholt')
+    _q63b = open(os.path.join(WURZEL, 'scbp', 'herstellung.py'), encoding='utf-8').read()
+    pruefe("'dismantle': roh.get('dismantle')" in _q63b,
+           'dasselbe fuer die Zerlege-Sperrliste')
+    from scbp import sprache as _sp63
+    for _k63 in ('s_bg_raff_kopf', 's_bg_raff_zeile', 's_bg_raff_egal',
+                 's_bg_raff_spanne', 's_bg_raff_weitere', 's_he_prozent',
+                 's_he_spanne', 's_he_zerlegen'):
+        _w63 = _sp63.TEXTE.get(_k63)
+        pruefe(bool(_w63) and len(_w63) == 2 and all(_w63),
+               'Text %s gibt es deutsch und englisch' % _k63)
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

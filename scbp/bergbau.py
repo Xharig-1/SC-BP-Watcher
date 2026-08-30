@@ -125,7 +125,11 @@ def aktualisieren(build, fortschritt=None):
     if AUS:
         return False, t('m_h_kein_netz')
     da = laden()
-    if da.get('build') == build and da.get('locations'):
+    # ⚠ `refineries` fehlt in Ablagen von vor v3.3.0 — dort wurden beim Sichern
+    # nur Orte und Zusammensetzungen behalten. Fehlt der Abschnitt, wird einmal
+    # neu geholt; danach passiert wieder nichts. Die Datei ist 0,4 MB.
+    if (da.get('build') == build and da.get('locations')
+            and da.get('refineries') is not None):
         return True, t('m_b_aktuell') % len(da['locations'])
     if fortschritt:
         fortschritt(t('z_laedt') % ('Bergbau', 0.4))
@@ -133,8 +137,14 @@ def aktualisieren(build, fortschritt=None):
     orte = roh.get('locations') or []
     if not orte:
         return False, t('m_b_leer')
+    # ⚠ Die Raffinerien gehoeren dazu. Sie stehen im selben Abruf und
+    # beantworten die Frage, die nach „wo baue ich das ab?" kommt: „und wohin
+    # bringe ich es?" 20 Raffinerien, 10 verschiedene Profile — bei Quartz
+    # liegen zwischen der besten und der schlechtesten 14 Prozentpunkte.
     _sichern({'format': FORMAT, 'build': build, 'locations': orte,
-              'compositions': roh.get('compositions') or {}})
+              'compositions': roh.get('compositions') or {},
+              'refineries': roh.get('refineries') or [],
+              'refineryProfiles': roh.get('refineryProfiles') or {}})
     return True, t('m_b_geladen') % len(orte)
 
 
@@ -220,6 +230,49 @@ def erze():
             sammlung.setdefault(name, []).append((o['name'], o['system'], arten))
     raus = [{'name': n, 'orte': sorted(v)} for n, v in sammlung.items()]
     raus.sort(key=lambda x: x['name'].lower())
+    return raus
+
+
+def raffinerien_fuer(rohstoff):
+    """Welche Raffinerie holt aus diesem Erz am meisten heraus?
+
+    Gibt `[(Namen, System, Bonus in Prozent)]`, beste zuerst. Raffinerien mit
+    demselben Profil werden zusammengefasst — bei zehn Profilen auf zwanzig
+    Stationen stuenden sonst Dubletten da.
+
+    ⚠ **Was nicht im Profil steht, ist 0 %**, nicht „unbekannt". So haelt es
+    die Quelle, und so steht es auch in deren Tabelle.
+
+    ⚠ Verglichen wird ueber `norm_rohstoff` — die Profile sagen
+    `Aluminum (Ore)`, die Rezepte `Aluminium`, die Bergbaudaten
+    `Aluminium (Ore)`. Ohne Angleichung findet man zu keinem Erz eine
+    Raffinerie.
+    """
+    from .herstellung import norm_rohstoff
+    da = laden()
+    profile = da.get('refineryProfiles') or {}
+    if not profile:
+        return []
+    gesucht = norm_rohstoff(rohstoff)
+    # Erst je Profil den Bonus bestimmen ...
+    bonus_je_profil = {}
+    for pid, werte in profile.items():
+        bonus_je_profil[pid] = 0
+        for mat, wert in (werte or {}).items():
+            if norm_rohstoff(mat) == gesucht:
+                bonus_je_profil[pid] = wert
+                break
+    # ... dann die Stationen dazu buendeln.
+    gebuendelt = {}
+    for r in da.get('refineries') or []:
+        pid = r.get('profileId')
+        if pid not in bonus_je_profil:
+            continue
+        eintrag = gebuendelt.setdefault(pid, {'namen': [], 'system': r.get('system'),
+                                              'bonus': bonus_je_profil[pid]})
+        eintrag['namen'].append(r.get('name') or '')
+    raus = [(e['namen'], e['system'], e['bonus']) for e in gebuendelt.values()]
+    raus.sort(key=lambda x: (-x[2], x[0][0] if x[0] else ''))
     return raus
 
 

@@ -1618,6 +1618,22 @@ TEXTE = {
     # diesen Zusatz liest man „× 0.800" als Verschlechterung, obwohl es
     # der bestmoegliche Wert ist.
     's_he_weniger_gut':  ('weniger ist besser', 'lower is better'),
+    # Raffinerien — die Frage nach „wo baue ich das ab?" ist „und wohin
+    # bringe ich es?"
+    's_bg_raff_kopf':    ('Raffinerie — was am meisten herausholt',
+                          'Refinery — where you get the most'),
+    's_bg_raff_zeile':   ('%+d %%', '%+d %%'),
+    # ⚠ Zehn Profile auf zwanzig Stationen — eines davon deckt acht ab.
+    # Alle auszuschreiben ergibt eine Textwand; scmdb schreibt aus
+    # demselben Grund „+7 others".
+    's_bg_raff_weitere': ('%s  +%d weitere', '%s  +%d others'),
+    's_bg_raff_egal':    ('Bei diesem Erz macht die Raffinerie keinen '
+                          'Unterschied — überall 0 %.',
+                          'The refinery makes no difference for this ore — '
+                          '0 % everywhere.'),
+    's_bg_raff_spanne':  ('%d Prozentpunkte zwischen bester und '
+                          'schlechtester Wahl',
+                          '%d percentage points between best and worst'),
     # Prozent neben dem Faktor — die Zahl, die man wirklich liest.
     's_he_prozent':      ('%+.2f %%', '%+.2f %%'),
     # Was mit diesem Material ueberhaupt erreichbar waere.
