@@ -11,6 +11,21 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- ⭐⭐ **The workshop — three new pages.** The blueprint used to be where the
+  answers stopped: "you have it" or "you are missing it". Now the tool answers
+  what comes after that.
+
+  | Page | The question it answers |
+  |---|---|
+  | **Crafting** | What does this blueprint need — and what comes out? Ingredients, craft time and the stats of the finished item, for **1,597** craftable things |
+  | **My stock** | What do I have? Material, amount, quality and location, kept by hand. The recipe then shows what is missing |
+  | **Mining** | Where do I get it? Type a resource → where it is found. Type a location → what is found there. **48 locations, 38 ores** |
+
+  **And quality counts.** One slider per ingredient shows what *your* material
+  makes of the values — the data carries it for **1,524 of the 1,597**
+  blueprints. If you hold quality 900 iron and quality 500 riccite, you see
+  exactly what that yields.
+
 - **The author of the German translation is now credited** — with name,
   repository and licence. It is by **rjcncpt**
   ([StarCitizen-Deutsch-INI](https://github.com/rjcncpt/StarCitizen-Deutsch-INI))

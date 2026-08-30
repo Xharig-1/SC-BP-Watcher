@@ -11,6 +11,20 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Neu
 
+- ⭐⭐ **Die Werkstatt — drei neue Seiten.** Der Bauplan war bisher das Ende der
+  Auskunft: „du hast ihn" oder „dir fehlt er". Jetzt beantwortet das Werkzeug
+  auch, was danach kommt.
+
+  | Seite | Die Frage, die sie beantwortet |
+  |---|---|
+  | **Herstellung** | Was braucht dieser Bauplan — und was wird daraus? Zutaten, Herstellzeit und die Werte des fertigen Gegenstands, für **1.597** herstellbare Dinge |
+  | **Mein Lager** | Was habe ich? Material, Menge, Qualität und Lagerort, von Hand gepflegt. Im Rezept steht dann, was fehlt |
+  | **Bergbau** | Wo bekomme ich das? Rohstoff eintippen → seine Fundorte. Ort eintippen → was es dort gibt. **48 Orte, 38 Erze** |
+
+  **Und die Qualität zählt mit.** Ein Regler je Zutat zeigt, was *dein* Material
+  aus den Werten macht — bei **1.524 der 1.597** Baupläne tragen die Daten das
+  mit. Wer 900er Iron hat und 500er Riccite, sieht genau, was dabei herauskommt.
+
 - **Der Urheber der deutschen Übersetzung ist jetzt genannt** — mit Name,
   Repository und Lizenz. Sie stammt von **rjcncpt**
   ([StarCitizen-Deutsch-INI](https://github.com/rjcncpt/StarCitizen-Deutsch-INI))

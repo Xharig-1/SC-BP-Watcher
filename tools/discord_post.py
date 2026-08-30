@@ -33,19 +33,56 @@ REPO = 'https://github.com/Xharig-1/SC-BP-Watcher'
 
 
 def punkte_aus(block):
-    """Die Überschriften der obersten Aufzählungsebene — ohne Unterpunkte."""
+    """Die Überschriften der obersten Aufzählungsebene — ohne Unterpunkte.
+
+    ⚠⚠ **Erst den Punkt zusammensetzen, dann kürzen.** Im CHANGELOG ist jeder
+    Punkt über mehrere Zeilen umgebrochen; die fette Überschrift reicht oft bis
+    in die zweite. Wer nur die erste Zeile nimmt, findet das schließende `**`
+    nicht, fällt auf „erster Satz" zurück — und der endet dann mitten im Wort.
+    Genau so sah die Meldung zu v3.3.0 aus: „Ins Lager kommt nur noch, was es
+    im Spiel wirklich gibt — Rohstoff", „Die Suche findet auch die Zutat. »ric«
+    brachte". Sechs von sechs Punkten abgeschnitten, in einer Nachricht, die an
+    mehrere hundert Leute geht (30.08.2026 aufgefallen).
+    """
     gefunden = []
-    for zeile in block.split('\n'):
-        if not zeile.startswith('- '):
-            continue                     # eingerückte Unterpunkte fallen weg
-        text = zeile[2:].strip()
+    puffer = [None]
+
+    def ablegen():
+        text = puffer[0]
+        puffer[0] = None
+        if not text:
+            return
         # „**Titel.** Erklärung …" -> nur der Titel; sonst der erste Satz.
-        fett = re.match(r'\*\*(.+?)\*\*', text)
-        kurz = fett.group(1) if fett else text.split('. ')[0]
-        kurz = re.sub(r'[`*_]', '', kurz).strip(' .—-')
-        kurz = re.sub(r'\s+', ' ', kurz)
+        fett = re.match(r'\*\*(.+?)\*\*', text, re.S)
+        kurz = fett.group(1) if fett else text
+        kurz = re.sub(r'[`*_]', '', kurz)
+        kurz = re.sub(r'\s+', ' ', kurz).strip()
+        # ⚠ Auch eine fette Überschrift kann zwei Sätze lang sein. Für Discord
+        # zählt der erste — der Rest steht im Änderungsprotokoll. Aber nur,
+        # wenn dabei noch ein Satz übrig bleibt und kein Stummel.
+        erster = re.split(r'(?<=[.!?])\s', kurz)[0]
+        if len(erster) >= 25:
+            kurz = erster
+        kurz = kurz.strip(' .—-')
         if kurz:
             gefunden.append(kurz)
+
+    for zeile in block.split('\n'):
+        if zeile.startswith('- '):
+            ablegen()
+            puffer[0] = zeile[2:].strip()
+            continue
+        if puffer[0] is None:
+            continue
+        inhalt = zeile.strip()
+        # Leerzeile, Überschrift oder ein neuer Block: der Punkt ist zu Ende.
+        # Unterpunkte und Tabellenzeilen gehören nicht in die Kurzfassung.
+        if (not inhalt or not zeile.startswith((' ', '\t'))
+                or inhalt.startswith(('- ', '* ', '|', '>', '#'))):
+            ablegen()
+            continue
+        puffer[0] += ' ' + inhalt
+    ablegen()
     return gefunden
 
 
