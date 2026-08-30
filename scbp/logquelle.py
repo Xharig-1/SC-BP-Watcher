@@ -347,6 +347,15 @@ class LogTail:
         # zehn Auftraegen stuende eine Liste da, von der nichts mehr stimmt.
         self.auftrag_ende_muster = None
         self.auftraege_beendet = []
+        # ⚠ Und dasselbe noch einmal **in der Reihenfolge des Logs**. Zwei
+        # getrennte Listen verlieren, was zuerst kam: Steht in einem Abschnitt
+        # erst die Annahme und danach der Abschluss — genau der Fall nach einem
+        # Neustart des Watchers, der einen ganzen Abend nachliest —, dann nimmt
+        # eine Auswertung „erst alle Enden, dann alle Annahmen" den Auftrag weg
+        # und stellt ihn gleich wieder hin. Er stuende als frisch angenommen da,
+        # obwohl er laengst erledigt ist. Genau so am 30.08.2026 gemessen.
+        # Eintraege sind `(ist_annahme, titel)`.
+        self.auftrag_ereignisse = []
 
     def _locate(self):
         p = pfade.game_log()
@@ -393,6 +402,15 @@ class LogTail:
 
     def new_names(self):
         """Neue Baupläne seit dem letzten Aufruf — Liste von (Name, Zusatz)."""
+        # ⚠ **Zuerst leeren, vor jedem Ausstieg.** Die drei Auftragslisten
+        # gehoeren zu *diesem* Abschnitt. Blieben sie stehen, wenn nichts Neues
+        # da ist, laese der Aufrufer sie ein zweites Mal — und der Watcher
+        # meldete einen Auftrag von vorhin noch einmal als eben angenommen.
+        # Der Bauplan-Weg hat das Problem nie gehabt, weil er seine Funde
+        # zurueckgibt statt sie abzulegen.
+        self.auftraege = []
+        self.auftraege_beendet = []
+        self.auftrag_ereignisse = []
         if not self._locate():
             return []
         try:
@@ -419,7 +437,25 @@ class LogTail:
         # Und ein dritter: was in diesem Abschnitt zu Ende gegangen ist.
         self.auftraege_beendet = (self.auftrag_ende_muster.findall(text)
                                   if self.auftrag_ende_muster else [])
+        self.auftrag_ereignisse = self._ereignisse_ordnen(text)
         return _namen_aus_text(text, self.muster)
+
+    def _ereignisse_ordnen(self, text):
+        """Annahmen und Enden dieses Abschnitts in der Reihenfolge des Logs.
+
+        Beide Muster einmal ueber denselben Text, dann nach der Fundstelle
+        sortiert. Die Fundstelle ist die Wahrheit: Sie sagt, was im Spiel
+        zuerst passiert ist.
+        """
+        gefunden = []
+        if self.auftrag_muster:
+            for m in self.auftrag_muster.finditer(text):
+                gefunden.append((m.start(), True, m.group(1)))
+        if self.auftrag_ende_muster:
+            for m in self.auftrag_ende_muster.finditer(text):
+                gefunden.append((m.start(), False, m.group(1)))
+        gefunden.sort(key=lambda e: e[0])
+        return [(ist_annahme, titel) for _stelle, ist_annahme, titel in gefunden]
 
 
 if __name__ == '__main__':

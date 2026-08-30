@@ -71,6 +71,35 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠ **A completed contract kept showing as "accepted".** Reported on
+  2026-08-30 for "Retake Platforms From Nine Tails": accepted in game at 01:18,
+  completed at 01:59 — and when the watcher started at 02:22 it announced it as
+  freshly accepted.
+
+  Two faults propping each other up:
+
+  1. At startup the watcher reads `Game.log` once, only to learn where it left
+     off. In doing so it also collects every contract event. If nothing new had
+     been written by the next pass, that collection was **not cleared** — it was
+     evaluated a second time.
+  2. The evaluation took *all* endings first and *all* acceptances second. In a
+     section containing both, the ending therefore hit nothing and the acceptance
+     put the contract back afterwards.
+
+  Point 2 hits anyone starting the watcher while the game is already running:
+  the first section then catches up on everything since the last run.
+
+  The lists are now cleared before every read, and the events are walked **in log
+  order**. Whatever is open at the end is shown. Cancelling a contract and taking
+  it again straight away still shows it.
+
+- ⚠ **The contract row in the list could not be dismissed.** The red marker only
+  existed in the contract bar, not on the row below it — there was no way to get
+  rid of the message.
+
+  The row now belongs to its contract: it carries the same red marker, disappears
+  by itself once the game reports the end, and can be dismissed by hand.
+
 - ⚠ **The overlay always started at its smallest size**, however large you had
   dragged it. The size was saved — it was overwritten immediately.
 

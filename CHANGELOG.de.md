@@ -101,6 +101,35 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠ **Ein abgeschlossener Auftrag stand weiter als „angenommen" da.** Gemeldet
+  am 30.08.2026 an „Retake Platforms From Nine Tails": im Spiel um 01:18
+  angenommen, um 01:59 abgeschlossen — und als der Watcher um 02:22 startete,
+  meldete er ihn als frisch angenommen.
+
+  Zwei Fehler, die sich gegenseitig getragen haben:
+
+  1. Beim Start liest der Watcher die `Game.log` einmal, nur um zu wissen, wo er
+     stehengeblieben ist. Dabei sammelt er nebenbei alle Auftragsereignisse ein.
+     Stand beim nächsten Durchlauf nichts Neues im Log, wurde diese Sammlung
+     **nicht geleert** — er hat sie ein zweites Mal ausgewertet.
+  2. Die Auswertung nahm erst *alle* Abschlüsse und dann *alle* Annahmen. In
+     einem Abschnitt, der beides enthält, traf der Abschluss deshalb ins Leere,
+     und die Annahme stellte den Auftrag danach wieder hin.
+
+  Punkt 2 trifft jeden, der den Watcher startet, während das Spiel schon läuft —
+  dann liest der erste Abschnitt alles nach, was seit dem letzten Lauf geschah.
+
+  Die Listen werden jetzt vor jedem Lesen geleert, und die Ereignisse werden **in
+  der Reihenfolge des Logs** durchgegangen. Was am Ende offen ist, wird gezeigt.
+  Wer einen Auftrag abbricht und sofort neu annimmt, sieht ihn weiterhin.
+
+- ⚠ **Die Auftragszeile in der Liste liess sich nicht wegklicken.** Das rote
+  Zeichen gab es nur in der Auftragsleiste, nicht an der Zeile darunter — wer
+  eine Meldung loswerden wollte, kam nicht an sie heran.
+
+  Die Zeile gehört jetzt zum Auftrag: Sie trägt dasselbe rote Zeichen, verschwindet
+  von allein, sobald das Spiel das Ende meldet, und lässt sich von Hand wegnehmen.
+
 - ⚠ **Das Overlay startete immer in der kleinsten Grösse**, egal wie gross man
   es gezogen hatte. Gespeichert war die Grösse durchaus — sie wurde nur sofort
   wieder überschrieben.

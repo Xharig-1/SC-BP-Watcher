@@ -4263,6 +4263,96 @@ def main():
     pruefe('freiwillig' not in _sp51.TEXTE['s_lg_qualitaet'][0],
            'die Qualitaet ist nicht mehr als freiwillig ausgewiesen')
 
+    # ------------------------------------------------------------------
+    # 58. Ein abgeschlossener Auftrag darf nicht als frisch angenommen gelten
+    #
+    # Am 30.08.2026 gemeldet: „Retake Platforms From Nine Tails" um 01:18
+    # angenommen, um 01:59 abgeschlossen — der Watcher um 02:22 gestartet und
+    # der Auftrag stand als laufend da. Zwei Ursachen, beide hier geprueft:
+    #
+    #   a) `new_names()` stieg aus, wenn nichts Neues in der Log stand — ohne
+    #      die Auftragslisten des VORIGEN Abschnitts zu leeren. Der Aufrufer
+    #      wertete sie ein zweites Mal aus.
+    #   b) Die Auswertung nahm erst alle Enden und dann alle Annahmen. In einem
+    #      Abschnitt, der beides enthaelt (jeder Neustart bei laufendem Spiel
+    #      liest so etwas nach), traf das Ende ins Leere und die Annahme stellte
+    #      den Auftrag danach wieder hin.
+    print()
+    print('58. Abgeschlossener Auftrag bleibt abgeschlossen')
+    from scbp import logquelle as _lq58
+    from scbp import auftraege as _au58
+    from scbp import pfade as _pf58
+
+    _log58 = os.path.join(tempfile.mkdtemp(), 'Game.log')
+    with open(_log58, 'w', encoding='utf-8') as _f58:
+        _f58.write('Added notification "Auftrag angenommen: Retake Platforms: " ...\n'
+                   'irgendwas dazwischen\n'
+                   'Added notification "Auftrag abgeschlossen: Retake Platforms: " ...\n')
+
+    class _Stand58:
+        def __init__(_s): _s.o = 0
+        def aktiv_holen(_s, _p): return 0
+        def aktiv_setzen(_s, _p, _o): _s.o = _o
+        def speichern(_s): pass
+
+    _echt58 = _pf58.game_log
+    try:
+        _pf58.game_log = lambda: _log58
+        _t58 = _lq58.LogTail(_Stand58())
+        _t58.auftrag_muster = _au58.muster()
+        _t58.auftrag_ende_muster = _au58.ende_muster()
+
+        _t58.new_names()
+        pruefe(len(_t58.auftraege) == 1 and len(_t58.auftraege_beendet) == 1,
+               'der erste Abschnitt bringt Annahme und Ende')
+
+        # a) Zweiter Aufruf, nichts Neues in der Datei: die Listen MUESSEN leer
+        #    sein. Bis v3.3.0-rc33 standen sie noch voll da.
+        _t58.new_names()
+        pruefe(_t58.auftraege == [] and _t58.auftraege_beendet == []
+               and _t58.auftrag_ereignisse == [],
+               'ohne neuen Text bleiben die Auftragslisten LEER')
+
+        # b) Die Reihenfolge muss stimmen: Annahme, dann Ende.
+        with open(_log58, 'a', encoding='utf-8') as _f58:
+            _f58.write('Added notification "Auftrag angenommen: Zweiter Job: " ...\n'
+                       'Added notification "Auftrag abgeschlossen: Zweiter Job: " ...\n')
+        _t58.new_names()
+        pruefe([e[0] for e in _t58.auftrag_ereignisse] == [True, False],
+               'die Ereignisse kommen in der Reihenfolge des Logs')
+        pruefe([e[1] for e in _t58.auftrag_ereignisse] == ['Zweiter Job', 'Zweiter Job'],
+               'und tragen beide denselben Titel')
+
+        # c) Und die Gesamtrechnung ueber die ganze Datei: nichts offen.
+        _text58 = open(_log58, encoding='utf-8').read()
+        pruefe(_au58.offene_aus_text(_text58, _t58.auftrag_muster,
+                                     _t58.auftrag_ende_muster) == [],
+               'ueber die ganze Log gerechnet ist KEIN Auftrag mehr offen')
+    finally:
+        _pf58.game_log = _echt58
+
+    # d) Die Auswertung im Hauptprogramm muss der Reihenfolge folgen und darf
+    #    nicht mehr auf die beiden getrennten Listen zurueckgreifen.
+    _quelle58 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
+                     encoding='utf-8').read()
+    _ab58 = _quelle58.split('def _auftraege_melden')[1].split('def _emit')[0]
+    pruefe('auftrag_ereignisse' in _ab58,
+           'die Auswertung geht ueber die geordneten Ereignisse')
+    pruefe('for titel in beendet:' not in _ab58,
+           'und NICHT mehr erst ueber alle Enden')
+
+    # e) Die Zeile in der Liste gehoert zum Auftrag — sonst bleibt sie stehen,
+    #    wenn er endet, und traegt kein Zeichen zum Wegnehmen.
+    pruefe("('hinweis', zeile, rein)" in _quelle58,
+           'die Hinweiszeile bekommt den Auftrag mit')
+    pruefe('def hinweis_entfernen' in _quelle58,
+           'es gibt einen Weg, die Zeile wieder herauszunehmen')
+    pruefe("'auftrag_weg'" in _quelle58,
+           'und eine Meldung, die das ausloest')
+    _ah58 = _quelle58.split('def add_hinweis')[1].split('def add_catalog')[0]
+    pruefe("zeichen.zeile(row, 'ausblenden'" in _ah58,
+           'die Zeile traegt dasselbe festgelegte Zeichen wie die Auftragsleiste')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
