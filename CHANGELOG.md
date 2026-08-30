@@ -6,7 +6,7 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.3.2 - unreleased
+## v3.3.2 - 2026-08-30
 
 ### Added
 
