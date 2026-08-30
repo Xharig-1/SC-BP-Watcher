@@ -6784,6 +6784,36 @@ def main():
     pruefe('rad_anschliessen(self.leisten_flaeche)' in _q85,
            'das Mausrad haengt an der gemeinsamen Stelle, nicht am Eigenbau')
 
+    # ⭐ Klappbare Gruppen — der dritte Hebel gegen die Fensterhoehe.
+    pruefe(set(_fenster85.gruppen) >= {'werkstatt', 'handel', 'einstellungen'},
+           'die Gruppen sind klappbar angelegt (%s)'
+           % sorted(_fenster85.gruppen))
+
+    _offen85 = _fenster85._seitenleiste_bedarf()
+    for _g85 in ('werkstatt', 'handel', 'einstellungen'):
+        _fenster85._gruppe_um(_g85, auf=False)
+    for _ in range(6):
+        _wurzel85.update()
+        _wurzel85.update_idletasks()
+    _zu85 = _fenster85._seitenleiste_bedarf()
+
+    # ⚠⚠ **Mit Zahl, nicht mit „kleiner gleich".** Beim ersten Bau brachte das
+    # Zuklappen **null** Ersparnis (1020 px vorher wie nachher):
+    # `winfo_reqheight()` meldet auch fuer einen weggeklappten Rahmen die volle
+    # Hoehe seines Inhalts. Eine Pruefung auf `<=` waere gruen geblieben.
+    pruefe(_zu85 < _offen85 - 200,
+           'zugeklappte Gruppen sparen echte Hoehe (%d -> %d px)'
+           % (_offen85, _zu85))
+
+    # Und der Reiter einer zugeklappten Gruppe muss sie wieder aufmachen —
+    # sonst steht man auf einer Seite, deren Eintrag nicht zu sehen ist.
+    _fenster85.oeffnen('verkauf')
+    for _ in range(4):
+        _wurzel85.update()
+        _wurzel85.update_idletasks()
+    pruefe(_fenster85.gruppen['handel']['offen'],
+           'wer einen Reiter oeffnet, sieht ihn auch in der Leiste')
+
     # Der Bericht muss den Fehler zeigen koennen — sonst raet man beim
     # naechsten Mal wieder.
     _q85b = open(os.path.join(WURZEL, 'scbp', 'bericht.py'),

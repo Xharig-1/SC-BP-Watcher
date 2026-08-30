@@ -59,6 +59,18 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   1.04 MB, and 293 KB once tidied up. The file header now says where the line
   actually runs.
 
+- ⭐ **Sidebar groups can be collapsed** — Blueprints, Workshop, Trading,
+  Settings, Info. One click on the heading; the state is remembered until the
+  next start.
+
+  This is the third lever against window height: collapsing Workshop, Trading
+  and Settings cuts the sidebar's space requirement from **1020 to 696
+  pixels**, and the window's minimum height follows. Suggested by
+  **Morkhan (KRT)**.
+
+  ⚠ Opening a tab from a collapsed group expands it automatically — otherwise
+  you would stand on a page whose entry is nowhere to be seen.
+
 ### Fixed
 
 - A button relabelled at runtime went back to its old colour once the mouse had

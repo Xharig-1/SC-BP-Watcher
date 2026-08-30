@@ -61,6 +61,19 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   volle Abzug ist 1,04 MB und aufgeräumt abgelegt 293 KB. Der Kopf der Datei
   sagt jetzt, wo die Grenze wirklich verläuft.
 
+- ⭐ **Die Gruppen der Seitenleiste lassen sich zuklappen** — Baupläne,
+  Werkstatt, Handel, Einstellungen, Info. Ein Klick auf die Überschrift, der
+  Zustand bleibt bis zum nächsten Start erhalten.
+
+  Das ist der dritte Hebel gegen die Fensterhöhe: Wer Werkstatt, Handel und
+  Einstellungen zuklappt, drückt den Platzbedarf der Leiste von **1020 auf
+  696 Pixel**, und die Mindesthöhe des Fensters geht mit. Vorschlag von
+  **Morkhan (KRT)**.
+
+  ⚠ Öffnet man einen Reiter aus einer zugeklappten Gruppe, klappt sie von
+  selbst auf — sonst stünde man auf einer Seite, deren Eintrag in der Leiste
+  gar nicht zu sehen ist.
+
 ### Behoben
 
 - Ein Knopf, der zur Laufzeit umbeschriftet wird, holte nach dem Überfahren mit

@@ -1426,6 +1426,8 @@ class Hauptfenster:
         self.seiten = {}          # kennung -> Frame
         self.gezeichnet = set()   # welche Seiten schon Inhalt haben
         self.knoepfe = {}         # kennung -> Reiter-Label
+        # Die klappbaren Gruppen der Seitenleiste — siehe `_gruppe`.
+        self.gruppen = {}
         self.aktuell = None
         self.fortgeschritten_offen = False
         # Wer die Schriftgröße ändert, meint das ganze Programm — auch das
@@ -1620,9 +1622,9 @@ class Hauptfenster:
         self.inhalt = tk.Frame(self.root, bg=BG)
         self.inhalt.pack(side='right', fill='both', expand=True)
 
-        self._gruppe(t('hf_gruppe_bp'))
-        self._reiter('liste', 'liste', t('hf_liste'))
-        self._reiter('fortschritt', 'fortschritt', t('hf_fortschritt'))
+        g_bp = self._gruppe(t('hf_gruppe_bp'), 'bauplaene')
+        self._reiter('liste', 'liste', t('hf_liste'), g_bp)
+        self._reiter('fortschritt', 'fortschritt', t('hf_fortschritt'), g_bp)
 
         # Eigene Gruppe, kein Anhängsel unter „Baupläne": Die beiden Seiten
         # beantworten eine andere Frage („was brauche ich / wo hole ich es")
@@ -1632,10 +1634,10 @@ class Hauptfenster:
         # Was habe ich → was brauche ich dafür → wo hole ich das. So hat es
         # Xharig-1 am 29.08.2026 selbst beschrieben, und so liest sich die
         # Leiste von oben nach unten wie ein Ablauf statt wie eine Sammlung.
-        self._gruppe(t('hf_gruppe_herst'))
-        self._reiter('lager', 'bestand', t('hf_lager'))
-        self._reiter('herstellung', 'blitz', t('hf_herstellung'))
-        self._reiter('bergbau', 'herkunft', t('hf_bergbau'))
+        g_werk = self._gruppe(t('hf_gruppe_herst'), 'werkstatt')
+        self._reiter('lager', 'bestand', t('hf_lager'), g_werk)
+        self._reiter('herstellung', 'blitz', t('hf_herstellung'), g_werk)
+        self._reiter('bergbau', 'herkunft', t('hf_bergbau'), g_werk)
 
         # ⚠ **Eigene Gruppe, nicht an „Werkstatt" angehängt.** Die Kette dort
         # endet beim Bauen („was habe ich → was brauche ich → wo hole ich es").
@@ -1645,25 +1647,27 @@ class Hauptfenster:
         #
         # Reihenfolge wie in der Werkstatt-Gruppe: erst der Bestand, dann was
         # man damit tut.
-        self._gruppe(t('hf_gruppe_handel'))
-        self._reiter('handelslager', 'handelslager', t('hf_handelslager'))
-        self._reiter('verkauf', 'verkauf', t('hf_verkauf'))
+        g_handel = self._gruppe(t('hf_gruppe_handel'), 'handel')
+        self._reiter('handelslager', 'handelslager', t('hf_handelslager'),
+                     g_handel)
+        self._reiter('verkauf', 'verkauf', t('hf_verkauf'), g_handel)
 
-        self._gruppe(t('hf_gruppe_einst'))
-        self._reiter('allgemein', 'einstellungen', t('hf_allgemein'))
-        self._reiter('anzeige', 'anzeige', t('hf_anzeige'))
-        self._reiter('spiel', 'auftragstexte', t('hf_spiel'))
-        self._reiter('bestand', 'bestand', t('hf_bestand'))
+        g_einst = self._gruppe(t('hf_gruppe_einst'), 'einstellungen')
+        self._reiter('allgemein', 'einstellungen', t('hf_allgemein'), g_einst)
+        self._reiter('anzeige', 'anzeige', t('hf_anzeige'), g_einst)
+        self._reiter('spiel', 'auftragstexte', t('hf_spiel'), g_einst)
+        self._reiter('bestand', 'bestand', t('hf_bestand'), g_einst)
 
         # „Was ist neu" und „Über" stellen nichts ein — sie erzählen etwas.
         # Unter der Überschrift „Einstellungen" waren sie falsch einsortiert.
-        self._gruppe(t('hf_gruppe_info'))
-        self._reiter('wasistneu', 'wasistneu', t('hf_wasistneu'))
-        self._reiter('ueber', 'ueber', t('hf_ueber'))
+        g_info = self._gruppe(t('hf_gruppe_info'), 'info')
+        self._reiter('wasistneu', 'wasistneu', t('hf_wasistneu'), g_info)
+        self._reiter('ueber', 'ueber', t('hf_ueber'), g_info)
         # Direkt unter „Update & Über": Wer nicht ins Spiel kommt, sucht den
         # Fehler zuerst bei sich. Ein eigener Reiter beantwortet das, statt die
         # Auskunft unten an eine andere Seite zu hängen, wo niemand sie sucht.
-        self._reiter('serverstatus', 'serverstatus', t('hf_serverstatus'))
+        self._reiter('serverstatus', 'serverstatus', t('hf_serverstatus'),
+                     g_info)
         # ⚠ **Diagnose gehört hierher, nicht unter „Fortgeschritten".** Wer die
         # Seite braucht, hat ein Problem — und sucht sie dann in einem Menü, das
         # zugeklappt ist und „Fortgeschritten" heißt, also nach „nichts für
@@ -1674,11 +1678,11 @@ class Hauptfenster:
         # Seit dem roten Knopf „Fehlerbericht absenden" ist die Seite außerdem
         # der Weg, auf dem Meldungen überhaupt ankommen. Ein Weg, den man
         # erklären muss, wird nicht benutzt.
-        self._reiter('diagnose', 'diagnose', t('hf_diagnose'))
+        self._reiter('diagnose', 'diagnose', t('hf_diagnose'), g_info)
         # ⚠ Eigener Reiter, kein Abschnitt auf „Update & Über": Die Seite dort
         # ist mit Version, Katalogzahlen, Update-Kanal und Holen-Knopf schon
         # voll, und wem was gehört, hat mit Updates nichts zu tun.
-        self._reiter('danke', 'quellen', t('hf_danke'))
+        self._reiter('danke', 'quellen', t('hf_danke'), g_info)
 
         # Fortgeschrittenes sitzt unten und ist zugeklappt — sichtbar, aber
         # nicht im Weg. Wer es sucht, findet es; wer es nicht kennt, wird nicht
@@ -1851,10 +1855,73 @@ class Hauptfenster:
         if not ok:
             self.sagen(t('s_sp_start_nein', grund))
 
-    def _gruppe(self, text):
-        tk.Label(self.leiste, text=text.upper(), bg=FLAECHE, fg=SUB,
-                 font=self.f_klein, anchor='w', padx=16,
-                 pady=6).pack(fill='x', pady=(10, 0))
+    def _gruppe(self, text, kennung=None):
+        """Eine Gruppenüberschrift — anklicken klappt ihre Reiter weg.
+
+        Gibt den Rahmen zurück, in den die Reiter der Gruppe gehören.
+
+        ⭐ **Warum klappbar** (Wunsch vom 30.08.2026): Die Seitenleiste
+        bestimmt mit, wie hoch das Fenster mindestens sein muss. Bei 36 px je
+        Reiter waren es mit der Gruppe „Handel" 1020 px — mehr, als auf einen
+        1080er Bildschirm passt. Wer Werkstatt, Handel und Einstellungen
+        zuklappt, spart rund 400 px, und die Mindesthöhe geht mit.
+
+        ⚠ **Das ersetzt weder die Deckelung noch die rollende Leiste.** Klappt
+        jemand alles auf, ist der Bedarf wieder da; ohne die beiden anderen
+        Maßnahmen wäre derselbe Fehler zurück.
+
+        ⚠ Der Zustand wird gemerkt, aber **die Gruppe des offenen Reiters
+        bleibt offen** (siehe `oeffnen`) — sonst verschwindet die Seite, auf
+        der man gerade steht, aus der Leiste, und das sieht nach kaputt aus.
+        """
+        kennung = kennung or text
+        offen = not pfade.einstellung_wahrheit('gruppe_zu_%s' % kennung, False)
+
+        kopf = tk.Frame(self.leiste, bg=FLAECHE, cursor='hand2')
+        kopf.pack(fill='x', pady=(10, 0))
+        pfeil = tk.Label(kopf, text='⌄' if offen else '⌃', bg=FLAECHE, fg=SUB,
+                         font=self.f_klein, padx=4)
+        pfeil.pack(side='right', padx=(0, 12))
+        beschriftung = tk.Label(kopf, text=text.upper(), bg=FLAECHE, fg=SUB,
+                                font=self.f_klein, anchor='w', padx=16, pady=6)
+        beschriftung.pack(side='left', fill='x', expand=True)
+
+        inhalt = tk.Frame(self.leiste, bg=FLAECHE)
+        if offen:
+            inhalt.pack(fill='x')
+
+        self.gruppen[kennung] = {'kopf': kopf, 'inhalt': inhalt,
+                                 'pfeil': pfeil, 'offen': offen,
+                                 'reiter': []}
+
+        for teil in (kopf, beschriftung, pfeil):
+            teil.bind('<Button-1>', lambda _e, k=kennung: self._gruppe_um(k))
+        return inhalt
+
+    def _gruppe_um(self, kennung, auf=None):
+        """Eine Gruppe auf- oder zuklappen. `auf=True` erzwingt das Aufklappen."""
+        g = self.gruppen.get(kennung)
+        if not g:
+            return
+        neu_offen = (not g['offen']) if auf is None else bool(auf)
+        if neu_offen == g['offen']:
+            return
+        g['offen'] = neu_offen
+        try:
+            if neu_offen:
+                # ⚠ **Vor dem Klappteil einordnen, nicht ans Ende.** Ohne
+                # `before` landet eine wieder aufgeklappte Gruppe unter allem,
+                # was von unten gepackt ist — die Reihenfolge der Leiste wäre
+                # nach dem ersten Zuklappen dauerhaft durcheinander.
+                g['inhalt'].pack(fill='x', after=g['kopf'])
+            else:
+                g['inhalt'].pack_forget()
+            g['pfeil'].configure(text='⌄' if neu_offen else '⌃')
+            pfade.einstellung_setzen('gruppe_zu_%s' % kennung,
+                                     'nein' if neu_offen else 'ja')
+        except tk.TclError:
+            pass
+        self.root.after(30, self._mindesthoehe_nachziehen)
 
     # ⚠ Nur Zeichen aus der Grundebene benutzen. `🗀` und `⇅` liegen darüber und
     # fehlen in der Oberflächenschrift — im Fenster stand statt des Symbols ein
@@ -1894,9 +1961,16 @@ class Hauptfenster:
         hoch = 0
         for kind in self.leiste.winfo_children():
             try:
+                # ⚠⚠ **Was nicht gepackt ist, zählt nicht.** `winfo_reqheight()`
+                # meldet auch für einen weggeklappten Rahmen weiter die volle
+                # Höhe seines Inhalts — der Rahmen ist ja noch da, nur nicht
+                # sichtbar. Ohne diese Abfrage brachte das Zuklappen einer
+                # Gruppe **null** Ersparnis: 1020 px vorher, 1020 px nachher.
+                # `pack_info()` wirft bei einem nicht gepackten Widget, und
+                # genau das ist hier die Auskunft.
                 polster = kind.pack_info().get('pady', 0)
             except Exception:
-                polster = 0
+                continue
             if isinstance(polster, str):
                 polster = sum(int(teil) for teil in polster.split())
             elif isinstance(polster, (tuple, list)):
@@ -2063,8 +2137,25 @@ class Hauptfenster:
         self.root.after(30, self._mindesthoehe_nachziehen)
 
     # ------------------------------------------------------------ Seitenwahl
+    def _gruppe_von_reiter_oeffnen(self, kennung):
+        """Die Gruppe aufklappen, in der dieser Reiter sitzt."""
+        eintrag = self.knoepfe.get(kennung)
+        if not eintrag or not eintrag[0]:
+            return
+        elternrahmen = eintrag[0].master
+        for name, g in self.gruppen.items():
+            if g['inhalt'] is elternrahmen and not g['offen']:
+                self._gruppe_um(name, auf=True)
+                return
+
     def oeffnen(self, kennung):
         """Eine Seite zeigen — und beim ersten Mal ihren Inhalt bauen."""
+        # ⚠ **Die Gruppe des Reiters muss offen sein.** Sonst steht man auf
+        # einer Seite, deren Eintrag in der Leiste gar nicht zu sehen ist — das
+        # sieht nach einem Fehler aus, und der Weg zurück ist nicht zu finden.
+        # Betrifft vor allem den Programmstart: Die zuletzt benutzte Seite kann
+        # in einer zugeklappten Gruppe liegen.
+        self._gruppe_von_reiter_oeffnen(kennung)
         if not hasattr(self, 'beim_zeigen'):
             # kennung -> Funktion, die beim erneuten Anzeigen laeuft
             self.beim_zeigen = {}
