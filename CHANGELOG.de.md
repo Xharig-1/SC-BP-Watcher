@@ -10,6 +10,30 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Neu
 
+- ⭐ **„Kaufen oder abbauen?" — die Frage, die nach „dir fehlt" kommt.** Neben
+  jeder fehlenden Zutat steht jetzt, was das Zukaufen kosten würde — oder dass
+  es **gar nicht geht**.
+
+  Der Befund dahinter ist der eigentliche Gewinn: Von den 26 Rohstoffen, die in
+  Rezepten vorkommen, sind **sieben nirgends käuflich** — Aslarite, Lindinium,
+  Ouratite, Quantainium, Riccite, Savrilium, Torite. Und **fünf davon stehen
+  gleichzeitig auf der Zerlege-Sperrliste**: weder zu kaufen noch aus einem
+  zerlegten Stück zurückzuholen. Das sind die echten Engpässe beim Herstellen,
+  und bisher stand das nirgends.
+
+  > ⚠ „Nicht kaufbar" wird auch so geschrieben — nie als „0 aUEC". Sonst sucht
+  > jemand am Terminal nach einem Schnäppchen, das es nie gab.
+
+  Die Preise kommen von der [UEX Corp](https://uexcorp.space)-Schnittstelle,
+  **höchstens einmal am Tag** und im Hintergrund. ⚠ Sie werden **nicht
+  mitgeliefert** — dieselbe Regel wie bei scmdb. Ohne Netz bleibt der letzte
+  Stand; ist gar keiner da, entfällt die Angabe still, und die Seite sieht aus
+  wie vorher.
+
+  Keine Handelsrouten, keine Preise je Terminal, keine Frachtplanung: Der
+  Watcher beantwortet „kaufen oder abbauen?", nicht „wo am teuersten
+  verkaufen?".
+
 - ⭐⭐ **Scan-Signatur — aus der Zahl des Scanners wird ein Name.** Der
   Bergbau-Scanner im Spiel zeigt einen Wert und verrät nicht, was dahintersteckt.
   Tipp ihn im Bergbau ein, und der Watcher sagt dir, **welches Erz** es ist und
@@ -153,6 +177,21 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   `FBL-8u Undersuit SecondWind` und `Warden Backpack Purgatory Camo`.
 
 ### Behoben
+
+- ⚠⚠ **Der ganze Qualitäts-Block war verschwunden** — Regler, Wirkungen und
+  sogar der Wert hinter „Herstellzeit". Betraf rc37 und rc38.
+
+  Ursache: Beim Einbau der Zerlege-Sperrliste bekam eine Variable den Namen
+  `_dauer` — und überschrieb damit die gleichnamige **Funktion** in derselben
+  Datei. Ein paar Zeilen später warf `_dauer(stufe['zeit'])` dann
+  `TypeError: 'int' object is not callable`, was den Aufbau mitten im Rezept
+  abbrach: Alles ab der Herstellzeit fehlte ersatzlos.
+
+  > ⚠ Der Selbsttest hat es nicht gesehen, weil er die Seite zwar **baute**,
+  > aber nie eine Rezeptzeile **aufklappte** — genau dort läuft der Code. Das
+  > tut er jetzt, und zusätzlich prüft er, dass kein lokaler Name eine Funktion
+  > derselben Datei verdeckt. Gegen die ausgelieferte rc38 gemessen: Beide
+  > Prüfungen schlagen dort an, an genau der richtigen Zeile.
 
 - ⚠ **Schweizerdeutsch wurde nicht erkannt.** Es gibt eine eigene Fassung der
   deutschen Übersetzung (`live-CH`), die „**Bauplan überchoo**" schreibt statt

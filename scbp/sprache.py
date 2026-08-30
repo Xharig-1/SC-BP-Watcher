@@ -1664,6 +1664,11 @@ TEXTE = {
     # diesen Zusatz liest man „× 0.800" als Verschlechterung, obwohl es
     # der bestmoegliche Wert ist.
     's_he_weniger_gut':  ('weniger ist besser', 'lower is better'),
+    # ⚠ „kaufen oder abbauen?" — die Frage, die nach „dir fehlt X" kommt.
+    # Ein Kaufpreis von 0 heisst NICHT kaufbar, nicht kostenlos.
+    's_he_kaufen':       ('kaufen: %s aUEC', 'buy: %s aUEC'),
+    's_he_nur_abbau':    ('nicht kaufbar — nur abbaubar',
+                          'cannot be bought — mining only'),
     # Raffinerien — die Frage nach „wo baue ich das ab?" ist „und wohin
     # bringe ich es?"
     # ⭐ Scan-Signatur: der Scanner zeigt eine Zahl, aber nicht, was

@@ -3867,6 +3867,16 @@ def _herstellung(fenster, rahmen):
     zeichnen()
 
 
+def _geld(betrag):
+    """Ein Geldbetrag mit Tausenderpunkten — 22700 wird zu „22.700".
+
+    ⚠ Ohne Trennung liest niemand fünfstellige Zahlen richtig: „145789" und
+    „14578" sehen im Vorbeigehen gleich aus. Punkt statt Komma, weil das Spiel
+    es so schreibt.
+    """
+    return '{:,.0f}'.format(float(betrag or 0)).replace(',', '.')
+
+
 def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
     """Eine Zeile der Herstellungs-Liste, auf Klick klappt das Rezept auf."""
     from . import herstellung as herst_modul
@@ -3905,6 +3915,7 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
         _fliesstext(block, t('s_he_unklar'), fenster.f_klein, fill='x')
     rez = herst_modul.rezept(eintrag['basis'])
     from . import rohstoffe as lager
+    from . import preise as preis_modul
     for stufe in (rez or {}).get('stufen') or []:
         # ⭐ Was davon liegt im eigenen Lager? (Vorschlag von Horthy (KRT))
         # ⚠ Gezeigt wird „hast du" bzw. „dir fehlt" — **nie** „du kannst nicht
@@ -3963,8 +3974,17 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
         # heraus. Das aendert die Rechnung und gehoert deshalb ans Rezept,
         # nicht in eine Fussnote. Steht in denselben Rezeptdaten
         # (`dismantle.blacklistedResources`), kostet also keinen Abruf.
+        # ⚠⚠ **Der dritte Rückgabewert hieß hier `_dauer` — und überschrieb
+        # damit die Funktion `_dauer()` weiter oben in dieser Datei.** Ab da
+        # war `_dauer` eine Zahl, und `_dauer(stufe['zeit'])` ein paar Zeilen
+        # später warf `TypeError: 'int' object is not callable`. Sichtbar wurde
+        # das als **verschwundener Qualitäts-Block**: Die Ausnahme brach den
+        # Aufbau mitten drin ab, die Herstellzeit blieb ohne Wert und alles
+        # danach — Regler, Wirkungen, Hinweise — fehlte ersatzlos. In rc37 und
+        # rc38 ausgeliefert. Nie einen lokalen Namen vergeben, den es in
+        # dieser Datei schon als Funktion gibt.
         try:
-            _sperre, _wirkung, _dauer = herst_modul.zerlege_sperre()
+            _sperre, _wirkung, _zerlege_sekunden = herst_modul.zerlege_sperre()
         except Exception:
             _sperre, _wirkung = set(), 0.5
         _betroffen = [r for _s, r, _m, _g in stufe['zutaten']
@@ -4022,8 +4042,14 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                                 font=fenster.f_klein, anchor='e')
             guete_lbl = tk.Label(z, text='', bg='#0c1017', fg=SUB,
                                  font=fenster.f_klein, anchor='e')
+            # ⭐ „kaufen oder abbauen?" — die Frage, die nach „dir fehlt X"
+            # kommt. Sieben der 26 Rohstoffe lassen sich NIRGENDS kaufen; fünf
+            # davon stehen zusätzlich auf der Zerlege-Sperrliste. Wer das nicht
+            # weiß, sucht am Terminal nach etwas, das es dort nie gibt.
+            preis_lbl = tk.Label(z, text='', bg='#0c1017', fg=SUB,
+                                 font=fenster.f_klein, anchor='e')
             zutat_widgets.append((rohstoff, menge, menge_lbl, lage_lbl,
-                                  guete_lbl))
+                                  guete_lbl, preis_lbl))
 
         def mengen_setzen(*_):
             """Mengen und Lage neu beschriften — für die aktuelle Stückzahl.
@@ -4038,7 +4064,8 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
             wie_viele = 1 if not wie_viele or wie_viele < 1 else int(wie_viele)
             neue_lage = {m: (br, da, f, zug, mq) for m, br, da, f, zug, mq
                          in lager.pruefen(stufe['zutaten'], wie_viele)}
-            for rohstoff, menge, menge_lbl, lage_lbl, guete_lbl in zutat_widgets:
+            for (rohstoff, menge, menge_lbl, lage_lbl, guete_lbl,
+                 preis_lbl) in zutat_widgets:
                 noetig = (menge or 0) * wie_viele
                 menge_lbl.configure(
                     text=(t('s_he_menge') % noetig if wie_viele == 1
@@ -4069,6 +4096,32 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
                     guete_lbl.pack(side='right', padx=(0, 8))
                 else:
                     guete_lbl.pack_forget()
+
+                # Was das Schliessen der Lücke kostet — oder dass es gar nicht
+                # geht. ⚠ Nur zeigen, wenn wirklich etwas fehlt: Bei vollem
+                # Lager ist die Frage „kaufen?" gegenstandslos.
+                #
+                # ⚠ Ohne Preisdaten (kein Netz, erster Start) bleibt die Zeile
+                # leer. Kein Hinweis, keine Entschuldigung — die Seite sah
+                # vorher genauso aus.
+                _p = None
+                if _fehlt > 0:
+                    try:
+                        _p = preis_modul.preis(rohstoff)
+                    except Exception as ausnahme:
+                        fehler.merken('seiten.preis', ausnahme)
+                if not _p:
+                    preis_lbl.pack_forget()
+                else:
+                    _kauf, _verk, _form = _p
+                    if _kauf > 0:
+                        preis_lbl.configure(
+                            text=t('s_he_kaufen') % _geld(_kauf * _fehlt),
+                            fg=SUB)
+                    else:
+                        # ⚠ NICHT „0 aUEC" — das liest sich wie geschenkt.
+                        preis_lbl.configure(text=t('s_he_nur_abbau'), fg=GOLD)
+                    preis_lbl.pack(side='right', padx=(0, 8))
 
         anzahl_var.trace_add('write', mengen_setzen)
         mengen_setzen()

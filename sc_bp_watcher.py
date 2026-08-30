@@ -46,7 +46,7 @@ from scbp import zeichen
 from scbp import fehler
 from scbp import hinweis
 from scbp import (
-    auftraege,ablagesymbol, aktualisierung, assistent, autostart,
+    auftraege,ablagesymbol, aktualisierung, assistent, autostart, preise,
                   bildschirm, overlay,
                   bestand as bestand_datei, bestandsfenster as bestandsfenster_modul,
                   einstellungsfenster, hinweis, injektion,
@@ -58,7 +58,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.3.0-rc38'
+__version__ = '3.3.0-rc39'
 
 
 def _mitgeliefert(name):
@@ -713,6 +713,19 @@ class Watcher(threading.Thread):
             self.q.put(('status', sprache.Satz('craftdaten_neu', SCMDB_VERSION,
                                             len(SCMDB))))
 
+    def _preise_tick(self):
+        """Holt die Rohstoffpreise, wenn die Ablage aelter als ein Tag ist.
+
+        ⚠ Laeuft im Hintergrund-Thread und schluckt jeden Fehler. Ohne Netz
+        bleibt der letzte Stand; liegt gar keiner vor, entfaellt die
+        Preisangabe still — die Herstellung funktioniert ohne sie genauso wie
+        vorher. Es gibt keine Meldung darueber, weil es keine braucht.
+        """
+        try:
+            preise.aktualisieren()
+        except Exception as ausnahme:
+            fehler.merken('watcher.preise', ausnahme)
+
     # ---- Bauplan-Katalog holen und frisch halten ----
     def _katalog_tick(self):
         """Holt den Bauplan-Katalog von scmdb, wenn er fehlt oder veraltet ist.
@@ -1299,6 +1312,7 @@ class Watcher(threading.Thread):
             self._scmdb_tick()
             self._katalog_tick()
             self._texte_tick()
+            self._preise_tick()
 
             # 1) Game.log: die eigentliche Quelle. Ohne Launcher ist die Meldung
             #    endgültig, mit Launcher zunächst vorläufig (er bestätigt gleich).

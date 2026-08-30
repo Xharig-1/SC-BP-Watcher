@@ -10,6 +10,28 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Added
 
+- ⭐ **"Buy or mine?" — the question that follows "you are missing".** Next to
+  every missing ingredient it now says what buying it would cost — or that it
+  **cannot be bought at all**.
+
+  The finding behind it is the real gain: of the 26 resources used in recipes,
+  **seven cannot be bought anywhere** — Aslarite, Lindinium, Ouratite,
+  Quantainium, Riccite, Savrilium, Torite. And **five of those are also on the
+  dismantle blacklist**: neither purchasable nor recoverable from a dismantled
+  item. Those are the real bottlenecks in crafting, and until now nothing said
+  so.
+
+  > ⚠ "Cannot be bought" is written exactly that way — never as "0 aUEC".
+  > Otherwise somebody hunts a terminal for a bargain that never existed.
+
+  Prices come from the [UEX Corp](https://uexcorp.space) API, **at most once a
+  day** and in the background. ⚠ They are **not bundled** — the same rule as
+  for scmdb. Without a connection the last state stays; with none at all the
+  line simply does not appear, and the page looks exactly as before.
+
+  No trade routes, no per-terminal prices, no cargo planning: the watcher
+  answers "buy or mine?", not "where do I sell highest?".
+
 - ⭐⭐ **Scan signature — turning the scanner's number into a name.** The mining
   scanner in game shows a value and does not say what is behind it. Type it into
   the mining page and the watcher tells you **which ore** it is and **how many
@@ -120,6 +142,21 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   now shows as an ordinary row with its info icon, drop-off and reputation.
 
 ### Fixed
+
+- ⚠⚠ **The entire quality block had vanished** — sliders, effects, even the
+  value behind "craft time". Affected rc37 and rc38.
+
+  Cause: while adding the dismantle blacklist a variable was named `_dauer` and
+  thereby shadowed the **function** of the same name in that file. A few lines
+  later `_dauer(stufe['zeit'])` raised `TypeError: 'int' object is not
+  callable`, aborting the build mid-recipe: everything from the craft time
+  onwards was simply missing.
+
+  > ⚠ The self-test missed it because it **built** the page but never
+  > **expanded** a recipe row — which is where that code runs. It now does, and
+  > additionally checks that no local name shadows a function of the same file.
+  > Measured against the shipped rc38: both checks fire there, at exactly the
+  > right line.
 
 - ⚠ **Swiss German went unrecognised.** There is a separate variant of the
   German translation (`live-CH`) that says "**Bauplan überchoo**" instead of

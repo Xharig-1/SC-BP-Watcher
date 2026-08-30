@@ -5015,6 +5015,192 @@ def main():
                'Added notification "Irgendwas: Irgendwer: " [9] to queue.'),
            'eine leere Liste ergibt einen Ausdruck, der nie trifft')
 
+    # ------------------------------------------------------------------
+    # 66. Preise — „kaufen oder abbauen?"
+    #
+    # Die Herstellung sagte, WAS fehlt, aber nicht, ob man es ueberhaupt kaufen
+    # kann. Gemessen am 30.08.2026 ueber alle 26 Rohstoffe in Rezepten: 19
+    # kaufbar, **7 nicht** (Aslarite, Lindinium, Ouratite, Quantainium,
+    # Riccite, Savrilium, Torite). Fuenf davon stehen zusaetzlich auf der
+    # Zerlege-Sperrliste — weder kaufbar noch zurueckzugewinnen.
+    print()
+    print('66. Rohstoffpreise')
+    from scbp import preise as _pr66
+
+    # a) ⚠ Ohne Netz und ohne Ablage darf NICHTS passieren.
+    _echt66 = _pr66.laden
+    try:
+        _pr66.laden = lambda: {}
+        pruefe(_pr66.preis('Iron') is None,
+               'ohne Preisdaten kommt None zurueck, kein Absturz')
+        pruefe(_pr66.alter() is None,
+               'und das Alter ist None statt einer erfundenen Zahl')
+    finally:
+        _pr66.laden = _echt66
+
+    # b) ⚠⚠ Jedes Material steht bei UEX ZWEIMAL — veredelt und als Erz. Wer
+    #    beim Einlesen ueberschreibt, bekommt zufaellig die falsche Form: Beim
+    #    ersten Versuch stand bei Iron „Kaufpreis 0", obwohl es fuer 2.643 im
+    #    Regal liegt.
+    _bau66 = {'format': _pr66.FORMAT, 'geholt': 1.0, 'waren': {
+        'iron': [{'name': 'Iron', 'kauf': 2643.0, 'verkauf': 3376.0},
+                 {'name': 'Iron (Ore)', 'kauf': 0.0, 'verkauf': 1000.0}],
+        'borase': [{'name': 'Borase', 'kauf': 0.0, 'verkauf': 27266.0},
+                   {'name': 'Borase (Ore)', 'kauf': 5520.0, 'verkauf': 14000.0}],
+        'quantainium': [{'name': 'Quantainium', 'kauf': 0.0,
+                         'verkauf': 145789.0}]}}
+    _pr66.laden = lambda: _bau66
+    try:
+        pruefe(_pr66.preis('Iron')[0] == 2643.0,
+               'Iron nimmt die veredelte Form (2643), nicht das Erz')
+        pruefe(_pr66.preis('Borase')[0] == 5520.0
+               and _pr66.preis('Borase')[2] == 'Borase (Ore)',
+               'Borase nimmt das Erz — dort steht der einzige Kaufpreis')
+        pruefe(_pr66.preis('Quantainium')[0] == 0.0,
+               'Quantainium ist nicht kaufbar (Kaufpreis 0)')
+        pruefe(_pr66.preis('Quantainium')[1] == 145789.0,
+               'der Verkaufspreis kommt trotzdem mit')
+        # ⚠ Die Namensangleichung muss auch hier greifen.
+        pruefe(_pr66.preis('Iron (Ore)')[0] == 2643.0,
+               'die Erz-Schreibweise findet denselben Eintrag')
+        pruefe(_pr66.preis('Voellig Unbekanntes') is None,
+               'ein unbekannter Name ergibt None, keinen Nullpreis')
+    finally:
+        _pr66.laden = _echt66
+
+    # c) Die Anzeige darf „nicht kaufbar" NIE als „0 aUEC" schreiben.
+    _seiten66 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                     encoding='utf-8').read()
+    pruefe("t('s_he_nur_abbau')" in _seiten66,
+           'fuer nicht kaufbare Rohstoffe steht ein eigener Text da')
+    pruefe('def _geld' in _seiten66,
+           'Betraege bekommen Tausenderpunkte (145789 liest sonst niemand)')
+    # d) Der Abruf laeuft im Hintergrund, nicht beim Seitenaufbau.
+    _haupt66 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
+                    encoding='utf-8').read()
+    pruefe('def _preise_tick' in _haupt66 and 'self._preise_tick()' in _haupt66,
+           'die Preise werden im Hintergrund-Faden geholt')
+    from scbp import sprache as _sp66
+    for _k66 in ('s_he_kaufen', 's_he_nur_abbau'):
+        _w66 = _sp66.TEXTE.get(_k66)
+        pruefe(bool(_w66) and len(_w66) == 2 and all(_w66),
+               'Text %s gibt es deutsch und englisch' % _k66)
+
+    # ------------------------------------------------------------------
+    # 67. Ein Rezept wirklich AUFKLAPPEN
+    #
+    # ⚠⚠ Der Fehler, der diese Pruefung erzwungen hat (rc37 und rc38
+    # ausgeliefert): Beim Auspacken der Zerlege-Angaben bekam eine Variable den
+    # Namen `_dauer` — und ueberschrieb damit die gleichnamige Funktion in
+    # derselben Datei. Ein paar Zeilen spaeter warf `_dauer(stufe['zeit'])`
+    # dann `TypeError: 'int' object is not callable`.
+    #
+    # Sichtbar wurde das als **verschwundener Qualitaets-Block**: Die Ausnahme
+    # brach den Aufbau mitten drin ab, die Herstellzeit blieb ohne Wert, und
+    # alles danach — Regler, Wirkungen, Hinweise — fehlte ersatzlos.
+    #
+    # Der Selbsttest hat es nicht gesehen, weil er die Seite **baute**, aber
+    # nie eine Zeile aufklappte. Genau das tut er jetzt: Ohne aufgeklapptes
+    # Rezept laeuft `_herstellung_zeile` gar nicht bis zu der Stelle.
+    print()
+    print('67. Ein Rezept aufklappen')
+    import tkinter as _tk67
+    from scbp import seiten as _se67
+    from scbp import herstellung as _he67
+
+    _rez67 = _he67.laden().get('blueprints') or []
+    if not _rez67:
+        print('  [–]    keine Rezeptdaten vorhanden — uebersprungen')
+    else:
+        # Ein Bauplan mit Zutaten UND Qualitaetswirkungen — nur der laeuft
+        # durch alle Zweige.
+        _kandidat67 = None
+        for _b67 in _rez67:
+            for _t67 in _b67.get('tiers') or []:
+                for _s67 in _t67.get('slots') or []:
+                    if _s67.get('modifiers') and _s67.get('options'):
+                        _kandidat67 = _b67.get('productName')
+                        break
+                if _kandidat67:
+                    break
+            if _kandidat67:
+                break
+        pruefe(bool(_kandidat67), 'ein Bauplan mit Qualitaetswirkungen gefunden')
+
+        if _kandidat67:
+            _w67 = _tk67.Tk()
+            _w67.withdraw()          # ⚠ kein Fenster ins Bild schieben
+            try:
+                # ⚠ **Echte Schrift-Objekte, keine Tupel.** Die Regler und
+                # Auswahlfelder rufen `.metrics()` und `.measure()` darauf auf;
+                # mit einem Tupel bricht der Aufbau mit
+                # `AttributeError: 'tuple' object has no attribute 'metrics'`
+                # ab — und der Test wuerde einen Fehler melden, den es im
+                # Programm gar nicht gibt.
+                import tkinter.font as _tkfont67
+                _schrift67 = _tkfont67.Font(root=_w67, family='TkDefaultFont',
+                                            size=10)
+
+                class _Fenster67:
+                    f_grund = f_klein = f_item = _schrift67
+                    beim_zeigen = {}
+                    bergbau_suche = ''
+
+                    def oeffnen(self, _name):
+                        pass
+
+                _rahmen67 = _tk67.Frame(_w67)
+                _eintrag67 = {'name': _kandidat67, 'basis': _kandidat67,
+                              'habe': True, 'hersteller': 'Behring'}
+                _offen67 = {'name': _kandidat67}      # ⭐ AUFGEKLAPPT
+                _fehler67 = None
+                try:
+                    _se67._herstellung_zeile(_Fenster67(), _rahmen67,
+                                             _eintrag67, _offen67,
+                                             lambda: None)
+                except Exception as _aus67:
+                    _fehler67 = '%s: %s' % (type(_aus67).__name__, _aus67)
+                pruefe(_fehler67 is None,
+                       'ein aufgeklapptes Rezept baut ohne Ausnahme (%s)'
+                       % (_fehler67 or 'sauber'))
+
+                # Und der Qualitaets-Block muss wirklich dastehen — nicht nur
+                # „keine Ausnahme". Genau der war ja verschwunden.
+                def _texte67(w, raus):
+                    try:
+                        raus.append(str(w.cget('text')))
+                    except Exception:
+                        pass
+                    for _k in w.winfo_children():
+                        _texte67(_k, raus)
+                    return raus
+
+                _alle67 = ' | '.join(_texte67(_rahmen67, []))
+                from scbp import sprache as _sp67
+                pruefe(_sp67.t('s_he_regler_kopf') in _alle67,
+                       'die Ueberschrift der Qualitaetsregler steht da')
+                pruefe('Q ' in _alle67 or '×' in _alle67,
+                       'und die Spannen-Angaben darunter')
+            finally:
+                _w67.destroy()
+
+    # ⚠ Kein lokaler Name darf eine Funktion derselben Datei verdecken.
+    # Statische Gegenprobe fuer genau diesen Fehler.
+    import re as _re67
+    _q67 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'), encoding='utf-8').read()
+    _funktionen67 = set(_re67.findall(r'^def (_?\w+)\(', _q67, _re67.M))
+    _verdeckt67 = []
+    for _m67 in _re67.finditer(r'^\s+([_a-zA-Z][\w, ]*?)\s*=\s*\S', _q67, _re67.M):
+        for _name67 in (_n.strip() for _n in _m67.group(1).split(',')):
+            if _name67 in _funktionen67:
+                _zeile67 = _q67[:_m67.start()].count('\n') + 1
+                _verdeckt67.append('%s (Zeile %d)' % (_name67, _zeile67))
+    pruefe(not _verdeckt67,
+           'kein lokaler Name verdeckt eine Funktion derselben Datei (%d)'
+           % len(_verdeckt67))
+    for _x67 in _verdeckt67[:5]:
+        print('       ·', _x67)
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
