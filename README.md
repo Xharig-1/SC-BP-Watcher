@@ -154,7 +154,7 @@ There are several blueprint lists. Four things make the difference day to day:
 
 - **You never leave the game.** The overlay sits on top of Star Citizen. No second window, no alt-tab, no browser — the new blueprint is simply there while you keep playing.
 - **It knows what you already have.** The watcher keeps your blueprint inventory itself and reads Star Citizen's stored session logs on first start — you get your existing collection for free, without typing anything. If a gap remains anyway, it says so instead of passing off an incomplete list as complete.
-- **It tells you where to get what's missing.** For **655 of the 722** blueprints it shows which faction offers it, in which contract, from which standing, and what it pays — sorted by the easiest route. "I'm missing X" is half the information; "X drops at Foxwell from Veteran Contractor" is all of it.
+- **It tells you where to get what's missing.** For **670 of the 738** blueprints it shows which faction offers it, in which contract, from which standing, and what it pays — sorted by the easiest route. "I'm missing X" is half the information; "X drops at Foxwell from Veteran Contractor" is all of it.
 - **Nothing leaves your machine.** No account, no sign-in, no cloud. It reads files that are already on your disk and writes nothing back into the game.
 
 On top of that: class, size and grade are right there in the line (`M/1/A`), the interface speaks German and English, and the whole thing runs on the plain Python standard library — no extra packages, no dependencies that break tomorrow.
@@ -165,7 +165,7 @@ On top of that: class, size and grade are right there in the line (`M/1/A`), the
 |---|---|
 | <img src="assets/symbole/22/blitz-gruen.png" width="22" alt=""> **Instant** | Reads Star Citizen's `Game.log` → the blueprint is in the list **within seconds** |
 | <img src="assets/symbole/22/liste-gruen.png" width="22" alt=""> **Blueprint list** | Search everything, grouped by type, filters *all / owned / missing / watching / new in game*, with progress. Tick items with one click |
-| <img src="assets/symbole/22/herkunft-gruen.png" width="22" alt=""> **Where it drops** | One click shows faction, contract, required standing and payout — for **655 of 722** blueprints, sorted by the easiest route |
+| <img src="assets/symbole/22/herkunft-gruen.png" width="22" alt=""> **Where it drops** | One click shows faction, contract, required standing and payout — for **670 of 738** blueprints, sorted by the easiest route |
 | <img src="assets/symbole/22/auftragstexte-gruen.png" width="22" alt=""> **Contract accepted** | Accept a contract and you see right away whether blueprints are part of it — and **which of those you are still missing**. If the catalogue does not know the contract, it stays quiet rather than guessing |
 | <img src="assets/symbole/22/blitz-gruen.png" width="22" alt=""> **Crafting** | For each of the **1,597** craftable items: the ingredients with amounts and the craft time — and whether you have the blueprint. Clicking a resource jumps to where it can be mined |
 | <img src="assets/symbole/22/herkunft-gruen.png" width="22" alt=""> **Mining** | Both directions in one search: type a resource → its locations (Iron: 27). Type a location → what is found there (Daymar: 14 ores). With mining type FPS · vehicle · ship, a **refinery comparison** per ore (which method yields how much and how long it takes) and the **scan signature** to recognise it in game |
@@ -407,7 +407,17 @@ needed to track a problem down, without any personal information.
 
 ## Passing it on
 
-> 🔒 **It's yours.** No account, no sign-in, no cloud. The tool reads files that are on your disk anyway and changes nothing about the game installation. It only reaches out to the network for two things: the value and origin data from scmdb.net (once per game version) and the question of whether there is a new build. Both can be switched off with `SC_BP_NO_NET=1`.
+> 🔒 **It's yours.** No account, no sign-in, no cloud. The tool reads files that are on your disk anyway and changes nothing about the game installation. It only reaches out to the network to **fetch** data — never to hand any over:
+>
+> | What for | How often |
+> |---|---|
+> | Values and origins from scmdb.net | once per game version |
+> | Resource prices and storage locations from UEX Corp | at most once a day |
+> | Contract texts and translation sources | when you switch them on |
+> | Whether there is a new build | at start |
+> | CIG's server status | while the page is open |
+>
+> **All of it** can be switched off with `SC_BP_NO_NET=1`. The one exception is the problem report — that only goes out when you press the button yourself, and you see the contents beforehand.
 
 Just pass on the file from the [releases page](../../releases) — the recipient needs neither Python nor a launcher, only Star Citizen.
 

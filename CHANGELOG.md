@@ -193,6 +193,22 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+- ⚠⚠ **`SC_BP_NO_NET=1` did not switch off everything it promised.** The
+  catalogue, prices, storage locations, server status and the update check
+  honoured it — the **translation sources** and the **contract data** did not.
+  Anyone setting that switch does not want half an assurance. Every fetch now
+  honours it; the one exception remains the problem report, which only goes out
+  on a button press anyway. The self-test no longer lets a module with network
+  access pass that does not know the switch.
+
+  The README also names **every** connection individually now, with how often
+  it happens — it used to say "two things", and there are five.
+
+- ⚠ **The numbers in the README were a patch old** — "655 of 722 blueprints"
+  instead of the actual **670 of 738**. Numbers like that go stale with every
+  game patch without anything noticing; the self-test now compares them against
+  the real data.
+
 - ⚠ **"Reset inventory" sat under "Report a problem" — nobody looks for it
   there.** It now sits at the end of the **Blueprint inventory** page, right
   below "Read the logs again". Side by side, the difference that matters also
@@ -625,7 +641,7 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   you do not have to do the arithmetic.
 
   **And quality genuinely matters.** The recipes carry how strongly it changes
-  the values of the finished item — for **1,540 of the 1,607 blueprints**. So
+  the values of the finished item — for **1,524 of the 1,597 blueprints**. So
   the recipe shows what *your* material would produce:
 
   ```

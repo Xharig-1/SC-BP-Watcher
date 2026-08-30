@@ -231,6 +231,22 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
+- ⚠⚠ **`SC_BP_NO_NET=1` hat nicht alles abgeschaltet, was es versprochen hat.**
+  Katalog, Preise, Lagerorte, Serverstatus und die Update-Frage hielten sich
+  daran — die **Übersetzungsquellen** und die **Auftragsdaten** nicht. Wer den
+  Schalter setzt, will keine halbe Zusicherung. Jetzt hält sich jeder Abruf
+  daran; einzige Ausnahme bleibt der Fehlerbericht, der ohnehin nur auf
+  Knopfdruck rausgeht. Der Selbsttest lässt kein Modul mit Netzabruf mehr
+  durch, das den Schalter nicht kennt.
+
+  Die Anleitung nennt jetzt außerdem **jede** Verbindung einzeln samt Häufigkeit
+  — vorher standen dort „zwei Dinge", inzwischen sind es fünf.
+
+- ⚠ **Die Zahlen in der Anleitung waren einen Patch alt** — „655 von 722
+  Bauplänen" statt der tatsächlichen **670 von 738**. Solche Zahlen veralten
+  mit jedem Spiel-Patch, ohne dass etwas anschlägt; der Selbsttest vergleicht
+  sie jetzt gegen die echten Daten.
+
 - ⚠ **„Bestand zurücksetzen" stand unter „Fehler melden" — dort sucht es
   niemand.** Es steht jetzt am Ende der Seite **Bauplan-Bestand**, direkt unter
   „Protokolle erneut einlesen". Nebeneinander wird auch der Unterschied
@@ -730,7 +746,7 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   ohne dass du rechnen musst.
 
   **Und die Qualität zählt wirklich.** Die Rezepte tragen mit, wie stark sie die
-  Werte des fertigen Stücks verändert — bei **1.540 der 1.607 Baupläne**.
+  Werte des fertigen Stücks verändert — bei **1.524 der 1.597 Baupläne**.
   Deshalb steht im Rezept, was mit *deinem* Material herauskäme:
 
   ```

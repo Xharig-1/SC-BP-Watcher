@@ -81,6 +81,14 @@ QUELLEN = {
 
 
 def _hole(url, roh=False):
+    # ⚠ `SC_BP_NO_NET` gilt hier genauso. Die Anleitung verspricht, dass sich
+    # die Netzabrufe abschalten lassen — bis rc42 galt das für den Katalog,
+    # die Preise, die Orte, den Serverstatus und die Update-Frage, aber nicht
+    # für die Übersetzungsquellen und die Auftragsdaten. Ein Versprechen, das
+    # nur zum Teil eingehalten wird, ist keines.
+    from .katalog import AUS
+    if AUS:
+        raise OSError('Netzabrufe sind abgeschaltet (SC_BP_NO_NET)')
     req = urllib.request.Request(url, headers={'User-Agent': KENNUNG})
     with urllib.request.urlopen(req, timeout=ZEITLIMIT) as r:
         daten = r.read()

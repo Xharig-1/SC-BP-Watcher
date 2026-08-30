@@ -154,7 +154,7 @@ Bauplan-Listen gibt es mehrere. Vier Dinge machen den Unterschied im Alltag:
 
 - **Du musst nicht aus dem Spiel.** Das Overlay liegt über Star Citizen. Kein zweites Fenster, kein Alt-Tab, kein Nachschlagen im Browser — der neue Bauplan steht einfach da, während du weiterspielst.
 - **Es weiß, was du schon hast.** Der Watcher führt deinen Bauplan-Bestand selbst und liest beim ersten Start die aufgehobenen Spielprotokolle nach — du bekommst deinen bisherigen Stand geschenkt, ohne etwas einzutippen. Bleibt trotzdem eine Lücke, sagt er das, statt eine unvollständige Liste als vollständig auszugeben.
-- **Es sagt dir, woher du das Fehlende bekommst.** Für **655 der 722** Baupläne steht dabei, welche Fraktion sie auslobt, in welchem Auftrag, ab welchem Rang und was er einbringt — sortiert nach dem leichtesten Weg. „Mir fehlt X" ist die halbe Information; die ganze ist „X gibt es bei Foxwell ab Veteran Contractor".
+- **Es sagt dir, woher du das Fehlende bekommst.** Für **670 der 738** Baupläne steht dabei, welche Fraktion sie auslobt, in welchem Auftrag, ab welchem Rang und was er einbringt — sortiert nach dem leichtesten Weg. „Mir fehlt X" ist die halbe Information; die ganze ist „X gibt es bei Foxwell ab Veteran Contractor".
 - **Es meldet auch, was du noch gar nicht haben kannst.** Die Katalog-Wache erkennt, wenn CIG mit einem Patch etwas **neu craftbar** macht — unabhängig von deinem eigenen Freischalt-Stand — solche Zeilen sind blau. Wer auf ein bestimmtes Teil wartet, trägt es in die Beobachtungsliste ein und wird beim Auftauchen auffällig darauf gestoßen.
 - **Nichts verlässt deinen Rechner.** Kein Konto, keine Anmeldung, keine Cloud. Das Tool liest ausschließlich Dateien, die ohnehin auf deiner Platte liegen, und schreibt nichts zurück ins Spiel.
 
@@ -166,7 +166,7 @@ Dazu: Klasse, Größe und Gütegrad stehen direkt in der Zeile (`M/1/A`), die Ob
 |---|---|
 | <img src="assets/symbole/22/blitz-gruen.png" width="22" alt=""> **Sofort-Meldung** | Liest die Star-Citizen-`Game.log` mit → der Bauplan steht **in Sekunden** in der Liste |
 | <img src="assets/symbole/22/liste-gruen.png" width="22" alt=""> **Bauplan-Liste** | Alle Baupläne durchsuchen, nach Art gruppiert, Filter *alle / habe ich / fehlt mir / beobachtet / neu im Spiel*, mit Fortschrittsanzeige. Häkchen per Klick |
-| <img src="assets/symbole/22/herkunft-gruen.png" width="22" alt=""> **Herkunft je Bauplan** | Ein Klick zeigt Fraktion, Auftrag, nötigen Rang und Belohnung — für **655 von 722** Bauplänen, sortiert nach dem leichtesten Weg |
+| <img src="assets/symbole/22/herkunft-gruen.png" width="22" alt=""> **Herkunft je Bauplan** | Ein Klick zeigt Fraktion, Auftrag, nötigen Rang und Belohnung — für **670 von 738** Bauplänen, sortiert nach dem leichtesten Weg |
 | <img src="assets/symbole/22/auftragstexte-gruen.png" width="22" alt=""> **Auftrag angenommen** | Nimmst du einen Auftrag an, steht sofort da, ob Baupläne dabei sind — und **welche dir davon noch fehlen**. Kennt der Katalog den Auftrag nicht, wird geschwiegen statt geraten |
 | <img src="assets/symbole/22/blitz-gruen.png" width="22" alt=""> **Herstellung** | Zu jedem der **1.597** herstellbaren Gegenstände die Zutaten mit Menge und die Herstellzeit — und ob du den Bauplan dafür hast. Ein Klick auf einen Rohstoff springt zu seinen Fundorten |
 | <img src="assets/symbole/22/herkunft-gruen.png" width="22" alt=""> **Bergbau** | Beide Richtungen in einer Suche: Rohstoff eintippen → seine Fundorte (Iron: 27 Orte). Ort eintippen → was es dort gibt (Daymar: 14 Erze). Mit Abbauart FPS · Fahrzeug · Schiff, **Raffinerie-Vergleich** je Erz (welche Methode wie viel Ausbeute bringt und wie lange sie braucht) und der **Scan-Signatur** zum Wiedererkennen im Spiel |
@@ -451,7 +451,17 @@ Textblock enthält alles, was zur Fehlersuche gebraucht wird, ohne persönliche 
 
 ## Weitergeben
 
-> 🔒 **Es gehört dir.** Kein Konto, keine Anmeldung, keine Cloud. Das Werkzeug liest Dateien, die ohnehin auf deiner Platte liegen, und verändert an der Spielinstallation nichts. Ins Netz greift es nur für zwei Dinge: die Werte- und Herkunftsdaten von scmdb.net (einmal je Spielversion) und die Frage, ob es eine neue Version gibt. Beides lässt sich mit `SC_BP_NO_NET=1` abschalten.
+> 🔒 **Es gehört dir.** Kein Konto, keine Anmeldung, keine Cloud. Das Werkzeug liest Dateien, die ohnehin auf deiner Platte liegen, und verändert an der Spielinstallation nichts. Ins Netz greift es nur, um Daten **zu holen** — nie, um welche abzuliefern:
+>
+> | Wofür | Wie oft |
+> |---|---|
+> | Werte und Herkunft von scmdb.net | einmal je Spielversion |
+> | Rohstoffpreise und Lagerorte von UEX Corp | höchstens einmal am Tag |
+> | Auftragstexte und Übersetzungsquellen | wenn du sie einschaltest |
+> | Ob es eine neue Version gibt | beim Start |
+> | Der Serverstatus von CIG | solange die Seite offen ist |
+>
+> **Alles davon** lässt sich mit `SC_BP_NO_NET=1` abschalten. Einzige Ausnahme ist der Fehlerbericht — der geht nur raus, wenn du selbst den Knopf drückst, und du siehst vorher, was drinsteht.
 
 Gib einfach die Datei von der [Releases-Seite](../../releases) weiter — der Empfänger braucht weder Python noch einen Launcher, nur Star Citizen.
 

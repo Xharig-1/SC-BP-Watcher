@@ -5817,6 +5817,113 @@ def main():
            and any(_fh72.SPUR_GRENZE in _z for _z in _sichtbar72),
            'im sichtbaren Ausschnitt stehen erster und letzter Startschritt')
 
+    # ------------------------------------------------------------------
+    # 73. Die Zahlen in der Anleitung stimmen noch
+    #
+    # ⚠ In der README stehen Zahlen: „für 670 der 738 Bauplaene steht, woher
+    # sie kommen", „zu jedem der 1.597 herstellbaren Gegenstaende". Die sind
+    # kein Beiwerk — sie sind das Versprechen, das jemand vor dem Herunterladen
+    # liest. Und sie veralten mit **jedem** Spiel-Patch, ohne dass irgendetwas
+    # anschlaegt: Am 30.08.2026 stand dort 655 von 722, waehrend die Daten
+    # laengst 670 von 738 hergaben. Aufgefallen ist es nur, weil jemand von
+    # Hand nachgezaehlt hat.
+    #
+    # ⚠ Diese Pruefung braucht die heruntergeladenen Daten und wird ohne sie
+    # uebersprungen — im Bau-Lauf also immer. Sie greift dort, wo sie greifen
+    # muss: auf dem Rechner, auf dem veroeffentlicht wird.
+    print()
+    print('73. Die Zahlen in der Anleitung stimmen noch')
+    import re as _re73
+    from scbp import katalog as _ka73
+    from scbp import herstellung as _he73
+
+    # ⚠ Kurz aus dem Wegwerf-Ordner heraustreten. Der Selbsttest arbeitet in
+    # einem leeren `SC_BP_HOME`; die echten Daten liegen im Ablageordner des
+    # Nutzers, und genau die zeigt die Anleitung.
+    _heim73 = os.environ.pop('SC_BP_HOME', None)
+    try:
+        _ka73.vergessen() if hasattr(_ka73, 'vergessen') else None
+        _he73.vergessen()
+        try:
+            _bp73 = (_ka73.laden().get('bauplaene') or {})
+        except Exception:
+            _bp73 = {}
+        _gezeigt73 = []
+        try:
+            _gezeigt73 = _he73.mit_bestand(set())
+        except Exception:
+            pass
+    finally:
+        if _heim73 is not None:
+            os.environ['SC_BP_HOME'] = _heim73
+        _ka73.vergessen() if hasattr(_ka73, 'vergessen') else None
+        _he73.vergessen()
+
+    if not _bp73 or not _gezeigt73:
+        print('  [–]    keine Katalog- oder Rezeptdaten — uebersprungen')
+    else:
+        _mitq73 = sum(1 for _v in _bp73.values() if _v.get('q'))
+        _soll73 = {'baupläne': len(_bp73), 'herkunft': _mitq73,
+                   'herstellbar': len(_gezeigt73)}
+        print('       Daten: %d Baupläne, %d mit Herkunft, %d herstellbar'
+              % (_soll73['baupläne'], _soll73['herkunft'],
+                 _soll73['herstellbar']))
+
+        def _zahlen73(text):
+            # „670 der 738", „670 of 738", „670 von 738" — beide Zahlen.
+            paare = set()
+            for _m in _re73.finditer(
+                    r'\*\*([\d.,]+)\s+(?:der|von|of(?: the)?)\s+([\d.,]+)\*\*',
+                    text):
+                paare.add((int(_m.group(1).replace('.', '').replace(',', '')),
+                           int(_m.group(2).replace('.', '').replace(',', ''))))
+            einzeln = set()
+            for _m in _re73.finditer(r'\*\*([\d][\d.,]{2,})\*\*', text):
+                einzeln.add(int(_m.group(1).replace('.', '').replace(',', '')))
+            return paare, einzeln
+
+        for _name73 in ('README.de.md', 'README.md'):
+            _txt73 = open(os.path.join(WURZEL, _name73), encoding='utf-8').read()
+            _paare73, _einzeln73 = _zahlen73(_txt73)
+            _falsch73 = [pa for pa in _paare73
+                         if pa != (_soll73['herkunft'], _soll73['baupläne'])]
+            pruefe(not _falsch73,
+                   '%s: „X von Y Bauplaenen" stimmt (%s)'
+                   % (_name73, _falsch73 or 'alles aktuell'))
+            # Die Zahl der herstellbaren Gegenstaende steht allein da.
+            _herst73 = [z for z in _einzeln73 if 1000 <= z <= 5000]
+            pruefe(all(z == _soll73['herstellbar'] for z in _herst73),
+                   '%s: die Zahl der herstellbaren Gegenstaende stimmt (%s)'
+                   % (_name73, sorted(_herst73) or 'keine genannt'))
+
+    # ------------------------------------------------------------------
+    # 74. `SC_BP_NO_NET` gilt ueberall
+    #
+    # ⚠ Die Anleitung verspricht: „Beides laesst sich mit `SC_BP_NO_NET=1`
+    # abschalten." Bis rc42 stimmte das nur zur Haelfte — Katalog, Preise,
+    # Orte, Serverstatus und Update-Frage hielten sich daran, die
+    # Uebersetzungsquellen und die Auftragsdaten des SCDL-Teams nicht. Wer die
+    # Schalterstellung ernst nimmt, muss sich darauf verlassen koennen.
+    #
+    # Ausgenommen ist einzig `bericht.py`: Es sendet nur, wenn jemand den Knopf
+    # drueckt, und sagt dabei selbst, was es tut.
+    print()
+    print('74. Netzabrufe halten sich an SC_BP_NO_NET')
+    _ausnahmen74 = {'bericht.py'}       # nur auf Knopfdruck, siehe oben
+    _offen74 = []
+    for _name74 in sorted(os.listdir(os.path.join(WURZEL, 'scbp'))):
+        if not _name74.endswith('.py') or _name74 in _ausnahmen74:
+            continue
+        _q74 = open(os.path.join(WURZEL, 'scbp', _name74),
+                    encoding='utf-8').read()
+        if 'urlopen(' not in _q74:
+            continue
+        if 'AUS' not in _q74 and 'SC_BP_NO_NET' not in _q74:
+            _offen74.append(_name74)
+    pruefe(not _offen74,
+           'jedes Modul mit Netzabruf kennt den Schalter (%s)'
+           % (', '.join(_offen74) or 'alle'))
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

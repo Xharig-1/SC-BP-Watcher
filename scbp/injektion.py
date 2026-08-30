@@ -556,8 +556,9 @@ def _titel_zusatz(eintrag, habe, worte):
 
 def scdl_holen(sprachkuerzel, fortschritt=None):
     """Die Vertragsdaten des SCDL-Teams holen und ablegen. (Erfolg, Anzahl)."""
+    from .katalog import AUS
     datei = SCDL_DATEI.get(sprachkuerzel)
-    if not datei:
+    if not datei or AUS:          # ⚠ SC_BP_NO_NET gilt auch hier
         return False, 0
     try:
         if fortschritt:
@@ -952,9 +953,10 @@ def scdl_update_da(sprachkuerzel):
     Verglichen wird die Kennung aus `_meta.version` (z. B. „LIVE 20.08.2026").
     Geholt wird dafür die ganze Datei — sie hat keine eigene Versionsauskunft,
     und 2,4 MB einmal am Tag sind kein Grund, dafür etwas zu bauen."""
+    from .katalog import AUS
     alt = scdl_stand(sprachkuerzel)
     datei = SCDL_DATEI.get(sprachkuerzel)
-    if not datei:
+    if not datei or AUS:          # ⚠ SC_BP_NO_NET gilt auch hier
         return False, None
     try:
         req = urllib.request.Request(SCDL_ROH % datei,
