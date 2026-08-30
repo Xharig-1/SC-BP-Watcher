@@ -1714,12 +1714,16 @@ class Hauptfenster:
         # Fortgeschrittenes ist zugeklappt — sichtbar, aber nicht im Weg. Wer
         # es sucht, findet es; wer es nicht kennt, wird nicht erschlagen.
         #
-        # ⚠ **Es sitzt in der Gruppe „Info", nicht mehr am unteren Rand.** Dort
-        # klebte es früher zwischen den Knöpfen und war das einzige Element der
-        # Leiste ohne Gruppe — das fiel als Bruch auf, sobald die Gruppen
-        # klappbar wurden (30.08.2026). Jetzt gehört es zu einer Gruppe wie
-        # alles andere und klappt mit ihr weg.
-        self.klapp = tk.Frame(g_info, bg=FLAECHE)
+        # ⚠ **Es sitzt in der Gruppe „Einstellungen", nicht mehr am unteren
+        # Rand.** Dort klebte es früher zwischen den Knöpfen und war das
+        # einzige Element der Leiste ohne Gruppe — ein Bruch, sobald die
+        # Gruppen klappbar wurden (30.08.2026).
+        #
+        # ⚠ Und zwar **Einstellungen**, nicht „Info": Dahinter liegen
+        # Spielordner und Erkennung, also Dinge, die man **einstellt**. „Info"
+        # erzählt etwas (Was ist neu, Über, Serverstatus, Danke) — dort wäre es
+        # thematisch falsch einsortiert, auch wenn es optisch passte.
+        self.klapp = tk.Frame(g_einst, bg=FLAECHE)
         self.klapp.pack(fill='x', pady=(6, 4))
         # ⚠ Aufbau wie eine Gruppenüberschrift: Beschriftung links, Pfeil
         # rechts, dasselbe Symbol. Es ist dieselbe Handlung — etwas auf- und

@@ -72,8 +72,9 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   you would stand on a page whose entry is nowhere to be seen.
 
 - **The sidebar now looks the same throughout.** "Advanced" carries the same
-  collapse arrow as the groups and sits inside the "Info" group instead of
-  clinging to the bottom on its own. All collapse arrows use the same icon as
+  collapse arrow as the groups and sits inside the "Settings" group instead of
+  clinging to the bottom on its own — behind it are the game folder and
+  detection, things you set. All collapse arrows use the same icon as
   the rest of the program — previously they were text characters that looked
   different depending on the system font.
 

@@ -75,8 +75,9 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   gar nicht zu sehen ist.
 
 - **Die Seitenleiste sieht überall gleich aus.** „Für Fortgeschrittene" hat
-  jetzt denselben Klapp-Pfeil wie die Gruppen und sitzt in der Gruppe „Info",
-  statt einzeln unten zu kleben. Alle Klapp-Pfeile benutzen dasselbe Symbol
+  jetzt denselben Klapp-Pfeil wie die Gruppen und sitzt in der Gruppe
+  „Einstellungen", statt einzeln unten zu kleben — dahinter liegen Spielordner
+  und Erkennung, also Dinge, die man einstellt. Alle Klapp-Pfeile benutzen dasselbe Symbol
   wie der Rest des Programms — vorher waren es Textzeichen, die je nach
   Systemschrift anders aussahen.
 

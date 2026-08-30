@@ -6828,8 +6828,11 @@ def main():
 
     # „Fuer Fortgeschrittene" gehoert in eine Gruppe wie alles andere —
     # sonst ist es das einzige Element der Leiste ohne eine.
-    pruefe(_fenster85.klapp.master is _fenster85.gruppen['info']['inhalt'],
-           'Fortgeschrittenes sitzt in der Gruppe Info')
+    # ⚠ **Einstellungen, nicht Info.** Dahinter liegen Spielordner und
+    # Erkennung — Dinge, die man einstellt. „Info" erzaehlt etwas.
+    pruefe(_fenster85.klapp.master
+           is _fenster85.gruppen['einstellungen']['inhalt'],
+           'Fortgeschrittenes sitzt in der Gruppe Einstellungen')
     pruefe(hasattr(_fenster85, 'klapppfeil'),
            'und traegt denselben Klapp-Pfeil wie die Gruppen')
 
