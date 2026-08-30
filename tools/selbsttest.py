@@ -4870,6 +4870,76 @@ def main():
         pruefe(bool(_w63) and len(_w63) == 2 and all(_w63),
                'Text %s gibt es deutsch und englisch' % _k63)
 
+    # ------------------------------------------------------------------
+    # 64. Scan-Signatur — aus der Zahl des Scanners das Erz bestimmen
+    #
+    # Der Bergbau-Scanner im Spiel zeigt eine Zahl und verraet nicht, was
+    # dahintersteckt. Die Zahl ist die Signatur des Rohstoffs mal der Zahl der
+    # Brocken; wie viele es hoechstens sein koennen, sagt die Seltenheit.
+    # Gegengerechnet gegen die Tabelle auf scmdb.net (Stand 4.10.0).
+    print()
+    print('64. Scan-Signatur')
+    from scbp import bergbau as _bg64
+
+    if not (_bg64.laden().get('elemente') or {}):
+        print('  [–]    keine Rohstoff-Stammdaten vorhanden — uebersprungen')
+    else:
+        # a) Punktgenaue Treffer aus der Tabelle.
+        for _eingabe64, _soll64, _anz64 in (
+                ('7080', 'Beryl', 2),        # scmdb: „1 MATCH — 2x Beryl"
+                ('3170', 'Quantainium', 1),
+                ('4270', 'Iron', 1),
+                ('25800', 'Ice', 6),
+                ('19500', 'Torite', 5)):
+            _tr64 = _bg64.signatur_suchen(_eingabe64)
+            pruefe(bool(_tr64) and _tr64[0][0].startswith(_soll64)
+                   and _tr64[0][1] == _anz64,
+                   '%s -> %d× %s (gefunden: %s)'
+                   % (_eingabe64, _anz64, _soll64,
+                      ('%d× %s' % (_tr64[0][1], _tr64[0][0])) if _tr64 else 'nichts'))
+
+        # b) ⚠ Ohne Toleranz wird NICHTS gerundet. Wer daneben liegt, soll das
+        #    erfahren statt einen falschen Treffer vorgesetzt zu bekommen.
+        pruefe(_bg64.signatur_suchen('9999') == [],
+               'ein Wert ohne Entsprechung liefert nichts, statt zu raten')
+        pruefe(len(_bg64.signatur_suchen('~8600')) > 1,
+               'mit ~ davor kommen die Nachbarn dazu')
+        pruefe(len(_bg64.signatur_suchen('12000-13000')) > 1,
+               'eine Bereichssuche findet mehrere')
+
+        # c) Die Seltenheit begrenzt die Vielfachen. Quantainium ist legendaer
+        #    (hoechstens 2 Brocken) — ein drittes Vielfaches darf es NICHT
+        #    geben, sonst behauptet das Werkzeug unmoegliche Vorkommen.
+        _drei64 = _bg64.signatur_suchen('9510')      # 3170 x 3
+        pruefe(not any(n.startswith('Quantainium') for n, _a, _g, _ab in _drei64),
+               'legendaeres Erz wird nicht mit 3 Brocken gemeldet')
+        _zwei64 = _bg64.signatur_suchen('6340')      # 3170 x 2
+        pruefe(any(n.startswith('Quantainium') for n, _a, _g, _ab in _zwei64),
+               'mit 2 Brocken dagegen schon')
+
+        # d) Sortierung: die genaueste Uebereinstimmung zuerst.
+        _tr64 = _bg64.signatur_suchen('~8600')
+        pruefe(abs(_tr64[0][3]) <= abs(_tr64[-1][3]),
+               'die genaueste Uebereinstimmung steht oben')
+
+    # Die Stammdaten muessen beim Sichern erhalten bleiben.
+    _q64 = open(os.path.join(WURZEL, 'scbp', 'bergbau.py'), encoding='utf-8').read()
+    pruefe("'elemente': roh.get('mineableElements')" in _q64,
+           'die Rohstoff-Stammdaten werden beim Sichern behalten')
+    pruefe("da.get('elemente') is not None" in _q64,
+           'und eine alte Ablage ohne sie wird einmal neu geholt')
+    # ⚠ Das Eingabefeld darf NICHT im Neuzeichnen gebaut werden.
+    _q64b = open(os.path.join(WURZEL, 'scbp', 'seiten.py'), encoding='utf-8').read()
+    _vor64 = _q64b.split('def sig_zeichnen')[0]
+    pruefe('sig_feld = rundes_feld' in _vor64,
+           'das Scan-Feld steht ausserhalb des Neuzeichnens (Cursor bleibt)')
+    from scbp import sprache as _sp64
+    for _k64 in ('s_bg_sig_feld', 's_bg_sig_hilfe', 's_bg_sig_treffer',
+                 's_bg_sig_nichts', 's_bg_sig_anzahl', 's_bg_sig_genau'):
+        _w64 = _sp64.TEXTE.get(_k64)
+        pruefe(bool(_w64) and len(_w64) == 2 and all(_w64),
+               'Text %s gibt es deutsch und englisch' % _k64)
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

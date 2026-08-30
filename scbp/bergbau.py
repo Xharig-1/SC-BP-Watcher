@@ -129,7 +129,8 @@ def aktualisieren(build, fortschritt=None):
     # nur Orte und Zusammensetzungen behalten. Fehlt der Abschnitt, wird einmal
     # neu geholt; danach passiert wieder nichts. Die Datei ist 0,4 MB.
     if (da.get('build') == build and da.get('locations')
-            and da.get('refineries') is not None):
+            and da.get('refineries') is not None
+            and da.get('elemente') is not None):
         return True, t('m_b_aktuell') % len(da['locations'])
     if fortschritt:
         fortschritt(t('z_laedt') % ('Bergbau', 0.4))
@@ -144,7 +145,10 @@ def aktualisieren(build, fortschritt=None):
     _sichern({'format': FORMAT, 'build': build, 'locations': orte,
               'compositions': roh.get('compositions') or {},
               'refineries': roh.get('refineries') or [],
-              'refineryProfiles': roh.get('refineryProfiles') or {}})
+              'refineryProfiles': roh.get('refineryProfiles') or {},
+              # Die Stammdaten je Rohstoff — darin stehen Seltenheit und
+              # Scan-Signatur, ohne die der Signatur-Rechner nichts kann.
+              'elemente': roh.get('mineableElements') or {}})
     return True, t('m_b_geladen') % len(orte)
 
 
@@ -231,6 +235,87 @@ def erze():
     raus = [{'name': n, 'orte': sorted(v)} for n, v in sammlung.items()]
     raus.sort(key=lambda x: x['name'].lower())
     return raus
+
+
+# Wie oft ein Vorkommen höchstens auftritt — das begrenzt, welche Vielfachen
+# der Signatur überhaupt vorkommen können. Steht als `rarity` an jedem
+# Rohstoff.
+MAX_BROCKEN = {'legendary': 2, 'epic': 3, 'rare': 4, 'uncommon': 5,
+               'common': 6}
+
+# Grundsignaturen für Vorkommen ohne eigenen Wert. ⚠ `roc` und `fps` stehen so
+# in den Daten (`groundScanSignature` 4000, `fpsScanSignature` 3000).
+# `salvage` steht dort **nicht** — der Wert stammt aus der Tabelle auf
+# scmdb.net. Wenn er je falsch ist, ist er dort genauso falsch.
+GRUND_SIGNATUR = (('roc', 4000, 7), ('fps', 3000, 10), ('salvage', 2000, 15))
+
+
+def signatur_suchen(eingabe):
+    """Aus einem gescannten Wert den Rohstoff bestimmen.
+
+    ⭐ **Das Werkzeug, das ein Miner im Spiel wirklich braucht.** Der Scanner
+    zeigt eine Zahl; welcher Brocken dahintersteckt, sagt er nicht. Die Zahl
+    ist die Signatur des Rohstoffs mal der Anzahl der Brocken im Vorkommen —
+    wie oft, begrenzt die Seltenheit (legendär höchstens 2, verbreitet 6).
+
+    Eingabeformen, wie bei scmdb:
+
+    | Eingabe | Bedeutung |
+    |---|---|
+    | `8600` | genau dieser Wert |
+    | `~5000` | ±10 % Spielraum |
+    | `4000-9000` | alles dazwischen |
+
+    Gibt `[(Name, Anzahl Brocken, Signatur, Abweichung in Prozent)]`, die
+    genaueste Übereinstimmung zuerst.
+
+    ⚠ **Ohne Toleranz wird nichts gerundet.** Wer `8600` eingibt und nichts
+    trifft, soll das erfahren und `~8600` versuchen — nicht einen Treffer
+    vorgesetzt bekommen, der um 300 danebenliegt.
+    """
+    text = (eingabe or '').strip().replace(',', '.')
+    if not text:
+        return []
+    toleranz, unten, oben = 0.0, None, None
+    try:
+        if text.startswith('~'):
+            wert = float(text[1:])
+            toleranz = 0.10
+            unten, oben = wert * 0.9, wert * 1.1
+        elif '-' in text[1:]:
+            a, b = text.split('-', 1) if not text.startswith('-') else (None, None)
+            unten, oben = sorted((float(a), float(b)))
+            wert = (unten + oben) / 2.0
+        else:
+            wert = float(text)
+            unten = oben = wert
+    except (ValueError, TypeError):
+        return []
+    if unten is None:
+        return []
+
+    da = laden()
+    elemente = da.get('elemente') or {}
+    treffer = []
+    for _g, e in elemente.items():
+        sig = e.get('scanSignature')
+        if not sig:
+            continue
+        hoechstens = MAX_BROCKEN.get(e.get('rarity'), 6)
+        for anzahl in range(1, hoechstens + 1):
+            gesamt = sig * anzahl
+            if unten <= gesamt <= oben:
+                ab = (gesamt - wert) / wert * 100.0 if wert else 0.0
+                treffer.append((e.get('name') or '?', anzahl, gesamt, ab))
+    # Und die pauschalen Vorkommen ohne eigenen Rohstoff.
+    for name, sig, hoechstens in GRUND_SIGNATUR:
+        for anzahl in range(1, hoechstens + 1):
+            gesamt = sig * anzahl
+            if unten <= gesamt <= oben:
+                ab = (gesamt - wert) / wert * 100.0 if wert else 0.0
+                treffer.append((name, anzahl, gesamt, ab))
+    treffer.sort(key=lambda x: (abs(x[3]), x[0]))
+    return treffer
 
 
 def raffinerien_fuer(rohstoff):

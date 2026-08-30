@@ -1620,6 +1620,25 @@ TEXTE = {
     's_he_weniger_gut':  ('weniger ist besser', 'lower is better'),
     # Raffinerien — die Frage nach „wo baue ich das ab?" ist „und wohin
     # bringe ich es?"
+    # ⭐ Scan-Signatur: der Scanner zeigt eine Zahl, aber nicht, was
+    # dahintersteckt. Genau die Luecke schliesst das Feld.
+    's_bg_sig_feld':     ('Scan-Wert vom Scanner', 'Scanner reading'),
+    's_bg_sig_hilfe':    ('Der Scanner zeigt eine Zahl — hier steht, welches '
+                          'Erz dahintersteckt und aus wie vielen Brocken das '
+                          'Vorkommen besteht. `8600` für genau diesen Wert, '
+                          '`~8600` mit 10 % Spielraum, `12000-13000` für alles '
+                          'dazwischen.',
+                          'The scanner shows a number — this tells you which ore '
+                          'it is and how many rocks the deposit holds. `8600` for '
+                          'an exact match, `~8600` with 10 % tolerance, '
+                          '`12000-13000` for a range.'),
+    's_bg_sig_treffer':  ('%d× %s', '%d× %s'),
+    's_bg_sig_nichts':   ('Kein Erz hat diese Signatur. Mit `~` davor wird mit '
+                          '10 %% Spielraum gesucht.',
+                          'No ore has this signature. Put `~` in front to search '
+                          'with 10 %% tolerance.'),
+    's_bg_sig_anzahl':   ('%d mögliche Treffer', '%d possible matches'),
+    's_bg_sig_genau':    ('genau', 'exact'),
     's_bg_raff_kopf':    ('Raffinerie — was am meisten herausholt',
                           'Refinery — where you get the most'),
     's_bg_raff_zeile':   ('%+d %%', '%+d %%'),

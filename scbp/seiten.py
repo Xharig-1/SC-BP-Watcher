@@ -4381,6 +4381,66 @@ def _bergbau(fenster, rahmen):
     # ein- und ausgeblendet, nicht neu gebaut.
     fenster.beim_zeigen['bergbau'] = lambda: suche_var.set('')
 
+    # ⭐⭐ **Scan-Signatur — das Werkzeug, das im Spiel wirklich fehlt.**
+    # Der Bergbau-Scanner zeigt eine Zahl und verrät nicht, was dahintersteckt.
+    # Die Zahl ist die Signatur des Rohstoffs mal der Zahl der Brocken im
+    # Vorkommen; wie viele es höchstens sein können, sagt die Seltenheit
+    # (legendär 2, verbreitet 6). Beides steht in den Bergbaudaten, die der
+    # Watcher ohnehin lädt.
+    #
+    # ⚠ Das Feld wird **hier** gebaut, nicht in `zeichnen()`. Läge es darin,
+    # verlöre es bei jedem Tastendruck den Cursor — derselbe Fehler wie beim
+    # Suchfeld im Lager (v3.3.0-rc21).
+    sig_var = tk.StringVar(value='')
+    ziel_sig = _feld(fenster, innen, t('s_bg_sig_feld'), '')
+    sig_feld = rundes_feld(ziel_sig, sig_var, fenster.f_klein, '#0c1017',
+                           LINIE, ACCENT, FG)
+    sig_feld.halter.pack(fill='x', pady=(4, 2))
+    _fliesstext(innen, t('s_bg_sig_hilfe'), fenster.f_klein, fill='x')
+    sig_rahmen = tk.Frame(innen, bg=BG)
+    sig_rahmen.pack(fill='x', pady=(2, 10))
+
+    def sig_zeichnen(*_):
+        for w in sig_rahmen.winfo_children():
+            w.destroy()
+        eingabe = sig_var.get().strip()
+        if not eingabe:
+            return
+        try:
+            treffer = berg_modul.signatur_suchen(eingabe)
+        except Exception as ausnahme:
+            fehler.merken('seiten.signatur', ausnahme)
+            return
+        if not treffer:
+            _fliesstext(sig_rahmen, t('s_bg_sig_nichts'), fenster.f_klein,
+                        fill='x')
+            return
+        tk.Label(sig_rahmen, text=t('s_bg_sig_anzahl') % len(treffer), bg=BG,
+                 fg=SUB, font=fenster.f_klein, anchor='w').pack(fill='x')
+        # ⚠ Höchstens zehn. Eine Bereichssuche kann dutzende Treffer haben,
+        # und die Liste darunter soll nicht aus dem Bild geschoben werden.
+        for name, anzahl, gesamt, ab in treffer[:10]:
+            z = tk.Frame(sig_rahmen, bg=BG)
+            z.pack(fill='x', pady=1)
+            tk.Label(z, text=t('s_bg_sig_treffer') % (anzahl, name), bg=BG,
+                     fg=ACCENT, font=fenster.f_grund, anchor='w').pack(
+                         side='left', padx=(4, 0))
+            tk.Label(z, text='%d' % gesamt, bg=BG, fg=FG,
+                     font=fenster.f_klein, anchor='e').pack(
+                         side='right', padx=(8, 4))
+            # Die Abweichung nur, wenn es eine gibt — „+0,0 %" ist Rauschen.
+            if abs(ab) >= 0.05:
+                tk.Label(z, text='%+.1f %%' % ab, bg=BG, fg=SUB,
+                         font=fenster.f_klein, anchor='e').pack(
+                             side='right', padx=(8, 0))
+            else:
+                tk.Label(z, text=t('s_bg_sig_genau'), bg=BG, fg=SUB,
+                         font=fenster.f_klein, anchor='e').pack(
+                             side='right', padx=(8, 0))
+
+    sig_var.trace_add('write', sig_zeichnen)
+    _suche_leeren_kreuz(fenster, ziel_sig, sig_var)
+
     liste_rahmen = tk.Frame(innen, bg=BG)
     liste_rahmen.pack(fill='both', expand=True)
     offen = {'name': None}
