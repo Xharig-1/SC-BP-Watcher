@@ -6874,6 +6874,27 @@ def main():
     pruefe('vorschlag_rahmen' not in _lagerseite85,
            'und nicht mehr die alte Vorschlagszeile daneben')
 
+    # ⚠⚠ **Der Lagerort der Raffinerie-Ausbeute darf NICHT durch
+    # `lager_name()` laufen.** Die Funktion zieht eine Eingabe auf einen
+    # bekannten **Rohstoff** (sie vergleicht gegen `einlagerbar()`); ein
+    # Ortsname steht dort nie drin. Ergebnis war `None`, und `or ''` machte
+    # daraus einen leeren Lagerort: Wer „Levski" gewaehlt hatte, bekam die
+    # ganze Ausbeute ohne Ort eingebucht (30.08.2026 gemeldet, mit zwei
+    # Bildschirmfotos belegt).
+    from scbp import herstellung as _he85
+    pruefe(_he85.lager_name('Levski') is None,
+           'lager_name() kennt keine Orte — das war die Ursache')
+
+    _raffblock85 = _q85p.split('def _raffinerie_block(')[-1].split('\ndef ')[0]
+    # ⚠ Nicht auf `lager_name(` allein pruefen — fuer die **Materialnamen** ist
+    # sie genau richtig und wird dort weiter gebraucht. Falsch war nur, sie auf
+    # den **Ort** anzuwenden.
+    pruefe('lager_name((ort' not in _raffblock85
+           and 'lager_name(ort' not in _raffblock85,
+           'der Raffinerie-Block zieht den ORT nicht durch lager_name()')
+    pruefe('ort_raff' in _raffblock85 and '_orte_modul.kennt(' in _raffblock85,
+           'er hat ein eigenes Ortsfeld und prueft es gegen die Ortsliste')
+
     # Und der Reiter einer zugeklappten Gruppe muss sie wieder aufmachen —
     # sonst steht man auf einer Seite, deren Eintrag nicht zu sehen ist.
     _fenster85.oeffnen('verkauf')

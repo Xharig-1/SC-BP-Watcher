@@ -141,12 +141,18 @@ TEXTE = {
     's_rf_titel':      ('Raffinerie-Ausbeute eintragen',
                         'Enter refinery yield'),
     's_rf_hilfe':      ('Tipp die Zeilen so ab, wie sie im Terminal stehen — '
-                        'Material, Qualität, Menge. Eine Zeile je Posten, der '
-                        'Lagerort gilt für alle.',
+                        'Material, Qualität, Menge. Eine Zeile je Posten. Der '
+                        'Lagerort darunter gilt für die ganze Ausbeute.',
                         'Type the rows as they appear in the terminal — '
-                        'material, quality, amount. One line per entry, the '
-                        'storage location applies to all.'),
+                        'material, quality, amount. One line per entry. The '
+                        'storage location below applies to the whole yield.'),
     's_rf_beispiel':   ('Titanium 295 188', 'Titanium 295 188'),
+    's_rf_ort_unbekannt': ('Diesen Lagerort gibt es nicht. Nimm einen '
+                           'Vorschlag — oder lass das Feld leer.',
+                           'No such storage location. Pick a suggestion — or '
+                           'leave the field empty.'),
+    's_rf_ort':          ('Lagerort für diese Ausbeute',
+                          'Storage location for this yield'),
     's_rf_einheit':    ('Menge in', 'Amount in'),
     's_rf_knopf':      ('%d Posten eintragen', 'Add %d entries'),
     's_rf_nichts':     ('Noch nichts eingetippt.', 'Nothing typed yet.'),

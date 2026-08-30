@@ -4954,6 +4954,7 @@ def _raffinerie_block(fenster, eltern, lager, ort_var, neu_zeichnen, meldung):
     stehen.
     """
     from . import herstellung as herst_lager
+    from . import orte as _orte_modul
     from .hauptfenster import rundrahmen
 
     ziel = _feld(fenster, eltern, t('s_rf_titel'), t('s_rf_hilfe'), breit=True)
@@ -4967,6 +4968,24 @@ def _raffinerie_block(fenster, eltern, lager, ort_var, neu_zeichnen, meldung):
     rundwahl(zeile, [('cscu', 'cSCU'), ('scu', 'SCU')], 'cscu',
              lambda k: (einheit.set(k), pruefen()),
              fenster.f_klein).pack(side='left')
+
+    # ⭐ **Eigenes Lagerort-Feld.** Vorher galt stillschweigend der Ort aus dem
+    # Formular ganz oben — der steht seit dem Umbau weit weg, und wer ihn für
+    # eine Ausbeute ändern wollte, musste hochrollen und danach zurück. Am
+    # 30.08.2026 gemeldet: „man kann für Raffinerie-Ausbeute keinen Lagerort
+    # angeben."
+    #
+    # Vorbelegt mit dem Ort von oben, damit sich für alle, die immer am selben
+    # Ort einlagern, nichts ändert.
+    ort_raff = tk.StringVar(value=(ort_var.get() or '').strip())
+    ortblock = tk.Frame(ziel, bg=BG)
+    ortblock.pack(fill='x', pady=(4, 0))
+    tk.Label(ortblock, text=t('s_rf_ort'), bg=BG, fg=FG,
+             font=fenster.f_fett, anchor='w').pack(fill='x')
+    _ozeile, _oliste, _ozeichnen = _auswahlfeld(fenster, ortblock, ort_raff,
+                                                _orte_modul.alle)
+    _ozeile.pack(fill='x', pady=(4, 0))
+    _oliste.pack(fill='x')
 
     kasten = rundrahmen(ziel, '#0c1017', LINIE, radius=8, grundfarbe=BG)
     kasten.halter.pack(fill='x', pady=(4, 6))
@@ -5004,7 +5023,20 @@ def _raffinerie_block(fenster, eltern, lager, ort_var, neu_zeichnen, meldung):
                    uebernehmen, stark=True).pack(side='left')
 
     def uebernehmen():
-        ziel_ort = herst_lager.lager_name((ort_var.get() or '').strip()) or ''
+        # ⚠ Geschlossene Liste wie überall: Was UEX nicht kennt, kommt nicht
+        # ins Lager. Leer ist erlaubt — der Lagerort ist freiwillig.
+        if not _orte_modul.kennt((ort_raff.get() or '').strip()):
+            meldung.configure(text=t('s_rf_ort_unbekannt'), fg=ROT)
+            return
+        # ⚠⚠ **Der Ort läuft NICHT durch `lager_name()`.** Die Funktion zieht
+        # eine Eingabe auf einen bekannten **Rohstoff** — sie vergleicht gegen
+        # `einlagerbar()`. Ein Ortsname steht dort nie drin, also kam immer
+        # `None` zurück, und `or ''` machte daraus einen **leeren Lagerort**:
+        # Wer „Levski" gewählt hatte, bekam seine ganze Ausbeute ohne Ort
+        # eingebucht. Am 30.08.2026 gemeldet.
+        #
+        # Der Ort wird gegen die Ortsliste geprüft, so wie im Formular oben.
+        ziel_ort = (ort_raff.get() or '').strip()
         for name, menge, guete in stand['posten']:
             lager.eintragen(name, menge, guete, ziel_ort)
         anzahl = len(stand['posten'])

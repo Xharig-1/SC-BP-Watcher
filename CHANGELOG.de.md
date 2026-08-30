@@ -103,6 +103,16 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   die aufgeklappte Liste nichts verschiebt. Dieselbe Bedienung an beiden
   Stellen — wer die eine kann, kann die andere blind.
 
+- ⭐⭐ **Die Raffinerie-Ausbeute verlor ihren Lagerort.** Wer „Levski" gewählt
+  hatte, bekam die ganze Ausbeute **ohne Ort** eingebucht — und damit als eigene
+  Stapel neben dem bereits vorhandenen Bestand. Ursache: Der Ortsname lief durch
+  eine Funktion, die eine Eingabe auf einen bekannten **Rohstoff** zieht; ein
+  Ortsname steht dort nie drin, also kam nichts zurück.
+
+  Dazu hat der Block jetzt ein **eigenes Feld „Lagerort für diese Ausbeute"**.
+  Vorher galt stillschweigend der Ort aus dem Formular weiter oben — das war
+  weder sichtbar noch zu ändern, ohne hochzurollen.
+
 ### Behoben
 
 - Ein Knopf, der zur Laufzeit umbeschriftet wird, holte nach dem Überfahren mit

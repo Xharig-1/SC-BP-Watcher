@@ -97,6 +97,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   the fields rather than beside them, so an expanded list shifts nothing. Same
   handling in both places — learn one, know the other.
 
+- ⭐⭐ **The refinery yield lost its storage location.** Anyone who had picked
+  "Levski" got the whole yield booked in **without a location**, and therefore as
+  separate stacks next to the existing stock. Cause: the location name was run
+  through a function that maps input onto a known **resource**; a location name
+  is never in that list, so nothing came back.
+
+  The block now also has its own **"Storage location for this yield"** field.
+  Previously the location from the form further up applied silently — neither
+  visible nor changeable without scrolling back.
+
 ### Fixed
 
 - A button relabelled at runtime went back to its old colour once the mouse had
