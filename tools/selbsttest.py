@@ -5225,7 +5225,13 @@ def main():
                                             size=10)
 
                 class _Fenster67:
-                    f_grund = f_klein = f_item = _schrift67
+                    # ⚠ **Das Ersatzfenster muss alle Schriften kennen, die das
+                    # echte hat.** Am 31.08.2026 fehlte `f_fett`, und die neue
+                    # Kopfzeile ueber dem Rezept liess die ganze Pruefung
+                    # auffliegen — im Bau-Lauf, nicht auf dem Entwicklerrechner,
+                    # weil der Selbsttest dort schon vorher abbricht. Kommt eine
+                    # Schrift dazu, gehoert sie hierher.
+                    f_grund = f_klein = f_item = f_fett = _schrift67
                     beim_zeigen = {}
                     bergbau_suche = ''
 
