@@ -7054,78 +7054,57 @@ def main():
     from scbp import hauptfenster as _hf87
     from scbp import pfade as _pf87
 
-    _wurzel87 = _wurzel()
+    # ⚠⚠ **Geprueft wird die RECHNUNG, nicht das gezeichnete Fenster.** Die
+    # erste Fassung mass `winfo_width()` an einem echten Fenster — und fiel auf
+    # beiden Bau-Rechnern durch, obwohl der Code stimmte: Ein verstecktes
+    # Fenster meldet dort keine brauchbaren Masse (dieselbe Falle wie bei den
+    # Pruefungen 59 und 60). Was zaehlt, ist ohnehin `gemerkte_groesse()`:
+    # Genau ihr Ergebnis setzt `Hauptfenster.__init__` als Startgroesse.
+    class _Schirm87:
+        """Ein Bildschirm bekannter Groesse — statt des echten."""
+
+        def __init__(self, breite, hoehe):
+            self._b, self._h = breite, hoehe
+
+        def winfo_screenwidth(self):
+            return self._b
+
+        def winfo_screenheight(self):
+            return self._h
+
+    _gross87 = _Schirm87(3840, 2160)
+    _klein87 = _Schirm87(1024, 768)          # kleiner als die Mindestgroesse!
+
     _pf87.einstellung_setzen(_hf87.GROESSE_SCHLUESSEL, None)
-    _f87 = _hf87.Hauptfenster(_wurzel87)
-    for _ in range(6):
-        _wurzel87.update()
-        _wurzel87.update_idletasks()
-    pruefe((_f87.root.winfo_width(), _f87.root.winfo_height())
-           == (_hf87.MIN_BREITE, _hf87.MIN_HOEHE),
-           'ohne gemerkte Groesse kommt das Fenster in Mindestgroesse')
+    pruefe(_hf87.gemerkte_groesse(_gross87) == (_hf87.MIN_BREITE, _hf87.MIN_HOEHE),
+           'ohne gemerkte Groesse gilt die Mindestgroesse')
 
     _b87, _h87 = _hf87.MIN_BREITE + 240, _hf87.MIN_HOEHE + 300
-    _f87.root.geometry('%dx%d' % (_b87, _h87))
-    for _ in range(8):
-        _wurzel87.update()
-        _wurzel87.update_idletasks()
-    _f87._groesse_merken()
-    pruefe(_pf87.einstellung(_hf87.GROESSE_SCHLUESSEL) == '%dx%d' % (_b87, _h87),
-           'groesser gezogen wird gemerkt')
-    _f87.root.destroy()
+    _pf87.einstellung_setzen(_hf87.GROESSE_SCHLUESSEL, '%dx%d' % (_b87, _h87))
+    pruefe(_hf87.gemerkte_groesse(_gross87) == (_b87, _h87),
+           'eine gemerkte Groesse wird unveraendert zurueckgegeben')
 
-    _f87b = _hf87.Hauptfenster(_wurzel87)
-    for _ in range(6):
-        _wurzel87.update()
-        _wurzel87.update_idletasks()
-    pruefe((_f87b.root.winfo_width(), _f87b.root.winfo_height()) == (_b87, _h87),
-           'und beim naechsten Start wieder eingestellt')
-    pruefe(tuple(_f87b.root.minsize()) == (_hf87.MIN_BREITE, _hf87.MIN_HOEHE),
-           'die Mindestgroesse bleibt dabei unveraendert')
-    _f87b.root.destroy()
-
-    # ⚠ Ein unbrauchbarer Eintrag darf das Fenster nicht verkruemeln.
-    for _muell87 in ('', 'kaputt', '0x0', '12x9', '-100x-100'):
+    # Unbrauchbares faellt zurueck — sonst verkruemelt ein kaputter Eintrag das
+    # Fenster unter seine eigene Mindestgroesse.
+    for _muell87 in ('', 'kaputt', '0x0', '12x9', '-100x-100', '1160', 'axb'):
         _pf87.einstellung_setzen(_hf87.GROESSE_SCHLUESSEL, _muell87)
-        if _hf87.gemerkte_groesse(_wurzel87) != (_hf87.MIN_BREITE, _hf87.MIN_HOEHE):
+        if _hf87.gemerkte_groesse(_gross87) != (_hf87.MIN_BREITE, _hf87.MIN_HOEHE):
             pruefe(False, 'unbrauchbarer Eintrag %r faellt nicht zurueck' % _muell87)
             break
     else:
         pruefe(True, 'unbrauchbare Eintraege fallen auf die Mindestgroesse zurueck')
 
-    # ⚠ Und eine Groesse vom grossen Schirm darf am Laptop nicht ueberstehen.
-    _pf87.einstellung_setzen(_hf87.GROESSE_SCHLUESSEL, '99999x99999')
-    _bg87, _hg87 = _hf87.gemerkte_groesse(_wurzel87)
-    # ⚠ `max(..., MIN_*)`: Auf einem Bildschirm, der kleiner ist als die
-    # Mindestgroesse (Bau-Rechner!), darf die Deckelung sie nicht unterbieten.
-    pruefe(_bg87 <= max(_wurzel87.winfo_screenwidth(), _hf87.MIN_BREITE)
-           and _hg87 <= max(_wurzel87.winfo_screenheight(), _hf87.MIN_HOEHE),
+    # Eine Groesse vom grossen Schirm darf am kleinen nicht ueberstehen …
+    _pf87.einstellung_setzen(_hf87.GROESSE_SCHLUESSEL, '3000x1800')
+    _bg87, _hg87 = _hf87.gemerkte_groesse(_klein87)
+    pruefe(_bg87 <= max(1024, _hf87.MIN_BREITE) and _hg87 <= max(768, _hf87.MIN_HOEHE),
            'eine Groesse groesser als der Bildschirm wird gedeckelt')
 
-    # Die Lage gehoert NICHT dazu — sonst startet das Fenster auf einem
-    # Rechner mit einem Bildschirm ausserhalb des Bildes.
-    _q87 = open(os.path.join(WURZEL, 'scbp', 'hauptfenster.py'),
-                encoding='utf-8').read()
-    pruefe('bildschirm.mittig(self.root, _b_start, _h_start)' in _q87,
-           'das Fenster geht weiter mittig auf, nur eben in der eigenen Groesse')
-
-    # ⚠⚠ **Ein Bildschirm KLEINER als die Mindestgroesse.** Genau daran ist der
-    # Bau-Lauf von v3.4.2 gescheitert: Der Windows-Rechner dort hat einen
-    # kleineren Schirm als jeder echte Nutzer, und die Deckelung auf die
-    # Bildschirmgroesse unterbot dadurch die Mindestgroesse — heraus kam
-    # 1024x768, obwohl `minsize` 1160x380 verlangt.
-    #
-    # Nachgestellt statt gehofft: ein Stellvertreter, der einen kleinen Schirm
-    # meldet. Auf dem echten Bildschirm des Entwicklers greift der Fall nie.
-    class _KleinerSchirm87:
-        def winfo_screenwidth(self):
-            return 1024
-
-        def winfo_screenheight(self):
-            return 768
-
-    _klein87 = _KleinerSchirm87()
-    for _eintrag87 in (None, '', '1800x1200', 'kaputt'):
+    # ⚠⚠ … und die Deckelung darf die Mindestgroesse NICHT unterbieten. Genau
+    # daran ist der erste Bau-Lauf von v3.4.2 gescheitert: Der Bau-Rechner hat
+    # einen kleineren Schirm als jeder echte Nutzer, heraus kam 1024x768 —
+    # unterhalb des eigenen `minsize` von 1160x380.
+    for _eintrag87 in (None, '', '3000x1800', 'kaputt'):
         _pf87.einstellung_setzen(_hf87.GROESSE_SCHLUESSEL, _eintrag87)
         _bk87, _hk87 = _hf87.gemerkte_groesse(_klein87)
         if _bk87 < _hf87.MIN_BREITE or _hk87 < _hf87.MIN_HOEHE:
@@ -7136,11 +7115,21 @@ def main():
         pruefe(True, 'auf einem Schirm kleiner als die Mindestgroesse gewinnt '
                      'trotzdem die Mindestgroesse')
 
+    # Und der Weg von der Rechnung ins Fenster muss auch gegangen werden.
+    _q87 = open(os.path.join(WURZEL, 'scbp', 'hauptfenster.py'),
+                encoding='utf-8').read()
+    pruefe('_b_start, _h_start = gemerkte_groesse(self.root)' in _q87
+           and 'bildschirm.mittig(self.root, _b_start, _h_start)' in _q87,
+           'der Start benutzt die gemerkte Groesse — und bleibt mittig')
+    pruefe('self.root.minsize(MIN_BREITE, MIN_HOEHE)' in _q87,
+           'die Mindestgroesse wird unveraendert gesetzt')
+    pruefe("self.root.bind('<Configure>', self._groesse_beobachten" in _q87
+           and 'after_cancel' in _q87,
+           'Groessenaenderungen werden verfolgt und gedrosselt gespeichert')
+    pruefe("self.root.state() != 'normal'" in _q87,
+           'im maximierten Zustand wird nichts gemerkt')
+
     _pf87.einstellung_setzen(_hf87.GROESSE_SCHLUESSEL, None)
-    try:
-        _wurzel87.destroy()
-    except Exception:
-        pass
 
     print()
     if fehler:
