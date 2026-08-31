@@ -288,8 +288,47 @@ def offene_aus_text(text, muster_an=None, muster_aus=None):
             continue
         if ist_annahme:
             offen.setdefault(rein, titel)
+        elif rein in offen:
+            del offen[rein]
         else:
-            offen.pop(rein, None)
+            # ⚠⚠ **Ein Ende, das zu keinem offenen Auftrag passt, wirft alles
+            # um.** Das ist kein Notnagel, sondern die einzige ehrliche Antwort
+            # — und der Grund steht im Spiel selbst:
+            #
+            # **Beim Zurückziehen meldet Star Citizen nicht den Auftrag,
+            # sondern das gerade aktive Ziel.** Angenommen wird „Secure Our
+            # Airspace", zurückgezogen wird „der Außenbereich eines
+            # Asteroidenstützpunkts aufsuchen und Target finden". Über 152
+            # Protokolle gemessen (31.08.2026): von 112 Rücknahmen tragen
+            # **2** einen Titel, der auch als Annahme vorkommt.
+            #
+            # Damit lief der Auftrag hier ewig weiter: Der Watcher fand nichts
+            # zum Streichen, und weil er beim Start die laufende `Game.log`
+            # durchgeht, stand der abgebrochene Auftrag nach **jedem** Start
+            # wieder da. Gemeldet von Morkhan (KRT) am 31.08.2026.
+            #
+            # ⚠ **Warum nicht raten, welcher gemeint war?** Weil es nicht
+            # aufgeht. Gemessen an denselben Protokollen war bei einem nicht
+            # zuzuordnenden Ende nur in 36 von 172 Fällen genau **ein** Auftrag
+            # offen; meist waren es drei bis acht. „Den zuletzt angenommenen
+            # streichen" läge also oft daneben — dann verschwände ein Auftrag,
+            # den man noch hat, und der abgebrochene bliebe stehen. Auch die
+            # Missions-Kennung hilft nicht: Beim Ende steht sie im Log
+            # (`EndMission MissionId[…]`), bei der Annahme in 26 von 28 Fällen
+            # nicht.
+            #
+            # Also: Ab hier stimmt die Buchführung nicht mehr, und was davor
+            # gezählt wurde, ist wertlos. Alles Spätere zählt wieder normal —
+            # der nächste angenommene Auftrag steht sofort wieder da. Das
+            # kostet in seltenen Fällen eine Zeile, die noch gestimmt hätte;
+            # dafür steht nie etwas da, das erledigt ist. **Lieber nichts
+            # zeigen als etwas Falsches behaupten** — dieselbe Linie wie
+            # überall sonst im Werkzeug.
+            #
+            # Wirkung, an allen 152 Protokollen nachgerechnet: von 174
+            # scheinbar offenen Auftraegen bleiben 105 — 40 % weniger, ohne
+            # eine einzige geratene Zuordnung.
+            offen.clear()
     return list(offen.values())
 
 

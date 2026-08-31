@@ -1050,15 +1050,19 @@ TEXTE = {
                               'beim Herstellen zieht das Werkzeug die Zutaten ab.',
                               '**Your own resource stock** — enter it instead of doing the'
                               'maths; crafting deducts the ingredients for you.'),
-    's_dk_morkhan_idee':     ('**Angaben am Gegenstand im Spiel**, **Star Citizen aus dem'
-                              'Werkzeug starten** — und seit v3.4.0 der **Verkaufs-Reiter**.',
-                              '**Item details in game**, **launching Star Citizen from the'
-                              'tool** — and since v3.4.0 the **selling tab**.'),
-    's_dk_morkhan_bugs':     ('Dazu über zwanzig Funde, darunter 797 Baupläne, die niemand zu'
-                              'sehen bekam, und ein Fenster, das nicht mehr auf den'
-                              'Bildschirm passte.',
-                              'Plus more than twenty finds, among them 797 blueprints nobody'
-                              'ever got to see, and a window that no longer fit the screen.'),
+    's_dk_morkhan_idee':     ('**Angaben am Gegenstand im Spiel**, **Star Citizen aus '
+                              'dem Werkzeug starten** — und seit v3.4.0 der '
+                              '**Verkaufs-Reiter**.',
+                              '**Item details in game**, **launching Star Citizen from '
+                              'the tool** — and since v3.4.0 the **selling tab**.'),
+    's_dk_morkhan_bugs':     ('Dazu über zwanzig Funde, darunter 797 Baupläne, die '
+                              'niemand zu sehen bekam, ein Fenster, das nicht mehr auf '
+                              'den Bildschirm passte, und der abgebrochene Auftrag, der '
+                              'nach jedem Start wieder dastand.',
+                              'Plus more than twenty finds, among them 797 blueprints '
+                              'nobody ever got to see, a window that no longer fit the '
+                              'screen, and the withdrawn contract that came back after '
+                              'every start.'),
     's_dk_marken':     ('SC BP Watcher ist ein eigenständiges, inoffizielles '
                         'Zusatzwerkzeug und steht in keiner offiziellen Verbindung '
                         'zum SC Deutsch Launcher oder zu Cloud Imperium Games. Alle '

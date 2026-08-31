@@ -6,6 +6,40 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.4.4 - unreleased
+
+### Fixed
+
+- ⭐⭐ **A withdrawn contract came back after every start.** Withdraw a contract,
+  and the tool showed it as running again on the next start — and the one after
+  that.
+
+  The reason is in the game: **when you withdraw, Star Citizen reports the
+  active objective, not the contract.** You accept "Secure Our Airspace", you
+  withdraw "reach the outer area of an asteroid base and find target". Measured
+  across 152 logs: of 112 withdrawals, exactly **two** carry a title that also
+  appears as an acceptance. So the watcher found nothing to strike out.
+
+  An ending that cannot be matched to an open contract now clears the list. The
+  next accepted contract shows up again immediately.
+
+  ⚠ **Deliberately not guessed.** The obvious move would be to strike the most
+  recently accepted contract — but the numbers do not support it: with an
+  unmatched ending, only 36 of 172 cases had exactly one contract open, mostly
+  it was three to eight. That would drop a contract you still have and keep the
+  withdrawn one. The mission id does not help either: it is in the log at the
+  end, but not at acceptance in 26 of 28 cases. Better one line short than one
+  line wrong.
+
+  Reported by **Morkhan (KRT)**.
+
+- **Two missing spaces on the credits page.** It read "launching Star Citizen
+  from thetool" and "797 blueprints nobodyever got to see".
+
+### Thanks
+
+- **Morkhan (KRT)** — for the withdrawn contract that would not go away.
+
 ## v3.4.3 - 2026-08-31
 
 The cargo hold shows its table again. In v3.4.2 the page only built the form —

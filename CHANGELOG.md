@@ -6,6 +6,42 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.4.4 - unveröffentlicht
+
+### Behoben
+
+- ⭐⭐ **Ein zurückgezogener Auftrag stand nach jedem Start wieder da.** Wer
+  einen Auftrag abbricht, bekam ihn beim nächsten Start des Werkzeugs erneut
+  als laufend angezeigt — und beim übernächsten wieder.
+
+  Der Grund liegt im Spiel: **Beim Zurückziehen meldet Star Citizen nicht den
+  Auftrag, sondern das gerade aktive Ziel.** Angenommen wird „Secure Our
+  Airspace", zurückgezogen wird „der Außenbereich eines Asteroidenstützpunkts
+  aufsuchen und Target finden". Über 152 Protokolle nachgemessen: von 112
+  Rücknahmen tragen **genau zwei** einen Titel, der auch als Annahme vorkommt.
+  Der Watcher fand also nichts zum Streichen.
+
+  Ein Ende, das sich keinem offenen Auftrag zuordnen lässt, räumt die Liste
+  jetzt leer. Der nächste angenommene Auftrag steht sofort wieder da.
+
+  ⚠ **Bewusst nicht geraten.** Naheliegend wäre, einfach den zuletzt
+  angenommenen Auftrag zu streichen — das geht aber nicht auf: Bei einem nicht
+  zuzuordnenden Ende war nur in 36 von 172 Fällen überhaupt genau ein Auftrag
+  offen, meist waren es drei bis acht. Dann verschwände ein Auftrag, den du
+  noch hast, und der abgebrochene bliebe stehen. Auch die Missions-Kennung
+  hilft nicht: Beim Ende steht sie im Protokoll, bei der Annahme in 26 von 28
+  Fällen nicht. Lieber eine Zeile zu wenig als eine falsche.
+
+  Gemeldet von **Morkhan (KRT)**.
+
+- **Zwei fehlende Leerzeichen auf der Danke-Seite.** Dort stand „Star Citizen
+  aus demWerkzeug starten" und „797 Baupläne, die niemand zusehen bekam".
+
+### Dank
+
+- **Morkhan (KRT)** — für den zurückgezogenen Auftrag, der nicht verschwinden
+  wollte.
+
 ## v3.4.3 - 2026-08-31
 
 Das Handelslager zeigt seine Tabelle wieder. In v3.4.2 baute die Seite nur das

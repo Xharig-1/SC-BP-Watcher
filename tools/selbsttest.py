@@ -7174,6 +7174,44 @@ def main():
            'kein lokaler Funktionsname wird ueberschrieben%s'
            % ('' if not _doppelte88 else ' — ' + '; '.join(_doppelte88[:3])))
 
+    # 89. Ein abgebrochener Auftrag verschwindet auch wirklich
+    #
+    # ⚠⚠ **Beim Zurückziehen meldet das Spiel das ZIEL, nicht den Auftrag.**
+    # Angenommen wird „Secure Our Airspace", zurueckgezogen wird „der
+    # Aussenbereich eines Asteroidenstuetzpunkts aufsuchen". Ueber 152
+    # Protokolle gemessen: von 112 Ruecknahmen passen **2** zum Annahmetitel.
+    # Der Auftrag lief deshalb ewig weiter und stand nach jedem Start des
+    # Werkzeugs wieder da. Gemeldet von Morkhan (KRT) am 31.08.2026.
+    print()
+    print('89. Ein abgebrochener Auftrag verschwindet auch wirklich')
+    from scbp import auftraege as _au89
+
+    _an89 = 'Added notification "Auftrag angenommen: Secure Our Airspace: " [1] to queue.\n'
+    _ziel89 = 'Added notification "Neuer Auftrag: Asteroidenstützpunkt aufsuchen: " [2] to queue.\n'
+    _weg89 = ('Added notification "Auftrag zurückgezogen: Asteroidenstützpunkt '
+              'aufsuchen: " [3] to queue.\n')
+    _fertig89 = 'Added notification "Auftrag abgeschlossen: Secure Our Airspace: " [4] to queue.\n'
+    _neu89 = 'Added notification "Auftrag angenommen: Kill the king: " [5] to queue.\n'
+
+    pruefe(_au89.offene_aus_text(_an89 + _ziel89 + _weg89) == [],
+           'nach dem Zurueckziehen ist nichts mehr offen')
+    pruefe(len(_au89.offene_aus_text(_an89)) == 1,
+           'ein laufender Auftrag bleibt aber stehen')
+    pruefe(_au89.offene_aus_text(_an89 + _fertig89) == [],
+           'ein sauber abgeschlossener verschwindet weiterhin')
+
+    # ⭐ **Danach zaehlt wieder normal.** Sonst waere das Werkzeug nach dem
+    # ersten Abbruch bis zum Spielneustart blind.
+    _danach89 = _au89.offene_aus_text(_an89 + _ziel89 + _weg89 + _neu89)
+    pruefe(len(_danach89) == 1 and 'Kill the king' in _danach89[0],
+           'der naechste angenommene Auftrag steht sofort wieder da')
+
+    # ⚠ Und der Abbruch raeumt bewusst ALLES weg, statt zu raten, welcher
+    # gemeint war: Bei einem nicht zuzuordnenden Ende waren nur in 36 von 172
+    # Faellen ueberhaupt genau ein Auftrag offen.
+    pruefe(_au89.offene_aus_text(_an89 + _neu89 + _weg89) == [],
+           'bei mehreren offenen wird nicht geraten, sondern geraeumt')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
