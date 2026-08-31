@@ -7485,6 +7485,66 @@ def main():
     pruefe(len(_texte91(_ov92, '3')) >= 1,
            'und der Rest wird gezaehlt, nicht verschwiegen')
 
+
+    # 93. „Bestand zurücksetzen" sagt immer, was passiert ist
+    #
+    # ⚠⚠ **Am 31.08.2026 aus einem Nutzerbericht** (Linux, CachyOS, v3.4.2,
+    # „Inventory 0 blueprints"):
+    #
+    #     seiten.bestand.zuruecksetzen
+    #     FileNotFoundError: .../Bauplaene/bestand.json
+    #
+    # Wer noch keinen einzigen Bauplan hat, hat auch keine Bestandsdatei. Das
+    # `os.remove` warf, der Fehler ging still in die Diagnose — und auf dem
+    # Bildschirm passierte nach dem roten Knopf und der Warnfrage **nichts**.
+    # Kein Haken, keine Meldung. Von einem kaputten Knopf nicht zu
+    # unterscheiden, obwohl der Zustand genau der gewünschte war.
+    #
+    # ⚠ **Geprüft wird das Modul, nicht die Oberfläche.** Genau dafür ist die
+    # Entscheidung aus `seiten.py` herausgezogen worden: So läuft die Prüfung
+    # ohne Fenster — auf jedem System und im Bau-Lauf.
+    print()
+    print('93. „Bestand zuruecksetzen" sagt immer, was passiert ist')
+    from scbp import bestand as _bd93, pfade as _pf93
+
+    _datei93 = _pf93.app_datei('bestand.json')
+    _bd93.speichern({'bauplaene': {'xl-1': {'name': 'XL-1'}}})
+    pruefe(os.path.exists(_datei93), 'ein Bestand liegt da')
+
+    pruefe(_bd93.zuruecksetzen() is None, 'das Zuruecksetzen meldet Erfolg')
+    pruefe(not os.path.exists(_datei93), 'und die Datei ist weg')
+
+    # ⭐ Der gemeldete Fall: noch einmal, jetzt ohne Datei.
+    pruefe(_bd93.zuruecksetzen() is None,
+           'ein zweites Mal ist ebenfalls Erfolg — „war schon weg" ist weg')
+
+    # Und der Bestand liest sich danach als leer, faellt also NICHT auf die
+    # Vorgaengerfassung zurueck. Sonst waere das Zuruecksetzen wirkungslos.
+    pruefe(_bd93.laden().get('bauplaene') == {},
+           'danach ist der Bestand wirklich leer')
+
+    # ⚠ Eine echte Stoerung muss dagegen zurueckkommen — sonst schluckt der
+    # Knopf ein „keine Rechte" und behauptet Erfolg.
+    _echt93 = os.remove
+    os.remove = _machs93 = lambda *_a, **_k: (_ for _ in ()).throw(
+        PermissionError(13, 'kein Zugriff'))
+    try:
+        _stoerung93 = _bd93.zuruecksetzen()
+    finally:
+        os.remove = _echt93
+    pruefe(isinstance(_stoerung93, OSError)
+           and not isinstance(_stoerung93, FileNotFoundError),
+           'eine echte Stoerung kommt zurueck statt verschluckt zu werden')
+
+    # Und die Oberflaeche muss sie auch ZEIGEN, nicht nur wegschreiben.
+    _q93 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                encoding='utf-8').read()
+    _ab93 = _q93.split('def zuruecksetzen():')[-1].split('_knopf(')[0]
+    pruefe(_ab93.count('fenster.sagen') == 2,
+           'beide Ausgaenge melden sich beim Nutzer')
+    pruefe("t('s_be_reset_fehler'" in _ab93,
+           'und der Fehlschlag hat einen eigenen Text')
+
     try:
         _ov92.root.destroy()
         _wz92.destroy()

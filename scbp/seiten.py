@@ -1754,16 +1754,20 @@ def _bestand(fenster, rahmen):
     ziel = _feld(fenster, innen, t('s_be_reset'), t('s_be_reset_h'))
 
     def zuruecksetzen():
-        from . import pfade
         from .hauptfenster import frage_stellen
         if not frage_stellen(fenster.root, t('s_be_reset'),
                              t('s_be_reset_frage')):
             return
-        try:
-            os.remove(pfade.app_datei('bestand.json'))
-            fenster.sagen(t('s_be_reset_ok'))
-        except OSError as ausnahme:
-            fehler.merken('seiten.bestand.zuruecksetzen', ausnahme)
+        # ⚠⚠ **Jeder Ausgang sagt etwas.** Ein Knopf, der nach der
+        # Warnfrage schweigt, ist von einem kaputten nicht zu unterscheiden.
+        # Was „geschafft" heisst, entscheidet `bestand.zuruecksetzen()` — dort
+        # steht auch, warum „war schon weg" dazugehoert.
+        stoerung = bestand_datei.zuruecksetzen()
+        if stoerung is not None:
+            fehler.merken('seiten.bestand.zuruecksetzen', stoerung)
+            fenster.sagen(t('s_be_reset_fehler', stoerung))
+            return
+        fenster.sagen(t('s_be_reset_ok'))
 
     _knopf(fenster, ziel, t('s_zuruecksetzen'), zuruecksetzen, gefahr=True).pack()
 

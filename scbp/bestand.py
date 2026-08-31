@@ -157,6 +157,36 @@ def laden():
     return daten
 
 
+def zuruecksetzen():
+    """Den Bauplan-Bestand von der Platte nehmen.
+
+    Rückgabe: `None`, wenn danach keine Bestandsdatei mehr da ist — **auch
+    dann, wenn vorher schon keine da war**. Sonst die Störung, die im Weg
+    stand (keine Rechte, Datei gesperrt).
+
+    ⚠⚠ **„War schon weg" ist Erfolg, kein Fehler.** Bis v3.5.0 lag das
+    `os.remove` unmittelbar in der Oberfläche, und ein `FileNotFoundError`
+    landete still in der Diagnose: Der Nutzer drückte den roten Knopf,
+    bestätigte die Warnfrage — und dann passierte **nichts**. Kein Haken,
+    keine Meldung. Das Werkzeug sah kaputt aus, obwohl der Zustand genau der
+    gewünschte war.
+
+    ⚠ Der Fall trifft nicht die Ausnahme, sondern den Anfänger: Wer noch
+    keinen einzigen Bauplan hat, hat auch keine Bestandsdatei. Am 31.08.2026
+    aus einem Nutzerbericht mit „Inventory 0 blueprints" (Linux, CachyOS).
+
+    ⚠ Hier und nicht in der Oberfläche, damit es sich prüfen lässt — ohne
+    Fenster, auf jedem System.
+    """
+    try:
+        os.remove(pfad())
+    except FileNotFoundError:
+        return None
+    except OSError as stoerung:
+        return stoerung
+    return None
+
+
 def speichern(daten):
     """Schreibt den Bestand — mit Vorgängerfassung und ohne Halbfertiges.
 

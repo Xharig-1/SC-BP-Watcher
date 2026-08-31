@@ -6,6 +6,38 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.5.1 - 2026-08-31
+
+"Reset inventory" did nothing at all for some people — and did not say why.
+From a bug report.
+
+### Fixed
+
+- ⭐ **The "Reset inventory" button stayed silent.** Red button, warning
+  confirmed — and then nothing happened. No tick, no message, no error.
+  Indistinguishable from a broken button.
+
+  Cause: the tool deleted the inventory file without allowing for the case that
+  **there is none**. The error went quietly into the diagnostics.
+
+  ⚠ That does not hit the edge case, it hits the beginning: **anyone without a
+  single blueprint has no inventory file either.** Exactly as in the report —
+  "Inventory 0 blueprints". And anyone who presses twice.
+
+  "Already gone" now counts as what it is: the desired result. The button
+  reports the same thing either way.
+
+- ⚠ **And when it really does fail, it says so on screen.** No permission, file
+  locked — that used to live in the diagnostics only, where it is found by
+  those who know it exists. The status line says it now.
+
+### Internal
+
+- **The decision moved out of the interface**: `bestand.zuruecksetzen()`
+  returns `None` when no inventory file remains afterwards, otherwise the
+  failure. That lets self-test 93 run **without a window** — on any system and
+  in the build run.
+
 ## v3.5.0 - 2026-08-31
 
 Every running contract now shows **what to do next**. And the contract itself no

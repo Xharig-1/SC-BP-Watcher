@@ -857,6 +857,12 @@ TEXTE = {
                           'Your blueprint inventory will be deleted and rebuilt from the logs you still have.\n\nAnything older than your logs will not come back. Continue?'),
     's_be_reset_ok':   ('Bestand zurückgesetzt — beim nächsten Start neu gelesen',
                           'Inventory reset — read afresh on the next start'),
+    # ⚠⚠ **Auch das Misslingen muss ANKOMMEN.** Bis 3.5.0 wurde ein
+    # Fehlschlag nur in die Diagnose geschrieben — der Nutzer druckte den roten
+    # Knopf, bestaetigte die Warnung und bekam danach: nichts. Kein Haken, kein
+    # Fehler. Am 31.08.2026 aus einem Nutzerbericht (Linux, CachyOS).
+    's_be_reset_fehler': ('Zurücksetzen ging nicht: %s',
+                          'Reset did not work: %s'),
     's_be_reset_warn': ('Zurücksetzen löscht deinen Bauplan-Stand.',
                           'Resetting deletes your blueprint inventory.'),
     's_be_reset_warn_h': ('Der Watcher liest ihn danach aus den noch vorhandenen Protokollen neu auf — was älter ist, ist weg. Vorher oben unter „Bestand ausgeben" sichern.',

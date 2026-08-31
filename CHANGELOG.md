@@ -6,6 +6,38 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.5.1 - 2026-08-31
+
+„Bestand zurücksetzen" tat bei manchen Leuten gar nichts — und sagte auch nicht,
+warum. Aus einem Fehlerbericht.
+
+### Behoben
+
+- ⭐ **Der Knopf „Bestand zurücksetzen" schwieg.** Roter Knopf, Warnfrage
+  bestätigt — und danach passierte nichts. Kein Haken, keine Meldung, kein
+  Fehler. Von einem kaputten Knopf war das nicht zu unterscheiden.
+
+  Ursache: Das Werkzeug löschte die Bestandsdatei, ohne den Fall zu bedenken,
+  dass **gar keine da ist**. Der Fehler ging still in die Diagnose.
+
+  ⚠ Das trifft nicht die Ausnahme, sondern den Anfang: **Wer noch keinen
+  einzigen Bauplan hat, hat auch keine Bestandsdatei.** Genauso im Bericht —
+  „Inventory 0 blueprints". Und jeden, der zweimal drückt.
+
+  Jetzt gilt „war schon weg" als das, was es ist: das gewünschte Ergebnis. Der
+  Knopf meldet in beiden Fällen dasselbe.
+
+- ⚠ **Und wenn es wirklich schiefgeht, steht es auf dem Bildschirm.** Keine
+  Rechte, Datei gesperrt — das stand bisher nur in der Diagnose, wo es nur
+  findet, wer weiß, dass es sie gibt. Jetzt sagt es die Fußzeile.
+
+### Intern
+
+- **Die Entscheidung ist aus der Oberfläche heraus**: `bestand.zuruecksetzen()`
+  gibt `None` zurück, wenn danach keine Bestandsdatei mehr da ist, sonst die
+  Störung. Damit lässt sich Selbsttest 93 **ohne Fenster** fahren — auf jedem
+  System und im Bau-Lauf.
+
 ## v3.5.0 - 2026-08-31
 
 Unter jedem laufenden Auftrag steht jetzt, **was gerade zu tun ist**. Und der
