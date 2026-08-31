@@ -8,6 +8,38 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ## v3.4.1 - unveröffentlicht
 
+### Neu
+
+- ⭐ **Das Handelslager lässt sich sichern, zurückholen und in einem Zug
+  leeren** — dieselben vier Griffe, die das Werkstatt-Lager schon hatte, an
+  derselben Stelle und mit denselben Worten: *Als Sicherung (.json)*, *Als
+  Tabelle (.csv)*, *Sicherung einlesen* und *Lager löschen* in Rot.
+
+  Der Grund ist derselbe wie drüben: Das Handelslager ist Handarbeit, die es
+  nirgends sonst zu holen gibt. Und nach einem Patch, der alle Ware
+  zurücksetzt, ist der Laderaum im Spiel leer — im Werkzeug aber noch voll.
+  Posten für Posten von Hand zu löschen macht niemand, also blieb ein falsches
+  Lager stehen und die Verkaufsrechnung log. Ein Klick räumt jetzt alles weg,
+  nach einer Rückfrage mit der Zahl der Posten.
+
+  Die Tabelle führt Ware, Menge, das Kennzeichen *gestohlen* und den Lagerort —
+  Semikolon und Komma, wie ein deutsches Tabellenprogramm es erwartet.
+
+  ⚠ **Die Sicherung des anderen Lagers wird abgelehnt.** Beide Dateien sehen
+  von aussen gleich aus; ohne diese Weiche hätte das Handelslager eine
+  Rohstoff-Sicherung klaglos angenommen, alles darin verworfen und ein
+  **leeres** Lager gespeichert — mit der Meldung „0 Posten eingelesen". Jetzt
+  steht stattdessen da, welche Sicherung wohin gehört.
+
+### Geändert
+
+- **Die Raffinerie-Ausbeute ist eingeklappt, bis man sie braucht.** Der Block
+  war der längste auf der Lager-Seite — Einheit, Lagerort, ein sieben Zeilen
+  hohes Tippfeld, Vorschau und Knopf. Wer nur schnell einen Posten von Hand
+  einträgt, rollte an alldem vorbei, und die eigene Lagerliste lag darunter
+  ausser Sicht. Ein Klick auf die Überschrift klappt ihn auf; die Lage wird
+  gemerkt, wer also nach jedem Raffinerie-Lauf abtippt, findet ihn offen vor.
+
 ### Behoben
 
 - **Beide Lager legen jetzt eine Vorgängerfassung an.** Werkstatt-Lager und
@@ -20,6 +52,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Dort wiegt es sogar schwerer als beim Bestand: Freigeschaltete Baupläne
   liessen sich aus der `Game.log` neu aufbauen, eingelagerte Ware nicht — das
   sind reine Handeingaben, die es nirgends sonst zu holen gibt.
+
+- **Die Oberflächenprüfung hat die halbe Anwendung nie aufgebaut.** In ihrer
+  Seitenliste fehlten sechs Seiten — die ganze Werkstatt (Herstellung, Bergbau,
+  Mein Lager) und der ganze Handel (Verkauf, Handelslager). Sie meldete
+  trotzdem zuverlässig „kein deutscher Text in der englischen Oberfläche".
+  Jetzt besucht sie alle achtzehn und schlägt selbst an, wenn eine neue Seite
+  dazukommt, ohne eingetragen zu werden.
 
 ### Geändert
 

@@ -8,6 +8,38 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ## v3.4.1 - unreleased
 
+### Added
+
+- ⭐ **The trade storage can now be backed up, restored and cleared in one go** —
+  the same four controls the workshop storage already had, in the same place
+  and with the same words: *As backup (.json)*, *As spreadsheet (.csv)*, *Load
+  backup* and *Clear stock* in red.
+
+  The reason is the same as over there: the trade storage is hand-typed work
+  that exists nowhere else. And after a patch that wipes all cargo, the hold is
+  empty in the game but still full in the tool. Nobody deletes entries one by
+  one, so a wrong storage stayed put and the selling maths lied. One click now
+  clears it, after a confirmation that names the number of entries.
+
+  The spreadsheet lists commodity, amount, the *stolen* mark and the storage
+  location — semicolon and comma, the way a German spreadsheet program expects
+  them.
+
+  ⚠ **A backup from the other storage is rejected.** Both files look the same
+  from the outside; without this check the trade storage would have accepted a
+  workshop backup happily, discarded everything in it and saved an **empty**
+  storage — reporting “0 entries loaded”. It now says which backup belongs
+  where instead.
+
+### Changed
+
+- **The refinery yield is collapsed until you need it.** It was the longest
+  block on the storage page — unit, location, a seven-line typing field,
+  preview and button. Anyone just adding a single entry by hand scrolled past
+  all of it, with their own storage list out of sight below. One click on the
+  heading opens it; the state is remembered, so whoever types up every refinery
+  run finds it open.
+
 ### Fixed
 
 - **Both storages now keep a previous version.** The workshop storage and the
@@ -20,6 +52,12 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   It matters more here than for the inventory: unlocked blueprints can be
   rebuilt from `Game.log`, stored cargo cannot — those are hand-typed entries
   that exist nowhere else.
+
+- **The interface check never built half the application.** Six pages were
+  missing from its page list — the entire workshop (crafting, mining, my stock)
+  and the entire trade section (selling, trade storage). It still reported
+  “no German text in the English interface” every time. It now visits all
+  eighteen and flags a new page that gets added without being listed.
 
 ### Changed
 

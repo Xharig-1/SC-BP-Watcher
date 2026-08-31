@@ -6954,6 +6954,93 @@ def main():
     except Exception:
         pass
 
+    # 86. Beide Lager lassen sich sichern und zurueckholen
+    #
+    # ⚠⚠ **Der teure Fall ist die verwechselte Datei.** Werkstatt-Lager und
+    # Handelslager schreiben beide `{"format": 1, "posten": [...]}` — an der
+    # Huelle sind sie nicht zu unterscheiden. Ohne Weiche haette das
+    # Handelslager eine Rohstoff-Sicherung klaglos angenommen, jeden Posten
+    # mangels `ware` weggeworfen und mit „0 Posten eingelesen" ein LEERES
+    # Lager gespeichert. Ein Lager ist Handarbeit, die kein Neuaufbau
+    # zurueckholt.
+    #
+    # Die Prueflinge legt sich diese Pruefung selbst hin — keine Nutzerdatei,
+    # kein Abruf.
+    print()
+    print('86. Beide Lager: sichern, zurueckholen, leeren')
+    from scbp import handelslager as _hl86, rohstoffe as _rs86
+
+    _hl86.leeren()
+    _hl86.eintragen('Gold', '500', 'Orison', False)
+    _hl86.eintragen('Gold', '100', 'Orison', False)
+    _hl86.eintragen('Laranite', '12,5', 'Area18', True)
+
+    _csv86 = _hl86.als_csv()
+    pruefe(_csv86.startswith('Ware;Menge;Gestohlen;Lagerort'),
+           'die Tabelle hat eine Kopfzeile')
+    pruefe('Gold;600;;Orison' in _csv86,
+           'gleiche Stapel stehen zusammengezaehlt darin')
+    # ⚠ Komma als Dezimalzeichen: Mit Punkt macht ein deutsches Excel aus
+    # „12.5" ein Datum.
+    pruefe('Laranite;12,5;ja;Area18' in _csv86,
+           'Menge mit Komma, gestohlene Ware als „ja" gekennzeichnet')
+
+    pruefe(_hl86.aus_json(_hl86.als_json()) == _hl86.laden(),
+           'was ausgegeben wurde, kommt unveraendert zurueck')
+
+    # Der Kernfall: die Sicherung des ANDEREN Lagers.
+    _fremd86 = _rs86.als_json([{'material': 'Iron', 'menge': 5,
+                                'qualitaet': 800, 'ort': 'Daymar'}])
+    pruefe(_hl86.aus_json(_fremd86) is None,
+           'eine Werkstatt-Sicherung wird im Handelslager ABGELEHNT')
+    # Gegenprobe zur Gegenprobe — ohne die Weiche waere das Ergebnis leer
+    # gewesen, und genau das ist der Datenverlust.
+    import json as _json86
+    pruefe(not any(_p.get('ware') for _p
+                   in _json86.loads(_fremd86)['posten']),
+           'sie haette sonst ein leeres Lager ergeben')
+    pruefe(_rs86.aus_json(_hl86.als_json()) == [],
+           'und umgekehrt bringt eine Handels-Sicherung dem Werkstatt-Lager '
+           'nichts')
+
+    pruefe(_hl86.aus_json('kein json') is None
+           and _hl86.aus_json('{"format": 9, "posten": []}') is None,
+           'kaputte und fremde Formate werden abgelehnt')
+    pruefe(_hl86.aus_json('{"format": 1, "posten": []}') == [],
+           'ein leeres Lager ist aber erlaubt')
+    pruefe(_hl86.aus_json('{"format": 1, "posten": [{"ware": "Tin", '
+                          '"menge": "viel"}, {"ware": "Gold", "menge": 5}]}')
+           == [{'ware': 'Gold', 'menge': 5.0, 'ort': '', 'gestohlen': False}],
+           'unbrauchbare Zeilen fallen raus, der Rest bleibt')
+
+    _anzahl86 = len(_hl86.laden())
+    _hl86.leeren()
+    pruefe(_anzahl86 == 2 and _hl86.laden() == [],
+           'nach einem Patch-Wisch raeumt „leeren" alles in einem Zug weg')
+
+    # Und die Oberflaeche muss die Griffe auch anbieten — beide Lager
+    # dieselben, in derselben Reihenfolge.
+    _q86 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                encoding='utf-8').read()
+    _hlblock86 = _q86.split('def _handelslager(')[-1].split('\ndef ')[0]
+    for _schluessel86 in ("s_lg_aus_json", "s_lg_aus_csv", "s_lg_einlesen",
+                          "s_lg_leeren"):
+        pruefe("t('%s')" % _schluessel86 in _hlblock86,
+               'das Handelslager hat den Knopf %s' % _schluessel86)
+    pruefe('gefahr=True' in _hlblock86,
+           'und „Lager loeschen" steht in Rot')
+    pruefe("frage_stellen(" in _hlblock86,
+           'das Leeren fragt vorher nach')
+
+    # Der Raffinerie-Block ist einklappbar — und merkt sich die Lage.
+    _raffblock86 = _q86.split('def _raffinerie_block(')[-1].split('\ndef ')[0]
+    pruefe("symbol_tauschen('zuklappen')" in _raffblock86
+           and "symbol_tauschen('aufklappen')" in _raffblock86,
+           'die Raffinerie-Ausbeute laesst sich ein- und ausklappen')
+    pruefe(_raffblock86.count("einstellung_setzen('lager_raffinerie_offen'") >= 2
+           and "einstellung('lager_raffinerie_offen')" in _raffblock86,
+           'und die Lage ueberlebt den Neustart — in BEIDE Richtungen')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

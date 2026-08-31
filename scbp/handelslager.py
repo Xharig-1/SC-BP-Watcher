@@ -113,6 +113,93 @@ def sichern(posten):
         return False
 
 
+def als_csv(posten=None):
+    """Das Handelslager als Tabelle — Ware, Menge, Kennzeichen, Lagerort.
+
+    Warum CSV und nicht nur JSON: Eine Tabelle oeffnet sich in jedem
+    Tabellenprogramm und laesst sich weiterreichen — etwa an den, der den
+    Handelsflug fliegt. Das eigene JSON ist zum Zuruecklesen da, die Tabelle
+    zum Ansehen und Teilen.
+
+    Semikolon als Trenner und Komma als Dezimalzeichen — so erwartet es ein
+    deutsches Excel/LibreOffice. Mit Punkt und Komma-Trenner landet "1,36"
+    dort als Datum oder in einer Spalte zu viel. Dieselbe Wahl wie im
+    Werkstatt-Lager (`rohstoffe.als_csv`); zwei Lager, die sich beim Ausgeben
+    unterschiedlich verhalten, waeren nur eine Falle.
+
+    Die Spalte "Gestohlen" steht als `ja`/leer da statt als `True`/`False`:
+    In einer Tabelle liest das jeder, und es uebersetzt sich nicht falsch.
+    """
+    posten = laden() if posten is None else posten
+    zeilen = ['Ware;Menge;Gestohlen;Lagerort']
+    for p in posten:
+        menge = ('%g' % float(p.get('menge') or 0)).replace('.', ',')
+        zeilen.append(';'.join((
+            (p.get('ware') or '').replace(';', ','),
+            menge,
+            'ja' if p.get('gestohlen') else '',
+            (p.get('ort') or '').replace(';', ','))))
+    return '\n'.join(zeilen) + '\n'
+
+
+def als_json(posten=None):
+    """Das Handelslager als JSON-Text — dasselbe Format, das `laden()` liest.
+
+    Damit ist die Ausgabe zugleich eine Sicherung: Datei wegschreiben, spaeter
+    zuruckspielen, fertig.
+    """
+    posten = laden() if posten is None else posten
+    return json.dumps({'format': FORMAT, 'posten': posten},
+                      ensure_ascii=False, indent=1)
+
+
+def aus_json(text):
+    """Ein frueher ausgegebenes Handelslager wieder einlesen.
+
+    Gibt die Postenliste zurueck oder `None`, wenn die Datei nicht passt.
+
+    ⚠ Es wird **nichts** gespeichert — das entscheidet die Oberflaeche. Genau
+    wie bei `rohstoffe.aus_json`.
+
+    ⚠⚠ **Die Datei des anderen Lagers wird abgelehnt.** Beide sind
+    `{"format": 1, "posten": [...]}` — an der Huelle sind sie nicht zu
+    unterscheiden. Erkannt wird der Unterschied an den Posten selbst: Hier
+    heisst das Feld `ware`, im Werkstatt-Lager `material`. Ohne diese Probe
+    haette eine Rohstoff-Sicherung hier ein leeres Lager erzeugt (jeder Posten
+    ohne `ware` faellt raus) — und der Nutzer haette sein Handelslager gegen
+    Nichts getauscht, mit der Meldung "0 Posten eingelesen".
+    """
+    try:
+        daten = json.loads(text)
+    except Exception:
+        return None
+    if not isinstance(daten, dict) or daten.get('format') != FORMAT:
+        return None
+    posten = daten.get('posten')
+    if not isinstance(posten, list):
+        return None
+    # Eine nicht leere Liste, in der kein einziger Posten eine `ware` hat, ist
+    # keine Handelslager-Sicherung, sondern die des anderen Lagers.
+    if posten and not any(isinstance(p, dict) and str(p.get('ware') or '').strip()
+                          for p in posten):
+        return None
+    sauber = []
+    for p in posten:
+        if not isinstance(p, dict) or not str(p.get('ware') or '').strip():
+            continue
+        try:
+            menge = float(p.get('menge') or 0)
+        except (TypeError, ValueError):
+            continue
+        if menge <= 0:
+            continue
+        sauber.append({'ware': str(p.get('ware')).strip(),
+                       'menge': menge,
+                       'ort': str(p.get('ort') or '').strip(),
+                       'gestohlen': bool(p.get('gestohlen'))})
+    return sauber
+
+
 def gleicher_posten(a_ware, a_ort, a_gestohlen, b):
     """Sind das zwei Eintragungen für **denselben** Stapel?
 

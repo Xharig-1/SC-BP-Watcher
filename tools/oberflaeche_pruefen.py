@@ -53,9 +53,36 @@ os.environ.setdefault('SC_BP_NO_NET', '1')
 from scbp import sprache                                  # noqa: E402
 from scbp.hauptfenster import Hauptfenster                 # noqa: E402
 
+# ⚠⚠ **ALLE Seiten, die `scbp/seiten.py` kennt** — nicht nur die, die es beim
+# Bau dieser Pruefung schon gab. Bis 31.08.2026 fehlten hier sechs: die ganze
+# Werkstatt (`herstellung`, `bergbau`, `lager`) und der ganze Handel
+# (`verkauf`, `handelslager`). Die Pruefung meldete jahrelang "kein deutscher
+# Text in der englischen Oberflaeche" — und hatte die halbe Anwendung nie
+# aufgebaut. Eine Pruefung, die eine Seite nicht besucht, prueft sie nicht.
+#
+# Wer eine Seite dazubaut, traegt sie **hier mit ein**. `_alle_seiten_dabei()`
+# unten haelt das fest und schlaegt an, wenn eine fehlt.
 SEITEN = ('liste', 'fortschritt', 'allgemein', 'anzeige', 'spiel', 'bestand',
           'wasistneu', 'ueber', 'serverstatus', 'danke',
-          'ordner', 'erkennung', 'diagnose')
+          'ordner', 'erkennung', 'diagnose',
+          'herstellung', 'bergbau', 'lager', 'verkauf', 'handelslager')
+
+
+def _alle_seiten_dabei():
+    """Meldet Seiten, die es gibt, die hier aber nicht besucht werden.
+
+    Gelesen wird das Verzeichnis in `scbp/seiten.py` — die Zeilen der Form
+    `'kennung': _bauer,`. Kein Import, keine Oberflaeche: Es geht nur darum,
+    dass die Liste oben vollstaendig bleibt.
+    """
+    import re
+    quelle = io_lesen(os.path.join(HIER, 'scbp', 'seiten.py'))
+    # Der Block zwischen `bauer = {` und `}.get(kennung)`.
+    block = re.search(r"bauer = \{(.*?)\}\.get\(kennung\)", quelle, re.S)
+    if not block:
+        return []
+    kennungen = re.findall(r"'([a-z]+)':\s*_", block.group(1))
+    return [k for k in kennungen if k not in SEITEN]
 
 
 def _sollbestand():
@@ -143,6 +170,16 @@ def main():
     else:
         print('Symbolbilder: alle da.\n')
 
+    # ⚠ Erst fragen, ob ueberhaupt alles besucht wird — eine gruene Meldung
+    # ueber achtzehn Seiten ist wertlos, wenn es zwanzig gibt.
+    vergessen = _alle_seiten_dabei()
+    if vergessen:
+        print('Seiten, die es gibt, die diese Pruefung aber NICHT aufbaut:')
+        for kennung in vergessen:
+            print('  · %s' % kennung)
+        print('  → oben in SEITEN eintragen, sonst prueft sie diese Seite '
+              'nie.\n')
+
     print('Oberfläche auf Englisch:')
     tabelle, treffer, marken = pruefe()
     print('  %d Textpaare, die sich unterscheiden' % len(tabelle))
@@ -159,7 +196,7 @@ def main():
 
     if not treffer:
         print('\nKein deutscher Text in der englischen Oberfläche.')
-        return 1 if (fehlend or marken) else 0
+        return 1 if (fehlend or marken or vergessen) else 0
     print('\n%d deutsche Stelle(n) — sie stehen fest im Code statt in '
           'sprache.py:' % len(treffer))
     for deutsch, (schluessel, englisch) in sorted(treffer.items()):

@@ -1722,6 +1722,43 @@ TEXTE = {
     's_hl_marke':        ('gestohlen', 'stolen'),
     's_hl_wert':         ('höchstens {summe}', 'up to {summe}'),
     's_hl_gesamt':       ('Ladung höchstens: {summe}', 'Cargo up to: {summe}'),
+    # Handelslager sichern und zurueckholen — dieselben Knopfnamen wie im
+    # Werkstatt-Lager (`s_lg_aus_json`/`s_lg_aus_csv`/`s_lg_einlesen`/
+    # `s_lg_leeren`), die werden wiederverwendet statt hier zu doppeln: Zwei
+    # Fassungen derselben Beschriftung gehen mit der Zeit auseinander, und
+    # dann heisst derselbe Knopf auf zwei Seiten verschieden. Eigene Texte
+    # bekommt nur, was wirklich vom Handel spricht.
+    's_hl_ausgeben':     ('Handelslager ausgeben', 'Export cargo'),
+    's_hl_eingelesen':   ('%d Posten eingelesen — dein Handelslager wurde '
+                          'ersetzt.',
+                          '%d entries loaded — your cargo was replaced.'),
+    # ⚠ Beide Lager schreiben `{"format": 1, "posten": […]}`. Wer die
+    # falsche Sicherung waehlt, soll erfahren, welche hier hingehoert — sonst
+    # sucht er den Fehler in der Datei.
+    's_hl_datei_falsch': ('Das ist keine Handelslager-Sicherung. Die Sicherung '
+                          'vom Werkstatt-Lager gehört unter „Mein Lager“.',
+                          'That is not a cargo backup. A backup from your '
+                          'workshop stock belongs under “My stock”.'),
+    's_hl_leeren_frage_t': ('Wirklich das ganze Handelslager löschen?',
+                            'Really clear the whole cargo?'),
+    's_hl_leeren_frage': ('%d Posten werden entfernt. Das lässt sich nicht '
+                          'rückgängig machen — sichere vorher, wenn du sie '
+                          'noch brauchst.',
+                          '%d entries will be removed. This cannot be undone — '
+                          'export first if you still need them.'),
+    's_hl_geleert':      ('Handelslager geleert — %d Posten entfernt.',
+                          'Cargo cleared — %d entries removed.'),
+    # ⭐ Der Patch-Hinweis steht hier und nicht im Werkstatt-Lager: Nach einem
+    # Wischen ist der Laderaum leer, das Baumaterial aber oft nicht.
+    's_hl_aus_hilfe':    ('Die Sicherung lässt sich hier wieder einlesen. Die '
+                          'Tabelle ist zum Ansehen und Weitergeben — sie kann '
+                          'nicht zurückgelesen werden. Nach einem Patch, der '
+                          'alles zurücksetzt, räumt „Lager löschen“ den '
+                          'Laderaum in einem Zug leer.',
+                          'The backup can be loaded here again. The spreadsheet '
+                          'is for reading and sharing — it cannot be loaded '
+                          'back. After a patch wipe, “Clear stock” empties the '
+                          'hold in one go.'),
     's_lg_lead':         ('Was du an Rohstoffen hast. Trag es selbst ein — das '
                           'Spiel verrät es nicht. Beim Herstellen zieht der '
                           'Watcher die Zutaten ab.',

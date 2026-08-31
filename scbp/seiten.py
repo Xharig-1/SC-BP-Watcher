@@ -5014,7 +5014,38 @@ def _raffinerie_block(fenster, eltern, lager, ort_var, neu_zeichnen, meldung):
     from . import orte as _orte_modul
     from .hauptfenster import rundrahmen
 
-    ziel = _feld(fenster, eltern, t('s_rf_titel'), t('s_rf_hilfe'), breit=True)
+    # ⭐ **Zugeklappt, bis er gebraucht wird.** Der Block ist der laengste auf
+    # der Seite — Einheitenwahl, Lagerort mit Auswahlliste, ein sieben Zeilen
+    # hohes Tippfeld, Vorschau und Knopf. Wer nur schnell einen Posten von Hand
+    # eintraegt (der haeufigere Fall), rollte an alldem vorbei, und die Liste
+    # des eigenen Lagers lag darunter ausser Sicht.
+    #
+    # ⚠ Der Zustand wird **gemerkt** (`lager_raffinerie_offen`): Wer nach jedem
+    # Raffinerie-Lauf abtippt, will den Block offen vorfinden, und wer ihn nie
+    # benutzt, will ihn nicht bei jedem Start wieder zuklappen. Standard ist
+    # zu — fuer den, der ihn noch nie gebraucht hat, ist das die richtige Lage.
+    #
+    # Gebaut wie die Klappbloecke auf der Danke-Seite: Kopfzeile mit dem
+    # Klapp-Symbol links, Koerper darunter. Kein Textpfeil — das Symbol kommt
+    # aus dem Satz, wie ueberall sonst.
+    kasten = tk.Frame(eltern, bg=BG)
+    kasten.pack(fill='x', pady=(12, 0))
+    kopf = tk.Frame(kasten, bg=BG, cursor='hand2')
+    kopf.pack(fill='x')
+    pfeil = zeichen.zeile(kopf, 'aufklappen', grund=BG,
+                          schrift=fenster.f_klein)
+    pfeil.pack(side='left', padx=(0, 8))
+    tk.Label(kopf, text=t('s_rf_titel'), bg=BG, fg=FG, font=fenster.f_fett,
+             anchor='w', cursor='hand2').pack(side='left')
+
+    ziel = tk.Frame(kasten, bg=BG)
+    # Die Erklaerung gehoert in den Koerper, nicht in die Kopfzeile: Sonst
+    # steht zugeklappt ein Absatz da, der etwas erklaert, das man nicht sieht.
+    _rf_hilfe = tk.Label(ziel, text=_ohne_marken(t('s_rf_hilfe')), bg=BG,
+                         fg=SUB, font=fenster.f_klein, anchor='w',
+                         justify='left')
+    _rf_hilfe.pack(fill='x', pady=(2, 0))
+    _umbruch(_rf_hilfe, bezug=kasten, abzug=10)
     einheit = tk.StringVar(value='cscu')
     zeile = tk.Frame(ziel, bg=BG)
     zeile.pack(fill='x', pady=(6, 4))
@@ -5103,6 +5134,26 @@ def _raffinerie_block(fenster, eltern, lager, ort_var, neu_zeichnen, meldung):
         meldung.configure(text=t('s_rf_fertig') % anzahl, fg=ACCENT)
 
     feld.bind('<KeyRelease>', pruefen)
+
+    def _umschalten(_=None):
+        if ziel.winfo_ismapped():
+            ziel.pack_forget()
+            pfeil.symbol_tauschen('aufklappen')
+            pfade.einstellung_setzen('lager_raffinerie_offen', False)
+        else:
+            # ⚠ `after=kopf` — sonst haengt der Koerper beim zweiten Aufklappen
+            # unter allem, was inzwischen dazugekommen ist, statt unter seiner
+            # eigenen Kopfzeile.
+            ziel.pack(fill='x', after=kopf)
+            pfeil.symbol_tauschen('zuklappen')
+            pfade.einstellung_setzen('lager_raffinerie_offen', True)
+
+    # Die ganze Kopfzeile ist die Schaltflaeche, nicht nur das Symbol: Ein
+    # Pfeil von zwoelf Pixeln ist kein Ziel, das man treffen will.
+    for teil in (kopf, pfeil) + tuple(kopf.winfo_children()):
+        teil.bind('<Button-1>', _umschalten)
+    if pfade.einstellung('lager_raffinerie_offen'):
+        _umschalten()
     return feld
 
 
@@ -6477,6 +6528,97 @@ def _handelslager(fenster, rahmen):
         vorschau_zeigen()
         knoepfe_setzen()
         _liste()
+
+    # --- Sichern, zurueckholen, leeren ---------------------------------
+    # ⭐ **Dieselbe Reihe wie im Werkstatt-Lager**, in derselben Reihenfolge und
+    # mit denselben Beschriftungen: Sicherung, Tabelle, Einlesen — Abstand —
+    # Löschen in Rot. Zwei Lager, die dasselbe koennen, muessen es an derselben
+    # Stelle und mit denselben Worten koennen; sonst sucht man auf der zweiten
+    # Seite, was man auf der ersten blind findet.
+    #
+    # ⚠ Warum es das hier ueberhaupt braucht: Das Handelslager ist Handarbeit
+    # wie das andere — das Spiel gibt nichts her. Und beim Patch-Wisch ist der
+    # Laderaum leer, waehrend Posten fuer Posten von Hand zu loeschen genau die
+    # Fleissarbeit ist, die niemand macht (also bleibt ein falsches Lager
+    # stehen und die Verkaufsrechnung luegt).
+    def _ausgeben(art):
+        from . import dateiwahl
+        endung = '.csv' if art == 'csv' else '.json'
+        ziel = dateiwahl.datei_speichern(
+            t('s_hl_ausgeben'),
+            vorschlag='handelslager-%s%s' % (time.strftime('%Y-%m-%d'), endung),
+            endung=endung, start=None)
+        if not ziel:
+            return
+        try:
+            inhalt = (lager.als_csv() if art == 'csv' else lager.als_json())
+            with open(ziel, 'w', encoding='utf-8') as f:
+                f.write(inhalt)
+            meldung['text'] = t('s_lg_gespeichert') % os.path.basename(ziel)
+            meldung['farbe'] = SUB
+        except Exception as ausnahme:
+            fehler.merken('seiten.handelslager.ausgeben', ausnahme)
+            meldung['text'], meldung['farbe'] = t('s_hl_fehler'), ROT
+        neu_zeichnen()
+
+    def _einlesen():
+        from . import dateiwahl
+        quelle = dateiwahl.datei_oeffnen(t('s_lg_einlesen'))
+        if not quelle:
+            return
+        try:
+            with open(quelle, encoding='utf-8') as f:
+                posten = lager.aus_json(f.read())
+        except Exception as ausnahme:
+            fehler.merken('seiten.handelslager.einlesen', ausnahme)
+            posten = None
+        if posten is None:
+            # ⚠ Nicht schweigen. Wer eine falsche Datei waehlt und nichts
+            # passieren sieht, haelt das Einlesen fuer kaputt.
+            meldung['text'], meldung['farbe'] = t('s_hl_datei_falsch'), GOLD
+            neu_zeichnen()
+            return
+        lager.sichern(posten)
+        # ⚠ Erst die Bearbeitung schliessen, dann melden: `abbrechen()` zeichnet
+        # neu, und die Meldung wird beim Zeichnen verbraucht — andersherum waere
+        # sie weg, bevor sie jemand sieht.
+        abbrechen()
+        meldung['text'] = t('s_hl_eingelesen') % len(posten)
+        meldung['farbe'] = SUB
+        neu_zeichnen()
+
+    def _leeren():
+        """Das ganze Handelslager verwerfen — nach Rückfrage.
+
+        ⚠ Rot **und** mit Frage, wie im Werkstatt-Lager. In der Frage steht die
+        Zahl der Posten: „12 Posten werden entfernt" wiegt anders als „wirklich
+        löschen?" — und nach einem Patch-Wisch ist genau das der Griff, der
+        gemeint ist.
+        """
+        from .hauptfenster import frage_stellen
+        anzahl = len(lager.laden())
+        if not anzahl:
+            return
+        if not frage_stellen(fenster.root, t('s_hl_leeren_frage_t'),
+                             t('s_hl_leeren_frage') % anzahl):
+            return
+        lager.leeren()
+        abbrechen()
+        meldung['text'], meldung['farbe'] = t('s_hl_geleert') % anzahl, GOLD
+        neu_zeichnen()
+
+    _reihe_aus = tk.Frame(innen, bg=BG)
+    _reihe_aus.pack(fill='x', padx=24, pady=(0, 4))
+    _knopf(fenster, _reihe_aus, t('s_lg_aus_json'),
+           lambda: _ausgeben('json')).pack(side='left')
+    _knopf(fenster, _reihe_aus, t('s_lg_aus_csv'),
+           lambda: _ausgeben('csv')).pack(side='left', padx=(8, 0))
+    _knopf(fenster, _reihe_aus, t('s_lg_einlesen'),
+           _einlesen).pack(side='left', padx=(8, 0))
+    _knopf(fenster, _reihe_aus, t('s_lg_leeren'), _leeren,
+           gefahr=True).pack(side='left', padx=(24, 0))
+    _fliesstext(innen, t('s_hl_aus_hilfe'), fenster.f_klein, abzug=48,
+                fill='x', padx=24, pady=(0, 20))
 
     neu_zeichnen()
 
