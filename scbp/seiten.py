@@ -864,36 +864,34 @@ def _lohnende_auftraege(fenster, eltern, katalog, habe):
         teile.append(t('s_fo_lohnt_topf', anzahl))
         tk.Label(rechts, text=' · '.join(teile), bg=FLAECHE, fg=SUB,
                  font=fenster.f_klein, anchor='w').pack(fill='x')
-        # Der Ort steht direkt da — aufklappen muss man nur für die Liste,
-        # die nicht in eine Zeile passt („… und 12 weitere").
+        # Der Annahmeort steht direkt da — er beantwortet „wo finde ich den".
         ort = ort_text(wo)
-        if not ort:
-            continue
-        ort_label = tk.Label(rechts, text=ort, bg=FLAECHE, fg=SUB,
-                             font=fenster.f_klein, anchor='w', justify='left')
-        ort_label.pack(fill='x')
-        alle = (wo or {}).get('orte') or []
-        if not (wo or {}).get('mehr'):
-            continue
-        # ⚠ Die vollen Orte stecken nicht in `wo` — dort stehen nur die
-        # ersten vier und ein Zähler. Mehr gibt der Katalog an dieser Stelle
-        # nicht her, also wird auch nicht mehr versprochen: Der Klick zeigt,
-        # was da ist, und sagt dazu, dass es weitergeht.
-        zustand = {'offen': False}
+        beschriftungen = []
+        if ort:
+            ort_label = tk.Label(rechts, text=ort, bg=FLAECHE, fg=SUB,
+                                 font=fenster.f_klein, anchor='w',
+                                 justify='left')
+            ort_label.pack(fill='x')
+            beschriftungen.append(ort_label)
+        tk.Label(rechts, text=t('s_fo_lohnt_klick'), bg=FLAECHE, fg=SUB,
+                 font=fenster.f_klein, anchor='w').pack(fill='x')
 
-        def umschalten(_ereignis=None, label=ort_label, wo=wo, alle=alle,
-                       zustand=zustand):
-            zustand['offen'] = not zustand['offen']
-            if zustand['offen']:
-                label.config(text='%s %s: %s' % (
-                    t('annehmen_in'), wo.get('system') or '',
-                    ',\n'.join(alle) + t('und_weitere', wo['mehr'])))
-            else:
-                label.config(text=ort_text(wo))
+        # ⚠⚠ **Die Zahl ist keine Antwort, sie ist eine Frage.** „44" sagt
+        # nicht, WELCHE 44 — und danach fragt man als Nächstes. Der Klick
+        # führt deshalb in die Bauplan-Liste, gefiltert auf diesen Auftrag;
+        # dort steht jeder einzelne, mit Haken für das, was man schon hat.
+        # Die Liste kann das längst (`self.auftrag` als Filter), sie war von
+        # hier aus nur nicht erreichbar: Man musste den Auftragsnamen von Hand
+        # ins Suchfeld tippen und dann die Auftragszeile anklicken.
+        def hinspringen(_ereignis=None, titel=titel):
+            _zum_auftrag(fenster, titel)
 
-        for teil in (zeile, rechts, ort_label):
+        for teil in [zeile, rechts] + beschriftungen:
             teil.config(cursor='hand2')
-            teil.bind('<Button-1>', umschalten)
+            teil.bind('<Button-1>', hinspringen)
+        for kind in rechts.winfo_children():
+            kind.config(cursor='hand2')
+            kind.bind('<Button-1>', hinspringen)
     tk.Label(kasten, text='', bg=FLAECHE).pack(pady=2)
 
 
@@ -4292,6 +4290,18 @@ def _hat_herkunft(name):
     except Exception:
         pass
     return False
+
+
+def _zum_auftrag(fenster, titel):
+    """Von „Was bringt am meisten?" zur Bauplan-Liste, auf diesen Auftrag."""
+    try:
+        fenster.oeffnen('liste')
+        seite = getattr(fenster, 'bestandsseite', None)
+        if seite is not None and seite.zum_auftrag(titel):
+            return
+        fenster.sagen(t('s_fo_lohnt_nichts'))
+    except Exception as ausnahme:
+        fehler.merken('seiten.zum_auftrag', ausnahme)
 
 
 def _zum_bauplan(fenster, name):

@@ -7873,6 +7873,43 @@ def main():
                and getattr(_liste97, 'gewaehlt', None) == _mit_q97[0],
                'er steht in der Suche UND ist ausgewaehlt — die Herkunft '
                'schlaegt gleich auf')
+
+    # c) Und derselbe Weg fuer einen ganzen AUFTRAG.
+    #
+    # „Was bringt am meisten?" nennt einen Auftrag mit einer Zahl daneben —
+    # die naechste Frage ist immer „und welche Bauplaene sind das?". Die Liste
+    # kann darauf filtern, war von dort aus aber nicht erreichbar.
+    pruefe(hasattr(_bf97.Bestandsfenster, 'zum_auftrag'),
+           'die Liste laesst sich auch auf einen ganzen Auftrag stellen')
+    _auf97 = sorted({(q.get('auftrag') or '').strip()
+                     for e in (_kat97.laden().get('bauplaene') or {}).values()
+                     for q in (e.get('q') or [])
+                     if (q.get('auftrag') or '').strip()})
+    _liste97.auftrag = ''
+    _liste97.suche.set('etwas anderes')
+    pruefe(_liste97.zum_auftrag('Auftrag den es nicht gibt') is False
+           and _liste97.auftrag == '',
+           'ein unbekannter Auftrag meldet Fehlanzeige und setzt nichts')
+    pruefe(_liste97.suche.get() == 'etwas anderes',
+           'und laesst auch hier die Suche stehen')
+    pruefe(_liste97.zum_auftrag('') is False,
+           'ein leerer Auftragsname ebenso — nicht die ganze Liste filtern')
+    if _auf97:
+        pruefe(_liste97.zum_auftrag(_auf97[0]) is True
+               and _liste97.auftrag == _auf97[0],
+               'ein bekannter Auftrag wird gesetzt (%s)' % _auf97[0][:40])
+        # ⚠ **Gesetzt, nicht umgeschaltet.** `_auftrag_waehlen` loest denselben
+        # Auftrag beim zweiten Klick wieder — richtig in der Liste, falsch fuer
+        # einen Sprung von aussen: Wer zweimal herspringt, will zweimal
+        # dasselbe sehen, nicht beim zweiten Mal alles.
+        pruefe(_liste97.zum_auftrag(_auf97[0]) is True
+               and _liste97.auftrag == _auf97[0],
+               'zweimal hintereinander loest ihn NICHT wieder')
+        # Und der Zustandsfilter darf nicht dazwischenfunken: Steht er auf
+        # „fehlt mir", fehlen genau die Zeilen, die man schon hat — und die
+        # Zahl auf der Fortschritt-Seite passt nicht mehr zum Bild.
+        pruefe(_liste97.filter == 'alle',
+               'der Zustandsfilter steht auf „alle", sonst fehlen Zeilen')
     try:
         _liste97.root.destroy()
         _wz97.destroy()

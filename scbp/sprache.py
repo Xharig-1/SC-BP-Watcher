@@ -137,6 +137,10 @@ TEXTE = {
                          'likelier something you need drops.'),
     's_fo_lohnt_zeile': ('%d fehlende Baupläne', '%d missing blueprints'),
     's_fo_lohnt_topf':  ('%d im Belohnungstopf', '%d in the reward pool'),
+    's_fo_lohnt_klick': ('Anklicken zeigt, welche Baupläne das sind',
+                         'Click to see which blueprints those are'),
+    's_fo_lohnt_nichts': ('Zu diesem Auftrag steht kein Bauplan in der Liste.',
+                          'No blueprint in the list names this contract.'),
     's_fo_lohnt_leer':  ('Kein Auftrag bringt dir noch einen Bauplan, den du '
                          'nicht hast.',
                          'No contract still holds a blueprint you do not have.'),

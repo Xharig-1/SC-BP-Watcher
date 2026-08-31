@@ -37,12 +37,19 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
-- ⭐ **"What pays off most?" now tells you where to pick the contract up.** The
-  pickup location had been available all along and simply was not shown — the
-  page answered "which contract is worth it" and left "and where do I find it"
-  hanging. It now sits under every row ("Pick up in Stanton: Hurston, Arial,
-  Aberdeen, Magda and 12 more"), and clicking the row unfolds the location
-  list.
+- ⭐⭐ **"What pays off most?" now answers both follow-up questions.** The page
+  named a contract and a number — and left you there. Where do you pick it up?
+  And **which** blueprints are those, anyway?
+
+  Both had been there all along, just never connected: the pickup location came
+  with the data from the start and was thrown away, and the blueprint list has
+  always been able to filter on a single contract — you just had to type the
+  name into the search box by hand and then hit the contract row.
+
+  The location now sits under every row ("Pick up in Stanton: Hurston, Arial,
+  Aberdeen, Magda and 12 more"), and **clicking the row opens the blueprint
+  list filtered to that exact contract** — every single blueprint in it, ticked
+  off for the ones you already own.
 
 - ⭐ **The number is labelled reward pool now, not payout.** It used to read
   "44" next to a claim that the contract pays "the most in one go". That

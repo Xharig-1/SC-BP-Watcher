@@ -2063,6 +2063,42 @@ class Bestandsfenster:
         self.gewaehlt = name
         self._herkunft_zeichnen()
 
+    def zum_auftrag(self, name):
+        """Die Liste auf diesen Auftrag stellen — alles, was er hergibt.
+
+        Von aussen gerufen: „Was bringt am meisten?" nennt einen Auftrag mit
+        einer Zahl daneben. Die Zahl allein beantwortet die naechste Frage
+        nicht — **welche** Bauplaene sind das? Hier stehen sie.
+
+        ⚠⚠ **Erst nachsehen, dann springen** — dieselbe Regel wie bei
+        `zum_bauplan`: Kennt kein Bauplan diesen Auftrag als Quelle, wird die
+        Liste NICHT umgestellt. Ein Sprung auf eine leere Liste sieht aus, als
+        sei das Werkzeug kaputt. Rueckgabe sagt, ob es geklappt hat.
+
+        ⚠ Gesetzt wird, nicht umgeschaltet: `_auftrag_waehlen` loest denselben
+        Auftrag beim zweiten Klick wieder — richtig fuer einen Klick in der
+        Liste, falsch fuer einen Sprung von aussen. Wer zweimal aus dem
+        Fortschritt herspringt, will zweimal dasselbe sehen.
+        """
+        name = (name or '').strip()
+        if not name:
+            return False
+        bekannt = any(
+            name == (q.get('auftrag') or '').strip()
+            for eintrag in ((self.katalog or {}).get('bauplaene') or {}).values()
+            for q in (eintrag.get('q') or []))
+        if not bekannt:
+            return False
+        # ⚠ Der Filter muss auf „alle" — sonst versteckt „fehlt mir" genau die
+        # Bauplaene, die man schon hat, und die Zahl daneben stimmt nicht mehr
+        # mit dem ueberein, was dasteht.
+        self.filter = 'alle'
+        self.alle_zeigen = False
+        self.suche.set('')
+        self.auftrag = name
+        self._zeichnen(nach_oben=True)
+        return True
+
     def zum_bauplan(self, name):
         """Diesen Bauplan zeigen und seine Herkunft gleich aufschlagen.
 

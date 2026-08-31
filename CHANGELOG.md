@@ -38,12 +38,19 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Geändert
 
-- ⭐ **„Was bringt am meisten?" sagt jetzt, wo man den Auftrag annimmt.** Der
-  Annahmeort lag von Anfang an vor und wurde nur nicht angezeigt — die Seite
-  beantwortete „welcher Auftrag lohnt sich" und ließ die Anschlussfrage „und
-  wo finde ich den" offen. Jetzt steht er unter jeder Zeile
-  („Annehmen in Stanton: Hurston, Arial, Aberdeen, Magda und 12 weiteren"),
-  und ein Klick auf die Zeile klappt die Ortsliste auf.
+- ⭐⭐ **„Was bringt am meisten?" beantwortet jetzt beide Anschlussfragen.**
+  Die Seite nannte einen Auftrag und eine Zahl — und ließ einen damit stehen.
+  Wo nimmt man ihn an? Und **welche** Baupläne sind das überhaupt?
+
+  Beides war längst da und nur nicht verbunden: Der Annahmeort kam von Anfang
+  an mit den Daten und wurde weggeworfen, und die Bauplan-Liste kann seit jeher
+  auf einen einzelnen Auftrag filtern — man musste den Namen nur von Hand ins
+  Suchfeld tippen und dann die Auftragszeile treffen.
+
+  Jetzt steht der Ort unter jeder Zeile („Annehmen in Stanton: Hurston, Arial,
+  Aberdeen, Magda und 12 weiteren"), und **ein Klick auf die Zeile öffnet die
+  Bauplan-Liste, gefiltert auf genau diesen Auftrag** — mit jedem einzelnen
+  Bauplan, abgehakt, was man schon hat.
 
 - ⭐ **Die Zahl heißt jetzt Belohnungstopf, nicht Ausbeute.** Oben stand „44"
   und daneben, der Auftrag bringe „auf einen Schlag am meisten". Das versprach
