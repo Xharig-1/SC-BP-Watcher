@@ -7131,6 +7131,49 @@ def main():
 
     _pf87.einstellung_setzen(_hf87.GROESSE_SCHLUESSEL, None)
 
+    # 88. Kein Funktionsname zweimal in derselben Funktion
+    #
+    # ⚠⚠ **Die Wurzel des Fehlers in v3.4.2.** Im Handelslager gab es zweimal
+    # `_leeren`: einmal den Helfer, der die Kinder eines Rahmens wegraeumt
+    # (**mit** Argument), und einmal — neu dazugebaut — das Leeren des ganzen
+    # Lagers (**ohne**). In Python gewinnt die spaetere Definition, ohne Warnung.
+    # Ergebnis: Jeder Aufbau der Liste starb mit „takes 0 positional arguments
+    # but 1 was given", die Seite blieb ohne Tabelle — und ging so an die Nutzer.
+    #
+    # Gesucht wird mit dem Syntaxbaum, nicht mit Textsuche: Nur so ist klar,
+    # welche Definition zu welcher Funktion gehoert.
+    print()
+    print('88. Kein Funktionsname zweimal in derselben Funktion')
+    import ast as _ast88
+
+    _doppelte88 = []
+    for _datei88 in sorted(os.listdir(os.path.join(WURZEL, 'scbp'))):
+        if not _datei88.endswith('.py'):
+            continue
+        _pfad88 = os.path.join(WURZEL, 'scbp', _datei88)
+        try:
+            _baum88 = _ast88.parse(open(_pfad88, encoding='utf-8').read())
+        except Exception:
+            continue
+        for _knoten88 in _ast88.walk(_baum88):
+            if not isinstance(_knoten88, (_ast88.FunctionDef,
+                                          _ast88.AsyncFunctionDef)):
+                continue
+            _gesehen88 = {}
+            for _kind88 in _knoten88.body:
+                if isinstance(_kind88, (_ast88.FunctionDef,
+                                        _ast88.AsyncFunctionDef)):
+                    if _kind88.name in _gesehen88:
+                        _doppelte88.append(
+                            '%s: %s() definiert %s() zweimal (Zeile %d und %d)'
+                            % (_datei88, _knoten88.name, _kind88.name,
+                               _gesehen88[_kind88.name], _kind88.lineno))
+                    _gesehen88[_kind88.name] = _kind88.lineno
+
+    pruefe(not _doppelte88,
+           'kein lokaler Funktionsname wird ueberschrieben%s'
+           % ('' if not _doppelte88 else ' — ' + '; '.join(_doppelte88[:3])))
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

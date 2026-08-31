@@ -6,6 +6,26 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.4.3 - unreleased
+
+### Fixed
+
+- ⚠ **The cargo hold lost its table.** Since v3.4.2 the page only built the
+  form; the list of entered goods, the total and the per-entry delete were
+  missing. The cause was a name clash Python resolves silently: two functions
+  were called `_leeren` — one clears a frame, the other (newly added) empties
+  the whole storage. The later one wins, and building the list died with a type
+  error.
+
+### Internal
+
+- **Two checks that would have caught it.** The interface check saw the error
+  while building — and said nothing: it printed it but returned "all fine".
+  Worse, `oeffnen()` catches every exception itself and only writes it to the
+  error log, so nothing ever reached the check. It now reads that log and turns
+  red. On top, self-test 88 walks the syntax tree to make sure no local name is
+  assigned twice inside one function.
+
 ## v3.4.2 - 2026-08-31
 
 Drag the window to the size you need once — it will be there again next time.

@@ -6,6 +6,27 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.4.3 - unveröffentlicht
+
+### Behoben
+
+- ⚠ **Das Handelslager blieb ohne seine Tabelle.** Seit v3.4.2 baute die Seite
+  nur das Formular auf; die Liste der eingetragenen Ware, die Gesamtsumme und
+  das Löschen einzelner Posten fehlten. Ursache war ein Namenskonflikt, den
+  Python still auflöst: Zwei Funktionen hiessen `_leeren` — eine räumt einen
+  Rahmen aus, die andere (neu dazugekommen) leert das ganze Lager. Die spätere
+  gewinnt, und der Aufbau der Liste starb mit einem Typfehler.
+
+### Intern
+
+- **Zwei Prüfungen, die genau das gefangen hätten.** Die Oberflächenprüfung hat
+  den Fehler beim Aufbau gesehen — und geschwiegen: Sie druckte ihn aus, gab
+  aber „alles in Ordnung" zurück. Schlimmer noch, `oeffnen()` fängt jede
+  Ausnahme selbst ab und schreibt sie nur ins Fehlerprotokoll, sodass bei der
+  Prüfung gar nichts ankam. Sie liest jetzt das Protokoll mit und wird rot.
+  Dazu prüft Selbsttest 88 über den Syntaxbaum, dass in keiner Funktion ein
+  lokaler Name zweimal vergeben wird.
+
 ## v3.4.2 - 2026-08-31
 
 Zieh das Fenster einmal auf die Größe, die du brauchst — beim nächsten Start

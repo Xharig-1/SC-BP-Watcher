@@ -6587,8 +6587,16 @@ def _handelslager(fenster, rahmen):
         meldung['farbe'] = SUB
         neu_zeichnen()
 
-    def _leeren():
+    def _lager_leeren():
         """Das ganze Handelslager verwerfen — nach Rückfrage.
+
+        ⚠⚠ **Der Name ist mit Absicht lang.** Sie hiess bis 31.08.2026
+        `_leeren` — genau wie der Helfer weiter oben, der die Kinder eines
+        Rahmens wegraeumt und **mit** Argument gerufen wird. Die spaetere
+        Definition gewinnt in Python: Ab dem Einbau des Loeschen-Knopfes
+        scheiterte jeder Aufbau der Liste mit „_leeren() takes 0 positional
+        arguments but 1 was given" — die Seite blieb ohne ihre Tabelle. Ging
+        so in v3.4.2 an die Nutzer.
 
         ⚠ Rot **und** mit Frage, wie im Werkstatt-Lager. In der Frage steht die
         Zahl der Posten: „12 Posten werden entfernt" wiegt anders als „wirklich
@@ -6615,7 +6623,7 @@ def _handelslager(fenster, rahmen):
            lambda: _ausgeben('csv')).pack(side='left', padx=(8, 0))
     _knopf(fenster, _reihe_aus, t('s_lg_einlesen'),
            _einlesen).pack(side='left', padx=(8, 0))
-    _knopf(fenster, _reihe_aus, t('s_lg_leeren'), _leeren,
+    _knopf(fenster, _reihe_aus, t('s_lg_leeren'), _lager_leeren,
            gefahr=True).pack(side='left', padx=(24, 0))
     _fliesstext(innen, t('s_hl_aus_hilfe'), fenster.f_klein, abzug=48,
                 fill='x', padx=24, pady=(0, 20))

@@ -108,6 +108,7 @@ def pruefe():
     wurzel.withdraw()
     fenster = Hauptfenster(wurzel, version='pruefung')
     treffer = {}
+    kaputt = []
     # ⚠ Zweite Ernte aus demselben Durchgang: sichtbarer Text, in dem noch die
     # Auszeichnung `**fett**` steht. Tk-Labels können kein Mischformat, also
     # muss sie vor der Anzeige heraus — sonst liest der Nutzer die Sternchen
@@ -144,19 +145,44 @@ def pruefe():
         for kind in widget.winfo_children():
             sammeln(kind)
 
+    # ⚠⚠ **Das Fehlerprotokoll ist die eigentliche Quelle.** `oeffnen()` faengt
+    # jede Ausnahme selbst ab und schreibt sie nur nach `scbp.fehler` — bei der
+    # Pruefung hier kommt sie nie an. Genau deshalb blieb der TypeError in der
+    # Handelslager-Seite unbemerkt, obwohl dieser Lauf die Seite aufgebaut hat:
+    # Es gab nichts zu fangen, und gemeldet hat es niemand. Ein `try/except`
+    # allein prueft hier also NICHTS.
+    from scbp import fehler as fehlerbuch
+    fehlerbuch.leeren()
+
     for seite in SEITEN:
         try:
             fenster.oeffnen(seite)
             fenster.root.update()
             sammeln(fenster.root)
         except Exception as ausnahme:
+            # ⚠⚠ **Das ist ein FEHLER, keine Randnotiz.** Bis 31.08.2026 wurde
+            # er nur ausgedruckt, und die Pruefung meldete trotzdem „alles in
+            # Ordnung". Genau so ging v3.4.2 mit einer kaputten
+            # Handelslager-Seite an die Nutzer: Zwei Funktionen hiessen
+            # `_leeren`, die spaetere gewann, und der Aufbau der Liste starb
+            # mit einem TypeError. Der Lauf hier hat das gesehen — und
+            # geschwiegen.
+            kaputt.append((seite, ausnahme))
             print('  ! Seite %s ließ sich nicht aufbauen: %s' % (seite, ausnahme))
+
+    # Was beim Aufbauen still ins Protokoll gewandert ist, zaehlt genauso.
+    for eintrag in (fehlerbuch.letzte(50) or []):
+        if not isinstance(eintrag, dict):
+            continue
+        kaputt.append((eintrag.get('stelle') or '?',
+                       '%s: %s' % (eintrag.get('art') or '?',
+                                   eintrag.get('meldung') or '')))
 
     try:
         wurzel.destroy()
     except Exception:
         pass
-    return tabelle, treffer, marken
+    return tabelle, treffer, marken, kaputt
 
 
 def main():
@@ -181,7 +207,13 @@ def main():
               'nie.\n')
 
     print('Oberfläche auf Englisch:')
-    tabelle, treffer, marken = pruefe()
+    tabelle, treffer, marken, kaputt = pruefe()
+    if kaputt:
+        print()
+        print('%d Seite(n) liessen sich NICHT aufbauen:' % len(kaputt))
+        for seite, ausnahme in kaputt:
+            print('  · %s — %s' % (seite, ausnahme))
+        print('  → Das ist ein Fehler: Die Seite ist im Programm unbrauchbar.')
     print('  %d Textpaare, die sich unterscheiden' % len(tabelle))
 
     if marken:
@@ -196,7 +228,7 @@ def main():
 
     if not treffer:
         print('\nKein deutscher Text in der englischen Oberfläche.')
-        return 1 if (fehlend or marken or vergessen) else 0
+        return 1 if (fehlend or marken or vergessen or kaputt) else 0
     print('\n%d deutsche Stelle(n) — sie stehen fest im Code statt in '
           'sprache.py:' % len(treffer))
     for deutsch, (schluessel, englisch) in sorted(treffer.items()):
