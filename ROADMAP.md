@@ -43,6 +43,7 @@ Vier Dinge sind Absicht und bleiben so:
 | ✅ | **Preise** von UEX Corp — was ein Rohstoff kostet und was er einbringt, damit „was fehlt mir" auch „was kostet mich das" beantwortet |
 | ✅ | **Handelslager**: was zum Verkauf im Laderaum liegt — getrennt vom Werkstatt-Lager, mit Kennzeichen für als gestohlen markierte Ladung |
 | ✅ | **Beide Lager sichern und zurückholen** (.json), als Tabelle ausgeben (.csv) und nach einem Patch-Wisch in einem Zug leeren |
+| ✅ | Das Fenster **behält die Größe**, die du eingestellt hast |
 | ✅ | **Verkauf**: wo du deine Ware los wirst und was sie je SCU bringt — für mehrere Waren auf einmal, sortiert danach, wie viele ein Ort abnimmt |
 
 ## Woran gearbeitet wird

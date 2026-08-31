@@ -6,7 +6,12 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.4.2 - unveröffentlicht
+## v3.4.2 - 2026-08-31
+
+Zieh das Fenster einmal auf die Größe, die du brauchst — beim nächsten Start
+ist sie wieder da. Und die Anleitung zeigt endlich, was das Werkzeug heute
+kann: alle Bilder sind neu, mit Werkstatt und Handel statt der Oberfläche von
+vorletzter Woche.
 
 ### Geändert
 

@@ -6,7 +6,11 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.4.2 - unreleased
+## v3.4.2 - 2026-08-31
+
+Drag the window to the size you need once — it will be there again next time.
+And the guide finally shows what the tool does today: all screenshots are new,
+with the workshop and the trading section instead of last week's interface.
 
 ### Changed
 
