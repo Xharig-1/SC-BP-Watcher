@@ -372,6 +372,11 @@ class LogTail:
         # — die beiden Kennungen entscheiden, ob ein Ende den Auftrag
         # meint oder nur ein Zwischenziel (siehe `auftraege.ZUSATZ`).
         self.auftrag_ereignisse = []
+        # Und die Zwischenziele desselben Abschnitts — was gerade zu tun ist.
+        # ⚠ Zwei Sorten in einer Liste, roh: Zustandswechsel und Wortlaut.
+        # Gewertet wird in `auftraege.Ziele`, damit Start und laufender Betrieb
+        # nicht wieder eigene Rechenwege bekommen.
+        self.ziel_ereignisse = []
 
     def _locate(self):
         p = pfade.game_log()
@@ -427,6 +432,7 @@ class LogTail:
         self.auftraege = []
         self.auftraege_beendet = []
         self.auftrag_ereignisse = []
+        self.ziel_ereignisse = []
         if not self._locate():
             return []
         try:
@@ -454,6 +460,10 @@ class LogTail:
         self.auftraege_beendet = (self.auftrag_ende_muster.findall(text)
                                   if self.auftrag_ende_muster else [])
         self.auftrag_ereignisse = self._ereignisse_ordnen(text)
+        # ⚠ Ohne Auftragsmuster gibt es auch keine Auftragsanzeige — dann
+        # braucht niemand die Ziele, und das Suchen waere reine Arbeit.
+        self.ziel_ereignisse = (auftraege.ziel_ereignisse_aus_text(text)
+                                if self.auftrag_muster else [])
         return _namen_aus_text(text, self.muster)
 
     def _ereignisse_ordnen(self, text):

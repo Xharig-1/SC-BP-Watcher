@@ -6,11 +6,51 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.4.6 - 2026-08-31
+## v3.5.0 - 2026-08-31
 
-Ein laufender Auftrag verschwand aus dem Overlay, obwohl er im Spiel noch aktiv
-war. Das war eine Nebenwirkung von v3.4.4 und ist behoben — samt der falschen
-Annahme, die dahintersteckte.
+Unter jedem laufenden Auftrag steht jetzt, **was gerade zu tun ist**. Und der
+Auftrag selbst verschwindet nicht mehr, während er im Spiel noch läuft — das war
+eine Nebenwirkung von v3.4.4 und ist behoben, samt der falschen Annahme
+dahinter.
+
+### Neu
+
+- ⭐⭐ **Die offenen Zwischenziele stehen unter ihrem Auftrag.**
+
+  ```
+  Laufende Aufträge (laut Log)
+  Auftrag angenommen: Retake Platforms From Nine Tails  →  3 Baupläne
+     ◆ Hartmoore-Inverter deaktivieren
+     ◆ Knoten lokalisieren und zurücksetzen
+  ```
+
+  Der Auftrag sagt, ob Baupläne drin sind. Das Ziel sagt, wofür du gerade
+  fliegst. Beides steht im Protokoll — bisher wurde nur die eine Hälfte
+  genutzt. Schaffst du ein Ziel, fällt es raus und das nächste rückt nach.
+
+  Woher die Angaben kommen, mit Absicht getrennt gehalten:
+
+  | | Quelle | sprachneutral? |
+  |---|---|---|
+  | Zustand (läuft / erledigt / weg) | `<ObjectiveUpserted> … state …` | ja |
+  | Wortlaut | die Meldung im Spiel, zugeordnet über die `ObjectiveId` | nein |
+
+  ⚠ **Der Zustand kommt nie aus dem Wortlaut.** Auf Deutsch heißt die
+  Ziel-Annahme „Neuer Auftrag" — wortgleich mit einer Auftragsmeldung. Wer
+  darauf hört, zählt Ziele als Aufträge.
+
+  ⚠ **Nur was das Spiel selbst ins Auftragsbuch schreibt.** Ein Auftrag führt
+  daneben eine Menge interner Ziele mit: Zähler, Auslöser, Zonenwächter. Über
+  alle 153 Protokolle gemessen: Von 2832 Zielen tragen 456 zwar das
+  Kennzeichen `ShowInLog`, aber keinen Wortlaut — **kein einziges** hat einen
+  Wortlaut ohne dieses Kennzeichen. Ohne Wortlaut wird geschwiegen statt
+  geraten.
+
+  ⚠ **Höchstens sechs Zeilen**, der Rest wird gezählt. Gemessen hat ein Auftrag
+  fast immer genau **ein** offenes Ziel (182 von 226); der Ausreißer hatte
+  sechs. Die Grenze fängt nur den unbekannten Fall ab — das Overlay darf die
+  Bauplan-Liste nicht vom Bildschirm schieben. Eine abgeschnittene Liste, die
+  sich für vollständig ausgibt, wäre schlimmer als gar keine.
 
 ### Behoben
 

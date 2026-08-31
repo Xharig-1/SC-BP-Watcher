@@ -58,7 +58,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.4.6'
+__version__ = '3.5.0'
 
 
 def _mitgeliefert(name):
@@ -693,6 +693,10 @@ class Watcher(threading.Thread):
         # Star Citizen fuehrt beide Meldungen mit derselben MissionId, auch
         # ueber einen Neustart des Werkzeugs hinweg.
         self._auftrag_missionen = {}
+        # Und was zu diesen Auftraegen gerade ansteht. @@ **Der Auftrag sagt,
+        # ob Bauplaene drin sind — das Ziel sagt, wofuer man gerade fliegt.**
+        # Beides steht im Protokoll; die Buchfuehrung dazu in `auftraege.Ziele`.
+        self._ziele = auftraege.Ziele()
         self.bestand = bestand_datei.laden()   # der eigene, dauerhafte Bestand
         # ⚠ Einmal beim Start die Namen an den Katalog angleichen. Was der
         # Watcher vor v3.3.3 aus dem Log gelesen hat, trägt womöglich die
@@ -948,6 +952,20 @@ class Watcher(threading.Thread):
             self.q.put(('new', name, art_of(name), meta_of(name) or '',
                         time.strftime('%H:%M:%S'), True))
 
+    def _auftragsstand(self):
+        """Was die Anzeige braucht: `(Schluessel, Zeile, Zwischenziele)`.
+
+        ⚠⚠ **Die eine Stelle, die den Auftragsstand nach aussen gibt.** Vorher
+        stand `list(self._offene_auftraege.items())` an vier Stellen im Code;
+        eine davon zu vergessen hiesse, dass die Leiste je nach Anlass etwas
+        anderes zeigt.
+        """
+        zu_mission = {}
+        for kennung, rein in self._auftrag_missionen.items():
+            zu_mission.setdefault(rein, kennung)
+        return [(rein, zeile, self._ziele.offen(zu_mission.get(rein)))
+                for rein, zeile in self._offene_auftraege.items()]
+
     def auftrag_wegklicken(self, rein):
         """Einen Auftrag von Hand aus der Anzeige nehmen.
 
@@ -961,7 +979,7 @@ class Watcher(threading.Thread):
         Log-Abschnitt wieder auftaucht.
         """
         if self._offene_auftraege.pop(rein, None) is not None:
-            self.q.put(('auftraege', list(self._offene_auftraege.items())))
+            self.q.put(('auftraege', self._auftragsstand()))
         # Auch dann melden, wenn er in der Leiste schon weg war: Die Zeile in
         # der Liste kann trotzdem noch stehen, und genau die will man los.
         self.q.put(('auftrag_weg', rein))
@@ -1026,6 +1044,13 @@ class Watcher(threading.Thread):
         # Auftraege spaeter im laufenden Betrieb, ist die MissionId oft das
         # Einzige, was die Endmeldung mit ihm verbindet.
         self._auftrag_missionen.update(missionen)
+        # ⚠ Die Ziele aus demselben Text. Ohne das stuende beim Start zwar der
+        # Auftrag da, aber ohne das, was gerade zu tun ist — und genau danach
+        # schaut man nach einem Neustart zuerst.
+        try:
+            self._ziele.aufnehmen(auftraege.ziel_ereignisse_aus_text(text))
+        except Exception as ausnahme:
+            fehler.merken('watcher.ziele_start', ausnahme)
 
         for titel in offen:
             rein = auftraege.sauber(titel)
@@ -1037,7 +1062,7 @@ class Watcher(threading.Thread):
             self._offene_auftraege[rein] = (self._auftrag_zeile(titel, rein)
                                             or sprache.Satz('auftrag_zeile', rein))
         if self._offene_auftraege:
-            self.q.put(('auftraege', list(self._offene_auftraege.items())))
+            self.q.put(('auftraege', self._auftragsstand()))
 
     def _auftraege_melden(self):
         """Zu jedem angenommenen Auftrag sagen, ob Bauplaene dabei sind.
@@ -1049,8 +1074,22 @@ class Watcher(threading.Thread):
         falsche Bauplan-Zusage waere schlimmer als gar keine Meldung — und der
         Katalog kennt 353 von deutlich mehr Auftraegen im Spiel.
         """
+        # ⚠⚠ **Zuerst die Ziele — vor dem Ausstieg gleich darunter.** Ein
+        # Zwischenziel wechselt staendig, ohne dass sich die Auftragsliste
+        # ruehrt. Haengt man das hinter das `return`, steht in der Leiste bis
+        # zum naechsten angenommenen Auftrag das Ziel von vor zwanzig Minuten.
+        ziele_neu = False
+        try:
+            ziele_neu = self._ziele.aufnehmen(
+                getattr(self.tail, 'ziel_ereignisse', None))
+        except Exception as ausnahme:
+            fehler.merken('watcher.ziele', ausnahme)
+        self.tail.ziel_ereignisse = []
+
         ereignisse = getattr(self.tail, 'auftrag_ereignisse', None) or []
         if not ereignisse:
+            if ziele_neu and self._offene_auftraege:
+                self.q.put(('auftraege', self._auftragsstand()))
             return
         self.tail.auftraege = []
         self.tail.auftraege_beendet = []
@@ -1108,6 +1147,7 @@ class Watcher(threading.Thread):
                 veraendert = True
             for kennung in [k for k, v in self._auftrag_missionen.items()
                             if v == weg]:
+                self._ziele.vergessen(kennung)
                 del self._auftrag_missionen[kennung]
             self.q.put(('auftrag_weg', weg))
             # Damit dieselbe Mission spaeter wieder gemeldet wird. Ohne das
@@ -1133,16 +1173,16 @@ class Watcher(threading.Thread):
             # ⚠⚠ **Erst die Leiste, dann der Hinweis.** Andersherum weiss die
             # Anzeige beim Hinweis noch nichts von dem Auftrag und setzt
             # denselben Satz ein zweites Mal darunter (gemeldet 31.08.2026).
-            self.q.put(('auftraege', list(self._offene_auftraege.items())))
+            self.q.put(('auftraege', self._auftragsstand()))
             # ⚠ Mit dem Auftragsschluessel. Die Zeile in der Liste gehoert zu
             # genau diesem Auftrag — endet er, muss sie mitverschwinden, und
             # von Hand wegnehmen koennen muss man sie auch.
             self.q.put(('hinweis', zeile, rein))
 
-        if veraendert:
+        if veraendert or ziele_neu:
             # Die Anzeige bekommt den **ganzen** Stand, nicht die Änderung —
             # dann kann sie nicht auseinanderlaufen.
-            self.q.put(('auftraege', list(self._offene_auftraege.items())))
+            self.q.put(('auftraege', self._auftragsstand()))
 
     def _emit(self, key, log_meta=None):
         # log_meta = Kürzel aus dem Log-Zusatz; wird nur genommen, wenn der
@@ -1219,6 +1259,7 @@ class Watcher(threading.Thread):
         vorher = list(self._offene_auftraege)
         self._offene_auftraege = {}
         self._auftrag_missionen = {}
+        self._ziele = auftraege.Ziele()
         self._auftraege_beim_start()
         # Und die Zeilen in der Liste dazu: Was jetzt nicht mehr offen ist,
         # darf auch nicht mehr als laufender Auftrag dastehen.
@@ -2210,8 +2251,19 @@ class Overlay:
     def auftraege_zeigen(self, paare):
         """Die laufenden Auftraege setzen — die Leiste zeigt immer den Stand.
 
-        `paare` ist eine Liste aus (Titel ohne Marken, fertige Zeile). Der
-        Titel dient nur als Schluessel fuers Wegklicken.
+        `paare` ist eine Liste aus (Titel ohne Marken, fertige Zeile) — oder
+        aus (Titel, Zeile, Zwischenziele). Der Titel dient nur als Schluessel
+        fuers Wegklicken.
+
+        ⚠⚠ **Die Zwischenziele stehen eingerueckt unter ihrem Auftrag.** Der
+        Auftrag sagt, ob Bauplaene drin sind; das Ziel sagt, was gerade zu tun
+        ist. Die Raute ist dieselbe, die das Spiel selbst neben seine Ziele
+        setzt — und sie kommt aus dem festgelegten Satz (`zeichen.py`), nicht
+        aus einem getippten Zeichen.
+
+        ⚠ Die zwei Formen sind Absicht: Eine Anzeige, die nur Paare bekommt,
+        muss weiter gehen. Der Selbsttest ruft sie so auf, und ein Aufruf ohne
+        Ziele soll nicht mit einem Fehler enden, nur weil nichts anliegt.
         """
         for w in self.auftragsleiste.winfo_children():
             w.destroy()
@@ -2227,7 +2279,9 @@ class Overlay:
         kopf.pack(fill='x')
         kopf._quelle = sprache.Satz('ov_auftraege_kopf')
 
-        for rein, zeile in paare:
+        for eintrag in paare:
+            rein, zeile = eintrag[0], eintrag[1]
+            ziele = list(eintrag[2]) if len(eintrag) > 2 and eintrag[2] else []
             z = tk.Frame(self.auftragsleiste, bg=BG)
             z.pack(fill='x')
             lbl = tk.Label(z, text=str(zeile), bg=BG, fg=FG, font=self.f_sub,
@@ -2252,15 +2306,43 @@ class Overlay:
             weg.bind('<Button-1>', lambda _e, r=rein: self._auftrag_ausblenden(r))
             hinweis.anhaengen(weg, lambda: sprache.t('ov_auftrag_weg'))
             self._auftrag_zeilen.append(lbl)
+            self._ziele_zeigen(ziele)
 
         # ⚠ Welche Auftraege gerade in der Leiste stehen — `add_hinweis`
         # fragt danach, um denselben Text nicht ein zweites Mal darunter zu
         # setzen.
-        self._auftrag_schluessel = {r for r, _z in (paare or [])}
+        self._auftrag_schluessel = {e[0] for e in (paare or [])}
 
         # ⚠ Vor der Liste einordnen, sonst rutscht die Leiste ans Fensterende.
         self.auftragsleiste.pack(fill='x', padx=8, pady=(0, 2),
                                  before=self._listen_traeger)
+
+    def _ziele_zeigen(self, ziele):
+        """Die Zwischenziele eines Auftrags — eingerueckt, eine Zeile je Ziel.
+
+        ⚠ Gedeckelt. Gemessen hat ein Auftrag fast immer **ein** offenes Ziel,
+        der Ausreisser hatte sechs; die Grenze faengt nur den unbekannten Fall
+        ab. Was nicht mehr passt, wird gezaehlt statt verschwiegen — eine
+        abgeschnittene Liste, die sich fuer vollstaendig ausgibt, waere
+        schlimmer als gar keine.
+        """
+        for name in ziele[:auftraege.ZIELE_MAX]:
+            zz = tk.Frame(self.auftragsleiste, bg=BG)
+            zz.pack(fill='x', padx=(14, 0))
+            raute = zeichen.zeile(zz, 'standard', farbe=zeichen.GRAU, grund=BG,
+                                  schrift=self.f_sub)
+            raute.pack(side='left', padx=(0, 5))
+            zl = tk.Label(zz, text=str(name), bg=BG, fg=SUB, font=self.f_sub,
+                          anchor='w', justify='left')
+            zl.pack(side='left', fill='x', expand=True, anchor='w')
+            self._wrap_labels.append(zl)
+        rest = len(ziele) - auftraege.ZIELE_MAX
+        if rest > 0:
+            mehr = tk.Label(self.auftragsleiste,
+                            text=sprache.t('ov_ziele_mehr', rest),
+                            bg=BG, fg=SUB, font=self.f_sub, anchor='w')
+            mehr.pack(fill='x', padx=(14, 0))
+            mehr._quelle = sprache.Satz('ov_ziele_mehr', rest)
 
     def _auftrag_ausblenden(self, rein):
         """Der Spieler nimmt einen Auftrag selbst aus der Anzeige."""

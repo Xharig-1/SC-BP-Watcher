@@ -385,6 +385,126 @@ def offene_aus_text(text, muster_an=None, muster_aus=None):
     return stand_aus_text(text, muster_an, muster_aus)[0]
 
 
+# ---------------------------------------------------------------------------
+# Zwischenziele — was gerade zu tun ist
+# ---------------------------------------------------------------------------
+#
+# Der Auftrag sagt, ob Baupläne drin sind. Das Zwischenziel sagt, **wofür man
+# gerade fliegt**. Beides steht im Protokoll, an zwei verschiedenen Stellen:
+#
+# | | Quelle | sprachneutral? |
+# |---|---|---|
+# | Zustand | `<ObjectiveUpserted> … state MISSION_OBJECTIVE_STATE_…` | ja |
+# | Wortlaut | `Added notification "…: <Ziel>: " … ObjectiveId: [x]` | nein |
+#
+# ⚠ **Der Zustand kommt aus der sprachneutralen Zeile, nie aus dem Wortlaut.**
+# Dieselbe Falle wie bei den Aufträgen: Auf Deutsch heißt die Ziel-Annahme
+# „Neuer Auftrag" — genau wie eine Auftrags-Meldung. Wer darauf hört, zählt
+# falsch. `ObjectiveUpserted` steht in jeder Sprache gleich da.
+#
+# ⚠ **Der Wortlaut wird über die ObjectiveId zugeordnet, nicht über die
+# Phrase.** Damit ist es egal, wie die Meldung heißt und in welcher Sprache
+# sie steht.
+ZIEL_ZUSTAND = re.compile(
+    r'<ObjectiveUpserted>[^\n]*?mission_id (\S+) - objective_id (\S+) - '
+    r'state MISSION_OBJECTIVE_STATE_(\w+)[^\n]*?flags=(\S*)')
+
+ZIEL_TITEL = re.compile(
+    r'Added notification "[^"\n]*?:\s*(.+?)\s*:\s*"[^\n]*?'
+    r'ObjectiveId: \[([0-9a-fA-F][0-9a-fA-F-]{7,})\]')
+
+# ⚠ **Nur was das Spiel selbst ins Auftragsbuch schreibt.** Ein Auftrag führt
+# neben den sichtbaren Zielen eine Menge interner (`SilentUpdates`, `Hidden`) —
+# Zähler, Auslöser, Zonenwächter. Über alle 153 Protokolle gemessen: von 2832
+# Zielen tragen 456 zwar `ShowInLog`, aber keinen Wortlaut; **kein einziges**
+# hat einen Wortlaut ohne `ShowInLog`. Das Kennzeichen kostet also nichts und
+# hält den halben Maschinenraum draußen.
+ZIEL_SICHTBAR = 'ShowInLog'
+
+# Wie viele Ziele höchstens untereinander stehen. Gemessen an denselben
+# Protokollen: 182 von 226 Aufträgen haben **ein** offenes Ziel, der Ausreißer
+# hatte sechs. Die Grenze schützt nur vor dem unbekannten Fall — das Overlay
+# darf nicht die Bauplan-Liste vom Bildschirm schieben.
+ZIELE_MAX = 6
+
+
+def ziel_ereignisse_aus_text(text):
+    """Alle Ziel-Meldungen dieses Textes, in der Reihenfolge des Logs.
+
+    Zwei Sorten, beide als Tupel:
+
+    * `('zustand', mission_id, objective_id, zustand, kennzeichen)`
+    * `('titel', objective_id, wortlaut)`
+
+    Roh und ungewertet — was daraus wird, entscheidet `Ziele`.
+    """
+    gefunden = []
+    for m in ZIEL_ZUSTAND.finditer(text):
+        gefunden.append((m.start(), ('zustand', m.group(1), m.group(2),
+                                     m.group(3), m.group(4))))
+    for m in ZIEL_TITEL.finditer(text):
+        gefunden.append((m.start(), ('titel', m.group(2), m.group(1).strip())))
+    gefunden.sort(key=lambda e: e[0])
+    return [e for _stelle, e in gefunden]
+
+
+class Ziele:
+    """Buchführung über die Zwischenziele — was zu diesem Auftrag ansteht.
+
+    Ein Zustand, keine Verlaufsliste: `aufnehmen()` frisst Abschnitt für
+    Abschnitt, `offen()` sagt jederzeit, was gerade dransteht. Damit rechnen
+    Start (ganzes Protokoll) und laufender Betrieb (neuer Abschnitt) über
+    dieselbe Stelle — genau wie bei den Aufträgen.
+    """
+
+    def __init__(self):
+        self._titel = {}          # objective_id -> Wortlaut
+        self._stand = {}          # mission_id -> {objective_id: (zustand, kennz.)}
+
+    def aufnehmen(self, ereignisse):
+        """Einen Abschnitt verbuchen. Sagt, ob sich etwas geändert hat.
+
+        ⚠ Der Rückgabewert ist wichtig: Ziele wechseln, **ohne** dass sich die
+        Auftragsliste ändert. Ohne dieses Ja stünde in der Leiste noch das
+        Ziel von vor zwanzig Minuten.
+        """
+        veraendert = False
+        for e in ereignisse or ():
+            if e[0] == 'titel':
+                _art, oid, wortlaut = e
+                if wortlaut and self._titel.get(oid) != wortlaut:
+                    self._titel[oid] = wortlaut
+                    veraendert = True
+                continue
+            _art, mid, oid, zustand, kennzeichen = e
+            je_mission = self._stand.setdefault(mid, {})
+            if je_mission.get(oid) != (zustand, kennzeichen):
+                je_mission[oid] = (zustand, kennzeichen)
+                veraendert = True
+        return veraendert
+
+    def offen(self, mission_id):
+        """Die offenen Ziele dieses Auftrags, in der Reihenfolge des Logs.
+
+        ⚠ **Ohne Wortlaut wird geschwiegen.** Ein Ziel, dessen Meldung wir nicht
+        gesehen haben, bekommt hier keine Zeile — dieselbe Linie wie überall:
+        lieber nichts zeigen als etwas Falsches behaupten.
+        """
+        namen = []
+        for oid, (zustand, kennzeichen) in self._stand.get(mission_id,
+                                                           {}).items():
+            if zustand != 'INPROGRESS' or ZIEL_SICHTBAR not in kennzeichen:
+                continue
+            wortlaut = self._titel.get(oid)
+            if wortlaut and wortlaut not in namen:
+                namen.append(wortlaut)
+        return namen
+
+    def vergessen(self, mission_id):
+        """Der Auftrag ist vorbei — seine Ziele auch."""
+        self._stand.pop(mission_id, None)
+
+
 def _index_bauen():
     """Titel → Missionsschlüssel, aus der `global.ini` und dem Katalog.
 

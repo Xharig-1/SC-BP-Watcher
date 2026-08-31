@@ -7372,6 +7372,125 @@ def main():
     pruefe(len(_texte91(_ov91, 'Keine Log-Sicherungen')) == 1,
            'gewoehnliche Hinweise sind nicht betroffen')
 
+    # 92. Was gerade zu tun ist — die Zwischenziele unter dem Auftrag
+    #
+    # ⚠⚠ **Der Auftrag sagt, ob Baupläne drin sind. Das Ziel sagt, wofür man
+    # gerade fliegt.** Beides steht im Protokoll, aber an zwei Stellen: Der
+    # Zustand kommt aus der sprachneutralen Zeile `<ObjectiveUpserted> … state
+    # …`, der Wortlaut aus der übersetzten Meldung — zugeordnet über die
+    # `ObjectiveId`, nie über die Formulierung.
+    #
+    # ⚠ **Nicht auf den Wortlaut hören.** Auf Deutsch heißt die Ziel-Annahme
+    # „Neuer Auftrag" — wortgleich mit einer Auftragsmeldung. Wer danach geht,
+    # zählt Ziele als Aufträge.
+    print()
+    print('92. Was gerade zu tun ist — Zwischenziele unter dem Auftrag')
+    from scbp import auftraege as _au92
+
+    _m92 = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+
+    def _mld92(art, titel, oid=''):
+        return ('Added notification "%s: %s: " [1] to queue. New queue size: 1,'
+                ' MissionId: [%s], ObjectiveId: [%s] [Missions][Comms]'
+                % (art, titel, _m92, oid)) + '\n'
+
+    def _zst92(oid, zustand, flags='ShowInLog|RespectInheritedVisibility|'):
+        return ('<Notice> <ObjectiveUpserted> Received ObjectiveUpserted push'
+                ' message for: mission_id %s - objective_id %s - state'
+                ' MISSION_OBJECTIVE_STATE_%s - created 0 - flags=%s'
+                ' [Team_GameServices][Missions]'
+                % (_m92, oid, zustand, flags)) + '\n'
+
+    _z92 = _au92.Ziele()
+    _z92.aufnehmen(_au92.ziel_ereignisse_aus_text(
+        _mld92('Neuer Auftrag', 'Solanki-Plattform erreichen', 'aaaa1111')
+        + _zst92('aaaa1111', 'INPROGRESS')))
+    pruefe(_z92.offen(_m92) == ['Solanki-Plattform erreichen'],
+           'ein angefangenes Ziel steht da')
+
+    # a) Der halbe Maschinenraum bleibt draussen: Zaehler und Zonenwaechter
+    #    laufen als Ziele mit, gehoeren aber in kein Auftragsbuch.
+    _z92.aufnehmen(_au92.ziel_ereignisse_aus_text(
+        _zst92('cccc3333', 'INPROGRESS', 'SilentUpdates|')))
+    pruefe(_z92.offen(_m92) == ['Solanki-Plattform erreichen'],
+           'ein internes Ziel ohne ShowInLog taucht NICHT auf')
+
+    # b) Ohne Wortlaut wird geschwiegen — dieselbe Linie wie ueberall.
+    _z92.aufnehmen(_au92.ziel_ereignisse_aus_text(_zst92('eeee5555', 'INPROGRESS')))
+    pruefe(_z92.offen(_m92) == ['Solanki-Plattform erreichen'],
+           'ein Ziel ohne bekannten Wortlaut wird nicht erfunden')
+
+    # c) Erledigt heisst weg — und zurueckgezogen auch.
+    _geaendert92 = _z92.aufnehmen(_au92.ziel_ereignisse_aus_text(
+        _zst92('aaaa1111', 'COMPLETED')
+        + _mld92('Neuer Auftrag', 'Dach erreichen', 'dddd4444')
+        + _zst92('dddd4444', 'INPROGRESS')))
+    pruefe(_z92.offen(_m92) == ['Dach erreichen'],
+           'ein erledigtes Ziel macht dem naechsten Platz')
+    pruefe(_geaendert92 is True,
+           'die Buchfuehrung meldet, dass sich etwas geaendert hat')
+    pruefe(_z92.aufnehmen([]) is False,
+           'und meldet nichts, wenn nichts kam')
+
+    # d) ⚠⚠ **Das war der Fehler vom 31.08.2026.** Ein zurueckgezogenes ZIEL
+    #    darf den Auftrag nicht mitreissen — die beiden Ebenen muessen auch
+    #    hier getrennt bleiben.
+    _text92 = (_mld92('Auftrag angenommen', 'Retake Platforms')
+               + _mld92('Neuer Auftrag', 'Dach erreichen', 'dddd4444')
+               + _zst92('dddd4444', 'INPROGRESS')
+               + _mld92('Auftrag zurückgezogen', 'Dach erreichen', 'dddd4444')
+               + _zst92('dddd4444', 'WITHDRAWN'))
+    _offen92, _mid92 = _au92.stand_aus_text(_text92)
+    _z92b = _au92.Ziele()
+    _z92b.aufnehmen(_au92.ziel_ereignisse_aus_text(_text92))
+    pruefe(len(_offen92) == 1 and _z92b.offen(_m92) == [],
+           'das Ziel ist weg, der Auftrag bleibt')
+
+    # e) Und der Auftrag nimmt seine Ziele mit, wenn er endet.
+    _z92b.vergessen(_m92)
+    pruefe(_z92b.offen(_m92) == [],
+           'ein beendeter Auftrag laesst keine Ziele zurueck')
+
+    # f) Die Anzeige. @ Geprueft wird, was dasteht — nicht, was im Quelltext
+    #    steht. Genau daran ist der Doppel-Eintrag (Pruefung 91) nur auf einem
+    #    Bildschirmfoto aufgefallen.
+    _wz92 = _wurzel()
+    _ov92 = _w91.Overlay(_wz92)
+    _ov92.auftraege_zeigen([('retake', 'Auftrag: Retake Platforms',
+                             ['Dach erreichen', 'Remy Kettle eliminieren'])])
+    for _ in range(4):
+        _wz92.update()
+        _wz92.update_idletasks()
+    pruefe(len(_texte91(_ov92, 'Dach erreichen')) == 1
+           and len(_texte91(_ov92, 'Remy Kettle')) == 1,
+           'beide Ziele stehen unter ihrem Auftrag')
+
+    # g) ⚠⚠ **Die alte Form muss weiter gehen.** Eine Anzeige, die nur Paare
+    #    bekommt, darf nicht mit einem Fehler enden, nur weil kein Ziel anliegt.
+    _ov92.auftraege_zeigen([('kill', 'Auftrag: Kill the king')])
+    for _ in range(4):
+        _wz92.update()
+        _wz92.update_idletasks()
+    pruefe(len(_texte91(_ov92, 'Kill the king')) == 1,
+           'ein Auftrag ohne Ziele wird weiterhin angezeigt')
+
+    # h) Was nicht mehr passt, wird gezaehlt statt verschwiegen.
+    _viele92 = ['Ziel %d' % _i for _i in range(_au92.ZIELE_MAX + 3)]
+    _ov92.auftraege_zeigen([('viel', 'Auftrag: Viele Ziele', _viele92)])
+    for _ in range(4):
+        _wz92.update()
+        _wz92.update_idletasks()
+    pruefe(len(_texte91(_ov92, 'Ziel ')) == _au92.ZIELE_MAX,
+           'hoechstens %d Ziele stehen untereinander' % _au92.ZIELE_MAX)
+    pruefe(len(_texte91(_ov92, '3')) >= 1,
+           'und der Rest wird gezaehlt, nicht verschwiegen')
+
+    try:
+        _ov92.root.destroy()
+        _wz92.destroy()
+    except Exception:
+        pass
+
     try:
         _ov91.root.destroy()
         _wz91.destroy()

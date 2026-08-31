@@ -516,6 +516,10 @@ TEXTE = {
     # ausloggen musste, um einen Fehler loszuwerden.
     'ov_auftrag_weg':    ('Diesen Auftrag ausblenden',
                           'Hide this contract'),
+    # Die Zwischenziele stehen eingerueckt unter ihrem Auftrag. Passen nicht
+    # alle hin, wird der Rest GEZAEHLT — eine abgeschnittene Liste, die sich
+    # fuer vollstaendig ausgibt, waere schlimmer als gar keine.
+    'ov_ziele_mehr':     ('… und %d weitere', '… and %d more'),
     # Das Kreuz im Suchfeld. ⚠ Ein Feld ohne sichtbaren Weg zurueck laesst
     # Leute den Text markieren und loeschen — oder sie glauben, die Liste sei
     # kurz, weil nichts da ist.

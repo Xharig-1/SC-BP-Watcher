@@ -6,11 +6,49 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.4.6 - 2026-08-31
+## v3.5.0 - 2026-08-31
 
-A running contract vanished from the overlay even though it was still active in
-the game. That was a side effect of v3.4.4, and it is fixed — along with the
-wrong assumption behind it.
+Every running contract now shows **what to do next**. And the contract itself no
+longer vanishes while it is still running in the game — that was a side effect
+of v3.4.4 and is fixed, along with the wrong assumption behind it.
+
+### New
+
+- ⭐⭐ **Open objectives are listed under their contract.**
+
+  ```
+  Active contracts (per log)
+  Contract accepted: Retake Platforms From Nine Tails  →  3 blueprints
+     ◆ Disable the Hartmoore inverter
+     ◆ Locate and reset the node
+  ```
+
+  The contract tells you whether blueprints are in it. The objective tells you
+  what you are flying for right now. Both are in the log — only one half was
+  being used. Finish an objective and it drops off, the next one moves up.
+
+  Where the data comes from, deliberately kept apart:
+
+  | | Source | language-neutral? |
+  |---|---|---|
+  | State (running / done / gone) | `<ObjectiveUpserted> … state …` | yes |
+  | Wording | the in-game notification, matched by `ObjectiveId` | no |
+
+  ⚠ **State never comes from the wording.** In German the objective
+  notification reads "Neuer Auftrag" — word for word the same as a contract
+  notification. Go by that and you count objectives as contracts.
+
+  ⚠ **Only what the game itself writes into the contract log.** A contract also
+  runs a pile of internal objectives: counters, triggers, zone watchers.
+  Measured across all 153 logs: of 2832 objectives, 456 carry the `ShowInLog`
+  flag but no wording — **not one** has wording without that flag. No wording
+  means no line, rather than a guess.
+
+  ⚠ **Six lines at most**, the rest is counted. Measured, a contract almost
+  always has exactly **one** open objective (182 of 226); the outlier had six.
+  The cap only catches the unknown case — the overlay must not push the
+  blueprint list off screen. A truncated list that passes itself off as
+  complete would be worse than none.
 
 ### Fixed
 
