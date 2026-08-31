@@ -53,7 +53,7 @@ from . import pfade
 from .sprache import t
 
 MERKDATEI = 'uebersetzung.json'
-KENNUNG = 'SC-BP-Watcher (+https://github.com/Xharig-1/SC-BP-Watcher)'
+KENNUNG = 'SC-BP-Watcher (+https://github.com/Xharig/SC-BP-Watcher)'
 ZEITLIMIT = 60
 
 # Die Fremdquellen. `sprache` ist der Ordnername, unter dem Star Citizen die

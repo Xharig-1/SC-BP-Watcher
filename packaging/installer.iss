@@ -16,7 +16,7 @@
 
 #define AppName "SC BP Watcher"
 #define AppPublisher "Xharig"
-#define AppURL "https://github.com/Xharig-1/SC-BP-Watcher"
+#define AppURL "https://github.com/Xharig/SC-BP-Watcher"
 #ifndef AppVersion
   #define AppVersion "0.0.0"
 #endif

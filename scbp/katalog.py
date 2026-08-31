@@ -102,7 +102,7 @@ CACHE = 'katalog-cache.json'
 #
 # **Hochzählen, sobald `_missionen()` oder `_herkunft()` etwas anders ablegen.**
 FORMAT = 2
-KENNUNG = 'SC-BP-Watcher/2.0 (+https://github.com/Xharig-1/SC-BP-Watcher)'
+KENNUNG = 'SC-BP-Watcher/2.0 (+https://github.com/Xharig/SC-BP-Watcher)'
 ZEITLIMIT = 120
 AUS = os.environ.get('SC_BP_NO_NET', '') not in ('', '0')
 

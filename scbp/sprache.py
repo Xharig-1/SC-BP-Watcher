@@ -2002,7 +2002,7 @@ TEXTE = {
                            'for this blueprint.'),
     # ⚠ Bei einer TEILmenge muss beides dastehen. „dir fehlt 0,07" allein
     # verschweigt, dass 0,02 schon da sind — und genau das will man wissen,
-    # bevor man losfliegt. (Frage von Xharig-1, 29.08.2026.)
+    # bevor man losfliegt. (Frage von Xharig, 29.08.2026.)
     # Spaltenkoepfe der Lager-Tabelle — anklickbar zum Sortieren.
     's_lg_sp_material':  ('Material', 'Material'),
     's_lg_sp_menge':     ('Menge', 'Amount'),
@@ -2018,7 +2018,7 @@ TEXTE = {
     's_lg_fehlt':        ('dir fehlt: %g', 'you are missing: %g'),
     # ⚠ Der Knopf muss sagen, WAS PASSIERT. 'Das stelle ich jetzt her' klang
     # nach einer Aktion im Spiel; dass dabei das eigene Lager verrechnet wird,
-    # stand nirgends. Xharig-1 hat ihn am 29.08.2026 selbst nicht gefunden.
+    # stand nirgends. Xharig hat ihn am 29.08.2026 selbst nicht gefunden.
     's_lg_bauen':        ('Hergestellt — vom Lager abziehen',
                           'Crafted — deduct from stock'),
     's_lg_bauen_hilfe':  ('Du hast es gebaut? Dann nimmt der Watcher die Zutaten '

@@ -27,7 +27,7 @@ stand alles zusammen, ohne dass man sah, was davon ballistisch ist und was
 Laser. Am 29.08.2026 gemeldet: *„da gibt es aber viele, und ich weiß grad nicht,
 welche Ballistik sind, welche Laser, welche Repeater oder Cannon."*
 
-**Die Gliederung ist nicht erfunden.** Sie folgt der Liste, die Xharig-1 seit
+**Die Gliederung ist nicht erfunden.** Sie folgt der Liste, die Xharig seit
 Hand gepflegten Vergleichsliste: sieben
 Oberkategorien, darunter die feinen Arten. Was sich dort bewährt hat, muss das
 Werkzeug nicht neu erfinden.
@@ -188,7 +188,7 @@ def einordnen(art='', tag='', unterart='', rezeptart=''):
     if (art or '').lower().startswith('char_clothing'):
         return (KLEIDUNG, '')
     # ⚠ Was sich nicht bündeln lässt, bleibt **allein stehen** — mit seinem
-    # eigenen Namen, nicht in einem Sammeltopf „Sonstiges". Xharig-1:
+    # eigenen Namen, nicht in einem Sammeltopf „Sonstiges". Xharig:
     # „nur was man nicht bündeln kann, sollte noch alleine stehen bleiben."
     # Ein Andockkragen gehört in keine der sieben Gruppen, ist aber eine klare
     # Sache — er verschwindet nicht, er steht für sich.

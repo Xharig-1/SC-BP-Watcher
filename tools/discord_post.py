@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.join(WURZEL, '.github', 'scripts'))
 
 GRENZE = 2000            # Discord nimmt nicht mehr je Nachricht
 PUNKTE = 6               # mehr liest im Vorbeiscrollen niemand
-REPO = 'https://github.com/Xharig-1/SC-BP-Watcher'
+REPO = 'https://github.com/Xharig/SC-BP-Watcher'
 
 
 def punkte_aus(block):

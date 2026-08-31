@@ -391,7 +391,7 @@ def _scmdb_hole(url, timeout=SCMDB_TIMEOUT):
     # Protokoll sehen können, welches Werkzeug da abruft und wo er nachfragen
     # kann. Kostet nichts und ist schlicht anständig.
     import urllib.request
-    kennung = 'SC-BP-Watcher/%s (+https://github.com/Xharig-1/SC-BP-Watcher)' % __version__
+    kennung = 'SC-BP-Watcher/%s (+https://github.com/Xharig/SC-BP-Watcher)' % __version__
     req = urllib.request.Request(url, headers={'User-Agent': kennung})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.loads(r.read().decode('utf-8'))

@@ -204,7 +204,7 @@ def _suche_leeren_kreuz(fenster, halter, var):
 def _filterleiste(fenster, eltern, felder, beim_wechsel, zustand):
     """Eine Reihe Auswahlfelder plus „Auswahl zurücksetzen" — für jede Seite gleich.
 
-    ⚠⚠ **Ein Bedienkonzept für das ganze Programm.** Xharig-1 am 29.08.2026:
+    ⚠⚠ **Ein Bedienkonzept für das ganze Programm.** Xharig am 29.08.2026:
     *„egal wo, sollte das Bedienkonzept nicht jedes Mal ändern — die Leute
     wollen es nutzen und nicht erst lernen, wie sie es nutzen."* Wer die
     Bauplan-Liste bedienen kann, muss Herstellung und Bergbau ohne Umlernen
@@ -586,7 +586,7 @@ def _knopfreihe(eltern, knoepfe, abstand=8):
             + abstand * (len(knoepfe) - 1)
 
         # ⚠⚠ **Erst Platz schaffen, dann umbrechen.** Untereinander stehende
-        # Knöpfe sehen aus wie ein Fehler — Xharig-1: „das sieht schrecklich
+        # Knöpfe sehen aus wie ein Fehler — Xharig: „das sieht schrecklich
         # aus." Bevor umgebrochen wird, fordert die Reihe deshalb die Breite
         # an, die sie braucht.
         #
@@ -3256,8 +3256,8 @@ def _danke(fenster, rahmen):
     tk.Label(rechts, text='SC BP Watcher %s · GPL-3.0-only'
              % (fenster.version or ''), bg=FLAECHE, fg=SUB,
              font=fenster.f_klein, anchor='w').pack(fill='x')
-    _adresse(fenster, rechts, 'github.com/Xharig-1/SC-BP-Watcher',
-             'https://github.com/Xharig-1/SC-BP-Watcher')
+    _adresse(fenster, rechts, 'github.com/Xharig/SC-BP-Watcher',
+             'https://github.com/Xharig/SC-BP-Watcher')
     _fliesstext(innen, t('s_dk_selbst_h'), fenster.f_klein, fill='x',
                 pady=(10, 0))
 
@@ -3882,7 +3882,7 @@ def _herstellung(fenster, rahmen):
     wahl = {'art': '', 'unterart': '', 'hersteller': '', 'zustand': '',
             'material': ''}
 
-    # ⚠⚠ **Dieselbe Gliederung wie in der Bauplan-Liste.** Xharig-1:
+    # ⚠⚠ **Dieselbe Gliederung wie in der Bauplan-Liste.** Xharig:
     # „BP und Herstellung sind ja die gleichen BP, also muss man auf die
     # gleiche Art suchen." Beide Seiten fragen dasselbe Modul — wer hier eine
     # eigene Einteilung baute, hätte zwei Wahrheiten über dieselben Daten.
@@ -4158,7 +4158,7 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
 
         # ⭐ **Der Knopf steht GANZ OBEN.** Er stand bis zum 29.08.2026 unter
         # den Zutaten, der Herstellzeit UND dem Block „Mit deinem Material" —
-        # bei drei Zutaten also gut zehn Zeilen tiefer. Xharig-1 hat ihn selbst
+        # bei drei Zutaten also gut zehn Zeilen tiefer. Xharig hat ihn selbst
         # nicht gefunden: „wenn selbst ich es nicht verstehe". Eine Funktion,
         # die man suchen muss, ist für den Nutzer nicht vorhanden.
         reihe = tk.Frame(block, bg='#0c1017')
@@ -4368,7 +4368,7 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
             tk.Label(z, text=_dauer(stufe['zeit']), bg='#0c1017',
                      fg=FG, font=fenster.f_klein).pack(side='left')
 
-        # ⭐ Was käme mit DEINEM Material heraus? (Idee von Xharig-1, 29.08.2026)
+        # ⭐ Was käme mit DEINEM Material heraus? (Idee von Xharig, 29.08.2026)
         #
         # Die Rezepte tragen die Qualitätswirkung mit: mieses Erz macht ein
         # schlechteres Stück, gutes ein besseres. Das steht in keiner Webseite,
@@ -5330,7 +5330,7 @@ def _lager(fenster, rahmen):
     # ⚠ Als **Tabelle mit Spalten**, nicht als Fließtext: Bei 26 Materialien
     # an mehreren Orten wird die Liste lang, und dann sucht man einen Posten,
     # statt ihn zu sehen. Spaltenköpfe sortieren auf Klick, das Feld darüber
-    # filtert. (Wunsch von Xharig-1, 29.08.2026.)
+    # filtert. (Wunsch von Xharig, 29.08.2026.)
     sortier = {'nach': 'material', 'ab': False}
     filter_var = tk.StringVar()
 

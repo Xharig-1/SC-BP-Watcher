@@ -56,7 +56,7 @@ import urllib.request
 from . import fehler
 from . import pfade
 
-REPO = 'Xharig-1/SC-BP-Watcher'
+REPO = 'Xharig/SC-BP-Watcher'
 API = 'https://api.github.com/repos/%s/releases' % REPO
 # ⚠ **Kein `/releases/latest` mehr (28.08.2026).** Der Link führte auf
 # **v2.0.0**: GitHub blendet dort Vorabversionen aus, und alle rc-Fassungen

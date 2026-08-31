@@ -85,7 +85,7 @@ ROT     = '#e05252'
 # ⚠ **1160, nicht 1100.** Die Knopfreihe auf „Fehler melden" braucht auf
 # Deutsch 869 px (fünf Knöpfe, gemessen 29.08.2026); dazu die Seitenleiste mit
 # 210 und rund 60 für Ränder und Rollleiste. Bei 1100 brach sie um und die
-# Knöpfe standen untereinander — Xharig-1: „das sieht schrecklich aus."
+# Knöpfe standen untereinander — Xharig: „das sieht schrecklich aus."
 # Englisch käme mit 710 aus; massgeblich ist die längere Sprache.
 # ⭐ **Mindesthöhe 380 statt 760** (30.08.2026). Sie hing vorher am Platzbedarf
 # der Seitenleiste — bei 1020 px passte das Fenster auf keinen 1080er
@@ -211,7 +211,7 @@ def nach_vorn(fenster, fokus=False):
         #    ⚠ Nur unter Wayland, und nur wenn das Fenster wirklich verdeckt
         #    ist. Es kostet ein kurzes Flackern; das ist der Preis dafür, dass
         #    der Klick überhaupt etwas tut. Ohne diesen Schritt blieb nur
-        #    „Programm neu starten", und dazu Xharig-1 am 29.08.2026:
+        #    „Programm neu starten", und dazu Xharig am 29.08.2026:
         #    „nen user findet das nervig und wers nicht nervig findet rafft es
         #    nicht."
         if _wayland() and not fenster.focus_displayof():
@@ -1664,7 +1664,7 @@ class Hauptfenster:
         # gibt zugleich den Kontext, deshalb reichen darunter kurze Namen.
         # ⚠ Die Reihenfolge ist die **Kette, wie man sie im Spiel erlebt**:
         # Was habe ich → was brauche ich dafür → wo hole ich das. So hat es
-        # Xharig-1 am 29.08.2026 selbst beschrieben, und so liest sich die
+        # Xharig am 29.08.2026 selbst beschrieben, und so liest sich die
         # Leiste von oben nach unten wie ein Ablauf statt wie eine Sammlung.
         g_werk = self._gruppe(t('hf_gruppe_herst'), 'werkstatt')
         self._reiter('lager', 'bestand', t('hf_lager'), g_werk)

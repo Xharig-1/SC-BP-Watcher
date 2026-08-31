@@ -88,7 +88,7 @@ AMPEL = {
 
 def _kennung():
     from sc_bp_watcher import __version__ as v
-    return 'SC-BP-Watcher/%s (+https://github.com/Xharig-1/SC-BP-Watcher)' % v
+    return 'SC-BP-Watcher/%s (+https://github.com/Xharig/SC-BP-Watcher)' % v
 
 
 def _hole(pfad, etag=None):
