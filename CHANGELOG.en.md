@@ -39,14 +39,6 @@ that, although it cannot break anything. Reported by **Haldjas**.
   ⚠ Two buttons for one job are worse than one: whoever hits the weaker one
   concludes the tool cannot do it.
 
-### Internal
-
-- **Self-test 95** pins both down: that "read again" adds no duplicates and
-  does not downgrade a better source, that exactly **one** path triggers the
-  re-read — and that red now hangs on the reset alone.
-  ⚠ The check looks at the **code**, not the comments: while being written it
-  first snagged on the explanation of why the second button went.
-
 ## v3.5.1 - 2026-08-31
 
 "Reset inventory" did nothing at all for some people — and did not say why.
@@ -97,17 +89,6 @@ to ask back: does log detection work at all?
 - ⚠ **And when it really does fail, it says so on screen.** No permission, file
   locked — that used to live in the diagnostics only, where it is found by
   those who know it exists. The status line says it now.
-
-### Internal
-
-- **Self-test 94 found a hole while it was being written**: the first call in
-  the new report line sat outside the guard — an unplugged drive would have
-  taken the whole report with it. That very line appears in a report someone
-  sends **because** something is already broken.
-- **The decision moved out of the interface**: `bestand.zuruecksetzen()`
-  returns `None` when no inventory file remains afterwards, otherwise the
-  failure. That lets self-test 93 run **without a window** — on any system and
-  in the build run.
 
 ## v3.5.0 - 2026-08-31
 
@@ -192,20 +173,6 @@ of v3.4.4 and is fixed, along with the wrong assumption behind it.
   Result: **not one** of the 362 contract endings stays unmatched. So there is
   no need to guess and none to wipe — both are gone.
 
-### Internal
-
-- **One place reads contract notifications, not two.** Startup (the whole
-  `Game.log`) and live operation (the new chunk) used to go separate ways and
-  could drift apart. Both now call `auftraege.ereignisse_aus_text()` and decide
-  via `auftraege.beendet_welchen()`.
-- **The contract state remembers the mission ids** — including those from
-  startup. When a contract accepted before the tool was started ends, that id is
-  often the only bridge back to its line.
-- **Self-test 89 rewritten.** It now checks both directions against log lines in
-  the real format: a withdrawn objective leaves the contract standing, a real
-  abort hits exactly its contract via the `MissionId` — and without ids the
-  title still decides.
-
 ## v3.4.5 - 2026-08-31
 
 An accepted contract appeared twice in the overlay — once in the contract bar
@@ -220,14 +187,6 @@ and word for word again below it. It now appears once.
 
   If a contract is already in the bar, the note line is dropped. Without the bar
   — or after the contract has been dismissed there — it still appears.
-
-### Internal
-
-- **The new check looks at the display, not at the source.** The bug was
-  visible in a screenshot and not in the code; a check that only reads lines
-  would never have found it. Self-test 91 builds the overlay, puts a contract
-  into the bar, sends the same sentence as a note and counts how often it is
-  visible.
 
 ## v3.4.4 - 2026-08-31
 
@@ -296,15 +255,6 @@ are on v3.4.2, grab this build.
   the whole storage. The later one wins, and building the list died with a type
   error.
 
-### Internal
-
-- **Two checks that would have caught it.** The interface check saw the error
-  while building — and said nothing: it printed it but returned "all fine".
-  Worse, `oeffnen()` catches every exception itself and only writes it to the
-  error log, so nothing ever reached the check. It now reads that log and turns
-  red. On top, self-test 88 walks the syntax tree to make sure no local name is
-  assigned twice inside one function.
-
 ## v3.4.2 - 2026-08-31
 
 Drag the window to the size you need once — it will be there again next time.
@@ -322,20 +272,6 @@ with the workshop and the trading section instead of last week's interface.
   position: a stored position points into nowhere on a different machine, so
   the window still opens centred. A size from the big screen is capped to the
   smaller one.
-
-### Internal
-
-- **The build run found a bug no machine here shows:** when the screen is **smaller** than the window’s minimum size — as it is on the build machine — capping to the screen size beat the minimum size. The result would have been a window below its own `minsize`. The order is fixed, and self-test 87 now simulates the small screen itself.
-
-- **The screenshots for the guide are now produced by a tool**
-  (`tools/bilder_machen.py`) instead of being collected by hand. Eleven of the
-  sixteen images were from 27 Aug and showed an interface that no longer
-  exists — no workshop, no trading, a different sidebar. All thirty images
-  (German and English) are new and share one size.
-
-  The tool does **not** take over the screen: the window is built outside the
-  visible area and captured via `PrintWindow` — anyone playing meanwhile
-  notices nothing.
 
 ## v3.4.1 - 2026-08-31
 

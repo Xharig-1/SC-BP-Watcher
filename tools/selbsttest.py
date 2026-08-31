@@ -6859,12 +6859,17 @@ def main():
     pruefe('bestand' in _fenster85.knoepfe,
            'und ist nach dem Aufklappen da')
 
-    # Und der Knopf, der den Lauf anstoesst, warnt dauerhaft — nicht erst,
-    # wenn die Maus schon darauf steht.
+    # ⚠⚠ **Umgedreht am 31.08.2026.** Hier stand bis v3.5.1 das Gegenteil:
+    # „Protokolle erneut einlesen" MUSSTE rot sein. Das war falsch — der Knopf
+    # legt nur an und kann nichts wegnehmen. Direkt darunter steht das
+    # ebenfalls rote „Bestand zuruecksetzen", das wirklich loescht; zwei
+    # Bedeutungen fuer dieselbe Farbe heissen, dass die Farbe nicht mehr warnt.
+    # Gemeldet von Haldjas, der den harmlosen drueckte. Das Ganze steht jetzt
+    # in Pruefung 95.
     _q85s = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
                  encoding='utf-8').read()
-    pruefe("t('s_be_neu'), neu_einlesen, gefahr=True" in _q85s,
-           'der Knopf „Protokolle erneut einlesen" ist rot')
+    pruefe("t('s_be_neu'), neu_einlesen, gefahr=True" not in _q85s,
+           'der Knopf „Protokolle erneut einlesen" ist NICHT rot')
 
     _q85p = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
                  encoding='utf-8').read()

@@ -40,15 +40,6 @@ rot, obwohl er nichts kaputt machen kann. Gemeldet von **Haldjas**.
   ⚠ Zwei Knöpfe für eine Sache sind schlimmer als einer: Wer den schwächeren
   erwischt, glaubt, das Werkzeug könne es nicht.
 
-### Intern
-
-- **Selbsttest 95** hält beides fest: dass „erneut einlesen" nichts doppelt
-  anlegt und keine bessere Quelle herunterstuft, dass genau **ein** Weg das
-  Einlesen anstößt — und dass Rot nur noch am Zurücksetzen hängt.
-  ⚠ Die Prüfung schaut dabei auf den **Code**, nicht auf die Kommentare: Beim
-  Schreiben blieb sie zuerst an der Erklärung hängen, warum der zweite Knopf
-  weg ist.
-
 ## v3.5.1 - 2026-08-31
 
 „Bestand zurücksetzen" tat bei manchen Leuten gar nichts — und sagte auch nicht,
@@ -100,17 +91,6 @@ sonst zurückfragen müsste: greift die Log-Erkennung überhaupt?
 - ⚠ **Und wenn es wirklich schiefgeht, steht es auf dem Bildschirm.** Keine
   Rechte, Datei gesperrt — das stand bisher nur in der Diagnose, wo es nur
   findet, wer weiß, dass es sie gibt. Jetzt sagt es die Fußzeile.
-
-### Intern
-
-- **Selbsttest 94 hat beim Bauen gleich ein Loch gefunden**: Der erste Aufruf
-  in der neuen Berichtszeile lag außerhalb der Absicherung — eine ausgehängte
-  Platte hätte den ganzen Bericht mitgenommen. Genau die Zeile steht in einem
-  Bericht, den jemand abschickt, **weil** schon etwas kaputt ist.
-- **Die Entscheidung ist aus der Oberfläche heraus**: `bestand.zuruecksetzen()`
-  gibt `None` zurück, wenn danach keine Bestandsdatei mehr da ist, sonst die
-  Störung. Damit lässt sich Selbsttest 93 **ohne Fenster** fahren — auf jedem
-  System und im Bau-Lauf.
 
 ## v3.5.0 - 2026-08-31
 
@@ -198,21 +178,6 @@ dahinter.
   Ergebnis: **Kein einziges** der 362 Auftragsenden bleibt unzuordenbar. Damit
   muss weder geraten noch pauschal geräumt werden — beides ist raus.
 
-### Intern
-
-- **Eine Stelle liest die Auftragsmeldungen, nicht zwei.** Der Start (ganze
-  `Game.log`) und der laufende Betrieb (neuer Abschnitt) gingen bisher getrennte
-  Wege und konnten auseinanderlaufen. Beide rufen jetzt
-  `auftraege.ereignisse_aus_text()` und entscheiden über
-  `auftraege.beendet_welchen()`.
-- **Der Auftragsstand merkt sich die Missions-Kennungen** — auch die aus dem
-  Start. Endet ein Auftrag, der vor dem Start des Werkzeugs angenommen wurde,
-  ist die Kennung oft die einzige Brücke zurück zu seiner Zeile.
-- **Selbsttest 89 neu geschrieben.** Er prüft jetzt an Protokollzeilen im echten
-  Format beide Richtungen: Ein zurückgezogenes Zwischenziel lässt den Auftrag
-  stehen, ein echter Abbruch trifft über die `MissionId` genau seinen Auftrag —
-  und ohne Kennungen zählt weiterhin der Titel.
-
 ## v3.4.5 - 2026-08-31
 
 Ein angenommener Auftrag stand zweimal im Overlay — einmal in der Auftragsleiste
@@ -227,14 +192,6 @@ und wortgleich noch einmal darunter. Jetzt steht er einmal da.
 
   Steht ein Auftrag schon in der Leiste, entfällt die Hinweiszeile. Ohne Leiste
   — oder nachdem der Auftrag dort weggeklickt wurde — erscheint sie weiterhin.
-
-### Intern
-
-- **Die neue Prüfung schaut auf die Anzeige, nicht auf den Quelltext.** Der
-  Fehler war auf einem Bild zu sehen und im Code nicht; eine Prüfung, die nur
-  Zeilen liest, hätte ihn nie gefunden. Selbsttest 91 baut das Overlay auf,
-  setzt einen Auftrag in die Leiste, schickt denselben Satz als Hinweis und
-  zählt, wie oft er sichtbar dasteht.
 
 ## v3.4.4 - 2026-08-31
 
@@ -306,16 +263,6 @@ Posten fehlten. Wer v3.4.2 hat, holt sich am besten gleich diese Fassung.
   Rahmen aus, die andere (neu dazugekommen) leert das ganze Lager. Die spätere
   gewinnt, und der Aufbau der Liste starb mit einem Typfehler.
 
-### Intern
-
-- **Zwei Prüfungen, die genau das gefangen hätten.** Die Oberflächenprüfung hat
-  den Fehler beim Aufbau gesehen — und geschwiegen: Sie druckte ihn aus, gab
-  aber „alles in Ordnung" zurück. Schlimmer noch, `oeffnen()` fängt jede
-  Ausnahme selbst ab und schreibt sie nur ins Fehlerprotokoll, sodass bei der
-  Prüfung gar nichts ankam. Sie liest jetzt das Protokoll mit und wird rot.
-  Dazu prüft Selbsttest 88 über den Syntaxbaum, dass in keiner Funktion ein
-  lokaler Name zweimal vergeben wird.
-
 ## v3.4.2 - 2026-08-31
 
 Zieh das Fenster einmal auf die Größe, die du brauchst — beim nächsten Start
@@ -334,20 +281,6 @@ vorletzter Woche.
   nicht die Lage: Eine gespeicherte Position zeigt auf einem anderen Rechner
   ins Nichts — das Fenster geht deshalb weiter mittig auf. Eine Größe vom
   großen Bildschirm wird am kleineren auf dessen Maß gedeckelt.
-
-### Intern
-
-- **Der Bau-Lauf hat einen Fehler gefunden, den kein Rechner hier zeigt:** Ist der Bildschirm **kleiner** als die Mindestgröße des Fensters — auf dem Bau-Rechner ist er das —, gewann die Deckelung auf die Bildschirmgröße gegen die Mindestgröße. Herausgekommen wäre ein Fenster unterhalb seines eigenen `minsize`. Die Reihenfolge ist berichtigt, und Selbsttest 87 stellt den kleinen Bildschirm jetzt selbst nach.
-
-- **Die Bildschirmfotos der Anleitung macht jetzt ein Werkzeug**
-  (`tools/bilder_machen.py`), statt sie von Hand zusammenzusuchen. Elf der
-  sechzehn Bilder waren vom 27.08. und zeigten eine Oberfläche, die es so nicht
-  mehr gibt — ohne Werkstatt, ohne Handel, mit anderer Seitenleiste. Alle
-  dreißig Bilder (deutsch und englisch) sind neu und einheitlich groß.
-
-  Das Werkzeug belegt dabei **nicht den Bildschirm**: Das Fenster entsteht
-  ausserhalb des sichtbaren Bereichs und wird über `PrintWindow` abgegriffen —
-  wer nebenher spielt, merkt nichts davon.
 
 ## v3.4.1 - 2026-08-31
 
