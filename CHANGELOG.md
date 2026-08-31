@@ -6,6 +6,66 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.7.0 - 2026-08-31
+
+Eine Tastenkombination, die auch im Spiel greift. Dazu die weiße Titelleiste —
+die war in v3.6.0 nicht wirklich weg.
+
+### Neu
+
+- ⭐⭐ **Strg+Alt+B holt die Bauplan-Liste nach vorn — mitten aus dem Spiel.**
+
+  Star Citizen läuft im Vollbild und blendet den Mauszeiger aus: Wer nachsehen
+  will, ob er einen Bauplan schon hat, musste heraustabben und das Fenster dann
+  **blind** suchen und anklicken. Nutzerwunsch vom 31.08.2026.
+
+  Einstellbar unter **Anzeige**. Strg, Alt und Umschalt lassen sich mit einem
+  Buchstaben, einer Ziffer oder F1 bis F12 verbinden.
+
+  ⚠ **Es wird nichts mitgehört.** Angemeldet wird genau **eine** Kombination,
+  und das System weckt das Werkzeug nur bei genau dieser. Alles andere sieht es
+  nie — kein Mitschreiben, kein Zugriff auf das, was du im Spiel tippst. Das
+  ist der Unterschied zu einem Tastatur-Haken, und der Grund, warum nur dieser
+  Weg in Frage kam.
+
+  ⚠ **Ohne Modifikator geht es nicht.** Eine nackte Taste systemweit zu
+  belegen hieße, sie im Spiel unbrauchbar zu machen.
+
+  ⚠ **Unter Wayland kann das kein Programm** — das lässt das System aus gutem
+  Grund nicht zu. Statt eines toten Eingabefeldes steht dort die Erklärung und
+  der Weg über die Tastenkombinationen des Schreibtischs.
+
+- ⭐ **Die Eigenschaften der Rezepte stehen auf Deutsch da.** „Damage
+  Mitigation" heißt jetzt Schadensminderung, „Integrity" Integrität, „Max.
+  Shield Strength" Schildstärke — alle 24. Gemeldet: „einige können kein
+  Englisch und verstehen das nun nicht, und melden, es würde ihnen nicht
+  helfen."
+
+  ⚠ Übersetzt wird über den **sprachneutralen Schlüssel**, nicht über den
+  englischen Text — sonst fällt beim nächsten Patch die Hälfte still auf
+  Englisch zurück. Was noch fehlt, bleibt so stehen, wie das Spiel es nennt.
+
+### Behoben
+
+- ⭐ **Die Titelleiste war weiter weiß.** In v3.6.0 meldete Windows „Einstellung
+  gesetzt" — und zeichnete den Rahmen trotzdem nicht neu. Dazu kam: Der Versuch
+  **vor** dem ersten Anzeigen ging ins Leere, weil es das Fenster-Handle da noch
+  gar nicht gibt. Beides gemessen und behoben.
+
+- ⭐ **Man sieht jetzt, welcher Bauplan in der Herstellung aufgeklappt ist.**
+  Gemeldet: „nicht klar genug, welcher Bauplan ausgewählt ist, steht auch
+  nirgends." Die Zeile hebt sich ab, **und** der Name steht noch einmal über dem
+  Rezept — der Kasten ist lang, und wer bis zu den Zutaten gerollt hat, sieht
+  die Zeile nicht mehr.
+
+### Geändert
+
+- **Der Ordner unter „Pfade" heißt jetzt „Ordner für deine Daten"** und sagt,
+  was drinliegt: Bauplan-Bestand, Merkliste, **Werkstatt-Lager, Handelslager**,
+  Einstellungen und die ausgegebenen Dateien. Dazu der Satz, der bisher fehlte:
+  Auf zwei Rechnern denselben Ordner einstellen — und beide arbeiten mit
+  demselben Stand. ⚠ Umgestellt wird dabei nur, nicht kopiert.
+
 ## v3.6.0 - 2026-08-31
 
 Von der Herstellung direkt zum Bauplan — und der Weg dorthin ist endlich zu

@@ -26,6 +26,7 @@ Four things are deliberate and will stay that way:
 | ✅ | **Where each blueprint drops** — faction, contract, required standing, payout; a button in Crafting leads straight there |
 | ✅ | **When you accept a contract**: does it carry blueprints, and which are you missing? |
 | ✅ | **What to do next** — the open objectives are listed under their contract |
+| ✅ | **Keyboard shortcut** — brings the blueprint list up from inside the running game (Windows and Linux/X11) |
 | ✅ | Catalogue watch: reports what becomes **newly craftable** in the game, plus a watchlist |
 | ✅ | **New in game** filter plus a patch dropdown: see what each patch added |
 | ✅ | **Server status**: a tab of its own with CIG's live status, refreshing itself |

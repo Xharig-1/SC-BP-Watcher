@@ -1017,6 +1017,12 @@ def _anzeige(fenster, rahmen):
                   lambda k: _overlay_modus(fenster, modus, k))
     modus.pack()
 
+    # ⚠⚠ **Die Tastenkombination.** Star Citizen laeuft im Vollbild und blendet
+    # den Mauszeiger aus: Wer nachsehen will, ob er einen Bauplan schon hat,
+    # muss heraustabben und das Fenster dann BLIND suchen und anklicken. Am
+    # 31.08.2026 als Nutzerwunsch gemeldet.
+    _hotkey_feld(fenster, innen)
+
     ziel = _feld(fenster, innen, t('s_ov_dauer'), t('s_ov_dauer_h'))
     from .hauptfenster import rundes_feld as _zahlfeld
     dauer = _zahlfeld(ziel, None, fenster.f_klein, '#0c1017', LINIE, ACCENT, FG,
@@ -1237,6 +1243,64 @@ def _ordner(fenster, rahmen):
               platzhalter=t('s_or_leer'))
 
     _startbefehl_feld(fenster, innen)
+
+
+def _hotkey_feld(fenster, innen):
+    """Die Tastenkombination einstellen — oder ehrlich sagen, warum nicht.
+
+    ⚠⚠ **Unter Wayland steht hier keine Eingabe, sondern die Erklaerung.** Ein
+    leeres Feld, das nichts bewirkt, waere schlimmer als gar keins: Der Nutzer
+    tippt etwas ein, nichts passiert, und er sucht den Fehler bei sich. Das
+    System laesst es nicht zu — also sagen wir das und stellen den fertigen Weg
+    daneben.
+    """
+    from . import hotkey as hk
+    geht, grund = hk.moeglich()
+    if not geht and grund == 'wayland':
+        ziel = _feld(fenster, innen, t('s_hk'), t('s_hk_wayland'), breit=True)
+        return
+    if not geht:
+        return                       # kein Bildschirm, kein Windows — still
+
+    ziel = _feld(fenster, innen, t('s_hk'), t('s_hk_h'), breit=True)
+    reihe = tk.Frame(ziel, bg=BG)
+    reihe.pack(anchor='w')
+
+    from .hauptfenster import rundes_feld
+    feld = rundes_feld(reihe, None, fenster.f_klein, '#0c1017', LINIE, ACCENT,
+                       FG, breite=18)
+    feld.insert(0, pfade.einstellung('hotkey') or hk.STANDARD)
+    feld.halter.pack(side='left')
+
+    def merken(_=None):
+        wunsch = feld.get().strip()
+        mods, taste = hk.zerlegen(wunsch)
+        if not mods:
+            fenster.sagen(t('s_hk_falsch'))
+            return
+        pfade.einstellung_setzen('hotkey', wunsch)
+        # ⚠ Sofort ausprobieren, nicht erst beim naechsten Start: „belegt"
+        # erfaehrt man sonst zu einem Zeitpunkt, an dem niemand mehr weiss,
+        # dass er etwas eingestellt hat.
+        from . import overlay as ov
+        wache = getattr(ov.OVERLAY_STEUERUNG[0], 'hotkey', None)
+        if wache is None:
+            fenster.sagen(t('e_neustart_noetig'))
+            return
+        ok, warum = wache.anmelden(wunsch)
+        # ⚠ Getrennte Zweige statt eines Ausdrucks: Pruefung 10 liest, was in
+        # `sagen()` steht, und haelt einen Vergleichswert sonst fuer einen
+        # sichtbaren Text. Sie hat recht, so herum ist es ohnehin lesbarer.
+        if ok:
+            fenster.sagen(t('s_hk_ok', wunsch))
+        elif warum == 'belegt':
+            fenster.sagen(t('s_hk_belegt', wunsch))
+        else:
+            fenster.sagen(t('s_hk_falsch'))
+
+    feld.bind('<Return>', merken)
+    _knopf(fenster, reihe, t('s_or_uebernehmen'), merken).pack(side='left',
+                                                            padx=(8, 0))
 
 
 def _startbefehl_feld(fenster, innen):
@@ -3330,7 +3394,8 @@ def _danke(fenster, rahmen):
             ('Bomb20', 'pr0', t('s_dk_bomb_idee'), t('s_dk_bomb_bugs')),
             ('Morkhan', 'KRT', t('s_dk_morkhan_idee'),
              t('s_dk_morkhan_bugs')),
-            ('Horthy', 'KRT', t('s_dk_horthy_idee'), '')):
+            ('Horthy', 'KRT', t('s_dk_horthy_idee'), ''),
+            ('Bushwick4712', 'KRT', t('s_dk_bushwick_idee'), '')):
         _person(fenster, innen, name, gruppe, idee, funde)
 
     # --- Marken ---
@@ -4185,7 +4250,14 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
         zeichen_text, farbe = '·', SUB
     tk.Label(zeile, text=zeichen_text, bg=BG, fg=farbe, font=fenster.f_grund,
              width=2).pack(side='left')
-    tk.Label(zeile, text=eintrag['name'], bg=BG, fg=FG, font=fenster.f_grund,
+    # ⚠⚠ **Die aufgeklappte Zeile muss sich abheben.** Am 31.08.2026 gemeldet:
+    # „nicht klar genug, welcher Bauplan bei Herstellung ausgewaehlt ist,
+    # steht auch nirgends." Sie sah aus wie jede andere — und sobald man ein
+    # Stueck gerollt hatte, war der Name oben aus dem Bild.
+    _offen = offen['name'] == eintrag['name']
+    tk.Label(zeile, text=eintrag['name'], bg=BG,
+             fg=ACCENT if _offen else FG,
+             font=fenster.f_fett if _offen else fenster.f_grund,
              anchor='w').pack(side='left', fill='x', expand=True)
     if eintrag['hersteller']:
         tk.Label(zeile, text=eintrag['hersteller'], bg=BG, fg=SUB,
@@ -4204,6 +4276,20 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
     # --- aufgeklappt: das Rezept ---
     block = tk.Frame(eltern, bg='#0c1017')
     block.pack(fill='x', padx=(24, 0), pady=(2, 8))
+
+    # ⚠⚠ **Der Name noch einmal, ueber dem Rezept.** Der Kasten ist lang —
+    # Zutaten, Herstellzeit, Qualitaetsregler, Werte. Wer bis dorthin gerollt
+    # hat, sieht die Zeile mit dem Namen nicht mehr und weiss nicht, wovon er
+    # gerade die Zutaten liest. Der Hersteller steht daneben, weil „5SA
+    # 'Rhada'" allein niemandem sagt, worum es geht.
+    _kopf = tk.Frame(block, bg='#0c1017')
+    _kopf.pack(fill='x', padx=12, pady=(10, 0))
+    tk.Label(_kopf, text=eintrag['name'], bg='#0c1017', fg=ACCENT,
+             font=fenster.f_fett, anchor='w').pack(side='left')
+    if eintrag['hersteller']:
+        tk.Label(_kopf, text='  ·  %s' % eintrag['hersteller'], bg='#0c1017',
+                 fg=SUB, font=fenster.f_klein, anchor='w').pack(side='left')
+
     if eintrag['habe'] is None:
         _fliesstext(block, t('s_he_unklar'), fenster.f_klein, fill='x')
 
@@ -4491,7 +4577,11 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
             for w in grundliste:
                 wz = tk.Frame(werte_rahmen, bg='#0c1017')
                 wz.pack(fill='x', padx=12, pady=1)
-                tk.Label(wz, text=w['eigenschaft'], bg='#0c1017', fg=SUB,
+                # ⚠ Uebersetzt ueber den sprachneutralen Schluessel, nicht
+                # ueber den englischen Namen — siehe `herstellung.eigenschaft`.
+                tk.Label(wz, text=herst_modul.eigenschaft(w['eigenschaft'],
+                                                          w.get('key')),
+                         bg='#0c1017', fg=SUB,
                          font=fenster.f_klein, width=22,
                          anchor='w').pack(side='left')
                 # ⚠⚠ **Die feste Breite gilt nur für den Faktor.** Als die

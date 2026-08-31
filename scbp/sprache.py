@@ -665,10 +665,79 @@ TEXTE = {
                           'Star Citizen not found.'),
     's_sc_weg_h':      ('Trag den Ordner unten ein — der LIVE-Ordner reicht, auch der darüber oder das Wine-Präfix.',
                           'Enter the folder below — the LIVE folder is enough, as is the one above it or the Wine prefix.'),
-    's_eigene':        ('Eigene Dateien',
-                          'Your files'),
-    's_eigene_h':      ('Hier liegen dein Bauplan-Bestand, die Merkliste und die ausgegebenen Dateien — in getrennten Unterordnern.',
-                          'This holds your blueprint inventory, the watchlist and exported files — in separate subfolders.'),
+    # ⚠⚠ **„Eigene Dateien" sagte niemandem etwas.** Am 31.08.2026 gemeldet:
+    # „da fehlt auch die Beschreibung, für was der Ordner ist, der Name sagt
+    # nichts aus." Und der zweite Teil fehlte ganz: Dieser eine Ordner ist
+    # der Weg, alles zwischen zwei Rechnern zu teilen — Bestand UND beide
+    # Lager. Genau danach wurde am selben Tag gefragt, weil das Lager unter
+    # Windows fehlte.
+    's_eigene':        ('Ordner für deine Daten',
+                          'Folder for your data'),
+    's_eigene_h':      ('Alles, was das Werkzeug über dich weiß, liegt hier: '
+                        'Bauplan-Bestand, Merkliste, Werkstatt-Lager, '
+                        'Handelslager, Einstellungen und die ausgegebenen '
+                        'Dateien — in getrennten Unterordnern.\n\n'
+                        'Spielst du auf zwei Rechnern? Dann stell hier auf '
+                        'beiden denselben Ordner ein (Cloud, Netzlaufwerk, '
+                        'zweite Platte) — und beide arbeiten mit demselben '
+                        'Stand. ⚠ Der Ordner wird dabei nur umgestellt, nicht '
+                        'kopiert: Sichere deinen bisherigen Stand vorher unter '
+                        '„Bauplan-Bestand → Bestand ausgeben".',
+                          'Everything the tool knows about you lives here: '
+                          'blueprint inventory, watchlist, workshop stock, '
+                          'trade stock, settings and exported files — in '
+                          'separate subfolders.\n\n'
+                          'Playing on two machines? Point both at the same '
+                          'folder here (cloud, network drive, second disk) and '
+                          'both work from the same state. ⚠ Switching only '
+                          'changes the folder, it does not copy: save your '
+                          'current state first under "Blueprint inventory → '
+                          'Export inventory".'),
+    # ⚠⚠ **Der Grund fuer die Tastenkombination.** Star Citizen laeuft im
+    # Vollbild und blendet den Mauszeiger aus: Wer nachsehen will, ob er einen
+    # Bauplan schon hat, muss heraustabben und das Fenster dann BLIND suchen
+    # und anklicken. Am 31.08.2026 als Nutzerwunsch gemeldet.
+    's_hk':            ('Tastenkombination',
+                          'Keyboard shortcut'),
+    's_hk_h':          ('Holt die Bauplan-Liste nach vorn — auch aus dem '
+                        'laufenden Spiel heraus. Strg, Alt und Umschalt lassen '
+                        'sich mit einem Buchstaben, einer Ziffer oder F1 bis '
+                        'F12 verbinden.\n\n'
+                        '⚠ Ohne Modifikator geht es nicht: Eine nackte '
+                        'Taste global zu belegen hieße, sie im Spiel '
+                        'unbrauchbar zu machen.',
+                          'Brings the blueprint list to the front — even from '
+                          'inside the running game. Ctrl, Alt and Shift can be '
+                          'combined with a letter, a digit or F1 to F12.\n\n'
+                          '⚠ Without a modifier it will not work: '
+                          'claiming a bare key system-wide would make it '
+                          'useless in the game.'),
+    's_hk_an':         ('Tastenkombination benutzen',
+                          'Use the keyboard shortcut'),
+    's_hk_ok':         ('%s ist angemeldet.', '%s is registered.'),
+    's_hk_belegt':     ('%s hat schon ein anderes Programm. Nimm eine andere.',
+                          '%s is already taken by another program. Pick a '
+                          'different one.'),
+    's_hk_falsch':     ('Das ergibt keine Kombination. Beispiel: Strg+Alt+B',
+                          'That is not a valid combination. Example: Ctrl+Alt+B'),
+    # ⚠⚠ **Wayland kann das nicht — und das ist Absicht des Systems.** Ein
+    # Programm darf dort nicht mithoeren, was in einem anderen Fenster getippt
+    # wird. Statt es zu verschweigen oder so zu tun, als laege es an uns:
+    # sagen, was Sache ist, und den fertigen Weg danebenstellen.
+    's_hk_wayland':    ('Unter Wayland kann kein Programm eine systemweite '
+                        'Tastenkombination selbst belegen — das lässt das '
+                        'System aus gutem Grund nicht zu.\n\n'
+                        'Der Weg dorthin führt über die Tastenkombinationen '
+                        'deines Schreibtischs: Leg eine auf den Startbefehl '
+                        'unten. Läuft der Watcher schon, holt ein zweiter '
+                        'Start ihn nur nach vorn.',
+                          'On Wayland no program can claim a system-wide '
+                          'shortcut by itself — the system does not allow it, '
+                          'for good reason.\n\n'
+                          'The way there is your own desktop shortcut '
+                          'settings: put one on the start command below. If the '
+                          'watcher is already running, a second start just '
+                          'brings it to the front.'),
     's_optional':      ('optional',
                           'optional'),
     's_durchsuchen':   ('Durchsuchen …',
@@ -1063,6 +1132,12 @@ TEXTE = {
                               'server.'),
     # ⚠ Ein Geschenk, kein Fund — und trotzdem hierhin. Wer ein kostenloses
     # Werkzeug testet UND dem Autor etwas schenkt, gehört genannt.
+    's_dk_bushwick_idee':    ('**Von der Herstellung direkt zum Bauplan** — und der '
+                              'Knopf dorthin heißt jetzt „Woher?", statt nur '
+                              'ein Symbol zu sein.',
+                              '**From crafting straight to the blueprint** — and '
+                              'the button there now reads "Where from?" instead '
+                              'of being just a symbol.'),
     's_dk_horthy_idee':      ('**Das eigene Rohstoff-Lager** — eintragen statt rechnen, und'
                               'beim Herstellen zieht das Werkzeug die Zutaten ab.',
                               '**Your own resource stock** — enter it instead of doing the'
@@ -2508,6 +2583,65 @@ def setzen(sprache):
             # nicht.
             from . import fehler                # lokal: sonst Zirkelbezug
             fehler.merken('sprache.setzen', ausnahme)
+
+
+# ---------------------------------------------------------------------------
+# Die Eigenschaften aus den Rezeptdaten
+# ---------------------------------------------------------------------------
+#
+# ⚠⚠ **Am 31.08.2026 gemeldet:** „die Beschreibung, welche Werte sich ändern,
+# ist bei deutscher Einstellung englisch — einige können kein Englisch und
+# verstehen das nun nicht, und melden, es würde ihnen nicht helfen." Genau der
+# Zweck der Seite ging damit verloren: Wer nicht weiß, was „Damage Mitigation"
+# heißt, liest eine Zahl ohne Bedeutung.
+#
+# ⚠ **Gehen über den sprachneutralen `propertyKey`**, nicht über den englischen
+# Namen — sonst fällt beim nächsten Patch die Hälfte still auf Englisch zurück.
+#
+# ⚠ **Was fehlt, bleibt englisch.** Kommt mit einem Patch eine neue Eigenschaft
+# dazu, steht sie so da, wie das Spiel sie nennt — immer noch besser als eine
+# geratene Übersetzung. Gemessen am Datenstand 4.10.0-live.12519617: 24
+# verschiedene Eigenschaften, alle 24 hier drin.
+EIGENSCHAFTEN = {
+    'armor_temperaturemin':            'Minimaltemperatur',
+    'armor_temperaturemax':            'Maximaltemperatur',
+    'armor_damagemitigation':          'Schadensminderung',
+    'armor_radiationdissipation':      'Strahlungsabbau',
+    'health_maxhealth':                'Integrität',
+    'shield_maxhealth':                'Schildstärke',
+    'itemresource_powergeneration':    'Energiestufen',
+    'itemresource_coolantgeneration':  'Kühlleistung',
+    'weapon_damage':                   'Aufprallwucht',
+    'weapon_firerate':                 'Feuerrate',
+    'weapon_recoil_smoothness':        'Rückstoß — Gleichmäßigkeit',
+    'weapon_recoil_handling':          'Rückstoß — Beherrschbarkeit',
+    'weapon_recoil_kick':              'Rückstoß — Stärke',
+    'radar_minaimassistdistance':      'Zielhilfe ab',
+    'radar_maxaimassistdistance':      'Zielhilfe bis',
+    'quantum_speed':                   'Quantengeschwindigkeit',
+    'quantum_fuelrequirement':         'Quantentreibstoff-Verbrauch',
+    'weapon_tractor_fullstrengthdist': 'Volle Kraft bis',
+    'weapon_tractor_maxdist':          'Reichweite',
+    'weapon_tractor_force':            'Strahlkraft',
+    'weapon_tractor_maxvolume':        'Größtes Volumen',
+    'weapon_hullscraping_radius':      'Schürfradius',
+    'weapon_hullscraping_speed':       'Schürfgeschwindigkeit',
+    'weapon_hullscraping_efficiency':  'Ausbeute',
+}
+
+
+def eigenschaft(name, schluessel=None):
+    """Der Name einer Rezept-Eigenschaft in der eingestellten Sprache.
+
+    ⚠ Englisch bleibt englisch — dort ist der Name des Spiels der richtige.
+    Übersetzt wird nur ins Deutsche, und nur was in der Tabelle steht.
+    """
+    try:
+        if aktuelle() != 'de':
+            return name
+    except Exception:
+        return name
+    return EIGENSCHAFTEN.get(schluessel) or name
 
 
 def t(schluessel, *werte):

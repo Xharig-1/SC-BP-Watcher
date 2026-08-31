@@ -6,6 +6,64 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.7.0 - 2026-08-31
+
+A keyboard shortcut that works inside the game. Plus the white title bar — it
+was not really gone in v3.6.0.
+
+### New
+
+- ⭐⭐ **Ctrl+Alt+B brings the blueprint list to the front — from inside the
+  game.**
+
+  Star Citizen runs full screen and hides the mouse pointer: to check whether
+  you already have a blueprint you had to alt-tab and then hunt for the window
+  **blind**. User request, 2026-08-31.
+
+  Configurable under **Display**. Ctrl, Alt and Shift combine with a letter, a
+  digit or F1 to F12.
+
+  ⚠ **Nothing is being listened to.** Exactly **one** combination is
+  registered, and the system only wakes the tool for that one. It never sees
+  anything else — no logging, no access to what you type in the game. That is
+  the difference from a keyboard hook, and the reason only this route was
+  considered.
+
+  ⚠ **A modifier is required.** Claiming a bare key system-wide would make it
+  useless in the game.
+
+  ⚠ **On Wayland no program can do this** — the system does not allow it, for
+  good reason. Instead of a dead input field you get the explanation and the
+  route via your desktop's own shortcut settings.
+
+- ⭐ **Recipe properties now read in German** when German is selected — all 24
+  of them. Reported: "some people do not speak English and do not understand
+  this, and report that it does not help them."
+
+  ⚠ Translated via the **language-neutral key**, not the English text —
+  otherwise half of it would quietly fall back to English on the next patch.
+  Anything not yet covered stays as the game names it.
+
+### Fixed
+
+- ⭐ **The title bar was still white.** In v3.6.0 Windows reported "setting
+  applied" — and did not redraw the frame anyway. On top of that, the attempt
+  **before** the first display went nowhere, because the window handle does not
+  exist yet at that point. Both measured and fixed.
+
+- ⭐ **You can now see which blueprint is open in Crafting.** Reported: "not
+  clear enough which blueprint is selected, it is not stated anywhere." The row
+  stands out **and** the name is repeated above the recipe — the box is long,
+  and by the time you have scrolled to the ingredients the row is gone.
+
+### Changed
+
+- **The folder under "Paths" is now called "Folder for your data"** and says
+  what lives in it: blueprint inventory, watchlist, **workshop stock, trade
+  stock**, settings and exported files. Plus the sentence that was missing:
+  point both machines at the same folder and both work from the same state.
+  ⚠ Switching only changes the folder, it does not copy.
+
 ## v3.6.0 - 2026-08-31
 
 From crafting straight to the blueprint — and the way there can finally be

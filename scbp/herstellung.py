@@ -747,6 +747,28 @@ def slots(name_oder_tag):
     return None
 
 
+# ---------------------------------------------------------------------------
+# Die Eigenschaften auf Deutsch
+# ---------------------------------------------------------------------------
+#
+# ⚠ **Die Tabelle steht in `sprache.py`**, wie jeder andere Oberflächentext
+# auch — Projektregel, und Prüfung 17 wacht darüber. Hier steht nur der Weg
+# dorthin, weil die Rezeptdaten hier zu Hause sind.
+
+
+def eigenschaft(name, schluessel=None):
+    """Der Name der Eigenschaft in der eingestellten Sprache.
+
+    ⚠⚠ **Der SCHLÜSSEL entscheidet, nicht der englische Text.**
+    `propertyKey` ist sprachneutral und ändert sich nicht, wenn CIG die
+    Beschriftung umformuliert — dieselbe Regel wie bei den Auftragsmeldungen
+    (`auftraege.INI_SCHLUESSEL`). Über den englischen Namen zu gehen hieße:
+    beim nächsten Patch fällt die Hälfte still auf Englisch zurück.
+    """
+    from . import sprache
+    return sprache.eigenschaft(name, schluessel)
+
+
 def werte_mit_lager(name_oder_tag, qualitaet_je_material):
     """Was käme mit **diesem** Material heraus?
 

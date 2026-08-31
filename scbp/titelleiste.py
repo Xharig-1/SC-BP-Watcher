@@ -49,6 +49,23 @@ import sys
 
 ATTRIBUTE = (20, 19)                 # neu zuerst, dann die alte Kennzahl
 
+# Fuer das Neuzeichnen des Rahmens. ⚠ NOACTIVATE ist Pflicht: Ohne das holt
+# sich das Fenster den Fokus — und wer gerade Star Citizen fliegt, landet
+# mitten im Kampf auf dem Schreibtisch.
+SWP_NOSIZE, SWP_NOMOVE, SWP_NOZORDER = 0x0001, 0x0002, 0x0004
+SWP_NOACTIVATE, SWP_FRAMECHANGED = 0x0010, 0x0020
+
+
+def _griff(fenster):
+    """Das Fenster-Handle, an dem die Titelleiste haengt.
+
+    ⚠ `winfo_id()` liefert bei Tk den ZEICHENBEREICH, nicht den Rahmen. Die
+    Titelleiste gehoert dem Elternfenster — ohne `GetParent` faerbt man ein
+    Fenster ohne Leiste, und der Aufruf meldet trotzdem Erfolg.
+    """
+    import ctypes
+    return ctypes.windll.user32.GetParent(fenster.winfo_id())
+
 
 def dunkel(fenster):
     """Die Titelleiste dieses Fensters dunkel stellen. Sagt, ob es klappte."""
@@ -57,12 +74,7 @@ def dunkel(fenster):
     try:
         import ctypes
         from ctypes import wintypes
-        fenster.update_idletasks()
-        # ⚠ `winfo_id()` liefert bei Tk das Handle des ZEICHENBEREICHS, nicht
-        # des Rahmens. Die Titelleiste haengt am Elternfenster — ohne
-        # `GetParent` faerbt man ein Fenster, das gar keine Leiste hat, und
-        # der Aufruf meldet trotzdem Erfolg.
-        griff = ctypes.windll.user32.GetParent(fenster.winfo_id())
+        griff = _griff(fenster)
         if not griff:
             return False
         wert = ctypes.c_int(1)
@@ -77,22 +89,34 @@ def dunkel(fenster):
     return False
 
 
-def uebernehmen(fenster):
-    """Wie `dunkel()`, aber es wirkt auch auf ein schon sichtbares Fenster.
+def rahmen_neu(fenster):
+    """Windows zwingen, den Fensterrahmen neu zu zeichnen.
 
-    ⚠ Windows zeichnet die Leiste nicht von selbst neu, wenn das Fenster
-    bereits steht. Ein kurzes Aus und Ein zwingt es dazu — sonst bleibt sie
-    hell, bis man das Fenster einmal minimiert.
+    ⚠⚠ **Ohne das bleibt die Leiste weiss.** Genau daran ist v3.6.0
+    gescheitert: `DwmSetWindowAttribute` meldete Erfolg, die Einstellung stand
+    auch — aber Windows zeichnet einen Rahmen, der bereits auf dem Bildschirm
+    ist, nicht von selbst neu. Am 31.08.2026 gemeldet: „Meine Leiste ist
+    weiss", mit Bildschirmfoto einer frisch gebauten 3.6.0.
+
+    ⚠ **Und vorher geht es nicht.** Naheliegend waere, die Einstellung schon
+    beim Bauen des Fensters zu setzen, bevor es je gezeichnet wurde — dann
+    braeuchte es kein Neuzeichnen. Gemessen: Zu diesem Zeitpunkt gibt es das
+    Fenster-Handle noch nicht. Es bleibt also bei diesem Weg.
     """
-    if not dunkel(fenster):
+    if not sys.platform.startswith('win'):
         return False
     try:
-        if fenster.winfo_viewable():
-            fenster.withdraw()
-            fenster.deiconify()
+        import ctypes
+        griff = _griff(fenster)
+        if not griff:
+            return False
+        ctypes.windll.user32.SetWindowPos(
+            ctypes.c_void_p(griff), None, 0, 0, 0, 0,
+            SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE
+            | SWP_FRAMECHANGED)
+        return True
     except Exception:
-        pass
-    return True
+        return False
 
 
 def einrichten():
@@ -123,6 +147,13 @@ def einrichten():
         def bauen(self, *a, _urspruenglich=urspruenglich, **k):
             _urspruenglich(self, *a, **k)
             try:
+                # ⚠⚠ **Erst beim Anzeigen, nicht schon hier.** Naheliegend
+                # waere, die Einstellung gleich beim Bauen zu setzen — dann
+                # zeichnete Windows die Leiste von Anfang an richtig. Gemessen
+                # am 31.08.2026: **Zu diesem Zeitpunkt gibt es das Handle noch
+                # gar nicht** (`GetParent` liefert 0), der Aufruf ginge ins
+                # Leere und meldete das nicht einmal. Also nur `<Map>` — und
+                # dort dann mit erzwungenem Neuzeichnen.
                 self.bind('<Map>', lambda _e, w=self: _einmal(w), add='+')
             except Exception:
                 pass
@@ -136,13 +167,14 @@ def _einmal(fenster):
     """Beim ersten Anzeigen faerben — danach nie wieder.
 
     ⚠ `<Map>` feuert bei jedem Wiederherstellen aus der Taskleiste. Ohne
-    Merker liefe der Aufruf dutzendfach, und `uebernehmen()` wuerde das
-    Fenster dabei jedes Mal kurz aus- und einblenden.
+    Merker liefe das Neuzeichnen dutzendfach — jedes Mal, wenn jemand das
+    Fenster aus der Taskleiste holt.
     """
     try:
         if getattr(fenster, '_scbp_leiste_gesetzt', False):
             return
         fenster._scbp_leiste_gesetzt = True
-        dunkel(fenster)
+        if dunkel(fenster):
+            rahmen_neu(fenster)
     except Exception:
         pass

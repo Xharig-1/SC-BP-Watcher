@@ -51,14 +51,15 @@ from scbp import (
                   bestand as bestand_datei, bestandsfenster as bestandsfenster_modul,
                   einstellungsfenster, hinweis, injektion,
                   katalog as katalog_modul, logquelle, merkliste,
-                  pfade, phrasen, titelleiste, ton, uebersetzung, verkauf)
+                  pfade, phrasen, titelleiste, ton, uebersetzung, verkauf,
+                  hotkey as hotkey_modul)
 
 try:
     import winsound                      # nur Windows; unter Linux übernimmt tkinter
 except ImportError:
     winsound = None
 
-__version__ = '3.6.0'
+__version__ = '3.7.0'
 
 
 def _mitgeliefert(name):
@@ -1565,6 +1566,10 @@ class Overlay:
         # Ohne diesen Haken schreibt Tk sie auf die Standardausgabe — und die
         # sieht in einer .exe oder einem AppImage niemand.
         fehler.haken_setzen(self.root)
+        # Die Tastenkombination, die auch im Spiel greift. ⚠ Angemeldet wird
+        # erst, wenn die Hauptschleife laeuft (`hotkey_anmelden`) — vorher
+        # gibt es den Faden noch nicht, an dem die Meldung haengt.
+        self.hotkey = hotkey_modul.Wache()
         _WURZEL[0] = self.root                    # damit signalton() klingeln kann
         # Damit der Knopf „Fensterlage zurücksetzen" das Overlay sofort in die Mitte
         # setzen kann, ohne dass `seiten.py` das Hauptprogramm importieren müsste.
@@ -2501,6 +2506,7 @@ class Overlay:
                     self.add_catalog(msg[1], msg[2], msg[3], msg[4])
         except queue.Empty:
             pass
+        self._hotkey_nachsehen()
         self.root.after(300, self._poll_queue)
 
     def _bescheid_zeigen(self, titel, text):
@@ -3252,6 +3258,44 @@ class Overlay:
         except tk.TclError:
             pass
 
+    def hotkey_anmelden(self):
+        """Die Tastenkombination beim System anmelden — oder ehrlich schweigen.
+
+        ⚠⚠ **Der Grund, warum es sie gibt:** Star Citizen laeuft im Vollbild
+        und blendet den Mauszeiger aus. Wer nachsehen will, ob er einen
+        Bauplan schon hat, muss heraustabben und das Fenster dann BLIND suchen
+        und anklicken. Am 31.08.2026 als Nutzerwunsch gemeldet.
+
+        ⚠ Scheitert es, wird es NICHT gemeldet: Beim Start weiss noch niemand,
+        dass es die Kombination gibt, und eine Fehlermeldung ueber etwas, das
+        man nie eingestellt hat, verwirrt nur. Der Grund steht auf der
+        Einstellungsseite — dort, wo jemand danach sucht.
+        """
+        try:
+            if pfade.einstellungen().get('hotkey_an') is False:
+                fehler.spur('Hotkey: ausgeschaltet')
+                return
+            kombi = (pfade.einstellung('hotkey') or hotkey_modul.STANDARD)
+            ok, grund = self.hotkey.anmelden(kombi)
+            fehler.spur('Hotkey: %s (%s)'
+                        % ('%s angemeldet' % kombi if ok else 'entfaellt',
+                           grund or 'ok'))
+        except Exception as ausnahme:
+            fehler.merken('overlay.hotkey', ausnahme)
+
+    def _hotkey_nachsehen(self):
+        """Im selben Takt wie die Warteschlange nachfragen.
+
+        ⚠⚠ **Kein eigener Faden.** Unter Windows landet die Meldung in der
+        Nachrichtenschlange genau des Fadens, der angemeldet hat — das ist der
+        Tk-Faden. Ein Hintergrundfaden bekaeme nie etwas zu sehen.
+        """
+        try:
+            if self.hotkey.nachsehen():
+                self.hervorholen()
+        except Exception:
+            pass
+
     def hervorholen(self):
         """Von außen gerufen: Fenster her, egal in welchem Betrieb.
 
@@ -3312,6 +3356,7 @@ class Overlay:
         # deshalb die Arbeit per `after` an Tk übergeben, nicht dort erledigen.
         overlay.waechter_starten(
             lambda: self.root.after(0, self.hervorholen))
+        self.hotkey_anmelden()
         self.root.mainloop()
 
 

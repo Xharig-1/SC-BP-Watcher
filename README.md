@@ -182,6 +182,7 @@ Dazu: Klasse, Größe und Gütegrad stehen direkt in der Zeile (`M/1/A`), die Ob
 | | |
 |---|---|
 | <img src="assets/symbole/22/blitz-gruen.png" width="22" alt=""> **Sofort-Meldung** | Liest die Star-Citizen-`Game.log` mit → der Bauplan steht **in Sekunden** in der Liste |
+| <img src="assets/symbole/22/liste-gruen.png" width="22" alt=""> **Tastenkombination** | **Strg+Alt+B** holt die Bauplan-Liste nach vorn — mitten aus dem Vollbild-Spiel, ohne blind nach dem Fenster zu suchen. Angemeldet wird genau diese eine Kombination; mitgehört wird nichts |
 | <img src="assets/symbole/22/liste-gruen.png" width="22" alt=""> **Bauplan-Liste** | Alle Baupläne durchsuchen, nach Art gruppiert, Filter *alle / habe ich / fehlt mir / beobachtet / neu im Spiel*, mit Fortschrittsanzeige. Häkchen per Klick |
 | <img src="assets/symbole/22/herkunft-gruen.png" width="22" alt=""> **Herkunft je Bauplan** | Der Knopf **„Woher?"** zeigt Fraktion, Auftrag, nötigen Rang und Belohnung — für **670 von 738** Bauplänen, sortiert nach dem leichtesten Weg. Aus der **Herstellung** führt ein Knopf direkt dorthin: fehlt dir der Bauplan, siehst du mit einem Klick, welchen Auftrag du dafür machen musst |
 | <img src="assets/symbole/22/auftragstexte-gruen.png" width="22" alt=""> **Auftrag angenommen** | Nimmst du einen Auftrag an, steht sofort da, ob Baupläne dabei sind — und **welche dir davon noch fehlen**. Kennt der Katalog den Auftrag nicht, wird geschwiegen statt geraten |

@@ -7846,6 +7846,219 @@ def main():
     pruefe("eintrag['habe'] is not True and _hat_herkunft" in _hz97,
            'der Knopf steht nur, wo der Bauplan fehlt UND es ihn irgendwo gibt')
 
+
+    # 98. Die Titelleiste ist wirklich dunkel — nicht nur „erfolgreich gesetzt"
+    #
+    # ⚠⚠ **v3.6.0 hat genau hier gelogen.** `DwmSetWindowAttribute` gab S_OK
+    # zurueck, das Werkzeug hielt sich fuer fertig — und auf dem Bildschirm
+    # sass weiter eine weisse Leiste. Am 31.08.2026 mit Bildschirmfoto
+    # gemeldet: „Meine Leiste ist weiss."
+    #
+    # Zwei Dinge kamen zusammen, beide erst durch Nachmessen sichtbar:
+    #
+    # 1. Der Aufruf **vor** dem ersten Anzeigen ging ins Leere — zu dem
+    #    Zeitpunkt gibt es das Fenster-Handle noch gar nicht (`GetParent`
+    #    liefert 0), und er meldete das nicht.
+    # 2. Beim Anzeigen wurde die Einstellung zwar gesetzt, aber Windows
+    #    zeichnet einen Rahmen, der schon steht, nicht von selbst neu.
+    #
+    # ⚠ **Deshalb prueft das hier den ZUSTAND, nicht den Rueckgabewert.** Die
+    # Einstellung wird zurueckgelesen. Ein „hat geklappt" vom System war ja
+    # gerade das, was in die Irre gefuehrt hat.
+    print()
+    print('98. Die Titelleiste ist wirklich dunkel')
+    from scbp import titelleiste as _tl98
+
+    if not sys.platform.startswith('win'):
+        print('  [-]    kein Windows — die Leiste macht hier der Fenstermanager')
+    else:
+        import ctypes as _ct98
+        from ctypes import wintypes as _wt98
+
+        pruefe(_tl98.einrichten() is True, 'der Haken laesst sich setzen')
+
+        import tkinter as tk98
+        _wz98 = _wurzel()
+        _top98 = tk98.Toplevel(_wz98)
+        _top98.title('Pruefung 98')
+        # ⚠ Weit neben jeden Bildschirm. Die Pruefung MUSS das Fenster
+        # anzeigen — vorher gibt es kein Handle —, aber niemand soll es sehen.
+        _top98.geometry('300x120+9000+9000')
+        pruefe(not _tl98._griff(_top98),
+               'vor dem Anzeigen gibt es noch kein Handle — der frueher hier '
+               'stehende Aufruf war wirkungslos')
+        _top98.deiconify()
+        for _ in range(6):
+            _wz98.update()
+            _wz98.update_idletasks()
+
+        _h98 = _tl98._griff(_top98)
+        pruefe(bool(_h98), 'nach dem Anzeigen gibt es eines')
+
+        # ⚠⚠ **Hier wird von Hand ausgeloest, nicht auf `<Map>` gewartet.**
+        # Der Pruefbetrieb laeuft unter `unsichtbar`, und das legt `deiconify`
+        # still — sonst blitzten die Fenster auf dem Bildschirm des Nutzers
+        # auf. Damit feuert `<Map>` nie. Dass der Haken daran haengt, prueft
+        # weiter unten der Quelltext; hier geht es um die WIRKUNG.
+        _tl98._einmal(_top98)
+        pruefe(getattr(_top98, '_scbp_leiste_gesetzt', False) is True,
+               'der Haken merkt sich, dass er dieses Fenster erledigt hat')
+
+        _wert98 = _ct98.c_int(-1)
+        _ct98.windll.dwmapi.DwmGetWindowAttribute(
+            _wt98.HWND(_h98), _ct98.c_uint(20),
+            _ct98.byref(_wert98), _ct98.sizeof(_wert98))
+        pruefe(_wert98.value == 1,
+               'die dunkle Leiste steht wirklich am Fenster (zurueckgelesen: '
+               '%d)' % _wert98.value)
+
+        # ⭐ Und das Neuzeichnen ist da — ohne das blieb sie weiss.
+        pruefe(_tl98.rahmen_neu(_top98) is True,
+               'der Rahmen laesst sich zum Neuzeichnen zwingen')
+        _q98 = open(os.path.join(WURZEL, 'scbp', 'titelleiste.py'),
+                    encoding='utf-8').read()
+        _code98 = chr(10).join(_z for _z in _q98.split(chr(10))
+                               if not _z.strip().startswith('#'))
+        pruefe('rahmen_neu(fenster)' in _code98.split('def _einmal')[1],
+               'und wird beim Anzeigen auch gerufen')
+        # ⚠ Und der Haken haengt wirklich am Anzeigen — genau das laesst sich
+        # unter `unsichtbar` nicht ausloesen, also wird es hier gelesen.
+        pruefe("bind('<Map>'" in _code98,
+               'jedes Fenster bekommt den Haken beim Anzeigen')
+        # ⚠ Ohne NOACTIVATE risse das Neuzeichnen den Fokus an sich — wer
+        # gerade Star Citizen fliegt, landet mitten im Kampf auf dem Desktop.
+        pruefe('SWP_NOACTIVATE' in _code98,
+               'und tut das, ohne den Fokus zu klauen')
+
+        try:
+            _top98.destroy()
+            _wz98.destroy()
+        except Exception:
+            pass
+
+
+    # 99. Man sieht, welcher Bauplan in der Herstellung aufgeklappt ist
+    #
+    # ⚠⚠ **Am 31.08.2026 gemeldet:** „nicht klar genug, welcher Bauplan bei
+    # Herstellung ausgewaehlt ist, steht auch nirgends." Die aufgeklappte
+    # Zeile sah aus wie jede andere, und der Rezeptkasten darunter ist lang —
+    # Zutaten, Herstellzeit, Regler, Werte. Wer bis dorthin gerollt hatte,
+    # wusste nicht mehr, wovon er die Zutaten liest.
+    #
+    # ⚠ Zwei Antworten, beide noetig: Die Zeile hebt sich ab UND der Name
+    # steht noch einmal ueber dem Rezept. Nur das Hervorheben haette nichts
+    # genuetzt, sobald die Zeile aus dem Bild gerollt ist.
+    print()
+    print('99. Man sieht, welcher Bauplan in der Herstellung aufgeklappt ist')
+    _q99 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                encoding='utf-8').read()
+    _hz99 = _q99.split('def _herstellung_zeile')[1].split(chr(10) + 'def ')[0]
+    _code99 = chr(10).join(_z for _z in _hz99.split(chr(10))
+                           if not _z.strip().startswith('#'))
+
+    pruefe("fg=ACCENT if _offen else FG" in _code99,
+           'die aufgeklappte Zeile ist farblich abgesetzt')
+    pruefe('f_fett if _offen else' in _code99,
+           'und fett — Farbe allein reicht nicht, wenn jemand schlecht sieht')
+
+    # ⚠ Der Name im Kasten: geprueft wird, dass er VOR den Zutaten steht.
+    # Dahinter waere er wertlos — dann hat man ihn erst gefunden, wenn man
+    # ihn nicht mehr braucht.
+    _kopf99 = _code99.find("text=eintrag['name'], bg='#0c1017'")
+    _zutat99 = _code99.find('rez = herst_modul.rezept')
+    pruefe(_kopf99 > 0, 'der Name steht noch einmal ueber dem Rezept')
+    pruefe(_kopf99 < _zutat99,
+           'und zwar VOR den Zutaten, nicht darunter')
+    pruefe("eintrag['hersteller']" in _code99[_kopf99:_zutat99],
+           'mit dem Hersteller daneben — „5SA Rhada" allein sagt niemandem, '
+           'worum es geht')
+
+
+    # 100. Die Tastenkombination — und was sie NICHT tut
+    #
+    # ⚠⚠ **Nutzerwunsch vom 31.08.2026:** „Hotkey um die Bauplanliste
+    # aufzurufen, da man in SC erst raustabben muss um dann mit der Maus das
+    # Fenster zu suchen und zu klicken, da die Maus nicht sichtbar ist ueber
+    # dem SC Fenster."
+    #
+    # ⚠⚠ **Es wird NICHT mitgehoert.** Angemeldet wird genau EINE Kombination
+    # (`RegisterHotKey` unter Windows, `XGrabKey` unter X11); alles andere
+    # sieht das Programm nie. Das ist der Unterschied zu einem Tastatur-Haken —
+    # und der Grund, warum nur dieser Weg in Frage kam. Diese Pruefung haelt
+    # das fest, damit es niemand spaeter „vereinfacht".
+    print()
+    print('100. Die Tastenkombination — und was sie NICHT tut')
+    from scbp import hotkey as _hk100
+
+    pruefe(_hk100.zerlegen('Strg+Alt+B') == ({'strg', 'alt'}, 'B'),
+           'eine gewoehnliche Kombination wird verstanden')
+    pruefe(_hk100.zerlegen('ctrl-shift-F5') == ({'strg', 'umschalt'}, 'F5'),
+           'englische Namen, Bindestriche und F-Tasten auch')
+    pruefe(_hk100.zerlegen('  alt + 7 ') == ({'alt'}, '7'),
+           'Leerzeichen und Ziffern stoeren nicht')
+
+    # ⭐ Der wichtigste Fall: OHNE Modifikator wird abgelehnt.
+    # ⚠ Eine nackte Taste global zu belegen hiesse, sie im Spiel unbrauchbar
+    # zu machen — und der Nutzer sucht den Grund dann ueberall, nur nicht hier.
+    pruefe(_hk100.zerlegen('B') == (None, None),
+           'eine nackte Taste wird ABGELEHNT')
+    pruefe(_hk100.zerlegen('Strg+Alt') == (None, None),
+           'Modifikatoren allein ergeben keine Kombination')
+    pruefe(_hk100.zerlegen('Strg+A+B') == (None, None),
+           'zwei gewoehnliche Tasten auch nicht')
+    pruefe(_hk100.zerlegen('') == (None, None)
+           and _hk100.zerlegen(None) == (None, None),
+           'und leer erst recht nicht')
+    pruefe(_hk100.zerlegen('Strg+F13') == (None, None),
+           'F13 gibt es nicht — es wird nicht durchgereicht')
+
+    # Der Standard muss selbst durch die eigene Pruefung kommen.
+    pruefe(_hk100.zerlegen(_hk100.STANDARD)[0],
+           'die voreingestellte Kombination ist gueltig (%s)' % _hk100.STANDARD)
+
+    # ⚠⚠ **Ehrlich sagen, was nicht geht.** Unter Wayland kann kein Programm
+    # eine systemweite Kombination selbst belegen. Ein leeres Feld, das nichts
+    # bewirkt, waere schlimmer als gar keins.
+    _geht100, _grund100 = _hk100.moeglich()
+    pruefe(isinstance(_geht100, bool) and isinstance(_grund100, str),
+           'das System sagt, ob es geht — und wenn nicht, warum (%s)'
+           % (_grund100 or 'geht'))
+
+    _sq100 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                  encoding='utf-8').read()
+    pruefe("grund == 'wayland'" in _sq100 and "t('s_hk_wayland')" in _sq100,
+           'unter Wayland steht die Erklaerung statt eines toten Feldes')
+
+    # Die Wache selbst: anmelden, nachsehen, abmelden — ohne Tastendruck.
+    _w100 = _hk100.Wache()
+    pruefe(_w100.nachsehen() is False,
+           'ohne Anmeldung meldet die Wache nichts')
+    if _geht100:
+        _ok100, _warum100 = _w100.anmelden(_hk100.STANDARD)
+        pruefe(_ok100 or _warum100 == 'belegt',
+               'die Kombination laesst sich anmelden — oder sie ist belegt, '
+               'und das wird gesagt (%s)' % (_warum100 or 'angemeldet'))
+        pruefe(_w100.nachsehen() is False,
+               'und meldet nichts, solange niemand drueckt')
+        _w100.abmelden()
+        pruefe(_w100.helfer is None, 'abmelden raeumt auf')
+    pruefe(_w100.anmelden('kein Hotkey')[1] == 'kombination',
+           'Unsinn wird als Unsinn gemeldet, nicht als Systemfehler')
+
+    # ⚠ Und der Weg nach vorn ist der, den es schon gab.
+    _wq100 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
+                  encoding='utf-8').read()
+    _code100 = chr(10).join(_z for _z in _wq100.split(chr(10))
+                            if not _z.strip().startswith('#'))
+    pruefe('self.hervorholen()' in _code100.split('def _hotkey_nachsehen')[1]
+           .split(chr(10) + '    def ')[0],
+           'ein Druck holt das Fenster mit der Bauplan-Liste nach vorn')
+    # ⚠⚠ Kein eigener Faden: Unter Windows landet die Meldung in der Schlange
+    # genau des Fadens, der angemeldet hat — das ist der Tk-Faden.
+    pruefe('_hotkey_nachsehen()' in _code100.split('def _poll_queue')[1]
+           .split(chr(10) + '    def ')[0],
+           'gefragt wird im Tk-Takt, nicht in einem eigenen Faden')
+
     try:
         _ov92.root.destroy()
         _wz92.destroy()

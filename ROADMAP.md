@@ -26,6 +26,7 @@ Vier Dinge sind Absicht und bleiben so:
 | ✅ | **Herkunft je Bauplan** — Fraktion, Auftrag, nötiger Ruf, Belohnung; aus der Herstellung führt ein Knopf direkt hin |
 | ✅ | **Beim Annehmen eines Auftrags**: bringt er Baupläne, und welche fehlen dir noch? |
 | ✅ | **Was gerade zu tun ist** — die offenen Zwischenziele stehen unter ihrem Auftrag |
+| ✅ | **Tastenkombination** — holt die Bauplan-Liste aus dem laufenden Spiel nach vorn (Windows und Linux/X11) |
 | ✅ | Katalog-Wache: meldet, was im Spiel **neu craftbar** wird, dazu eine Merkliste |
 | ✅ | Filter **neu im Spiel** und Auswahlfeld **Patch**: nachschlagen, was jeder Patch gebracht hat |
 | ✅ | **Serverstatus**: eigener Reiter mit der Lage von CIG, frischt sich selbst auf |
