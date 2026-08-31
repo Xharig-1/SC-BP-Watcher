@@ -6,6 +6,18 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Fixed
+
+- **The patch history in the report could not be matched up.** Two game
+  versions sharing a number — `4.10.0-live.12519617` and
+  `4.10.0-live.12545750` — both showed up as "4.10.0". The report then read
+  `4.10.0 (24), 4.10.0 (34)`, with no way to tell which count belonged to which
+  patch. Of all lines, this was the one added for exactly that purpose, after a
+  bug had hidden there for three weeks. The short form is now used only while
+  it is unambiguous — otherwise the full version is shown.
+
 ## v3.9.0 - 2026-08-31
 
 The contract bar now shows only what is actually running — logging out drops

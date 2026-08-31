@@ -228,13 +228,23 @@ def _patchhistorie():
     Version, und aus 24 Bauplänen in 4.10.0 wurden 3. Im Bericht stand nur der
     Katalogstand — der war völlig in Ordnung, die Historie darunter nicht. Wer
     „der Patch-Filter zeigt fast nichts" meldet, soll die Zahlen sehen können,
-    ohne dass jemand erst eine JSON-Datei aufmacht."""
+    ohne dass jemand erst eine JSON-Datei aufmacht.
+
+    ⚠ Die Kurzform allein reicht nicht. `4.10.0-live.12519617` und
+    `4.10.0-live.12545750` kürzen beide auf „4.10.0"; im Bericht stand dann
+    zweimal „4.10.0" mit verschiedenen Zahlen, und niemand konnte zuordnen,
+    welcher Patch welche Zugänge brachte — ausgerechnet in der Zeile, die es
+    zum Zuordnen gibt. Darum: Kurzform nur, solange sie eindeutig ist, sonst
+    die volle Version."""
     from . import patchhistorie
     liste = patchhistorie.patches()
     if not liste:
         return None
-    return ', '.join('%s (%d)' % (kurz, anzahl)
-                     for _voll, kurz, anzahl in liste[:5])
+    liste = liste[:5]
+    kurzformen = [kurz for _voll, kurz, _anzahl in liste]
+    return ', '.join(
+        '%s (%d)' % (kurz if kurzformen.count(kurz) == 1 else voll, anzahl)
+        for voll, kurz, anzahl in liste)
 
 
 def _json_groesse(pfad_, schluessel):

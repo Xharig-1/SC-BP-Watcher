@@ -3000,6 +3000,21 @@ def main():
         from scbp import bericht as ber42
         pruefe('(%d)' % (_vorher42 + 3) in (ber42._patchhistorie() or ''),
                'der Bericht nennt die Anzahl je Patch')
+
+        # e) ⚠ Zwei Spielversionen mit derselben Nummer duerfen im Bericht nicht
+        #    zu zwei gleich aussehenden Eintraegen verkuerzt werden. Genau das
+        #    stand am 01.09.2026 dort: "4.10.0 (24), 4.10.0 (34)" — beide Male
+        #    dieselbe Beschriftung, und niemand konnte zuordnen, welche Zahl zu
+        #    welchem Patch gehoert. Ausgerechnet in der Zeile, die es zum
+        #    Zuordnen gibt (siehe d).
+        _kurz42 = _v42.split('-')[0]
+        _zwei42 = _kurz42 + '-live.99999999'
+        ph42.eintragen(_zwei42, ['Testwaffe D'])
+        _zeile42 = ber42._patchhistorie() or ''
+        pruefe(_kurz42 + ' (' not in _zeile42,
+               'gleiche Patch-Nummern werden nicht auf die Kurzform verkuerzt')
+        pruefe(_v42 in _zeile42 and _zwei42 in _zeile42,
+               'beide vollen Versionen stehen im Bericht')
     finally:
         if _alt_home42 is None:
             os.environ.pop('SC_BP_HOME', None)

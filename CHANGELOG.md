@@ -6,6 +6,19 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## Unveröffentlicht
+
+### Behoben
+
+- **Die Patch-Historie im Bericht ließ sich nicht zuordnen.** Zwei
+  Spielversionen mit gleicher Nummer — `4.10.0-live.12519617` und
+  `4.10.0-live.12545750` — erschienen beide als „4.10.0". Im Bericht stand
+  dann `4.10.0 (24), 4.10.0 (34)`, ohne dass erkennbar war, welche Zahl zu
+  welchem Patch gehört. Betroffen war ausgerechnet die Zeile, die genau dafür
+  eingebaut worden war, nachdem sich dort ein Fehler drei Wochen lang versteckt
+  hatte. Die Kurzform steht jetzt nur noch da, solange sie eindeutig ist —
+  sonst die volle Version.
+
 ## v3.9.0 - 2026-08-31
 
 Die Auftragsleiste zeigt nur noch, was wirklich läuft — beim Ausloggen verliert
