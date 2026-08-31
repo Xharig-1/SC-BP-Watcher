@@ -6,6 +6,47 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.5.2 - 2026-08-31
+
+Two buttons for the same job — one of them could do less and was red on top of
+that, although it cannot break anything. Reported by **Haldjas**.
+
+### Changed
+
+- ⭐ **"Read the logs again" is no longer red.** The button cannot break
+  anything: it **adds**, nothing else. Nothing is removed, nothing overwritten,
+  and duplicates cannot happen. The worst case is "takes a moment".
+
+  ⚠ **And that was the point.** Right below it sits "Reset inventory" — which
+  really does delete. With both red, red only said "something important"
+  instead of "this will be gone". Exactly what happened on 2026-08-31: Haldjas
+  pressed the harmless one and needed a shout afterwards. **Red is now reserved
+  for what actually takes something away.**
+
+- ⭐ **The second "read the logs again" button under "Detection" is gone.**
+  There were two, and they were not equals:
+
+  | Where | What it did |
+  |---|---|
+  | Detection → "Read from the start" | took effect **on the next start** |
+  | Inventory → "Read the logs again" | takes effect **now** and reports what came of it |
+
+  The second does everything the first did: it ignores the read position just
+  the same and goes through every kept session **and** the running `Game.log` —
+  only without a restart and with feedback. Haldjas: "the former is probably
+  not that useful any more then?" He was right.
+
+  ⚠ Two buttons for one job are worse than one: whoever hits the weaker one
+  concludes the tool cannot do it.
+
+### Internal
+
+- **Self-test 95** pins both down: that "read again" adds no duplicates and
+  does not downgrade a better source, that exactly **one** path triggers the
+  re-read — and that red now hangs on the reset alone.
+  ⚠ The check looks at the **code**, not the comments: while being written it
+  first snagged on the explanation of why the second button went.
+
 ## v3.5.1 - 2026-08-31
 
 "Reset inventory" did nothing at all for some people — and did not say why.

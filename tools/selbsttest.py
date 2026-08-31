@@ -7609,6 +7609,81 @@ def main():
 
     _bd94.speichern(_bd94.leer())
 
+
+    # 95. Rot heisst „weg", nicht „irgendwas Wichtiges"
+    #
+    # ⚠⚠ **Am 31.08.2026 gemeldet von Haldjas** — zwei Sachen auf einmal:
+    #
+    # 1. Es gab **zwei** Knoepfe, die die Protokolle neu lesen: einer unter
+    #    „Erkennung" (wirkte erst beim naechsten Start) und einer unter
+    #    „Bestand" (sofort). Der erste konnte strikt weniger. Wer ihn
+    #    erwischte, glaubte, das Werkzeug koenne es nicht.
+    # 2. Der verbliebene war **rot** — und direkt darunter steht das ebenfalls
+    #    rote „Bestand zuruecksetzen", das wirklich loescht. Haldjas drueckte
+    #    den harmlosen, und es brauchte einen Zuruf hinterher. Zwei
+    #    Bedeutungen fuer dieselbe Farbe heissen: Die Farbe warnt nicht mehr.
+    #
+    # ⚠ Nachgesehen, nicht geglaubt: `neu_einlesen` landet ueber den Watcher
+    # bei `bestand.hinzufuegen` — und das LEGT AN. Nichts wird entfernt,
+    # nichts ueberschrieben, doppelt kann nichts werden.
+    print()
+    print('95. Rot heisst „weg", nicht „irgendwas Wichtiges"')
+    from scbp import bestand as _bd95
+
+    # a) Der Beleg, dass der Knopf harmlos ist: zweimal dasselbe einlesen
+    #    aendert nichts, und Vorhandenes bleibt stehen.
+    _stand95 = _bd95.leer()
+    _bd95.hinzufuegen(_stand95, 'Vom Launcher', 'launcher')
+    _bd95.hinzufuegen(_stand95, 'Aus dem Log', 'log')
+    _vorher95 = dict(_stand95['bauplaene'])
+    for _ in range(3):
+        _bd95.hinzufuegen(_stand95, 'Aus dem Log', 'nachlese')
+        _bd95.hinzufuegen(_stand95, 'Vom Launcher', 'nachlese')
+    pruefe(_stand95['bauplaene'].keys() == _vorher95.keys(),
+           'erneutes Einlesen legt nichts doppelt an')
+    pruefe(_stand95['bauplaene'][_bd95.norm('Vom Launcher')]['quelle']
+           == 'launcher',
+           'und stuft eine bessere Quelle nicht herunter')
+
+    # b) Die Farben. @ Geprueft wird der Aufruf, denn `gefahr=True` ist der
+    #    einzige Unterschied — am fertigen Knopf ist er nur noch Pixel.
+    _q95 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                encoding='utf-8').read()
+    _be95 = _q95.split('def _bestand(')[1].split(chr(10) + 'def ')[0]
+
+    def _knopfzeile95(schluessel):
+        for _z95 in _be95.split(chr(10)):
+            if '_knopf(' in _z95 and schluessel in _z95:
+                return _z95
+        return ''
+
+    _neu95 = _knopfzeile95("t('s_be_neu')")
+    _reset95 = _knopfzeile95("t('s_zuruecksetzen')")
+    pruefe(_neu95 and 'gefahr' not in _neu95,
+           '„Protokolle erneut einlesen" ist NICHT rot (%s)' % _neu95.strip())
+    pruefe(_reset95 and 'gefahr=True' in _reset95,
+           '„Bestand zuruecksetzen" ist weiterhin rot (%s)' % _reset95.strip())
+
+    # c) Und es gibt nur noch EINEN Weg, die Protokolle neu zu lesen.
+    #
+    # ⚠ **Kommentare zaehlen nicht mit.** Beim Schreiben dieser Pruefung sind
+    # beide Zeilen zuerst an der Erklaerung haengengeblieben, warum der zweite
+    # Knopf weg ist — der Text erwaehnt ihn ja. Geprueft wird der CODE.
+    _code95 = chr(10).join(_z for _z in _q95.split(chr(10))
+                           if not _z.strip().startswith('#'))
+    pruefe(_code95.count('neu_einlesen_anstossen') == 1,
+           'nur eine Stelle stoesst das erneute Einlesen an (%d)'
+           % _code95.count('neu_einlesen_anstossen'))
+    pruefe('logstand.json' not in _code95,
+           'der zweite Knopf unter „Erkennung" ist weg — kein Loeschen des '
+           'Lesestands mehr in der Oberflaeche')
+
+    # d) Und keine verwaisten Sprachschluessel zurueckgelassen.
+    _sp95 = open(os.path.join(WURZEL, 'scbp', 'sprache.py'),
+                 encoding='utf-8').read()
+    pruefe('s_er_alt' not in _sp95,
+           'die Texte des entfernten Knopfes sind mitgegangen')
+
     try:
         _ov92.root.destroy()
         _wz92.destroy()

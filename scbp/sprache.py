@@ -809,12 +809,6 @@ TEXTE = {
                           'Catalogue refreshed: %s blueprints'),
     's_er_kat_weg':    ('Katalog holen ging nicht', 'Could not fetch catalogue'),
     's_er_kat_jetzt':  ('Jetzt neu holen', 'Fetch again now'),
-    's_er_alt':        ('Frühere Protokolle nachlesen', 'Re-read earlier logs'),
-    's_er_alt_h':      ('Liest die aufgehobenen Spielprotokolle noch einmal von vorn. Nützlich nach einem Umzug oder wenn der Bestand Lücken hat.',
-                          'Reads the kept game logs from the beginning once more. Useful after a move or when the inventory has gaps.'),
-    's_er_alt_ok':     ('Beim nächsten Start werden die Protokolle neu gelesen',
-                          'The logs will be read afresh on the next start'),
-    's_er_alt_knopf':  ('Von vorn lesen', 'Read from the start'),
 
     # -- Seite „Diagnose" --
     's_di_lead':       ('Wenn etwas klemmt: Dieser Block sagt in einem Rutsch, woran es liegen könnte. Der rote Knopf schickt ihn dem Entwickler — mehr musst du nicht tun.',

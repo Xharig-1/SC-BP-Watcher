@@ -1734,13 +1734,21 @@ def _bestand(fenster, rahmen):
         fenster.sagen(t('s_be_neu_los') if ov.neu_einlesen_anstossen()
                       else t('s_be_neu_kein'))
 
-    # ⚠⚠ **Rot, weil der Knopf etwas anrichtet.** Er wirft den Bestand nicht
-    # weg, aber er stösst einen Lauf über hunderte Protokolle an und schreibt
-    # dabei am Bauplan-Stand — am 30.08.2026 hat ihn jemand im Vorbeigehen
-    # gedrückt und es hat einen Fehler ausgelöst. `gefahr=True` färbt
-    # **dauerhaft**, nicht erst beim Überfahren: Ein Knopf, der erst rot wird,
-    # wenn die Maus schon darauf steht, warnt niemanden.
-    _knopf(fenster, ziel, t('s_be_neu'), neu_einlesen, gefahr=True).pack()
+    # ⚠⚠ **Nicht rot — der Knopf kann nichts kaputt machen.** Bis v3.5.1 war er
+    # es, weil er „etwas anrichtet": Er stösst einen Lauf über hunderte
+    # Protokolle an. Nachgesehen tut er aber nur eines — `bestand.hinzufuegen`,
+    # und das **legt an**. Es nimmt nichts weg, überschreibt nichts, und
+    # doppelt kann nichts werden. Der schlimmste Fall ist „dauert kurz".
+    #
+    # ⚠⚠ **Zwei Bedeutungen für dieselbe Farbe heissen: die Farbe warnt nicht
+    # mehr.** Direkt darunter steht „Bestand zurücksetzen" — das loescht
+    # wirklich. Waren beide rot, sagte Rot nur noch „irgendwas Wichtiges".
+    # Am 31.08.2026 genau so passiert: Haldjas drueckte den harmlosen, und es
+    # brauchte einen Zuruf „nicht druecken, der ist nicht ohne Grund rot" —
+    # bei einem Knopf, der gar nichts anrichten kann.
+    #
+    # Rot bleibt fuer das, was weg ist, wenn man es drueckt.
+    _knopf(fenster, ziel, t('s_be_neu'), neu_einlesen).pack()
 
     # ⚠ **Bestand zurücksetzen — hier und nicht unter „Fehler melden".** Dort
     # stand es bis rc42, und dort sucht es niemand: Wer seinen Bauplan-Stand
@@ -3620,16 +3628,20 @@ def _erkennung(fenster, rahmen):
 
     _knopf(fenster, ziel, t('s_er_kat_jetzt'), katalog_neu).pack()
 
-    ziel = _feld(fenster, innen, t('s_er_alt'), t('s_er_alt_h'))
-
-    def nachlesen():
-        try:
-            os.remove(pfade.app_datei('logstand.json'))
-        except OSError:
-            pass
-        fenster.sagen(t('s_er_alt_ok'))
-
-    _knopf(fenster, ziel, t('s_er_alt_knopf'), nachlesen).pack()
+    # ⚠⚠ **Hier stand bis v3.5.1 ein zweiter „Protokolle neu lesen"-Knopf.**
+    # Er loeschte `logstand.json` und wirkte erst **beim naechsten Start**.
+    # Unter „Bestand" gibt es denselben Auftrag als „Protokolle erneut
+    # einlesen" — der ignoriert den Lesestand ebenfalls, geht jede Sicherung
+    # UND die laufende `Game.log` durch, wirkt **sofort** und sagt hinterher,
+    # was dabei herauskam.
+    #
+    # Der eine konnte also strikt weniger als der andere. Gemeldet am
+    # 31.08.2026 von Haldjas: „unter detection macht es das nach dem naechsten
+    # start, unter BP inventory sofort — ersteres ist wahrscheinlich dann nicht
+    # mehr so sinnvoll?" Er hatte recht.
+    #
+    # ⚠ Zwei Knoepfe fuer eine Sache sind schlimmer als einer: Wer den
+    # schwaecheren erwischt, glaubt, das Werkzeug koenne es nicht.
 
 
 def _diagnose(fenster, rahmen):

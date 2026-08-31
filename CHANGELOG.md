@@ -6,6 +6,49 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.5.2 - 2026-08-31
+
+Zwei Knöpfe für dieselbe Sache — einer davon konnte weniger und war obendrein
+rot, obwohl er nichts kaputt machen kann. Gemeldet von **Haldjas**.
+
+### Geändert
+
+- ⭐ **„Protokolle erneut einlesen" ist nicht mehr rot.** Der Knopf kann
+  nichts kaputt machen: Er **legt an**, mehr nicht. Es wird nichts entfernt,
+  nichts überschrieben, und doppelt kann nichts werden. Der schlimmste Fall
+  ist „dauert kurz".
+
+  ⚠ **Und genau darum ging es.** Direkt darunter steht „Bestand
+  zurücksetzen" — das löscht wirklich. Waren beide rot, sagte Rot nur noch
+  „irgendwas Wichtiges" statt „das ist dann weg". Am 31.08.2026 genau so
+  passiert: Haldjas drückte den harmlosen, und es brauchte hinterher einen
+  Zuruf. **Rot bleibt jetzt dem vorbehalten, was wirklich etwas wegnimmt.**
+
+- ⭐ **Der zweite „Protokolle neu lesen"-Knopf unter „Erkennung" ist weg.**
+  Es gab ihn doppelt, und die beiden waren nicht gleichwertig:
+
+  | Wo | Was er tat |
+  |---|---|
+  | Erkennung → „Von vorn lesen" | wirkte erst **beim nächsten Start** |
+  | Bestand → „Protokolle erneut einlesen" | wirkt **sofort** und sagt, was dabei herauskam |
+
+  Der zweite kann alles, was der erste konnte: Er ignoriert den Lesestand
+  ebenso, geht jede aufgehobene Sitzung **und** die laufende `Game.log` durch —
+  nur eben ohne Neustart und mit Rückmeldung. Haldjas dazu: „ersteres ist
+  wahrscheinlich dann nicht mehr so sinnvoll?" Er hatte recht.
+
+  ⚠ Zwei Knöpfe für eine Sache sind schlimmer als einer: Wer den schwächeren
+  erwischt, glaubt, das Werkzeug könne es nicht.
+
+### Intern
+
+- **Selbsttest 95** hält beides fest: dass „erneut einlesen" nichts doppelt
+  anlegt und keine bessere Quelle herunterstuft, dass genau **ein** Weg das
+  Einlesen anstößt — und dass Rot nur noch am Zurücksetzen hängt.
+  ⚠ Die Prüfung schaut dabei auf den **Code**, nicht auf die Kommentare: Beim
+  Schreiben blieb sie zuerst an der Erklärung hängen, warum der zweite Knopf
+  weg ist.
+
 ## v3.5.1 - 2026-08-31
 
 „Bestand zurücksetzen" tat bei manchen Leuten gar nichts — und sagte auch nicht,
