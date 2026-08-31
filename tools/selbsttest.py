@@ -372,6 +372,59 @@ def main():
         pruefe(not assi.noetig(),
                'beim nächsten Mal läuft der Assistent nicht mehr von allein')
 
+        # ⚠⚠ Ein Lesefehler darf den ganzen Lauf nicht kippen. Bis 01.09.2026
+        # flog eine unerwartete Ausnahme aus `_lies_datei` bis hinauf in
+        # `_nachlese()`, das sie **still** verschluckt — `stand.speichern()`
+        # wurde nie erreicht, und ALLE in diesem Lauf gelesenen Dateien galten
+        # wieder als ungelesen. Am alten Stand gemessen: 0 von 23 gemerkt,
+        # beim naechsten Start dasselbe von vorn, ohne jede Meldung.
+        _sicherungen6 = pf2.log_sicherungen()
+        pruefe(len(_sicherungen6) > 0,
+               'es liegen Sicherungen zum Pruefen bereit (%d)' % len(_sicherungen6))
+        _echt6, _erste6 = lq._lies_datei, _sicherungen6[0]
+        _kaputt6 = os.path.basename(str(_erste6))
+
+        def _stolpert6(datei, muster, _e=_echt6, _k=_kaputt6):
+            if os.path.basename(str(datei)) == _k:
+                raise MemoryError('erzwungen fuer den Selbsttest')
+            return _e(datei, muster)
+
+        # ⚠ Den Eintrag dieser Datei vorher wegnehmen. Der Abschnitt oben hat
+        # sie schon gemerkt; ohne das misst die Pruefung unten den ALTEN
+        # Eintrag und wird gruen, egal wie sich der Code verhaelt.
+        _vor6 = lq.Lesestand()
+        _vor6.daten['sicherungen'].pop(_kaputt6, None)
+        _vor6.speichern()
+
+        lq._lies_datei = _stolpert6
+        try:
+            _f6, _b6 = lq.nachlesen(lq.Lesestand(), nur_neue=False)
+            pruefe(_b6['unlesbar'] == 1,
+                   'eine unlesbare Datei wird gezaehlt statt den Lauf zu sprengen')
+            pruefe(not lq.Lesestand().kennt(_erste6),
+                   'und bleibt ungemerkt, damit sie beim naechsten Lauf drankommt')
+        except Exception as _e6:
+            pruefe(False, 'nachlesen() ueberlebt einen Lesefehler (%s)'
+                   % type(_e6).__name__)
+        finally:
+            lq._lies_datei = _echt6
+
+        # Dasselbe fuer die laufende Game.log: Sie wird NACH der Schleife
+        # gelesen — eine Ausnahme dort haette die eben gelesenen Sicherungen um
+        # ihren Eintrag gebracht, obwohl mit ihnen alles in Ordnung war.
+        _echt_log6 = pf2.game_log
+        pf2.game_log = lambda: (_ for _ in ()).throw(OSError('erzwungen'))
+        try:
+            lq.nachlesen(lq.Lesestand(), nur_neue=False)
+            pruefe(lq.Lesestand().kennt(_erste6),
+                   'faellt die laufende Game.log aus, bleiben die Sicherungen '
+                   'trotzdem festgehalten')
+        except Exception as _e6b:
+            pruefe(False, 'nachlesen() ueberlebt eine ausgefallene Game.log (%s)'
+                   % type(_e6b).__name__)
+        finally:
+            pf2.game_log = _echt_log6
+
         # Der Assistent muss sich wiederholen lassen — für Leute, die sich nicht
         # durch Menüs klicken wollen. Vier Schritte, ohne Absturz durchgereicht.
         if ANZEIGE:

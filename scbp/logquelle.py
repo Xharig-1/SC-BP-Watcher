@@ -198,14 +198,29 @@ def nachlesen(stand=None, muster=None, nur_neue=True, auch_laufende=True):
     vorher = stand.daten.get('letzte_sitzung', 0.0)
     bericht = {'dateien': 0, 'uebersprungen': 0, 'gefunden': 0,
                'vorhanden': len(alle), 'luecke': False, 'grund': '',
-               'laufende': False}
+               'laufende': False, 'unlesbar': 0}
 
     treffer, gesehen = [], set()
     for datei in alle:
         if nur_neue and stand.kennt(datei):
             bericht['uebersprungen'] += 1
             continue
-        for name, zusatz in _lies_datei(datei, muster):
+        # ⚠ Eine einzige Datei darf den ganzen Lauf nicht kippen. `_lies_datei`
+        # faengt `OSError` selbst ab — alles andere (unerwartete Ausnahme beim
+        # Zerlegen, Speichernot bei einer riesigen Zeile) flog bis hierher
+        # durch, und weiter bis in `_nachlese()`, das sie **still** verschluckt.
+        # Dann wird `stand.speichern()` unten nie erreicht: Alle in diesem Lauf
+        # gemerkten Dateien gelten wieder als ungelesen, die Nachlese beginnt
+        # beim naechsten Start von vorn — jedes Mal, ohne dass jemand erfaehrt
+        # warum. Deshalb hier abfangen und die eine Datei ueberspringen.
+        try:
+            funde = _lies_datei(datei, muster)
+        except Exception:
+            # Bewusst NICHT merken: Eine Datei, die wir nicht lesen konnten,
+            # muss beim naechsten Lauf wieder drankommen.
+            bericht['unlesbar'] += 1
+            continue
+        for name, zusatz in funde:
             schluessel = name.lower().strip()
             if schluessel in gesehen:
                 continue
@@ -219,7 +234,10 @@ def nachlesen(stand=None, muster=None, nur_neue=True, auch_laufende=True):
     # ausgerechnet die aktuelle Sitzung als Loch im Bestand. Danach steht der
     # Lesestand auf dem Dateiende, das Mitlesen setzt dort nahtlos an.
     if auch_laufende:
-        aktiv = pfade.game_log()
+        # ⚠ Auch dieser Teil darf den Lauf nicht kippen — er steht NACH der
+        # Schleife, also haette eine Ausnahme hier ausgerechnet die eben
+        # gelesenen Sicherungen um ihren Eintrag gebracht.
+        aktiv = _sicher_game_log()
         # ⚠ **Immer lesen, nicht nur beim allerersten Mal.** Hier stand
         # `if aktiv and stand.aktiv_holen(aktiv) is None:` — die laufende Datei
         # wurde also übersprungen, sobald sie einmal gelesen war. Das trifft
@@ -238,23 +256,48 @@ def nachlesen(stand=None, muster=None, nur_neue=True, auch_laufende=True):
         # die Nachlese geht ohnehin über 149 Sicherungen. Doppelte fängt der
         # Bestand ab, der prüft jeden Namen.
         if aktiv:
-            for name, zusatz in _lies_datei(aktiv, muster):
-                schluessel = name.lower().strip()
-                if schluessel in gesehen:
-                    continue
-                gesehen.add(schluessel)
-                treffer.append((name, zusatz))
+            try:
+                for name, zusatz in _lies_datei(aktiv, muster):
+                    schluessel = name.lower().strip()
+                    if schluessel in gesehen:
+                        continue
+                    gesehen.add(schluessel)
+                    treffer.append((name, zusatz))
+                bericht['laufende'] = True
+            except Exception:
+                bericht['unlesbar'] += 1
             try:
                 stand.aktiv_setzen(aktiv, os.path.getsize(aktiv))
             except OSError:
                 pass
-            bericht['laufende'] = True
 
     bericht['gefunden'] = len(treffer)
-    bericht.update(_luecke_pruefen(vorher, alle))
-    stand.aufraeumen(alle)
+    try:
+        bericht.update(_luecke_pruefen(vorher, alle))
+    except Exception:
+        pass
+    # ⚠ Das Festhalten steht am Ende und muss es auch erreichen — deshalb ist
+    # oben alles abgefangen, was dazwischenkommen kann. Wird hier nicht
+    # gespeichert, war der ganze Lauf umsonst: Beim naechsten Start wird alles
+    # noch einmal gelesen, still und ohne erkennbaren Grund.
+    try:
+        stand.aufraeumen(alle)
+    except Exception:
+        pass
     stand.speichern()
     return treffer, bericht
+
+
+def _sicher_game_log():
+    """Die laufende `Game.log` — oder None, wenn der Pfad nicht zu holen ist.
+
+    ⚠ `pfade.game_log()` sieht auf dem Dateisystem nach. Eine ausgehaengte
+    Platte oder ein Netzpfad, der gerade nicht antwortet, hat den ganzen
+    Nachlese-Lauf gekippt, samt der bereits gelesenen Sicherungen."""
+    try:
+        return pfade.game_log()
+    except Exception:
+        return None
 
 
 def alles_neu(muster=None):

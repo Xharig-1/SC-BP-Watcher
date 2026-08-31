@@ -25,6 +25,15 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   dead end; "Bauplan überchoo", for instance, is Swiss German from the table
   and cannot appear there at all. Each group is now labelled separately.
 
+- ⭐ **A single unreadable log threw away the entire catch-up run.** If reading
+  stumbled on one file — or the running `Game.log` dropped out at the last
+  step, say because a drive went away — the read state was **never saved**.
+  Every log read during that run counted as unread again, and the next start
+  began all over: silently, with no error, every single time. Measured against
+  the old build: **0 of 23** logs recorded. Now that one file is skipped and
+  counted, the rest is recorded as usual, and the skipped one stays pending for
+  the next run instead of counting as done.
+
 ## v3.9.0 - 2026-08-31
 
 The contract bar now shows only what is actually running — logging out drops

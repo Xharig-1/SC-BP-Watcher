@@ -27,6 +27,17 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Schweizerdeutsch aus der Tabelle und kann dort gar nicht stehen. Jede Gruppe
   wird jetzt einzeln ausgewiesen.
 
+- ⭐ **Ein einziges unlesbares Protokoll machte die ganze Nachlese zunichte.**
+  Stolperte das Durchsehen an einer Datei — oder fiel beim letzten Schritt die
+  laufende `Game.log` aus, etwa weil eine Platte weg ist —, dann wurde der
+  Lesestand **nie gespeichert**. Alle in diesem Lauf gelesenen Protokolle
+  galten damit wieder als ungelesen, und beim nächsten Start begann alles von
+  vorn: still, ohne Fehlermeldung, jedes Mal aufs Neue. Am alten Stand
+  nachgemessen: **0 von 23** Protokollen festgehalten. Jetzt wird die eine
+  Datei übersprungen und gezählt, der Rest ganz normal festgehalten — und die
+  übersprungene bleibt für den nächsten Lauf offen, statt als erledigt zu
+  gelten.
+
 ## v3.9.0 - 2026-08-31
 
 Die Auftragsleiste zeigt nur noch, was wirklich läuft — beim Ausloggen verliert
