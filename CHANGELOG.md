@@ -9,7 +9,34 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 ## v3.5.1 - 2026-08-31
 
 „Bestand zurücksetzen" tat bei manchen Leuten gar nichts — und sagte auch nicht,
-warum. Aus einem Fehlerbericht.
+warum. Und der Fehlerbericht beantwortet ab jetzt selbst die Frage, die man
+sonst zurückfragen müsste: greift die Log-Erkennung überhaupt?
+
+### Neu
+
+- ⭐ **Der Bericht sagt jetzt selbst, ob die Log-Erkennung greift.** Die Zeile
+  „Sicherungen" nennt drei Zahlen statt einer:
+
+  ```
+  Sicherungen   462 Protokolle · 462 durchgesehen · 0 Baupläne daraus
+  ```
+
+  ⚠ **Weil Rückfragen oft nicht gehen.** Der Bericht, der zu dieser Fassung
+  geführt hat, kam ohne Absender und ohne Nachricht — nur „462 Protokolle" und
+  „0 Baupläne". Ob die Erkennung bei diesem Menschen versagt oder ob er
+  einfach neu im Spiel ist, war daraus **nicht** zu erkennen. Genau das ist
+  aber der Unterschied zwischen „alles in Ordnung" und „das Werkzeug ist für
+  ihn wertlos".
+
+  | Was dasteht | Was es heißt |
+  |---|---|
+  | 462 · 462 durchgesehen · **0** daraus | die Erkennung findet nichts |
+  | 462 · **0** durchgesehen · 0 daraus | die Nachlese lief nie |
+  | 462 · 462 durchgesehen · 380 daraus | alles in Ordnung |
+
+  Gezählt werden nur Funde **aus Protokollen**. Was vom Launcher, von Hand oder
+  aus den Startbauplänen kam, sagt über die Log-Erkennung nichts aus.
+
 
 ### Behoben
 
@@ -33,6 +60,10 @@ warum. Aus einem Fehlerbericht.
 
 ### Intern
 
+- **Selbsttest 94 hat beim Bauen gleich ein Loch gefunden**: Der erste Aufruf
+  in der neuen Berichtszeile lag außerhalb der Absicherung — eine ausgehängte
+  Platte hätte den ganzen Bericht mitgenommen. Genau die Zeile steht in einem
+  Bericht, den jemand abschickt, **weil** schon etwas kaputt ist.
 - **Die Entscheidung ist aus der Oberfläche heraus**: `bestand.zuruecksetzen()`
   gibt `None` zurück, wenn danach keine Bestandsdatei mehr da ist, sonst die
   Störung. Damit lässt sich Selbsttest 93 **ohne Fenster** fahren — auf jedem

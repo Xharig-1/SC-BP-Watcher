@@ -9,7 +9,33 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 ## v3.5.1 - 2026-08-31
 
 "Reset inventory" did nothing at all for some people — and did not say why.
-From a bug report.
+And the bug report now answers for itself the question you would otherwise have
+to ask back: does log detection work at all?
+
+### New
+
+- ⭐ **The report now says for itself whether log detection works.** The "Kept
+  logs" line carries three numbers instead of one:
+
+  ```
+  Kept logs   462 logs · 462 read · 0 blueprints from them
+  ```
+
+  ⚠ **Because asking back is often impossible.** The report behind this release
+  arrived with no sender and no message — just "462 logs" and "0 blueprints".
+  Whether detection fails for that person or they are simply new to the game
+  was **not** visible. Yet that is the difference between "all fine" and "the
+  tool is worthless to them".
+
+  | What it says | What it means |
+  |---|---|
+  | 462 · 462 read · **0** from them | detection finds nothing |
+  | 462 · **0** read · 0 from them | the catch-up never ran |
+  | 462 · 462 read · 380 from them | all fine |
+
+  Only finds **from logs** are counted. What came from the launcher, by hand or
+  from the starter blueprints says nothing about log detection.
+
 
 ### Fixed
 
@@ -33,6 +59,10 @@ From a bug report.
 
 ### Internal
 
+- **Self-test 94 found a hole while it was being written**: the first call in
+  the new report line sat outside the guard — an unplugged drive would have
+  taken the whole report with it. That very line appears in a report someone
+  sends **because** something is already broken.
 - **The decision moved out of the interface**: `bestand.zuruecksetzen()`
   returns `None` when no inventory file remains afterwards, otherwise the
   failure. That lets self-test 93 run **without a window** — on any system and

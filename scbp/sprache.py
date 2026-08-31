@@ -1247,6 +1247,15 @@ TEXTE = {
     'b_spiel':         ('Spiel', 'Game'),
     'b_gamelog':       ('Game.log', 'Game.log'),
     'b_sicherungen':   ('Sicherungen', 'Kept logs'),
+    # ⚠⚠ **Die Zeile, die eine Rueckfrage erspart.** Am 31.08.2026 kam ein
+    # Bericht mit „462 Protokolle" und „0 Baupläne" — und ohne Absender. Ob
+    # die Erkennung bei dem Menschen nichts findet oder ob er schlicht neu im
+    # Spiel ist, war daraus NICHT zu erkennen, und nachfragen ging nicht.
+    # Jetzt steht beides drin: wie viele Protokolle durchgesehen wurden und
+    # wie viele Bauplaene dabei herauskamen. 462 gelesen und 0 gefunden heisst
+    # kaputt; 0 gelesen heisst, die Nachlese lief nie.
+    'b_logs_gelesen':  ('%s durchgesehen', '%s read'),
+    'b_logs_funde':    ('%s Baupläne daraus', '%s blueprints from them'),
     'b_protokolle':    ('%s Protokolle', '%s logs'),
     'b_launcher':      ('Launcher', 'Launcher'),
     # ⚠ Diese Zeile wäre am 27.08.2026 die halbe Diagnose gewesen: Bomb20

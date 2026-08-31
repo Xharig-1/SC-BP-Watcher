@@ -7545,6 +7545,70 @@ def main():
     pruefe("t('s_be_reset_fehler'" in _ab93,
            'und der Fehlschlag hat einen eigenen Text')
 
+
+    # 94. Der Bericht sagt selbst, ob die Log-Erkennung greift
+    #
+    # ⚠⚠ **Weil Rueckfragen oft nicht gehen.** Am 31.08.2026 kam ein Bericht
+    # mit „462 Protokolle" und „0 Baupläne" — ohne Absender, ohne Nachricht.
+    # Daraus war NICHT zu erkennen, ob die Erkennung bei dem Menschen versagt
+    # oder ob er einfach neu im Spiel ist. Genau das ist aber der Unterschied
+    # zwischen „alles in Ordnung" und „das Werkzeug ist fuer ihn wertlos".
+    #
+    # | Was dasteht | Was es heisst |
+    # |---|---|
+    # | 462 · 462 durchgesehen · 0 daraus | die Erkennung findet nichts |
+    # | 462 · 0 durchgesehen · 0 daraus | die Nachlese lief nie |
+    # | 462 · 462 durchgesehen · 380 daraus | alles in Ordnung |
+    print()
+    print('94. Der Bericht sagt selbst, ob die Log-Erkennung greift')
+    from scbp import bericht as _be94, bestand as _bd94
+
+    def _zahlen94(text):
+        return [int(_x) for _x in re.findall(r'\d+', text)]
+
+    _bd94.speichern(_bd94.leer())
+    _zeile94 = _be94._protokollzeile()
+    _z94 = _zahlen94(_zeile94)
+    pruefe(len(_z94) == 3,
+           'die Zeile nennt drei Zahlen: vorhanden, gelesen, gefunden (%r)'
+           % _zeile94)
+    pruefe(_z94[0] == len(w.pfade.log_sicherungen()),
+           'die erste Zahl ist die Zahl der Protokolle')
+    pruefe(_z94[2] == 0, 'ohne Bestand steht hinten eine Null')
+
+    # ⭐ Der Kern: Nur Funde AUS PROTOKOLLEN zaehlen. Was vom Launcher, von
+    # Hand oder aus den Startbauplaenen kam, sagt ueber die Log-Erkennung
+    # nichts — und genau die steht hier zur Frage.
+    _daten94 = _bd94.leer()
+    _bd94.hinzufuegen(_daten94, 'Aus dem Log', 'log')
+    _bd94.hinzufuegen(_daten94, 'Aus der Nachlese', 'nachlese')
+    _bd94.hinzufuegen(_daten94, 'Vom Launcher', 'launcher')
+    _bd94.hinzufuegen(_daten94, 'Von Hand', 'hand')
+    _bd94.hinzufuegen(_daten94, 'Startbauplan', 'start')
+    _bd94.speichern(_daten94)
+    _z94b = _zahlen94(_be94._protokollzeile())
+    pruefe(_z94b[2] == 2,
+           'nur die zwei aus Protokollen werden gezaehlt, nicht alle fuenf '
+           '(gezaehlt: %d)' % _z94b[2])
+
+    # ⚠ Und die Zeile darf NIE stuerzen — sie steht in einem Bericht, den
+    # jemand abschickt, weil ohnehin schon etwas kaputt ist.
+    _echt94 = w.pfade.log_sicherungen
+    w.pfade.log_sicherungen = lambda *_a, **_k: (_ for _ in ()).throw(
+        OSError('Platte weg'))
+    try:
+        _kaputt94 = None
+        try:
+            _be94._protokollzeile()
+        except Exception as _f94:
+            _kaputt94 = _f94
+    finally:
+        w.pfade.log_sicherungen = _echt94
+    pruefe(_kaputt94 is None,
+           'die Zeile bricht den Bericht nicht ab (%s)' % _kaputt94)
+
+    _bd94.speichern(_bd94.leer())
+
     try:
         _ov92.root.destroy()
         _wz92.destroy()

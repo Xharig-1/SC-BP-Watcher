@@ -93,6 +93,58 @@ def _gedraengt(eintraege):
             for zeile, _text, zahl in heraus]
 
 
+def _protokollzeile():
+    """Wie viele Protokolle da sind, wie viele gelesen wurden — und was dabei
+    herauskam.
+
+    ⚠⚠ **Diese Zeile ersetzt eine Rueckfrage, die oft nicht moeglich ist.** Am
+    31.08.2026 kam ein Bericht mit „462 Protokolle" und „0 Baupläne", ohne
+    Absender und ohne Nachricht. Daraus war nicht zu erkennen, ob die Erkennung
+    bei dem Menschen versagt oder ob er einfach neu im Spiel ist — und genau
+    das ist der Unterschied zwischen „alles in Ordnung" und „das Werkzeug ist
+    fuer ihn wertlos".
+
+    Jetzt beantwortet der Bericht es selbst:
+
+    | Was dasteht | Was es heisst |
+    |---|---|
+    | 462 · 462 durchgesehen · 0 Bauplaene daraus | die Erkennung findet nichts |
+    | 462 · 0 durchgesehen · 0 Bauplaene daraus | die Nachlese lief nie |
+    | 462 · 462 durchgesehen · 380 Bauplaene daraus | alles in Ordnung |
+
+    ⚠ Gezaehlt werden nur die Bauplaene aus `log` und `nachlese`. Was vom
+    Launcher, von Hand oder aus den Startbauplaenen kam, sagt ueber die
+    Log-Erkennung nichts aus — und genau die steht hier zur Frage.
+    """
+    from . import bestand as bestand_modul
+    from . import logquelle, pfade as pfade_modul
+
+    # ⚠ **Jeder Schritt fuer sich abgesichert, auch der erste.** Diese Zeile
+    # steht in einem Bericht, den jemand abschickt, WEIL schon etwas kaputt
+    # ist — eine ausgehaengte Platte darf ihn nicht um den Rest bringen. Beim
+    # Bauen lag der erste Aufruf zunaechst ausserhalb; Selbsttest 94 hat es
+    # sofort gemeldet.
+    sicherungen = []
+    try:
+        sicherungen = pfade_modul.log_sicherungen()
+    except Exception:
+        pass
+    teile = [t('b_protokolle') % len(sicherungen)]
+    try:
+        stand = logquelle.Lesestand()
+        gelesen = sum(1 for p in sicherungen if stand.kennt(p))
+        teile.append(t('b_logs_gelesen') % gelesen)
+    except Exception:
+        pass
+    try:
+        quellen = bestand_modul.nach_quelle(bestand_modul.laden())
+        aus_logs = quellen.get('log', 0) + quellen.get('nachlese', 0)
+        teile.append(t('b_logs_funde') % aus_logs)
+    except Exception:
+        pass
+    return ' · '.join(teile)
+
+
 def _bestandzeile():
     """Wie viele Baupläne — und wie viele davon die Bauplan-Liste zeigt.
 
@@ -371,8 +423,7 @@ def bauen(version='', wurzel=None, fehleranzahl=8):
                                  or t('b_nicht_gefunden')))
     zeile(t('b_gamelog'), _sicher(lambda: uebersicht.get('game_log')
                                    or t('b_nicht_gefunden')))
-    zeile(t('b_sicherungen'), _sicher(
-        lambda: t('b_protokolle') % uebersicht.get('sicherungen')))
+    zeile(t('b_sicherungen'), _sicher(_protokollzeile))
     zeile(t('b_launcher'), _sicher(lambda: uebersicht.get('launcher')
                                     or t('b_nicht_da')))
     # ⚠ **Womit sich das Spiel starten ließe — und ob das jemand von Hand
