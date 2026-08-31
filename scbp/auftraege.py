@@ -258,8 +258,119 @@ def ende_muster():
     return re.compile(RAHMEN % teile)
 
 
+# ⚠⚠ **Der Zusatz hinter der Meldung entscheidet, ob ein Ende zählt.**
+# Star Citizen hängt an jede Auftrags-Benachrichtigung an, zu welcher Mission
+# und zu welchem **Ziel** sie gehört — und daran hängt alles:
+#
+#     "Auftrag angenommen: Retake Platforms From Nine Tails: "
+#         MissionId: [916223dd…], ObjectiveId: []
+#     "Auftrag zurückgezogen: Obere Plattform erreichen: "
+#         MissionId: [916223dd…], ObjectiveId: [40418b42…]
+#
+# Dieselbe Mission, zwei Ebenen. Die zweite Zeile nimmt **das Zwischenziel**
+# weg, nicht den Auftrag — der läuft weiter, und direkt danach steht im Log
+# schon das nächste Ziel. Wer den Unterschied nicht macht, löscht laufende
+# Aufträge: am 31.08.2026 mit Bildschirmfoto gemeldet — Auftrag im Spiel
+# sichtbar aktiv, Leiste leer.
+#
+# An allen 153 Protokollen gemessen (31.08.2026): 473 Enden, davon **111 mit**
+# ObjectiveId. Alle 111 waren Zwischenziele, und in allen 111 Fällen lief die
+# Mission danach nachweislich weiter.
+ZUSATZ = re.compile(r'MissionId:\s*\[([^\]]*)\][^\n]*?ObjectiveId:\s*\[([^\]]*)\]')
+
+
+def kennungen(text, stelle):
+    """`(MissionId, ObjectiveId)` der Meldung, die bei `stelle` beginnt.
+
+    Beide stehen am Ende **derselben** Logzeile. Fehlen sie — fremdes Format,
+    ältere Spielfassung, ein von Hand gebauter Testtext —, kommt zweimal `''`
+    zurück und es wird wie früher über den Titel gerechnet.
+    """
+    ende = text.find('\n', stelle)
+    zeile = text[stelle:ende if ende >= 0 else len(text)]
+    treffer = ZUSATZ.search(zeile)
+    if not treffer:
+        return '', ''
+    return treffer.group(1).strip(), treffer.group(2).strip()
+
+
+def ereignisse_aus_text(text, muster_an=None, muster_aus=None):
+    """Alle Auftrags-Ereignisse dieses Textes, in der Reihenfolge des Logs.
+
+    Einträge: `(ist_annahme, titel, mission_id, objective_id)`.
+
+    ⚠ Die **eine** Stelle, die Auftragsmeldungen aus einem Logtext holt: Der
+    Start liest damit die ganze `Game.log`, der laufende Betrieb damit jeden
+    neuen Abschnitt. Zwei Auswertungen mit eigener Buchführung liefen früher
+    auseinander.
+    """
+    muster_an = muster_an or muster()
+    muster_aus = muster_aus or ende_muster()
+    gefunden = []
+    for m in muster_an.finditer(text):
+        gefunden.append((m.start(), True, m.group(1)))
+    for m in muster_aus.finditer(text):
+        gefunden.append((m.start(), False, m.group(1)))
+    # Die Fundstelle ist die Wahrheit: Sie sagt, was im Spiel zuerst geschah.
+    gefunden.sort(key=lambda e: e[0])
+    return [(ist_annahme, titel) + kennungen(text, stelle)
+            for stelle, ist_annahme, titel in gefunden]
+
+
+def beendet_welchen(rein, mission_id, objective_id, offen, missionen):
+    """Welchen offenen Auftrag beendet dieses Ende — oder keinen (`None`)?
+
+    Drei Schritte, in dieser Reihenfolge:
+
+    1. **Steht eine ObjectiveId dabei, endet nur ein Zwischenziel.** Der
+       Auftrag läuft weiter. Der Grund steht oben bei `ZUSATZ`.
+    2. Sonst über den Titel — der Normalfall, 300 von 362 gemessen.
+    3. Sonst über die MissionId. Sie steht bei **jeder** der 1102 gemessenen
+       Annahmen und bei **jedem** der 362 Missions-Enden. Damit sind auch die
+       restlichen 62 zugeordnet, bei denen der Endtitel vom Annahmetitel
+       abweicht.
+
+    Ergebnis über 153 Protokolle: **0** Missions-Enden bleiben unzuordenbar.
+    Deshalb wird hier weder geraten noch pauschal geräumt — beides hatte
+    laufende Aufträge mitgerissen.
+    """
+    if objective_id:
+        return None
+    if rein in offen:
+        return rein
+    return missionen.get(mission_id) if mission_id else None
+
+
+def stand_aus_text(text, muster_an=None, muster_aus=None):
+    """Was laut diesem Logtext noch offen ist — mit den Missions-Kennungen.
+
+    Rückgabe: `(titel_liste, {mission_id: schlüssel})`. Die zweite Hälfte
+    braucht der laufende Betrieb: Endet später ein Auftrag, der **vor** dem
+    Start des Werkzeugs angenommen wurde, ist die MissionId die einzige
+    Brücke zurück zu seiner Zeile.
+    """
+    offen, missionen = {}, {}
+    for ist_annahme, titel, mid, oid in ereignisse_aus_text(text, muster_an,
+                                                            muster_aus):
+        rein = sauber(titel)
+        if not rein:
+            continue
+        if ist_annahme:
+            offen.setdefault(rein, titel)
+            if mid:
+                missionen[mid] = rein
+            continue
+        weg = beendet_welchen(rein, mid, oid, offen, missionen)
+        if weg is None:
+            continue
+        offen.pop(weg, None)
+        for kennung in [k for k, v in missionen.items() if v == weg]:
+            del missionen[kennung]
+    return list(offen.values()), missionen
+
+
 def offene_aus_text(text, muster_an=None, muster_aus=None):
-    """Welche Auftraege laut diesem Log-Text noch offen sind.
+    """Welche Aufträge laut diesem Log-Text noch offen sind.
 
     Geht den Text **in seiner Reihenfolge** durch und führt Buch: Eine Annahme
     legt den Titel ab, ein Ende nimmt ihn wieder weg. Was am Schluss übrig
@@ -271,65 +382,7 @@ def offene_aus_text(text, muster_an=None, muster_aus=None):
 
     Gibt die Titel in der Reihenfolge der Annahme zurück.
     """
-    muster_an = muster_an or muster()
-    muster_aus = muster_aus or ende_muster()
-
-    ereignisse = []
-    for m in muster_an.finditer(text):
-        ereignisse.append((m.start(), True, m.group(1)))
-    for m in muster_aus.finditer(text):
-        ereignisse.append((m.start(), False, m.group(1)))
-    ereignisse.sort(key=lambda e: e[0])
-
-    offen = {}
-    for _stelle, ist_annahme, titel in ereignisse:
-        rein = sauber(titel)
-        if not rein:
-            continue
-        if ist_annahme:
-            offen.setdefault(rein, titel)
-        elif rein in offen:
-            del offen[rein]
-        else:
-            # ⚠⚠ **Ein Ende, das zu keinem offenen Auftrag passt, wirft alles
-            # um.** Das ist kein Notnagel, sondern die einzige ehrliche Antwort
-            # — und der Grund steht im Spiel selbst:
-            #
-            # **Beim Zurückziehen meldet Star Citizen nicht den Auftrag,
-            # sondern das gerade aktive Ziel.** Angenommen wird „Secure Our
-            # Airspace", zurückgezogen wird „der Außenbereich eines
-            # Asteroidenstützpunkts aufsuchen und Target finden". Über 152
-            # Protokolle gemessen (31.08.2026): von 112 Rücknahmen tragen
-            # **2** einen Titel, der auch als Annahme vorkommt.
-            #
-            # Damit lief der Auftrag hier ewig weiter: Der Watcher fand nichts
-            # zum Streichen, und weil er beim Start die laufende `Game.log`
-            # durchgeht, stand der abgebrochene Auftrag nach **jedem** Start
-            # wieder da. Gemeldet von Morkhan (KRT) am 31.08.2026.
-            #
-            # ⚠ **Warum nicht raten, welcher gemeint war?** Weil es nicht
-            # aufgeht. Gemessen an denselben Protokollen war bei einem nicht
-            # zuzuordnenden Ende nur in 36 von 172 Fällen genau **ein** Auftrag
-            # offen; meist waren es drei bis acht. „Den zuletzt angenommenen
-            # streichen" läge also oft daneben — dann verschwände ein Auftrag,
-            # den man noch hat, und der abgebrochene bliebe stehen. Auch die
-            # Missions-Kennung hilft nicht: Beim Ende steht sie im Log
-            # (`EndMission MissionId[…]`), bei der Annahme in 26 von 28 Fällen
-            # nicht.
-            #
-            # Also: Ab hier stimmt die Buchführung nicht mehr, und was davor
-            # gezählt wurde, ist wertlos. Alles Spätere zählt wieder normal —
-            # der nächste angenommene Auftrag steht sofort wieder da. Das
-            # kostet in seltenen Fällen eine Zeile, die noch gestimmt hätte;
-            # dafür steht nie etwas da, das erledigt ist. **Lieber nichts
-            # zeigen als etwas Falsches behaupten** — dieselbe Linie wie
-            # überall sonst im Werkzeug.
-            #
-            # Wirkung, an allen 152 Protokollen nachgerechnet: von 174
-            # scheinbar offenen Auftraegen bleiben 105 — 40 % weniger, ohne
-            # eine einzige geratene Zuordnung.
-            offen.clear()
-    return list(offen.values())
+    return stand_aus_text(text, muster_an, muster_aus)[0]
 
 
 def _index_bauen():

@@ -7174,43 +7174,98 @@ def main():
            'kein lokaler Funktionsname wird ueberschrieben%s'
            % ('' if not _doppelte88 else ' — ' + '; '.join(_doppelte88[:3])))
 
-    # 89. Ein abgebrochener Auftrag verschwindet auch wirklich
+    # 89. Ein Ende meint den Auftrag — oder nur ein Zwischenziel
     #
-    # ⚠⚠ **Beim Zurückziehen meldet das Spiel das ZIEL, nicht den Auftrag.**
-    # Angenommen wird „Secure Our Airspace", zurueckgezogen wird „der
-    # Aussenbereich eines Asteroidenstuetzpunkts aufsuchen". Ueber 152
-    # Protokolle gemessen: von 112 Ruecknahmen passen **2** zum Annahmetitel.
-    # Der Auftrag lief deshalb ewig weiter und stand nach jedem Start des
-    # Werkzeugs wieder da. Gemeldet von Morkhan (KRT) am 31.08.2026.
+    # ⚠⚠ **Beim Zurückziehen meldet das Spiel oft das ZIEL, nicht den
+    # Auftrag.** Angenommen wird „Retake Platforms From Nine Tails",
+    # zurückgezogen wird „Obere Plattform erreichen". Beide Meldungen tragen
+    # dieselbe MissionId — die Ziel-Meldung zusätzlich eine **ObjectiveId**.
+    # Genau daran hängt der Unterschied.
+    #
+    # Zweimal ist das hier schon schiefgegangen:
+    #   * v3.4.3 und davor: nur über den Titel gestrichen. Ein von Hand
+    #     abgebrochener Auftrag lief ewig weiter (Morkhan/KRT, 31.08.2026).
+    #   * v3.4.4: jedes unzuordenbare Ende räumte die ganze Liste. Damit
+    #     verschwand ein Auftrag, der im Spiel sichtbar aktiv war
+    #     (31.08.2026, mit Bildschirmfoto gemeldet).
+    #
+    # Über alle 153 Protokolle gemessen: 473 Enden, davon 111 mit ObjectiveId
+    # (Zwischenziele, die Mission lief jedes Mal weiter) und 362 echte
+    # Missions-Enden — **alle 362 zuordenbar**, 300 über den Titel, 62 über
+    # die MissionId. Es muss also weder geraten noch geräumt werden.
     print()
-    print('89. Ein abgebrochener Auftrag verschwindet auch wirklich')
+    print('89. Ein Ende meint den Auftrag — oder nur ein Zwischenziel')
     from scbp import auftraege as _au89
 
-    _an89 = 'Added notification "Auftrag angenommen: Secure Our Airspace: " [1] to queue.\n'
-    _ziel89 = 'Added notification "Neuer Auftrag: Asteroidenstützpunkt aufsuchen: " [2] to queue.\n'
-    _weg89 = ('Added notification "Auftrag zurückgezogen: Asteroidenstützpunkt '
-              'aufsuchen: " [3] to queue.\n')
-    _fertig89 = 'Added notification "Auftrag abgeschlossen: Secure Our Airspace: " [4] to queue.\n'
-    _neu89 = 'Added notification "Auftrag angenommen: Kill the king: " [5] to queue.\n'
+    def _zeile89(art, titel, mid='11111111-1111-1111-1111-111111111111', oid=''):
+        return ('Added notification "%s: %s: " [1] to queue. New queue size: 1,'
+                ' MissionId: [%s], ObjectiveId: [%s]'
+                ' [Team_CoreGameplayFeatures][Missions][Comms]'
+                % (art, titel, mid, oid)) + '\n'
 
-    pruefe(_au89.offene_aus_text(_an89 + _ziel89 + _weg89) == [],
-           'nach dem Zurueckziehen ist nichts mehr offen')
-    pruefe(len(_au89.offene_aus_text(_an89)) == 1,
-           'ein laufender Auftrag bleibt aber stehen')
+    _an89 = _zeile89('Auftrag angenommen', 'Retake Platforms From Nine Tails')
+    _ziel89 = _zeile89('Neuer Auftrag', 'Obere Plattform erreichen',
+                       oid='22222222-2222-2222-2222-222222222222')
+    _zielweg89 = _zeile89('Auftrag zurückgezogen', 'Obere Plattform erreichen',
+                          oid='22222222-2222-2222-2222-222222222222')
+    _fertig89 = _zeile89('Auftrag abgeschlossen', 'Retake Platforms From Nine Tails')
+    # Ein echter Abbruch: dieselbe MissionId, KEINE ObjectiveId — und ein
+    # Titel, der nicht zur Annahme passt. Genau die 62 aus der Messung.
+    _weg89 = _zeile89('Auftrag zurückgezogen', 'Ganz anderer Wortlaut')
+    _neu89 = _zeile89('Auftrag angenommen', 'Kill the king',
+                      mid='33333333-3333-3333-3333-333333333333')
+
+    # a) Der Kern des Fehlers vom 31.08.2026.
+    _laeuft89 = _au89.offene_aus_text(_an89 + _ziel89 + _zielweg89)
+    pruefe(len(_laeuft89) == 1 and 'Retake Platforms' in _laeuft89[0],
+           'ein zurueckgezogenes ZIEL laesst den Auftrag stehen')
+
+    # b) Und er reisst auch keinen zweiten mit — das war v3.4.4.
+    pruefe(len(_au89.offene_aus_text(_an89 + _neu89 + _zielweg89)) == 2,
+           'und raeumt schon gar nicht die ganze Liste')
+
+    # c) Der echte Abbruch verschwindet trotzdem — ueber die MissionId, auch
+    #    wenn der Endtitel voellig anders lautet (Morkhans Fall).
+    _nach89 = _au89.offene_aus_text(_an89 + _neu89 + _weg89)
+    pruefe(len(_nach89) == 1 and 'Kill the king' in _nach89[0],
+           'ein echter Abbruch trifft ueber die MissionId genau seinen Auftrag')
+
     pruefe(_au89.offene_aus_text(_an89 + _fertig89) == [],
            'ein sauber abgeschlossener verschwindet weiterhin')
+    pruefe(len(_au89.offene_aus_text(_an89)) == 1,
+           'ein laufender Auftrag bleibt stehen')
 
-    # ⭐ **Danach zaehlt wieder normal.** Sonst waere das Werkzeug nach dem
-    # ersten Abbruch bis zum Spielneustart blind.
-    _danach89 = _au89.offene_aus_text(_an89 + _ziel89 + _weg89 + _neu89)
-    pruefe(len(_danach89) == 1 and 'Kill the king' in _danach89[0],
-           'der naechste angenommene Auftrag steht sofort wieder da')
+    # d) Ohne die Kennungen — fremdes Format, aeltere Spielfassung — muss
+    #    weiterhin der Titel entscheiden. Sonst faellt das Werkzeug bei einer
+    #    kuenftigen Log-Aenderung still auf „nichts geht mehr" zurueck.
+    _alt89 = 'Added notification "Auftrag angenommen: Secure Our Airspace: " [1]' + '\n'
+    _altweg89 = 'Added notification "Auftrag abgeschlossen: Secure Our Airspace: " [2]' + '\n'
+    pruefe(len(_au89.offene_aus_text(_alt89)) == 1
+           and _au89.offene_aus_text(_alt89 + _altweg89) == [],
+           'ohne MissionId zaehlt weiterhin der Titel')
 
-    # ⚠ Und der Abbruch raeumt bewusst ALLES weg, statt zu raten, welcher
-    # gemeint war: Bei einem nicht zuzuordnenden Ende waren nur in 36 von 172
-    # Faellen ueberhaupt genau ein Auftrag offen.
-    pruefe(_au89.offene_aus_text(_an89 + _neu89 + _weg89) == [],
-           'bei mehreren offenen wird nicht geraten, sondern geraeumt')
+    # e) Die Kennungen kommen auch wirklich mit heraus — der laufende Betrieb
+    #    braucht sie, um ein spaeteres Ende zuzuordnen.
+    _ereig89 = _au89.ereignisse_aus_text(_an89 + _zielweg89)
+    pruefe(len(_ereig89) == 2 and len(_ereig89[0]) == 4
+           and _ereig89[0][2].startswith('11111111')
+           and _ereig89[0][3] == '' and _ereig89[1][3].startswith('22222222'),
+           'ereignisse_aus_text liefert MissionId und ObjectiveId mit')
+
+    _offen89, _mid89 = _au89.stand_aus_text(_an89)
+    pruefe(list(_mid89) == ['11111111-1111-1111-1111-111111111111'],
+           'stand_aus_text gibt die Missions-Kennungen zurueck')
+
+    # f) Und das Hauptprogramm darf NICHT mehr pauschal raeumen.
+    _q89 = open(os.path.join(WURZEL, 'scbp', 'auftraege.py'),
+                encoding='utf-8').read()
+    pruefe('offen.clear()' not in _q89,
+           'die Buchfuehrung raeumt nirgends mehr die ganze Liste')
+    _w89 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
+                encoding='utf-8').read()
+    _ab89 = _w89.split('def _auftraege_melden')[1].split('def _emit')[0]
+    pruefe('beendet_welchen' in _ab89,
+           'der laufende Betrieb entscheidet ueber dieselbe Stelle wie der Start')
 
     # 90. Der Seitenwechsel zeichnet nur, wenn es etwas zu zeichnen gibt
     #

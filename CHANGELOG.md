@@ -6,6 +6,67 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.4.6 - 2026-08-31
+
+Ein laufender Auftrag verschwand aus dem Overlay, obwohl er im Spiel noch aktiv
+war. Das war eine Nebenwirkung von v3.4.4 und ist behoben — samt der falschen
+Annahme, die dahintersteckte.
+
+### Behoben
+
+- ⭐⭐ **Der laufende Auftrag war weg.** Seit v3.4.4 räumte jedes Ende, das
+  sich keinem Auftrag zuordnen ließ, die ganze Liste leer. Gemeldet am
+  31.08.2026 mit Bildschirmfoto: „Retake Platforms From Nine Tails" stand im
+  Spiel sichtbar links am Rand, die Auftragsleiste war leer.
+
+  Die Annahme hinter v3.4.4 war falsch. Es hieß dort, Star Citizen melde beim
+  Zurückziehen das aktive Ziel statt des Auftrags. Richtig ist: **das Spiel
+  meldet beides — auf zwei getrennten Ebenen.** Jede Meldung trägt am Zeilenende
+  eine `MissionId` und eine `ObjectiveId`:
+
+  ```
+  "Auftrag angenommen: Retake Platforms From Nine Tails: "
+      MissionId: [916223dd…]  ObjectiveId: []
+  "Auftrag zurückgezogen: Obere Plattform erreichen: "
+      MissionId: [916223dd…]  ObjectiveId: [40418b42…]
+  ```
+
+  Die zweite Zeile nimmt **ein Zwischenziel** weg, nicht den Auftrag — direkt
+  danach steht im Protokoll schon das nächste Ziel. v3.4.4 hat solche Zeilen
+  für Auftragsenden gehalten und deshalb geräumt.
+
+  Jetzt zählt ein Ende nur noch als Auftragsende, wenn keine `ObjectiveId`
+  dabeisteht. Über alle 153 Protokolle nachgemessen: von 473 Enden sind **111**
+  bloße Zwischenziele, und in allen 111 Fällen lief die Mission danach
+  nachweislich weiter.
+
+- ⚠ **Ein wirklich abgebrochener Auftrag verschwindet trotzdem** — der Fall, für
+  den v3.4.4 gedacht war (gemeldet von Morkhan, KRT). Passt der Endtitel nicht
+  zum Annahmetitel, entscheidet jetzt die `MissionId`. Sie steht bei **allen**
+  1102 gemessenen Annahmen und bei **allen** 362 echten Auftragsenden.
+
+  ⚠ Die Messung in v3.4.4 („bei der Annahme in 26 von 28 Fällen keine
+  Missions-Kennung") war ein Messfehler — gesucht wurde nur im Meldungstext,
+  nicht am Zeilenende, wo die Kennung tatsächlich steht.
+
+  Ergebnis: **Kein einziges** der 362 Auftragsenden bleibt unzuordenbar. Damit
+  muss weder geraten noch pauschal geräumt werden — beides ist raus.
+
+### Intern
+
+- **Eine Stelle liest die Auftragsmeldungen, nicht zwei.** Der Start (ganze
+  `Game.log`) und der laufende Betrieb (neuer Abschnitt) gingen bisher getrennte
+  Wege und konnten auseinanderlaufen. Beide rufen jetzt
+  `auftraege.ereignisse_aus_text()` und entscheiden über
+  `auftraege.beendet_welchen()`.
+- **Der Auftragsstand merkt sich die Missions-Kennungen** — auch die aus dem
+  Start. Endet ein Auftrag, der vor dem Start des Werkzeugs angenommen wurde,
+  ist die Kennung oft die einzige Brücke zurück zu seiner Zeile.
+- **Selbsttest 89 neu geschrieben.** Er prüft jetzt an Protokollzeilen im echten
+  Format beide Richtungen: Ein zurückgezogenes Zwischenziel lässt den Auftrag
+  stehen, ein echter Abbruch trifft über die `MissionId` genau seinen Auftrag —
+  und ohne Kennungen zählt weiterhin der Titel.
+
 ## v3.4.5 - 2026-08-31
 
 Ein angenommener Auftrag stand zweimal im Overlay — einmal in der Auftragsleiste

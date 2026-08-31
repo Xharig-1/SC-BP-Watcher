@@ -42,7 +42,7 @@ import os
 import re
 import time
 
-from . import pfade, phrasen
+from . import auftraege, pfade, phrasen
 from .sprache import t, Satz, Zeitpunkt
 
 # Schiffskomponenten stehen im Log MIT Zusatz „(Klasse/Size/Grade)", z. B.
@@ -368,7 +368,9 @@ class LogTail:
         # eine Auswertung „erst alle Enden, dann alle Annahmen" den Auftrag weg
         # und stellt ihn gleich wieder hin. Er stuende als frisch angenommen da,
         # obwohl er laengst erledigt ist. Genau so am 30.08.2026 gemessen.
-        # Eintraege sind `(ist_annahme, titel)`.
+        # Eintraege sind `(ist_annahme, titel, mission_id, objective_id)`
+        # — die beiden Kennungen entscheiden, ob ein Ende den Auftrag
+        # meint oder nur ein Zwischenziel (siehe `auftraege.ZUSATZ`).
         self.auftrag_ereignisse = []
 
     def _locate(self):
@@ -457,19 +459,16 @@ class LogTail:
     def _ereignisse_ordnen(self, text):
         """Annahmen und Enden dieses Abschnitts in der Reihenfolge des Logs.
 
-        Beide Muster einmal ueber denselben Text, dann nach der Fundstelle
-        sortiert. Die Fundstelle ist die Wahrheit: Sie sagt, was im Spiel
-        zuerst passiert ist.
+        ⚠ Das Auslesen selbst liegt in `auftraege.ereignisse_aus_text` — eine
+        Stelle für beide Wege. Der Start rechnet dort über die ganze
+        `Game.log`, der laufende Betrieb hier über den neuen Abschnitt; liefen
+        die beiden auseinander, verschwände ein Auftrag beim Neustart oder
+        stünde doppelt da.
         """
-        gefunden = []
-        if self.auftrag_muster:
-            for m in self.auftrag_muster.finditer(text):
-                gefunden.append((m.start(), True, m.group(1)))
-        if self.auftrag_ende_muster:
-            for m in self.auftrag_ende_muster.finditer(text):
-                gefunden.append((m.start(), False, m.group(1)))
-        gefunden.sort(key=lambda e: e[0])
-        return [(ist_annahme, titel) for _stelle, ist_annahme, titel in gefunden]
+        if not self.auftrag_muster and not self.auftrag_ende_muster:
+            return []
+        return auftraege.ereignisse_aus_text(text, self.auftrag_muster,
+                                             self.auftrag_ende_muster)
 
 
 if __name__ == '__main__':

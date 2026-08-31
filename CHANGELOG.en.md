@@ -6,6 +6,65 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.4.6 - 2026-08-31
+
+A running contract vanished from the overlay even though it was still active in
+the game. That was a side effect of v3.4.4, and it is fixed — along with the
+wrong assumption behind it.
+
+### Fixed
+
+- ⭐⭐ **The running contract was gone.** Since v3.4.4 every ending that could
+  not be matched to a contract wiped the whole list. Reported on 2026-08-31 with
+  a screenshot: "Retake Platforms From Nine Tails" was plainly visible in the
+  game, the contract bar was empty.
+
+  The assumption behind v3.4.4 was wrong. It claimed Star Citizen reports the
+  active objective instead of the contract when you withdraw. In fact **the game
+  reports both — on two separate levels.** Every notification carries a
+  `MissionId` and an `ObjectiveId` at the end of the line:
+
+  ```
+  "Contract Accepted: Retake Platforms From Nine Tails: "
+      MissionId: [916223dd…]  ObjectiveId: []
+  "Contract Withdrawn: Reach the upper platform: "
+      MissionId: [916223dd…]  ObjectiveId: [40418b42…]
+  ```
+
+  The second line drops **an objective**, not the contract — the log shows the
+  next objective right after it. v3.4.4 read such lines as contract endings and
+  cleared the list.
+
+  An ending now only counts as a contract ending when no `ObjectiveId` is
+  present. Measured across all 153 logs: of 473 endings, **111** are mere
+  objectives, and in all 111 cases the mission demonstrably continued.
+
+- ⚠ **A genuinely aborted contract still disappears** — the case v3.4.4 was
+  written for (reported by Morkhan, KRT). When the ending title does not match
+  the accepted title, the `MissionId` decides. It is present on **all** 1102
+  measured acceptances and on **all** 362 real contract endings.
+
+  ⚠ The v3.4.4 measurement ("no mission id on acceptance in 26 of 28 cases") was
+  a measurement error — it only searched the notification text, not the end of
+  the line, where the id actually sits.
+
+  Result: **not one** of the 362 contract endings stays unmatched. So there is
+  no need to guess and none to wipe — both are gone.
+
+### Internal
+
+- **One place reads contract notifications, not two.** Startup (the whole
+  `Game.log`) and live operation (the new chunk) used to go separate ways and
+  could drift apart. Both now call `auftraege.ereignisse_aus_text()` and decide
+  via `auftraege.beendet_welchen()`.
+- **The contract state remembers the mission ids** — including those from
+  startup. When a contract accepted before the tool was started ends, that id is
+  often the only bridge back to its line.
+- **Self-test 89 rewritten.** It now checks both directions against log lines in
+  the real format: a withdrawn objective leaves the contract standing, a real
+  abort hits exactly its contract via the `MissionId` — and without ids the
+  title still decides.
+
 ## v3.4.5 - 2026-08-31
 
 An accepted contract appeared twice in the overlay — once in the contract bar

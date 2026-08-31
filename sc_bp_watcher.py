@@ -58,7 +58,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.4.5'
+__version__ = '3.4.6'
 
 
 def _mitgeliefert(name):
@@ -688,6 +688,11 @@ class Watcher(threading.Thread):
         # **verschwinden**. Sonst stehen nach zehn Auftraegen am Abend zehn
         # Zeilen da, von denen neun erledigt sind.
         self._offene_auftraege = {}
+        # MissionId -> Auftragsschluessel. ⚠⚠ **Die einzige Bruecke, wenn der
+        # Endtitel nicht zum Annahmetitel passt** — gemessen 62 von 362 Enden.
+        # Star Citizen fuehrt beide Meldungen mit derselben MissionId, auch
+        # ueber einen Neustart des Werkzeugs hinweg.
+        self._auftrag_missionen = {}
         self.bestand = bestand_datei.laden()   # der eigene, dauerhafte Bestand
         # ⚠ Einmal beim Start die Namen an den Katalog angleichen. Was der
         # Watcher vor v3.3.3 aus dem Log gelesen hat, trägt womöglich die
@@ -1012,11 +1017,15 @@ class Watcher(threading.Thread):
             return
 
         try:
-            offen = auftraege.offene_aus_text(
+            offen, missionen = auftraege.stand_aus_text(
                 text, self.tail.auftrag_muster, self.tail.auftrag_ende_muster)
         except Exception as ausnahme:
             fehler.merken('watcher.auftraege_start', ausnahme)
             return
+        # ⚠ Die Kennungen mitnehmen, nicht nur die Titel: Endet einer dieser
+        # Auftraege spaeter im laufenden Betrieb, ist die MissionId oft das
+        # Einzige, was die Endmeldung mit ihm verbindet.
+        self._auftrag_missionen.update(missionen)
 
         for titel in offen:
             rein = auftraege.sauber(titel)
@@ -1066,21 +1075,45 @@ class Watcher(threading.Thread):
         # Die Reihenfolge klaert beide Faelle: Was am Ende des Abschnitts offen
         # ist, wird gezeigt; was zuletzt ein Ende hatte, nicht.
         offen_jetzt = {}
-        for ist_annahme, titel in ereignisse:
+        for ist_annahme, titel, mission_id, objective_id in ereignisse:
             rein = auftraege.sauber(titel)
             if not rein:
                 continue
             if ist_annahme:
                 offen_jetzt[rein] = titel
+                if mission_id:
+                    self._auftrag_missionen[mission_id] = rein
                 continue
-            offen_jetzt.pop(rein, None)
-            if self._offene_auftraege.pop(rein, None) is not None:
+            # ⚠⚠ **Nicht jedes Ende meint den Auftrag.** Traegt die Meldung
+            # eine ObjectiveId, endet nur ein Zwischenziel — der Auftrag
+            # laeuft weiter. Welcher Auftrag gemeint ist, entscheidet
+            # `auftraege.beendet_welchen`; dort steht auch, woran das gemessen
+            # ist.
+            # ⚠ Gesucht wird in BEIDEN Buechern: was dieser Abschnitt neu
+            # gebracht hat, und was laengst offen stand. Sonst faende ein
+            # Ende seinen Auftrag nur, wenn beide im selben Abschnitt liegen.
+            bekannt = dict(self._offene_auftraege)
+            bekannt.update(offen_jetzt)
+            weg = auftraege.beendet_welchen(rein, mission_id, objective_id,
+                                            bekannt, self._auftrag_missionen)
+            if weg is None:
+                # Zwischenziel — oder ein Missions-Ende ohne auffindbaren
+                # Auftrag. Letzteres kam ueber 153 Protokolle kein einziges
+                # Mal vor; traete es doch ein, bleibt alles stehen. Geraten
+                # wird nicht, und pauschal geraeumt schon gar nicht: Genau das
+                # hat in v3.4.4 laufende Auftraege mitgerissen.
+                continue
+            offen_jetzt.pop(weg, None)
+            if self._offene_auftraege.pop(weg, None) is not None:
                 veraendert = True
-            self.q.put(('auftrag_weg', rein))
+            for kennung in [k for k, v in self._auftrag_missionen.items()
+                            if v == weg]:
+                del self._auftrag_missionen[kennung]
+            self.q.put(('auftrag_weg', weg))
             # Damit dieselbe Mission spaeter wieder gemeldet wird. Ohne das
             # bliebe ein wiederholter Auftrag stumm — und genau die macht man
             # im Spiel reihenweise.
-            self._auftraege_gesehen.discard(rein)
+            self._auftraege_gesehen.discard(weg)
 
         for rein, titel in offen_jetzt.items():
             if rein not in self._offene_auftraege:
@@ -1185,6 +1218,7 @@ class Watcher(threading.Thread):
         # ermitteln: angenommen und danach kein Ende gesehen heisst offen.
         vorher = list(self._offene_auftraege)
         self._offene_auftraege = {}
+        self._auftrag_missionen = {}
         self._auftraege_beim_start()
         # Und die Zeilen in der Liste dazu: Was jetzt nicht mehr offen ist,
         # darf auch nicht mehr als laufender Auftrag dastehen.
