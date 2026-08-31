@@ -697,6 +697,27 @@ TEXTE = {
     # Vollbild und blendet den Mauszeiger aus: Wer nachsehen will, ob er einen
     # Bauplan schon hat, muss heraustabben und das Fenster dann BLIND suchen
     # und anklicken. Am 31.08.2026 als Nutzerwunsch gemeldet.
+    # ⚠⚠ **Ziehen geht im Pop-up-Betrieb nicht.** Das Overlay ist dort
+    # durchklickbar, damit es im Kampf nicht stoert — und was Mausklicks
+    # durchreicht, laesst sich auch nicht anfassen. Ohne waehlbare Ecke gibt es
+    # fuer diese Nutzer GAR KEINEN Weg, das Overlay zu positionieren.
+    # Am 31.08.2026 gemeldet: „stoert mich irgendwie, dass es nicht komplett in
+    # der Ecke sitzt."
+    's_ov_ecke':       ('Wo das Overlay sitzt',
+                          'Where the overlay sits'),
+    's_ov_ecke_h':     ('Legt das Overlay fest in eine Bildschirmecke — auch '
+                        'eingeklappt. ⚠ Im Pop-up-Betrieb ist das der '
+                        'einzige Weg: Dort reicht das Overlay Mausklicks durch '
+                        'und laesst sich deshalb nicht ziehen.',
+                          'Pins the overlay to a screen corner — collapsed too. '
+                          '⚠ In pop-up mode this is the only way: there '
+                          'the overlay passes mouse clicks through and cannot '
+                          'be dragged.'),
+    's_ov_ecke_frei':  ('Frei verschiebbar', 'Free to move'),
+    's_ov_ecke_ol':    ('Oben links', 'Top left'),
+    's_ov_ecke_or':    ('Oben rechts', 'Top right'),
+    's_ov_ecke_ul':    ('Unten links', 'Bottom left'),
+    's_ov_ecke_ur':    ('Unten rechts', 'Bottom right'),
     's_hk':            ('Tastenkombination',
                           'Keyboard shortcut'),
     's_hk_h':          ('Holt die Bauplan-Liste nach vorn — auch aus dem '

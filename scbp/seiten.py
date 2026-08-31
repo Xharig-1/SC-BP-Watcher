@@ -1021,6 +1021,21 @@ def _anzeige(fenster, rahmen):
     # den Mauszeiger aus: Wer nachsehen will, ob er einen Bauplan schon hat,
     # muss heraustabben und das Fenster dann BLIND suchen und anklicken. Am
     # 31.08.2026 als Nutzerwunsch gemeldet.
+    # ⚠⚠ **Die Ecke — im Pop-up-Betrieb der einzige Weg.** Dort reicht das
+    # Overlay Mausklicks durch und laesst sich deshalb nicht ziehen. Ohne
+    # diese Einstellung koennen diese Nutzer es ueberhaupt nicht
+    # positionieren. Am 31.08.2026 gemeldet.
+    ziel = _feld(fenster, innen, t('s_ov_ecke'), t('s_ov_ecke_h'), breit=True)
+    ecke = _wahl(fenster, ziel,
+                 [('frei', t('s_ov_ecke_frei')),
+                  ('oben-links', t('s_ov_ecke_ol')),
+                  ('oben-rechts', t('s_ov_ecke_or')),
+                  ('unten-links', t('s_ov_ecke_ul')),
+                  ('unten-rechts', t('s_ov_ecke_ur'))],
+                 pfade.einstellung('overlay_ecke') or 'frei',
+                 lambda k: _overlay_ecke(fenster, ecke, k))
+    ecke.pack()
+
     _hotkey_feld(fenster, innen)
 
     ziel = _feld(fenster, innen, t('s_ov_dauer'), t('s_ov_dauer_h'))
@@ -1245,6 +1260,24 @@ def _ordner(fenster, rahmen):
     _startbefehl_feld(fenster, innen)
 
 
+def _overlay_ecke(fenster, wahl, kennung):
+    """Die Ecke merken und sofort anwenden.
+
+    ⚠ Sofort, nicht erst beim naechsten Start: Wer eine Ecke waehlt, will
+    sehen, ob sie die richtige ist — und im Pop-up-Betrieb kann er das Fenster
+    danach nicht selbst hinschieben.
+    """
+    pfade.einstellung_setzen('overlay_ecke', kennung)
+    try:
+        wahl.setzen(kennung)
+    except Exception:
+        pass
+    from . import overlay as ov
+    steuerung = ov.OVERLAY_STEUERUNG[0]
+    if steuerung is not None and hasattr(steuerung, 'ecke_anwenden'):
+        steuerung.ecke_anwenden()
+
+
 def _hotkey_feld(fenster, innen):
     """Die Tastenkombination einstellen — oder ehrlich sagen, warum nicht.
 
@@ -1257,7 +1290,7 @@ def _hotkey_feld(fenster, innen):
     from . import hotkey as hk
     geht, grund = hk.moeglich()
     if not geht and grund == 'wayland':
-        ziel = _feld(fenster, innen, t('s_hk'), t('s_hk_wayland'), breit=True)
+        _feld(fenster, innen, t('s_hk'), t('s_hk_wayland'), breit=True)
         return
     if not geht:
         return                       # kein Bildschirm, kein Windows — still

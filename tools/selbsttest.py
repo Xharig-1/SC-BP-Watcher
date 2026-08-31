@@ -8065,6 +8065,93 @@ def main():
            .split(chr(10) + '    def ')[0],
            'gefragt wird im Tk-Takt, nicht in einem eigenen Faden')
 
+
+    # 101. Das Overlay laesst sich in eine Ecke legen — und klappt schmal ein
+    #
+    # ⚠⚠ **Am 31.08.2026 gemeldet:** „stoert mich irgendwie, dass es nicht
+    # komplett in der Ecke sitzt … der Balken sitzt ja aber mittig vom Watcher
+    # Fenster."
+    #
+    # Zwei Ursachen:
+    #
+    # 1. Beim Einklappen schrumpfte nur die HOEHE. Der Streifen blieb so breit
+    #    wie das offene Fenster — bei 1160 Pixeln ein Balken quer ueber den
+    #    halben Bildschirm, den man in keine Ecke bekommt.
+    # 2. Ziehen geht im Pop-up-Betrieb ueberhaupt nicht: Dort ist das Overlay
+    #    durchklickbar, damit es im Kampf nicht stoert — und was Mausklicks
+    #    durchreicht, laesst sich nicht anfassen. Diese Nutzer konnten das
+    #    Overlay also GAR NICHT positionieren.
+    #
+    # ⚠⚠ **Gerechnet, nicht gemessen.** Pruefung 87 steht als Mahnmal daneben:
+    # Versteckte Fenster liefern auf den Bau-Rechnern keine Masse, und eine
+    # Pixel-Pruefung waere dort gruen, ohne etwas geprueft zu haben. Also wird
+    # hier die Rechnung geprueft und der Bildschirm vorgegaukelt.
+    print()
+    print('101. Das Overlay laesst sich in eine Ecke legen')
+    import sc_bp_watcher as _w101
+    from scbp import bildschirm as _bs101, pfade as _pf101
+
+    class _Wurzel101:
+        def winfo_x(self): return 500
+        def winfo_y(self): return 400
+
+    class _Ov101:
+        ECKEN = _w101.Overlay.ECKEN
+        root = _Wurzel101()
+        _klapp_ecke = _w101.Overlay._klapp_ecke
+
+    _echt101 = _bs101.schirm_fuer
+    _bs101.schirm_fuer = lambda *_a, **_k: (0, 0, 1920, 1080)
+    _o101 = _Ov101()
+    try:
+        _pf101.einstellung_setzen('overlay_ecke', 'frei')
+        pruefe(_o101._klapp_ecke(300, 30) == (500, 400),
+               '„frei" laesst das Fenster stehen, wo es steht')
+
+        # ⭐ Die vier Ecken, mit 8 px Rand.
+        for _kennung101, _soll101 in (('oben-links',   (8, 8)),
+                                      ('oben-rechts',  (1920 - 300 - 8, 8)),
+                                      ('unten-links',  (8, 1080 - 30 - 8)),
+                                      ('unten-rechts', (1920 - 300 - 8,
+                                                        1080 - 30 - 8))):
+            _pf101.einstellung_setzen('overlay_ecke', _kennung101)
+            _ist101 = _o101._klapp_ecke(300, 30)
+            pruefe(_ist101 == _soll101,
+                   '%s sitzt richtig (%s)' % (_kennung101, _ist101))
+
+        # ⚠ Auf DEM Schirm, auf dem es steht — nicht auf dem ersten. Bei drei
+        # Monitoren nebeneinander waere „oben rechts" sonst immer der linke.
+        _bs101.schirm_fuer = lambda *_a, **_k: (1920, 0, 2560, 1440)
+        _pf101.einstellung_setzen('overlay_ecke', 'oben-rechts')
+        pruefe(_o101._klapp_ecke(300, 30) == (1920 + 2560 - 300 - 8, 8),
+               'und auf dem zweiten Bildschirm genauso')
+
+        # ⚠⚠ Unsinn in der Einstellung darf nichts verschieben — sonst landet
+        # das Overlay nach einem Tippfehler in der Datei im Nirgendwo.
+        _pf101.einstellung_setzen('overlay_ecke', 'schraeg-hinten')
+        pruefe(_o101._klapp_ecke(300, 30) == (500, 400),
+               'eine unbekannte Ecke laesst alles, wie es ist')
+    finally:
+        _bs101.schirm_fuer = _echt101
+        _pf101.einstellung_setzen('overlay_ecke', 'frei')
+
+    # Und das Einklappen nimmt die Breite mit.
+    _q101 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
+                 encoding='utf-8').read()
+    _code101 = chr(10).join(_z for _z in _q101.split(chr(10))
+                            if not _z.strip().startswith('#'))
+    _kz101 = _code101.split('def klappzustand_setzen')[1].split(chr(10) + '    def ')[0]
+    # ⚠ Nur die geometry-Zeile ansehen. `winfo_width()` kommt weiter vor —
+    # dort wird die OFFENE Breite gemerkt, und das ist richtig so.
+    _geo101 = [_z for _z in _kz101.split(chr(10)) if 'root.geometry' in _z]
+    pruefe(_geo101 and 'breite' in _geo101[0] and 'winfo_width' not in _geo101[0],
+           'eingeklappt wird die gemessene Breite gesetzt, nicht die alte '
+           '(%s)' % (_geo101[0].strip() if _geo101 else 'keine Zeile'))
+    pruefe('self.breite_offen' in _kz101,
+           'und die offene Breite wird gemerkt')
+    pruefe('_klapp_ecke' in _kz101,
+           'beim Klappen wird die Ecke angewandt')
+
     try:
         _ov92.root.destroy()
         _wz92.destroy()

@@ -6,6 +6,34 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.8.0 - 2026-08-31
+
+The overlay can finally be put where you want it — and collapsed it is actually
+small. Reported by **Haldjas (pr0)**.
+
+### New
+
+- ⭐⭐ **A screen corner can be chosen** (Display → "Where the overlay sits"):
+  top left, top right, bottom left, bottom right — or free to move as before.
+
+  ⚠ **In pop-up mode this is the only way.** There the overlay passes mouse
+  clicks through so it does not get in the way during a fight — and what passes
+  clicks through cannot be dragged either. Those users could not position the
+  overlay **at all** until now.
+
+  ⚠ It is calculated on the screen the window is **currently on** — with three
+  monitors side by side, "top right" would otherwise always be the left one.
+
+### Fixed
+
+- ⭐ **Collapsed, the overlay stayed as wide as when open.** Only the height
+  shrank; at 1160 pixels a bar remained stretched across half the screen, which
+  fits into no corner. Reported: "the bar sits centred on the watcher window."
+
+  Now the width shrinks too — to what the title bar actually needs. ⚠ Measured,
+  not guessed: a fixed value would be wrong at a different font size and in the
+  other language. Expanding restores the old width.
+
 ## v3.7.0 - 2026-08-31
 
 A keyboard shortcut that works inside the game. Plus the white title bar — it

@@ -6,6 +6,37 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.8.0 - 2026-08-31
+
+Das Overlay lässt sich endlich dorthin legen, wo man es haben will — und
+eingeklappt ist es wirklich klein. Gemeldet von **Haldjas (pr0)**.
+
+### Neu
+
+- ⭐⭐ **Eine Bildschirmecke ist wählbar** (Anzeige → „Wo das Overlay sitzt"):
+  oben links, oben rechts, unten links, unten rechts — oder frei verschiebbar
+  wie bisher.
+
+  ⚠ **Im Pop-up-Betrieb ist das der einzige Weg.** Dort reicht das Overlay
+  Mausklicks durch, damit es im Kampf nicht stört — und was Klicks durchreicht,
+  lässt sich auch nicht ziehen. Diese Nutzer konnten das Overlay bisher
+  **überhaupt nicht** positionieren.
+
+  ⚠ Gerechnet wird auf dem Bildschirm, auf dem das Fenster **gerade steht** —
+  bei drei Monitoren nebeneinander wäre „oben rechts" sonst immer der linke.
+
+### Behoben
+
+- ⭐ **Eingeklappt war das Overlay so breit wie offen.** Nur die Höhe schrumpfte;
+  bei 1160 Pixeln blieb ein Balken quer über den halben Bildschirm stehen, den
+  man in keine Ecke bekommt. Gemeldet: „der Balken sitzt ja aber mittig vom
+  Watcher-Fenster."
+
+  Jetzt schrumpft auch die Breite — auf das, was die Titelleiste wirklich
+  braucht. ⚠ Gemessen, nicht geraten: Ein fester Wert säße bei anderer
+  Schriftgröße und in der anderen Sprache daneben. Beim Aufklappen kommt die
+  alte Breite zurück.
+
 ## v3.7.0 - 2026-08-31
 
 Eine Tastenkombination, die auch im Spiel greift. Dazu die weiße Titelleiste —

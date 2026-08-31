@@ -59,7 +59,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.7.0'
+__version__ = '3.8.0'
 
 
 def _mitgeliefert(name):
@@ -1898,6 +1898,12 @@ class Overlay:
         bestandsfenster_modul.VERSION[0] = __version__
         self.eingeklappt = False
         self.hoehe_offen = None      # Fensterhöhe vor dem Einklappen
+        # ⚠⚠ **Auch die Breite.** Eingeklappt behielt das Overlay bis v3.7.0
+        # seine volle Breite — bei 1160 Pixeln ist das ein Balken quer ueber
+        # den halben Bildschirm, und in eine Ecke bekommt man ihn nie. Genau
+        # das am 31.08.2026 gemeldet: „stoert mich irgendwie, dass es nicht
+        # komplett in der Ecke sitzt."
+        self.breite_offen = None     # Fensterbreite vor dem Einklappen
         if pfade.einstellung_wahrheit('eingeklappt', False):
             # Zustand **setzen**, nicht umschalten — siehe `klappzustand_setzen`.
             # `merken=False`: Es ist genau der Zustand, der schon gespeichert
@@ -2629,6 +2635,7 @@ class Overlay:
                 # „auf" — der Knopf schaltete um, sichtbar passierte nichts, und
                 # das Overlay ließ sich nie wieder öffnen.
                 hoehe = max(self.hoehe_offen or 0, leistenhoehe + 120)
+                breite = max(self.breite_offen or 0, self._leisten_breite())
             else:
                 # ⚠ Die offene Höhe nur merken, wenn das Fenster **wirklich**
                 # offen ist. Laufen Zustand und Geometrie einmal auseinander
@@ -2639,13 +2646,17 @@ class Overlay:
                 aktuell = self.root.winfo_height()
                 if aktuell > leistenhoehe + 40:
                     self.hoehe_offen = aktuell
+                    # ⚠ Nur zusammen mit der Hoehe merken: Ist das Fenster
+                    # schon eingeklappt, stuende hier die Streifenbreite als
+                    # „offen" — und das Overlay bliebe fuer immer schmal.
+                    self.breite_offen = self.root.winfo_width()
+                breite = self._leisten_breite()
                 # Die Höhe der Titelleiste, nicht geraten: Ein fester Wert säße
                 # bei anderer Schriftgröße daneben.
                 hoehe = leistenhoehe
 
-            self.root.geometry('%dx%d+%d+%d' % (
-                self.root.winfo_width(), hoehe,
-                self.root.winfo_x(), self.root.winfo_y()))
+            x, y = self._klapp_ecke(breite, hoehe)
+            self.root.geometry('%dx%d+%d+%d' % (breite, hoehe, x, y))
             self.klapp_lbl.symbol_tauschen('aufklappen' if zu
                                           else 'einklappen')
             self.eingeklappt = zu
@@ -2654,6 +2665,61 @@ class Overlay:
                 pfade.einstellung_setzen('eingeklappt', zu)
         except tk.TclError:
             pass
+
+    ECKEN = ('frei', 'oben-links', 'oben-rechts', 'unten-links', 'unten-rechts')
+
+    def _leisten_breite(self):
+        """Wie breit der eingeklappte Streifen sein muss — gemessen, nicht geraten.
+
+        ⚠⚠ Ein fester Wert saesse bei anderer Schriftgroesse und in der anderen
+        Sprache daneben: „SC BP Watcher" ist kuerzer als sein englisches
+        Gegenstueck, und die Symbolreihe waechst mit der Schrift mit. Also
+        fragen wir die Leiste selbst, was sie braucht.
+        """
+        try:
+            leiste = self.root.winfo_children()[0]
+            self.root.update_idletasks()
+            return max(leiste.winfo_reqwidth() + 16, 260)
+        except Exception:
+            return max(self.root.winfo_width(), 260)
+
+    def _klapp_ecke(self, breite, hoehe):
+        """Wohin das Fenster gehoert — Ecke oder da, wo es steht.
+
+        ⚠⚠ **Ziehen geht im Pop-up-Betrieb nicht.** Das Overlay ist dort
+        durchklickbar, damit es im Kampf nicht stoert — und was Mausklicks
+        durchreicht, laesst sich auch nicht anfassen. Ohne eine waehlbare Ecke
+        gibt es fuer diese Nutzer **gar keinen** Weg, das Overlay zu
+        positionieren. Am 31.08.2026 gemeldet.
+
+        ⚠ Gerechnet wird auf dem Schirm, auf dem das Fenster GERADE steht —
+        nicht auf dem ersten. Bei drei Monitoren nebeneinander waere „oben
+        rechts" sonst immer der linke Bildschirm.
+        """
+        x, y = self.root.winfo_x(), self.root.winfo_y()
+        try:
+            ecke = pfade.einstellung('overlay_ecke') or 'frei'
+            if ecke not in self.ECKEN or ecke == 'frei':
+                return x, y
+            sx, sy, sb, sh = bildschirm.schirm_fuer(self.root, x, y)
+            rand = 8
+            x = sx + rand if ecke.endswith('links') else sx + sb - breite - rand
+            y = sy + rand if ecke.startswith('oben') else sy + sh - hoehe - rand
+            return int(x), int(y)
+        except Exception as ausnahme:
+            fehler.merken('overlay.klapp_ecke', ausnahme)
+            return x, y
+
+    def ecke_anwenden(self):
+        """Von der Einstellungsseite gerufen: die Ecke sofort uebernehmen."""
+        try:
+            self.root.update_idletasks()
+            b, h = self.root.winfo_width(), self.root.winfo_height()
+            x, y = self._klapp_ecke(b, h)
+            self.root.geometry('%dx%d+%d+%d' % (b, h, x, y))
+            self._save_geo()
+        except Exception as ausnahme:
+            fehler.merken('overlay.ecke_anwenden', ausnahme)
 
     def _grip_nachziehen(self, _e=None):
         """Den Ziehgriff zeigen oder verstecken, je nach Klappzustand.
