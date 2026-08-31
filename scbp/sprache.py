@@ -406,6 +406,16 @@ TEXTE = {
                              'Starts on login — click to turn off'),
     'hinweis_autostart_aus': ('Startet nicht von selbst — Klick schaltet es ein',
                               'Does not start by itself — click to turn on'),
+    # ⚠⚠ **Ein Symbol allein findet niemand.** Bis v3.5.3 stand hier nur ein
+    # kleines Zeichen am rechten Rand der Zeile — Bushwick4712 (KRT) hat es am
+    # 31.08.2026 schlicht nicht gefunden. Jetzt steht das Wort daneben.
+    'hk_knopf':          ('Woher?', 'Where from?'),
+    # Der Weg von der Herstellung zum Bauplan: „ich kann das nicht bauen — wo
+    # kriege ich den Bauplan her?" Gewuenscht von Bushwick4712 (KRT).
+    's_he_woher_bp':     ('Woher gibt es den Bauplan?',
+                          'Where do I get the blueprint?'),
+    's_he_woher_nichts': ('Zu diesem Bauplan ist keine Bezugsquelle bekannt.',
+                          'No source is known for this blueprint.'),
     'hinweis_quellen':   ('Zeigt, woher es diesen Bauplan gibt',
                           'Shows where this blueprint comes from'),
     'start_eingetragen': ('%d Startbaupläne ergänzt — die hat jeder von Anfang an',

@@ -23,7 +23,7 @@ Four things are deliberate and will stay that way:
 | ✅ | **Its own blueprint inventory** — the SC Deutsch Launcher is not needed |
 | ✅ | **Catch-up**: earlier play sessions are read on start |
 | ✅ | **Blueprint list** to look up, filter and tick off, with progress |
-| ✅ | **Where each blueprint drops** — faction, contract, required standing, payout |
+| ✅ | **Where each blueprint drops** — faction, contract, required standing, payout; a button in Crafting leads straight there |
 | ✅ | **When you accept a contract**: does it carry blueprints, and which are you missing? |
 | ✅ | **What to do next** — the open objectives are listed under their contract |
 | ✅ | Catalogue watch: reports what becomes **newly craftable** in the game, plus a watchlist |

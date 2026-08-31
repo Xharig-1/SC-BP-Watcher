@@ -6,6 +6,46 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.6.0 - 2026-08-31
+
+Von der Herstellung direkt zum Bauplan — und der Weg dorthin ist endlich zu
+finden. Beides gewünscht von **Bushwick4712 (KRT)**. Dazu die dunkle
+Titelleiste.
+
+### Neu
+
+- ⭐⭐ **„Woher gibt es den Bauplan?" — ein Knopf in der Herstellung.**
+
+  Du klappst ein Rezept auf, dir fehlt der Bauplan dafür, und die nächste Frage
+  ist immer dieselbe: *Welchen Auftrag muss ich machen?* Die Antwort stand
+  schon im Werkzeug — aber auf einer anderen Seite. Man musste wissen, dass es
+  sie gibt, und den Namen von Hand hinübertippen.
+
+  Jetzt ein Klick: Die Bauplan-Liste springt auf genau diesen Bauplan, die
+  Herkunft ist aufgeschlagen — Fraktion, Auftrag, nötiger Ruf, Belohnung.
+
+  ⚠ **Nur wo er hinführt.** Der Knopf erscheint nur, wenn der Bauplan dir
+  fehlt **und** der Katalog weiß, woher es ihn gibt. Der Katalog kennt 738
+  Baupläne, die Rezepte sind 1.607 — ein Knopf auf eine leere Liste wäre
+  schlimmer als keiner. Findet sich der Bauplan wider Erwarten nicht, bleibt
+  die Liste stehen, wie sie war, statt leer zu springen.
+
+### Geändert
+
+- ⭐ **Der Herkunfts-Knopf in der Bauplan-Liste heißt jetzt „Woher?".**
+  Vorher war es ein Symbol am rechten Rand der Zeile, ohne Wort — Bushwick hat
+  es schlicht nicht gefunden. Ein Symbol erklärt sich nur dem, der es gebaut
+  hat.
+
+- ⭐ **Die Titelleiste ist dunkel** (Windows). Das Fenster war von innen
+  komplett dunkel, und obendrauf saß eine **weiße** Leiste mit Titel und den
+  drei Knöpfen. Sie gehört nicht zum Programm, sondern zu Windows — wer dort
+  das helle Design fährt, bekam sie hell, egal wie dunkel der Inhalt ist.
+
+  ⚠ Unter Linux macht das der Fenstermanager; dort ändert sich nichts. Und
+  wenn Windows es nicht hergibt, bleibt es bei der hellen Leiste — häßlich,
+  aber kein Grund für einen Absturz beim Fensterbau.
+
 ## v3.5.3 - 2026-08-31
 
 Das Ergebnis von „Protokolle erneut einlesen" ging in der Fußzeile unter.

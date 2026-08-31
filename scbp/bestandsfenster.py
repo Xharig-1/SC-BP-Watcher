@@ -1809,9 +1809,14 @@ class Bestandsfenster:
             # ⚠ `antippbar()` statt `zeile()`: eine Stufe groesser. Das Zeichen
             # oeffnet den Herkunftskasten — in reiner Zeilengroesse war es zu
             # klein, um es als Schaltflaeche zu erkennen und zu treffen.
+            # ⚠⚠ **Wort dazu, nicht nur ein Zeichen.** Bushwick4712 (KRT) hat
+            # den Knopf am 31.08.2026 schlicht nicht gefunden — er suchte, wo
+            # es einen Bauplan gibt, und das Symbol am rechten Rand hat ihm
+            # nichts gesagt. Ein Symbol erklaert sich nur dem, der es gebaut
+            # hat.
             info = zeichen.antippbar(zeile, symbol, grund=FLAECHE,
-                                     schrift=schrift(11))
-            info.configure(cursor='hand2', padx=12)
+                                     text=t('hk_knopf'), schrift=schrift(10))
+            info.configure(cursor='hand2', padx=12, fg=ACCENT)
             info.pack(side='right')
             info.bind('<Button-1>', lambda e, n=name: self._herkunft_umschalten(n))
             hinweis.anhaengen(info, lambda: t('hinweis_quellen'))
@@ -2057,6 +2062,32 @@ class Bestandsfenster:
     def _auswaehlen(self, name):
         self.gewaehlt = name
         self._herkunft_zeichnen()
+
+    def zum_bauplan(self, name):
+        """Diesen Bauplan zeigen und seine Herkunft gleich aufschlagen.
+
+        Von aussen gerufen — die Herstellung schickt hierher, wenn jemand
+        wissen will, woher er einen fehlenden Bauplan bekommt.
+
+        ⚠⚠ **Erst nachsehen, dann springen.** Kennt der Katalog den Namen
+        nicht, wird die Liste NICHT umgestellt: Ein Sprung auf eine leere
+        Liste sieht aus, als sei das Werkzeug kaputt, und der Suchbegriff von
+        vorhin waere obendrein weg. Rueckgabe sagt, ob es geklappt hat.
+        """
+        treffer = None
+        for eintrag in ((self.katalog or {}).get('bauplaene') or {}).values():
+            if bestand_datei.norm(eintrag.get('n') or '') == bestand_datei.norm(name):
+                treffer = eintrag.get('n')
+                break
+        if not treffer:
+            return False
+        # ⚠ Filter zurueck auf „alle": Steht er auf „fehlt mir" und der Bauplan
+        # ist vorhanden (oder umgekehrt), faende die Suche ihn nicht.
+        self.filter = 'alle'
+        self.alle_zeigen = False
+        self.suche.set(treffer)          # loest das Neuzeichnen aus
+        self._auswaehlen(treffer)
+        return True
 
     def schliessen(self):
         if getattr(self, 'eingebettet', False):

@@ -6,6 +6,45 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.6.0 - 2026-08-31
+
+From crafting straight to the blueprint — and the way there can finally be
+found. Both requested by **Bushwick4712 (KRT)**. Plus the dark title bar.
+
+### New
+
+- ⭐⭐ **"Where do I get the blueprint?" — a button in Crafting.**
+
+  You open a recipe, you are missing the blueprint for it, and the next
+  question is always the same: *which mission do I have to run?* The answer was
+  already in the tool — but on another page. You had to know it existed and
+  retype the name by hand.
+
+  Now it is one click: the blueprint list jumps to exactly that blueprint with
+  its origin opened — faction, mission, required reputation, reward.
+
+  ⚠ **Only where it leads somewhere.** The button appears only when you are
+  missing the blueprint **and** the catalogue knows where to get it. The
+  catalogue holds 738 blueprints, the recipes number 1,607 — a button onto an
+  empty list would be worse than none. If the blueprint is unexpectedly not
+  found, the list stays as it was instead of jumping to nothing.
+
+### Changed
+
+- ⭐ **The origin button in the blueprint list now reads "Where from?".**
+  It used to be a symbol at the right edge of the row, without a word —
+  Bushwick simply did not find it. A symbol explains itself only to whoever
+  built it.
+
+- ⭐ **The title bar is dark** (Windows). The window was fully dark inside and
+  carried a **white** bar with the title and the three buttons on top. That bar
+  belongs to Windows, not to the program — anyone running the light system
+  theme got it light, however dark the content.
+
+  ⚠ On Linux the window manager handles this; nothing changes there. And if
+  Windows will not do it, the bar stays light — ugly, but no reason to crash
+  while building a window.
+
 ## v3.5.3 - 2026-08-31
 
 The result of "Read the logs again" was lost in the status line.

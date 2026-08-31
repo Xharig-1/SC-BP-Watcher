@@ -51,14 +51,14 @@ from scbp import (
                   bestand as bestand_datei, bestandsfenster as bestandsfenster_modul,
                   einstellungsfenster, hinweis, injektion,
                   katalog as katalog_modul, logquelle, merkliste,
-                  pfade, phrasen, ton, uebersetzung, verkauf)
+                  pfade, phrasen, titelleiste, ton, uebersetzung, verkauf)
 
 try:
     import winsound                      # nur Windows; unter Linux übernimmt tkinter
 except ImportError:
     winsound = None
 
-__version__ = '3.5.3'
+__version__ = '3.6.0'
 
 
 def _mitgeliefert(name):
@@ -3367,6 +3367,10 @@ if __name__ == '__main__':
     fehler.absturzfaenger()
     fehler.VERSION[0] = __version__
     fehler.spur('Start, Version %s, %s' % (__version__, sys.platform))
+    # ⚠⚠ **Vor dem ersten Fenster.** Sonst haette die Wurzel — und alles, was
+    # vor diesem Aufruf entsteht — weiterhin die helle Leiste des Systems.
+    # Unter Linux tut der Aufruf nichts und kostet nichts.
+    titelleiste.einrichten()
     wurzel = tk.Tk()
     wurzel.withdraw()
     # Die Knöpfe der System-Abfragen auf die Programmsprache bringen. Muss nach

@@ -7749,6 +7749,103 @@ def main():
     pruefe('Leiste' not in _sp96.t('s_be_neu_los'),
            'der Zwischenstand verspricht nicht mehr die Leiste')
 
+
+    # 97. Von der Herstellung zum Bauplan — und den Knopf auch finden
+    #
+    # ⚠⚠ **Beides von Bushwick4712 (KRT) am 31.08.2026.**
+    #
+    # 1. „Ich kann das nicht bauen — woher bekomme ich den Bauplan?" Die
+    #    Antwort stand schon im Werkzeug, aber auf einer anderen Seite: Man
+    #    musste wissen, dass es sie gibt, und den Namen von Hand
+    #    hinuebertippen.
+    # 2. Den Knopf dorthin hat er **nicht gefunden**. Es war ein Symbol am
+    #    rechten Rand der Zeile, ohne Wort. Ein Symbol erklaert sich nur dem,
+    #    der es gebaut hat.
+    print()
+    print('97. Von der Herstellung zum Bauplan — und den Knopf auch finden')
+    from scbp import seiten as _se97, sprache as _sp97
+
+    # a) Der Knopf erscheint nur, wo er hinfuehrt. ⚠ Der Katalog kennt 738
+    #    Bauplaene, die Rezepte sind 1607 — ein Knopf auf eine leere Liste
+    #    waere schlimmer als keiner.
+    pruefe(_se97._hat_herkunft('gibt es nicht') is False,
+           'ein unbekannter Name bekommt keinen Knopf')
+    pruefe(_se97._hat_herkunft('') is False and _se97._hat_herkunft(None) is False,
+           'und ein leerer Name auch nicht')
+
+    from scbp import katalog as _kat97
+    from scbp import pfade as _pf97
+
+    # ⚠⚠ **Notfalls eigene Daten hinlegen.** Der Selbsttest arbeitet in einem
+    # Wegwerf-Ordner, dort liegt kein Katalog — ohne das hier waeren genau die
+    # zwei interessanten Pruefungen IMMER uebersprungen worden, auf jedem
+    # frischen Rechner und im Bau-Lauf sowieso. Dieselbe Falle wie bei
+    # Pruefung 67: Eine Pruefung, die nur bei ihrem Autor anschlaegt, ist keine.
+    if not (_kat97.laden().get('bauplaene') or {}):
+        with open(_pf97.app_datei(_kat97.CACHE), 'w', encoding='utf-8') as _f97:
+            json.dump({'bauplaene': {
+                'mit-quelle': {'n': 'Pruefling Mit Quelle',
+                               'q': [{'f': 'Foxwell', 'a': 'Testauftrag'}]},
+                'ohne-quelle': {'n': 'Pruefling Ohne Quelle'}}}, _f97)
+
+    _mit_q97 = [e.get('n') for e in (_kat97.laden().get('bauplaene') or {}).values()
+                if e.get('q') and e.get('n')]
+    _ohne_q97 = [e.get('n') for e in (_kat97.laden().get('bauplaene') or {}).values()
+                 if not e.get('q') and e.get('n')]
+    if _mit_q97:
+        pruefe(_se97._hat_herkunft(_mit_q97[0]),
+               'ein Bauplan MIT Bezugsquelle bekommt ihn (%s)' % _mit_q97[0])
+    else:
+        print('  [-]    kein Katalog mit Bezugsquellen — uebersprungen')
+    if _ohne_q97:
+        pruefe(not _se97._hat_herkunft(_ohne_q97[0]),
+               'ein Bauplan OHNE Bezugsquelle bekommt keinen (%s)' % _ohne_q97[0])
+
+    # b) Der Weg dorthin gibt es, und er sagt ehrlich, wenn er nichts findet.
+    from scbp import bestandsfenster as _bf97
+    pruefe(hasattr(_bf97.Bestandsfenster, 'zum_bauplan'),
+           'die Bauplan-Liste laesst sich von aussen auf einen Bauplan stellen')
+
+    _wz97 = _wurzel()
+    _liste97 = _bf97.Bestandsfenster(_wz97)
+    for _ in range(3):
+        _wz97.update(); _wz97.update_idletasks()
+    _liste97.suche.set('etwas anderes')
+    pruefe(_liste97.zum_bauplan('gibt es nicht') is False,
+           'ein unbekannter Bauplan meldet Fehlanzeige')
+    # ⚠⚠ **Und ruehrt die Liste nicht an.** Ein Sprung auf eine leere Liste
+    # saehe aus, als sei das Werkzeug kaputt — und der Suchbegriff von vorhin
+    # waere obendrein weg.
+    pruefe(_liste97.suche.get() == 'etwas anderes',
+           'und laesst die Suche stehen, wie sie war')
+    if _mit_q97:
+        pruefe(_liste97.zum_bauplan(_mit_q97[0]) is True,
+               'ein bekannter Bauplan wird angesprungen')
+        pruefe(_liste97.suche.get() == _mit_q97[0]
+               and getattr(_liste97, 'gewaehlt', None) == _mit_q97[0],
+               'er steht in der Suche UND ist ausgewaehlt — die Herkunft '
+               'schlaegt gleich auf')
+    try:
+        _liste97.root.destroy()
+        _wz97.destroy()
+    except Exception:
+        pass
+
+    # c) Der Knopf traegt jetzt ein Wort, nicht nur ein Zeichen.
+    _bq97 = open(os.path.join(WURZEL, 'scbp', 'bestandsfenster.py'),
+                 encoding='utf-8').read()
+    pruefe("text=t('hk_knopf')" in _bq97,
+           'der Herkunfts-Knopf in der Liste ist beschriftet')
+    pruefe(_sp97.t('hk_knopf') and _sp97.t('hk_knopf') != 'hk_knopf',
+           'und die Beschriftung gibt es in beiden Sprachen')
+
+    # d) Und in der Herstellung steht er nur bei einem FEHLENDEN Bauplan.
+    _sq97 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                 encoding='utf-8').read()
+    _hz97 = _sq97.split('def _herstellung_zeile')[1].split(chr(10) + 'def ')[0]
+    pruefe("eintrag['habe'] is not True and _hat_herkunft" in _hz97,
+           'der Knopf steht nur, wo der Bauplan fehlt UND es ihn irgendwo gibt')
+
     try:
         _ov92.root.destroy()
         _wz92.destroy()

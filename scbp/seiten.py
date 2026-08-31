@@ -4137,6 +4137,39 @@ def _geld(betrag):
     return '{:,.0f}'.format(float(betrag or 0)).replace(',', '.')
 
 
+def _hat_herkunft(name):
+    """Kennt der Katalog diesen Bauplan — und weiss er, woher es ihn gibt?
+
+    ⚠ Beides zusammen. Ein Katalogeintrag ohne `q` hat keine Bezugsquelle
+    (59 Bauplaene, ueberwiegend Event-Belohnungen); ein Knopf dorthin fuehrte
+    zu einer Seite, die nichts zu sagen hat.
+    """
+    if not name:
+        return False
+    try:
+        from . import katalog as kat
+        gesucht = bestand_datei.norm(name)
+        for e in (kat.laden().get('bauplaene') or {}).values():
+            if bestand_datei.norm(e.get('n') or '') == gesucht:
+                return bool(e.get('q'))
+    except Exception:
+        pass
+    return False
+
+
+def _zum_bauplan(fenster, name):
+    """Von der Herstellung zur Bauplan-Liste — mit aufgeschlagener Herkunft."""
+    try:
+        fenster.oeffnen('liste')
+        seite = getattr(fenster, 'bestandsseite', None)
+        if seite is not None and seite.zum_bauplan(name):
+            return
+        fenster.sagen(t('s_he_woher_nichts'))
+    except Exception as ausnahme:
+        fehler.merken('seiten.zum_bauplan', ausnahme)
+        fenster.sagen(t('s_he_woher_nichts'))
+
+
 def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
     """Eine Zeile der Herstellungs-Liste, auf Klick klappt das Rezept auf."""
     from . import herstellung as herst_modul
@@ -4173,6 +4206,21 @@ def _herstellung_zeile(fenster, eltern, eintrag, offen, neu_zeichnen):
     block.pack(fill='x', padx=(24, 0), pady=(2, 8))
     if eintrag['habe'] is None:
         _fliesstext(block, t('s_he_unklar'), fenster.f_klein, fill='x')
+
+    # ⚠⚠ **„Ich kann das nicht bauen — woher bekomme ich den Bauplan?"**
+    # Gewuenscht von Bushwick4712 (KRT) am 31.08.2026. Die Antwort stand schon
+    # im Werkzeug, aber auf einer anderen Seite und hinter einem Symbol: Man
+    # musste wissen, dass es sie gibt, und den Namen von Hand hinuebertippen.
+    #
+    # ⚠ **Nur wenn der Bauplan fehlt.** Wer ihn hat, will hier bauen und nicht
+    # wissen, wo es ihn gaebe — der Knopf waere dann nur eine Zeile mehr.
+    # ⚠ **Und nur, wenn dahinter wirklich etwas steht.** Der Katalog kennt 738
+    # Bauplaene, die Rezepte sind 1607; ein Knopf, der auf eine leere Liste
+    # fuehrt, ist schlimmer als keiner.
+    if eintrag['habe'] is not True and _hat_herkunft(eintrag.get('basis')):
+        _knopf(fenster, block, t('s_he_woher_bp'),
+               lambda n=eintrag.get('basis'): _zum_bauplan(fenster, n)).pack(
+                   anchor='w', padx=12, pady=(8, 0))
     rez = herst_modul.rezept(eintrag['basis'])
     from . import rohstoffe as lager
     from . import preise as preis_modul

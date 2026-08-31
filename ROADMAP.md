@@ -23,7 +23,7 @@ Vier Dinge sind Absicht und bleiben so:
 | ✅ | **Eigener Bauplan-Bestand** — der SC Deutsch Launcher ist nicht nötig |
 | ✅ | **Nachlese**: beim Start werden frühere Spielsitzungen ausgewertet |
 | ✅ | **Bauplan-Liste** zum Nachschlagen, Filtern und Abhaken, mit Fortschritt |
-| ✅ | **Herkunft je Bauplan** — Fraktion, Auftrag, nötiger Ruf, Belohnung |
+| ✅ | **Herkunft je Bauplan** — Fraktion, Auftrag, nötiger Ruf, Belohnung; aus der Herstellung führt ein Knopf direkt hin |
 | ✅ | **Beim Annehmen eines Auftrags**: bringt er Baupläne, und welche fehlen dir noch? |
 | ✅ | **Was gerade zu tun ist** — die offenen Zwischenziele stehen unter ihrem Auftrag |
 | ✅ | Katalog-Wache: meldet, was im Spiel **neu craftbar** wird, dazu eine Merkliste |
