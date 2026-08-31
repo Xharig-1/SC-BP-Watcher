@@ -94,6 +94,42 @@ ROT     = '#e05252'
 # nichts verloren, wenn das Fenster kürzer ist: Was nicht hinpasst, rollt.
 MIN_BREITE, MIN_HOEHE = 1160, 380
 
+# Die zuletzt eingestellte Fenstergroesse. Nur die **Groesse**, keine Lage:
+# Eine gemerkte Position zeigt auf einem anderen Rechner ins Nichts (siehe die
+# Regel dazu in der Projekt-CLAUDE.md und `geometrie_pruefen` beim Overlay) —
+# das Fenster geht deshalb weiter mittig auf.
+GROESSE_SCHLUESSEL = 'fenster_groesse'
+
+
+def gemerkte_groesse(root):
+    """Die gemerkte Fenstergroesse als `(Breite, Hoehe)`.
+
+    Faellt auf die Mindestgroesse zurueck, wenn nichts gemerkt ist oder der
+    Eintrag unbrauchbar ist.
+
+    ⚠ **Zweimal begrenzt, und beides ist noetig.** Nach unten auf
+    `MIN_BREITE`/`MIN_HOEHE` — sonst koennte ein alter Eintrag das Fenster
+    kleiner machen, als seine Mindestgroesse zulaesst, und Tk zoege es beim
+    ersten Zeichnen ruckartig wieder auf. Nach oben auf den Bildschirm: Wer
+    seine Groesse am 4K-Schirm gemerkt hat und spaeter am Laptop startet,
+    haette sonst ein Fenster, dessen rechte Haelfte nicht erreichbar ist.
+    """
+    roh = (pfade.einstellung(GROESSE_SCHLUESSEL) or '').strip().lower()
+    breite = hoehe = 0
+    if 'x' in roh:
+        teile = roh.split('x', 1)
+        if teile[0].isdigit() and teile[1].isdigit():
+            breite, hoehe = int(teile[0]), int(teile[1])
+    breite = max(MIN_BREITE, breite)
+    hoehe = max(MIN_HOEHE, hoehe)
+    try:
+        breite = min(breite, root.winfo_screenwidth())
+        hoehe = min(hoehe, root.winfo_screenheight())
+    except Exception:
+        pass
+    return breite, hoehe
+
+
 # Startbreite der Seitenleiste. Auch sie ist nur eine Untergrenze: Wie breit
 # „Angaben im Spiel" oder das englische „In-game details" wirklich wird, hängt
 # wieder an Schrift und Skalierung — bei 125 % ragte der Text aus der Leiste
@@ -1421,10 +1457,20 @@ class Hauptfenster:
         self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
         self.root.title(fenstertitel(t('hf_titel')))
         self.root.configure(bg=BG)
-        # Start = Mindestgröße, mittig auf dem Hauptbildschirm. Mittig, damit das
-        # Fenster bei mehreren Monitoren nicht auf einer Kante landet.
-        self.root.geometry(bildschirm.mittig(self.root, MIN_BREITE, MIN_HOEHE))
+        # Start = die zuletzt eingestellte Groesse, sonst die Mindestgroesse —
+        # mittig auf dem Hauptbildschirm. Mittig, damit das Fenster bei
+        # mehreren Monitoren nicht auf einer Kante landet.
+        #
+        # ⭐ **Wer sein Fenster groesser zieht, findet es so wieder.** Vorher
+        # ging es bei jedem Start wieder auf 1160x380 zurueck, und wer mit
+        # langen Listen arbeitet, zog es jedes Mal von Hand auf.
+        _b_start, _h_start = gemerkte_groesse(self.root)
+        self.root.geometry(bildschirm.mittig(self.root, _b_start, _h_start))
         self.root.minsize(MIN_BREITE, MIN_HOEHE)
+        # Merker fuer die Drossel unten — solange etwas darin steht, ist ein
+        # Speichern schon vorgemerkt.
+        self._groesse_wartet = None
+        self.root.bind('<Configure>', self._groesse_beobachten, add='+')
 
         self._schriften_anlegen()
 
@@ -2409,7 +2455,57 @@ class Hauptfenster:
         except Exception as ausnahme:
             fehler.merken('hauptfenster.assistent', ausnahme)
 
+    def _groesse_beobachten(self, ereignis):
+        """Auf Groessenaenderungen horchen — aber nicht bei jedem Pixel schreiben.
+
+        ⚠ **Gedrosselt.** `<Configure>` feuert waehrend des Ziehens
+        ununterbrochen; ungebremst schriebe das Werkzeug die Einstellungsdatei
+        hundertfach in der Sekunde. Gespeichert wird erst, wenn eine halbe
+        Sekunde lang nichts mehr passiert ist.
+
+        ⚠ **Nur das Fenster selbst.** Jedes Widget bekommt sein eigenes
+        `<Configure>`; ohne diese Abfrage zaehlte auch jede Listenzeile mit.
+        """
+        if ereignis.widget is not self.root:
+            return
+        if self._groesse_wartet:
+            try:
+                self.root.after_cancel(self._groesse_wartet)
+            except Exception:
+                pass
+        self._groesse_wartet = self.root.after(500, self._groesse_merken)
+
+    def _groesse_merken(self):
+        """Die eingestellte Groesse sichern.
+
+        ⚠ **Nur im normalen Zustand.** Ein maximiertes Fenster meldet die
+        volle Bildschirmgroesse; gemerkt wuerde damit eine Groesse, die beim
+        naechsten Start als *nicht* maximiertes Fenster bis unter die
+        Taskleiste reicht. Wer maximiert, findet beim naechsten Start seine
+        letzte selbst gezogene Groesse vor — das ist die ehrlichere Antwort.
+        """
+        self._groesse_wartet = None
+        try:
+            if self.root.state() != 'normal':
+                return
+            breite, hoehe = self.root.winfo_width(), self.root.winfo_height()
+        except Exception:
+            return
+        # Solange nichts gezeichnet ist, meldet Tk eine 1 — das ist keine Groesse.
+        if breite < MIN_BREITE or hoehe < MIN_HOEHE:
+            return
+        wert = '%dx%d' % (breite, hoehe)
+        if wert == (pfade.einstellung(GROESSE_SCHLUESSEL) or ''):
+            return
+        pfade.einstellung_setzen(GROESSE_SCHLUESSEL, wert)
+
     def schliessen(self):
+        # Beim Zumachen noch einmal sichern: Wer das Fenster kurz nach dem
+        # Ziehen schliesst, waere sonst schneller als die Drossel.
+        try:
+            self._groesse_merken()
+        except Exception as ausnahme:
+            fehler.merken('hauptfenster.groesse_merken', ausnahme)
         try:
             if self.beim_schliessen:
                 self.beim_schliessen()

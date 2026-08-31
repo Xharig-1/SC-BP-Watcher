@@ -7041,6 +7041,78 @@ def main():
            and "einstellung('lager_raffinerie_offen')" in _raffblock86,
            'und die Lage ueberlebt den Neustart — in BEIDE Richtungen')
 
+    # 87. Das Fenster behaelt die eingestellte Groesse
+    #
+    # ⭐ Wer mit langen Listen arbeitet, zieht das Fenster gross — und fand es
+    # bis 31.08.2026 bei jedem Start wieder auf 1160x380 zurueckgesetzt.
+    #
+    # ⚠ Gemerkt wird **nur die Groesse, nie die Lage**: Eine gespeicherte
+    # Position zeigt auf einem anderen Rechner ins Nichts (dieselbe Falle wie
+    # beim Overlay, siehe `geometrie_pruefen`).
+    print()
+    print('87. Das Fenster behaelt die eingestellte Groesse')
+    from scbp import hauptfenster as _hf87
+    from scbp import pfade as _pf87
+
+    _wurzel87 = _wurzel()
+    _pf87.einstellung_setzen(_hf87.GROESSE_SCHLUESSEL, None)
+    _f87 = _hf87.Hauptfenster(_wurzel87)
+    for _ in range(6):
+        _wurzel87.update()
+        _wurzel87.update_idletasks()
+    pruefe((_f87.root.winfo_width(), _f87.root.winfo_height())
+           == (_hf87.MIN_BREITE, _hf87.MIN_HOEHE),
+           'ohne gemerkte Groesse kommt das Fenster in Mindestgroesse')
+
+    _b87, _h87 = _hf87.MIN_BREITE + 240, _hf87.MIN_HOEHE + 300
+    _f87.root.geometry('%dx%d' % (_b87, _h87))
+    for _ in range(8):
+        _wurzel87.update()
+        _wurzel87.update_idletasks()
+    _f87._groesse_merken()
+    pruefe(_pf87.einstellung(_hf87.GROESSE_SCHLUESSEL) == '%dx%d' % (_b87, _h87),
+           'groesser gezogen wird gemerkt')
+    _f87.root.destroy()
+
+    _f87b = _hf87.Hauptfenster(_wurzel87)
+    for _ in range(6):
+        _wurzel87.update()
+        _wurzel87.update_idletasks()
+    pruefe((_f87b.root.winfo_width(), _f87b.root.winfo_height()) == (_b87, _h87),
+           'und beim naechsten Start wieder eingestellt')
+    pruefe(tuple(_f87b.root.minsize()) == (_hf87.MIN_BREITE, _hf87.MIN_HOEHE),
+           'die Mindestgroesse bleibt dabei unveraendert')
+    _f87b.root.destroy()
+
+    # ⚠ Ein unbrauchbarer Eintrag darf das Fenster nicht verkruemeln.
+    for _muell87 in ('', 'kaputt', '0x0', '12x9', '-100x-100'):
+        _pf87.einstellung_setzen(_hf87.GROESSE_SCHLUESSEL, _muell87)
+        if _hf87.gemerkte_groesse(_wurzel87) != (_hf87.MIN_BREITE, _hf87.MIN_HOEHE):
+            pruefe(False, 'unbrauchbarer Eintrag %r faellt nicht zurueck' % _muell87)
+            break
+    else:
+        pruefe(True, 'unbrauchbare Eintraege fallen auf die Mindestgroesse zurueck')
+
+    # ⚠ Und eine Groesse vom grossen Schirm darf am Laptop nicht ueberstehen.
+    _pf87.einstellung_setzen(_hf87.GROESSE_SCHLUESSEL, '99999x99999')
+    _bg87, _hg87 = _hf87.gemerkte_groesse(_wurzel87)
+    pruefe(_bg87 <= _wurzel87.winfo_screenwidth()
+           and _hg87 <= _wurzel87.winfo_screenheight(),
+           'eine Groesse groesser als der Bildschirm wird gedeckelt')
+
+    # Die Lage gehoert NICHT dazu — sonst startet das Fenster auf einem
+    # Rechner mit einem Bildschirm ausserhalb des Bildes.
+    _q87 = open(os.path.join(WURZEL, 'scbp', 'hauptfenster.py'),
+                encoding='utf-8').read()
+    pruefe('bildschirm.mittig(self.root, _b_start, _h_start)' in _q87,
+           'das Fenster geht weiter mittig auf, nur eben in der eigenen Groesse')
+
+    _pf87.einstellung_setzen(_hf87.GROESSE_SCHLUESSEL, None)
+    try:
+        _wurzel87.destroy()
+    except Exception:
+        pass
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

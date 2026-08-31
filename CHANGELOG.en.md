@@ -6,6 +6,32 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.4.2 - unreleased
+
+### Changed
+
+- ⭐ **The window keeps the size you set.** Anyone who dragged it larger —
+  because long lists do not fit otherwise — found it back at the minimum size
+  on the next start and resized it every single time. The size is now
+  remembered.
+
+  The **minimum size is unchanged**, and only the *size* is remembered, not the
+  position: a stored position points into nowhere on a different machine, so
+  the window still opens centred. A size from the big screen is capped to the
+  smaller one.
+
+### Internal
+
+- **The screenshots for the guide are now produced by a tool**
+  (`tools/bilder_machen.py`) instead of being collected by hand. Eleven of the
+  sixteen images were from 27 Aug and showed an interface that no longer
+  exists — no workshop, no trading, a different sidebar. All thirty images
+  (German and English) are new and share one size.
+
+  The tool does **not** take over the screen: the window is built outside the
+  visible area and captured via `PrintWindow` — anyone playing meanwhile
+  notices nothing.
+
 ## v3.4.1 - 2026-08-31
 
 Your cargo hold can now be backed up — and after a patch that wipes all goods,

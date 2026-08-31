@@ -6,6 +6,32 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.4.2 - unveröffentlicht
+
+### Geändert
+
+- ⭐ **Das Fenster behält die Größe, die du eingestellt hast.** Wer es größer
+  zieht — weil lange Listen sonst nicht hineinpassen —, fand es beim nächsten
+  Start wieder auf der Mindestgröße vor und zog es jedes Mal von Neuem auf.
+  Jetzt wird die Größe gemerkt.
+
+  Die **Mindestgröße bleibt unverändert**, und gemerkt wird nur die *Größe*,
+  nicht die Lage: Eine gespeicherte Position zeigt auf einem anderen Rechner
+  ins Nichts — das Fenster geht deshalb weiter mittig auf. Eine Größe vom
+  großen Bildschirm wird am kleineren auf dessen Maß gedeckelt.
+
+### Intern
+
+- **Die Bildschirmfotos der Anleitung macht jetzt ein Werkzeug**
+  (`tools/bilder_machen.py`), statt sie von Hand zusammenzusuchen. Elf der
+  sechzehn Bilder waren vom 27.08. und zeigten eine Oberfläche, die es so nicht
+  mehr gibt — ohne Werkstatt, ohne Handel, mit anderer Seitenleiste. Alle
+  dreißig Bilder (deutsch und englisch) sind neu und einheitlich groß.
+
+  Das Werkzeug belegt dabei **nicht den Bildschirm**: Das Fenster entsteht
+  ausserhalb des sichtbaren Bereichs und wird über `PrintWindow` abgegriffen —
+  wer nebenher spielt, merkt nichts davon.
+
 ## v3.4.1 - 2026-08-31
 
 Dein Laderaum lässt sich jetzt sichern — und nach einem Patch, der alle Ware
