@@ -6,7 +6,12 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## Unveröffentlicht
+## v3.9.0 - 2026-08-31
+
+Die Auftragsleiste zeigt nur noch, was wirklich läuft — beim Ausloggen verliert
+man seine Aufträge, und das Werkzeug weiß das jetzt. Und „Was bringt am
+meisten?" hört nicht mehr bei einer Zahl auf: Ein Klick auf den Auftrag zeigt,
+welche Baupläne dahinterstecken und wo man ihn annimmt.
 
 ### Behoben
 

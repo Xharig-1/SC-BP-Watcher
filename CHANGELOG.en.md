@@ -6,7 +6,12 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## Unreleased
+## v3.9.0 - 2026-08-31
+
+The contract bar now shows only what is actually running — logging out drops
+your contracts, and the tool knows that now. And "What pays off most?" no
+longer stops at a number: one click on a contract shows which blueprints are
+behind it, and where to pick it up.
 
 ### Fixed
 
