@@ -26,6 +26,8 @@ with the workshop and the trading section instead of last week's interface.
 
 ### Internal
 
+- **The build run found a bug no machine here shows:** when the screen is **smaller** than the window’s minimum size — as it is on the build machine — capping to the screen size beat the minimum size. The result would have been a window below its own `minsize`. The order is fixed, and self-test 87 now simulates the small screen itself.
+
 - **The screenshots for the guide are now produced by a tool**
   (`tools/bilder_machen.py`) instead of being collected by hand. Eleven of the
   sixteen images were from 27 Aug and showed an interface that no longer

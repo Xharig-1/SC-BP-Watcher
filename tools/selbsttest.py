@@ -7096,8 +7096,10 @@ def main():
     # ⚠ Und eine Groesse vom grossen Schirm darf am Laptop nicht ueberstehen.
     _pf87.einstellung_setzen(_hf87.GROESSE_SCHLUESSEL, '99999x99999')
     _bg87, _hg87 = _hf87.gemerkte_groesse(_wurzel87)
-    pruefe(_bg87 <= _wurzel87.winfo_screenwidth()
-           and _hg87 <= _wurzel87.winfo_screenheight(),
+    # ⚠ `max(..., MIN_*)`: Auf einem Bildschirm, der kleiner ist als die
+    # Mindestgroesse (Bau-Rechner!), darf die Deckelung sie nicht unterbieten.
+    pruefe(_bg87 <= max(_wurzel87.winfo_screenwidth(), _hf87.MIN_BREITE)
+           and _hg87 <= max(_wurzel87.winfo_screenheight(), _hf87.MIN_HOEHE),
            'eine Groesse groesser als der Bildschirm wird gedeckelt')
 
     # Die Lage gehoert NICHT dazu — sonst startet das Fenster auf einem
@@ -7106,6 +7108,33 @@ def main():
                 encoding='utf-8').read()
     pruefe('bildschirm.mittig(self.root, _b_start, _h_start)' in _q87,
            'das Fenster geht weiter mittig auf, nur eben in der eigenen Groesse')
+
+    # ⚠⚠ **Ein Bildschirm KLEINER als die Mindestgroesse.** Genau daran ist der
+    # Bau-Lauf von v3.4.2 gescheitert: Der Windows-Rechner dort hat einen
+    # kleineren Schirm als jeder echte Nutzer, und die Deckelung auf die
+    # Bildschirmgroesse unterbot dadurch die Mindestgroesse — heraus kam
+    # 1024x768, obwohl `minsize` 1160x380 verlangt.
+    #
+    # Nachgestellt statt gehofft: ein Stellvertreter, der einen kleinen Schirm
+    # meldet. Auf dem echten Bildschirm des Entwicklers greift der Fall nie.
+    class _KleinerSchirm87:
+        def winfo_screenwidth(self):
+            return 1024
+
+        def winfo_screenheight(self):
+            return 768
+
+    _klein87 = _KleinerSchirm87()
+    for _eintrag87 in (None, '', '1800x1200', 'kaputt'):
+        _pf87.einstellung_setzen(_hf87.GROESSE_SCHLUESSEL, _eintrag87)
+        _bk87, _hk87 = _hf87.gemerkte_groesse(_klein87)
+        if _bk87 < _hf87.MIN_BREITE or _hk87 < _hf87.MIN_HOEHE:
+            pruefe(False, 'kleiner Schirm + Eintrag %r ergibt %dx%d — unter der '
+                          'Mindestgroesse' % (_eintrag87, _bk87, _hk87))
+            break
+    else:
+        pruefe(True, 'auf einem Schirm kleiner als die Mindestgroesse gewinnt '
+                     'trotzdem die Mindestgroesse')
 
     _pf87.einstellung_setzen(_hf87.GROESSE_SCHLUESSEL, None)
     try:

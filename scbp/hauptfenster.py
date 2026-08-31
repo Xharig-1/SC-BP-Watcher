@@ -120,13 +120,19 @@ def gemerkte_groesse(root):
         teile = roh.split('x', 1)
         if teile[0].isdigit() and teile[1].isdigit():
             breite, hoehe = int(teile[0]), int(teile[1])
-    breite = max(MIN_BREITE, breite)
-    hoehe = max(MIN_HOEHE, hoehe)
     try:
         breite = min(breite, root.winfo_screenwidth())
         hoehe = min(hoehe, root.winfo_screenheight())
     except Exception:
         pass
+    # ⚠⚠ **Die Mindestgroesse hat das letzte Wort — nach der Deckelung.**
+    # Andersherum gewinnt auf einem Bildschirm, der kleiner ist als die
+    # Mindestgroesse, der Bildschirm: Das Fenster kaeme mit 1024x768 heraus,
+    # obwohl `minsize` 1160x380 verlangt, und Tk zoege es beim ersten Zeichnen
+    # ruckartig wieder auf. Gefunden hat das der Bau-Lauf von v3.4.2 — der
+    # Windows-Rechner dort hat einen kleineren Schirm als jeder echte Nutzer.
+    breite = max(MIN_BREITE, breite)
+    hoehe = max(MIN_HOEHE, hoehe)
     return breite, hoehe
 
 

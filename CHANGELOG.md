@@ -27,6 +27,8 @@ vorletzter Woche.
 
 ### Intern
 
+- **Der Bau-Lauf hat einen Fehler gefunden, den kein Rechner hier zeigt:** Ist der Bildschirm **kleiner** als die Mindestgröße des Fensters — auf dem Bau-Rechner ist er das —, gewann die Deckelung auf die Bildschirmgröße gegen die Mindestgröße. Herausgekommen wäre ein Fenster unterhalb seines eigenen `minsize`. Die Reihenfolge ist berichtigt, und Selbsttest 87 stellt den kleinen Bildschirm jetzt selbst nach.
+
 - **Die Bildschirmfotos der Anleitung macht jetzt ein Werkzeug**
   (`tools/bilder_machen.py`), statt sie von Hand zusammenzusuchen. Elf der
   sechzehn Bilder waren vom 27.08. und zeigten eine Oberfläche, die es so nicht
