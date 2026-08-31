@@ -444,6 +444,8 @@ needed to track a problem down, without any personal information.
 
 Just pass on the file from the [releases page](../../releases) — the recipient needs neither Python nor a launcher, only Star Citizen.
 
+If you fork this project, please keep the credit in the footer or mention the original source.
+
 > ℹ️ Windows SmartScreen reports „unknown publisher" for unsigned files → **More info → Run anyway**.
 
 ## Thanks & credits
@@ -467,13 +469,6 @@ As a base for the blueprint details you can pick **[StarStrings](https://github.
 The interface symbols come from the **[Lucide](https://lucide.dev)** set (ISC licence) — all drawn on the same grid with the same stroke width, which is why they look identical on Windows, Linux and macOS. **Thanks** to the Lucide community! 🙏 The licence text ships with the tool (`assets/symbole/LIZENZ.txt`) and is shown under **Thanks & Licenses**.
 
 SC BP Watcher is an independent, unofficial companion tool with **no** official connection to the SC Deutsch Launcher or Cloud Imperium Games. All brand and project names belong to their respective owners.
-
-## Author
-
-[![Xharig](https://github.com/Xharig.png?size=40)](https://github.com/Xharig)
-**Xharig** — [github.com/Xharig](https://github.com/Xharig)
-
-If you fork this project, please keep the credit in the footer or mention the original source.
 
 ## What's next
 
@@ -518,3 +513,13 @@ Official site: **[robertsspaceindustries.com](https://robertsspaceindustries.com
 ## License
 
 [GNU GPL v3.0](LICENSE) — free to use and modify; if you distribute it, the source has to come along under the same licence.
+
+<div align="center">
+
+[![Xharig](https://github.com/Xharig.png?size=80)](https://github.com/Xharig)
+
+**Xharig** — development and design of this project
+
+<sub>Like the tool? <a href="https://ko-fi.com/xharig">Ko-fi</a> ☕</sub>
+
+</div>

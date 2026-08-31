@@ -488,6 +488,8 @@ Textblock enthält alles, was zur Fehlersuche gebraucht wird, ohne persönliche 
 
 Gib einfach die Datei von der [Releases-Seite](../../releases) weiter — der Empfänger braucht weder Python noch einen Launcher, nur Star Citizen.
 
+Wenn du das Projekt abzweigst, lass die Nennung im Fußbereich stehen oder nenne die ursprüngliche Quelle.
+
 > ℹ️ Windows SmartScreen meldet bei unsignierten Dateien „unbekannter Herausgeber" → **Weitere Informationen → Trotzdem ausführen**.
 
 ## Danksagung & Credits
@@ -511,13 +513,6 @@ Als Grundlage für die Bauplan-Angaben lässt sich **[StarStrings](https://githu
 Die Symbole der Oberfläche stammen aus dem **[Lucide](https://lucide.dev)**-Satz (ISC-Lizenz) — alle auf demselben Raster mit gleicher Strichstärke gezeichnet, weshalb sie unter Windows, Linux und macOS gleich aussehen. **Danke** an die Lucide-Gemeinschaft! 🙏 Der Lizenztext liegt bei (`assets/symbole/LIZENZ.txt`) und steht im Werkzeug unter **Danke & Lizenzen**.
 
 SC BP Watcher ist ein eigenständiges, inoffizielles Zusatz-Tool und steht in **keiner** offiziellen Verbindung zum SC Deutsch Launcher oder zu Cloud Imperium Games. Alle Marken- und Projektnamen gehören ihren jeweiligen Eigentümern.
-
-## Author
-
-[![Xharig](https://github.com/Xharig.png?size=40)](https://github.com/Xharig)
-**Xharig** — [github.com/Xharig](https://github.com/Xharig)
-
-If you fork this project, please keep the credit in the footer or mention the original source.
 
 ## Was noch kommt
 
@@ -566,3 +561,13 @@ Offizielle Seite: **[robertsspaceindustries.com](https://robertsspaceindustries.
 
 Kurz: Du darfst das Programm nutzen, verändern und weitergeben. Wer es weitergibt — verändert
 oder nicht —, muss den Quellcode unter derselben Lizenz mitliefern. Es gibt keine Garantie.
+
+<div align="center">
+
+[![Xharig](https://github.com/Xharig.png?size=80)](https://github.com/Xharig)
+
+**Xharig** — Entwicklung und Gestaltung dieses Projekts
+
+<sub>Gefällt Dir das Werkzeug? <a href="https://ko-fi.com/xharig">Ko-fi</a> ☕</sub>
+
+</div>
