@@ -359,8 +359,11 @@ TEXTE = {
                           'when the watcher was closed while Star Citizen kept '
                           'running: that session\'s blueprints then sit in a file '
                           'it considers done. Duplicates cannot happen.'),
-    's_be_neu_los':      ('Wird gelesen … das Ergebnis steht gleich in der Leiste.',
-                          'Reading … the result will appear in the bar shortly.'),
+    # ⚠⚠ Sagt jetzt „meldet sich", nicht „steht in der Leiste": Das Ergebnis
+    # kommt als Fenster. Die alte Zusage stimmte nicht mehr — und sie stimmte
+    # auch vorher nur vier Sekunden lang.
+    's_be_neu_los':      ('Wird gelesen … das Ergebnis meldet sich, sobald es da ist.',
+                          'Reading … the result will report back when it is ready.'),
     's_be_neu_kein':     ('Dafür muss der Watcher laufen.',
                           'The watcher needs to be running for this.'),
     'nachlese_marke':    ('nachgelesen', 'caught up'),
@@ -2278,6 +2281,7 @@ TEXTE = {
     'e_ton_hilfe':       ('Kurzer Ton, wenn ein Bauplan erscheint.',
                           'A short sound when a blueprint shows up.'),
     'e_ja':              ('Ja', 'Yes'),
+    'e_ok':              ('Alles klar', 'Got it'),
     'e_nein':            ('Nein', 'No'),
     'e_an':              ('an', 'on'),
     'e_aus':             ('aus', 'off'),

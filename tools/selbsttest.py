@@ -7689,6 +7689,66 @@ def main():
     pruefe('s_er_alt' not in _sp95,
            'die Texte des entfernten Knopfes sind mitgegangen')
 
+
+    # 96. Das Ergebnis des Einlesens geht nicht in der Leiste unter
+    #
+    # ⚠⚠ **Am 31.08.2026 gemeldet:** „waere eine Meldung mit Fenster
+    # sinnvoller, in der Leiste steht es zu kurz oder gar nicht." Die Fusszeile
+    # zeigt vier Sekunden und ist dann leer — und genau in diesen vier Sekunden
+    # sieht niemand hin, der gerade einen Lauf ueber hunderte Protokolle
+    # angestossen hat. Er hat den Knopf gedrueckt und wartet.
+    #
+    # ⚠ **Die Leiste bekommt es trotzdem.** Den Knopf gibt es auch am Overlay;
+    # ist das Hauptfenster zu, existiert kein Fenster, ueber dem ein Dialog
+    # stehen koennte. Dann bleibt die Zeile — verschluckt wird das Ergebnis nie.
+    print()
+    print('96. Das Ergebnis des Einlesens geht nicht in der Leiste unter')
+    from scbp import hauptfenster as _hf96
+
+    pruefe(hasattr(_hf96, 'bescheid_geben'),
+           'es gibt einen Weg, ein Ergebnis als Fenster zu zeigen')
+
+    _q96 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
+                encoding='utf-8').read()
+    _code96 = chr(10).join(_z for _z in _q96.split(chr(10))
+                           if not _z.strip().startswith('#'))
+
+    # a) Der Watcher schickt das Ergebnis als Bescheid — nicht als blosse Zeile.
+    _ab96 = _code96.split('def _alles_neu_einlesen')[1].split(chr(10) + '    def ')[0]
+    pruefe("'bescheid'" in _ab96,
+           'das Ergebnis des Einlesens kommt als Bescheid')
+    pruefe("('status', sprache.Satz('neu_gelesen'" not in _ab96,
+           'und nicht mehr nur als Statuszeile')
+    pruefe('neu_gelesen_fehler' in _ab96 and _ab96.count("'bescheid'") == 2,
+           'auch der Fehlschlag meldet sich als Bescheid')
+
+    # b) Die Anzeige kennt die Meldungsart — sonst faellt sie stumm durch.
+    pruefe("msg[0] == 'bescheid'" in _code96,
+           'die Anzeige wertet die neue Meldungsart aus')
+
+    # c) ⚠ Und sie setzt IMMER auch die Leiste, bevor sie ein Fenster
+    #    versucht. Ohne das waere ein zugeklapptes Hauptfenster gleich­
+    #    bedeutend mit „Ergebnis weg".
+    _bz96 = _code96.split('def _bescheid_zeigen')[1].split(chr(10) + '    def ')[0]
+    pruefe(_bz96.index('_status_setzen') < _bz96.index('bescheid_geben'),
+           'die Leiste wird gesetzt, BEVOR ein Fenster versucht wird')
+    pruefe('if fenster is None' in _bz96,
+           'ohne Hauptfenster bleibt es bei der Leiste, ohne Fehler')
+
+    # d) Der Dialog braucht seinen einen Knopf — und einen Text dafuer.
+    from scbp import sprache as _sp96
+    pruefe(_sp96.t('e_ok') and _sp96.t('e_ok') != 'e_ok',
+           'der Knopf des Bescheids hat einen Text')
+    _hq96 = open(os.path.join(WURZEL, 'scbp', 'hauptfenster.py'),
+                 encoding='utf-8').read()
+    pruefe('nur_ok' in _hq96 and 'if not nur_ok:' in _hq96,
+           'beim Bescheid entfaellt der zweite Knopf — es gibt nichts zu waehlen')
+
+    # e) Und die Zusage in der Leiste darf nicht mehr „steht in der Leiste"
+    #    versprechen, wenn ein Fenster kommt.
+    pruefe('Leiste' not in _sp96.t('s_be_neu_los'),
+           'der Zwischenstand verspricht nicht mehr die Leiste')
+
     try:
         _ov92.root.destroy()
         _wz92.destroy()

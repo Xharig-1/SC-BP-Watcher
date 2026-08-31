@@ -6,6 +6,34 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.5.3 - 2026-08-31
+
+The result of "Read the logs again" was lost in the status line.
+
+### Changed
+
+- ⭐ **The result now arrives as a window, not as a line.**
+
+  ```
+  Read the logs again
+  152 logs read again, 2 blueprints added.
+                                              [ Got it ]
+  ```
+
+  ⚠ **The status line was the wrong place.** It shows a line for four seconds
+  and is then empty again — and during those four seconds nobody is looking
+  there who has just started a run across hundreds of logs. You pressed the
+  button and you are waiting. Reported on 2026-08-31: "in the bar it is there
+  too briefly or not at all".
+
+  ⚠ **The bar still gets it.** The button also exists on the overlay; with the
+  main window closed there is no window for a dialog to sit above. Then the
+  line remains the way. The result is never swallowed.
+
+  ⚠ **A window for a result only**, not for every message. A tool that keeps
+  throwing up windows gets clicked away unread. Blueprint finds stay where they
+  are.
+
 ## v3.5.2 - 2026-08-31
 
 Two buttons for the same job — one of them could do less and was red on top of

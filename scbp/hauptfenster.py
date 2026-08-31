@@ -2588,7 +2588,8 @@ def _dialog_knopf(eltern, text, tat, schrift, stark=False):
     return c
 
 
-def frage_stellen(eltern, titel, text, ja=None, nein=None):
+def frage_stellen(eltern, titel, text, ja=None, nein=None,
+                  nur_ok=False):
     """Ja/Nein-Frage im Programmstil. Gibt True zurück, wenn bejaht wurde.
 
     Ersatz für `messagebox.askyesno`. Modal, mittig über dem Elternfenster,
@@ -2637,8 +2638,11 @@ def frage_stellen(eltern, titel, text, ja=None, nein=None):
 
         reihe = tk.Frame(rahmen, bg=BG)
         reihe.pack(anchor='e', pady=(20, 0))
-        _dialog_knopf(reihe, nein, lambda: schliessen(False),
-                      schrift_knopf).pack(side='right', padx=(8, 0))
+        # ⚠ Beim blossen Bescheid gibt es nichts zu entscheiden — dann waere
+        # ein zweiter Knopf eine Frage, die keine ist.
+        if not nur_ok:
+            _dialog_knopf(reihe, nein, lambda: schliessen(False),
+                          schrift_knopf).pack(side='right', padx=(8, 0))
         _dialog_knopf(reihe, ja, lambda: schliessen(True),
                       schrift_knopf, stark=True).pack(side='right')
 
@@ -2664,4 +2668,22 @@ def frage_stellen(eltern, titel, text, ja=None, nein=None):
     except Exception as ausnahme:
         fehler.merken('hauptfenster.frage_stellen', ausnahme)
         from tkinter import messagebox
+        if nur_ok:
+            messagebox.showinfo(titel, text, parent=eltern)
+            return True
         return bool(messagebox.askyesno(titel, text, parent=eltern))
+
+
+def bescheid_geben(eltern, titel, text):
+    """Ein Ergebnis zeigen, das nicht uebersehen werden darf.
+
+    ⚠⚠ **Die Fusszeile reicht dafuer nicht.** Sie zeigt vier Sekunden lang
+    eine Zeile und ist dann wieder leer — wer in der Zeit woanders hinsieht,
+    erfaehrt das Ergebnis nie. Bei einem Lauf ueber hunderte Protokolle sieht
+    man aber genau dorthin nicht: Man hat den Knopf gedrueckt und wartet.
+    Am 31.08.2026 gemeldet: „in der Leiste steht es zu kurz oder gar nicht."
+
+    ⚠ Ein Fenster nur fuer ein ERGEBNIS, nicht fuer jede Meldung. Ein Werkzeug,
+    das staendig Fenster aufreisst, wird weggeklickt, ohne gelesen zu werden.
+    """
+    frage_stellen(eltern, titel, text, ja=t('e_ok'), nur_ok=True)

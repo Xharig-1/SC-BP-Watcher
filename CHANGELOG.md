@@ -6,6 +6,34 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.5.3 - 2026-08-31
+
+Das Ergebnis von „Protokolle erneut einlesen" ging in der Fußzeile unter.
+
+### Geändert
+
+- ⭐ **Das Ergebnis kommt jetzt als Fenster, nicht als Zeile.**
+
+  ```
+  Protokolle erneut einlesen
+  152 Protokolle noch einmal gelesen, 2 Baupläne dazugekommen.
+                                                    [ Alles klar ]
+  ```
+
+  ⚠ **Die Fußzeile war der falsche Ort.** Sie zeigt vier Sekunden lang eine
+  Zeile und ist dann wieder leer — und genau in diesen vier Sekunden sieht
+  niemand dorthin, der gerade einen Lauf über hunderte Protokolle angestoßen
+  hat. Man hat den Knopf gedrückt und wartet. Gemeldet am 31.08.2026: „in der
+  Leiste steht es zu kurz oder gar nicht."
+
+  ⚠ **Die Leiste bekommt es trotzdem.** Den Knopf gibt es auch am Overlay; ist
+  das Hauptfenster zu, gibt es kein Fenster, über dem ein Dialog stehen könnte.
+  Dann bleibt die Zeile der Weg. Verschluckt wird das Ergebnis nie.
+
+  ⚠ **Ein Fenster nur für ein Ergebnis**, nicht für jede Meldung. Ein Werkzeug,
+  das ständig Fenster aufreißt, wird weggeklickt, ohne gelesen zu werden.
+  Bauplan-Funde bleiben deshalb, wo sie sind.
+
 ## v3.5.2 - 2026-08-31
 
 Zwei Knöpfe für dieselbe Sache — einer davon konnte weniger und war obendrein

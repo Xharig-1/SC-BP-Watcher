@@ -58,7 +58,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.5.2'
+__version__ = '3.5.3'
 
 
 def _mitgeliefert(name):
@@ -1238,7 +1238,8 @@ class Watcher(threading.Thread):
             funde, bericht = logquelle.alles_neu(phrasen.muster())
         except Exception as ausnahme:
             fehler.merken('watcher.neu_einlesen', ausnahme)
-            self.q.put(('status', sprache.Satz('neu_gelesen_fehler')))
+            self.q.put(('bescheid', sprache.Satz('s_be_neu'),
+                        sprache.Satz('neu_gelesen_fehler')))
             return
         dazu = []
         for name, _zusatz in funde:
@@ -1247,8 +1248,11 @@ class Watcher(threading.Thread):
         if dazu:
             bestand_datei.speichern(self.bestand)
             self.seen = set(bestand_datei.schluessel(self.bestand))
-        self.q.put(('status', sprache.Satz('neu_gelesen',
-                                           bericht.get('dateien', 0), len(dazu))))
+        # ⚠ Als Bescheid, nicht nur als Zeile: Wer diesen Lauf anstoesst,
+        # wartet auf genau diese Zahl.
+        self.q.put(('bescheid', sprache.Satz('s_be_neu'),
+                    sprache.Satz('neu_gelesen',
+                                 bericht.get('dateien', 0), len(dazu))))
         # ⚠ Hier erst recht: Wer den Knopf drückt, will das Ergebnis sehen und
         # nicht nur eine Zahl in der Leiste.
         self._nachgelesenes_melden(dazu)
@@ -2485,6 +2489,8 @@ class Overlay:
                     # wird farblich abgesetzt — eine Lücke im Bestand soll
                     # auffallen, aber kein Fenster aufreißen.
                     self.add_hinweis(*msg[1:])
+                elif msg[0] == 'bescheid':
+                    self._bescheid_zeigen(msg[1], msg[2])
                 elif msg[0] == 'auftraege':
                     self.auftraege_zeigen(msg[1])
                 elif msg[0] == 'auftrag_weg':
@@ -2496,6 +2502,30 @@ class Overlay:
         except queue.Empty:
             pass
         self.root.after(300, self._poll_queue)
+
+    def _bescheid_zeigen(self, titel, text):
+        """Ein Ergebnis, das nicht uebersehen werden darf.
+
+        ⚠⚠ **Die Fusszeile reicht nicht.** Sie steht vier Sekunden und ist dann
+        leer — und genau in diesen vier Sekunden sieht niemand hin, der gerade
+        einen Lauf ueber hunderte Protokolle angestossen hat. Gemeldet am
+        31.08.2026: „in der Leiste steht es zu kurz oder gar nicht."
+
+        ⚠ **Die Leiste bekommt es trotzdem.** Ist das Hauptfenster zu — der
+        Knopf gibt es auch am Overlay —, gibt es kein Fenster, ueber dem ein
+        Dialog stehen koennte. Dann bleibt die Zeile der Weg, und sie ist
+        besser als nichts. Verschluckt wird das Ergebnis nie.
+        """
+        self._status_setzen(text)
+        fenster = getattr(self, '_fenster', None)
+        if fenster is None:
+            return
+        try:
+            from scbp.hauptfenster import bescheid_geben, nach_vorn
+            nach_vorn(fenster.root)
+            bescheid_geben(fenster.root, str(titel), str(text))
+        except Exception as ausnahme:
+            fehler.merken('oberflaeche.bescheid', ausnahme)
 
     def versionen_zeigen(self):
         """Das Fenster „Was ist neu" öffnen."""
