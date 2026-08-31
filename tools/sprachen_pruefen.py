@@ -43,6 +43,11 @@ PAARE = [
     ('README.en.md', 'README.md', 'abschnitte'),
     ('CHANGELOG.en.md', 'CHANGELOG.md', 'versionen'),
     ('ROADMAP.en.md', 'ROADMAP.md', 'abschnitte'),
+    # ⚠ Seit 31.08.2026 auch die beiden Nebenseiten. Sie lagen bis dahin **nur**
+    # auf Englisch — in einem Projekt, dessen Hauptsprache Deutsch ist, ist
+    # ausgerechnet die Sicherheitsseite die falsche Stelle zum Sparen.
+    ('SECURITY.en.md', 'SECURITY.md', 'abschnitte'),
+    ('CODE_OF_CONDUCT.en.md', 'CODE_OF_CONDUCT.md', 'abschnitte'),
 ]
 
 

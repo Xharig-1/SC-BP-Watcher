@@ -250,7 +250,7 @@ Windows binaries will be signed by SignPath, and Windows will show the
 publisher name instead of "unknown publisher".
 
 Builds are produced exclusively by a public GitHub Actions workflow — see
-[SECURITY.md](SECURITY.md) for how releases are built and what the program
+[SECURITY.en.md](SECURITY.en.md) for how releases are built and what the program
 does and does not send.
 
 ### ⚠️ Windows says "Windows protected your PC"

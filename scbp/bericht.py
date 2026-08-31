@@ -617,12 +617,24 @@ ISSUE_ADRESSE = 'https://github.com/Xharig/SC-BP-Watcher/issues/new'
 
 
 def _vorlage_zur_sprache():
-    """Deutsche Oberfläche → deutsches Formular, sonst das englische."""
+    """Deutsche Oberfläche → deutsches Formular, sonst das englische.
+
+    ⚠ **Der Rückfall ist seit 31.08.2026 das deutsche Formular** — Deutsch ist
+    die Hauptsprache des Projekts. Er greift nur, wenn sich die eingestellte
+    Sprache nicht ermitteln lässt; das ist ein Ausnahmefall, und dann ist die
+    Hauptsprache die bessere Wahl als die zweite.
+
+    ⚠⚠ **Die beiden Dateinamen sind festgenagelt.** Jede ausgelieferte Fassung
+    schickt `template=bug.yml` bzw. `template=fehler.yml` mit — wer sie
+    umbenennt (etwa um die deutsche in der GitHub-Auswahl nach oben zu
+    sortieren), lässt bei allen älteren Fassungen den vorausgefüllten Bericht
+    ins Leere laufen.
+    """
     try:
         from . import sprache
-        return 'fehler.yml' if sprache.aktuelle() == 'de' else 'bug.yml'
+        return 'bug.yml' if sprache.aktuelle() == 'en' else 'fehler.yml'
     except Exception:
-        return 'bug.yml'
+        return 'fehler.yml'
 
 
 def issue_adresse(text, titel='', vorlage=None):

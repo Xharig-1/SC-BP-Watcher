@@ -1,31 +1,34 @@
-# Code of Conduct
+# Verhaltensregeln
 
-## In short
+**Deutsch** · [English](CODE_OF_CONDUCT.en.md)
 
-Be decent to each other. This is a small hobby project for a video game —
-nobody is paid, and everybody here is doing this in their spare time.
+## Kurz gesagt
 
-## What is expected
+Seid anständig zueinander. Das hier ist ein kleines Hobbyprojekt zu einem
+Videospiel — niemand wird dafür bezahlt, und alle machen es in ihrer Freizeit.
 
-- Treat other people with respect, whatever their experience level.
-- Assume good faith. A short question is not an attack, and a bug report
-  is not an insult.
-- Remember that many users of this tool are **not** programmers. Answer
-  accordingly: plain words, no lecturing.
-- Accept that the maintainer may say no. Not every idea fits the project.
+## Was erwartet wird
 
-## What is not acceptable
+- Geh mit anderen respektvoll um, egal wie viel Erfahrung sie haben.
+- Geh vom Guten aus. Eine kurze Frage ist kein Angriff, und eine
+  Fehlermeldung ist keine Beleidigung.
+- Denk daran, dass viele, die dieses Werkzeug benutzen, **nicht**
+  programmieren. Antworte entsprechend: in klaren Worten, ohne Belehrung.
+- Nimm hin, dass ein Vorschlag abgelehnt werden kann. Nicht jede Idee passt
+  ins Projekt.
 
-- Insults, personal attacks, harassment, or discriminatory language of
-  any kind.
-- Publishing other people's private information.
-- Deliberately derailing discussions or repeatedly pushing a rejected
-  request.
+## Was nicht geht
 
-## Reporting
+- Beleidigungen, persönliche Angriffe, Belästigung oder diskriminierende
+  Sprache jeder Art.
+- Private Angaben anderer Leute veröffentlichen.
+- Absichtlich Gespräche entgleisen lassen oder eine abgelehnte Bitte immer
+  wieder vorbringen.
 
-If someone behaves this way, contact the maintainer via a GitHub issue or
-on Discord: https://discord.gg/g2E7e6XxZC
+## Etwas melden
 
-The maintainer may edit, hide, or delete comments, and may block accounts
-that do not follow these rules.
+Wenn sich jemand so verhält, wende dich über ein GitHub-Issue oder auf Discord
+an die Projektleitung: https://discord.gg/g2E7e6XxZC
+
+Kommentare können bearbeitet, ausgeblendet oder gelöscht werden, und Konten,
+die sich nicht an diese Regeln halten, können gesperrt werden.
