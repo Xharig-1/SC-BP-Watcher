@@ -6,6 +6,24 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## Unveröffentlicht
+
+### Behoben
+
+- ⭐⭐ **Strg+Alt+B holte die Bauplan-Liste nicht nach vorn.** Die Kombination
+  war beim System sauber angemeldet — der Tastendruck kam nur nie im Programm
+  an, auf jedem Windows-Rechner, von Anfang an.
+
+  Windows liefert einen so angemeldeten Druck als **Faden-Nachricht** an genau
+  den Programmteil, der ihn angemeldet hat. Das war bisher derselbe, der auch
+  das Fenster zeichnet — und der räumt seine Nachrichten selbst ab, ehe die
+  Abfrage 300 Millisekunden später nachsieht. Der Druck war zu diesem Zeitpunkt
+  längst weg. Nachgemessen: ohne Fenster kamen 3 von 3 an, mit Fenster 0 von 3.
+
+  Jetzt wartet ein eigener Programmteil auf den Druck, dem niemand dazwischen
+  aufräumt. Am Wesentlichen ändert das nichts: Angemeldet wird weiterhin genau
+  **eine** Kombination, mitgelesen wird nichts.
+
 ## v3.8.0 - 2026-08-31
 
 Das Overlay lässt sich endlich dorthin legen, wo man es haben will — und

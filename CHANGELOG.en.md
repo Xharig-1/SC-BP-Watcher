@@ -6,6 +6,24 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Fixed
+
+- ⭐⭐ **Ctrl+Alt+B did not bring the blueprint list to the front.** The shortcut
+  was registered with the system correctly — the key press simply never reached
+  the program, on every Windows machine, right from the start.
+
+  Windows delivers a shortcut registered this way as a **thread message** to
+  exactly the part of the program that registered it. Until now that was the
+  same part that draws the window — and it clears its own messages before the
+  300-millisecond poll takes a look. By then the press was long gone. Measured:
+  without a window 3 out of 3 arrived, with a window 0 out of 3.
+
+  A dedicated part of the program now waits for the press, and nothing clears
+  its messages behind its back. Nothing changes about the essentials: exactly
+  **one** combination is registered, and nothing is listened in on.
+
 ## v3.8.0 - 2026-08-31
 
 The overlay can finally be put where you want it — and collapsed it is actually

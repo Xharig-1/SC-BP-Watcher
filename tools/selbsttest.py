@@ -8059,11 +8059,69 @@ def main():
     pruefe('self.hervorholen()' in _code100.split('def _hotkey_nachsehen')[1]
            .split(chr(10) + '    def ')[0],
            'ein Druck holt das Fenster mit der Bauplan-Liste nach vorn')
-    # ⚠⚠ Kein eigener Faden: Unter Windows landet die Meldung in der Schlange
-    # genau des Fadens, der angemeldet hat — das ist der Tk-Faden.
     pruefe('_hotkey_nachsehen()' in _code100.split('def _poll_queue')[1]
            .split(chr(10) + '    def ')[0],
-           'gefragt wird im Tk-Takt, nicht in einem eigenen Faden')
+           'gefragt wird im Tk-Takt, im selben wie die uebrige Warteschlange')
+
+
+    # ⭐⭐ Und der Fehler, der am 31.08.2026 gemeldet wurde: „bei mir geht
+    # er nicht".
+    #
+    # ⚠⚠ **Angemeldet war alles richtig — der Druck kam nur nie an.**
+    # `RegisterHotKey(None, ...)` liefert eine FADEN-Nachricht. Lief die im
+    # Tk-Faden, raeumte Tk sie mit seiner eigenen Pumpe
+    # (`PeekMessage(NULL, 0, 0, PM_REMOVE)`) weg, bevor der 300-ms-Takt
+    # nachsah — eine Faden-Nachricht hat kein Fenster, also stellt
+    # `DispatchMessage` sie niemandem zu, sie ist einfach fort. Gemessen:
+    # ohne Tk 3 von 3 angekommen, mit laufendem Tk 0 von 3.
+    _hq100 = open(os.path.join(WURZEL, 'scbp', 'hotkey.py'),
+                  encoding='utf-8').read()
+    _nachsehen100 = (_hq100.split('class _Windows')[1].split('def nachsehen')[1]
+                     .split(chr(10) + chr(10) + chr(10))[0])
+    pruefe('Message' not in _nachsehen100,
+           'nachgesehen wird an einer Fahne, NICHT in der Nachrichtenschlange '
+           'des Tk-Fadens — dort raeumt Tk vorher weg')
+    pruefe('threading.Thread' in _hq100 and 'GetMessageW' in _hq100,
+           'gewartet wird in einem eigenen Faden, auf seiner eigenen Schlange')
+
+    # ⚠ Die Gegenprobe geht nur unter Windows — unter Linux gibt es weder
+    # `RegisterHotKey` noch die Schlange, um die es hier geht. Der Weg dorthin
+    # (X11) ist ein anderer und war nie betroffen.
+    if sys.platform.startswith('win'):
+        import ctypes as _ct100
+        import tkinter as _tkk100
+        _w100b = _hk100.Wache()
+        # ⚠ Bewusst NICHT die Standardkombination: Laeuft der Watcher gerade,
+        # ist die belegt, und die Pruefung wuerde sich selbst ueberspringen.
+        _ok100b, _warum100b = _w100b.anmelden('Strg+Alt+Umschalt+F9')
+        if _ok100b:
+            _wz100 = _tkk100.Tk()
+            _wz100.withdraw()           # kein Fenster, kein Fokusklau
+            _an100 = [0]
+
+            def _senden100():
+                _ct100.windll.user32.PostThreadMessageW(
+                    _ct100.c_uint(_w100b.helfer._tid),
+                    _ct100.c_uint(_hk100.WM_HOTKEY),
+                    _ct100.c_size_t(_hk100.KENNUNG), _ct100.c_ssize_t(0))
+
+            def _takt100():
+                if _w100b.nachsehen():
+                    _an100[0] += 1
+                _wz100.after(100, _takt100)
+
+            _wz100.after(200, _senden100)
+            _wz100.after(300, _takt100)
+            _wz100.after(1800, _wz100.destroy)
+            _wz100.mainloop()
+            _w100b.abmelden()
+            pruefe(_an100[0] == 1,
+                   'ein Druck kommt an, WAEHREND Tk laeuft (%d von 1) — genau '
+                   'das ging bis v3.8.0 verloren' % _an100[0])
+        else:
+            pruefe(_warum100b == 'belegt',
+                   'die Gegenprobe entfaellt, weil die Testkombination belegt '
+                   'ist — und das wird gesagt, statt still zu schweigen')
 
 
     # 101. Das Overlay laesst sich in eine Ecke legen — und klappt schmal ein

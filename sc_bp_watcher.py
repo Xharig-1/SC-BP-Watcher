@@ -3352,9 +3352,11 @@ class Overlay:
     def _hotkey_nachsehen(self):
         """Im selben Takt wie die Warteschlange nachfragen.
 
-        ⚠⚠ **Kein eigener Faden.** Unter Windows landet die Meldung in der
-        Nachrichtenschlange genau des Fadens, der angemeldet hat — das ist der
-        Tk-Faden. Ein Hintergrundfaden bekaeme nie etwas zu sehen.
+        ⚠⚠ **Hier wird nur die Fahne abgeholt.** Gewartet wird woanders:
+        Unter Windows landet der Druck in der Schlange des Fadens, der
+        angemeldet hat — war das der Tk-Faden, raeumte Tk ihn selbst weg,
+        bevor dieser Takt nachsah (v3.8.0 und frueher, gemessen 0 von 3).
+        Seither haelt ein eigener Faden die Stellung, siehe `scbp/hotkey.py`.
         """
         try:
             if self.hotkey.nachsehen():

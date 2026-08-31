@@ -57,6 +57,7 @@ nur der erste Weg in Frage kam.
 """
 import os
 import sys
+import threading
 
 # Was sich kombinieren laesst. ⚠ Bewusst klein gehalten: Modifikatoren plus
 # EINE gewoehnliche Taste. Wer eine Kombination aus drei Buchstaben zulaesst,
@@ -125,12 +126,27 @@ def moeglich():
 # Windows
 # ---------------------------------------------------------------------------
 #
-# ⚠ `RegisterHotKey(None, ...)` haengt die Kombination an den **Faden**, nicht
-# an ein Fenster. Die Meldung landet damit in der Nachrichtenschlange genau des
-# Fadens, der angemeldet hat — deshalb muss beides im Tk-Faden passieren:
-# anmelden und nachsehen. Ein Hintergrundfaden bekaeme nie etwas zu sehen.
+# ⚠⚠ **Ein EIGENER Faden mit eigener Nachrichtenschlange — nicht der Tk-Faden.**
+# `RegisterHotKey(None, ...)` haengt die Kombination an den Faden, der anmeldet;
+# der Druck kommt dann als **Faden-Nachricht** in dessen Schlange an. Genau das
+# war bis v3.8.0 der Tk-Faden — und dort kam nie etwas an: Tk pumpt seine
+# Schlange selbst mit `PeekMessage(NULL, 0, 0, PM_REMOVE)` und nimmt dabei
+# ALLES heraus, auch Faden-Nachrichten. Eine Faden-Nachricht hat kein Fenster,
+# also kann `DispatchMessage` sie niemandem zustellen — sie ist danach weg.
+# Wer wie wir 300 ms spaeter nachsieht, findet eine leere Schlange.
+#
+# ⚠ Gemessen am 31.08.2026, weil „geht bei mir nicht" allein keine Ursache ist:
+# dreimal `WM_HOTKEY` an den eigenen Faden geschickt, ohne Tk **3 von 3**
+# angekommen, mit laufendem Tk **0 von 3**. Das ist der ganze Fehler.
+#
+# Deshalb meldet jetzt ein eigener Faden an und wartet dort mit `GetMessage`
+# auf **seiner** Schlange, die ihm niemand leerraeumt. Er setzt nur eine Fahne;
+# `nachsehen()` nimmt sie im Tk-Takt herunter. Am Wesentlichen aendert das
+# nichts: Es kommt weiterhin ausschliesslich die eine angemeldete Kombination
+# an, mitgelesen wird nichts.
 WM_HOTKEY = 0x0312
-PM_REMOVE = 0x0001
+WM_QUIT = 0x0012
+PM_NOREMOVE = 0x0000
 MOD_ALT, MOD_CONTROL, MOD_SHIFT = 0x0001, 0x0002, 0x0004
 MOD_NOREPEAT = 0x4000            # nicht dauerfeuern, solange man haelt
 KENNUNG = 0xB9CB                 # irgendeine Zahl, nur fuer uns
@@ -148,9 +164,13 @@ def _vk(taste):
 class _Windows:
     def __init__(self):
         self.angemeldet = False
+        self._faden = None
+        self._tid = 0
+        self._treffer = threading.Event()
+        self._bereit = threading.Event()
+        self._ergebnis = (False, 'faden')
 
     def anmelden(self, mods, taste):
-        import ctypes
         flaggen = MOD_NOREPEAT
         flaggen |= MOD_CONTROL if 'strg' in mods else 0
         flaggen |= MOD_ALT if 'alt' in mods else 0
@@ -159,49 +179,102 @@ class _Windows:
         if code is None:
             return False, 'taste'
         self.abmelden()
-        if not ctypes.windll.user32.RegisterHotKey(None, KENNUNG, flaggen, code):
-            # ⚠⚠ **Belegt heisst belegt.** Hat ein anderes Programm die
-            # Kombination, gibt Windows sie nicht her — daran laesst sich
-            # nichts drehen. Der Nutzer muss es erfahren, sonst sucht er den
-            # Fehler bei sich.
-            return False, 'belegt'
-        self.angemeldet = True
-        return True, ''
+        self._treffer.clear()
+        self._bereit.clear()
+        self._ergebnis = (False, 'faden')
+        self._faden = threading.Thread(target=self._schleife,
+                                       args=(flaggen, code),
+                                       name='sc-bp-hotkey', daemon=True)
+        self._faden.start()
+        # ⚠ Hier wird gewartet, und zwar mit Absicht: „belegt" ist eine
+        # Auskunft, die der Nutzer sofort braucht, sonst steht er vor einem
+        # Feld, das nichts sagt. `RegisterHotKey` antwortet in Millisekunden —
+        # zwei Sekunden sind nur die Reissleine, damit ein haengender Faden
+        # nicht den Start blockiert.
+        self._bereit.wait(2.0)
+        ok, warum = self._ergebnis
+        self.angemeldet = ok
+        return ok, warum
+
+    def _schleife(self, flaggen, code):
+        """Der eigene Faden: anmelden, warten, aufraeumen.
+
+        ⚠ Anmelden und Warten muessen im SELBEN Faden passieren — die
+        Kombination haengt an ihm, nicht am Fenster.
+        """
+        import ctypes
+        from ctypes import wintypes
+
+        class MSG(ctypes.Structure):
+            _fields_ = [('hwnd', wintypes.HWND), ('message', wintypes.UINT),
+                        ('wParam', wintypes.WPARAM), ('lParam', wintypes.LPARAM),
+                        ('time', wintypes.DWORD), ('pt', wintypes.POINT)]
+
+        u32 = ctypes.windll.user32
+        msg = MSG()
+        try:
+            self._tid = ctypes.windll.kernel32.GetCurrentThreadId()
+            # ⚠ Die Schlange entsteht erst, wenn sie einmal angefasst wurde.
+            # Ohne das geht ein `PostThreadMessage` von aussen ins Leere.
+            u32.PeekMessageW(ctypes.byref(msg), None, 0, 0, PM_NOREMOVE)
+            if not u32.RegisterHotKey(None, KENNUNG, flaggen, code):
+                # ⚠⚠ **Belegt heisst belegt.** Hat ein anderes Programm die
+                # Kombination, gibt Windows sie nicht her — daran laesst sich
+                # nichts drehen. Der Nutzer muss es erfahren, sonst sucht er
+                # den Fehler bei sich.
+                self._ergebnis = (False, 'belegt')
+                return
+            self._ergebnis = (True, '')
+        except Exception:
+            self._ergebnis = (False, 'system')
+            return
+        finally:
+            self._bereit.set()
+
+        try:
+            while True:
+                stand = u32.GetMessageW(ctypes.byref(msg), None, 0, 0)
+                if stand == 0 or stand == -1:      # 0 = WM_QUIT, -1 = Fehler
+                    break
+                if msg.message == WM_HOTKEY and msg.wParam == KENNUNG:
+                    self._treffer.set()
+        except Exception:
+            pass
+        finally:
+            try:
+                u32.UnregisterHotKey(None, KENNUNG)
+            except Exception:
+                pass
 
     def abmelden(self):
-        if not self.angemeldet:
+        faden, tid = self._faden, self._tid
+        self._faden, self._tid = None, 0
+        self.angemeldet = False
+        if faden is None or not faden.is_alive():
             return
         try:
             import ctypes
-            ctypes.windll.user32.UnregisterHotKey(None, KENNUNG)
+            u32 = ctypes.windll.user32
+            # `WM_QUIT` beendet das `GetMessage` des Fadens; er meldet die
+            # Kombination selbst wieder ab, dort wo er sie angemeldet hat.
+            u32.PostThreadMessageW(ctypes.c_uint(tid), ctypes.c_uint(WM_QUIT),
+                                   ctypes.c_size_t(0), ctypes.c_ssize_t(0))
         except Exception:
             pass
-        self.angemeldet = False
+        faden.join(1.0)
 
     def nachsehen(self):
-        """Wurde gedrueckt? Nimmt die Meldung aus der Schlange."""
+        """Wurde gedrueckt? Nimmt die Fahne herunter, die der Faden gesetzt hat.
+
+        ⚠ Bewusst eine Fahne und keine Zaehlung: Zweimal schnell hintereinander
+        gedrueckt soll das Fenster einmal nach vorn holen, nicht zweimal.
+        """
         if not self.angemeldet:
             return False
-        try:
-            import ctypes
-            from ctypes import wintypes
-
-            class MSG(ctypes.Structure):
-                _fields_ = [('hwnd', wintypes.HWND), ('message', wintypes.UINT),
-                            ('wParam', wintypes.WPARAM), ('lParam', wintypes.LPARAM),
-                            ('time', wintypes.DWORD), ('pt', wintypes.POINT)]
-
-            msg = MSG()
-            getroffen = False
-            # ⚠ Alle abholen, die aufgelaufen sind — sonst bleibt eine liegen
-            # und feuert beim naechsten Nachsehen ein zweites Mal.
-            while ctypes.windll.user32.PeekMessageW(
-                    ctypes.byref(msg), None, WM_HOTKEY, WM_HOTKEY, PM_REMOVE):
-                if msg.wParam == KENNUNG:
-                    getroffen = True
-            return getroffen
-        except Exception:
-            return False
+        if self._treffer.is_set():
+            self._treffer.clear()
+            return True
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -328,10 +401,12 @@ class Wache:
     alles andere sieht das Programm nie. Das ist der Unterschied zu einem
     Tastatur-Haken — und der Grund, warum hier nur dieser Weg in Frage kam.
 
-    ⚠ **Gefragt wird im Tk-Faden**, nicht in einem eigenen. Unter Windows
-    landet die Meldung in der Schlange genau des Fadens, der angemeldet hat;
-    ein Hintergrundfaden bekäme nie etwas zu sehen. Also hängt `nachsehen()`
-    am selben Takt wie die übrige Warteschlange.
+    ⚠⚠ **Gewartet wird NEBEN Tk, gefragt wird im Tk-Takt.** Unter Windows
+    landet der Druck in der Schlange genau des Fadens, der angemeldet hat —
+    und wenn das der Tk-Faden ist, räumt Tk ihn selbst weg, bevor jemand
+    nachsieht (gemessen am 31.08.2026: 0 von 3 kamen an). Deshalb hält ein
+    eigener Faden die Stellung und setzt eine Fahne; `nachsehen()` nimmt sie
+    im selben Takt wie die übrige Warteschlange herunter.
     """
 
     def __init__(self):
