@@ -8087,6 +8087,13 @@ def main():
     # ⚠ Die Gegenprobe geht nur unter Windows — unter Linux gibt es weder
     # `RegisterHotKey` noch die Schlange, um die es hier geht. Der Weg dorthin
     # (X11) ist ein anderer und war nie betroffen.
+    #
+    # ⚠⚠ **Kein `mainloop()`, sondern `update()` im Takt.** Die erste Fassung
+    # dieser Pruefung rief `mainloop()` — und blieb auf dem Windows-Laeufer von
+    # GitHub haengen, wo kein Mensch am Bildschirm sitzt (Bau-Lauf v3.8.1, nach
+    # elf Minuten abgebrochen). `update()` pumpt dieselbe Nachrichtenschlange,
+    # um die es hier geht, und kommt garantiert zurueck. Der ganze Selbsttest
+    # macht es ueberall sonst genauso — diese Pruefung war die Ausnahme.
     if sys.platform.startswith('win'):
         import ctypes as _ct100
         import tkinter as _tkk100
@@ -8094,34 +8101,36 @@ def main():
         # ⚠ Bewusst NICHT die Standardkombination: Laeuft der Watcher gerade,
         # ist die belegt, und die Pruefung wuerde sich selbst ueberspringen.
         _ok100b, _warum100b = _w100b.anmelden('Strg+Alt+Umschalt+F9')
-        if _ok100b:
-            _wz100 = _tkk100.Tk()
-            _wz100.withdraw()           # kein Fenster, kein Fokusklau
-            _an100 = [0]
-
-            def _senden100():
+        try:
+            if _ok100b:
+                _wz100 = _tkk100.Tk()
+                _wz100.withdraw()       # kein Fenster, kein Fokusklau
                 _ct100.windll.user32.PostThreadMessageW(
                     _ct100.c_uint(_w100b.helfer._tid),
                     _ct100.c_uint(_hk100.WM_HOTKEY),
                     _ct100.c_size_t(_hk100.KENNUNG), _ct100.c_ssize_t(0))
-
-            def _takt100():
-                if _w100b.nachsehen():
-                    _an100[0] += 1
-                _wz100.after(100, _takt100)
-
-            _wz100.after(200, _senden100)
-            _wz100.after(300, _takt100)
-            _wz100.after(1800, _wz100.destroy)
-            _wz100.mainloop()
+                _an100 = 0
+                for _ in range(20):     # hoechstens 2 Sekunden, dann ist es weg
+                    _wz100.update()     # <- genau hier raeumte Tk frueher ab
+                    if _w100b.nachsehen():
+                        _an100 += 1
+                        break
+                    time.sleep(0.1)
+                _wz100.destroy()
+                pruefe(_an100 == 1,
+                       'ein Druck kommt an, WAEHREND Tk seine Schlange pumpt '
+                       '(%d von 1) — genau das ging bis v3.8.0 verloren'
+                       % _an100)
+            else:
+                pruefe(_warum100b == 'belegt',
+                       'die Gegenprobe entfaellt, weil die Testkombination '
+                       'belegt ist — und das wird gesagt, statt still zu '
+                       'schweigen')
+        finally:
+            # ⚠ Immer abmelden: Bleibt der Faden stehen, haengt am Ende der
+            # Prozess statt der Pruefung.
             _w100b.abmelden()
-            pruefe(_an100[0] == 1,
-                   'ein Druck kommt an, WAEHREND Tk laeuft (%d von 1) — genau '
-                   'das ging bis v3.8.0 verloren' % _an100[0])
-        else:
-            pruefe(_warum100b == 'belegt',
-                   'die Gegenprobe entfaellt, weil die Testkombination belegt '
-                   'ist — und das wird gesagt, statt still zu schweigen')
+
 
 
     # 101. Das Overlay laesst sich in eine Ecke legen — und klappt schmal ein
