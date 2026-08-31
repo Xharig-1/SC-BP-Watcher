@@ -6,7 +6,12 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## Unreleased
+## v3.9.1 - 2026-09-01
+
+Three things the diagnostic report itself brought to light. Two of them were in
+the report: it showed figures that could not be matched up, or claimed a wrong
+origin — sending the very troubleshooting it exists for down the wrong path. The
+third sat deeper and could do real damage.
 
 ### Fixed
 

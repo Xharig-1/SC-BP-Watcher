@@ -6,7 +6,13 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## Unveröffentlicht
+## v3.9.1 - 2026-09-01
+
+Drei Dinge, die der Fehlerbericht selbst ans Licht gebracht hat. Zwei davon
+betrafen den Bericht: Er zeigte Angaben, die sich nicht zuordnen ließen oder
+eine falsche Herkunft behaupteten — und schickte damit ausgerechnet die
+Fehlersuche in die Irre, für die es ihn gibt. Das dritte lag tiefer und konnte
+echten Schaden anrichten.
 
 ### Behoben
 
