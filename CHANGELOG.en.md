@@ -18,6 +18,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   bug had hidden there for three weeks. The short form is now used only while
   it is unambiguous — otherwise the full version is shown.
 
+- **The report claimed a wrong origin for the search phrases.** A single source
+  was printed behind the whole list — "from the game's global.ini" — even
+  though the list is mixed: phrases confirmed from the language files, plus the
+  built-in fallback table. Looking for one of the others in `global.ini` is a
+  dead end; "Bauplan überchoo", for instance, is Swiss German from the table
+  and cannot appear there at all. Each group is now labelled separately.
+
 ## v3.9.0 - 2026-08-31
 
 The contract bar now shows only what is actually running — logging out drops

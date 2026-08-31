@@ -5019,6 +5019,30 @@ def main():
            'ohne umgestellte Formulierung ist der Ausdruck zeichengleich '
            'mit dem alten')
 
+    # a2) ⚠ Der Bericht darf keine falsche Herkunft behaupten. Er zeigte eine
+    #     einzige Quelle hinter der GANZEN Liste — „aus der global.ini des
+    #     Spiels" — obwohl die Liste gemischt ist: belegte Formulierungen und
+    #     die eingebaute Rueckfalltabelle. Am 01.09.2026 kostete das drei
+    #     Suchlaeufe in einer 12-MB-Datei nach „Bauplan ueberchoo", das dort
+    #     gar nicht stehen kann (Schweizerdeutsch, aus der Tabelle).
+    from scbp import bericht as _ber65, sprache as _sp65
+    _zeile65 = _ber65._spielsprache() or ''
+    _eigene65, _ini65 = _ph65.gemessene()
+    _rueck65 = [_p for _p in _liste65 if _p not in _eigene65 + _ini65]
+    if _rueck65:
+        pruefe(_sp65.t('b_woher_tabelle') in _zeile65,
+               'Rueckfall-Formulierungen sind als Tabelle gekennzeichnet')
+        # Und sie stehen HINTER der Kennzeichnung der belegten Quelle, nicht
+        # davor — sonst liest sich die Tabelle wieder wie die global.ini.
+        if _ini65:
+            pruefe(_zeile65.index(_rueck65[-1])
+                   > _zeile65.index(_sp65.t('b_woher_ini')),
+                   'die Tabellen-Formulierungen stehen nicht unter der '
+                   'global.ini-Angabe')
+    if _ini65:
+        pruefe(_sp65.t('b_woher_ini') in _zeile65,
+               'die belegte Quelle wird weiterhin genannt')
+
     # b) Zerlegen in Vor- und Nachtext.
     for _phrase65, _soll65 in (
             ('Bauplan erhalten: %s', ('Bauplan erhalten', '')),

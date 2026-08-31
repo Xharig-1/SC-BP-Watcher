@@ -209,15 +209,31 @@ def _unbekannte_bauplaene():
 
 
 def _spielsprache():
-    """Wonach im Log gesucht wird — und woher die Formulierung stammt."""
+    """Wonach im Log gesucht wird — und woher **jede** Formulierung stammt.
+
+    ⚠ Hier stand eine einzige Herkunft hinter der **ganzen** Liste. Die Liste
+    ist aber gemischt: belegte Formulierungen (eigene Angabe, `global.ini`) und
+    die eingebaute Rückfalltabelle. Der Bericht las sich dadurch so, als stünden
+    alle sieben in der `global.ini` — dort steht genau eine. Am 01.09.2026
+    kostete das drei Suchläufe in einer 12-MB-Datei, bis klar war, dass „Bauplan
+    überchoo" (Schweizerdeutsch) aus der Tabelle kommt und dort gar nicht stehen
+    kann. Ein Bericht, der eine falsche Herkunft behauptet, schickt die
+    Fehlersuche in die Irre — genau das, was er verhindern soll."""
     from . import phrasen as phrasen_modul
-    gefunden, herkunft = phrasen_modul.sammeln()
+    gefunden, _herkunft = phrasen_modul.sammeln()
     if not gefunden:
         return None
-    woher = {'ini': t('b_woher_ini'),
-             'eigen': t('b_woher_eigen'),
-             'tabelle': t('b_woher_tabelle')}.get(herkunft, herkunft)
-    return '%s (%s)' % (', '.join(gefunden), woher)
+    eigene, aus_ini = phrasen_modul.gemessene()
+    belegt = eigene + aus_ini
+    rueckfall = [p for p in gefunden if p not in belegt]
+    teile = []
+    if eigene:
+        teile.append('%s (%s)' % (', '.join(eigene), t('b_woher_eigen')))
+    if aus_ini:
+        teile.append('%s (%s)' % (', '.join(aus_ini), t('b_woher_ini')))
+    if rueckfall:
+        teile.append('%s (%s)' % (', '.join(rueckfall), t('b_woher_tabelle')))
+    return ' · '.join(teile)
 
 
 def _patchhistorie():

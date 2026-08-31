@@ -247,6 +247,28 @@ def sammeln():
     return phrasen, herkunft
 
 
+def gemessene():
+    """Nur die belegten Formulierungen, getrennt: (eigene, aus_ini).
+
+    ⚠ Für den Bericht. `sammeln()` liefert eine **gemischte** Liste — belegte
+    Formulierungen und die eingebaute Rückfalltabelle — dazu **eine** Herkunft
+    für alles. Im Bericht stand deshalb hinter der ganzen Liste „aus der
+    global.ini des Spiels", obwohl dort genau eine davon herkam. Wer die
+    übrigen dort sucht, sucht umsonst: am 01.09.2026 kostete das drei
+    Suchläufe, bis klar war, dass „Bauplan überchoo" aus der Tabelle stammt
+    (Schweizerdeutsch) und gar nicht in der `global.ini` stehen kann."""
+    eigene = []
+    for p in _eigene():
+        if p not in eigene:
+            eigene.append(p)
+    aus_ini = []
+    for datei in _ini_dateien():
+        p = _aus_ini(datei)
+        if p and p not in eigene and p not in aus_ini:
+            aus_ini.append(p)
+    return eigene, aus_ini
+
+
 def zerlegen(phrase):
     """Eine Formulierung in Vor- und Nachtext um den Bauplan-Namen herum.
 

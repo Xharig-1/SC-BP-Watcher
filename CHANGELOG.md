@@ -19,6 +19,14 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   hatte. Die Kurzform steht jetzt nur noch da, solange sie eindeutig ist —
   sonst die volle Version.
 
+- **Der Bericht behauptete eine falsche Herkunft der Suchbegriffe.** Hinter der
+  ganzen Liste stand eine einzige Quelle — „aus der global.ini des Spiels" —,
+  obwohl die Liste gemischt ist: belegte Formulierungen aus den
+  Sprachdateien und die eingebaute Rückfalltabelle. Wer eine der übrigen in der
+  `global.ini` sucht, sucht umsonst; „Bauplan überchoo" etwa ist
+  Schweizerdeutsch aus der Tabelle und kann dort gar nicht stehen. Jede Gruppe
+  wird jetzt einzeln ausgewiesen.
+
 ## v3.9.0 - 2026-08-31
 
 Die Auftragsleiste zeigt nur noch, was wirklich läuft — beim Ausloggen verliert
