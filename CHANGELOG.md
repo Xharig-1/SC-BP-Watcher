@@ -6,6 +6,29 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.4.5 - 2026-08-31
+
+Ein angenommener Auftrag stand zweimal im Overlay — einmal in der Auftragsleiste
+und wortgleich noch einmal darunter. Jetzt steht er einmal da.
+
+### Behoben
+
+- ⚠ **Derselbe Auftrag wurde doppelt angezeigt.** Die Auftragsleiste („Laufende
+  Aufträge") und die Hinweiszeile darunter zeigten denselben Satz. Beide
+  Meldungen für sich waren richtig — erst zusammen ergaben sie die Dopplung,
+  und im Quelltext war das nicht zu sehen.
+
+  Steht ein Auftrag schon in der Leiste, entfällt die Hinweiszeile. Ohne Leiste
+  — oder nachdem der Auftrag dort weggeklickt wurde — erscheint sie weiterhin.
+
+### Intern
+
+- **Die neue Prüfung schaut auf die Anzeige, nicht auf den Quelltext.** Der
+  Fehler war auf einem Bild zu sehen und im Code nicht; eine Prüfung, die nur
+  Zeilen liest, hätte ihn nie gefunden. Selbsttest 91 baut das Overlay auf,
+  setzt einen Auftrag in die Leiste, schickt denselben Satz als Hinweis und
+  zählt, wie oft er sichtbar dasteht.
+
 ## v3.4.4 - 2026-08-31
 
 Ein zurückgezogener Auftrag verschwindet endlich — bisher stand er nach jedem

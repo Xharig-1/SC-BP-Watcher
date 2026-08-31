@@ -6,6 +6,29 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.4.5 - 2026-08-31
+
+An accepted contract appeared twice in the overlay — once in the contract bar
+and word for word again below it. It now appears once.
+
+### Fixed
+
+- ⚠ **The same contract was shown twice.** The contract bar ("Running
+  contracts") and the note line below it carried the same sentence. Both
+  messages were correct on their own — only together did they duplicate, and in
+  the source that was invisible.
+
+  If a contract is already in the bar, the note line is dropped. Without the bar
+  — or after the contract has been dismissed there — it still appears.
+
+### Internal
+
+- **The new check looks at the display, not at the source.** The bug was
+  visible in a screenshot and not in the code; a check that only reads lines
+  would never have found it. Self-test 91 builds the overlay, puts a contract
+  into the bar, sends the same sentence as a note and counts how often it is
+  visible.
+
 ## v3.4.4 - 2026-08-31
 
 A withdrawn contract finally goes away — until now it came back as running

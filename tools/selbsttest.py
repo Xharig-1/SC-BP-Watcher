@@ -7248,6 +7248,81 @@ def main():
            and 'self._zeichnen(nach_oben=True)' in _fein90,
            'und gesetzte Filter werden weiterhin zurueckgestellt und gezeichnet')
 
+    # 91. Ein Auftrag steht nur EINMAL im Overlay
+    #
+    # ⚠⚠ **Am 31.08.2026 mit Bildschirmfoto gemeldet: „wieso sehe ich ne quest
+    # jetzt 2 mal".** Derselbe Satz stand in der Auftragsleiste und direkt
+    # darunter noch einmal als Hinweiszeile. Der Watcher schickte beides: die
+    # Leiste (`auftraege`) und den Hinweis (`hinweis`) — mit demselben Text.
+    #
+    # ⚠ Geprueft wird die **Anzeige**, nicht der Quelltext. Der Fehler war auf
+    # einem Bild zu sehen und im Code nicht: Beide Aufrufe fuer sich sind
+    # richtig, erst zusammen ergeben sie die Dopplung.
+    print()
+    print('91. Ein Auftrag steht nur EINMAL im Overlay')
+    import sc_bp_watcher as _w91
+
+    def _texte91(fenster, teil):
+        """Wie oft steht dieser Text sichtbar im Overlay?"""
+        treffer = []
+
+        def suchen(widget):
+            try:
+                t = widget.cget('text')
+                if isinstance(t, str) and teil in t:
+                    treffer.append(t)
+            except Exception:
+                pass
+            for kind in widget.winfo_children():
+                suchen(kind)
+
+        suchen(fenster.root)
+        return treffer
+
+    _wz91 = _wurzel()
+    _ov91 = _w91.Overlay(_wz91)
+    _satz91 = 'Auftrag angenommen: Retake Platforms  ->  3 Bauplaene'
+    _schluessel91 = 'retake platforms'
+
+    _ov91.auftraege_zeigen([(_schluessel91, _satz91)])
+    for _ in range(4):
+        _wz91.update()
+        _wz91.update_idletasks()
+    _ov91.add_hinweis(_satz91, _schluessel91)
+    for _ in range(4):
+        _wz91.update()
+        _wz91.update_idletasks()
+    _gefunden91 = len(_texte91(_ov91, 'Retake Platforms'))
+    pruefe(_gefunden91 == 1,
+           'der Auftrag steht genau einmal im Overlay (gefunden: %d)' % _gefunden91)
+
+    # ⚠ Ohne Leiste muss der Hinweis weiterhin kommen — sonst faellt die
+    # Meldung ganz weg, sobald jemand den Auftrag wegklickt.
+    _ov91.auftraege_zeigen([])
+    for _ in range(4):
+        _wz91.update()
+        _wz91.update_idletasks()
+    _ov91.add_hinweis('Auftrag angenommen: Kill the king  ->  1 Bauplan', 'kill the king')
+    for _ in range(4):
+        _wz91.update()
+        _wz91.update_idletasks()
+    pruefe(len(_texte91(_ov91, 'Kill the king')) == 1,
+           'ohne Leisteneintrag erscheint der Hinweis weiterhin')
+
+    # Und ein gewoehnlicher Hinweis ohne Auftrag bleibt unberuehrt.
+    _ov91.add_hinweis('Keine Log-Sicherungen gefunden')
+    for _ in range(4):
+        _wz91.update()
+        _wz91.update_idletasks()
+    pruefe(len(_texte91(_ov91, 'Keine Log-Sicherungen')) == 1,
+           'gewoehnliche Hinweise sind nicht betroffen')
+
+    try:
+        _ov91.root.destroy()
+        _wz91.destroy()
+    except Exception:
+        pass
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

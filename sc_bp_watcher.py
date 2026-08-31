@@ -58,7 +58,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.4.4'
+__version__ = '3.4.5'
 
 
 def _mitgeliefert(name):
@@ -1097,6 +1097,10 @@ class Watcher(threading.Thread):
                 continue
             self._offene_auftraege[rein] = zeile
             veraendert = True
+            # ⚠⚠ **Erst die Leiste, dann der Hinweis.** Andersherum weiss die
+            # Anzeige beim Hinweis noch nichts von dem Auftrag und setzt
+            # denselben Satz ein zweites Mal darunter (gemeldet 31.08.2026).
+            self.q.put(('auftraege', list(self._offene_auftraege.items())))
             # ⚠ Mit dem Auftragsschluessel. Die Zeile in der Liste gehoert zu
             # genau diesem Auftrag — endet er, muss sie mitverschwinden, und
             # von Hand wegnehmen koennen muss man sie auch.
@@ -2215,6 +2219,11 @@ class Overlay:
             hinweis.anhaengen(weg, lambda: sprache.t('ov_auftrag_weg'))
             self._auftrag_zeilen.append(lbl)
 
+        # ⚠ Welche Auftraege gerade in der Leiste stehen — `add_hinweis`
+        # fragt danach, um denselben Text nicht ein zweites Mal darunter zu
+        # setzen.
+        self._auftrag_schluessel = {r for r, _z in (paare or [])}
+
         # ⚠ Vor der Liste einordnen, sonst rutscht die Leiste ans Fensterende.
         self.auftragsleiste.pack(fill='x', padx=8, pady=(0, 2),
                                  before=self._listen_traeger)
@@ -2257,6 +2266,14 @@ class Overlay:
         Auftrag gehört. Dann bekommt sie dasselbe rote Zeichen wie die
         Auftragsleiste und verschwindet, sobald der Auftrag endet.
         """
+        # ⚠⚠ **Nicht zweimal dasselbe.** Steht der Auftrag schon in der
+        # Auftragsleiste, sagt diese Zeile wortgleich dasselbe noch einmal —
+        # direkt darunter. Am 31.08.2026 mit Bildschirmfoto gemeldet: „wieso
+        # sehe ich ne quest jetzt 2 mal". Die Leiste zeigt den Zustand; sie
+        # gewinnt. Ohne Leiste — oder nachdem der Auftrag dort weggeklickt
+        # wurde — erscheint der Hinweis weiterhin.
+        if auftrag and auftrag in getattr(self, '_auftrag_schluessel', ()):
+            return
         if self.count == 0 and hasattr(self, '_ph') and self._ph.winfo_exists():
             self._ph.destroy()
         self.count += 1
