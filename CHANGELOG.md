@@ -6,7 +6,11 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.4.3 - unveröffentlicht
+## v3.4.3 - 2026-08-31
+
+Das Handelslager zeigt seine Tabelle wieder. In v3.4.2 baute die Seite nur das
+Formular auf — die Liste deiner Ware, die Gesamtsumme und das Löschen einzelner
+Posten fehlten. Wer v3.4.2 hat, holt sich am besten gleich diese Fassung.
 
 ### Behoben
 

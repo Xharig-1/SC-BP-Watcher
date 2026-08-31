@@ -6,7 +6,11 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.4.3 - unreleased
+## v3.4.3 - 2026-08-31
+
+The cargo hold shows its table again. In v3.4.2 the page only built the form —
+the list of your goods, the total and the per-entry delete were missing. If you
+are on v3.4.2, grab this build.
 
 ### Fixed
 
