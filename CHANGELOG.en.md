@@ -6,7 +6,12 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## Unreleased
+## v3.8.1 - 2026-08-31
+
+Ctrl+Alt+B really does bring the blueprint list to the front now. The shortcut
+has been there since v3.7.0 — on Windows it never once worked, on any machine.
+If you want to know mid-game whether you already have a blueprint, that is two
+keys now, instead of tabbing out and hunting for the window blind.
 
 ### Fixed
 

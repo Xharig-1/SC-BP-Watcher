@@ -6,7 +6,13 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## Unveröffentlicht
+## v3.8.1 - 2026-08-31
+
+Strg+Alt+B holt die Bauplan-Liste jetzt wirklich nach vorn. Die
+Tastenkombination gibt es seit v3.7.0 — gewirkt hat sie unter Windows nie, auf
+keinem Rechner. Wer mitten im Vollbild wissen will, ob er einen Bauplan schon
+hat, drückt jetzt zwei Tasten, statt herauszutabben und das Fenster blind zu
+suchen.
 
 ### Behoben
 
