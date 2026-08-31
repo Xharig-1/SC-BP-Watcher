@@ -6,7 +6,19 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.4.1 - unveröffentlicht
+## v3.4.1 - 2026-08-31
+
+Dein Laderaum lässt sich jetzt sichern — und nach einem Patch, der alle Ware
+zurücksetzt, mit einem Klick leeren statt Posten für Posten. Dazu spricht das
+Projekt ab sofort zuerst Deutsch: Anleitung, Änderungsprotokoll und diese
+Ankündigung stehen oben auf Deutsch, Englisch klappt darunter auf.
+
+> [!important]
+> **Die Doku-Dateien heißen anders.** `README.md`, `CHANGELOG.md` und
+> `ROADMAP.md` sind jetzt die **deutschen** Fassungen; die englischen liegen
+> daneben als `README.en.md`, `CHANGELOG.en.md` und `ROADMAP.en.md`. Alte Links
+> auf `README.de.md` laufen ins Leere — wer aus einem Lesezeichen kommt, geht
+> einmal über die Projektseite.
 
 ### Neu
 
@@ -40,6 +52,25 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   ausser Sicht. Ein Klick auf die Überschrift klappt ihn auf; die Lage wird
   gemerkt, wer also nach jedem Raffinerie-Lauf abtippt, findet ihn offen vor.
 
+- ⭐ **Deutsch ist die Hauptsprache des Projekts.** Das betrifft alles, was man
+  auf GitHub zu sehen bekommt: die Anleitung, das Änderungsprotokoll, den
+  Ausblick, die Release-Texte (Deutsch oben, Englisch aufklappbar) und die
+  Infobox der Projektseite. **Englisch bleibt vollständig gepflegt** — es steht
+  nur nicht mehr zuerst.
+
+- **Sicherheitsseite und Verhaltensregeln gibt es endlich auf Deutsch.** Beide
+  lagen bisher **nur** auf Englisch. In einem Projekt, dessen Hauptsprache
+  Deutsch ist, ist ausgerechnet die Sicherheitsseite die falsche Stelle zum
+  Sparen.
+
+- **Der Fußbereich der Anleitung sieht aus wie in den anderen Projekten.**
+  Der Autor-Block stand mitten im Text; er steht jetzt unten, mittig, mit Bild
+  — und der Ko-fi-Verweis dort, wo jemand ankommt, der bis zum Ende gelesen hat.
+
+- Das sichere Schreiben steht jetzt **einmal** in `pfade.json_sichern()` statt in
+  jedem Modul neu. Zwei Fassungen derselben Regel gehen irgendwann auseinander —
+  genau das war hier passiert.
+
 ### Behoben
 
 - **Beide Lager legen jetzt eine Vorgängerfassung an.** Werkstatt-Lager und
@@ -59,12 +90,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   trotzdem zuverlässig „kein deutscher Text in der englischen Oberfläche".
   Jetzt besucht sie alle achtzehn und schlägt selbst an, wenn eine neue Seite
   dazukommt, ohne eingetragen zu werden.
-
-### Geändert
-
-- Das sichere Schreiben steht jetzt **einmal** in `pfade.json_sichern()` statt in
-  jedem Modul neu. Zwei Fassungen derselben Regel gehen irgendwann auseinander —
-  genau das war hier passiert.
 
 ## v3.4.0 - 2026-08-30
 

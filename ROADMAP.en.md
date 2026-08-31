@@ -42,6 +42,7 @@ Four things are deliberate and will stay that way:
 | ✅ | **Mining** both ways: material → where it is found, location → what is found there, with mining type, refinery comparison and scan signature |
 | ✅ | **Prices** from UEX Corp — what a material costs and what it sells for, so "what am I missing" also answers "what will it cost me" |
 | ✅ | **Cargo hold**: what you carry to sell — kept apart from the workshop stock, with a marker for cargo flagged as stolen |
+| ✅ | **Back up and restore both storages** (.json), export them as a spreadsheet (.csv) and clear them in one go after a patch wipe |
 | ✅ | **Selling**: where to offload your goods and what they pay per SCU — for several commodities at once, sorted by how many a place takes |
 
 ## What is being worked on

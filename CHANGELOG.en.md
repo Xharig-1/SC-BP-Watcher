@@ -6,7 +6,18 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.4.1 - unreleased
+## v3.4.1 - 2026-08-31
+
+Your cargo hold can now be backed up — and after a patch that wipes all goods,
+cleared with one click instead of entry by entry. On top of that, the project
+now speaks German first: the guide, the changelog and this announcement lead in
+German, with English one click below.
+
+> [!important]
+> **The documentation files were renamed.** `README.md`, `CHANGELOG.md` and
+> `ROADMAP.md` are now the **German** versions; the English ones sit beside them
+> as `README.en.md`, `CHANGELOG.en.md` and `ROADMAP.en.md`. Bookmarks pointing
+> at `README.de.md` no longer resolve — go via the project page once.
 
 ### Added
 
@@ -40,6 +51,24 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   heading opens it; the state is remembered, so whoever types up every refinery
   run finds it open.
 
+- ⭐ **German is the project's primary language.** This covers everything you
+  see on GitHub: the guide, the changelog, the outlook, the release notes
+  (German on top, English one click below) and the project page's info box.
+  **English stays fully maintained** — it simply no longer comes first.
+
+- **The security policy and the code of conduct are finally available in
+  German.** Both existed in English **only**. In a project whose primary
+  language is German, the security page is the wrong place to economise.
+
+- **The footer of the guide now matches the other projects.** The author block
+  used to sit in the middle of the text; it now stands at the bottom, centred,
+  with a picture — and the Ko-fi link is where someone arrives who has read to
+  the end.
+
+- Safe writing now lives in **one** place, `pfade.json_sichern()`, instead of
+  being rebuilt in every module. Two copies of the same rule drift apart
+  eventually — which is exactly what had happened here.
+
 ### Fixed
 
 - **Both storages now keep a previous version.** The workshop storage and the
@@ -58,12 +87,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   and the entire trade section (selling, trade storage). It still reported
   “no German text in the English interface” every time. It now visits all
   eighteen and flags a new page that gets added without being listed.
-
-### Changed
-
-- Safe writing now lives in **one** place, `pfade.json_sichern()`, instead of
-  being rebuilt in every module. Two copies of the same rule drift apart
-  eventually — which is exactly what had happened here.
 
 ## v3.4.0 - 2026-08-30
 
