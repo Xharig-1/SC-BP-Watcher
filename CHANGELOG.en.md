@@ -6,6 +6,52 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Fixed
+
+- ⭐⭐ **Contracts from two days ago showed up as "active".** Reported on
+  2026-08-31: Star Citizen had not even been launched, and the bar read
+  "Welcome to the system". The cause is a gap in the log — **on leaving the
+  game world, the game reports no contract ending at all.** Log out and your
+  contracts are gone silently; the tool only listened for endings and so kept
+  books on a state the game had long since dropped. Dismissing the line did not
+  help: on the next start it was back, recomputed from the same log.
+
+  The tool now also reads the marker the game writes on leaving — language
+  neutral, and it covers both cases: back to the main menu and quitting the
+  game.
+
+  ⚠ This is **not** the blanket clearing from v3.4.4. Back then, an ending that
+  could not be matched to a contract wiped the list — a guess, in other words.
+  Here the game itself says the player is out. Measured across 23 logs: 39
+  markers, 19 acceptances, 3 real endings, 87 objectives — **not a single
+  contract survived a logout.** Contracts accepted after the last logout stay
+  put.
+
+- **"Nonsense" was reported as a system error on Wayland.** When registering a
+  shortcut, the tool checked the system before the input. On Wayland the input
+  check was therefore never reached: a typo got you "not available on Wayland",
+  even though what you had typed was not a valid combination in the first
+  place. The input is checked first now.
+
+### Changed
+
+- ⭐ **"What pays off most?" now tells you where to pick the contract up.** The
+  pickup location had been available all along and simply was not shown — the
+  page answered "which contract is worth it" and left "and where do I find it"
+  hanging. It now sits under every row ("Pick up in Stanton: Hurston, Arial,
+  Aberdeen, Magda and 12 more"), and clicking the row unfolds the location
+  list.
+
+- ⭐ **The number is labelled reward pool now, not payout.** It used to read
+  "44" next to a claim that the contract pays "the most in one go". That
+  promised more than the data holds: the 44 are the pool of a **mission type**
+  — that many different blueprints can drop from it, not that many land in your
+  hands per run. The blueprint window had this same claim toned down after a
+  report from Morkhan; this page still carried it. The number stays, it is
+  correct — it is just labelled as what it is now.
+
 ## v3.8.1 - 2026-08-31
 
 Ctrl+Alt+B really does bring the blueprint list to the front now. The shortcut

@@ -418,14 +418,20 @@ class Wache:
         """Sagt `(ja, grund)`. `grund` ist ein Kürzel, kein fertiger Satz —
         die Oberfläche macht daraus einen Text in der richtigen Sprache."""
         self.abmelden()
-        geht, warum = moeglich()
-        if not geht:
-            self.grund = warum
-            return False, warum
+        # ⚠ **Erst die Eingabe, dann das System.** Umgekehrt kam die
+        # Eingabeprüfung unter Wayland nie dran: Dort meldete `moeglich()`
+        # sofort `wayland`, und eine unsinnige Kombination bekam dieselbe
+        # Auskunft wie eine gültige. Der Nutzer las „geht unter Wayland
+        # nicht", obwohl schon das Eingetippte keine Kombination war.
+        # Unter Wayland aufgefallen, als Prüfung 100 dort rot lief.
         mods, taste = zerlegen(kombination)
         if not mods:
             self.grund = 'kombination'
             return False, 'kombination'
+        geht, warum = moeglich()
+        if not geht:
+            self.grund = warum
+            return False, warum
         helfer = _Windows() if sys.platform.startswith('win') else _X11()
         ok, warum = helfer.anmelden(mods, taste)
         if not ok:

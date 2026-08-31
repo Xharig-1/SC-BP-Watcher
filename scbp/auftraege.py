@@ -279,6 +279,29 @@ def ende_muster():
 ZUSATZ = re.compile(r'MissionId:\s*\[([^\]]*)\][^\n]*?ObjectiveId:\s*\[([^\]]*)\]')
 
 
+# ⚠⚠ **Wer die Spielwelt verlässt, verliert seine Aufträge — lautlos.**
+# Star Citizen meldet beim Ausloggen **kein einziges** Auftrags-Ende. Im
+# Auftragsbuch ist danach trotzdem alles weg. Wer nur auf Enden hört, führt
+# Aufträge von vorgestern als „laufend" — gemeldet am 31.08.2026: Das Spiel war
+# nicht einmal gestartet, und in der Leiste stand „Willkommen im System".
+#
+# Der Marker ist sprachneutral und deckt **beide** Fälle ab: zurück ins
+# Hauptmenü und Spiel beenden. Er steht in jeder Fassung an derselben Stelle:
+#
+#     [CSessionManager::RequestFrontEnd] Started - RequestFrontEndReason="…"!
+#
+# An 23 Protokollen gemessen (31.08.2026): **39** Ausloggen-Marker, 19
+# Annahmen, 3 echte Enden, 87 Zwischenziele. Kein einziger Auftrag hat ein
+# Ausloggen überlebt — es gibt **0** Fälle, in denen nach einem Marker noch ein
+# Ende für einen davor angenommenen Auftrag kam.
+#
+# ⚠ Das ist **nicht** das pauschale Räumen aus v3.4.4. Dort räumte ein Ende,
+# das sich keinem Auftrag zuordnen ließ — geraten also. Hier sagt das Spiel
+# selbst, dass die Spielwelt verlassen wurde. Der Unterschied ist der zwischen
+# „ich weiß nicht, was das war" und „der Spieler ist raus".
+VERLASSEN = re.compile(r'CSessionManager::RequestFrontEnd\]\s*Started')
+
+
 def kennungen(text, stelle):
     """`(MissionId, ObjectiveId)` der Meldung, die bei `stelle` beginnt.
 
@@ -299,6 +322,14 @@ def ereignisse_aus_text(text, muster_an=None, muster_aus=None):
 
     Einträge: `(ist_annahme, titel, mission_id, objective_id)`.
 
+    `ist_annahme` kennt **drei** Werte:
+
+    | Wert | Bedeutung |
+    |---|---|
+    | `True` | Auftrag angenommen |
+    | `False` | Auftrag beendet (abgeschlossen, abgebrochen, gescheitert) |
+    | `None` | **Spielwelt verlassen** — alles Offene ist weg, siehe `VERLASSEN` |
+
     ⚠ Die **eine** Stelle, die Auftragsmeldungen aus einem Logtext holt: Der
     Start liest damit die ganze `Game.log`, der laufende Betrieb damit jeden
     neuen Abschnitt. Zwei Auswertungen mit eigener Buchführung liefen früher
@@ -311,6 +342,8 @@ def ereignisse_aus_text(text, muster_an=None, muster_aus=None):
         gefunden.append((m.start(), True, m.group(1)))
     for m in muster_aus.finditer(text):
         gefunden.append((m.start(), False, m.group(1)))
+    for m in VERLASSEN.finditer(text):
+        gefunden.append((m.start(), None, ''))
     # Die Fundstelle ist die Wahrheit: Sie sagt, was im Spiel zuerst geschah.
     gefunden.sort(key=lambda e: e[0])
     return [(ist_annahme, titel) + kennungen(text, stelle)
@@ -352,6 +385,11 @@ def stand_aus_text(text, muster_an=None, muster_aus=None):
     offen, missionen = {}, {}
     for ist_annahme, titel, mid, oid in ereignisse_aus_text(text, muster_an,
                                                             muster_aus):
+        # ⚠ Vor der Titelprüfung: Das Verlassen trägt keinen Titel.
+        if ist_annahme is None:
+            offen.clear()
+            missionen.clear()
+            continue
         rein = sauber(titel)
         if not rein:
             continue

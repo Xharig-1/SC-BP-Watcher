@@ -7267,11 +7267,53 @@ def main():
     pruefe(list(_mid89) == ['11111111-1111-1111-1111-111111111111'],
            'stand_aus_text gibt die Missions-Kennungen zurueck')
 
-    # f) Und das Hauptprogramm darf NICHT mehr pauschal raeumen.
-    _q89 = open(os.path.join(WURZEL, 'scbp', 'auftraege.py'),
-                encoding='utf-8').read()
-    pruefe('offen.clear()' not in _q89,
-           'die Buchfuehrung raeumt nirgends mehr die ganze Liste')
+    # f) Und das Hauptprogramm darf NICHT pauschal raeumen.
+    #
+    # ⚠ Bis zum 31.08.2026 stand hier eine Textsuche nach `offen.clear()` im
+    # Quelltext. Die hat das falsche geprueft: Sie verbot ein **Wort**, nicht
+    # ein **Verhalten** — und schlug damit auch bei einem Raeumen an, das
+    # richtig ist. Geprueft wird jetzt, was herauskommt.
+    #
+    # Der Unterschied, um den es geht:
+    #
+    # | Auslöser | räumen? | warum |
+    # |---|---|---|
+    # | Ende, das sich keinem Auftrag zuordnen lässt | **nein** | geraten — das war v3.4.4 |
+    # | Spielwelt verlassen (`VERLASSEN`) | **ja** | das Spiel sagt es selbst |
+    _fremd89 = _zeile89('Auftrag abgeschlossen', 'Nie angenommener Auftrag',
+                        mid='99999999-9999-9999-9999-999999999999')
+    pruefe(len(_au89.offene_aus_text(_an89 + _neu89 + _fremd89)) == 2,
+           'ein unzuordenbares Ende raeumt NICHTS (die v3.4.4-Falle)')
+
+    # g) Ausloggen dagegen raeumt — und zwar alles.
+    #
+    # Gemeldet am 31.08.2026: Star Citizen war nicht einmal gestartet, und in
+    # der Leiste stand ein Auftrag von vorgestern. Beim Verlassen der
+    # Spielwelt meldet das Spiel **kein** Auftrags-Ende, das Auftragsbuch ist
+    # trotzdem leer. An 23 Protokollen gemessen: 39 Marker, kein einziger
+    # Auftrag hat eines ueberlebt.
+    _raus89 = ('<2026-08-30T12:27:22.352Z> [CSessionManager::RequestFrontEnd]'
+               ' Started - RequestFrontEndReason="OnLobbyPostGameUnload"!') + '\n'
+    pruefe(_au89.offene_aus_text(_an89 + _neu89 + _raus89) == [],
+           'Ausloggen raeumt die Liste')
+    pruefe(len(_au89.offene_aus_text(_an89 + _raus89 + _neu89)) == 1,
+           'was DANACH angenommen wird, bleibt stehen')
+
+    # ⚠ Die Gegenprobe: Ohne den Marker muesste der alte Fehler wieder da
+    # sein. Ist er das nicht, prueft der Test oben nichts.
+    import re as _re89
+    _merk89 = _au89.VERLASSEN
+    _au89.VERLASSEN = _re89.compile(r'(?!x)x')
+    _ohne89 = _au89.offene_aus_text(_an89 + _neu89 + _raus89)
+    _au89.VERLASSEN = _merk89
+    pruefe(len(_ohne89) == 2,
+           'ohne den Marker stuenden sie wieder da (Gegenprobe)')
+
+    # h) Das Ereignis traegt keinen Titel — wer `sauber(titel)` zuerst prueft,
+    #    wirft es weg und raeumt nie. Genau diese Reihenfolge ist die Falle.
+    _ev89 = _au89.ereignisse_aus_text(_an89 + _raus89)
+    pruefe([e[0] for e in _ev89] == [True, None],
+           'das Verlassen kommt als eigenes Ereignis (ist_annahme is None)')
     _w89 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
                 encoding='utf-8').read()
     _ab89 = _w89.split('def _auftraege_melden')[1].split('def _emit')[0]

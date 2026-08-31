@@ -839,6 +839,14 @@ def _lohnende_auftraege(fenster, eltern, katalog, habe):
     kasten.halter.pack(fill='x', pady=(10, 0))
     # ⚠ Nur die ersten zehn. Es sind 170 — eine vollständige Liste wäre keine
     # Antwort auf „was mache ich als Nächstes", sondern die nächste Suchaufgabe.
+    # ⚠ **Der Annahmeort gehört an die Zeile.** Er lag von Anfang an vor —
+    # `lohnende_auftraege` liefert ihn als sechsten Wert — und wurde hier
+    # weggeworfen. Damit beantwortete die Seite „welcher Auftrag lohnt sich"
+    # und ließ die Anschlussfrage „und wo nehme ich den an" offen; genau
+    # dieselbe Lücke war im Bauplan-Fenster schon einmal gemeldet worden,
+    # weshalb es `ort_text()` überhaupt gibt. Sie wurde dort geschlossen und
+    # hier nicht.
+    from .bestandsfenster import ort_text
     for titel, fraktion, anzahl, uec, rang, wo in lohnend[:10]:
         zeile = tk.Frame(kasten, bg=FLAECHE)
         zeile.pack(fill='x', padx=14, pady=3)
@@ -853,8 +861,39 @@ def _lohnende_auftraege(fenster, eltern, katalog, habe):
             teile.append('%s aUEC' % '{:,}'.format(uec).replace(',', '.'))
         if rang:
             teile.append(rang)
+        teile.append(t('s_fo_lohnt_topf', anzahl))
         tk.Label(rechts, text=' · '.join(teile), bg=FLAECHE, fg=SUB,
                  font=fenster.f_klein, anchor='w').pack(fill='x')
+        # Der Ort steht direkt da — aufklappen muss man nur für die Liste,
+        # die nicht in eine Zeile passt („… und 12 weitere").
+        ort = ort_text(wo)
+        if not ort:
+            continue
+        ort_label = tk.Label(rechts, text=ort, bg=FLAECHE, fg=SUB,
+                             font=fenster.f_klein, anchor='w', justify='left')
+        ort_label.pack(fill='x')
+        alle = (wo or {}).get('orte') or []
+        if not (wo or {}).get('mehr'):
+            continue
+        # ⚠ Die vollen Orte stecken nicht in `wo` — dort stehen nur die
+        # ersten vier und ein Zähler. Mehr gibt der Katalog an dieser Stelle
+        # nicht her, also wird auch nicht mehr versprochen: Der Klick zeigt,
+        # was da ist, und sagt dazu, dass es weitergeht.
+        zustand = {'offen': False}
+
+        def umschalten(_ereignis=None, label=ort_label, wo=wo, alle=alle,
+                       zustand=zustand):
+            zustand['offen'] = not zustand['offen']
+            if zustand['offen']:
+                label.config(text='%s %s: %s' % (
+                    t('annehmen_in'), wo.get('system') or '',
+                    ',\n'.join(alle) + t('und_weitere', wo['mehr'])))
+            else:
+                label.config(text=ort_text(wo))
+
+        for teil in (zeile, rechts, ort_label):
+            teil.config(cursor='hand2')
+            teil.bind('<Button-1>', umschalten)
     tk.Label(kasten, text='', bg=FLAECHE).pack(pady=2)
 
 

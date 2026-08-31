@@ -1116,6 +1116,24 @@ class Watcher(threading.Thread):
         # ist, wird gezeigt; was zuletzt ein Ende hatte, nicht.
         offen_jetzt = {}
         for ist_annahme, titel, mission_id, objective_id in ereignisse:
+            # ⚠⚠ **Ausloggen raeumt alles** — und zwar bevor irgendein Titel
+            # geprueft wird, denn dieses Ereignis hat keinen. Das Spiel meldet
+            # beim Verlassen der Spielwelt kein einziges Auftrags-Ende, im
+            # Auftragsbuch ist danach trotzdem alles weg. Begruendung und
+            # Messung stehen bei `auftraege.VERLASSEN`.
+            if ist_annahme is None:
+                offen_jetzt.clear()
+                for weg in list(self._offene_auftraege):
+                    del self._offene_auftraege[weg]
+                    self.q.put(('auftrag_weg', weg))
+                    veraendert = True
+                    # Damit derselbe Auftrag nach dem naechsten Einloggen
+                    # wieder gemeldet wird — man nimmt ihn ja erneut an.
+                    self._auftraege_gesehen.discard(weg)
+                for kennung in list(self._auftrag_missionen):
+                    self._ziele.vergessen(kennung)
+                    del self._auftrag_missionen[kennung]
+                continue
             rein = auftraege.sauber(titel)
             if not rein:
                 continue

@@ -127,13 +127,16 @@ TEXTE = {
     'zeit_tage':       ('%d Tagen', '%d days'),
     # „Was lohnt sich" auf der Fortschritt-Seite
     's_fo_lohnt':      ('Was bringt am meisten?', 'What pays off most?'),
-    's_fo_lohnt_hilfe': ('Die Aufträge, aus denen dir noch die meisten Baupläne '
-                         'fehlen. Oben steht der, der auf einen Schlag am '
-                         'meisten bringt.',
-                         'The contracts you are still missing the most '
-                         'blueprints from. Top of the list gives you the most '
-                         'in one go.'),
+    's_fo_lohnt_hilfe': ('Missionstypen, aus deren Belohnungstopf dir noch die '
+                         'meisten Baupläne fehlen. Die Zahl ist der Topf, '
+                         'nicht die Ausbeute eines Abschlusses — je größer, '
+                         'desto eher fällt etwas ab, das dir fehlt.',
+                         'Mission types whose reward pool still holds the most '
+                         'blueprints you are missing. The number is the pool, '
+                         'not what one run pays out — the bigger it is, the '
+                         'likelier something you need drops.'),
     's_fo_lohnt_zeile': ('%d fehlende Baupläne', '%d missing blueprints'),
+    's_fo_lohnt_topf':  ('%d im Belohnungstopf', '%d in the reward pool'),
     's_fo_lohnt_leer':  ('Kein Auftrag bringt dir noch einen Bauplan, den du '
                          'nicht hast.',
                          'No contract still holds a blueprint you do not have.'),

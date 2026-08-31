@@ -6,6 +6,54 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## Unveröffentlicht
+
+### Behoben
+
+- ⭐⭐ **Aufträge von vorgestern standen als „laufend" da.** Gemeldet am
+  31.08.2026: Star Citizen war nicht einmal gestartet, und in der Leiste stand
+  „Willkommen im System". Der Grund ist eine Lücke im Protokoll — **beim
+  Verlassen der Spielwelt meldet das Spiel kein einziges Auftrags-Ende.** Wer
+  sich ausloggt, verliert seine Aufträge lautlos; das Werkzeug hörte nur auf
+  Enden und führte deshalb Buch über einen Stand, den es im Spiel längst nicht
+  mehr gab. Wegklicken half nicht: Beim nächsten Start stand die Zeile wieder
+  da, denn sie wurde aus demselben Protokoll neu errechnet.
+
+  Ausgewertet wird jetzt zusätzlich der Marker, den das Spiel beim Verlassen
+  schreibt — sprachneutral, und er deckt beides ab: zurück ins Hauptmenü und
+  Spiel beenden.
+
+  ⚠ Das ist **nicht** das pauschale Räumen aus v3.4.4. Dort räumte ein Ende,
+  das sich keinem Auftrag zuordnen ließ — also ein geratenes. Hier sagt das
+  Spiel selbst, dass der Spieler draußen ist. An 23 Protokollen gemessen: 39
+  Marker, 19 Annahmen, 3 echte Enden, 87 Zwischenziele — **kein einziger
+  Auftrag hat ein Ausloggen überlebt.** Aufträge, die nach dem letzten
+  Ausloggen angenommen wurden, bleiben unverändert stehen.
+
+- **„Unsinn" wurde unter Wayland als Systemfehler gemeldet.** Beim Anmelden
+  einer Tastenkombination prüfte das Werkzeug erst das System und dann die
+  Eingabe. Unter Wayland kam es deshalb nie zur Eingabeprüfung: Wer sich
+  vertippte, las „geht unter Wayland nicht", obwohl schon das Eingetippte
+  keine gültige Kombination war. Jetzt wird zuerst die Eingabe geprüft.
+
+### Geändert
+
+- ⭐ **„Was bringt am meisten?" sagt jetzt, wo man den Auftrag annimmt.** Der
+  Annahmeort lag von Anfang an vor und wurde nur nicht angezeigt — die Seite
+  beantwortete „welcher Auftrag lohnt sich" und ließ die Anschlussfrage „und
+  wo finde ich den" offen. Jetzt steht er unter jeder Zeile
+  („Annehmen in Stanton: Hurston, Arial, Aberdeen, Magda und 12 weiteren"),
+  und ein Klick auf die Zeile klappt die Ortsliste auf.
+
+- ⭐ **Die Zahl heißt jetzt Belohnungstopf, nicht Ausbeute.** Oben stand „44"
+  und daneben, der Auftrag bringe „auf einen Schlag am meisten". Das versprach
+  mehr, als die Daten hergeben: Die 44 sind der Topf eines **Missionstyps** —
+  so viele verschiedene Baupläne können daraus fallen, nicht so viele bekommt
+  man für einen Abschluss. Im Bauplan-Fenster war genau diese Zusage nach einer
+  Meldung von Morkhan schon entschärft worden; auf dieser Seite stand sie noch.
+  Die Zahl bleibt, sie ist richtig — sie ist jetzt nur beschriftet, als das,
+  was sie ist.
+
 ## v3.8.1 - 2026-08-31
 
 Strg+Alt+B holt die Bauplan-Liste jetzt wirklich nach vorn. Die
