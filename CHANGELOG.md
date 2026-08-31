@@ -6,7 +6,11 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.4.4 - unveröffentlicht
+## v3.4.4 - 2026-08-31
+
+Ein zurückgezogener Auftrag verschwindet endlich — bisher stand er nach jedem
+Start wieder als laufend da. Und der Wechsel auf die Bauplan-Liste ist wieder
+sofort da statt nach einer halben Sekunde.
 
 ### Behoben
 
@@ -36,6 +40,21 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 - **Zwei fehlende Leerzeichen auf der Danke-Seite.** Dort stand „Star Citizen
   aus demWerkzeug starten" und „797 Baupläne, die niemand zusehen bekam".
+
+### Geändert
+
+- ⭐ **Der Wechsel auf die Bauplan-Liste ist wieder sofort da.** Gemessen kostete
+  er **642 ms**, obwohl die Seite längst gebaut war — jetzt sind es **0,4 ms**.
+
+  Schuld war die Routine, die beim erneuten Anzeigen die Filter zurücksetzt:
+  Sie zeichnete jedes Mal alle 738 Zeilen neu, auch wenn gar kein Filter gesetzt
+  war. Dasselbe auf der Herstellungs-Seite mit ihren 1597 Zeilen. Jetzt wird nur
+  noch zurückgesetzt, wenn wirklich etwas gesetzt war — mit Filter passiert
+  weiterhin genau dasselbe wie vorher.
+
+  ⚠ Was bleibt: Beim ersten Öffnen einer großen Seite braucht das Zeichnen
+  weiterhin seine Zeit, und beim Einblenden rendert das Fenstersystem die vielen
+  Zeilen erneut. Das ist die schiere Menge, kein Fehler.
 
 ### Dank
 

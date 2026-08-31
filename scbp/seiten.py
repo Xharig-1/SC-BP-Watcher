@@ -3863,6 +3863,19 @@ def _herstellung(fenster, rahmen):
     # unterschiedlich verhalten, sind schlimmer als eines ohne Kreuz.
     _suche_leeren_kreuz(fenster, ziel_suche, suche_var)
     def _herst_frisch():
+        """Beim erneuten Aufrufen ohne Filter anfangen.
+
+        ⚠⚠ **Nur wenn wirklich etwas gesetzt war.** Sonst baut jeder Wechsel
+        auf die Herstellungs-Seite die 1597 Zeilen neu auf, ohne dass sich
+        etwas ändert — dieselbe Bremse wie in der Bauplan-Liste
+        (`bestandsfenster._fein_leeren`), am 31.08.2026 gemessen und gemeldet.
+        """
+        etwas_gesetzt = bool(suche_var.get() or any(wahl.values())
+                             or _material_merker)
+        if not etwas_gesetzt:
+            # ⚠ Auch `set('')` nicht: Das loest den `trace` aus und zeichnet
+            # damit die ganze Liste neu — genau das, was hier vermieden wird.
+            return
         suche_var.set('')
         for schluessel in wahl:
             wahl[schluessel] = ''

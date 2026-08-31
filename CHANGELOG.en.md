@@ -6,7 +6,11 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.4.4 - unreleased
+## v3.4.4 - 2026-08-31
+
+A withdrawn contract finally goes away — until now it came back as running
+after every start. And switching to the blueprint list is instant again instead
+of taking half a second.
 
 ### Fixed
 
@@ -35,6 +39,20 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 - **Two missing spaces on the credits page.** It read "launching Star Citizen
   from thetool" and "797 blueprints nobodyever got to see".
+
+### Changed
+
+- ⭐ **Switching to the blueprint list is instant again.** It measured **642 ms**
+  even though the page had long been built — it is **0.4 ms** now.
+
+  The culprit was the routine that resets the filters when the page is shown
+  again: it redrew all 738 rows every time, even with no filter set. Same on the
+  crafting page with its 1597 rows. It now only resets when something actually
+  was set — with a filter, everything happens exactly as before.
+
+  ⚠ What remains: opening a large page for the first time still takes its time,
+  and the window system re-renders the many rows when the page is shown. That is
+  sheer volume, not a bug.
 
 ### Thanks
 

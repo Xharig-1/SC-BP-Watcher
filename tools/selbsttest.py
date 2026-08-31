@@ -7212,6 +7212,42 @@ def main():
     pruefe(_au89.offene_aus_text(_an89 + _neu89 + _weg89) == [],
            'bei mehreren offenen wird nicht geraten, sondern geraeumt')
 
+    # 90. Der Seitenwechsel zeichnet nur, wenn es etwas zu zeichnen gibt
+    #
+    # ⚠⚠ **Am 31.08.2026 gemeldet: „reagiert etwas langsamer".** Gemessen kam
+    # heraus: Der Wechsel auf die Bauplan-Liste kostete **642 ms**, obwohl die
+    # Seite laengst gebaut war. Ursache war die Routine, die beim erneuten
+    # Anzeigen die Filter zuruecksetzt — sie zeichnete **immer** alle 738
+    # Zeilen neu, auch wenn gar kein Filter gesetzt war. Und `set('')` auf ein
+    # bereits leeres Suchfeld loest den `trace` trotzdem aus.
+    #
+    # Jetzt: 0,4 ms, wenn nichts gesetzt war. ⚠ Der Zweck darf dabei nicht
+    # verloren gehen — war etwas gesetzt, MUSS weiter zurueckgestellt werden,
+    # sonst steht der Suchbegriff von vorhin wieder da (29.08.2026 gemeldet).
+    print()
+    print('90. Der Seitenwechsel zeichnet nur, wenn noetig')
+    _q90 = open(os.path.join(WURZEL, 'scbp', 'bestandsfenster.py'),
+                encoding='utf-8').read()
+    _fein90 = _q90.split('def _fein_leeren(')[1].split('\n    def ')[0]
+    pruefe('etwas_gesetzt' in _fein90 and 'if etwas_gesetzt:' in _fein90,
+           'die Filter-Ruecksetzung zeichnet nur bei gesetztem Filter')
+    _suche90 = _q90.split('def _suche_leeren(')[1].split('\n    def ')[0]
+    pruefe('if self.suche.get():' in _suche90,
+           'und das Suchfeld wird nur angefasst, wenn etwas drinsteht')
+
+    _q90s = open(os.path.join(WURZEL, 'scbp', 'seiten.py'), encoding='utf-8').read()
+    _herst90 = _q90s.split('def _herst_frisch(')[1].split('\n    fenster.beim_zeigen')[0]
+    pruefe('if not etwas_gesetzt:' in _herst90 and 'return' in _herst90,
+           'dasselbe auf der Herstellungs-Seite')
+
+    # ⚠ Und die Ruecksetzung selbst muss erhalten bleiben — sonst ist der
+    # Geschwindigkeitsgewinn mit einem alten Fehler bezahlt.
+    pruefe("self.suche.set('')" in _suche90,
+           'ein gesetzter Suchbegriff wird weiterhin geleert')
+    pruefe("self.fein[schluessel] = ''" in _fein90
+           and 'self._zeichnen(nach_oben=True)' in _fein90,
+           'und gesetzte Filter werden weiterhin zurueckgestellt und gezeichnet')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

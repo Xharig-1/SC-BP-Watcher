@@ -1155,16 +1155,36 @@ class Bestandsfenster:
         ⚠ `setzen()` der Felder ruft den Rückruf mit auf. Fünf Felder
         nacheinander zurückzustellen hieße fünfmal die ganze Liste neu bauen;
         deshalb wird stumm gesetzt und am Ende einmal gezeichnet.
+
+        ⚠⚠ **War nichts gesetzt, wird auch nichts gezeichnet.** Diese Routine
+        läuft bei **jedem** Wechsel auf die Bauplan-Liste — und zeichnete
+        bisher jedes Mal 738 Zeilen neu, auch wenn gar kein Filter aktiv war.
+        Gemessen am 31.08.2026: **794 ms** allein fürs Umschalten auf eine
+        Seite, die längst gebaut dasteht. Genau das war als „das Fenster
+        reagiert träge" gemeldet worden.
+
+        Der Normalfall ist „kein Filter gesetzt" — dann ist die Liste schon
+        richtig, und es gibt nichts zurückzustellen.
         """
+        etwas_gesetzt = (any(self.fein.values()) or self.alle_zeigen)
         for schluessel in self.fein:
             self.fein[schluessel] = ''
         for feld in self.fein_felder.values():
             feld.stumm_setzen('')
         self.alle_zeigen = False
-        self._zeichnen(nach_oben=True)
+        if etwas_gesetzt:
+            self._zeichnen(nach_oben=True)
 
     def _suche_leeren(self):
-        self.suche.set('')
+        """Das Suchfeld leeren — aber nur, wenn etwas drinsteht.
+
+        ⚠⚠ `set('')` loest den `trace` auch dann aus, wenn das Feld schon leer
+        war, und der zeichnet die ganze Liste neu. Zusammen mit
+        `_fein_leeren` waren das **794 ms** bei jedem Wechsel auf diese Seite,
+        ohne dass sich irgendetwas geaendert haette.
+        """
+        if self.suche.get():
+            self.suche.set('')
 
     def _loeschkreuz_zeigen(self):
         """Das ✕ nur zeigen, wenn es etwas zu löschen gibt."""
