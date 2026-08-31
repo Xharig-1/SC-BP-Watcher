@@ -71,15 +71,16 @@ def laden():
 
 
 def sichern(posten):
-    """Die Posten schreiben. Meldet einen Fehlschlag, statt ihn zu schlucken."""
+    """Die Posten schreiben. Meldet einen Fehlschlag, statt ihn zu schlucken.
+
+    ⚠ Die **Vorgängerfassung** (`rohstoffe.bak.json`) legt
+    `pfade.json_sichern` an. Bis 31.08.2026 fehlte sie hier: Geschrieben wurde
+    atomar, aber ohne Rückfall — ein leer gespeichertes Lager war endgültig
+    weg. Ein Lager sind eigene Eingaben, die kein Neuaufbau zurückholt.
+    """
     ziel = pfade.app_datei(DATEI)
     try:
-        os.makedirs(os.path.dirname(ziel), exist_ok=True)
-        with open(ziel + '.tmp', 'w', encoding='utf-8') as f:
-            json.dump({'format': FORMAT, 'posten': posten}, f,
-                      ensure_ascii=False, indent=1)
-        os.replace(ziel + '.tmp', ziel)
-        return True
+        return pfade.json_sichern(ziel, {'format': FORMAT, 'posten': posten})
     except Exception as ausnahme:
         fehler.merken('rohstoffe.sichern', ausnahme)
         return False

@@ -384,6 +384,55 @@ def einstellung(name):
     return os.path.expanduser(wert) if wert else None
 
 
+def json_sichern(ziel, daten, einzug=1, sortiert=False):
+    """JSON schreiben — ohne Halbfertiges und mit Vorgängerfassung.
+
+    Erst in eine Nebendatei, dann umbenennen: Stürzt der Rechner mitten im
+    Schreiben ab, ist die alte Datei noch vollständig da. Die vorige Fassung
+    bleibt als `….bak.json` liegen.
+
+    ⚠ **Warum das hier steht und nicht in jedem Modul einzeln.** `bestand.py`
+    hatte diese Sicherung von Anfang an, die beiden Lager (Werkstatt und
+    Handel) nicht — sie schrieben zwar atomar, aber ohne Rückfall. Genau dort
+    stehen **eigene Eingaben**, die es nirgends sonst zu holen gibt: Ein
+    Bauplan-Bestand liesse sich aus der Game.log neu aufbauen, ein Lager nicht.
+    Zwei Fassungen derselben Regel gehen irgendwann auseinander, deshalb eine.
+
+    ⚠ **Meldet nichts selbst.** Der Aufrufer weiss, unter welchem Namen der
+    Fehler ins Protokoll gehört (`rohstoffe.sichern` gegen
+    `handelslager.sichern`) — und `pfade` darf `fehler` nicht einbinden, das
+    gäbe einen Ringschluss. Bei einem Fehlschlag fliegt die Ausnahme; die
+    Nebendatei ist dann schon weggeräumt.
+    """
+    temp = ziel + '.tmp'
+    try:
+        ordner = os.path.dirname(ziel)
+        if ordner:
+            os.makedirs(ordner, exist_ok=True)
+        with open(temp, 'w', encoding='utf-8') as f:
+            json.dump(daten, f, ensure_ascii=False, indent=einzug,
+                      sort_keys=sortiert)
+        if os.path.exists(ziel):
+            # ⚠ Nicht `ziel.replace('.json', …)` — das trifft auch einen
+            # Ordnernamen, in dem „.json" vorkommt. Nur die Endung zählt.
+            sicherung = (ziel[:-5] + '.bak.json' if ziel.endswith('.json')
+                         else ziel + '.bak')
+            try:
+                os.replace(ziel, sicherung)
+            except OSError:
+                # Kein Grund abzubrechen: Die Vorgängerfassung ist der Gürtel,
+                # das atomare Schreiben der Hosenträger. Einer genügt.
+                pass
+        os.replace(temp, ziel)
+        return True
+    except Exception:
+        try:
+            os.remove(temp)
+        except OSError:
+            pass
+        raise
+
+
 def einstellung_setzen(name, wert):
     """Einen Pfad dauerhaft merken — ohne die Erklärzeilen zu verlieren.
 

@@ -6,6 +6,27 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.4.1 - unreleased
+
+### Fixed
+
+- **Both storages now keep a previous version.** The workshop storage and the
+  trade storage already wrote atomically — to a side file first, then rename —
+  but **without a fallback**: a storage accidentally emptied or corrupted was
+  gone for good. The blueprint inventory had this safeguard from the start, the
+  two storages never did. They now produce `rohstoffe.bak.json` and
+  `handelslager.bak.json`, just like `bestand.bak.json`.
+
+  It matters more here than for the inventory: unlocked blueprints can be
+  rebuilt from `Game.log`, stored cargo cannot — those are hand-typed entries
+  that exist nowhere else.
+
+### Changed
+
+- Safe writing now lives in **one** place, `pfade.json_sichern()`, instead of
+  being rebuilt in every module. Two copies of the same rule drift apart
+  eventually — which is exactly what had happened here.
+
 ## v3.4.0 - 2026-08-30
 
 Cargo hold full — now what? The new **Trading** section tells you where to

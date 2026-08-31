@@ -6,6 +6,27 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.4.1 - unveröffentlicht
+
+### Behoben
+
+- **Beide Lager legen jetzt eine Vorgängerfassung an.** Werkstatt-Lager und
+  Handelslager schrieben zwar atomar — erst in eine Nebendatei, dann umbenennen —,
+  aber **ohne Rückfall**: Ein versehentlich geleertes oder beschädigtes Lager war
+  endgültig weg. Der Bauplan-Bestand hatte diese Sicherung von Anfang an, die
+  beiden Lager nie. Jetzt entstehen `rohstoffe.bak.json` und
+  `handelslager.bak.json` genau wie `bestand.bak.json`.
+
+  Dort wiegt es sogar schwerer als beim Bestand: Freigeschaltete Baupläne
+  liessen sich aus der `Game.log` neu aufbauen, eingelagerte Ware nicht — das
+  sind reine Handeingaben, die es nirgends sonst zu holen gibt.
+
+### Geändert
+
+- Das sichere Schreiben steht jetzt **einmal** in `pfade.json_sichern()` statt in
+  jedem Modul neu. Zwei Fassungen derselben Regel gehen irgendwann auseinander —
+  genau das war hier passiert.
+
 ## v3.4.0 - 2026-08-30
 
 Der Laderaum ist voll — und jetzt? Der neue Bereich **Handel** sagt dir, wo du
