@@ -23,7 +23,7 @@ import subprocess
 import sys
 
 WURZEL = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-CHANGELOGS = ('CHANGELOG.md', 'CHANGELOG.de.md')
+CHANGELOGS = ('CHANGELOG.en.md', 'CHANGELOG.md')
 
 
 def version():

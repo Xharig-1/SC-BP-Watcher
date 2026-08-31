@@ -141,11 +141,11 @@ def bauen(tag, sprache='de'):
             return ('## SC BP Watcher %s ist da\n\n%s\n\n'
                     '**Herunterladen:** <%s/releases/latest>\n'
                     'Alle Änderungen im Einzelnen: '
-                    '<%s/blob/main/CHANGELOG.de.md>'
+                    '<%s/blob/main/CHANGELOG.md>'
                     % (tag, vorspann, REPO, REPO))
         return ('## SC BP Watcher %s is out\n\n%s\n\n'
                 '**Download:** <%s/releases/latest>\n'
-                'Every change in detail: <%s/blob/main/CHANGELOG.md>'
+                'Every change in detail: <%s/blob/main/CHANGELOG.en.md>'
                 % (tag, vorspann, REPO, REPO))
 
     punkte = punkte_aus(block)[:PUNKTE]

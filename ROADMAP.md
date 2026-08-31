@@ -1,66 +1,66 @@
 # Roadmap
 
-**English** · [Deutsch](ROADMAP.de.md)
+**Deutsch** · [English](ROADMAP.en.md)
 
-## What it is for
+## Zielbild
 
-SC BP Watcher is a small overlay that shows, while you play Star Citizen, when a new blueprint is unlocked — on **Windows and Linux**, from a shared codebase.
+SC BP Watcher ist ein kleines Overlay, das beim Spielen von Star Citizen live anzeigt, sobald ein neuer Bauplan freigeschaltet wird — unter **Windows und Linux**, aus einer gemeinsamen Codebasis.
 
-Since v3.3.0 there is a **workshop** on top of that: what you can craft from a blueprint, what you are missing for it, where the materials are mined and what sits in your storage. The blueprint is still the starting point — the workshop answers the question that follows it: *and now what?*
+Seit v3.3.0 kommt eine **Werkstatt** dazu: Was du aus einem Bauplan herstellen kannst, was dafür fehlt, wo die Rohstoffe liegen und was in deinem Lager steht. Der Bauplan bleibt der Ausgangspunkt — die Werkstatt beantwortet die Frage, die danach kommt: *und jetzt?*
 
-Four things are deliberate and will stay that way:
+Vier Dinge sind Absicht und bleiben so:
 
-- **Lightweight.** Plain Python standard library, no extra packages. What has no dependency cannot lose one.
-- **It's yours.** No account, no sign-in, no cloud. What the tool knows sits in files on your disk.
-- **It reads, it does not write.** Nothing about the game installation is changed.
-- **Honest over pretty.** If something might be missing, it says so — an uncomfortable answer beats a nice number you cannot rely on.
+- **Leichtgewichtig.** Reine Python-Standardbibliothek, keine Zusatzpakete. Was keine Abhängigkeit hat, kann auch keine verlieren.
+- **Es gehört dir.** Kein Konto, keine Anmeldung, keine Cloud. Was das Werkzeug weiß, steht in Dateien auf deiner Platte.
+- **Es liest, es schreibt nicht.** An der Spielinstallation wird nichts verändert.
+- **Ehrlich statt hübsch.** Wenn etwas fehlen könnte, sagt es das — lieber eine unbequeme Auskunft als eine schöne Zahl, auf die kein Verlass ist.
 
-## What it does today
+## Was es kann
 
-| | |
+| | Inhalt |
 |---|---|
-| ✅ | Live detection of new blueprints from the game log, shown in the overlay |
-| ✅ | **Its own blueprint inventory** — the SC Deutsch Launcher is not needed |
-| ✅ | **Catch-up**: earlier play sessions are read on start |
-| ✅ | **Blueprint list** to look up, filter and tick off, with progress |
-| ✅ | **Where each blueprint drops** — faction, contract, required standing, payout |
-| ✅ | **When you accept a contract**: does it carry blueprints, and which are you missing? |
-| ✅ | Catalogue watch: reports what becomes **newly craftable** in the game, plus a watchlist |
-| ✅ | **New in game** filter plus a patch dropdown: see what each patch added |
-| ✅ | **Server status**: a tab of its own with CIG's live status, refreshing itself |
-| ✅ | Class, size and grade tag (`M/1/A`) |
-| ✅ | Setup wizard, repeatable at any time |
-| ✅ | German and English, switchable |
-| ✅ | Windows and Linux, with autostart on both |
-| ✅ | Export your inventory — for the KRT Profit Basetool, for scmdb.net and as a full backup |
-| ✅ | Collapse the overlay, for anyone on a single screen |
-| ✅ | **Tray icon**: next to the clock on Windows, in the application menu on Linux — the way back to the list and the settings while the overlay stays out of sight |
-| ✅ | **Item details in game** — class, size and grade at the tractor beam, seeker type for missiles |
-| ✅ | **Crafting**: for every craftable item the ingredients, the duration and the stats — including whether you own the blueprint for it |
-| ✅ | **Material quality matters** — one slider per ingredient shows what *your* material would yield, and the range the value can reach at all |
-| ✅ | **My storage**: record material, amount, quality and location; the recipe then shows what is missing, and a button deducts the ingredients |
-| ✅ | **Mining** both ways: material → where it is found, location → what is found there, with mining type, refinery comparison and scan signature |
-| ✅ | **Prices** from UEX Corp — what a material costs and what it sells for, so "what am I missing" also answers "what will it cost me" |
-| ✅ | **Cargo hold**: what you carry to sell — kept apart from the workshop stock, with a marker for cargo flagged as stolen |
-| ✅ | **Selling**: where to offload your goods and what they pay per SCU — for several commodities at once, sorted by how many a place takes |
+| ✅ | Live-Erkennung neuer Baupläne aus der Spiel-Log, Anzeige im Overlay |
+| ✅ | **Eigener Bauplan-Bestand** — der SC Deutsch Launcher ist nicht nötig |
+| ✅ | **Nachlese**: beim Start werden frühere Spielsitzungen ausgewertet |
+| ✅ | **Bauplan-Liste** zum Nachschlagen, Filtern und Abhaken, mit Fortschritt |
+| ✅ | **Herkunft je Bauplan** — Fraktion, Auftrag, nötiger Ruf, Belohnung |
+| ✅ | **Beim Annehmen eines Auftrags**: bringt er Baupläne, und welche fehlen dir noch? |
+| ✅ | Katalog-Wache: meldet, was im Spiel **neu craftbar** wird, dazu eine Merkliste |
+| ✅ | Filter **neu im Spiel** und Auswahlfeld **Patch**: nachschlagen, was jeder Patch gebracht hat |
+| ✅ | **Serverstatus**: eigener Reiter mit der Lage von CIG, frischt sich selbst auf |
+| ✅ | Kürzel für Klasse, Größe und Gütegrad (`M/1/A`) |
+| ✅ | Einrichtungsassistent, jederzeit wiederholbar |
+| ✅ | Deutsch und Englisch, umschaltbar |
+| ✅ | Windows und Linux, mit Autostart auf beiden |
+| ✅ | Bestand ausgeben — für das KRT Profit Basetool, für scmdb.net und als vollständige Sicherung |
+| ✅ | Overlay einklappen, für alle mit einem Bildschirm |
+| ✅ | **Ablage-Symbol**: neben der Uhr unter Windows, im Startmenü unter Linux — der Weg zurück zu Liste und Einstellungen, während sich das Overlay zurückhält |
+| ✅ | **Angaben am Gegenstand im Spiel** — Klasse, Größe und Gütegrad am Traktorstrahl, bei Raketen der Suchkopf |
+| ✅ | **Herstellung**: zu jedem herstellbaren Gegenstand die Zutaten, die Dauer und die Werte — samt der Frage, ob du den Bauplan dafür hast |
+| ✅ | **Materialqualität wirkt sich aus** — ein Regler je Zutat zeigt, was mit *deinem* Material herauskäme, und in welcher Spanne der Wert überhaupt liegen kann |
+| ✅ | **Mein Lager**: Material, Menge, Qualität und Lagerort eintragen; im Rezept steht dann, was fehlt, und ein Knopf zieht die Zutaten ab |
+| ✅ | **Bergbau** in beide Richtungen: Rohstoff → Fundorte, Ort → was es dort gibt, mit Abbauart, Raffinerie-Vergleich und Scan-Signatur |
+| ✅ | **Preise** von UEX Corp — was ein Rohstoff kostet und was er einbringt, damit „was fehlt mir" auch „was kostet mich das" beantwortet |
+| ✅ | **Handelslager**: was zum Verkauf im Laderaum liegt — getrennt vom Werkstatt-Lager, mit Kennzeichen für als gestohlen markierte Ladung |
+| ✅ | **Verkauf**: wo du deine Ware los wirst und was sie je SCU bringt — für mehrere Waren auf einmal, sortiert danach, wie viele ein Ort abnimmt |
 
-## What is being worked on
+## Woran gearbeitet wird
 
-No schedule and no fixed order — the state of things is in [`CHANGELOG.md`](CHANGELOG.md), and the **ⓘ "What's new"** window inside the tool shows what each build brought.
+Ohne Zeitplan und ohne feste Reihenfolge — Stand der Dinge steht im [`CHANGELOG.md`](CHANGELOG.md), und im Fenster „Was ist neu" lässt sich nachlesen, was jede Version gebracht hat.
 
-What comes next follows from what people report. The tool is in daily use, and most changes started as someone's message.
+Was als Nächstes kommt, ergibt sich aus den Rückmeldungen. Das Werkzeug ist täglich im Einsatz, und die meisten Änderungen haben als Nachricht von jemandem angefangen.
 
-## Relationship to the SC Deutsch Launcher
+## Verhältnis zum SC Deutsch Launcher
 
-**Freedom of choice, not replacement.**
+**Wahlfreiheit, nicht Ersatz.**
 
-This page used to argue that a self-kept inventory is necessarily inaccurate because it could only be filled "from today on". Two measurements disproved that:
+Hier stand lange, ein selbst geführter Bestand sei zwangsläufig ungenau, weil er nur „ab heute" fortgeschrieben werden könne. Zwei Messungen haben das widerlegt:
 
-- The watcher reads the **stored logs** on start. Having played without it running does not tear a hole, as long as Star Citizen still has the backup. If a gap remains anyway, it is **stated** rather than hidden.
-- The launcher itself counts **too low**: it is missing the P4-AR Rifle although the Fabricator lists it as owned. Starter blueprints were never "received" and appear in no log. Its number is a lower bound, not an inventory.
+- Der Watcher liest beim Start die **aufgehobenen Logs** nach. Ohne laufenden Watcher gespielt zu haben, reißt also kein Loch, solange Star Citizen die Sicherung noch hat. Bleibt doch eine Lücke, wird sie **gesagt** statt verschwiegen.
+- Der Launcher selbst zählt **zu niedrig**: Ihm fehlt die P4-AR Rifle, obwohl sie im Fabricator als „im Besitz" steht. Startbaupläne wurden nie „erhalten" und stehen in keinem Log. Seine Zahl ist eine Untergrenze, kein Bestand.
 
-The launcher remains useful all the same: it confirms finds and maintains a catalogue with German names. If it is there, it is used. If it is not — always the case on Linux — the watcher works anyway.
+Der Launcher bleibt trotzdem nützlich: Er bestätigt Funde und pflegt einen Katalog mit deutschen Bezeichnungen. Ist er da, wird er genutzt. Ist er nicht da — unter Linux immer —, läuft der Watcher trotzdem.
 
-## Getting involved
+## Mitreden
 
-Wishes, bug reports and ideas are welcome as an [issue](../../issues).
+Wünsche, Fehlermeldungen und Ideen gern als [Issue](../../issues).

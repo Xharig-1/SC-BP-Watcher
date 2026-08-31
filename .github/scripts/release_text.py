@@ -17,7 +17,7 @@ import os
 import re
 import sys
 
-DATEIEN = {'en': 'CHANGELOG.md', 'de': 'CHANGELOG.de.md'}
+DATEIEN = {'en': 'CHANGELOG.en.md', 'de': 'CHANGELOG.md'}
 
 
 def grundversion(tag):
@@ -176,7 +176,7 @@ def main():
     text = zusammensetzen(abschnitt(DATEIEN['en'], tag),
                           abschnitt(DATEIEN['de'], tag))
     if not text:
-        text = ('See the [changelog](../blob/main/CHANGELOG.md) for what this '
+        text = ('See the [changelog](../blob/main/CHANGELOG.en.md) for what this '
                 'release brought.')
     print(vorab_kopf(tag) + text + HINWEIS)
 

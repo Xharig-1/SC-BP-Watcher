@@ -1,104 +1,106 @@
 # Changelog
 
-**English** · [Deutsch](CHANGELOG.de.md)
+**Deutsch** · [English](CHANGELOG.en.md)
 
-All notable changes to this project are documented here.
+Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
-The project follows SemVer: `MAJOR.MINOR.PATCH`.
+Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.4.1 - unreleased
+## v3.4.1 - unveröffentlicht
 
-### Added
+### Neu
 
-- ⭐ **The trade storage can now be backed up, restored and cleared in one go** —
-  the same four controls the workshop storage already had, in the same place
-  and with the same words: *As backup (.json)*, *As spreadsheet (.csv)*, *Load
-  backup* and *Clear stock* in red.
+- ⭐ **Das Handelslager lässt sich sichern, zurückholen und in einem Zug
+  leeren** — dieselben vier Griffe, die das Werkstatt-Lager schon hatte, an
+  derselben Stelle und mit denselben Worten: *Als Sicherung (.json)*, *Als
+  Tabelle (.csv)*, *Sicherung einlesen* und *Lager löschen* in Rot.
 
-  The reason is the same as over there: the trade storage is hand-typed work
-  that exists nowhere else. And after a patch that wipes all cargo, the hold is
-  empty in the game but still full in the tool. Nobody deletes entries one by
-  one, so a wrong storage stayed put and the selling maths lied. One click now
-  clears it, after a confirmation that names the number of entries.
+  Der Grund ist derselbe wie drüben: Das Handelslager ist Handarbeit, die es
+  nirgends sonst zu holen gibt. Und nach einem Patch, der alle Ware
+  zurücksetzt, ist der Laderaum im Spiel leer — im Werkzeug aber noch voll.
+  Posten für Posten von Hand zu löschen macht niemand, also blieb ein falsches
+  Lager stehen und die Verkaufsrechnung log. Ein Klick räumt jetzt alles weg,
+  nach einer Rückfrage mit der Zahl der Posten.
 
-  The spreadsheet lists commodity, amount, the *stolen* mark and the storage
-  location — semicolon and comma, the way a German spreadsheet program expects
-  them.
+  Die Tabelle führt Ware, Menge, das Kennzeichen *gestohlen* und den Lagerort —
+  Semikolon und Komma, wie ein deutsches Tabellenprogramm es erwartet.
 
-  ⚠ **A backup from the other storage is rejected.** Both files look the same
-  from the outside; without this check the trade storage would have accepted a
-  workshop backup happily, discarded everything in it and saved an **empty**
-  storage — reporting “0 entries loaded”. It now says which backup belongs
-  where instead.
+  ⚠ **Die Sicherung des anderen Lagers wird abgelehnt.** Beide Dateien sehen
+  von aussen gleich aus; ohne diese Weiche hätte das Handelslager eine
+  Rohstoff-Sicherung klaglos angenommen, alles darin verworfen und ein
+  **leeres** Lager gespeichert — mit der Meldung „0 Posten eingelesen". Jetzt
+  steht stattdessen da, welche Sicherung wohin gehört.
 
-### Changed
+### Geändert
 
-- **The refinery yield is collapsed until you need it.** It was the longest
-  block on the storage page — unit, location, a seven-line typing field,
-  preview and button. Anyone just adding a single entry by hand scrolled past
-  all of it, with their own storage list out of sight below. One click on the
-  heading opens it; the state is remembered, so whoever types up every refinery
-  run finds it open.
+- **Die Raffinerie-Ausbeute ist eingeklappt, bis man sie braucht.** Der Block
+  war der längste auf der Lager-Seite — Einheit, Lagerort, ein sieben Zeilen
+  hohes Tippfeld, Vorschau und Knopf. Wer nur schnell einen Posten von Hand
+  einträgt, rollte an alldem vorbei, und die eigene Lagerliste lag darunter
+  ausser Sicht. Ein Klick auf die Überschrift klappt ihn auf; die Lage wird
+  gemerkt, wer also nach jedem Raffinerie-Lauf abtippt, findet ihn offen vor.
 
-### Fixed
+### Behoben
 
-- **Both storages now keep a previous version.** The workshop storage and the
-  trade storage already wrote atomically — to a side file first, then rename —
-  but **without a fallback**: a storage accidentally emptied or corrupted was
-  gone for good. The blueprint inventory had this safeguard from the start, the
-  two storages never did. They now produce `rohstoffe.bak.json` and
-  `handelslager.bak.json`, just like `bestand.bak.json`.
+- **Beide Lager legen jetzt eine Vorgängerfassung an.** Werkstatt-Lager und
+  Handelslager schrieben zwar atomar — erst in eine Nebendatei, dann umbenennen —,
+  aber **ohne Rückfall**: Ein versehentlich geleertes oder beschädigtes Lager war
+  endgültig weg. Der Bauplan-Bestand hatte diese Sicherung von Anfang an, die
+  beiden Lager nie. Jetzt entstehen `rohstoffe.bak.json` und
+  `handelslager.bak.json` genau wie `bestand.bak.json`.
 
-  It matters more here than for the inventory: unlocked blueprints can be
-  rebuilt from `Game.log`, stored cargo cannot — those are hand-typed entries
-  that exist nowhere else.
+  Dort wiegt es sogar schwerer als beim Bestand: Freigeschaltete Baupläne
+  liessen sich aus der `Game.log` neu aufbauen, eingelagerte Ware nicht — das
+  sind reine Handeingaben, die es nirgends sonst zu holen gibt.
 
-- **The interface check never built half the application.** Six pages were
-  missing from its page list — the entire workshop (crafting, mining, my stock)
-  and the entire trade section (selling, trade storage). It still reported
-  “no German text in the English interface” every time. It now visits all
-  eighteen and flags a new page that gets added without being listed.
+- **Die Oberflächenprüfung hat die halbe Anwendung nie aufgebaut.** In ihrer
+  Seitenliste fehlten sechs Seiten — die ganze Werkstatt (Herstellung, Bergbau,
+  Mein Lager) und der ganze Handel (Verkauf, Handelslager). Sie meldete
+  trotzdem zuverlässig „kein deutscher Text in der englischen Oberfläche".
+  Jetzt besucht sie alle achtzehn und schlägt selbst an, wenn eine neue Seite
+  dazukommt, ohne eingetragen zu werden.
 
-### Changed
+### Geändert
 
-- Safe writing now lives in **one** place, `pfade.json_sichern()`, instead of
-  being rebuilt in every module. Two copies of the same rule drift apart
-  eventually — which is exactly what had happened here.
+- Das sichere Schreiben steht jetzt **einmal** in `pfade.json_sichern()` statt in
+  jedem Modul neu. Zwei Fassungen derselben Regel gehen irgendwann auseinander —
+  genau das war hier passiert.
 
 ## v3.4.0 - 2026-08-30
 
-Cargo hold full — now what? The new **Trading** section tells you where to
-offload your goods and what they pay per SCU. Several commodities at once,
-sorted by how many of them a place actually takes: one stop usually beats three.
+Der Laderaum ist voll — und jetzt? Der neue Bereich **Handel** sagt dir, wo du
+deine Ware los wirst und was sie je SCU bringt. Für mehrere Waren auf einmal,
+sortiert danach, wie viele davon ein Ort überhaupt abnimmt: Ein Stopp bringt
+meist mehr als drei.
 
-Also in: a separate hold for trade goods, the **"Can close"** filter for
-blueprints you might lock yourself out of, and refinery yields typed in one go
-instead of across 24 fields.
+Dazu: ein eigenes Lager für Handelsware, der Filter **„Kann zugehen"** für
+Baupläne, die du dir unbemerkt verbaust, und die Raffinerie-Ausbeute tippst du
+jetzt in einem Rutsch ab statt in 24 Feldern.
 
-### Added
-- ⭐⭐ **"Can close" — the filter for what you quietly lock yourself out of.**
-  280 of the 353 contracts have a **reputation cap**: rank up past it with that
-  faction and they are no longer offered — and their blueprints are gone for
-  that save. The game says nothing about it.
+### Neu
+- ⭐⭐ **„Kann zugehen" — der Filter für das, was du dir unbemerkt verbaust.**
+  280 der 353 Aufträge haben eine **Ruf-Obergrenze**: Steigst du bei der
+  Fraktion darüber, werden sie dir nicht mehr angeboten — und ihre Baupläne sind
+  für diesen Spielstand weg. Im Spiel steht das nirgends.
 
-  The new filter in the blueprint list shows exactly the blueprints you are
-  missing that are **only** available from such contracts. In a real inventory
-  that was **199 of 738**.
+  Der neue Filter in der Bauplan-Liste zeigt genau die Baupläne, die dir fehlen
+  und **nur** über solche Aufträge zu bekommen sind. In einem echten Bestand
+  waren das **199 von 738**.
 
-  For every affected blueprint the limit now also appears under its origin:
-  *"⚠ Closes at Elite Contractor (95,250 reputation)"*.
+  Bei jedem betroffenen Bauplan steht die Grenze jetzt auch in der Herkunft:
+  *„⚠ Zu ab Elite Contractor (95.250 Ruf)"*.
 
-  ⚠ **One open route is enough.** If five contracts lead to a blueprint and one
-  of them has no cap, there is no warning — otherwise it would appear everywhere
-  and nobody would take it seriously.
+  ⚠ **Ein offener Weg genügt.** Führen fünf Aufträge zu einem Bauplan und einer
+  davon hat keine Obergrenze, wird nicht gewarnt — sonst stünde die Warnung
+  überall und niemand nähme sie noch ernst.
 
-  ⚠ **What the tool does NOT say: how far away you are.** Your own standing is
-  not in the `Game.log` — measured across 22 logs, reputation appears there only
-  as a connection line to CIG's service. So it says "closes at", not "you have
-  4,200 left".
+  ⚠ **Was das Werkzeug NICHT sagt: wie weit du noch weg bist.** Der eigene
+  Ruf-Stand steht nicht in der `Game.log` — nachgemessen über 22 Protokolle,
+  dort taucht der Ruf ausschließlich als Verbindungszeile zu CIGs Dienst auf.
+  Deshalb heißt es „ab wann zu" und nicht „dir bleiben noch 4.200".
 
-- ⭐ **Enter a whole refinery yield at once.** Under "My stock" there is now a
-  field where you type the rows exactly as they appear in game:
+- ⭐ **Raffinerie-Ausbeute in einem Rutsch eintragen.** Unter „Mein Lager" gibt
+  es jetzt ein Feld, in das du die Zeilen so abtippst, wie sie im Spiel stehen:
 
   ```
   Titanium 295 188
@@ -106,3552 +108,3843 @@ instead of across 24 fields.
   Heart of the Woods 500 12
   ```
 
-  As you type, the tool works out what would go in; broken lines are listed
-  individually with the reason. One button, all entries added — the storage
-  location applies to all. Six entries used to be **24 inputs** through the form
-  above; now they are six lines.
+  Beim Tippen rechnet das Werkzeug mit und zeigt, was hineinginge; kaputte
+  Zeilen stehen einzeln mit Grund daneben. Ein Knopf, alle Posten drin — der
+  Lagerort gilt für alle. Sechs Posten waren über das Formular darüber **24
+  Eingaben**, jetzt sind es sechs Zeilen.
 
-  **Unit switchable: cSCU or SCU.** The refinery terminal counts in cSCU
-  ("GEWONNENE MATERIALIEN (cSCU)"), the inventory tooltip in SCU (`0.889 SCU`).
-  Both screens can be typed off this way. Cross-checked: 272 cSCU from the
-  terminal are the same 2.728 SCU as the seven stacks in the inventory.
+  **Einheit umschaltbar: cSCU oder SCU.** Das Raffinerie-Terminal rechnet in
+  cSCU („GEWONNENE MATERIALIEN (cSCU)"), die Gegenstands-Anzeige im Lager in
+  SCU (`0.889 SCU`). Beide Bildschirme lassen sich so abtippen. Gegengerechnet:
+  272 cSCU aus dem Terminal sind dieselben 2,728 SCU wie die sieben Stapel im
+  Inventar.
 
-  **And the amount field itself now speaks cSCU.** A checkbox sits right of it:
-  tick it and the row reads "Amount (cSCU)" — then you type the number straight
-  off the refinery screen without dividing by 100. Unticked it stays SCU, the
-  way the inventory tooltip shows it.
+  **Und das Mengenfeld selbst kann jetzt cSCU.** Rechts daneben sitzt ein
+  Kästchen: Haken rein, und die Zeile heißt „Menge (cSCU)" — dann tippst du die
+  Zahl vom Raffinerie-Bildschirm ab, ohne durch 100 zu teilen. Ohne Haken bleibt
+  es bei SCU, wie es die Gegenstands-Anzeige im Lager zeigt.
 
-  That is the more convenient route: at the refinery terminal all rows are
-  listed below each other, in the inventory you have to hover every stack with
-  the mouse. The setting is remembered, and the label always states which unit
-  applies — otherwise every entry would silently be off by a factor of 100.
+  Das ist der bequemere Weg: Am Raffinerie-Terminal stehen alle Zeilen
+  untereinander, im Inventar musst du jeden Stapel einzeln mit der Maus
+  anfahren. Die Einstellung bleibt gemerkt, und die Beschriftung sagt immer,
+  welche Einheit gerade gilt — sonst wäre jede Eingabe stillschweigend
+  hundertfach daneben.
 
-  **The storage location stays** — after adding entries and across restarts.
-  Whoever enters a yield enters six items at the same place; picking it again
-  every time was pure typing.
+  **Der Lagerort bleibt stehen** — auch nach dem Eintragen und über den
+  Programmstart hinweg. Wer eine Ausbeute einträgt, trägt sechs Posten am
+  selben Ort ein; ihn jedes Mal neu zu wählen war reine Tipparbeit.
 
-  **A mistyped name shows the most likely match next to it** — "Aslerite" is
-  not a resource. Did you mean: Aslarite? Nothing is matched automatically
-  though; the decision stays with the human.
+  **Bei einem vertippten Namen steht der wahrscheinlichste Treffer daneben** —
+  „Aslerite" gibt es nicht als Rohstoff. Meintest du: Aslarite? Zugeordnet wird
+  trotzdem nichts von allein; die Entscheidung bleibt beim Menschen.
 
-  ⚠ **Automatic is not possible, and that is measured, not assumed.** The
-  refinery job is **not** in the `Game.log` — checked across 22 logs:
-  `Refinery` appears 58 times, only as a load line for the deck's 3D models;
-  `Aslarite`, `Agricium` and `cSCU` **not once**. Image recognition would need
-  extra packages and is therefore out.
+  ⚠ **Automatisch geht es nicht, und das ist gemessen, nicht vermutet.** Der
+  Raffinerie-Auftrag steht **nicht** in der `Game.log` — über 22 Protokolle
+  nachgesehen: `Refinery` kommt 58-mal vor, ausschließlich als Ladezeile für
+  die 3D-Modelle des Decks; `Aslarite`, `Agricium` und `cSCU` **kein einziges
+  Mal**. Bilderkennung bräuchte Zusatzpakete und fällt damit aus.
 
-- ⭐ **"What pays off most?" — the next sensible step, below your progress.**
-  The percentage tells you where you stand, not what moves you forward. Below it
-  are now the ten contracts you are still missing the most blueprints from —
-  with faction, payout and required rank.
+- ⭐ **„Was bringt am meisten?" — der nächste sinnvolle Schritt, unter dem
+  Fortschritt.** Die Prozentzahl sagt, wo du stehst, aber nicht, was dich
+  weiterbringt. Jetzt stehen darunter die zehn Aufträge, aus denen dir noch die
+  meisten Baupläne fehlen — mit Fraktion, Belohnung und nötigem Rang.
 
-  The top one gives **44 missing blueprints in one go** in a real inventory.
-  Calculated on data that is loaded anyway.
+  Der oberste bringt in einem echten Bestand **44 fehlende Baupläne auf einen
+  Schlag**. Gerechnet wird auf Daten, die ohnehin geladen sind.
 
-- **Two details on every blueprint that exist nowhere else:**
+- **Zwei Angaben an jedem Bauplan, die es sonst nirgends gibt:**
 
   | | |
   |---|---|
-  | 👥 **Shareable in a group** | "you can run this as five, everyone gets the blueprints". ⚠ Only shown when **all** routes are shareable — otherwise the group would line up at the wrong contract |
-  | ⏱ **Repeat lockout** | "Available again after 2 h 30 min". Values from one minute to a week; the shortest is shown |
+  | 👥 **Im Team teilbar** | „den könnt ihr zu fünft laufen, jeder bekommt die Baupläne". ⚠ Steht nur da, wenn **alle** Wege teilbar sind — sonst stünde die Staffel am falschen Auftrag |
+  | ⏱ **Wiederholsperre** | „Wieder verfügbar nach 2 Std 30 Min". Werte von einer Minute bis zu einer Woche; genannt wird die kürzeste |
 
-  Both come from CIG's own contract data (`canBeShared`,
-  `personalCooldownTime`) and were only visible in the raw files until now.
+  Beides kommt aus CIGs eigenen Vertragsdaten (`canBeShared`,
+  `personalCooldownTime`) und war bisher nur in den Rohdaten zu sehen.
 
 
-- ⭐⭐ **Trading — two new tabs: "Cargo hold" and "Selling".**
-  The question that was missing: *where do I offload my cargo, and what does it
-  pay per SCU?*
+- ⭐⭐ **Handel — zwei neue Reiter: „Handelslager" und „Verkauf".**
+  Die Frage, die bisher fehlte: *wo werde ich meine Ladung los, und was bringt
+  sie je SCU?*
 
-  **The selling tab** answers it for **several commodities at once**. It sorts
-  not by the highest price, but by **how many of your goods a place actually
-  takes** — because that is the difference that matters. Measured on 30 Aug
-  2026 for 100 SCU gold, 40 copper and 25 iron:
+  **Der Verkaufs-Reiter** beantwortet sie für **mehrere Waren auf einmal**.
+  Sortiert wird nicht nach dem höchsten Preis, sondern danach, **wie viele
+  deiner Waren ein Ort überhaupt abnimmt** — denn das ist der Unterschied, der
+  zählt. Gemessen am 30.08.2026 für 100 SCU Gold, 40 Copper und 25 Iron:
 
-  | Route | Revenue |
+  | Weg | Erlös |
   |---|---|
-  | everything at **one** place | 3,533,000 aUEC |
-  | each commodity at its own best place | 3,566,000 aUEC |
+  | alles an **einem** Ort | 3.533.000 aUEC |
+  | jede Ware am je besten Ort | 3.566.000 aUEC |
 
-  **One percent more for two extra approaches.** The known trading sites do not
-  give that answer, because they only ever look at one commodity.
+  **Ein Prozent mehr für zwei zusätzliche Anflüge.** Genau diese Antwort geben
+  die bekannten Handelsseiten nicht, weil sie immer nur eine Ware betrachten.
 
-  **The cargo hold** is deliberately kept apart from the workshop stock: one is
-  building material you keep, the other is cargo you want gone. A button in the
-  selling tab pulls the whole hold into the selection.
+  **Das Handelslager** ist bewusst vom Werkstatt-Lager getrennt: Das eine ist
+  Baumaterial, das man behält, das andere Ladung, die man loswerden will. Ein
+  Knopf im Verkaufs-Reiter übernimmt den ganzen Bestand in die Auswahl.
 
-  Both lists are proper tables — commodity · location · SCU · price per SCU ·
-  total, figures right-aligned below each other.
+  Beide Listen sind echte Tabellen — Ware · Ort · SCU · Preis 1 SCU ·
+  Gesamtpreis, Zahlen rechtsbündig untereinander.
 
-- **Stolen cargo.** Instead of a quality (which changes nothing when selling,
-  and looted cargo is always Q 0 anyway) the cargo hold has a *"marked as
-  stolen"* tick. The selling tab then narrows down to the **15 terminals** that
-  ask no questions (`is_nqa` at UEX) — seven of them with buy offers.
+- **Gestohlene Ware.** Statt einer Güte (die beim Verkauf nichts ändert, und
+  erbeutete Ladung hat ohnehin immer Q 0) gibt es im Handelslager den Haken
+  *„als gestohlen markiert"*. Der Verkaufs-Reiter blendet dann auf die
+  **15 Terminals**, die keine Fragen stellen (`is_nqa` bei UEX) — sieben davon
+  mit Ankaufgeboten.
 
-- **Refresh prices yourself.** A button fetches prices right away instead of
-  waiting for the daily update — **once per hour**. While the lock is running
-  the button counts down itself and changes colour as it goes (grey → gold →
-  green). No red: the button is locked *because* the fetch succeeded.
+- **Preise selbst auffrischen.** Ein Knopf holt die Preise sofort, statt auf den
+  täglichen Abruf zu warten — **einmal pro Stunde**. Solange die Sperre läuft,
+  zählt der Knopf die Restzeit selbst herunter und wechselt dabei die Farbe
+  (grau → gold → grün). Kein Rot: Der Knopf ist gesperrt, *weil* der Abruf
+  geklappt hat.
 
-- **The amount field does maths** — `100+5` makes 105. Click a row and its
-  amount appears in the field, ready to be adjusted with `+5` or `−12`. Same
-  behaviour as in the workshop stock.
+- **Im Mengenfeld darf gerechnet werden** — `100+5` ergibt 105. Klickt man eine
+  Zeile an, steht ihre Menge im Feld und lässt sich mit `+5` oder `−12`
+  nachjustieren. Dasselbe Verhalten wie im Werkstatt-Lager.
 
-### Changed
-- **Commodity and storage location come from closed lists** — as in the
-  workshop stock. Only what UEX knows can be entered; near misses get
-  suggestions.
+### Geändert
+- **Ware und Lagerort kommen aus geschlossenen Listen** — wie im Werkstatt-Lager.
+  Eingetragen werden kann nur, was UEX auch kennt; zu Vertippern werden
+  ähnliche Namen vorgeschlagen.
 
-- `preise.py` used to rule out "prices per terminal" explicitly ("another 2.1 MB
-  of data and a different tool"). That was no longer true: the full pull is
-  1.04 MB, and 293 KB once tidied up. The file header now says where the line
-  actually runs.
+- `preise.py` schloss „Preise je Terminal" bisher ausdrücklich aus („weitere
+  2,1 MB Daten und ein anderes Werkzeug"). Der Satz stimmte nicht mehr: Der
+  volle Abzug ist 1,04 MB und aufgeräumt abgelegt 293 KB. Der Kopf der Datei
+  sagt jetzt, wo die Grenze wirklich verläuft.
 
-- ⭐ **Sidebar groups can be collapsed** — Blueprints, Workshop, Trading,
-  Settings, Info. One click on the heading; the state is remembered until the
-  next start.
+- ⭐ **Die Gruppen der Seitenleiste lassen sich zuklappen** — Baupläne,
+  Werkstatt, Handel, Einstellungen, Info. Ein Klick auf die Überschrift, der
+  Zustand bleibt bis zum nächsten Start erhalten.
 
-  This is the third lever against window height: collapsing Workshop, Trading
-  and Settings cuts the sidebar's space requirement from **1020 to 696
-  pixels**, and the window's minimum height follows. Suggested by
+  Das ist der dritte Hebel gegen die Fensterhöhe: Wer Werkstatt, Handel und
+  Einstellungen zuklappt, drückt den Platzbedarf der Leiste von **1020 auf
+  696 Pixel**, und die Mindesthöhe des Fensters geht mit. Vorschlag von
   **Morkhan (KRT)**.
 
-  ⚠ Opening a tab from a collapsed group expands it automatically — otherwise
-  you would stand on a page whose entry is nowhere to be seen.
+  ⚠ Öffnet man einen Reiter aus einer zugeklappten Gruppe, klappt sie von
+  selbst auf — sonst stünde man auf einer Seite, deren Eintrag in der Leiste
+  gar nicht zu sehen ist.
 
-- **The sidebar now looks the same throughout.** "Advanced" carries the same
-  collapse arrow as the groups and sits inside the "Settings" group instead of
-  clinging to the bottom on its own — behind it are paths, detection and the
-  blueprint stock, things you set. All collapse arrows use the same icon as
-  the rest of the program — previously they were text characters that looked
-  different depending on the system font.
+- **Die Seitenleiste sieht überall gleich aus.** „Für Fortgeschrittene" hat
+  jetzt denselben Klapp-Pfeil wie die Gruppen und sitzt in der Gruppe
+  „Einstellungen", statt einzeln unten zu kleben — dahinter liegen Pfade,
+  Erkennung und der Bauplan-Bestand, also Dinge, die man einstellt. Alle Klapp-Pfeile benutzen dasselbe Symbol
+  wie der Rest des Programms — vorher waren es Textzeichen, die je nach
+  Systemschrift anders aussahen.
 
-- **"Launch Star Citizen", Coffee and Discord are pinned to the foot of the
-  sidebar** and no longer scroll away. The sidebar also has a visible scrollbar:
-  without it an expanded group looked empty whenever its entries sat below the
-  window edge.
+- **„Star Citizen starten", Kaffee und Discord stehen fest am Fuß der Leiste**
+  und rollen nicht mehr mit. Dazu hat die Leiste einen sichtbaren Rollbalken:
+  Ohne ihn wirkte eine aufgeklappte Gruppe leer, wenn ihre Einträge unterhalb
+  des Fensterrands lagen.
 
-- ⭐ **"Blueprint stock" now sits behind "Advanced".** The page writes to your
-  own stock — reading in, overwriting, resetting — yet stood among harmless
-  settings and got clicked in passing. It stays reachable, just not by accident.
+- ⭐ **„Bauplan-Bestand" liegt jetzt hinter „Für Fortgeschrittene."** Die Seite
+  schreibt am eigenen Bestand — einlesen, überschreiben, zurücksetzen —, stand
+  aber zwischen lauter harmlosen Einstellungen und wurde im Vorbeigehen
+  angeklickt. Erreichbar bleibt sie, nur nicht mehr nebenbei.
 
-- **The "Read the logs again" button is red.** It starts a run across hundreds
-  of logs and writes to the blueprint stock while doing so. Red **permanently**,
-  not only on hover — a button that warns once the mouse is already on it warns
-  nobody. Both found by **Morkhan (KRT)** after pressing it by accident.
+- **Der Knopf „Protokolle erneut einlesen" ist rot.** Er stößt einen Lauf über
+  hunderte Protokolle an und schreibt dabei am Bauplan-Stand. Rot **dauerhaft**,
+  nicht erst beim Überfahren — ein Knopf, der erst warnt, wenn die Maus schon
+  darauf steht, warnt niemanden. Beides gefunden von **Morkhan (KRT)**, nachdem
+  er ihn versehentlich gedrückt hatte.
 
-- **"My stock" now works like the cargo hold.** Resource and storage location
-  are dropdown fields: type **or** click the arrow and pick. Labels sit above
-  the fields rather than beside them, so an expanded list shifts nothing. Same
-  handling in both places — learn one, know the other.
+- **„Mein Lager" bedient sich jetzt wie das Handelslager.** Rohstoff und
+  Lagerort sind Auswahlfelder: tippen **oder** den Pfeil anklicken und
+  aussuchen. Die Beschriftungen stehen über den Feldern statt daneben, damit
+  die aufgeklappte Liste nichts verschiebt. Dieselbe Bedienung an beiden
+  Stellen — wer die eine kann, kann die andere blind.
 
-- ⭐⭐ **The refinery yield lost its storage location.** Anyone who had picked
-  "Levski" got the whole yield booked in **without a location**, and therefore as
-  separate stacks next to the existing stock. Cause: the location name was run
-  through a function that maps input onto a known **resource**; a location name
-  is never in that list, so nothing came back.
+- ⭐⭐ **Die Raffinerie-Ausbeute verlor ihren Lagerort.** Wer „Levski" gewählt
+  hatte, bekam die ganze Ausbeute **ohne Ort** eingebucht — und damit als eigene
+  Stapel neben dem bereits vorhandenen Bestand. Ursache: Der Ortsname lief durch
+  eine Funktion, die eine Eingabe auf einen bekannten **Rohstoff** zieht; ein
+  Ortsname steht dort nie drin, also kam nichts zurück.
 
-  The block now also has its own **"Storage location for this yield"** field.
-  Previously the location from the form further up applied silently — neither
-  visible nor changeable without scrolling back.
+  Dazu hat der Block jetzt ein **eigenes Feld „Lagerort für diese Ausbeute"**.
+  Vorher galt stillschweigend der Ort aus dem Formular weiter oben — das war
+  weder sichtbar noch zu ändern, ohne hochzurollen.
 
-- **"Please download the new version yourself" appeared at the wrong moment.**
-  Clicking "get" while GitHub is still building the files sent you to the
-  releases page — where they are not yet either. It now says what is actually
-  going on: *"This version is still being built."*
+- **„Bitte hol die neue Version selbst" kam zur falschen Zeit.** Wer auf
+  „holen" klickt, während GitHub die Dateien noch baut, wurde auf die
+  Releases-Seite geschickt — wo sie in dem Moment auch nicht liegen. Jetzt steht
+  dort, was wirklich los ist: *„Diese Fassung wird gerade noch gebaut."*
 
-- ⭐ **The window could no longer be made smaller.** Minimum height was derived
-  from the sidebar's space requirement — it grew with every new tab and ended up
-  at **1028 pixels**. It is now **380**: since the sidebar scrolls and its groups
-  collapse, a shorter window loses nothing.
+- ⭐ **Das Fenster ließ sich nicht mehr kleiner ziehen.** Die Mindesthöhe wurde
+  aus dem Platzbedarf der Seitenleiste gerechnet — mit jedem neuen Reiter wuchs
+  sie mit und lag zuletzt bei **1028 Pixeln**. Jetzt sind es **380**: Seit die
+  Leiste rollt und ihre Gruppen klappbar sind, geht bei einem kürzeren Fenster
+  nichts verloren.
 
-- **Deleting an entry jumped the list back to the top.** Removing an item far
-  down meant finding your place again — the list is redrawn on delete, and the
-  scroll position reset. It is now kept, in both the workshop and cargo stock.
+- **Beim Löschen sprang die Liste nach ganz oben.** Wer einen Posten weit unten
+  entfernte, musste sich neu zurechtfinden — die Liste wird beim Löschen neu
+  gezeichnet, und die Rollfläche stand danach wieder am Anfang. Die Stelle
+  bleibt jetzt erhalten, im Werkstatt- wie im Handelslager.
 
-### Fixed
-- **The README said something wrong about the SC Deutsch Launcher.** It claimed
-  the launcher "confirms finds" — that intermediate state has been gone since
-  v3.0.0: what is in the `Game.log` is in the game, there is nothing to confirm.
-  The English version had been right for a while, the German one had not.
+### Behoben
+- **Die Anleitung sagte Falsches über den SC Deutsch Launcher.** Dort stand, er
+  „bestätige die Funde" — diese Zwischenstufe gibt es seit v3.0.0 nicht mehr:
+  Was in der `Game.log` steht, steht im Spiel, da ist nichts zu bestätigen. Die
+  englische Fassung war längst richtig, die deutsche nicht.
 
-  What stands there instead is the point that actually matters: **both write
-  into the same game text file.** That is not a problem — the watcher replaces
-  the launcher's list with the same list plus checkboxes instead of adding a
-  second one, and undoing the notes brings the launcher's state back. But if the
-  launcher runs afterwards, the checkboxes are gone until the watcher has been
-  through again (six hours at the latest, immediately via *Refresh*).
+  Neu steht dafür der Punkt da, der wirklich zählt: **Beide schreiben in
+  dieselbe Textdatei des Spiels.** Das ist kein Problem — der Watcher ersetzt
+  die Liste des Launchers durch dieselbe mit Kästchen, statt eine zweite
+  danebenzustellen, und beim Zurücknehmen steht dessen Stand wieder da. Läuft
+  der Launcher aber danach noch einmal, sind die Kästchen weg, bis der Watcher
+  wieder dran war (spätestens nach sechs Stunden, sofort über *Auffrischen*).
 
-- ⚠⚠ **With the "Original" text source, the wrong file was written.** If your
-  game is set to German, the details went into the **English** `global.ini` —
-  which the game never reads. Writing succeeded, nothing ever arrived, and the
-  status line reported success anyway.
+- ⚠⚠ **Bei der Textquelle „Original" wurde in die falsche Datei geschrieben.**
+  Wer sein Spiel auf Deutsch stellt, bekam die Angaben in die **englische**
+  `global.ini` — die das Spiel nie liest. Eingetragen wurde korrekt, angekommen
+  ist nichts, und die Statuszeile meldete trotzdem Erfolg.
 
-  The reason: the tool walked a fixed order — `english` first, then
-  `german_(germany)` — and took the first file that existed. Both almost always
-  exist, so **English always won**. Which language the game actually reads is in
-  `user.cfg` (`g_language`) — a line the tool has always **written** itself, but
-  never read.
+  Der Grund: Das Werkzeug ging eine feste Reihenfolge durch — erst `english`,
+  dann `german_(germany)` — und nahm die erste Datei, die es gab. Beide gibt es
+  fast immer, also gewann **immer Englisch**. Welche Sprache das Spiel wirklich
+  liest, steht in der `user.cfg` (`g_language`) — die Zeile hat das Werkzeug
+  seit jeher selbst **geschrieben**, aber nie gelesen.
 
-  Now `g_language` decides. If it is not set, English stays the default — that
-  is how Star Citizen starts without it anyway.
+  Jetzt entscheidet `g_language`. Steht dort nichts, bleibt es bei Englisch —
+  ohne den Eintrag startet Star Citizen ohnehin so.
 
-  This probably explains why changes to the contract texts did not arrive for
-  months. Only "Original" was affected; the **German** and **StarStrings**
-  sources carry their own language.
-
-
-- A button relabelled at runtime went back to its old colour once the mouse had
-  passed over it.
+  Das erklärt vermutlich, warum Änderungen an den Auftragstexten monatelang
+  nicht ankamen. Betroffen war nur „Original"; die Quellen **Deutsch** und
+  **StarStrings** bringen ihre Sprache selbst mit.
 
 
-- ⭐ **The window no longer fit on a 1920×1080 screen.** With the "Trading"
-  group the sidebar needed 1020 pixels, which produced a **minimum height
-  larger than the monitor** — Tk then holds that against any attempt to shrink
-  the window, it extended past the taskbar and everything below became
-  unreachable. Found by **Morkhan (KRT)** on the first day of testing.
+- Ein Knopf, der zur Laufzeit umbeschriftet wird, holte nach dem Überfahren mit
+  der Maus die alte Farbe zurück.
 
-  Two changes: the minimum height is now capped to the screen, and the
-  **sidebar scrolls** when it does not fit — otherwise the lower tabs would
-  simply have been cut off.
 
-- The **diagnostic report** now states window size and minimum size. When the
-  above was found the report contained not a single figure about it, although
-  those were exactly what mattered.
+- ⭐ **Das Fenster passte auf 1920×1080 nicht mehr auf den Bildschirm.** Mit der
+  Gruppe „Handel" brauchte die Seitenleiste 1020 Pixel, und daraus wurde eine
+  **Mindesthöhe größer als der Monitor** — die hält Tk dann gegen jedes
+  Verkleinern, das Fenster stand über der Taskleiste hinaus und man kam an
+  alles darunter nicht mehr heran. Gefunden von **Morkhan (KRT)** am ersten Testtag.
 
-### Thanks
-- **Morkhan (KRT)** for the idea behind this tab, for spotting that the
-  window no longer fit the screen, and for the thought that one
-  place taking the whole cargo beats the best single price.
+  Zwei Änderungen: Die Mindesthöhe wird jetzt auf den Bildschirm gedeckelt, und
+  die **Seitenleiste rollt**, wenn sie nicht ganz hineinpasst — sonst wären die
+  unteren Reiter einfach abgeschnitten gewesen.
+
+- Der **Diagnosebericht** nennt jetzt Fenstergröße und Mindestmaß. Beim Fund
+  oben stand dazu keine einzige Zahl darin, obwohl genau sie den Fehler
+  ausmachte.
+
+### Danke
+- **Morkhan (KRT)** für die Idee zu diesem Reiter, für den Fund, dass das
+  Fenster nicht mehr auf den Bildschirm passte, und für den Gedanken, dass
+  ein Ort, der die ganze Ladung nimmt, mehr wert ist als der beste Einzelpreis.
 
 ## v3.3.5 - 2026-08-30
 
-### Fixed
+### Behoben
 
-- ⚠ **Three blueprints could never find each other.** Quotation marks are
-  levelled when names are compared — straight, typographic, French. The table
-  was missing the **opening** typographic one: `SW16BR1 “Buzzsaw” Repeater`
-  became `sw16br1 “buzzsaw' repeater`, closing levelled, opening not.
+- ⚠ **Drei Baupläne konnten nie zueinander finden.** Beim Vergleichen werden
+  Anführungszeichen angeglichen — gerade, typografische, französische. In der
+  Tabelle fehlte ausgerechnet das **öffnende** typografische:
+  `SW16BR1 “Buzzsaw” Repeater` wurde zu `sw16br1 “buzzsaw' repeater`, das
+  schließende angeglichen, das öffnende nicht.
 
-  Affected are the three `SW16BR…` repeaters. Anyone who had them from another
-  source — log, launcher, import — saw them as permanently **missing**, even
-  though they were in the inventory.
+  Betroffen sind die drei `SW16BR…`-Repeater. Wer sie aus einer anderen Quelle
+  hatte — Log, Launcher, Import —, bei dem galten sie dauerhaft als **fehlend**,
+  obwohl sie im Bestand standen.
 
-  Found by comparing a hand-kept list against the catalogue, not through a
-  report: nobody suspects a quotation mark. The self-test now runs every common
-  quotation mark through the comparison form and requires the same result.
+  Aufgefallen beim Abgleich einer von Hand geführten Liste gegen den Katalog,
+  nicht durch eine Meldung: Niemand vermutet ein Anführungszeichen dahinter.
+  Der Selbsttest zieht jetzt alle gängigen Anführungszeichen durch die
+  Vergleichsform und verlangt dasselbe Ergebnis.
 
 ## v3.3.4 - 2026-08-30
 
-### Fixed
+### Behoben
 
-- **Blueprints that were once named differently in game are recognised again.**
-  The translation occasionally renames items. Anyone who got the blueprint before
-  carried the old name in their inventory forever — and the catalogue did not
-  know it.
+- **Baupläne, die im Spiel einmal anders hießen, werden wiedererkannt.** Die
+  Übersetzung benennt Gegenstände gelegentlich um. Wer den Bauplan vorher bekam,
+  trug den alten Namen für immer im Bestand — und der Katalog kannte ihn nicht.
 
-  | In the inventory | In the catalogue today |
+  | Im Bestand | Heute im Katalog |
   |---|---|
   | `BlackFire Racing Flight Suit` | `Neutrino Racing Flight Suit BlackFire` |
   | `BlueFlame Racing Helmet` | `Neutrino Racing Helmet BlueFlame` |
 
-  Same words, different order, one series name more — a string comparison never
-  catches that.
+  Dieselben Wörter, andere Reihenfolge, ein Reihenname mehr — ein
+  Zeichenketten-Vergleich fängt das nie.
 
-  ⚠ **A match is only made when it is unambiguous:** when **exactly one**
-  catalogue entry contains all the words of the old name, and the name has at
-  least two words. `Parallax` alone sits inside five entries and therefore stays
-  as it is. A wrongly matched blueprint would be worse than one openly listed as
-  unknown.
+  ⚠ **Zugeordnet wird nur, wenn es eindeutig ist:** wenn **genau ein**
+  Katalogeintrag sämtliche Wörter des alten Namens enthält, und der Name
+  mindestens zwei Wörter hat. `Parallax` allein steckt in fünf Einträgen und
+  bleibt deshalb stehen. Ein falsch zugeordneter Bauplan wäre schlimmer als
+  einer, der offen als unbekannt ausgewiesen ist.
 
-  The existing inventory is corrected on the next start.
+  Der vorhandene Stand wird beim nächsten Start mit angeglichen.
 
-  Found in the data of **Morkhan (KRT)** 🙏
+  Gefunden an den Daten von **Morkhan (KRT)** 🙏
 
 ## v3.3.3 - 2026-08-30
 
-### Fixed
+### Behoben
 
-- ⚠⚠ **The tool was spoiling its own detection.** Anyone with the in-game item
-  details switched on — class, size and grade in the item name — had every
-  newly unlocked blueprint **stored wrongly** from then on.
+- ⚠⚠ **Das Werkzeug hat sich die eigene Erkennung verdorben.** Wer die Angaben
+  am Gegenstand eingeschaltet hat — Klasse, Größe, Gütegrad im Spielnamen —,
+  bekam ab dann jeden neu freigeschalteten Bauplan **falsch gespeichert**.
 
-  The reason: the game reports a blueprint under the name that currently sits in
-  its text file. And since the insertion that is no longer "Balandin" but
-  **"Balandin (S3 B Military)"**. That is exactly what got stored. The catalogue
-  does not know that name — the blueprint counted as **not owned**, the tick was
-  missing from the list, progress stayed too low, and every further find made it
-  worse.
+  Der Grund: Das Spiel meldet den Bauplan mit dem Namen, der gerade in seiner
+  Textdatei steht. Und dort steht seit der Einfügung nicht mehr „Balandin",
+  sondern **„Balandin (S3 B Military)"**. Genau das wurde abgelegt. Der Katalog
+  kennt den Namen nicht — der Bauplan galt als **nicht vorhanden**, in der
+  Liste fehlte das Häkchen, der Fortschritt blieb zu niedrig, und mit jedem
+  weiteren Fund wurde es schlimmer.
 
-  For one reporter it was **twelve** blueprints. It only came to light because
-  since v3.3.2 the report says which names the catalogue does not know — the
-  list read like an excerpt from the game, only with a suffix.
+  Bei einem Melder waren es **zwölf** Baupläne. Aufgefallen ist es erst, weil
+  seit v3.3.2 im Bericht steht, welche Namen der Katalog nicht kennt — die
+  Liste las sich wie ein Auszug aus dem Spiel, nur mit Anhang.
 
-  **Fixed both ways:** new finds are stored under their catalogue name, and the
-  existing inventory is corrected once on the next start. Nothing is lost and
-  nobody has to do anything.
+  **Behoben in beide Richtungen:** Neue Funde werden unter ihrem Katalognamen
+  abgelegt, und der vorhandene Stand wird beim nächsten Start einmal
+  angeglichen. Es geht nichts verloren und niemand muss etwas tun.
 
-  ⚠ The bracket is only removed **when it is the cause**: 39 blueprints are
-  named that way themselves ("A03 Sniper Rifle Magazine (15 cap)", "Artimex
-  Arms (Modified)"). The rule applies only when the full name is unknown and the
-  shortened one is known — so it also covers a suffix that does not exist yet.
+  ⚠ Die Klammer wird dabei **nur** abgeschnitten, wenn sie die Ursache ist:
+  39 Baupläne heißen selbst so („A03 Sniper Rifle Magazine (15 cap)",
+  „Artimex Arms (Modified)"). Die Regel greift nur, wenn der volle Name
+  unbekannt und der gekürzte bekannt ist — damit auch bei einem Anhang, den es
+  heute noch gar nicht gibt.
 
-  Reported by **Morkhan (KRT)** 🙏
+  Gemeldet von **Morkhan (KRT)** 🙏
 
-### Thanks
+### Dank
 
-**Morkhan (KRT)** found three things that day, and the last was the heaviest: a
-bug that affects every user with the item details switched on, and that drifts
-further apart over time. Thank you 🙏
+**Morkhan (KRT)** ist an diesem Tag dreimal fündig geworden, und der letzte
+Fund war der schwerste: ein Fehler, der jeden Nutzer mit eingeschalteten
+Angaben betrifft und mit der Zeit immer weiter auseinanderläuft. Danke 🙏
 
 ## v3.3.2 - 2026-08-30
 
-### Added
+### Neu
 
-- **The report now also says *which* blueprints the catalogue does not know** —
-  not just how many. Up to twelve names, then "… and N more".
+- **Der Bericht sagt jetzt auch, *welche* Baupläne der Katalog nicht kennt** —
+  nicht nur, wie viele. Bis zu zwölf Namen, danach „… und N weitere".
 
-  The number alone only says that something does not line up. The names usually
-  say why as well: a whole armour set the catalogue does not carry yet, or a
-  different spelling. Without them somebody would have to compare the file with
-  the catalogue by hand — which makes the line in the report worthless.
+  Die Zahl allein sagt nur, dass etwas nicht zusammenpasst. Die Namen sagen
+  meistens auch gleich, warum: ein ganzes Rüstungsset, das der Katalog noch
+  nicht führt, oder eine abweichende Schreibweise. Ohne sie müsste jemand die
+  Datei von Hand mit dem Katalog vergleichen — dann ist die Angabe im Bericht
+  wertlos.
 
 ## v3.3.1 - 2026-08-30
 
-### Fixed
+### Behoben
 
-- ⚠⚠ **The name you typed did not come along.** Enter your name in the problem
-  report and you see it in the box right away — but what was sent, copied and
-  saved was still the earlier version, so "From: not given".
+- ⚠⚠ **Der eingetippte Name kam nicht mit.** Wer im Fehlerbericht seinen Namen
+  einträgt, sieht ihn sofort im Kasten — abgeschickt, kopiert und gespeichert
+  wurde trotzdem die Fassung von vorhin, also „Von: nicht angegeben".
 
-  The reason: the four buttons worked with the report built when the **page was
-  opened**; redrawing only changed the display. Above the box it says "You see
-  exactly what you are sending" — then exactly that has to go out. The text now
-  comes from the box.
+  Der Grund: Die vier Knöpfe arbeiteten mit dem Bericht, der beim **Öffnen der
+  Seite** gebaut wurde; das Nachzeichnen änderte nur die Anzeige. Über dem
+  Kasten steht „Du siehst vorher genau, was du verschickst" — dann muss auch
+  genau das rausgehen. Jetzt kommt der Text aus dem Kasten.
 
-  Reported by **Morkhan (KRT)** 🙏 — *"it's there for me, but apparently not
-  when I send it."*
+  Gemeldet von **Morkhan (KRT)** 🙏 — *„bei mir stehts drin, aber wenn ichs
+  verschicke wohl nicht."*
 
-- ⚠ **Two numbers for the same inventory.** The problem report said 315
-  blueprints, the blueprint list showed 292 — and both were right: the report
-  counts the stored entries, the list walks the catalogue and ticks off what you
-  have. A blueprint the catalogue does not know is missing from the second
-  number.
+- ⚠ **Zwei Zahlen für denselben Bestand.** Der Fehlerbericht meldete 315
+  Baupläne, die Bauplan-Liste zeigte 292 — und beide hatten recht: Der Bericht
+  zählt die gespeicherten Einträge, die Liste geht den Katalog durch und hakt
+  ab, was man davon hat. Ein Bauplan, den der Katalog nicht kennt, fehlt in der
+  zweiten Zahl.
 
-  The report now states the difference itself: "315 blueprints · 292 of them in
-  the catalogue, 23 unknown". That turns a contradiction into information — and
-  the more useful kind.
+  Der Bericht nennt die Differenz jetzt selbst: „315 Baupläne · 292 davon im
+  Katalog, 23 unbekannt". Damit ist es kein Widerspruch mehr, sondern eine
+  Auskunft — und zwar die interessantere.
 
-  Reported by **Morkhan (KRT)** 🙏
+  Gemeldet von **Morkhan (KRT)** 🙏
 
-### Thanks
+### Dank
 
-**Morkhan (KRT)** found both bugs on release day, with screenshots and a
-description that explained the fault straight away. Thank you 🙏
+**Morkhan (KRT)** hat beide Fehler am Tag der Veröffentlichung gefunden, mit
+Bildschirmfotos und einer Beschreibung, die den Fehler auf Anhieb erklärte.
+Danke dafür 🙏
 
 ## v3.3.0 - 2026-08-30
 
 
-### Added
+### Neu
 
-- ⭐⭐ **The workshop — three new pages.** The blueprint used to be where the
-  answers stopped: "you have it" or "you are missing it". Now the tool answers
-  what comes after that.
+- ⭐⭐ **Die Werkstatt — drei neue Seiten.** Der Bauplan war bisher das Ende der
+  Auskunft: „du hast ihn" oder „dir fehlt er". Jetzt beantwortet das Werkzeug
+  auch, was danach kommt.
 
-  | Page | The question it answers |
+  | Seite | Die Frage, die sie beantwortet |
   |---|---|
-  | **Crafting** | What does this blueprint need — and what comes out? Ingredients, craft time and the stats of the finished item, for **1,597** craftable things |
-  | **My stock** | What do I have? Material, amount, quality and location, kept by hand. The recipe then shows what is missing |
-  | **Mining** | Where do I get it? Type a resource → where it is found. Type a location → what is found there. **48 locations, 38 ores** |
+  | **Herstellung** | Was braucht dieser Bauplan — und was wird daraus? Zutaten, Herstellzeit und die Werte des fertigen Gegenstands, für **1.597** herstellbare Dinge |
+  | **Mein Lager** | Was habe ich? Material, Menge, Qualität und Lagerort, von Hand gepflegt. Im Rezept steht dann, was fehlt |
+  | **Bergbau** | Wo bekomme ich das? Rohstoff eintippen → seine Fundorte. Ort eintippen → was es dort gibt. **48 Orte, 38 Erze** |
 
-  **And quality counts.** One slider per ingredient shows what *your* material
-  makes of the values — the data carries it for **1,524 of the 1,597**
-  blueprints. If you hold quality 900 iron and quality 500 riccite, you see
-  exactly what that yields.
+  **Und die Qualität zählt mit.** Ein Regler je Zutat zeigt, was *dein* Material
+  aus den Werten macht — bei **1.524 der 1.597** Baupläne tragen die Daten das
+  mit. Wer 900er Iron hat und 500er Riccite, sieht genau, was dabei herauskommt.
 
-- **The author of the German translation is now credited** — with name,
-  repository and licence. It is by **rjcncpt**
+- **Der Urheber der deutschen Übersetzung ist jetzt genannt** — mit Name,
+  Repository und Lizenz. Sie stammt von **rjcncpt**
   ([StarCitizen-Deutsch-INI](https://github.com/rjcncpt/StarCitizen-Deutsch-INI))
-  under **CC BY-NC-SA 4.0**, which requires exactly that. Until now only the SC
-  Deutsch Launcher was named — the distributor, not the author.
+  und steht unter **CC BY-NC-SA 4.0**; die Lizenz verlangt das ausdrücklich.
+  Bisher stand dort nur der SC Deutsch Launcher — der Verteiler, nicht der Autor.
 
-  Shown under **Thanks & Licenses** and in both readmes.
+  Zu finden unter **Danke & Lizenzen** und in beiden Anleitungen.
 
-  The watcher does **not bundle** the translation and never passes on a modified
-  copy: it only extends the file on your own machine, and the **source note in
-  its first line is left untouched** — the author asks for that, so anyone can
-  find their way back to the original translation.
+  Der Watcher **liefert die Übersetzung nicht mit** und gibt auch keine
+  veränderte Fassung weiter: Er ergänzt die Datei ausschließlich auf deinem
+  Rechner, und die **Quellenangabe in ihrer ersten Zeile bleibt unangetastet** —
+  so verlangt es der Autor, damit jeder zur ursprünglichen Übersetzung
+  zurückfindet.
 
-- ⭐⭐ **Only things that actually exist in the game can be stored** — resource
-  **and** location. The "Add anyway" button is gone.
+- ⭐⭐ **Ins Lager kommt nur noch, was es im Spiel wirklich gibt** — Rohstoff
+  **und** Lagerort. Der Knopf „Trotzdem eintragen" ist weg.
 
-  The reason is not tidiness: a free text field means somebody can enter slurs,
-  religious or political text, take a screenshot and spread it. In the end nobody
-  asks who typed it — it stands in this tool.
+  Der Grund ist kein Ordnungssinn: Ein freies Textfeld heißt, dass jemand
+  Schimpfwörter, Religiöses oder Politisches einträgt, ein Bildschirmfoto macht
+  und es verbreitet. Am Ende fragt niemand, wer getippt hat — es steht in diesem
+  Werkzeug.
 
-  | Field | Choice | Source |
+  | Feld | Auswahl | Quelle |
   |---|---|---|
-  | Resource | **52 names** — 39 minerals, 13 plants | game data |
-  | Location | **158 stations, cities and outposts** | UEX Corp |
-  | Quality | 0–1000, anything else is rejected | |
+  | Rohstoff | **52 Namen** — 39 Mineralien, 13 Pflanzen | Spieldaten |
+  | Lagerort | **158 Stationen, Städte und Außenposten** | UEX Corp |
+  | Qualität | 0–1000, alles andere wird abgelehnt | |
 
-  The location stays **optional** — empty is still fine. And if no location list
-  has arrived yet (first start without a connection), the field does not block.
+  Der Lagerort bleibt **freiwillig** — leer ist weiterhin erlaubt. Und liegt
+  noch keine Ortsliste vor (erster Start ohne Netz), blockiert das Feld nicht.
 
-- ⭐ **The 13 plants are new** — Flareweed, Heart of the Woods, Sunset Berry,
-  Golden Medmon and the rest. The watcher did not know them: they are not listed
-  with the minerals but as deposits at the locations. They are hand-harvested and
-  can now be stored with a quality.
+- ⭐ **Die 13 Pflanzen sind neu dabei** — Flareweed, Heart of the Woods, Sunset
+  Berry, Golden Medmon und die übrigen. Der Watcher kannte sie nicht: Sie stehen
+  nicht bei den Mineralien, sondern als Vorkommen an den Fundorten. Sie werden
+  von Hand geerntet und lassen sich jetzt mit Qualität einlagern.
 
-- ⭐ **Crafting search now finds the ingredient too.** "ric" returned "Lo**ric**a"
-  and "Fab**ric**ation" — accidents — and never the 83 blueprints using Riccite.
-  And where nothing comes of it, it now says so: **26 of the 52** resources appear
-  in no recipe, all plants among them. The search box is therefore labelled
-  "Blueprint or resource …" instead of "Search …".
+- ⭐ **Die Suche in der Herstellung findet auch die Zutat.** „ric" brachte
+  „Lo**ric**a" und „Fab**ric**ation" — Zufallstreffer — und nie die 83 Baupläne
+  mit Riccite. Und wo nichts herauskommt, steht das jetzt da: **26 der 52**
+  Rohstoffe kommen in keinem Rezept vor, alle Pflanzen darunter. Das Suchfeld
+  heißt deshalb jetzt „Bauplan oder Rohstoff …" statt „Suchen …".
 
-- ⭐ **"Buy or mine?" — the question that follows "you are missing".** Next to
-  every missing ingredient it now says what buying it would cost — or that it
-  **cannot be bought at all**.
+- ⭐ **„Kaufen oder abbauen?" — die Frage, die nach „dir fehlt" kommt.** Neben
+  jeder fehlenden Zutat steht jetzt, was das Zukaufen kosten würde — oder dass
+  es **gar nicht geht**.
 
-  The finding behind it is the real gain: of the 26 resources used in recipes,
-  **seven cannot be bought anywhere** — Aslarite, Lindinium, Ouratite,
-  Quantainium, Riccite, Savrilium, Torite. And **five of those are also on the
-  dismantle blacklist**: neither purchasable nor recoverable from a dismantled
-  item. Those are the real bottlenecks in crafting, and until now nothing said
-  so.
+  Der Befund dahinter ist der eigentliche Gewinn: Von den 26 Rohstoffen, die in
+  Rezepten vorkommen, sind **sieben nirgends käuflich** — Aslarite, Lindinium,
+  Ouratite, Quantainium, Riccite, Savrilium, Torite. Und **fünf davon stehen
+  gleichzeitig auf der Zerlege-Sperrliste**: weder zu kaufen noch aus einem
+  zerlegten Stück zurückzuholen. Das sind die echten Engpässe beim Herstellen,
+  und bisher stand das nirgends.
 
-  > ⚠ "Cannot be bought" is written exactly that way — never as "0 aUEC".
-  > Otherwise somebody hunts a terminal for a bargain that never existed.
+  > ⚠ „Nicht kaufbar" wird auch so geschrieben — nie als „0 aUEC". Sonst sucht
+  > jemand am Terminal nach einem Schnäppchen, das es nie gab.
 
-  > ⭐ **Goods bought at a terminal are always quality 500** — the base point.
-  > An item made from them gets exactly ×1.000 on **every** property. It only
-  > gets better with self-mined ore above that. That is why the quality now
-  > stands next to the price: without it "buy" reads like an equivalent route
-  > that merely costs money instead of time — and it is not.
+  > ⭐ **Am Terminal gekaufte Ware hat immer Qualität 500** — den Nullpunkt.
+  > Ein daraus gebauter Gegenstand bekommt auf **jede** Eigenschaft genau
+  > ×1,000. Besser wird er ausschließlich mit selbst abgebautem Erz darüber.
+  > Deshalb steht die Qualität jetzt am Preis: Ohne sie liest sich „kaufen"
+  > wie ein gleichwertiger Weg, der bloß Geld statt Zeit kostet — und das ist
+  > er nicht.
   >
-  > Measured across every recipe in build 4.10.0: **5,025 of 5,219** quality
-  > effects have their base point at exactly Q 500.
+  > Gemessen über alle Rezepte des Spielstands 4.10.0: Bei **5.025 von 5.219**
+  > Qualitätswirkungen liegt der Nullpunkt exakt bei Q 500.
 
 
-  Prices come from the [UEX Corp](https://uexcorp.space) API, **at most once a
-  day** and in the background. ⚠ They are **not bundled** — the same rule as
-  for scmdb. Without a connection the last state stays; with none at all the
-  line simply does not appear, and the page looks exactly as before.
+  Die Preise kommen von der [UEX Corp](https://uexcorp.space)-Schnittstelle,
+  **höchstens einmal am Tag** und im Hintergrund. ⚠ Sie werden **nicht
+  mitgeliefert** — dieselbe Regel wie bei scmdb. Ohne Netz bleibt der letzte
+  Stand; ist gar keiner da, entfällt die Angabe still, und die Seite sieht aus
+  wie vorher.
 
-  No trade routes, no per-terminal prices, no cargo planning: the watcher
-  answers "buy or mine?", not "where do I sell highest?".
+  Keine Handelsrouten, keine Preise je Terminal, keine Frachtplanung: Der
+  Watcher beantwortet „kaufen oder abbauen?", nicht „wo am teuersten
+  verkaufen?".
 
-- ⭐⭐ **Scan signature — turning the scanner's number into a name.** The mining
-  scanner in game shows a value and does not say what is behind it. Type it into
-  the mining page and the watcher tells you **which ore** it is and **how many
-  rocks** the deposit holds.
+- ⭐⭐ **Scan-Signatur — aus der Zahl des Scanners wird ein Name.** Der
+  Bergbau-Scanner im Spiel zeigt einen Wert und verrät nicht, was dahintersteckt.
+  Tipp ihn im Bergbau ein, und der Watcher sagt dir, **welches Erz** es ist und
+  aus **wie vielen Brocken** das Vorkommen besteht.
 
-  | Input | Meaning |
+  | Eingabe | Bedeutung |
   |---|---|
-  | `8600` | this exact value |
-  | `~8600` | ±10 % tolerance |
-  | `12000-13000` | anything in between |
+  | `8600` | genau dieser Wert |
+  | `~8600` | ±10 % Spielraum |
+  | `12000-13000` | alles dazwischen |
 
-  > ⚠ Without the tilde **nothing** is rounded. If you are off, you get "no ore
-  > has this signature" rather than a match that sends you to the wrong rock.
+  > ⚠ Ohne die Tilde wird **nichts** gerundet. Wer daneben liegt, bekommt „Kein
+  > Erz hat diese Signatur" statt eines Treffers, der ihn zum falschen Brocken
+  > schickt.
 
-  Rarity limits how many rocks a deposit can hold — Quantainium is legendary, so
-  at most two. A deposit of three cannot exist, and the tool does not claim one.
+  Die Seltenheit begrenzt dabei, wie viele Brocken es überhaupt sein können —
+  Quantainium ist legendär, also höchstens zwei. Ein Vorkommen mit drei kann es
+  nicht geben, und der Rechner behauptet es auch nicht.
 
-- ⭐ **Which refinery gets you the most** — every ore now lists all twenty
-  refineries with their bonus, best first, plus the spread. And the spread is no
-  rounding error: **Bexalite differs by 18 percentage points** between the best
-  and the worst choice, Quartz by 16, Titanium by 15.
+- ⭐ **Welche Raffinerie am meisten herausholt** — unter jedem Erz stehen jetzt
+  alle zwanzig Raffinerien mit ihrem Bonus, beste zuerst, dazu die Spannweite.
+  Und die ist kein Rundungsfehler: Bei **Bexalite liegen 18 Prozentpunkte**
+  zwischen der besten und der schlechtesten Wahl, bei Quartz 16, bei Titanium 15.
 
-  Stations sharing a profile appear on one line (`CRU-L1 +1 others`). Ores where
-  it makes no difference say so instead of showing ten zero rows.
+  Stationen mit gleichem Profil stehen in einer Zeile (`CRU-L1 +1 weitere`).
+  Erze, bei denen es keinen Unterschied macht, sagen das ausdrücklich, statt
+  zehn Nullzeilen zu zeigen.
 
-- **What dismantling will NOT give back.** Six resources are on CIG's blacklist —
-  Lindinium, Quantainium, Riccite, Ouratite, Stileron, Savrilium. Everything else
-  returns at half. If a recipe uses one of them it now says so: a part made from
-  it is a one-way street.
+- **Was beim Zerlegen NICHT zurückkommt.** Sechs Rohstoffe stehen auf CIGs
+  Sperrliste — Lindinium, Quantainium, Riccite, Ouratite, Stileron, Savrilium.
+  Beim Rest bekommt man die Hälfte wieder. Enthält ein Rezept einen davon, steht
+  es jetzt darunter: Ein Bauteil daraus ist eine Einbahnstraße.
 
-- **Percentage and range on every quality effect.** `× 0.867` has to be converted
-  in your head — `−13.28 %` now stands next to it. And below it, what is
-  achievable at all: `Q 0–1000 · ×1.2–0.8 · base 500`. Without that a factor does
-  not tell you whether there is much left to gain.
+- **Prozent und Spanne bei jeder Qualitätswirkung.** `× 0.867` muss man im Kopf
+  umrechnen — daneben steht jetzt `−13,28 %`. Und darunter, was überhaupt
+  erreichbar wäre: `Q 0–1000 · ×1.2–0.8 · Nullpunkt 500`. Ohne das sagt ein
+  Faktor nicht, ob noch viel geht oder fast nichts mehr.
 
-- **Star Citizen Fan Content** — the official "Made by the Community" badge from
-  the Fankit is now in the readme, and the full notice per the Fankit Agreement
-  is also **inside the program** under "Thanks & Licenses". People who use a tool
-  rarely read its readme.
+- **Star Citizen Fan Content** — die offizielle „Made by the Community"-Grafik
+  aus dem Fankit steht jetzt in der Anleitung, und der vollständige Hinweis nach
+  dem Fankit Agreement auch **im Programm** unter „Danke & Lizenzen". Wer ein
+  Werkzeug benutzt, liest die Anleitung meist nie.
 
-- **One quality slider per material instead of one for all.** There used to be
-  a single slider giving every ingredient the same quality — a situation you
-  practically never have. Each material now has its own, starting at your
-  actual stock value.
+- **Ein Qualitäts-Regler je Material statt einem für alle.** Bisher gab es
+  einen einzigen Regler, der allen Zutaten dieselbe Qualität gab — eine Lage,
+  die man praktisch nie hat. Jetzt hat jedes Material seinen eigenen, und jeder
+  startet bei deinem tatsächlichen Lagerwert.
 
-  That makes the real question askable: "I have 500 Iron — what do I get with
-  900, and what does that change about the Riccite value?" A material that
-  raises three properties still has just **one** slider; its three rows move
-  together.
+  Damit lässt sich die Frage stellen, um die es wirklich geht: „Ich habe 500er
+  Iron — was kommt raus, wenn ich 900er nähme, und was ändert sich dadurch am
+  Riccite-Wert?" Ein Material, das drei Eigenschaften anhebt, hat trotzdem nur
+  **einen** Regler; die drei Zeilen bewegen sich gemeinsam.
 
-- **The stock list shows how a material is mined** — hand, vehicle or ship, as
-  its own column.
+- **Das Lager zeigt, womit man den Rohstoff holt** — Hand, Fahrzeug oder
+  Schiff, als eigene Spalte. Die Angabe steckt in den Bergbaudaten und
+  beantwortet die Frage, die nach „habe ich genug?" kommt: „und wie komme ich
+  an mehr?"
 
-- **The stock list is searchable** — the search box is always there now, not
-  only from five entries on.
+- **Das Lager ist durchsuchbar** — das Suchfeld ist jetzt immer da, nicht erst
+  ab fünf Posten. Wer viel eingetragen hat, findet sonst nichts mehr; wer wenig
+  hat, sieht am leeren Feld, dass es Suchen gibt.
 
-- **Delete a single entry** while editing it — a red button next to "Save
-  change", with a confirmation naming the entry and amount.
+- **Einen einzelnen Posten löschen**, während man ihn bearbeitet — roter Knopf
+  neben „Änderung speichern", mit Rückfrage samt Name und Menge.
 
-- **Crafting filters by material:** "have the material" or "material missing",
-  calculated against your stock. With 1597 blueprints that is 19 against 1573 —
-  which is what makes the list usable.
+- **Die Herstellung filtert nach dem Material:** „Material reicht" oder
+  „Material fehlt", gerechnet gegen dein Lager. Bei 1597 Bauplänen und dem
+  aktuellen Lagerstand sind das 19 gegen 1573 — die Liste wird damit erst
+  benutzbar.
 
-  > ⚠ Calculated from **your list**, not your cargo hold. The watcher does not
-  > know the latter.
+  > ⚠ Gerechnet wird mit **deiner Liste**, nicht mit deinem Frachtraum. Den
+  > kennt der Watcher nicht, und das steht auch oben auf der Seite.
 
-- **A red "Clear stock" button** — with a confirmation, so nobody loses their
-  stock by accident. The question names **how many entries** will go. Your
-  stock is handwork that exists nowhere else, and the export button sits right
-  next to it.
+  Dazu weiterhin der Filter „Bauplan vorhanden / fehlt" — beides zusammen
+  beantwortet „was kann ich jetzt sofort bauen?".
 
-- ⭐ **Search by contract.** "Retake" used to find nothing although six
-  blueprints come from contracts with that word. The search now also covers
-  **contract name, faction and contract type** — "nine tails" finds three
-  blueprints, "headhunters" 141.
+- **Ein roter Knopf „Lager löschen"** — mit Rückfrage, damit niemand
+  versehentlich seinen Bestand verliert. In der Frage steht, **wie viele
+  Posten** verschwinden; „4 Posten werden entfernt" wiegt anders als „wirklich
+  löschen?". Das Lager ist Handarbeit, die sonst nirgends liegt: kein Log,
+  keine Datenquelle, nur deine Eingaben. Sichern lässt es sich mit dem Knopf
+  daneben.
 
-  Above the results an overview answers the actual question: **what does this
-  quest hold?** For "retake" that is `Retake Platforms From Nine Tails — 3
-  blueprints` and `Need multiple CFP outposts retaken — 3 blueprints`.
+- ⭐ **Suche nach dem Auftrag.** „Retake" fand bisher nichts, obwohl sechs
+  Baupläne aus Aufträgen mit diesem Wort stammen. Gesucht wird jetzt auch in
+  **Auftragsname, Fraktion und Auftragsart** — „nine tails" findet drei
+  Baupläne, „headhunters" 141, „bounty" 77.
 
-  > **And the contracts are clickable.** One click narrows the list to that
-  > contract's blueprints only; clicking it again releases the filter.
+  Darüber steht eine Übersicht, die die eigentliche Frage beantwortet: **Was
+  gibt es in dieser Quest?** Bei „retake" etwa `Retake Platforms From Nine
+  Tails — 3 Baupläne` und `Need multiple CFP outposts retaken — 3 Baupläne`.
 
-- ⭐⭐ **Two levels instead of one long list — category and subtype.** The type
-  dropdown had thirty entries: "Armour (arms)", "Armour (legs)", "Helmet",
-  "Backpack", "Clothing (jacket)" … Assembling a full set of armour meant
-  hunting through all of them.
+  > **Und die Aufträge sind anklickbar.** Ein Klick zeigt nur noch die
+  > Baupläne dieses einen Auftrags — bei „Retake Platforms From Nine Tails"
+  > also `BUL-H4 Armor`, `BUL-H4 Helmet` und `H4-PBF Ammo Carrier`. Derselbe
+  > Auftrag noch einmal angeklickt löst den Filter wieder; ein Filter, aus dem
+  > man nicht herauskommt, wäre schlimmer als keiner.
 
-  There are now **seven groups** — ship weapons, ship modules, ship tools, FPS
-  weapons, gear, armour, clothing — each with its own subtypes: ship weapons
-  split into laser cannon (22), laser repeater (15), ballistic cannon (13),
-  ballistic gatling (9), scattergun (6) and the rest; armour into helmet (84),
-  torso (70), arms (69), legs (69), undersuit (11).
+  Darunter stehen die Baupläne selbst, mit Info-Zeichen, Abgabeort und Ruf.
 
-  > **What cannot be grouped stays on its own** — docking collars and the other
-  > one-offs do not vanish into a catch-all.
+- ⭐⭐ **Zwei Ebenen statt einer langen Liste — Oberkategorie und Unterart.**
+  Die Art-Auswahl hatte dreissig Einträge: „Rüstung (Arme)", „Rüstung (Beine)",
+  „Rüstung (Torso)", „Helm", „Rucksack", „Kleidung (Jacke)" … Wer eine ganze
+  Rüstung zusammenstellt, sucht sich darin einen Wolf.
 
-  **Blueprint list and crafting share one grouping** — same blueprints, so the same way to search.
+  Jetzt gibt es **sieben Gruppen** — Schiffswaffen, Schiffsmodule,
+  Schiffswerkzeuge, FPS-Waffen, Ausrüstung, Rüstung, Kleidung — und darunter
+  die feinen Arten:
 
-- **The subtype field now says that it is one**: instead of "All subtypes" it
-  reads "12 subtypes — refine here" whenever there is something to pick.
+  | Gruppe | Unterarten |
+  |---|---|
+  | Schiffswaffen (87) | Laserkanone 22 · Laser-Repeater 15 · Ballistische Kanone 13 · Ballistische Gatling 9 · Scattergun 6 · Mass Driver 4 · je 3 Distortion, Neutron, Tachyon |
+  | Rüstung (303) | Helm 84 · Torso 70 · Arme 69 · Beine 69 · Unteranzug 11 |
+  | FPS-Waffen (89) | Pistole 20 · Gewehr 18 · Schrotflinte 15 · MP 12 · Scharfschütze 11 · LMG 8 |
+  | Schiffsmodule (157) | Kühler 45 · Generator 44 · Schild 37 · Radar 18 · Quantenantrieb 13 |
+  | Ausrüstung (52) | Magazin 34 · Rucksack 15 · Behälter 3 |
 
-- **Your own watches can be removed** — every row has an ×.
+  > **Was sich nicht bündeln lässt, bleibt allein stehen** — Andockkragen,
+  > Frachtmodul und die übrigen Einzelgänger verschwinden nicht in einem
+  > Sammeltopf, sie stehen unter den Gruppen.
 
-- ⚠ **When a watched item becomes available, you now see it.** The "watching"
-  filter only checked clicked names — a match on a search pattern stayed
-  invisible, so you watched something and were never told it had arrived. It
-  now shows as an ordinary row with its info icon, drop-off and reputation.
+  **Bauplan-Liste und Herstellung teilen sich dieselbe Einteilung.** Es sind
+  dieselben Baupläne, also muss man auf dieselbe Art suchen können; beide
+  Seiten fragen dasselbe Modul, damit es keine zwei Wahrheiten gibt.
 
-- **The watcher now shows which contracts are running** — and keeps them across
-  a restart. Until now an accepted contract was only a line in the log view;
-  restarting the watcher lost it.
+  Die feinen Waffenarten stehen in keinem Datenfeld — sie stecken im Tag der
+  Rezeptdaten (`BP_CRAFT_APAR_BallisticGatling_S4`).
 
-  This works because Star Citizen writes not just the acceptance to its log but
-  every ending too. Across the logs of a single machine: 701 acceptances, 303
-  completions, 112 withdrawals, 57 failures — each with the same mission id.
-  The watcher walks the running log once and keeps score: accepted with no
-  ending after it means still open.
+- **Das Unterart-Feld sagt jetzt, dass es eines ist.** Statt „Alle Unterarten"
+  steht dort „12 Unterarten — hier verfeinern", sobald es etwas zu holen gibt:
+  *„niemand hat es auf Anhieb gefunden, erst nach Erklärung."*
 
-  > **Finished ones disappear.** Someone running ten contracts in an evening
-  > should not have to look at ten dead lines. Completion, withdrawal and
-  > failure remove the contract from the display, immediately and while
-  > running.
+- **Eigene Beobachtungen lassen sich abwählen** — jede Zeile hat ein ×.
+  Wechselt die Staffel ein Rüstungsteil, wirft man die Beobachtung wieder raus.
 
-  **Shared** contracts count as well: if someone in your group passes one to
-  you, you see just as clearly whether it holds blueprints for you.
+- ⚠ **Wird ein beobachtetes Teil im Spiel verfügbar, siehst du es jetzt auch.**
+  Der Filter „beobachtet" prüfte nur angeklickte Namen — ein Treffer auf ein
+  Suchmuster blieb unsichtbar. Man beobachtete etwas und erfuhr nicht, dass es
+  da ist. Jetzt erscheint es als ganz normale Zeile, mit Info-Zeichen,
+  Abgabeort und Ruf. Im vorliegenden Bestand trifft das bereits auf zwei zu:
+  `FBL-8u Undersuit SecondWind` und `Warden Backpack Purgatory Camo`.
 
-  Two things the log cannot know, so they are not claimed: restarting the
-  **game** starts a fresh log, and nothing is asserted about what ran before.
-  And if a contract is lost to a bug, the game says nothing — for exactly that
-  case every line can be dismissed with a click on the ×.
+- **Der Watcher zeigt jetzt, welche Aufträge gerade laufen** — und behält das
+  über einen Neustart hinweg. Bisher war ein angenommener Auftrag nur eine
+  Zeile im Verlauf; nach einem Neustart des Watchers war sie weg.
 
-### Changed
+  Möglich wird das, weil Star Citizen nicht nur die Annahme ins Log schreibt,
+  sondern auch jedes Ende. In den Protokollen eines einzigen Rechners: 701
+  Annahmen, 303 Abschlüsse, 112 Rücknahmen, 57 Fehlschläge — jeweils mit
+  derselben Missions-Kennung. Der Watcher geht das laufende Log einmal durch
+  und führt Buch: angenommen und danach kein Ende gesehen heisst offen.
 
-- **Data now comes from the official SCMDB mirror.** Krovax set up a public
-  repository for exactly this purpose
-  ([KrovaxCode/SCMDB_DATA](https://github.com/KrovaxCode/SCMDB_DATA)) — "for
-  programmatic consumers". That is steadier than going through the website,
-  which sits behind bot protection. **scmdb.net stays as a fallback** should the
-  mirror ever be unavailable. Thanks to Krovax 🙏
-- **"Progress" is now "Blueprint progress".** With the new pages the old name
-  would have been ambiguous.
+  > **Abgeschlossene verschwinden.** Wer an einem Abend zehn Aufträge macht,
+  > soll nicht zehn tote Zeilen ansehen. Abschluss, Abbruch und Fehlschlag
+  > nehmen den Auftrag aus der Anzeige — sofort, auch im laufenden Betrieb.
 
-### Fixed
+  Auch **geteilte** Aufträge zählen: Wer in der Gruppe einen Auftrag
+  weitergereicht bekommt, sieht genauso, ob darin Baupläne für ihn stecken.
 
-- ⚠⚠ **Clicking "read the old logs again" brought back the full setup wizard on
-  the next start** — on a tool that had been set up for weeks. And closing that
-  wizard left you with nothing at all: the program quit **silently**, no overlay,
-  no message, not a line in the problem report.
+  Zwei Dinge kann das Log nicht wissen, deshalb stehen sie auch nicht da:
+  Nach einem Neustart des **Spiels** beginnt ein frisches Protokoll — was
+  davor lief, wird nicht behauptet. Und geht ein Auftrag durch einen Fehler im
+  Spiel verloren, meldet das Spiel nichts. Für genau den Fall lässt sich jede
+  Zeile mit einem Klick auf das × selbst ausblenden.
 
-  Two mistakes in a chain:
+### Geändert
+
+- **Die Daten kommen jetzt vom offiziellen SCMDB-Spiegel.** Krovax hat dafür
+  eigens ein öffentliches Repo eingerichtet
+  ([KrovaxCode/SCMDB_DATA](https://github.com/KrovaxCode/SCMDB_DATA)) — „for
+  programmatic consumers". Das ist stabiler als der Weg über die Webseite, vor
+  der ein Bot-Schutz steht. **scmdb.net bleibt als Rückfall**, falls der Spiegel
+  einmal ausfällt. Danke an Krovax 🙏
+- **„Fortschritt" heißt jetzt „Bauplan-Fortschritt".** Mit den neuen Seiten wäre
+  der alte Name mehrdeutig gewesen.
+
+### Behoben
+
+- ⚠⚠ **Ein Klick auf „alte Protokolle neu einlesen" holte beim nächsten Start
+  den kompletten Einrichtungsassistenten zurück** — bei einem Werkzeug, das
+  längst eingerichtet war. Und wer ihn dann zumachte, hatte gar nichts mehr:
+  Das Programm beendete sich **wortlos**, kein Overlay, keine Meldung, nichts
+  im Fehlerbericht.
+
+  Zwei Fehler in einer Kette:
 
   | | |
   |---|---|
-  | How "first start" was detected | by the missing **read position** (`logstand.json`) — the very file that button deletes on purpose |
-  | What cancelling did | quit the program, **always** — even with the setup complete |
+  | Woran „erster Start" erkannt wurde | am Fehlen des **Lesestands** (`logstand.json`) — genau der Datei, die der Knopf mit Absicht löscht |
+  | Was Abbrechen tat | das Programm beenden, **immer** — auch bei fertiger Einrichtung |
 
-  The tool now records a completed setup itself, and cancelling only quits on a
-  **genuine** first start. Someone who dismisses the wizard wants to keep
-  working, not to stop.
+  Jetzt merkt sich das Werkzeug die abgeschlossene Einrichtung selbst, und
+  Abbrechen beendet nur beim **echten** ersten Start. Wer den Assistenten
+  wegklickt, will weiterarbeiten — nicht aufhören.
 
-- ⚠⚠ **"Buy me a coffee" and "Discord" did nothing at all.** Both buttons at the
-  bottom left said "opening", and then nothing ever happened — not even a line
-  in the problem report.
+- ⚠⚠ **„Kaffee spendieren" und „Discord" taten gar nichts.** Beide Knöpfe unten
+  links meldeten „wird geöffnet", und dann passierte nie etwas — auch im
+  Fehlerbericht stand dazu keine Zeile.
 
-  The cause sits in the Linux build: inside the AppImage the library paths point
-  into our own unpacked bundle. Any system program started from there loads our
-  libraries instead of its own and dies immediately. Python's `webbrowser`
-  reports success anyway — it only checks that it **started** something, not
-  that it survived.
+  Der Grund steckt in der Linux-Fassung: Im AppImage zeigen die
+  Bibliothekspfade in unser eigenes entpacktes Paket. Jedes daraus gestartete
+  Systemprogramm lädt unsere Bibliotheken statt seiner eigenen und stirbt
+  sofort. Pythons `webbrowser` meldet trotzdem Erfolg — es prüft nur, ob es
+  etwas **gestartet** hat, nicht ob es überlebt.
 
-  Half the links in the program already had the countermeasure, the other half
-  did not. They all go through one place now: clean environment, `xdg-open`
-  first, `webbrowser` only as a fallback — and if it really fails, the address
-  appears in the status line instead of the button staying silent. The self-test
-  no longer lets a direct `webbrowser` call through.
+  Die Hälfte der Verweise im Programm hatte die Gegenmaßnahme schon, die andere
+  nicht. Jetzt gehen **alle** durch dieselbe Stelle: saubere Umgebung, `xdg-open`
+  zuerst, `webbrowser` nur als Rückfall — und wenn es wirklich nicht klappt,
+  steht die Adresse in der Statuszeile, statt dass der Knopf schweigt. Der
+  Selbsttest lässt keinen direkten `webbrowser`-Aufruf mehr durch.
 
-- ⚠⚠ **`SC_BP_NO_NET=1` did not switch off everything it promised.** The
-  catalogue, prices, storage locations, server status and the update check
-  honoured it — the **translation sources** and the **contract data** did not.
-  Anyone setting that switch does not want half an assurance. Every fetch now
-  honours it; the one exception remains the problem report, which only goes out
-  on a button press anyway. The self-test no longer lets a module with network
-  access pass that does not know the switch.
+- ⚠⚠ **`SC_BP_NO_NET=1` hat nicht alles abgeschaltet, was es versprochen hat.**
+  Katalog, Preise, Lagerorte, Serverstatus und die Update-Frage hielten sich
+  daran — die **Übersetzungsquellen** und die **Auftragsdaten** nicht. Wer den
+  Schalter setzt, will keine halbe Zusicherung. Jetzt hält sich jeder Abruf
+  daran; einzige Ausnahme bleibt der Fehlerbericht, der ohnehin nur auf
+  Knopfdruck rausgeht. Der Selbsttest lässt kein Modul mit Netzabruf mehr
+  durch, das den Schalter nicht kennt.
 
-  The README also names **every** connection individually now, with how often
-  it happens — it used to say "two things", and there are five.
+  Die Anleitung nennt jetzt außerdem **jede** Verbindung einzeln samt Häufigkeit
+  — vorher standen dort „zwei Dinge", inzwischen sind es fünf.
 
-- ⚠ **The numbers in the README were a patch old** — "655 of 722 blueprints"
-  instead of the actual **670 of 738**. Numbers like that go stale with every
-  game patch without anything noticing; the self-test now compares them against
-  the real data.
+- ⚠ **Die Zahlen in der Anleitung waren einen Patch alt** — „655 von 722
+  Bauplänen" statt der tatsächlichen **670 von 738**. Solche Zahlen veralten
+  mit jedem Spiel-Patch, ohne dass etwas anschlägt; der Selbsttest vergleicht
+  sie jetzt gegen die echten Daten.
 
-- ⚠ **"Reset inventory" sat under "Report a problem" — nobody looks for it
-  there.** It now sits at the end of the **Blueprint inventory** page, right
-  below "Read the logs again". Side by side, the difference that matters also
-  becomes visible: reading again **adds** what is missing. Resetting **throws
-  away** and rebuilds from the logs.
+- ⚠ **„Bestand zurücksetzen" stand unter „Fehler melden" — dort sucht es
+  niemand.** Es steht jetzt am Ende der Seite **Bauplan-Bestand**, direkt unter
+  „Protokolle erneut einlesen". Nebeneinander wird auch der Unterschied
+  sichtbar, auf den es ankommt: Einlesen **ergänzt**, was fehlt.
+  Zurücksetzen **wirft weg** und baut aus den Protokollen neu auf.
 
-- ⚠ **In a recipe you could no longer tell which range belonged to which
-  value.** The lines "Q 0–1000 · ×0.9–1.1" piled up under the last value
-  instead of sitting under their own — with three materials that meant three
-  near-identical lines with no visible link to anything.
+- ⚠ **Im Rezept war nicht mehr zu erkennen, welche Spanne zu welchem Wert
+  gehört.** Die Zeilen „Q 0–1000 · ×0,9–1,1" sammelten sich unter dem letzten
+  Wert, statt jeweils unter ihrem eigenen zu stehen — bei drei Materialien
+  standen dort drei fast gleich aussehende Zeilen ohne erkennbare Zuordnung.
 
-- ⚠ **Backticks showed up in the middle of on-screen text** — "`8600` for an
-  exact match" instead of "8600". They come from the markup in the text file;
-  Tk simply displays them. Affected were the scanner-reading help text and
-  paragraphs under "What's new". The interface check now also trips on
-  backticks, not just on asterisks.
+- ⚠ **Im Fenster standen Rückstriche mitten im Text** — „`8600` für genau
+  diesen Wert" statt „8600". Sie stammen aus der Auszeichnung der Textdatei;
+  Tk zeigt sie einfach mit. Betroffen waren der Hilfetext zum Scan-Wert und
+  Absätze unter „Was ist neu". Die Oberflächenprüfung schlägt jetzt auch bei
+  Rückstrichen an, nicht nur bei Sternchen.
 
-- ⚠⚠ **The startup trace in the diagnostic report had become useless.** Instead
-  of the startup steps it showed the same line twelve times, "Liste: zeichnen
-  beginnt" — and that section is the only thing left after a hard crash: its
-  last line says how far the program got.
+- ⚠⚠ **Der Startverlauf im Diagnose-Bericht war unbrauchbar geworden.** Statt
+  der Startschritte stand dort zwölfmal dieselbe Zeile „Liste: zeichnen
+  beginnt" — und genau dieser Abschnitt ist bei einem harten Absturz das
+  Einzige, was übrig bleibt: Seine letzte Zeile sagt, wie weit das Programm kam.
 
-  Two causes, both fixed:
+  Zwei Ursachen, beide behoben:
 
-  | What | Before | Now |
+  | Was | Vorher | Jetzt |
   |---|---|---|
-  | Splitting startup ↔ usage | anything not starting with "Seite " counted as a startup step | split at the line that ends the startup |
-  | Repetitions | every line on its own | summarised as "(12×)" |
+  | Trennung Start ↔ Bedienung | alles, was nicht mit „Seite " anfing, galt als Startschritt | getrennt wird an der Zeile, mit der der Start endet |
+  | Wiederholungen | jede Zeile einzeln | zusammengefasst als „(12×)" |
 
-  The old way was a list of prefixes — it broke the moment a new trace entry was
-  added anywhere in the program. The new one cannot: whatever happens after
-  startup is necessarily behind the boundary line.
+  Der alte Weg war eine Liste von Vorsilben — er brach in dem Moment, als
+  irgendwo im Programm ein neuer Eintrag dazukam. Der neue kann das nicht mehr:
+  Was nach dem Start passiert, steht zwangsläufig hinter der Grenzzeile.
 
-- ⚠ **No contract at all was recognised in Swiss German.** The `live-CH`
-  edition writes "**Uftrag** angenommen", "Uftrag abgschlosse", "Uftrag
-  fehlgschlage" — without the "A". Read straight from the source, not guessed.
-  Without those entries the watcher stayed silent there: no message, no skipped
-  file, simply no contracts.
+- ⚠ **Auf Schweizerdeutsch wurde kein einziger Auftrag erkannt.** Die
+  `live-CH`-Fassung schreibt „**Uftrag** angenommen", „Uftrag abgschlosse",
+  „Uftrag fehlgschlage" — ohne „A". Direkt in der Quelle nachgesehen, nicht
+  geraten. Ohne diese Einträge blieb der Watcher dort still: keine Meldung,
+  keine übersprungene Datei, einfach keine Aufträge.
 
-- ⚠⚠ **The percentages were cut off** — "× 1.047  +4.(" instead of "+4.70 %".
-  The label had a fixed width of nine characters; when the percentage was added,
-  Tk truncated it silently. Percentage now has its own column, and the self-test
-  measures **every** label in a recipe against the width it gets.
+- ⚠⚠ **Die Prozentangaben waren abgeschnitten** — „× 1.047  +4.(" statt
+  „+4,70 %". Das Etikett hatte eine feste Breite von neun Zeichen; als die
+  Prozentzahl dazukam, schnitt Tk sie stumm ab. Prozent hat jetzt eine eigene
+  Spalte, und der Selbsttest misst **jedes** Etikett im Rezept gegen die Breite,
+  die es bekommt.
 
-- ⚠ **Same material, same quality, same location is now added up** instead of
-  becoming a second row. Adding after every mining run otherwise left ten rows of
-  the same pile within a week.
+- ⚠ **Gleiches Material, gleiche Qualität, gleicher Ort wird zusammengezählt**
+  statt ein zweites Mal in die Liste gestellt. Wer nach jedem Abbauflug nachträgt,
+  hatte sonst nach einer Woche zehn Zeilen desselben Stapels.
 
-- ⚠ **"Remove" in the stock table was cut off** ("move"). It was packed after the
-  columns and only got the leftovers.
+- ⚠ **„Löschen" in der Lagertabelle war abgeschnitten** („chen"). Es wurde nach
+  den Spalten gepackt und bekam nur den Rest.
 
-- ⚠ **An open dropdown stayed put when switching pages** — opened in Crafting,
-  then a click on "My stock", and the list kept floating above the new page. It
-  now listens for its field being hidden.
+- ⚠ **Ein aufgeklapptes Auswahlmenü blieb beim Seitenwechsel stehen** — offen in
+  der Herstellung, dann auf „Mein Lager" geklickt, und die Liste schwebte weiter
+  über der neuen Seite. Sie hört jetzt darauf, dass ihr Feld ausgeblendet wird.
 
-- ⚠ **The scrollbar was practically invisible** — contrast **1.6 : 1** on an open
-  list. Now 2.9 : 1 there, 3.6 : 1 on a page, plus a visible track and 10 instead
-  of 8 pixels. Applies to every scroll area.
+- ⚠ **Der Rollbalken war praktisch unsichtbar** — Kontrast **1,6 : 1** auf einer
+  aufgeklappten Liste. Jetzt 2,9 : 1 dort, 3,6 : 1 auf einer Seite, dazu eine
+  sichtbare Bahn und 10 statt 8 Pixel. Gilt für jede Rollfläche.
 
-- ⚠ **Dropdown fields were as wide as their longest entry.** Among the 64
-  manufacturers stands "Musashi Industrial & Starflight Concern" — the field grew
-  to 314 pixels and the fourth filter no longer fitted the row. Now capped; the
-  open list stays full width.
+- ⚠ **Die Auswahlfelder waren so breit wie ihr längster Eintrag.** Unter den 64
+  Herstellern steht „Musashi Industrial & Starflight Concern" — das Feld wurde
+  314 Pixel breit, und die vierte Auswahl passte nicht mehr in die Zeile. Jetzt
+  gedeckelt; die aufgeklappte Liste bleibt voll breit.
 
-- ⚠ **The window left the monitor at large font sizes.** With two stacked
-  monitors it ran into the second one. It now stays on its monitor unless you drag
-  it. **"Very large" has been removed** as a font size — that step made the window
-  taller than a screen.
+- ⚠ **Das Fenster verließ bei großer Schrift den Bildschirm.** Bei zwei
+  übereinander stehenden Monitoren lief es in den zweiten hinein. Es bleibt jetzt
+  auf seinem Monitor, solange man es nicht selbst zieht. **„Sehr groß" ist als
+  Schriftgröße entfallen** — die Stufe machte das Fenster größer, als ein
+  Bildschirm hoch ist.
 
-- ⚠ **The stock amount could not be edited the way people do it.** When editing,
-  the amount is already in the field; to add three you append `+3` and end up with
-  `1.04+3` — which was rejected. Both work now and give the same result. Next to
-  the field it shows what comes out while you type: "makes 4.04 SCU".
+- ⚠ **Im Lager ließ sich die Menge nicht so ändern, wie man es tut.** Beim
+  Bearbeiten steht die Menge schon im Feld; wer drei dazulegen will, hängt `+3`
+  an und hat `1.04+3` dastehen — genau das wurde abgelehnt. Jetzt geht beides,
+  und beides ergibt dasselbe. Daneben steht beim Tippen, was herauskommt:
+  „ergibt 4,04 SCU".
 
-- ⚠ **The name suggestion sat 557 pixels below the input field**, down by the
-  buttons. Now 15 pixels next to it — both measured.
+- ⚠ **Der Namensvorschlag stand 557 Pixel unter dem Eingabefeld**, unten bei den
+  Knöpfen. Jetzt 15 Pixel daneben — beides gemessen.
 
-- ⚠⚠ **In the stock list the amount could not be edited the way people do it.**
-  When editing, the current amount is already in the field — to add three you
-  append `+3` and end up with `1.04+3`. That was rejected ("enter an amount,
-  for example 12.5") because only a **leading** sign counted.
+- ⚠⚠ **Im Lager ließ sich die Menge nicht so ändern, wie man es tut.** Beim
+  Bearbeiten steht die aktuelle Menge schon im Feld — wer drei dazulegen will,
+  hängt hinten `+3` an und hat `1.04+3` dastehen. Genau das wurde abgelehnt
+  („Trag eine Menge ein, zum Beispiel 12,5"), weil nur ein **führendes**
+  Vorzeichen zählte.
 
-  **Both** now work, and both give the same result: `+3` and `1.04+3` each turn
-  1.04 into 4.04. Nobody has to know which form is meant.
+  Jetzt geht **beides**, und beides ergibt dasselbe: `+3` und `1.04+3` machen
+  aus 1,04 gleichermaßen 4,04. Niemand muss wissen, welche Form gemeint ist.
 
-- ⚠ **The hint about it was a punishment.** "Overwrite the amount — or type +5
-  or -2 to add or subtract" described a mechanism in accountant's language
-  without saying where the signs belong.
+- ⚠ **Der Hinweis dazu war eine Zumutung.** „Menge überschreiben — oder +5 bzw.
+  -2 tippen, dann wird auf- oder abgebucht" beschrieb eine Mechanik in
+  Buchhaltersprache, ohne zu sagen, wohin die Zeichen gehören.
 
-  The real explanation is no longer text: **next to the field it now shows what
-  comes out** while you type — "makes 4.04 SCU", "makes 0 — the entry will be
-  removed", "more than you have (1.04 SCU)". The hint shrank to one line with
-  an example.
+  Die eigentliche Erklärung ist jetzt keine: **Neben dem Feld steht beim Tippen,
+  was herauskommt** — „ergibt 4,04 SCU", „ergibt 0 — der Posten wird gelöscht",
+  „mehr als vorhanden (1,04 SCU)". Der Hinweistext ist auf eine Zeile mit
+  Beispiel geschrumpft.
 
-- ⚠ **The name suggestion sat 557 pixels below the input field** — down by the
-  buttons while you type at the top. A suggestion you have to hunt for is not
-  one. It now stands right next to the field (15 pixels); both measured.
+- ⚠ **Der Namensvorschlag stand 557 Pixel unter dem Eingabefeld** — unten bei
+  den Knöpfen, während man oben tippt. Ein Vorschlag, den man suchen muss, ist
+  keiner. Er steht jetzt direkt neben dem Feld (15 Pixel), beides gemessen.
 
-- ⚠⚠ **The entire quality block had vanished** — sliders, effects, even the
-  value behind "craft time". Affected rc37 and rc38.
+- ⚠⚠ **Der ganze Qualitäts-Block war verschwunden** — Regler, Wirkungen und
+  sogar der Wert hinter „Herstellzeit". Betraf rc37 und rc38.
 
-  Cause: while adding the dismantle blacklist a variable was named `_dauer` and
-  thereby shadowed the **function** of the same name in that file. A few lines
-  later `_dauer(stufe['zeit'])` raised `TypeError: 'int' object is not
-  callable`, aborting the build mid-recipe: everything from the craft time
-  onwards was simply missing.
+  Ursache: Beim Einbau der Zerlege-Sperrliste bekam eine Variable den Namen
+  `_dauer` — und überschrieb damit die gleichnamige **Funktion** in derselben
+  Datei. Ein paar Zeilen später warf `_dauer(stufe['zeit'])` dann
+  `TypeError: 'int' object is not callable`, was den Aufbau mitten im Rezept
+  abbrach: Alles ab der Herstellzeit fehlte ersatzlos.
 
-  > ⚠ The self-test missed it because it **built** the page but never
-  > **expanded** a recipe row — which is where that code runs. It now does, and
-  > additionally checks that no local name shadows a function of the same file.
-  > Measured against the shipped rc38: both checks fire there, at exactly the
-  > right line.
+  > ⚠ Der Selbsttest hat es nicht gesehen, weil er die Seite zwar **baute**,
+  > aber nie eine Rezeptzeile **aufklappte** — genau dort läuft der Code. Das
+  > tut er jetzt, und zusätzlich prüft er, dass kein lokaler Name eine Funktion
+  > derselben Datei verdeckt. Gegen die ausgelieferte rc38 gemessen: Beide
+  > Prüfungen schlagen dort an, an genau der richtigen Zeile.
 
-- ⚠ **Swiss German went unrecognised.** There is a separate variant of the
-  German translation (`live-CH`) that says "**Bauplan überchoo**" instead of
-  "Bauplan erhalten". Without the entry the watcher found **zero blueprints in
-  silence** there — no error, no skipped file, just nothing.
+- ⚠ **Schweizerdeutsch wurde nicht erkannt.** Es gibt eine eigene Fassung der
+  deutschen Übersetzung (`live-CH`), die „**Bauplan überchoo**" schreibt statt
+  „Bauplan erhalten". Ohne den Eintrag fand der Watcher dort **still null
+  Baupläne** — keine Fehlermeldung, keine übersprungene Datei, einfach nichts.
 
-  Only affects the fallback: a readable `global.ini` always wins. For a vanilla
-  English install, whose text file sits inside `Data.p4k`, that list is all
-  there is.
+  Betrifft nur den Rückfall: Eine lesbare `global.ini` gewinnt immer. Für eine
+  englische Werksinstallation, deren Textdatei in der `Data.p4k` steckt, ist
+  diese Liste aber das Einzige, was bleibt.
 
-- ⚠ **A reordered translation would have blinded the watcher silently.** Only
-  the part **before** the placeholder was taken from the game's text file. For
-  "Received Blueprint: %s" that is right. Were CIG ever to reorder it — "%s has
-  arrived" — nothing would stand in front, and detection would fall back to the
-  bundled list, which then no longer fits. Again without any hint.
+- ⚠ **Eine umgestellte Übersetzung hätte den Watcher lautlos blind gemacht.**
+  Aus der Textdatei des Spiels wurde bisher nur der Teil **vor** dem Platzhalter
+  genommen. Bei „Bauplan erhalten: %s" stimmt das. Würde CIG je umstellen —
+  „%s ist eingetroffen" —, stünde davor nichts, und die Erkennung fiele auf die
+  mitgelieferte Liste zurück, die dann nicht mehr passt. Wieder ohne jeden
+  Hinweis.
 
-  No language phrases it that way today; the branch costs nothing and covers the
-  day it happens.
+  Heute formuliert keine Sprache so; der Zweig kostet nichts und deckt den Tag
+  ab, an dem es passiert.
 
-  > ⚠ This is the path every blueprint find runs on. The self-test therefore
-  > first proves that without a reordered phrasing the search pattern is
-  > **character-identical** to the old one — measured, not claimed.
+  > ⚠ Das ist der Weg, auf dem **jeder** Bauplanfund läuft. Der Selbsttest
+  > sichert deshalb zuerst ab, dass der Suchausdruck ohne umgestellte
+  > Formulierung **zeichengleich** mit dem alten ist — gemessen, nicht behauptet.
 
-  Both findings come from the blueprint reader of the **KRT Basetool**
-  (GPL-3.0), which reads the same `Game.log`. Thanks for that!
+  Beide Funde stammen aus dem Bauplan-Ausleser des **KRT-Basetools** (GPL-3.0),
+  der dieselbe `Game.log` liest. Danke dafür!
 
-- ⚠⚠ **The ingredient list lied for more than one unit.** Typing 10 into the
-  quantity box still showed the requirement for a single unit — "1.16 SCU" and
-  "missing 1.16" while 11.6 were needed. The deduction was right, only the
-  display was not. It now recalculates as you type and shows where the figure
-  comes from: `11.6 SCU (1.16 × 10)`.
+- ⚠⚠ **Bei mehr als einem Stück log die Zutatenliste.** Wer 10 in das
+  Stückzahl-Feld tippte, sah weiter den Bedarf für ein einziges Stück — „1.16
+  SCU" und „dir fehlt 1.16", obwohl 11,6 gebraucht wurden. Der Abzug rechnete
+  richtig, nur die Anzeige nicht. Sie rechnet jetzt beim Tippen mit und zeigt
+  zusätzlich, woraus sich die Menge ergibt: `11.6 SCU (1.16 × 10)`.
 
-- ⚠⚠ **If material is short, NOTHING is deducted any more.** Previously it took
-  what it could and reported the rest. Clicking with "quantity 10" while having
-  material for three left you with an emptied stock and none of the ten items.
+- ⚠⚠ **Reicht das Material nicht, wird jetzt GAR NICHTS abgezogen.** Bisher
+  wurde genommen, so weit es reichte, und der Rest gemeldet. Wer mit „Anzahl
+  10" klickte und Material für drei hatte, stand danach mit einem leergeräumten
+  Lager und ohne die zehn Stück da.
 
-  If an ingredient is missing the item was never craftable — the click was a
-  slip or a typo. The **shortfall** is now reported, not just the name, and the
-  quantity you typed stays so you can correct it. (Stock could never go
-  negative, but "swept to zero" is nearly as bad.)
+  Fehlt eine Zutat, war der Gegenstand überhaupt nicht herstellbar — der Klick
+  war ein Versehen oder ein Vertipper. Gemeldet wird jetzt die **Fehlmenge**,
+  nicht nur der Name, und die eingegebene Stückzahl bleibt stehen, damit man
+  sie berichtigen kann. (Ins Minus konnte der Bestand nie geraten, aber „auf
+  null geräumt" ist fast so schlimm.)
 
-- ⚠⚠ **Good values were shown in the warning colour.** The display coloured by
-  the bare number: green from `× 1.000` up, gold below. For **852 of the 6524**
-  quality effects in build 4.10.0 that is exactly backwards — there better
-  quality lowers the number, and that is the improvement:
+- ⚠⚠ **Gute Werte standen in der Warnfarbe.** Die Anzeige färbte stur nach der
+  Zahl: alles ab `× 1.000` grün, alles darunter gold. Bei **852 der 6524**
+  Qualitätswirkungen im Spielstand 4.10.0 ist das genau verkehrt — dort senkt
+  bessere Qualität den Wert, und das ist die Verbesserung:
 
-  | Property | Cases |
+  | Eigenschaft | Fälle |
   |---|---|
-  | Recoil Smoothness / Handling / Kick | 245 each |
+  | Recoil Smoothness / Handling / Kick | je 245 |
   | Quantum Fuel Burn | 114 |
   | Damage Mitigation | 3 |
 
-  On the FS-9 LMG the best possible recoil (`× 0.800`) sat in the warning
-  colour and the worst (`× 1.200`) in green. The direction is now read **from
-  the game data itself** rather than guessed from property names, so it holds
-  even where the same property runs both ways. Rows where lower is better now
-  say so.
+  Beim FS-9 LMG stand der bestmögliche Rückstoß (`× 0.800`) in Warnfarbe und
+  der schlechteste (`× 1.200`) in Grün. Die Richtung wird jetzt **aus den
+  Spieldaten selbst** gelesen, nicht nach Eigenschaftsnamen geraten — damit
+  stimmt sie auch dort, wo dieselbe Eigenschaft mal so und mal anders läuft.
+  Zeilen, bei denen weniger besser ist, sagen das jetzt auch.
 
-  Cross-check: at quality 0 every value is now gold, at quality 1000 every
-  value is green.
+  Gegenprobe: Bei Qualität 0 ist nun **jeder** Wert gold, bei Qualität 1000
+  **jeder** grün.
 
-- ⚠ **"Power Pips" are not multipliers.** They appeared as `× -1.000` — a
-  factor that cannot exist. They are in fact counts from **−3 to +3** in fixed
-  quality bands, and they affect every power plant (598 of 6524 effects). They
-  now read `-1` and `+3`, with sign. Detected by the value, not the name: a
-  multiplier is always above zero.
+- ⚠ **„Power Pips" sind keine Multiplikatoren.** Sie standen als `× -1.000`
+  da — ein Faktor, den es nicht geben kann. In Wirklichkeit sind es
+  Stückzahlen von **−3 bis +3** in festen Qualitätsstufen; das betrifft
+  sämtliche Kraftwerke (598 der 6524 Wirkungen). Jetzt steht dort `-1` bzw.
+  `+3`, mit Vorzeichen. Erkannt wird das an der Zahl, nicht am Namen: Ein
+  Multiplikator liegt immer über null.
 
-- ⚠⚠ **The open dropdown lists could not be scrolled** — turning the wheel left
-  the list where it was and moved the **page behind it** instead. As the field
-  slid away, the list closed. The lower entries were therefore **unreachable**:
-  everything past "microTech" among the 48 mining locations, everything past
-  "Greycat Industrial" among the manufacturers.
+- ⚠⚠ **Die aufgeklappten Auswahllisten liessen sich nicht rollen** — man drehte
+  am Rad, die Liste blieb stehen und stattdessen wanderte die **Seite dahinter**.
+  Weil das Auswahlfeld dabei wegrutschte, klappte die Liste zu. Die unteren
+  Einträge waren dadurch **überhaupt nicht erreichbar**: im Bergbau ab „microTech"
+  bei den 48 Orten, in der Herstellung ab „Greycat Industrial" bei den Herstellern.
 
-  Cause: the mouse wheel is handled in one place for the whole program and finds
-  its scroll area by walking up the parent chain from whatever sits under the
-  pointer. The open list is a window of its own, but its parent is the dropdown
-  field — which sits inside the scrollable page. So the chain walked out of the
-  list and into the page behind it.
+  Ursache: Das Mausrad hängt an einer einzigen Stelle für das ganze Programm und
+  sucht sich die Rollfläche, indem es vom Element unter dem Zeiger die Elternkette
+  hinaufgeht. Die aufgeklappte Liste ist zwar ein eigenes Fenster — ihr Elternteil
+  ist aber das Auswahlfeld, und das steht mitten in der rollbaren Seite. Die Kette
+  lief also aus der Liste heraus in die Seite dahinter.
 
-  The wheel is now caught at the list window itself and stops there; the page
-  never sees it. Measured: against the old build the page moves by 10.3%, against
-  the new one by 0.0%, and the list scrolls through to the last entry. Scrolling
-  **next to** the list still closes it.
+  Das Rad wird jetzt am Listenfenster selbst abgefangen und dort beendet; die Seite
+  dahinter bekommt es gar nicht mehr zu sehen. Gemessen: gegen den alten Stand
+  wandert die Seite um 10,3 %, gegen den neuen um 0,0 %, und die Liste rollt bis
+  zum letzten Eintrag durch. Rollt man **neben** der Liste, klappt sie weiterhin zu.
 
-- ⚠ **The open list was too long.** It reached from the field to well below the
-  window edge, and was clipped at the screen edge when the window sat low. Until
-  now it was only limited by available *space* — which is vast on a large display.
+- ⚠ **Die aufgeklappte Liste war zu lang.** Sie reichte vom Auswahlfeld bis weit
+  unter den Fensterrand; stand das Fenster tief im Bild, wurde sie am Bildrand
+  abgeschnitten. Begrenzt war sie bis dahin nur nach dem verfügbaren *Platz* — und
+  der ist auf einem grossen Bildschirm riesig.
 
-  It now shows at most **15 rows**, anything beyond scrolls. That also makes the
-  scrollbar visible, so you can tell there is more. For the 48 mining locations
-  that is 497 pixels instead of 1090.
+  Jetzt zeigt sie höchstens **15 Zeilen**, alles darüber wird gerollt. Damit ist
+  auch die Rollleiste sichtbar und sagt, dass noch mehr kommt. Bei den 48 Orten
+  im Bergbau sind das 497 statt 1090 Pixel.
 
-  On top of that a hard ceiling: a dropdown never grows taller than the
-  **smallest possible** window (760 pixels). Otherwise enlarging the window
-  would produce a list that no longer fits once you shrink it again.
+  Und eine harte Obergrenze dazu: Eine Auswahlliste wird nie höher als das
+  **kleinstmögliche** Fenster (760 Pixel). Wer sein Fenster gross zieht, bekäme
+  sonst eine Liste, die nach dem Verkleinern nicht mehr hineinpasst.
 
-- ⚠ **A completed contract kept showing as "accepted".** Reported on
-  2026-08-30 for "Retake Platforms From Nine Tails": accepted in game at 01:18,
-  completed at 01:59 — and when the watcher started at 02:22 it announced it as
-  freshly accepted.
+- ⚠ **Ein abgeschlossener Auftrag stand weiter als „angenommen" da.** Gemeldet
+  am 30.08.2026 an „Retake Platforms From Nine Tails": im Spiel um 01:18
+  angenommen, um 01:59 abgeschlossen — und als der Watcher um 02:22 startete,
+  meldete er ihn als frisch angenommen.
 
-  Two faults propping each other up:
+  Zwei Fehler, die sich gegenseitig getragen haben:
 
-  1. At startup the watcher reads `Game.log` once, only to learn where it left
-     off. In doing so it also collects every contract event. If nothing new had
-     been written by the next pass, that collection was **not cleared** — it was
-     evaluated a second time.
-  2. The evaluation took *all* endings first and *all* acceptances second. In a
-     section containing both, the ending therefore hit nothing and the acceptance
-     put the contract back afterwards.
+  1. Beim Start liest der Watcher die `Game.log` einmal, nur um zu wissen, wo er
+     stehengeblieben ist. Dabei sammelt er nebenbei alle Auftragsereignisse ein.
+     Stand beim nächsten Durchlauf nichts Neues im Log, wurde diese Sammlung
+     **nicht geleert** — er hat sie ein zweites Mal ausgewertet.
+  2. Die Auswertung nahm erst *alle* Abschlüsse und dann *alle* Annahmen. In
+     einem Abschnitt, der beides enthält, traf der Abschluss deshalb ins Leere,
+     und die Annahme stellte den Auftrag danach wieder hin.
 
-  Point 2 hits anyone starting the watcher while the game is already running:
-  the first section then catches up on everything since the last run.
+  Punkt 2 trifft jeden, der den Watcher startet, während das Spiel schon läuft —
+  dann liest der erste Abschnitt alles nach, was seit dem letzten Lauf geschah.
 
-  The lists are now cleared before every read, and the events are walked **in log
-  order**. Whatever is open at the end is shown. Cancelling a contract and taking
-  it again straight away still shows it.
+  Die Listen werden jetzt vor jedem Lesen geleert, und die Ereignisse werden **in
+  der Reihenfolge des Logs** durchgegangen. Was am Ende offen ist, wird gezeigt.
+  Wer einen Auftrag abbricht und sofort neu annimmt, sieht ihn weiterhin.
 
-- ⚠ **The contract row in the list could not be dismissed.** The red marker only
-  existed in the contract bar, not on the row below it — there was no way to get
-  rid of the message.
+- ⚠ **Die Auftragszeile in der Liste liess sich nicht wegklicken.** Das rote
+  Zeichen gab es nur in der Auftragsleiste, nicht an der Zeile darunter — wer
+  eine Meldung loswerden wollte, kam nicht an sie heran.
 
-  The row now belongs to its contract: it carries the same red marker, disappears
-  by itself once the game reports the end, and can be dismissed by hand.
+  Die Zeile gehört jetzt zum Auftrag: Sie trägt dasselbe rote Zeichen, verschwindet
+  von allein, sobald das Spiel das Ende meldet, und lässt sich von Hand wegnehmen.
 
-- ⚠ **The overlay always started at its smallest size**, however large you had
-  dragged it. The size was saved — it was overwritten immediately.
+- ⚠ **Das Overlay startete immer in der kleinsten Grösse**, egal wie gross man
+  es gezogen hatte. Gespeichert war die Grösse durchaus — sie wurde nur sofort
+  wieder überschrieben.
 
-  The cause was the minimum-width check from rc10: shortly after startup Tk
-  reports width **1** for a window that is not shown yet, so the comparison
-  always matched and the overlay was set to the minimum. It now only acts once
-  the window is actually up. Verified: 900×400 stays 900×400, and a window
-  remembered too narrow is still widened.
+  Ursache war die Mindestbreite aus rc10: Sie prüft kurz nach dem Start, ob das
+  Fenster schmaler ist als seine Symbolleiste. Zu dem Zeitpunkt meldet Tk für
+  ein noch nicht angezeigtes Fenster aber die Breite **1** — der Vergleich traf
+  also immer zu, und das Overlay wurde auf die Mindestbreite gestellt.
+  Ausgerechnet die Änderung, die die Symbole retten sollte.
 
-- ⚠ **In the stock list the search box lost the cursor after every keystroke.**
-  The field was built **inside** the redraw routine, which clears the whole list
-  area on every change — so each typed character destroyed the field itself. It
-  is now created once, outside. Anything that can hold a cursor belongs outside
-  the redraw.
+  Sie greift jetzt nur, wenn das Fenster wirklich schon steht. Geprüft: 900×400
+  bleibt 900×400, und ein zu schmal gemerktes Fenster wird weiterhin angehoben.
 
-- ⚠⚠ **"Report a problem" could not be opened without internet** — the window
-  froze until a network timeout expired. Precisely the page you need when
-  something is wrong. The diagnostic report asked scmdb.net for the current game
-  version while being built, on the main thread. It now shows the **stored**
-  catalogue version. Measured: **6.1 seconds down to 0.1**.
+- ⚠ **Im Lager verlor das Suchfeld nach jedem Buchstaben den Cursor.** Man
+  musste für jeden weiteren Buchstaben neu hineinklicken.
 
-- ⚠⚠ **The server status page could crash the window** with no internet. The
-  fetch runs in the background and calls back into the window; switching pages
-  or closing the window meanwhile crashed in a thread where no error hook
-  catches it. Every callback is now guarded.
+  Ursache: Das Feld wurde **in** der Zeichenfunktion gebaut, und die räumt bei
+  jeder Änderung den ganzen Listenbereich leer — mit jedem getippten Buchstaben
+  zerstörte sich das Feld also selbst. Es entsteht jetzt einmal, ausserhalb.
+  Prüfung 52p hält fest, dass dort kein Eingabefeld mehr gebaut wird: Alles,
+  woran ein Cursor stehen kann, gehört ausserhalb der Zeichenroutine.
 
-- **Without a connection the status page says so** instead of "nothing fetched
-  yet, click Check now" — advice that leads nowhere offline.
+- ⚠⚠ **Ohne Internet liess sich „Fehler melden" nicht mehr öffnen** — das
+  Fenster blieb starr, bis ein Netz-Timeout ablief. Ausgerechnet die Seite, die
+  man bei Störungen braucht.
 
-- **The dropdown no longer runs off screen.** It limited itself to the display
-  but not to the window; with 38 materials and the window low on screen it was
-  cut off. It is now at most as tall as the window and scrolls.
+  Ursache: Der Diagnosebericht fragte beim Bauen die aktuelle Spielversion bei
+  scmdb.net ab — im Hauptfaden, mehrfach. Er zeigt jetzt den **gespeicherten**
+  Katalogstand; das ist ohnehin die interessantere Angabe, weil sie sagt, womit
+  dieser Rechner arbeitet. Gemessen: von **6,1 Sekunden auf 0,1**.
 
-- ⚠ **The overlay's resize grip was missing entirely.** It hung on the
-  blueprint list — fine while the list got the rest of the window. Since the
-  active-contracts bar sits above it, the list can end up **shorter than the
-  grip itself**. It now hangs on the window and is present at any height —
-  checked at 190, 130 and 110 pixels — while still disappearing when collapsed.
+- ⚠⚠ **Der Serverstatus konnte das Fenster zum Absturz bringen**, wenn kein
+  Internet da war. Der Abruf läuft im Hintergrund und meldet sich danach im
+  Fenster zurück — wer währenddessen die Seite wechselte oder das Fenster
+  schloss, bekam einen Absturz, der in keinem Fehlerhaken landete, weil er in
+  einem eigenen Faden passierte. Ohne Netz dauert der Abruf am längsten, also
+  traf es genau dann. Jeder Rückweg ins Fenster ist jetzt abgesichert.
 
-- **The dismiss control on a contract line is now a crossed-out circle**, red
-  and clearly larger. A cross means "close the window" everywhere else in the
-  program; removing a single line is a different thing.
+- **Ohne Verbindung sagt der Serverstatus das auch.** Vorher stand dort „Noch
+  nichts abgerufen. Klick auf „Jetzt nachsehen"" — ein Rat, der ohne Internet zu
+  nichts führt und einen den Fehler bei sich suchen lässt. Jetzt: „Keine
+  Internetverbindung". Gibt es einen älteren Stand, wird der gezeigt, mit dem
+  Hinweis, dass er alt ist.
 
-- ⚠⚠ **The overlay said 405 blueprints, the progress page 382 of 738.** Two
-  numbers for the same thing, and neither explained the other.
+- **Die Auswahlliste ragt nicht mehr aus dem Bild.** Sie begrenzte sich am
+  Bildschirm, nicht am Fenster: Bei 38 Rohstoffen im Bergbau und einem Fenster
+  weit unten im Bild lief sie unten heraus und wurde abgeschnitten. Sie ist
+  jetzt höchstens so hoch wie das Fenster und rollt, wenn ihr Inhalt länger ist.
 
-  The cause was the catalogue on disk: written months ago, when magazines were
-  still keyed as `FS-9 Magazine (75 cap)`. The inventory has long used
-  `FS-9 Magazine (75)` — matching the quantity wording came later. **23
-  magazines and batteries** counted as missing everywhere although they were
-  owned.
+- ⚠ **Der Ziehgriff des Overlays fehlte ganz.** Er hing an der Bauplan-Liste —
+  eine gute Idee, solange die Liste den Rest des Fensters bekam. Seit die
+  Leiste mit den laufenden Aufträgen darüber Platz nimmt, kann die Liste
+  **niedriger werden als der Griff selbst**: Bei einem schmalen Overlay mit
+  einem laufenden Auftrag blieben ihr rund 20 Pixel, der Griff braucht 26.
 
-  Catalogue keys are now rebuilt from the name on load. If everything already
-  matches, nothing is touched.
+  Er hängt jetzt am Fenster und ist in jeder Höhe da — geprüft bei 190, 130 und
+  110 Pixeln. Beim Einklappen verschwindet er weiterhin, sonst läge er über dem
+  Schliessen-Kreuz. Dazu grösser und in der Akzentfarbe: Er ist der einzige Weg,
+  das Overlay in der Grösse zu ändern, und wer ihn nicht sieht, hält die Grösse
+  für fest.
 
-- ⚠ **The open dropdown stayed put while scrolling.** It floats as its own
-  window above the page, so scrolling the list underneath left it lying across
-  unrelated rows. No focus change happens there, and focus was all it watched.
+- **Das Kreuz zum Ausblenden eines Auftrags ist ein durchgestrichener Kreis
+  geworden**, rot und deutlich grösser. Das Kreuz steht im Programm für
+  „Fenster schliessen"; hier wird eine einzelne Zeile weggenommen, und das
+  sagt der durchgestrichene Kreis besser.
 
-  It now also closes on **scrolling**, on **moving or resizing the window**, and
-  on **Esc**. Scrolling inside the list itself still works.
+- ⚠⚠ **Das Overlay meldete 405 Baupläne, der Fortschritt 382 von 738.** Zwei
+  Zahlen für dasselbe, und keine erklärte die andere.
 
-- ⚠⚠ **"Nothing found" as soon as a category was selected** — now really fixed.
-  The filter was right, but **a second place** discarded whole groups in
-  advance, comparing catalogue type against the new top-level category. That
-  never matches, so every group fell out. The shortcut is gone; the check now
-  happens in exactly one place.
+  Die Ursache lag im Katalog auf der Platte: Er wurde vor Monaten geschrieben,
+  als Magazine dort noch `FS-9 Magazine (75 cap)` hießen. Der Bestand führt sie
+  längst als `FS-9 Magazine (75)` — die Angleichung der Mengenangabe kam später
+  dazu. **23 Magazine und Batterien** galten dadurch überall als fehlend,
+  obwohl sie im Bestand standen: im Fortschritt, an den Häkchen der Liste und
+  bei „404 von 1597 herstellbar".
 
-- ⭐ **The watcher now notices such cases itself.** If the dropdown says
-  "Ship modules (157)" and the list stays empty, that is a contradiction — one
-  number comes from the catalogue, the other from the filter. It is written to
-  the error log and appears in the diagnostic report, instead of someone having
-  to send a screenshot.
+  Der Katalog wird beim Laden jetzt neu verschlüsselt — es zählt der Name, nicht
+  die Schreibweise von damals. Passt schon alles, wird nichts angefasst.
 
-- **Mining lists materials first.** It used to show the 48 locations by
-  default, but you arrive asking "where do I find titanium?", not "where am I?".
+- ⚠ **Die aufgeklappte Auswahlliste blieb beim Scrollen stehen.** Sie schwebt
+  als eigenes Fenster über der Seite; rollt man die Liste darunter weg, lag sie
+  quer über fremden Zeilen. Ein Fokuswechsel findet dabei nicht statt, und nur
+  darauf hatte sie bisher geachtet.
 
-- ⚠⚠ **"Nothing found" as soon as a category was selected.** The list showed
-  `0 of 738` although a category and subtype were chosen. The filter itself was
-  right — the **drawing** aborted: rebuilding the dropdowns left the old layout
-  callback pointing at destroyed widgets (`TclError: bad window path name`).
-  Dead elements are now skipped. Found through the error log that recorded the crash while the screen showed only an empty list.
+  Sie schliesst jetzt auch beim **Scrollen**, beim **Verschieben oder
+  Vergrössern des Fensters** und auf **Esc**. Innerhalb der Liste selbst darf
+  weiter gescrollt werden — die gehört ihr.
 
-- ⚠ **The subtype could not be selected on the crafting page.** The check
-  "does this subtype belong to the chosen category?" compared against a list of
-  **pairs** rather than values, so it never matched and the selection was
-  cleared immediately.
+- ⚠⚠ **„Nichts gefunden", sobald eine Kategorie gewählt war** — jetzt wirklich.
+  Der Filter rechnete richtig, aber **eine zweite Stelle** sortierte ganze
+  Gruppen vorab aus und verglich dabei Katalog-Art gegen Oberkategorie. Das
+  trifft nie zu, also fiel jede Gruppe heraus. Diese Abkürzung ist weg —
+  geprüft wird an genau **einer** Stelle. Gemessen: „Schiffsmodule" zeigt
+  wieder 157 von 738, „Generator" 44.
 
-- **The button row on "Report a problem" now claims the space it needs**
-  instead of wrapping — up to the screen width. Two fixed minimum widths had
-  failed: how wide a button really gets is only known once it is drawn, and
-  that differs per system.
+- ⭐ **Der Watcher merkt solche Fälle jetzt selbst.** Steht im Auswahlfeld
+  „Schiffsmodule (157)" und die Liste bleibt leer, ist das ein Widerspruch:
+  Die eine Zahl kommt aus dem Katalog, die andere aus dem Filter. Der Watcher
+  schreibt das in sein Fehlerprotokoll, und es steht im Diagnosebericht — statt
+  dass jemand ein Bildschirmfoto schicken muss.
 
-- ⚠⚠ **Watch patterns matched inside words — and reported the wrong item.**
-  The pattern `arden backpack` matched *W**arden** Backpack Purgatory Camo*:
-  the watcher announced a piece of armour as available that has nothing to do
-  with the one being watched.
+  > Der Fehler war zweimal nur am leeren Bildschirm zu sehen; abgestürzt ist
+  > nichts, also stand auch nichts im Bericht. Ein Werkzeug, das solche
+  > Widersprüche anzeigt, aber nicht meldet, liegt in der Ecke.
 
-  Patterns now match at **word boundaries** only — no letter or digit directly
-  before or after. Hyphens and spaces count as boundaries, so `abc-mk4 legs
-  grey` still matches.
+- **Der Bergbau zeigt die Rohstoffe zuerst.** Im Grundzustand standen dort die
+  48 Orte — man kommt aber mit „wo finde ich Titanium?" herein, nicht mit „wo
+  bin ich?". Die Orte stehen jetzt darunter und beantworten die zweite Frage.
 
-  > **Why this matters here:** a squadron armour set means exactly one item per
-  > slot. The colours were tested for months for camouflage; an "almost right"
-  > piece is worthless.
+- ⚠⚠ **„Nichts gefunden", sobald eine Kategorie gewählt war.** Die Liste zeigte
+  `0 von 738`, obwohl „Schiffsmodule (157)" und „Generator (44)" ausgewählt
+  waren. Der Filter selbst rechnete richtig — das **Zeichnen** brach ab.
 
-  Found while proof-reading the stored watches.
+  > Ursache: Beim Wechsel der Oberkategorie werden die Auswahlfelder neu
+  > gebaut. Die alte Anordnungs-Funktion hing aber weiter am Rahmen und griff
+  > auf die zerstörten Felder zu (`TclError: bad window path name … !canvas14`,
+  > acht Stück im Fehlerprotokoll). Sie brach mittendrin ab, die Felder blieben
+  > ungesetzt und die Liste zeichnete nichts mehr.
 
-- ⚠ **On "Report a problem" the five buttons stacked vertically.** The window's
-  minimum width was 1100 px while the button row needs 869 px in German plus
-  sidebar and margins. It is now 1160 px.
+  Die Anordnung übersteht den Neubau jetzt: Tote Elemente werden übersprungen,
+  der Merker für „unverändert" wird beim Neubau geleert.
+  — **gefunden über das Fehlerprotokoll**, das den Absturz mitgeschrieben hat,
+  obwohl am Bildschirm nur eine leere Liste zu sehen war.
 
-- **The armour role filter is gone again** — nobody searches by it.
+- ⚠ **Die Unterart liess sich auf der Herstellung nicht auswählen.** Man klickte
+  sie an, und nichts war gewählt. Die Prüfung „gehört diese Unterart zur
+  gewählten Kategorie?" verglich gegen eine Liste aus **Paaren** statt aus
+  Werten — sie traf deshalb nie zu, und die Auswahl wurde sofort wieder
+  geleert.
 
-- ⭐ **Filter by subtype — you can finally tell the weapons apart.** The
-  blueprint list lumped all ship weapons together. There is now an extra
-  dropdown: for ship weapons **Ballistic (32) · Laser (40) · Distortion (6) ·
-  Neutron (6) · Tachyon (3)**, for armour the **roles** (combat, engineer,
-  hunter, stealth, miner …).
+- **Die Knopfreihe auf „Fehler melden" verschafft sich jetzt selbst Platz.**
+  Reicht die Breite nicht, fordert sie die fehlenden Pixel vom Fenster an,
+  statt umzubrechen — bis zur Bildschirmbreite.
 
-  > **It only appears when there is something to choose.** Coolers would offer
-  > sizes only, and those have their own field.
+  > Zwei feste Mindestbreiten (1100, dann 1160) hatten nicht gereicht: Wie
+  > breit ein Knopf wirklich wird, steht erst fest, wenn er gezeichnet ist, und
+  > das fällt je nach System anders aus. Eine geratene Zahl kann das nicht
+  > treffen — die Reihe muss selbst messen.
 
-  This works by joining two sources: the catalogue knows the armour body parts,
-  the recipe data knows the weapon type. Joined by name — **738 of 738**
-  blueprints match.
+- ⚠⚠ **Beobachtungs-Muster trafen mitten im Wort — und meldeten das Falsche.**
+  Das Muster `arden backpack` traf auf *W**arden** Backpack Purgatory Camo*:
+  Der Watcher meldete ein Rüstungsteil als verfügbar, das mit dem gesuchten
+  nichts zu tun hat. Wer sich darauf verlässt, fliegt umsonst los.
 
-- ⭐ **Crafting now has the same filters**: type, subtype or armour role,
-  manufacturer, and "blueprint owned / missing". It previously had a search box
-  only, and without knowing what to search for you paged through 1597 rows.
+  Muster greifen jetzt nur an **Wortgrenzen** — vor und hinter dem Muster darf
+  kein Buchstabe und keine Ziffer stehen. Bindestriche und Leerzeichen zählen
+  als Grenze, `abc-mk4 legs grey` passt also weiterhin.
 
-- **Mining gets dropdowns** for material and location — 38 and 48 entries you
-  previously had to know by heart in order to type them.
+  > **Warum das zählt:** Wer ein bestimmtes Ausrüstungsteil beobachtet, meint
+  > genau dieses eine. Ein „fast passendes" ist wertlos.
 
-  > All three pages use the same controls as the blueprint list: the way you
-  > operate this tool should not change from page to page.
+- ⚠ **Auf „Fehler melden" standen die fünf Knöpfe untereinander.** Die
+  Mindestbreite des Fensters war 1100 px, die Knopfreihe braucht auf Deutsch
+  aber 869 px zuzüglich Seitenleiste und Rändern. Jetzt sind es 1160 px, und
+  die Reihe steht nebeneinander.
 
-- ⚠ **"You are not watching anything" while nine watches were stored.** The
-  watchlist holds two kinds: blueprints clicked in the catalogue — and your own
-  watches with search patterns. The view showed only the first kind while the
-  diagnostic report counted both. Your own watches now appear at the top of the
-  view with their patterns.
+- **Die Rüstungsrolle ist wieder raus** (Kampf, Technik, Tarnung). Sie war als
+  Filter angeboten, aber: *„danach sucht laut Rückmeldung niemand."* Bei
+  Rüstung zählen die Körperteile.
 
-- **Crafting takes a quantity.** Building ten in a row meant ten clicks — and on
-  the eleventh the stock was wrong without anyone noticing. There is now a field
-  next to the button: enter the number, click once, done. It resets to 1
-  afterwards so the next click does not quietly deduct ten again.
+- ⭐ **Filter nach Unterart — endlich sieht man, welche Waffe was ist.** In der
+  Bauplan-Liste stand unter „Schiffswaffen" alles zusammen: *„ich weiß grad
+  nicht, welche Ballistik sind, welche Laser, welche Repeater oder Cannon."*
+  Jetzt gibt es ein zusätzliches Auswahlfeld — bei Schiffswaffen mit
+  **Ballistisch (32) · Laser (40) · Distortion (6) · Neutron (6) · Tachyon (3)**,
+  bei Rüstung mit den **Rollen** (Kampf, Technik, Jagd, Tarnung, Bergbau …).
 
-- **The stock list can be exported and loaded back.** As a backup (`.json`),
-  which loads again here, or as a spreadsheet (`.csv`) for reading and sharing.
+  > **Es erscheint nur, wenn es etwas zu wählen gibt.** Bei Kühlern gäbe es
+  > bloß Größen, und die haben ihr eigenes Feld — ein Auswahlfeld, das nur
+  > „alle" anbietet, lässt einen suchen, was es filtern soll.
 
-  > Your stock is handwork that exists nowhere else: no log, no data source,
-  > only what you typed. Without an export it is gone at the next machine.
+  Möglich wird das, weil zwei Quellen zusammengeführt werden: Der Katalog kennt
+  die Körperteile der Rüstung (Helm, Torso, Arme, Beine), die Rezeptdaten die
+  Waffenart. Verbunden über den Namen — **738 von 738** Bauplänen passen.
+ 
 
-- **The "Inventory" tab is now "Blueprint inventory".** With "My stock" next to
-  it, one of the two names had to say which is which.
+- ⭐ **Die Herstellung hat jetzt dieselben Filter**: Art, Unterart bzw.
+  Rüstungsrolle, Hersteller und „Bauplan vorhanden / fehlt". Vorher gab es dort
+  nur ein Suchfeld, und wer nicht wusste, wonach er sucht, blätterte 1597
+  Zeilen durch.
 
-- **Two new pages: "Crafting" and "Mining".** They answer the question that
-  comes after the blueprint — *what do I need, and where do I get it?*
+- **Der Bergbau bekommt Auswahlfelder** für Rohstoff und Ort — 38 und 48
+  Einträge, die man vorher auswendig kennen musste, um sie eintippen zu können.
 
-  **Crafting** lists all **1,597** craftable items. One click shows the
-  ingredients with amounts and the craft time. And because the watcher knows
-  your collection, every row says whether you have the blueprint — 403 ticks out
-  of 404 blueprints.
+  > Alle drei Seiten benutzen dieselben Bedienelemente wie die Bauplan-Liste.
+  > *„egal wo, sollte das Bedienkonzept nicht jedes Mal ändern —
+  > die Leute wollen es nutzen und nicht erst lernen, wie sie es nutzen."*
 
-  > **Two** rows show a `?` instead of a tick. Three names cover several
-  > different items ("BroadSpec" exists in S02 and S03, "Main Powerplant" for
-  > Idris and Reclaimer). Your collection only knows the name, not the variant —
-  > so we claim nothing.
+- ⚠ **„Du beobachtest noch nichts", obwohl neun Beobachtungen hinterlegt
+  waren.** Die Merkliste führt zwei Sorten: angeklickte Baupläne aus dem
+  Katalog — und eigene Beobachtungen mit Suchmustern. Die Ansicht
+  zeigte nur die erste Sorte, der Diagnosebericht zählte beide. Jetzt stehen
+  die eigenen Beobachtungen mit ihren Suchmustern oben in der Ansicht.
+ 
 
-  **Mining** answers both directions in one search: type a resource and you get
-  its locations (Iron: 27). Type a location and you get everything found there
-  (Daymar: 14 ores). Each entry says whether it is FPS, vehicle or ship mining.
+- **Beim Herstellen lässt sich eine Anzahl angeben.** Wer zehn Stück am Stück
+  baut, klickte bisher zehnmal — und beim elften Klick stimmte der Bestand nicht
+  mehr, ohne dass es auffiel. Jetzt steht neben dem Knopf ein Feld: Anzahl
+  eintragen, einmal klicken, fertig. Danach springt es von selbst auf 1 zurück,
+  damit der nächste Klick nicht unbemerkt wieder zehn abzieht.
 
-  **The two are linked:** in a recipe every resource is clickable and jumps
-  straight to its locations.
+- **Das Lager lässt sich ausgeben und wieder einlesen.** Als Sicherung (`.json`)
+  — die kommt hier auch wieder herein — oder als Tabelle (`.csv`) zum Ansehen
+  und Weitergeben. Die Tabelle nutzt Semikolon und Komma, damit ein deutsches
+  Tabellenprogramm sie richtig aufteilt.
 
-  ⚠ **What the watcher does not say: whether you can craft it.** It knows your
-  blueprints, not your cargo hold. "Needs 0.3 SCU Iron" — yes. "You can build
-  this now" — never.
+  > Der Lagerbestand ist Handarbeit, die sonst nirgends liegt: kein Log, keine
+  > Datenquelle, nur deine Eingaben. Ohne Ausgabe wäre sie beim nächsten
+  > Rechnerwechsel weg.
 
-  For probabilities and the refinery comparison **scmdb.net** remains the better
-  place; the page links there.
+- **Der Reiter „Bestand" heißt jetzt „Bauplan-Bestand".** Seit es „Mein Lager"
+  gibt, waren zwei Reiter mit dem Wort Bestand einer zu viel — der eine führt
+  Baupläne, der andere Rohstoffe.
 
-- **My stock — and what your material quality makes of the product.**
-  Suggested by **Horthy (KRT)** 🙏
+- **Zwei neue Seiten: „Herstellung" und „Bergbau".** Sie beantworten die Frage,
+  die nach dem Bauplan kommt — *was brauche ich dafür, und wo hole ich das?*
 
-  You enter what resources you have: **material, amount, quality, location**.
-  Every ingredient in a recipe then shows whether it is there or how much is
-  missing — and a button **"Crafting this now"** subtracts the ingredients, so
-  you do not have to do the arithmetic.
+  **Herstellung** listet alle **1.597** herstellbaren Gegenstände. Ein Klick
+  zeigt die Zutaten mit Menge und die Herstellzeit. Und weil der Watcher deinen
+  Bestand kennt, steht an jeder Zeile, ob du den Bauplan hast — bei 404
+  Bauplänen sind das 403 Häkchen.
 
-  **And quality genuinely matters.** The recipes carry how strongly it changes
-  the values of the finished item — for **1,524 of the 1,597 blueprints**. So
-  the recipe shows what *your* material would produce:
+  > Bei **zwei** Zeilen steht ein `?` statt eines Häkchens. Drei Namen meinen
+  > mehrere verschiedene Gegenstände („BroadSpec" gibt es in S02 und S03, „Main
+  > Powerplant" für Idris und Reclaimer). Der Bestand kennt nur den Namen, nicht
+  > die Variante — dann behaupten wir nichts.
+
+  **Bergbau** beantwortet beide Richtungen in einer Suche: Tipp einen Rohstoff
+  ein, und du bekommst seine Fundorte (Iron: 27 Orte). Tipp einen Ort ein, und
+  du bekommst alles, was es dort gibt (Daymar: 14 Erze). Dazu steht jeweils, ob
+  per FPS, Fahrzeug oder Schiff abgebaut wird.
+
+  **Beides hängt zusammen:** Im Rezept ist jeder Rohstoff anklickbar und springt
+  direkt zu seinen Fundorten.
+
+  ⚠ **Was der Watcher nicht sagt: ob du es herstellen kannst.** Er kennt deine
+  Baupläne, nicht deinen Frachtraum. „Braucht 0,3 SCU Iron" — ja. „Du kannst das
+  jetzt bauen" — nie.
+
+  Für Wahrscheinlichkeiten und den Refinery-Vergleich ist **scmdb.net** weiter
+  die bessere Adresse; die Seite verweist auch dorthin.
+
+- **Mein Lager — und was deine Materialqualität aus dem Produkt macht.**
+  Vorgeschlagen von **Horthy (KRT)** 🙏
+
+  Du trägst ein, was du an Rohstoffen hast: **Material, Menge, Qualität,
+  Lagerort**. Im Rezept steht dann an jeder Zutat, ob sie da ist oder wie viel
+  fehlt — und ein Knopf **„Das stelle ich jetzt her"** zieht die Zutaten ab,
+  ohne dass du rechnen musst.
+
+  **Und die Qualität zählt wirklich.** Die Rezepte tragen mit, wie stark sie die
+  Werte des fertigen Stücks verändert — bei **1.524 der 1.597 Baupläne**.
+  Deshalb steht im Rezept, was mit *deinem* Material herauskäme:
 
   ```
-  With your material
-     Damage Mitigation    × 1.044     Ouratite · Q 720
-     Min Temp             × 1.088     Aslarite · Q 800
+  Mit deinem Material
+     Damage Mitigation    × 1,044     Ouratite · Q 720
+     Min Temp             × 1,088     Aslarite · Q 800
   ```
 
-  If material is on hand but below the required quality, it says so — otherwise
-  you would read "missing 0.3" while 12 SCU sit in your stock.
+  Liegt Material da, das die geforderte Qualität nicht erreicht, steht das
+  ausdrücklich dabei — sonst hieße es „dir fehlt 0,3", während 12 SCU im Lager
+  liegen.
 
-  **When adding, the watcher suggests the materials that actually exist** — 26
-  of them, from the recipes. Type "Aslerite" and you are offered "Aslarite",
-  instead of silently never getting a match.
+  **Beim Eintragen schlägt der Watcher die Materialien vor**, die es wirklich
+  gibt — 26 Stück aus den Rezepten. Wer „Aslerite" tippt, bekommt „Aslarite"
+  angeboten, statt stillschweigend nie einen Treffer zu haben.
 
-  **The stock is a sortable table**: column headers for material, amount,
-  quality and location sort on click, and from six entries on a filter appears.
-  Two entries of the same material in different places stay cleanly apart.
+  **Das Lager ist eine sortierbare Tabelle**: Spaltenköpfe für Material, Menge,
+  Qualität und Lagerort sortieren auf Klick, ab sechs Posten kommt ein Filter
+  dazu. Zwei Posten desselben Materials an verschiedenen Orten stehen sauber
+  getrennt.
 
-  **The recipe shows what you already have** — not just what is missing: "have
-  0.02 of 0.09 · missing 0.07". Otherwise you set off to fetch 0.09 when 0.07
-  would do.
+  **Am Rezept steht, was du schon hast** — nicht nur was fehlt: „hast 0,02 von
+  0,09 · fehlt 0,07". Sonst fliegt man los, um 0,09 zu holen, obwohl 0,07
+  reichen.
 
-  **And you can try out a quality.** A slider from 0 to 1000 shows what better
-  or worse ore would yield — the same question you would otherwise ask by hand
-  on scmdb.net, only with your stock as the starting point.
+  **Und du kannst eine Qualität durchspielen.** Ein Regler von 0 bis 1000 zeigt,
+  was mit besserem oder schlechterem Erz herauskäme — dieselbe Frage, die man
+  sonst auf scmdb.net von Hand stellt, nur mit deinem Lager als Ausgangspunkt.
 
-  ⚠ **The stock is kept by hand**, because the game gives nothing away: 17 MB of
-  logs contain not one word about resources or crafting. That is why the watcher
-  never says "you cannot build this", only "you are missing Iron". A stock that
-  lags two entries behind must not become a liar.
+  ⚠ **Das Lager wird von Hand geführt**, weil das Spiel nichts darüber verrät:
+  In 17 MB Protokollen steht kein Wort zu Rohstoffen oder Herstellung. Deshalb
+  sagt der Watcher auch nie „du kannst das nicht bauen", sondern nur „dir fehlt
+  Iron". Ein Lager, das zwei Einträge hinterherhinkt, darf nicht zum Lügner
+  werden.
 
-- **Your name in the bug report.** On the "Report a problem" page you can enter
-  a name that appears at the top of the report, so follow-up questions can be
-  matched to you. **Optional** — empty stays empty, and nothing is ever
-  pre-filled.
+- **Dein Name im Fehlerbericht.** Auf der Seite „Fehler melden" lässt sich ein
+  Name eintragen, der oben im Bericht steht. Damit lassen sich Rückfragen
+  zuordnen. **Freiwillig** — leer bleibt leer, und vorausgefüllt wird nie etwas.
 
-- ⚠ **With many sources for one blueprint you could not scroll to the bottom.**
-  Expanding the origins — the "Hart Scraper Module" has twelve — left the lower
-  entries out of view and out of reach.
+- ⚠ **Bei vielen Wegen zu einem Bauplan ließ sich nicht bis nach unten
+  rollen.** Wer die Herkunft aufklappte — beim „Hart Scraper Module" sind es
+  zwölf Wege —, sah die unteren Einträge nicht und kam auch nicht an sie heran.
 
-  > Cause: the scroll length is built from **estimated** row heights. That holds
-  > while every row is the same height; an expanded blueprint is several times
-  > taller, and the estimate knew nothing about it.
+  > Ursache: Die Länge der Rollfläche entsteht aus **geschätzten** Zeilenhöhen.
+  > Das stimmt, solange jede Zeile gleich hoch ist; ein aufgeklappter Bauplan
+  > ist aber ein Vielfaches höher, und die Schätzung wusste nichts davon.
 
-  The list now re-measures whenever a built section differs from the estimate,
-  shifts the following ones and extends the scroll area. It does this by itself
-  rather than relying on someone remembering it at each click site.
+  Die Liste misst jetzt nach, sobald ein gebauter Abschnitt von der Schätzung
+  abweicht, rückt die folgenden nach und verlängert die Rollfläche. Das läuft
+  von selbst — es hängt nicht daran, dass jemand an jeder Klickstelle daran
+  denkt.
 
-- ⚠ **The reset control in the blueprint list could not be found.** It existed —
-  as a small grey underlined text at the bottom right, next to the result count.
-  It was missed entirely and filters were cleared by hand instead. What you
-  cannot find is not there.
+- ⚠ **Der Zurücksetzen-Knopf der Bauplan-Liste war nicht zu finden.** Es gab
+  ihn — als kleinen grauen Unterstrich-Text unten rechts neben dem
+  Trefferzähler. Er wurde vergeblich gesucht und die Filter von Hand zurückgestellt:
+  „nervt auf Dauer". Was man nicht findet, ist nicht da.
 
-  It now sits **at the top**, in the row with "all / owned / new in game", far
-  right and set apart, as a framed button with an ×. It still appears only when
-  something is actually narrowed down — and now clears **everything**: the
-  dropdowns, the search box and the state selection.
+  Er steht jetzt **oben in der Zustandszeile** neben „alle / habe ich / neu im
+  Spiel", ganz rechts und mit Abstand, als Knopf mit Rahmen und ×. Er erscheint
+  weiterhin nur, wenn wirklich etwas eingegrenzt ist — und nimmt jetzt **alles**
+  zurück: Auswahlfelder, Suchfeld und Zustandswahl. Vorher hätte er nur die
+  Auswahlfelder geleert, und die Liste wäre trotzdem gefiltert geblieben.
 
-- **The blueprint list starts without filters.** Setting "docking collar, size 2,
-  grade A" and returning to the tab later showed "Nothing found" — easily
-  mistaken for an empty inventory. Filters and search box are cleared on
-  reopening.
+- **Die Bauplan-Liste startet ohne Filter.** Wer „Andockkragen, Größe 2, Grad A"
+  eingestellt und den Reiter später wieder aufgerufen hatte, sah „Nichts
+  gefunden" — und konnte das leicht für einen leeren Bestand halten. Auswahl und
+  Suchfeld sind beim erneuten Aufrufen leer.
 
-- ⚠ **"With your material" was shown even when none of it was in stock.** The
-  line on the right said "you are missing 1.2", yet a factor was calculated
-  below — from the slider default, not from your material. Anyone reading that
-  takes the factor for their own result. The heading now says what it shows:
-  "What quality 500 would give", whenever a value is being tried or the stock
-  holds nothing.
+- ⚠ **„Mit deinem Material" stand auch dann da, wenn nichts davon im Lager
+  lag.** Rechts meldete die Zeile „dir fehlt: 1.2", darunter wurde trotzdem
+  gerechnet — mit dem Standardwert des Reglers, nicht mit deinem Material. Wer
+  das liest, hält den Faktor für sein Ergebnis. Die Überschrift sagt jetzt, was
+  sie zeigt: „Was Qualität 500 bringen würde", sobald durchgespielt wird oder
+  nichts im Lager liegt.
 
-- **The search fields on Crafting and Mining kept their contents.** Searching
-  for "titan" and returning to the tab later still showed only titanium — easily
-  mistaken for the whole list. They are empty again on reopening.
+- **Die Suchfelder bei Herstellung und Bergbau merkten sich ihren Inhalt.** Wer
+  „titan" gesucht und den Reiter später wieder aufgerufen hatte, sah weiter nur
+  Titan — und hielt das leicht für den ganzen Bestand. Sie sind jetzt beim
+  erneuten Aufrufen leer.
 
-  > Cause: a page is built **once** and only shown and hidden after that.
-  > Anything that should be fresh has to register for it.
+  > Ursache: Eine Seite wird **einmal** gebaut und danach nur ein- und
+  > ausgeblendet. Alles, was frisch sein soll, muss sich dafür eigens anmelden.
 
-- **Both search fields have a × to clear them**, shown only when something is in.
+- **Beide Suchfelder haben ein × zum Leeren**, sichtbar nur, wenn etwas drinsteht.
 
-- ⚠ **Buttons cut off their own labels** — one read "e change" instead of "Save
-  change", and in the overlay the contract line ended mid-word. That is not
-  cosmetic: someone reading half a word goes looking for a bug that does not
-  exist.
+- ⚠ **Knöpfe schnitten ihre Beschriftung ab** — auf einem Knopf stand „erung
+  speichern" statt „Änderung speichern", und im Overlay endete die Auftragszeile
+  mitten im Wort. Das ist kein Schönheitsfehler: Wer ein halbes Wort liest,
+  sucht einen Fehler, den es nicht gibt. *„sonst suchen die User
+  Symbole, die sie selber abgeschnitten haben."*
 
-  Cause: the surface was sized with `measure()` but drawn with whatever font the
-  system provides — and under **Wayland** that is only settled once the window
-  is shown. Every button now measures itself three times: when built, when first
-  shown, and once when idle. If it grows, its frame grows with it. Applies to
-  all buttons including filter rows.
+  Ursache: Die Fläche wurde mit `measure()` bemessen, gezeichnet wird aber mit
+  der Schrift, die das System liefert — und unter **Wayland** steht die erst
+  fest, wenn das Fenster angezeigt wird. Jeder Knopf misst jetzt dreimal nach:
+  beim Bauen, beim ersten Anzeigen und einmal im Leerlauf. Wächst er, wächst
+  der Rahmen mit. Gilt für alle Knöpfe samt Filterreihen.
 
-- ⚠ **The overlay could be dragged narrower than its own icon bar**, hiding the
-  bell and the icons on the right — at 290 px not one of them was visible. It
-  now has a minimum width derived from that bar (measured: 520 px for the title
-  and ten icons), and a too-small saved size is raised on startup.
+- ⚠ **Das Overlay ließ sich schmaler ziehen als seine eigene Symbolleiste.**
+  Glocke und die Symbole rechts verschwanden einfach — bei 290 px Breite war
+  kein einziges mehr zu sehen. Es hat jetzt eine Mindestbreite, die sich an der
+  Leiste bemisst (gemessen: 520 px für Titel und zehn Symbole), und eine zu
+  klein gespeicherte Größe von früher wird beim Start angehoben.
 
-  > The first attempt did nothing because it asked the bar for its requested
-  > width — but that bar runs with `pack_propagate(False)`, deliberately not
-  > passing on its children's size, and reported **1 pixel**. The elements are
-  > now added up individually.
+  > Der erste Anlauf half nichts, weil er die Leiste nach ihrer Wunschbreite
+  > fragte — die läuft aber mit `pack_propagate(False)`, gibt die Größe ihrer
+  > Kinder also bewusst nicht weiter und meldete **1 Pixel**. Jetzt werden die
+  > Elemente einzeln zusammengezählt.
 
  
 
-- **The contract line in the overlay wraps instead of being cut off.**
+- **Die Auftragszeile im Overlay bricht um, statt abgeschnitten zu werden.**
 
-- ⚠ **An open window would not come to the front under Wayland.** Clicking the
-  overlay appeared to do nothing and only restarting helped. Under Wayland a
-  window may not raise itself; what the compositor does accept is a window that
-  **re-registers** itself, and that is what now happens — only under Wayland,
-  and only when the window really is covered. Keyboard focus stays with the game.
+- ⚠ **Ein offenes Fenster kam unter Wayland nicht nach vorn.** Der Klick aufs
+  Overlay schien wirkungslos, und es half nur, das Programm neu zu starten —
+  *„nen User findet das nervig, und wer's nicht nervig findet, rafft
+  es nicht."* Unter Wayland darf sich ein Fenster nicht selbst vordrängen; was
+  der Compositor annimmt, ist ein Fenster, das sich **neu anmeldet**. Genau das
+  passiert jetzt — aber nur unter Wayland und nur, wenn das Fenster wirklich
+  verdeckt ist. Der Tastaturfokus bleibt dabei beim Spiel.
 
-- ⚠ **Buttons cut off their own labels.** One button read "e change" instead of
-  "Save change". Cause: the surface was sized with `measure()` but drawn with
-  whatever font the system actually provides — where those differ, the text
-  runs past the edge and is clipped on both sides. Every button now measures
-  itself after its text is set. This affected all buttons, not just one.
- 
+- ⚠ **Knöpfe schnitten ihre Beschriftung ab.** Auf einem Knopf stand „erung
+  speichern" statt „Änderung speichern". Ursache: Die Fläche wurde mit
+  `measure()` bemessen, gezeichnet wurde aber mit der Schrift, die das System
+  wirklich hergibt — weichen die ab, steht der Text über den Rand und wird
+  beidseitig gekappt. Jeder Knopf misst jetzt nach dem Setzen seines Textes
+  selbst nach. Betraf alle Knöpfe, nicht nur den einen.
 
-- ⚠ **Stock entries could not be corrected.** After a typo or after handing
-  material to someone else, the only option was to delete the entry and retype
-  it — which easily created a second name for the same material. Now **clicking
-  a row** opens it in the fields above: change amount, quality and storage
-  location, save, done.
+- ⚠ **Der Lagerbestand liess sich nicht berichtigen.** Wer sich vertippt oder
+  Material weitergegeben hatte, konnte den Posten nur löschen und neu tippen —
+  und beim Neutippen entstand leicht ein zweiter Name für dasselbe Material.
+  Jetzt **öffnet ein Klick auf eine Zeile** sie oben in den Feldern: Menge,
+  Qualität und Lagerort ändern, speichern, fertig.
 
-  > **Add and subtract instead of doing the maths.** With an entry open you can
-  > type `+5` or `-2` to add or remove. Handed everything over? Type the full
-  > amount with a minus and the entry disappears. You cannot subtract more than
-  > you have; the available amount is shown instead.
+  > **Auf- und Abbuchen statt Kopfrechnen.** Bei einem offenen Posten kannst du
+  > `+5` oder `-2` tippen, dann wird dazugelegt oder abgezogen. Wer alles
+  > abgegeben hat, tippt die volle Menge mit Minus — der Posten verschwindet.
+  > Mehr, als da ist, lässt sich nicht abbuchen; dann steht der Bestand da.
 
-- ⚠ **A typo in a material name quietly broke your stock.** The suggestions
-  could be ignored: enter `Aslerite` and the list looked right — but no recipe
-  found the stock, and nobody learned why. Names are now **matched**: case,
-  the mining spelling with brackets (`Aslarite (Raw)`), `Aluminium` versus
-  `Aluminum` and a close typo are pulled onto the correct name and reported. A
-  completely unknown name is **queried** rather than stored — with an "Add
-  anyway" button for the case where you really do have something no recipe
-  lists.
+- ⚠ **Ein Vertipper im Materialnamen machte den Bestand still unbrauchbar.**
+  Die Vorschläge liessen sich übergehen: Wer `Aslerite` eintrug, sah eine Liste,
+  die richtig aussah — nur fand kein Rezept den Bestand, und niemand erfuhr,
+  warum. Der Name wird jetzt **abgeglichen**: Gross- und Kleinschreibung, die
+  Bergbau-Schreibweise mit Klammer (`Aslarite (Raw)`), `Aluminium` gegen
+  `Aluminum` und ein knapper Vertipper werden auf den richtigen Namen gezogen,
+  sichtbar gemeldet. Ist ein Name gänzlich unbekannt, wird **nachgefragt**
+  statt eingetragen — mit einem Knopf „Trotzdem eintragen" für den Fall, dass
+  du wirklich etwas hast, das in keinem Rezept steht.
 
-- **The location field said "Location".** That belongs to mining. This is where
-  your material **sits**, so it now says "Storage location" — and stays
-  optional, since not everyone uses several places. **Amount and quality are
-  required:** without quality the watcher cannot work out what your material
-  does to the finished item, which is the whole point of the stock list.
+- **Das Ortsfeld hiess „Fundort".** Das gehört zum Bergbau. Hier steht, wo dein
+  Material **liegt**, also heisst es jetzt „Lagerort" — und bleibt freiwillig,
+  weil nicht jeder mehrere Lager hat. **Menge und Qualität sind dagegen Pflicht:**
+  Ohne Qualität kann der Watcher nicht rechnen, was dein Material aus dem
+  fertigen Teil macht, und genau dafür ist das Lager da.
 
-- **Comma and full stop both work for amounts.** Some type `12.5`, others
-  `12,5`. The comma used to raise an error.
+- **Komma und Punkt gelten beim Eintragen gleich.** Die einen tippen `12,5`,
+  die anderen `12.5`. Bisher warf das Komma eine Fehlermeldung.
 
-- **Clicking the overlay now really brings an open window to the front.** It
-  used to stay behind the game, and the click seemed to do nothing. Cause:
-  `lift()` alone is ignored under **Wayland** — a window may not raise itself
-  there. Now "always on top" is set briefly and switched off again, which the
-  compositor accepts. A **minimised** window is restored too; it used to stay
-  collapsed. Affects the blueprint list, settings and "What's new".
+- **Ein Klick auf das Overlay holt ein offenes Fenster jetzt wirklich nach
+  vorn.** Bisher blieb es hinter dem Spiel, und der Klick schien nichts zu tun.
+  Ursache: `lift()` allein wird unter **Wayland** ignoriert — dort darf sich ein
+  Fenster nicht selbst in den Vordergrund setzen. Jetzt wird kurz „immer oben"
+  gesetzt und gleich wieder abgeschaltet; das nimmt der Compositor an. Ein
+  **minimiertes** Fenster wird dabei ebenfalls wiederhergestellt, vorher blieb
+  es eingeklappt. Betrifft Bauplan-Liste, Einstellungen und „Was ist neu".
 
-  > **Your game keeps the keyboard.** The window comes forward but does not
-  > grab input focus — if you are flying, you keep flying. Click into the
-  > window when you want to type in it. Only at startup does it take focus,
-  > because you started it yourself.
+  > **Dein Spiel behält die Tastatur.** Das Fenster kommt nach vorn, reißt aber
+  > nicht den Eingabefokus an sich — wer gerade fliegt, fliegt weiter. Wer im
+  > Fenster tippen will, klickt hinein. Nur beim Programmstart bekommt es den
+  > Fokus, denn den hast du ja selbst ausgelöst.
 
-- ⚠ **The quality slider stuttered because 4 MB were read from disk on every
-  mouse move.** The recipe file was re-read on **every** access — 22 ms per
-  call, and the slider fires on every pixel. That came to over 600 ms of
-  computing per second. The data now stays in memory and is only re-read when
-  the file actually changes: **0.33 ms instead of 21.9 ms**. On top of that,
-  dragging now only relabels the values instead of rebuilding them, which took
-  care of the remaining flicker.
+- ⚠ **Der Qualitäts-Regler ruckelte, weil bei jeder Mausbewegung 4 MB von der
+  Platte gelesen wurden.** Die Rezeptdatei wurde bei **jedem** Zugriff neu
+  eingelesen — 22 ms pro Aufruf, und der Regler ruft bei jedem Pixel. Das waren
+  über 600 ms Rechenzeit pro Sekunde. Jetzt bleiben die Daten im Speicher und
+  werden nur neu gelesen, wenn sich die Datei wirklich ändert: **0,33 ms statt
+  21,9 ms**. Nebenbei werden die Werte beim Ziehen nur noch neu beschriftet
+  statt neu aufgebaut — das nahm den Rest des Flackerns.
 
-- ⚠ **The new data never arrived for anyone who already had a catalogue.**
-  The fetch stopped as soon as the blueprint catalogue was current — which it is
-  for every existing user. Crafting, Mining and Stock would have stayed empty
-  until the next Star Citizen patch. Both fetches are now **always** checked;
-  they carry their own "already current?" test and load nothing twice.
-- **The quality scale was shown wrongly.** In the stock the field read
-  "Quality %" and values appeared as "720 %". The recipes work with **0 to
-  1000**. Anyone reading "72" in game and entering that would have got wrong
-  results throughout — their ore would count as unusable when it is good.
+- ⚠ **Die neuen Daten kamen bei niemandem an, der schon einen Katalog hatte.**
+  Der Abruf brach ab, sobald der Bauplan-Katalog aktuell war — und das ist er
+  bei jedem bisherigen Nutzer. Herstellung, Bergbau und Lager wären dauerhaft
+  leer geblieben, bis Star Citizen das nächste Mal patcht. Die beiden Abrufe
+  werden jetzt **immer** geprüft; sie bringen ihre eigene „schon aktuell?"-Frage
+  mit und laden nichts doppelt.
+- **Die Qualitätsskala stand falsch da.** Im Lager hieß das Feld „Güte %" und
+  zeigte Werte als „720 %" an. Die Rezepte rechnen aber mit **0 bis 1000**. Wer
+  im Spiel „72" abliest und einträgt, hätte danach lauter falsche Ergebnisse
+  bekommen — sein Erz gälte als unbrauchbar, obwohl es gut ist.
 
-- **"Network error" where the site had simply refused the request.** A 403 is a
-  refusal, not a loose cable: the tool now says so plainly, keeps working with
-  the data it already has — and no longer retries three times (which cost six
-  seconds for nothing).
+- **„Netzfehler", wo die Seite den Abruf nur abgelehnt hatte.** Ein 403 ist eine
+  Absage, kein Wackelkontakt: Das Werkzeug sagt das jetzt klar, arbeitet mit dem
+  zuletzt geladenen Stand weiter — und wiederholt den Versuch nicht mehr dreimal
+  (das kostete sechs Sekunden für nichts).
 
-### Thanks
+### Dank
 
-The idea for the resource stock came from **Horthy (KRT)** — and out of it grew the quality calculation that now shows what your own material makes of a blueprint. Thank you 🙏
+Die Idee zum Rohstoff-Lager kam von **Horthy (KRT)** — und aus ihr ist die Qualitätsrechnung geworden, die jetzt zeigt, was das eigene Material aus einem Bauplan macht. Danke dafür 🙏
 
-And **Krovax** (SCMDB), who set up a public data mirror on request so tools like this one have a dependable source.
+Dazu **Krovax** (SCMDB), der auf Anfrage eigens einen öffentlichen Datenspiegel eingerichtet hat, damit Werkzeuge wie dieses eine verlässliche Quelle haben.
 
 ## v3.2.1 - 2026-08-29
 
-### Fixed
+### Behoben
 
-- **Other tools are no longer written over.** Three programs mark blueprint
-  contracts in the game, and all three use the same `[BP]` mark: this one,
-  **MrKraken's StarStrings** and the **SC Deutsch Launcher** (watcher and
-  launcher even draw on the same data source, so they write word-identical
-  lists). Until now the watcher did not tell its own marks from anyone else's.
-  All counted against the real 29 Aug 2026 release:
+- **Andere Werkzeuge werden nicht mehr überschrieben.** Drei Programme
+  kennzeichnen Bauplan-Aufträge im Spiel, und alle drei benutzen dieselbe Marke
+  `[BP]`: dieses hier, **MrKrakens StarStrings** und der **SC Deutsch Launcher**
+  (Watcher und Launcher schöpfen sogar aus derselben Datenquelle und schreiben
+  darum wortgleiche Listen). Bisher hat der Watcher nicht unterschieden, was von
+  ihm stammt und was nicht. Alles an der echten Fassung vom 29.08.2026
+  nachgezählt:
 
-  - **17** of MrKraken's marks were **deleted** when details were written — and
-    because the watcher then remembered the already-trimmed wording as the
-    original, they never came back on reset either.
-  - **297** more ended up **twice**.
-  - **136** item names got their tag twice:
+  - **17** von MrKrakens Kennzeichnungen wurden beim Eintragen **gelöscht** —
+    und weil sich der Watcher danach den bereits gekürzten Wortlaut als
+    Urfassung merkte, kamen sie auch beim Zurücksetzen nie wieder.
+  - **297** weitere standen danach **doppelt**.
+  - **136** Gegenstandsnamen bekamen ihr Kürzel zweimal:
     `[CS1] Spark-G Missile (CS1)`.
-  - Anyone running the **SC Deutsch Launcher** alongside would have read the
-    blueprint list twice over on **336** contracts, and lost the launcher's
-    state on reset.
+  - Wer den **SC Deutsch Launcher** parallel benutzt, hätte die Bauplan-Liste
+    an **336** Aufträgen zweimal untereinander gelesen und beim Zurücksetzen
+    den Stand des Launchers verloren.
 
-  **The new rule is simple: where a mark already stands, no second one is
-  added.** And whatever was there before our first insertion belongs to the
-  player — it is restored on reset, even when another tool put it there.
+  **Die neue Regel ist einfach: Wo schon eine Marke steht, kommt keine zweite
+  dazu.** Und was vor der ersten eigenen Einfügung dastand, gehört dem Spieler —
+  es wird beim Zurücksetzen wiederhergestellt, auch wenn es von einem anderen
+  Werkzeug stammt.
 
-  With the launcher the watcher goes one step further: its list **replaces** the
-  launcher's instead of sitting next to it. Because it is the same list — only
-  with **tick boxes**, the comparison against your own blueprints. Take the
-  details back out and the launcher's list is there again, character for
-  character.
+  Beim Launcher geht der Watcher einen Schritt weiter: Seine Liste **ersetzt**
+  dessen Liste, statt eine zweite danebenzusetzen. Denn sie ist dieselbe — nur
+  mit **Kästchen**, also mit dem Abgleich gegen deine eigenen Baupläne. Nimmst du
+  die Angaben zurück, steht seine Liste wieder da, Zeichen für Zeichen.
 
-  If an item name already carries a tag in square brackets, it is left alone.
+  Trägt ein Gegenstandsname schon ein Kürzel in eckigen Klammern, bleibt er, wie
+  er ist.
 
-  **Thanks to MrKraken** for [StarStrings](https://github.com/MrKraken/StarStrings)
-  and to the **SC Deutsch Launcher** team — and sorry for writing over your
-  work. 🙏
+  **Danke an MrKraken** für [StarStrings](https://github.com/MrKraken/StarStrings)
+  und an das Team des **SC Deutsch Launchers** — und Entschuldigung für das
+  Hineinschreiben. 🙏
 
-- **The watcher reported "details are in the game" where none of its own were.**
-  It recognised the injection by the `[BP]` mark and by the blueprint list
-  heading — both of which the other two tools write as well. Now only what is
-  unique to the watcher counts: the **tick box**.
+- **Der Watcher meldete „Angaben stehen im Spiel", wo nichts von ihm stand.**
+  Erkannt wurde die Injektion an der Marke `[BP]` und an der Überschrift der
+  Bauplan-Liste — beides schreiben die anderen beiden Werkzeuge genauso. Jetzt
+  zählt nur, was es ausschließlich beim Watcher gibt: das **Kästchen**.
 
-- **Tick boxes appeared in front of regions and delivery points.** In the game
-  you read `[  ] Stanton System - Danger 4-6/10`, as if a region were something
-  you could own. Cause: the blueprint blocks are structured with headings, and
-  three of them carry lists — `# Blueprints` (4,379 lines), `# Delivery` (323)
-  and `# Region` (239). Every one of them got ticked. Now only what sits under
-  **Blueprints** gets a box; that removes **838** wrong boxes from a finished
-  file. Same in German (`# Baupläne`, `# Abgabe`).
+- **Kästchen standen vor Regionen und Abgabeorten.** Im Spiel las man
+  `[  ] Stanton-System - Gefahr 4-6/10`, als könnte man eine Region besitzen.
+  Ursache: Die Bauplan-Blöcke gliedern mit Überschriften, und unter dreien davon
+  stehen Listen — `# Baupläne` (4.379 Zeilen), `# Abgabe` (323) und `# Region`
+  (239). Angekreuzt wurde jede. Jetzt bekommt nur ein Kästchen, was unter
+  **Baupläne** steht; in einer fertigen Datei fallen damit **838** falsche
+  Kästchen weg. Auf Englisch (`# Blueprints`, `# Delivery`) genauso.
 
-- **Installing a new base clears the original-wording file.** It belonged to the
-  old file and would have written back an outdated state. The same note also
-  protects the fresh file: the watcher has never written into something just
-  installed, so there is nothing of its own to remove there.
+- **Nach dem Einsetzen einer neuen Grundlage wird die Urfassungs-Merkdatei
+  geleert.** Sie gehörte zur alten Datei und hätte auf einen überholten Stand
+  zurückgeschrieben. Zugleich schützt der Vermerk die frische Datei: In etwas,
+  das eben erst eingesetzt wurde, hat der Watcher noch nie geschrieben — also
+  gibt es dort auch nichts von ihm zu entfernen.
 
-### Changed
+### Geändert
 
-- **MrKraken is now credited in the readme.** He had long been on the "Thanks &
-  Licences" page in the tool, but was missing from the readme.
-- **The licence stated for StarStrings is corrected.** It said "CC BY-NC-SA
-  4.0". The project states no licence at all — not in the repository, not in its
-  readme. Attributing a licence the author never granted is wrong; it now says
-  "no licence stated".
+- **MrKraken steht jetzt in der Danksagung der Anleitung.** Auf der Seite
+  „Danke & Lizenzen" im Programm stand er längst, in der Anleitung fehlte er.
+- **Die Lizenzangabe zu StarStrings ist berichtigt.** Dort stand
+  „CC BY-NC-SA 4.0". Das Projekt gibt gar keine Lizenz an — weder im Repo noch
+  in seiner Anleitung. Eine Lizenz zuzuschreiben, die der Autor nie vergeben
+  hat, ist falsch; jetzt steht dort „keine Lizenzangabe".
 
 ## v3.2.0 - 2026-08-29
 
-### Added
+### Neu
 
-- **When you accept a contract, the watcher now tells you whether blueprints are
-  part of it — and which of those you are still missing.** Until now you only
-  found out once the blueprint arrived. It appears in the list the moment you
-  accept:
+- **Der Watcher sagt dir beim Annehmen eines Auftrags, ob Baupläne dabei sind —
+  und welche dir davon noch fehlen.** Bisher erfuhrst du es erst, wenn der
+  Bauplan kam. Jetzt steht es in der Liste, sobald du den Auftrag annimmst:
 
   ```
-  Contract accepted: Retake Platforms From Nine Tails
-    →  3 blueprints · you are missing: H4-PBF Ammo Carrier
+  Auftrag angenommen: Retake Platforms From Nine Tails
+    →  3 Baupläne · dir fehlt: H4-PBF Ammo Carrier
   ```
 
-  This is deliberately **not** contract management: no list, no tab, no second
-  window. Just a line, like a blueprint find. The tool does not take on a second
-  job — it answers its own question earlier.
+  Es ist bewusst **keine Auftragsverwaltung**: keine Liste, kein Reiter, kein
+  zweites Fenster. Eine Zeile wie bei einem Bauplanfund auch. Das Werkzeug
+  bekommt keine zweite Aufgabe — es beantwortet seine eigene früher.
 
-  **If the catalogue does not know the contract, it stays quiet.** A wrong
-  promise about blueprints would be worse than no message at all.
+  **Kennt der Katalog den Auftrag nicht, wird geschwiegen.** Eine falsche
+  Bauplan-Zusage wäre schlimmer als gar keine Meldung.
 
-  Acceptance is detected through the key `mobiGlas_ui_MissionEvent_Activated`
-  from the game's own files rather than through the wording — in German the
-  **sub-objectives** are also called "Neuer Auftrag", so wording alone would fire
-  at every step. It works the same way if your game runs in English.
+  Erkannt wird die Annahme über den Schlüssel `mobiGlas_ui_MissionEvent_Activated`
+  aus der Spieldatei, nicht über den Wortlaut — auf Deutsch heißen sonst auch die
+  **Zwischenziele** „Neuer Auftrag", und die Meldung käme bei jedem Etappenziel.
+  Läuft dein Spiel auf Englisch, funktioniert es genauso.
 
-### Changed
+### Geändert
 
-- **The thanks to testers no longer sit in the readme.** They belong in the
-  changelog and on the "Thanks & Licenses" page inside the tool, where they
-  remain in full.
+- **Der Dank an die Tester steht nicht mehr in der Anleitung.** Er gehört in das
+  Änderungsprotokoll und auf die Seite „Danke & Lizenzen" im Programm — dort ist
+  er weiterhin vollständig.
 
 ## v3.1.0 - 2026-08-29
 
-### Added
+### Neu
 
-- **Caught-up blueprints are now reported, not just added silently.** When the
-  watcher finds something in the logs — on startup or at the push of the button
-  — it appears in the list, marked *caught up* so it doesn't look like a fresh
-  find.
+- **Nachgelesene Baupläne werden gemeldet, nicht nur still eingetragen.** Findet
+  der Watcher beim Start oder auf Knopfdruck etwas in den Protokollen, steht es
+  jetzt in der Liste — gekennzeichnet mit *nachgelesen*, damit es nicht wie ein
+  Fund von eben aussieht.
 
-  Up to ten individually; above that it stays with the summary in the status
-  bar. The reason for that limit: on the very first start the catch-up goes
-  through **every** stored session — on a well-used machine that is over a
-  hundred, and nobody wants to dismiss those one by one. Day to day it is zero
-  to three, and those are exactly the ones you want to see.
+  Bis zu zehn Stück einzeln; darüber bleibt es bei der Summe in der Statuszeile.
+  Der Grund für diese Grenze: Beim allerersten Start geht die Nachlese über
+  **alle** aufgehobenen Sitzungen — auf einem gewachsenen Rechner sind das über
+  hundert, und die will niemand einzeln wegklicken. Im Alltag sind es null bis
+  drei, und genau die will man sehen.
 
-### Fixed
+### Behoben
 
-- **The same blueprint counted twice when the game runs in German.** The SC
-  Deutsch Launcher reads the **English** catalogue and writes
-  `Ravager-212 Twin Shotgun Magazine (16 cap)`. Re-reading the logs picks up the
-  same crate in whatever language Star Citizen runs in — in German
-  `… (16 Schuss)`. To the Watcher those were two different blueprints.
+- **Derselbe Bauplan zählte zweimal, wenn das Spiel auf Deutsch läuft.** Der SC
+  Deutsch Launcher liest den **englischen** Katalog und schreibt
+  `Ravager-212 Twin Shotgun Magazine (16 cap)`. Die Nachlese aus den Protokollen
+  liest dieselbe Kiste in der Sprache, in der Star Citizen läuft — auf Deutsch
+  also `… (16 Schuss)`. Für den Watcher waren das zwei verschiedene Baupläne.
 
-  Measured against a real inventory: **405 shown, 403 actually held.** The bug is
-  silent — nothing breaks, the number is simply too high.
+  Gemessen an einem echten Bestand: **405 angezeigt, 403 vorhanden.** Der Fehler
+  ist still — es geht nichts kaputt, es steht nur eine zu große Zahl da.
 
-  The quantity in brackets is now language-neutral: `(16 Schuss)` and `(16 cap)`
-  are the same blueprint. **The number stays** — a 40-round and a 60-round
-  magazine are different blueprints and must remain so. Brackets that do not
-  start with a digit are untouched, so `Singe Cannon (S2)` keeps its name.
+  Die Mengenangabe in Klammern wird jetzt entsprachlicht: `(16 Schuss)` und
+  `(16 cap)` sind derselbe Bauplan. **Die Zahl bleibt stehen** — ein 40er- und
+  ein 60er-Magazin sind verschiedene Baupläne und müssen es bleiben. Klammern
+  ohne führende Ziffer bleiben unangetastet, `Singe Cannon (S2)` heißt weiter so.
 
-  An inventory already on disk is migrated on the next start: duplicates are
-  merged into one entry, and the **older** find wins.
+  Ein bereits gespeicherter Bestand zieht beim nächsten Start automatisch mit —
+  die Dubletten werden zu einem Eintrag zusammengeführt, wobei der **ältere**
+  Fund gewinnt.
 
-- **"Start with the system" never worked on Linux.** The Watcher wrote the
-  AppImage's **temporary mount point** (`/tmp/.mount_SC-BP-ji95vH/…`) into the
-  autostart file. That path gets a new random name on every launch, so after a
-  reboot the entry pointed nowhere and the Watcher did not come up — with no
-  error message, because the file looked perfectly fine.
+- **„Mit System starten" funktionierte unter Linux nie.** In die Autostart-Datei
+  schrieb der Watcher den **temporären Einhängepunkt** des AppImage
+  (`/tmp/.mount_SC-BP-ji95vH/…`). Der bekommt bei jedem Start einen neuen
+  Zufallsnamen — nach einem Neustart des Rechners zeigte der Eintrag ins Leere
+  und der Watcher kam nicht hoch. Ohne Fehlermeldung: Die Datei sah richtig aus.
 
-  The cause was the order in the code: an AppImage also counts as "frozen", so
-  that branch won and the real AppImage path was never reached. Now reversed.
+  Ursache war die Reihenfolge im Code. Ein AppImage gilt ebenfalls als
+  „eingefroren", deshalb gewann diese Abfrage, und der Pfad zur echten
+  AppImage-Datei kam nie an die Reihe. Jetzt andersherum.
 
-  Found on 29 Aug 2026 on a machine where the entry had been dead ever since the
-  move to Linux.
+  Gefunden am 29.08.2026 auf einem Rechner, auf dem der Eintrag seit dem Umstieg
+  auf Linux tot dalag.
 
 
-- **The floating lock sat seven pixels too far right.** The offset for it came
-  from a measurement on a **different screen** (5120×1440 instead of 4096×1152)
-  — symbols are 24 px wide there instead of 22, and an offset measured in pixels
-  applies to exactly the one screen it was measured on.
+- **Das schwebende Schloss saß sieben Pixel zu weit rechts.** Der Ausgleich
+  dafür stammte aus einer Messung auf einem **anderen Bildschirm** (5120×1440
+  statt 4096×1152) — dort sind die Symbole 24 px breit statt 22, und ein in
+  Pixeln gemessener Ausgleich gilt genau für den einen Bildschirm.
 
-  Measured again on the running program: without the offset it sits exactly on
-  target. It is back to zero.
+  Am laufenden Programm nachgemessen: Ohne Ausgleich sitzt es deckungsgleich.
+  Er steht wieder auf null.
 
 ## v3.0.3 - 2026-08-28
 
-### Fixed
+### Behoben
 
-- **Three places showed the key name instead of the text.** Most visibly on the
-  rocket icon: its tooltip literally read `s_sp_start`. It now says what was
-  meant — "Launch Star Citizen".
+- **An drei Stellen stand der Schlüsselname statt des Textes.** Am auffälligsten
+  am Raketen-Symbol: Der Hinweis dort lautete wörtlich `s_sp_start`. Jetzt steht
+  da, was gemeint war — „Star Citizen starten".
 
-  The other two would have surfaced on the next failed download and in the
-  version window.
+  Die beiden anderen wären beim nächsten fehlgeschlagenen Herunterladen und im
+  Versionsfenster aufgetaucht.
 
-  The cause is a fallback that hides too well: if the language table does not
-  know a key, it returns **the key**. That beats crashing — but the fault stays
-  invisible until someone sees it in the running program.
+  Der Grund ist ein Notnagel, der zu gut versteckt: Kennt die Sprachtabelle
+  einen Schlüssel nicht, gibt sie **den Schlüssel zurück**. Das ist besser als
+  ein Absturz — aber der Fehler bleibt unsichtbar, bis ihn jemand im laufenden
+  Programm sieht.
 
-  The self-test now checks this: it collects **every** call with a fixed key
-  across the program and matches it against the table. With over 600 entries
-  that cannot be done by hand — and it was this check, not a person, that found
-  all three.
+  Der Selbsttest prüft das jetzt: Er sammelt **jeden** Aufruf mit festem
+  Schlüssel aus dem ganzen Programm und gleicht ihn gegen die Tabelle ab. Bei
+  über 600 Einträgen ist das von Hand nicht zu halten — gefunden hat die drei
+  auch kein Mensch, sondern diese Prüfung.
 
-  Reported by **der Autor** on 2026-08-28.
+  Gemeldet von **der Autor** am 28.08.2026.
 
-### Changed
+### Geändert
 
-- **It said "check daily for new versions", but checked hourly.** The interval
-  has always been one hour; the text beside it said otherwise. It only came up
-  once the check actually started repeating.
+- **„Täglich nach neuen Versionen sehen" hieß es, stündlich war es.** Der
+  Abstand steht seit jeher bei einer Stunde; der Text daneben sagte etwas
+  anderes. Aufgefallen ist es erst, seit die Prüfung tatsächlich wiederholt
+  läuft.
 
 ## v3.0.2 - 2026-08-28
 
-### Fixed
+### Behoben
 
-- **A running watcher never learned about a new version.** The notice only
-  appeared after a restart — anyone leaving the program running for days never
-  saw it.
+- **Ein laufender Watcher erfuhr nie von einer neuen Fassung.** Die Meldung kam
+  erst nach einem Neustart — wer das Programm tagelang durchlaufen lässt, sah
+  nie etwas.
 
-  It looked **exactly once**, two seconds after startup. The hourly interval in
-  the check only limits how often it *may* ask; someone still has to ask. That
-  now happens every hour.
+  Nachgesehen wurde **genau einmal**, zwei Sekunden nach dem Start. Der
+  Stundenabstand in der Abfrage begrenzt nur, wie oft gefragt werden *darf*;
+  fragen muss trotzdem jemand. Das passiert jetzt stündlich.
 
-  Reported by **der Autor** on 2026-08-28: v3.0.1 was out and the running watcher
-  stayed quiet — even though it had already fetched it and had it in its cache.
+  Gemeldet von **der Autor** am 28.08.2026: v3.0.1 war draußen, der laufende
+  Watcher schwieg — obwohl er sie längst abgerufen hatte und sie in seinem
+  Zwischenspeicher stand.
 
-- **An expected error made the problem report useless.** While downloading,
-  progress arrives every second; if the window closes during that, every single
-  update fails — caught, but logged each time.
+- **Ein erwarteter Fehler machte das Fehlerprotokoll unbrauchbar.** Beim
+  Herunterladen kommt der Fortschritt im Sekundentakt; geht dabei das Fenster
+  zu, scheitert jede einzelne Meldung — abgefangen, aber jedes Mal
+  protokolliert.
 
-  In one report that filled **50 of 50** slots with the same line, all within
-  eight seconds. Every real error had been pushed out. This message is now only
-  recorded the first time.
+  In einem Bericht waren dadurch **50 von 50** Plätzen mit derselben Zeile
+  belegt, alle innerhalb von acht Sekunden. Jeder echte Fehler war daraus
+  verdrängt. Diese Meldung wird jetzt nur beim ersten Mal festgehalten.
 
 ## v3.0.1 - 2026-08-28
 
-### Fixed
+### Behoben
 
 > [!important]
-> **If the watcher was closed while Star Citizen kept running, that session's
-> blueprints were lost** — permanently. If that sounds familiar: press the new
-> **Read the logs again** button once and they are back.
+> **War der Watcher zu, während Star Citizen weiterlief, gingen die Baupläne
+> dieser Sitzung verloren** — und zwar dauerhaft. Wer das kennt: einmal auf den
+> neuen Knopf **Protokolle erneut einlesen** drücken, dann sind sie da.
 
-- **The running `Game.log` was only read on the very first start.** After that
-  it counted as done: live reading resumed at the remembered position, and
-  everything before it was unreachable. The file only moves to the backup folder
-  on the next game start — until then the blueprint was missing with nothing to
-  hint at it.
+- **Die laufende `Game.log` wurde beim Start nur beim allerersten Mal gelesen.**
+  Danach galt sie als erledigt: Das Mitlesen setzte beim gemerkten Stand an, und
+  alles davor war unerreichbar. In den Sicherungsordner wandert die Datei erst
+  beim nächsten Spielstart — bis dahin fehlte der Bauplan, ohne dass irgendwo
+  etwas darauf hindeutete.
 
-  Measured: the blueprint sat at byte 11,987,664, the read position at
-  12,759,872. It would never have been found.
+  Nachgemessen: Der Bauplan stand bei Byte 11.987.664, der Lesestand bei
+  12.759.872. Er wäre nie gefunden worden.
 
-  The running file is now read in full on every start. That costs a fraction of
-  a second — the catch-up goes through every stored log anyway — and duplicates
-  cannot happen, the inventory checks every name.
+  Die laufende Datei wird jetzt bei jedem Start ganz gelesen. Das kostet den
+  Bruchteil einer Sekunde — die Nachlese geht ohnehin über alle Sicherungen —
+  und doppelte Einträge kann es nicht geben, der Bestand prüft jeden Namen.
 
-  Reported by **der Autor**, hours after v3.0.0.
+  Gemeldet von **der Autor**, wenige Stunden nach v3.0.0.
 
-- **After a game restart the read position jumped to the end of the file instead
-  of the start.** When Star Citizen creates a fresh `Game.log`, it is shorter
-  than the remembered position. The comment there correctly says "a new game
-  session has run" — but the code set the position to the **end** of the new
-  file instead of reading from the beginning. Everything the fresh session had
-  already reported was skipped.
+- **Nach einem Spielneustart sprang der Lesestand ans Dateiende statt an den
+  Anfang.** Legt Star Citizen eine frische `Game.log` an, ist sie kürzer als der
+  gemerkte Stand. Der Kommentar an der Stelle sagt richtig „dann lief eine neue
+  Spielsitzung" — der Code setzte aber auf das **Ende** der neuen Datei, statt
+  von vorn zu lesen. Alles, was die frische Sitzung schon gemeldet hatte, war
+  damit übersprungen.
 
-### Added
+### Neu
 
-- **A "Read the logs again" button** — in the overlay's title bar and in the
-  settings under *Inventory*. It goes through every stored session again,
-  including the ones already read, and fills in what is missing.
+- **Ein Knopf „Protokolle erneut einlesen"** — in der Titelleiste des Overlays
+  und in den Einstellungen unter *Bestand*. Er sieht jede aufgehobene Sitzung
+  noch einmal durch, auch die schon gelesenen, und trägt nach was fehlt.
 
-  It also helps when the game language was not yet detected on the first run:
-  the logs were then searched with the wrong wording and still marked as read.
+  Hilft nicht nur im Fall oben, sondern auch dann, wenn beim ersten Lauf die
+  Spielsprache noch nicht erkannt war: Dann wurden die Protokolle mit der
+  falschen Formulierung durchsucht und trotzdem als gelesen abgehakt.
 
-### Changed
+### Geändert
 
-- **Two texts that were no longer true.** The lock's hint described it as
-  sitting "at the top right of the overlay" — it hasn't since v3.0.0. And the
-  settings text still pointed to a second program start as the way back, even
-  though the lock exists for exactly that.
+- **Zwei Texte, die nicht mehr stimmten.** Der Hinweis am Schloss beschrieb es
+  „oben rechts am Overlay" — dort steht es seit v3.0.0 nicht mehr. Und die
+  Erklärung in den Einstellungen schickte zum Zurückholen noch zu einem zweiten
+  Programmstart, obwohl das Schloss genau dafür da ist.
 
 ## v3.0.0 - 2026-08-28
 
 > [!important]
-> **On Windows there is now an installer instead of a single `.exe`.** Updating
-> therefore opens an installation window once — that is correct and not foreign
-> software. The watcher restarts by itself afterwards. On Linux it stays one
-> file: the AppImage.
+> **Unter Windows gibt es jetzt einen Installer statt einer einzelnen `.exe`.**
+> Beim Update öffnet sich deshalb einmal ein Installationsfenster — das ist
+> richtig so und keine fremde Software. Danach startet der Watcher von selbst
+> wieder. Unter Linux bleibt es bei einer Datei: dem AppImage.
 >
-> **The SC Deutsch Launcher is no longer required.** Blueprints come from Star
-> Citizen's own `Game.log`. With the launcher you keep German names and a few
-> extra details — without it (always the case on Linux) nothing essential is
-> missing.
+> **Der SC Deutsch Launcher wird nicht mehr gebraucht.** Die Baupläne kommen aus
+> Star Citizens eigener `Game.log`. Wer den Launcher hat, behält deutsche
+> Bezeichnungen und ein paar Zusatzangaben — wer nicht (unter Linux immer), dem
+> fehlt nichts Wesentliches.
 
-A year after the first build, the narrow notification bar has grown into a tool
-that fully answers „which blueprint do I have, and where do I get the rest?" —
-without leaving the game.
+Ein Jahr nach der ersten Fassung ist aus der schmalen Melde-Leiste ein Werkzeug
+geworden, das die Frage „welchen Bauplan habe ich, und wo bekomme ich den Rest?"
+vollständig beantwortet — ohne aus dem Spiel zu gehen.
 
-### The main points
+### Das Wichtigste
 
-- **One window with everything in it.** Blueprint list to search and tick off,
-  progress by area, settings, server status, „What's new" — instead of scattered
-  little windows.
-- **Where each blueprint drops.** One click shows the faction, the contract, the
-  standing required and the payout — for **655 of 722** blueprints, sorted by
-  the easiest route. „I'm missing X" is half the information; „X drops at
-  Foxwell from Veteran" is all of it.
-- **New in the game.** A filter shows what the current patch brought, and a
-  dropdown next to it every earlier patch. Every blueprint carries the game
-  version it first appeared in.
-- **Details inside the game.** The watcher writes into contract texts **which**
-  blueprints a contract hands out — with `[x]` for the ones you already have.
-  And on request class, size and grade onto item names, so the tractor beam
-  reads „Glacier (Mil/1/A)" rather than just „Glacier".
-- **The overlay gets out of the way.** On request it only pops up briefly when a
-  blueprint arrives; mouse clicks can be passed through to the game, and a lock
-  in the bar brings it back. It can also fold down to just its title bar.
-- **Reporting problems without guesswork.** A red button collects system,
-  version, game state and the last errors into one report — no names, no paths.
-  That is why the bugs in this changelog are described so precisely.
-- **German and English, completely.** Switchable in the program. The blueprint
-  message in the log is recognised in **any** game language — the watcher works
-  out the wording by itself.
-- **Windows and Linux from one codebase**, with autostart, self-update and a
-  tray icon on both.
+- **Ein eigenes Fenster mit allem drin.** Bauplan-Liste zum Durchsuchen und
+  Abhaken, Fortschritt nach Bereichen, Einstellungen, Serverstatus, „Was ist
+  neu" — statt verstreuter kleiner Fenster.
+- **Herkunft je Bauplan.** Ein Klick zeigt Fraktion, Auftrag, nötigen Rang und
+  Belohnung — für **655 von 722** Bauplänen, sortiert nach dem leichtesten Weg.
+  „Mir fehlt X" ist die halbe Auskunft; „X gibt es bei Foxwell ab Veteran" ist
+  die ganze.
+- **Neu im Spiel.** Ein Filter zeigt, was der aktuelle Patch gebracht hat, ein
+  Auswahlfeld dazu jeden früheren Patch. Jeder Bauplan trägt die Spielversion,
+  in der es ihn zuerst gab.
+- **Angaben im Spiel.** Der Watcher schreibt in die Auftragstexte, **welche**
+  Baupläne ein Auftrag ausschüttet — mit `[x]` für die, die du schon hast. Und
+  auf Wunsch Klasse, Größe und Gütegrad an den Gegenstandsnamen, sodass am
+  Traktorstrahl „Glacier (Mil/1/A)" steht statt nur „Glacier".
+- **Das Overlay macht Platz, wenn du es brauchst.** Auf Wunsch blendet es nur
+  noch bei einem Neuzugang kurz auf; Mausklicks lassen sich ins Spiel
+  durchreichen, und ein Schloss in der Leiste holt es zurück. Einklappen geht
+  auch, dann bleibt nur die Titelzeile stehen.
+- **Fehler melden ohne Rätselraten.** Ein roter Knopf sammelt System, Fassung,
+  Spielstand und die letzten Fehler in einen Bericht — ohne Namen und ohne
+  Pfade. Das ist der Grund, warum die Fehler in diesem Änderungsprotokoll so
+  genau beschrieben sind.
+- **Deutsch und Englisch, vollständig.** Umschaltbar im Programm. Die
+  Bauplan-Meldung im Log erkennt der Watcher in **jeder** Spielsprache — er
+  findet die Formulierung selbst heraus.
+- **Windows und Linux aus einer Codebasis**, mit Autostart, Selbst-Update und
+  Ablagesymbol auf beiden.
 
-### Thanks
+### Dank
 
-Without these three, v3.0.0 would be markedly worse. They tested on their own
-machines and described faults well enough to find them:
+Ohne die drei hier wäre v3.0.0 deutlich schlechter — sie haben auf ihren eigenen
+Rechnern getestet und Fehler so beschrieben, dass sie zu finden waren:
 
-- **Bomb20** (pr0) — that the tool could not be kept up to date on Linux, plus
-  the crash on the very first start and a morning with four finds that would
-  otherwise have hit every user.
-- **Haldjas** (pr0) — pop-up mode and click-through go back to him; so does the
-  way **there and back** for click-through, the installer that failed on the
-  running file, and the console windows during updates.
-- **Morkhan** — the item details in game, and the find that
-  several reward tiers of one contract were overwriting each other in the
-  catalogue: **797 blueprints** nobody had ever seen before.
+- **Bomb20** (pr0) — dass das Werkzeug unter Linux nicht aktuell zu halten war,
+  dazu der Absturz beim allerersten Start und ein Vormittag mit vier Funden, die
+  sonst jeden Nutzer getroffen hätten.
+- **Haldjas** (pr0) — der Aufblend-Betrieb und die durchgereichten Mausklicks
+  gehen auf ihn zurück; ebenso der Weg **hin und zurück** zum Durchreichen, das
+  Setup, das an der laufenden Datei abbrach, und die Konsolenfenster beim
+  Update.
+- **Morkhan** — die Angaben am Gegenstand im Spiel, und der Fund,
+  dass sich mehrere Preisstufen eines Auftrags im Katalog gegenseitig
+  überschrieben: **797 Baupläne** hatte davor nie jemand gesehen.
 
-The complete list of every single change is in the `v3.0.0-rc1` to `v3.0.0-rc99`
-sections below.
+Die vollständige Liste jeder einzelnen Änderung steht in den Abschnitten
+`v3.0.0-rc1` bis `v3.0.0-rc99` darunter.
 
 ## v3.0.0-rc99 - 2026-08-28
 
-### Fixed
+### Behoben
 
-- **The green lock did not sit exactly on the lock in the bar.** A narrow edge
-  of the symbol underneath showed on the right — it looked like two locks
-  instead of one changing colour.
+- **Das grüne Schloss lag nicht genau auf dem Schloss in der Leiste.** Rechts
+  schaute dadurch ein schmaler Rand des Symbols darunter hervor — es sah aus wie
+  zwei Schlösser statt wie eines, das die Farbe wechselt.
 
-  The offset was **measured** from a screenshot, not estimated: the upper lock
-  sat at x=1068–1091, of the lower one only x=1094–1098 was visible. At 24 px
-  wide the lower one therefore starts at 1075 — **7 px further right**. The
-  upper one now moves by exactly that.
+  Der Versatz wurde aus einem Bildschirmfoto **ausgemessen**, nicht geschätzt:
+  Das obere Schloss stand bei x=1068–1091, vom unteren war nur x=1094–1098 zu
+  sehen. Bei 24 px Breite beginnt das untere damit bei 1075 — **7 px weiter
+  rechts**. Genau um diesen Wert rückt das obere jetzt nach.
 
-  ⚠ The value is measured, its **cause is not known**: in a rebuild with the
-  same Tk version and the same symbols, the lock sits exactly right without any
-  offset. It is therefore a named constant in one place, and applies only to the
-  visible state — pop-up mode calculates differently and is left alone.
+  ⚠ Der Wert ist gemessen, seine **Ursache nicht gefunden**: In einem Nachbau
+  mit gleicher Tk-Fassung und gleichen Symbolen sitzt das Schloss ohne Ausgleich
+  exakt. Er steht deshalb als benannte Konstante an einer Stelle und gilt nur
+  für den sichtbaren Zustand — der Aufblend-Betrieb rechnet anders und bleibt
+  unangetastet.
 
 ## v3.0.0-rc98 - 2026-08-28
 
-### Fixed
+### Behoben
 
-- **The lock was more opaque than the overlay beneath it.** With transparency
-  turned down, passing clicks through showed two locks of different saturation
-  on top of each other — the one in the bar showed through, the one above it did
-  not.
+- **Das Schloss war deckender als das Overlay darunter.** Wer die
+  Durchsichtigkeit heruntergestellt hat, sah beim Durchreichen zwei Schlösser
+  mit verschiedener Sättigung übereinander — das in der Leiste schien durch, das
+  darüber nicht.
 
-  A separate window does **not** inherit the main window's transparency; it has
-  to be given its own. Both now carry the same value, and it looks like one lock
-  changing colour — as intended.
+  Ein eigenes Fenster erbt die Durchsichtigkeit des Hauptfensters **nicht**; sie
+  muss ihm eigens gegeben werden. Jetzt tragen beide denselben Wert, und es
+  sieht aus wie ein Schloss, das die Farbe wechselt — so wie es gedacht ist.
 
 ## v3.0.0-rc97 - 2026-08-28
 
-### Fixed
+### Behoben
 
-- **On a second screen, the strip and lock jumped to the wrong monitor.** This
-  affected pop-up mode: if the overlay sits on a monitor **above** the main
-  screen, the green strip and its lock reappeared at the top edge of the main
-  monitor.
+- **Auf einem zweiten Bildschirm sprangen Streifen und Schloss auf den falschen
+  Monitor.** Betroffen war der Aufblend-Betrieb: Wer das Overlay auf einem
+  Monitor **oberhalb** des Hauptbildschirms liegen hat, fand den grünen Streifen
+  samt Schloss an der Oberkante des Hauptmonitors wieder.
 
-  A monitor above the main screen works with **negative** Y values — that is a
-  valid position, not a broken one. Remembering the position accounted for it;
-  displaying it threw it away again: a `max(0, …)` clamped every height below
-  zero to the top edge of the main monitor.
+  Ein Monitor über dem Hauptbildschirm arbeitet mit **negativen** Y-Werten —
+  das ist keine kaputte Angabe, sondern eine gültige. Beim Merken der Position
+  wurde das ausdrücklich berücksichtigt, beim Anzeigen dann wieder verworfen:
+  Ein `max(0, …)` klemmte jede Höhe unterhalb von null auf die Oberkante des
+  Hauptmonitors.
 
-  The strip carried that line from the start; the lock inherited it when it
-  moved next to the strip in rc94. Both are rid of it.
+  Der Streifen hatte diese Zeile von Anfang an; das Schloss hat sie beim Umzug
+  an den Streifen (rc94) geerbt. Beide sind sie los.
 
 ## v3.0.0-rc96 - 2026-08-28
 
-### Fixed
+### Behoben
 
-- **On hiding, the lock took three seconds to return to its place.** When the
-  overlay hides itself in pop-up mode, the lock belongs back at the handle
-  strip — instead it stayed where the bar had just been.
+- **Beim Zublenden brauchte das Schloss drei Sekunden zurück an seinen Platz.**
+  Blendet sich das Overlay im Aufblend-Betrieb weg, gehört das Schloss wieder an
+  den Anfasser-Streifen — es blieb aber erst noch dort stehen, wo eben die Leiste
+  war.
 
-  It was **exactly** the ten 300 ms retries from rc92. Those are meant for
-  startup, where the bar is about to appear: while it is still being drawn, the
-  lock waits instead of jumping to a guessed spot. But that waiting also ran
-  when the overlay had **deliberately** gone away — waiting for something that
-  is not coming.
+  Es waren **genau** die zehn Nachfass-Versuche à 300 ms aus rc92. Die sind für
+  den Start gedacht, wo die Leiste gleich kommt: Solange sie noch gezeichnet
+  wird, wartet das Schloss, statt an eine geratene Stelle zu springen. Nur lief
+  dieses Warten auch dann, wenn das Overlay gerade **absichtlich** verschwunden
+  ist — Warten auf etwas, das nicht kommt.
 
-  Both cases look the same at the button, but not at the window. Measured:
+  Beide Fälle sehen am Knopf gleich aus, am Fenster aber nicht. Nachgemessen:
 
-  | Case | Window | Button |
+  | Fall | Fenster | Knopf |
   |---|---|---|
-  | startup, still being drawn | 1 | 0 |
-  | deliberately hidden | 0 | 0 |
+  | Start, wird noch gezeichnet | 1 | 0 |
+  | absichtlich weggeblendet | 0 | 0 |
 
-  The window is now asked. If it is gone, the lock moves at once.
+  Gefragt wird jetzt das Fenster. Ist es weg, springt das Schloss sofort.
 
-  Reported by **Haldjas (pr0)** on 2026-08-28, including the exact separation
-  from the six seconds the overlay itself stays up.
+  Gemeldet von **Haldjas (pr0)** am 28.08.2026 — samt der genauen Trennung von
+  den sechs Sekunden, die das Overlay selbst noch stehen bleibt: „wenn der
+  watcher minimiert wurde, dauert es nochmal 3 sekunden".
 
 ## v3.0.0-rc95 - 2026-08-28
 
-### Changed
+### Geändert
 
 > [!important]
-> **A found blueprint is green from now on — no more yellow „provisional".**
-> Anyone with the SC Deutsch Launcher installed saw every find from the
-> `Game.log` in yellow first, until the launcher confirmed it. That confirmation
-> no longer exists, and neither does the yellow waiting.
+> **Ein gefundener Bauplan ist ab sofort grün — kein gelbes „vorläufig" mehr.**
+> Wer den SC Deutsch Launcher installiert hat, sah jeden Fund aus der `Game.log`
+> zuerst gelb, bis der Launcher ihn bestätigte. Diese Bestätigung gibt es nicht
+> mehr, und das gelbe Warten damit auch nicht.
 
-- **The waiting state is gone, not just the colour.** The yellow dot meant „read
-  from the Game.log, waiting for the launcher to confirm". Since the `Game.log`
-  is the source and the launcher only adds to it, that confirmation can never
-  arrive.
+- **Der Wartezustand ist raus, nicht nur die Farbe.** Der gelbe Punkt hieß „aus
+  der Game.log gelesen, wartet auf Bestätigung durch den Launcher". Seit die
+  `Game.log` die Quelle ist und der Launcher nur noch ergänzt, kann diese
+  Bestätigung gar nicht mehr kommen.
 
-  What remained was a state with no way out: with the launcher you saw permanent
-  yellow — without it permanent green, at **exactly the same certainty**. Two
-  colours for one statement are not information, they are a dead end.
+  Übrig geblieben war ein Zustand, aus dem nichts mehr herausführt: Wer den
+  Launcher hatte, sah dauerhaft Gelb — wer ihn nicht hat, dauerhaft Grün, bei
+  **genau derselben Sicherheit**. Zwei Farben für dieselbe Aussage sind keine
+  Auskunft, sondern eine Sackgasse.
 
-  The whole mechanism went, not just the display: the register of unconfirmed
-  rows, the matching of log names to launcher keys, the after-the-fact
-  confirming of a row, the word „provisional" — and the yellow dot in the
-  documentation, so nobody hunts for a symbol that does not exist.
+  Entfernt wurde die ganze Mechanik, nicht nur die Anzeige: der Merker für
+  unbestätigte Zeilen, die Zuordnung von Log-Namen zu Launcher-Schlüsseln, das
+  Nachträgliche-Bestätigen einer Zeile, der Text „vorläufig" — und der gelbe
+  Punkt aus der Anleitung, damit niemand nach einem Symbol sucht, das es nicht
+  gibt.
 
-  The launcher stays what it is: an addition. German names, maintained details
-  for type, size and grade, and it reports anything the log missed.
+  Der Launcher bleibt, was er ist: eine Ergänzung. Deutsche Bezeichnungen,
+  gepflegte Angaben zu Typ, Größe und Gütegrad, und er meldet nach, was im Log
+  fehlte.
 
 ## v3.0.0-rc94 - 2026-08-28
 
-### Improved
+### Verbessert
 
-- **In pop-up mode the lock now sits by the handle strip.** It sat at the top
-  right corner of the remembered overlay position — correctly calculated, but
-  on its own: the strip that shows where the overlay is waiting sits centred,
-  with the lock a good two hundred pixels further right, where there is nothing
-  to see.
+- **Im Aufblend-Betrieb sitzt das Schloss jetzt am Anfasser-Streifen.** Es stand
+  an der rechten oberen Ecke der gemerkten Overlay-Lage — richtig gerechnet,
+  aber einsam: Der Streifen, der zeigt wo das Overlay wartet, sitzt mittig, das
+  Schloss gut zweihundert Pixel weiter rechts, wo nichts zu sehen ist.
 
-  Two markers for the same thing belong together. It now reads as one: this is
-  where the overlay waits, and this is the lock.
+  Zwei Marken für dieselbe Sache gehören zusammen. Jetzt liest es sich als
+  eines: hier wartet das Overlay, und hier ist das Schloss.
 
-  Reported by **Haldjas (pr0)** on 2026-08-28.
+  Gemeldet von **Haldjas (pr0)** am 28.08.2026: „das schloss sitzt jetzt neben
+  dem watcher".
 
 ## v3.0.0-rc93 - 2026-08-28
 
-### Fixed
+### Behoben
 
-- **In pop-up mode the lock floated beside the overlay.** The rc92 fix worked
-  for everyone who keeps the overlay visible — in „only on a new blueprint"
-  mode the old behaviour remained.
+- **Im Aufblend-Betrieb schwebte das Schloss neben dem Overlay.** Der Fix aus
+  rc92 griff für alle, die das Overlay dauerhaft sehen — im Betrieb „nur bei
+  einem Neuzugang" blieb es beim alten Verhalten.
 
-  The reason: there the overlay is **hidden** at startup, before it has ever
-  been drawn. That leaves no bar for the lock to align with, and the fallback
-  used the position of an invisible window — measured, a never-drawn window
-  reports width 1 and position 0. The lock ended up somewhere beside the
-  overlay.
+  Der Grund: Dort wird das Overlay beim Start **versteckt**, bevor es je
+  gezeichnet wurde. Damit gibt es keine Leiste, an der sich das Schloss
+  ausrichten könnte, und die Ersatzrechnung nahm die Lage eines unsichtbaren
+  Fensters — nachgemessen meldet ein nie gezeichnetes Fenster Breite 1 und
+  Position 0. Das Schloss landete irgendwo neben dem Overlay.
 
-  It now hangs off the same remembered position as the handle strip, which in
-  pop-up mode already shows where the overlay is waiting — and moves onto the
-  bar as soon as the overlay pops up.
+  Es hängt jetzt an derselben gemerkten Position wie der Anfasser-Streifen, der
+  im Aufblend-Betrieb ohnehin zeigt, wo das Overlay wartet — und rückt auf die
+  Leiste, sobald das Overlay aufblendet.
 
-  Reported by **Haldjas (pr0)** on 2026-08-28. His problem report settled it:
-  without the line `overlay_modus=popup` in it, why this hit him and not others
-  would still be guesswork.
+  Gemeldet von **Haldjas (pr0)** am 28.08.2026. Sein Fehlerbericht hat es
+  entschieden: Ohne die Zeile `overlay_modus=popup` darin wäre weiter geraten
+  worden, warum es bei ihm auftritt und bei anderen nicht.
 
 ## v3.0.0-rc92 - 2026-08-28
 
-### Fixed
+### Behoben
 
-- **After a restart the lock sat beside the overlay instead of on it.** Anyone
-  who had click-through saved as on saw **two** locks after every start: one in
-  the wrong place next to the window, one in the title bar. Only the first
-  toggle moved it into place — and the next start began the same thing again.
+- **Nach dem Start stand das Schloss neben dem Overlay statt darauf.** Wer das
+  Durchreichen eingeschaltet gespeichert hatte, sah nach jedem Start **zwei**
+  Schlösser: eines an der falschen Stelle neben dem Fenster, eines in der
+  Leiste. Erst das erste Umschalten rückte es an seinen Platz — und beim
+  nächsten Start ging es wieder von vorn los.
 
-  The cause is an old `tkinter` trap: the state is applied immediately before
-  the window loop starts. The bar is already in the tree by then, but Tk has
-  drawn nothing yet — neither „is visible" nor the measurements are true at that
-  moment. So the lock went to a guessed position.
+  Die Ursache ist eine alte `tkinter`-Falle: Der Zustand wird unmittelbar vor
+  dem Start der Fensterschleife angewendet. Die Leiste steht da zwar schon im
+  Baum, aber Tk hat noch nichts gezeichnet — weder „ist sichtbar" noch die Maße
+  stimmen zu diesem Zeitpunkt. Das Schloss wurde also an einen geratenen Platz
+  gesetzt.
 
-  It now **waits instead of guessing**: while the bar is not yet drawn, no lock
-  is built at all; it retries until the bar is there. A briefly flashing lock in
-  the wrong place would only have been half a fix.
+  Jetzt wird **gewartet statt geraten**: Solange die Leiste noch nicht steht,
+  wird gar kein Schloss gebaut, sondern nachgefasst, bis sie da ist. Ein kurz
+  aufblitzendes falsches Schloss wäre nur die halbe Reparatur gewesen.
 
-  Reported by **Haldjas (pr0)** on 2026-08-28, with the full steps to reproduce.
+  Gemeldet von **Haldjas (pr0)** am 28.08.2026, mit dem vollständigen Ablauf zum
+  Nachstellen: „Starte Watcher — Schloss ist an 2 Positionen … position bleibt so
+  bis man den watcher neu startet".
 
 ## v3.0.0-rc91 - 2026-08-28
 
-### Improved
+### Verbessert
 
-- **One lock instead of two.** The green lock used to sit in the overlay's
-  corner while the title bar still showed an open one — two locks, one of them
-  stating the opposite of the truth.
+- **Ein Schloss statt zwei.** Bisher saß das grüne Schloss in der Ecke des
+  Overlays, während in der Leiste weiter ein offenes stand — zwei Schlösser,
+  von denen eines das Gegenteil des wahren Zustands zeigte.
 
-  The green lock now sits **exactly on top of** the one in the title bar: same
-  place, same size, same component. To the player it is one lock changing
-  colour — closed and green means „clicks go to the game", open and grey means
-  „the overlay catches them". You unlock where you locked.
+  Jetzt liegt das grüne Schloss **passgenau über** dem in der Leiste: gleiche
+  Stelle, gleiche Größe, gleiches Bauteil. Für den Spieler ist es ein Schloss,
+  das die Farbe wechselt — zu und grün heißt „Klicks gehen ins Spiel", offen
+  und grau heißt „das Overlay fängt sie ab". Entsperrt wird an derselben Stelle,
+  an der man zugesperrt hat.
 
-  It remains a **separate window**, and that cannot change: passing clicks
-  through applies to the whole window — a button in the bar would be just as
-  unreachable as the rest. If the bar is collapsed or the overlay hidden in
-  pop-up mode, the lock falls back to its old place in the corner.
+  Ein **eigenes Fenster** bleibt es trotzdem, und das lässt sich nicht ändern:
+  Wer Klicks durchreicht, reicht sie für das ganze Fenster durch — ein Knopf in
+  der Leiste wäre in dem Moment genauso wenig zu treffen wie der Rest. Ist die
+  Leiste eingeklappt oder das Overlay im Pop-up-Betrieb versteckt, fällt das
+  Schloss auf seinen alten Platz in der Ecke zurück.
 
 ## v3.0.0-rc90 - 2026-08-28
 
-### Improved
+### Verbessert
 
-- **The lock now sits permanently in the overlay's title bar.** Passing clicks
-  through to the game was only reachable via Settings → Overlay; getting back
-  was comfortable, through the lock that appears while it is active.
+- **Das Schloss steht jetzt fest in der Leiste des Overlays.** Klicks ins Spiel
+  durchreichen ging bisher nur über Einstellungen → Overlay; zurück kam man
+  bequem über das Schloss, das dabei erscheint.
 
-  A way there and back belongs in the same place. The title bar therefore
-  carries an **open** lock — it means „the overlay catches clicks". One click
-  closes it, and from then on the floating lock at the top right takes over, as
-  before. No more detour through the settings.
+  Ein Weg hin und her gehört an dieselbe Stelle. In der Titelleiste steht
+  deshalb ein **offenes** Schloss — es heißt „das Overlay fängt Klicks ab". Ein
+  Klick sperrt zu, und ab dann übernimmt das schwebende Schloss oben rechts, wie
+  bisher. Kein Umweg über die Einstellungen mehr.
 
-  The button only appears where the system can pass clicks through at all —
-  under native Wayland it would do nothing. Should it fail against expectation,
-  the setting is rolled back rather than storing an „on" that has no effect.
+  Der Knopf erscheint nur dort, wo das System Klicks überhaupt durchreichen kann
+  — unter nativem Wayland wäre er wirkungslos. Klappt es wider Erwarten nicht,
+  wird die Einstellung zurückgenommen, statt ein „an" zu speichern, das nichts
+  bewirkt.
 
-  Suggested by **Haldjas (pr0)** on 2026-08-28.
+  Vorgeschlagen von **Haldjas (pr0)** am 28.08.2026: „man kann das durckclicken
+  entfernen, aber eventuell kann der button zum locken stehen bleiben? sonst
+  muss man ja erst wieder in die einstellungen".
 
 ## v3.0.0-rc89 - 2026-08-28
 
-### Fixed
+### Behoben
 
-- **The dropdown promised more than the list showed.** After the patch-history
-  fix it read „4.10.0 (24)" — with three rows below it.
+- **Das Auswahlfeld versprach mehr, als die Liste zeigte.** Nach dem Fix an
+  der Patch-Historie stand im Feld „4.10.0 (24)" — darunter drei Zeilen.
 
-  Two causes, both the same kind of mistake:
+  Zwei Ursachen, beide dieselbe Art Fehler:
 
-  **Two sources for one question.** The dropdown counted the history, the
-  filter checks the `seit` stamp in the catalogue. But the number in brackets
-  is a promise about how many rows will appear. It now counts the catalogue —
-  what is not stamped cannot be shown anyway.
+  **Zwei Quellen für dieselbe Frage.** Das Feld zählte die Historie, der Filter
+  prüft den Stempel `seit` im Katalog. Die Zahl in Klammern ist aber eine
+  Zusage, wie viele Zeilen kommen. Gezählt wird jetzt der Katalog — was nicht
+  gestempelt ist, kann die Liste ohnehin nicht zeigen.
 
-  **And the stamp arrived too late.** It was only caught up during the network
-  tick, which runs at some point after startup in its own thread. Measured on
-  2026-08-28: window built at 10:44:02, catalogue stamped at 10:44:03 — one
-  second too late, and the list stayed wrong until the next opening. The window
-  now catches the stamp up itself, **before** it reads the catalogue. This hits
-  every user on the first start after a build with new history.
+  **Und der Stempel kam zu spät.** Nachgezogen wurde er nur im Netz-Takt, der
+  irgendwann nach dem Start in einem eigenen Faden läuft. Gemessen am
+  28.08.2026: Fenster um 10:44:02 gebaut, Katalog um 10:44:03 fertig gestempelt
+  — eine Sekunde zu spät, und die Liste blieb bis zum nächsten Öffnen falsch.
+  Das Fenster stempelt jetzt selbst nach, **bevor** es den Katalog liest. Das
+  trifft jeden Nutzer beim ersten Start nach einer Fassung mit neuer Historie.
 
 ## v3.0.0-rc88 - 2026-08-28
 
-### Fixed
+### Behoben
 
-- **The patch filter lost almost the entire patch.** The dropdown read
-  „4.10.0 (3)" and the list showed three ship weapons. In truth 4.10.0 brought
-  **24** blueprints — the 21 shipped ones had vanished from the view.
+- **Der Patch-Filter verlor fast den ganzen Patch.** Im Auswahlfeld stand
+  „4.10.0 (3)", und die Liste zeigte drei Schiffswaffen. In Wahrheit hat 4.10.0
+  **24** Baupläne gebracht — die 21 mitgelieferten waren aus der Anzeige
+  verschwunden.
 
-  Cause: the program layered its own observed history on top of the shipped
-  one. For the same game version, the local one won outright. But what the
-  program records itself is only ever the **increase since the last run** —
-  here three weapons the source added two days later. Read as a complete patch
-  list, that is bound to be wrong.
+  Ursache: Das Programm legte die selbst beobachtete Historie über die
+  mitgelieferte. Bei gleicher Spielversion gewann die eigene komplett. Nur:
+  Was das Programm selbst einträgt, ist immer bloß der **Zuwachs seit dem
+  letzten Lauf** — hier drei Waffen, die die Quelle zwei Tage später
+  nachreichte. Als vollständige Patch-Liste gelesen ist das zwangsläufig falsch.
 
-  Both lists are now **merged** rather than replaced, and the earlier date
-  wins. The same applied to two local findings in a row: the second erased the
-  first. That is fixed as well.
+  Beide Listen werden jetzt **vereinigt** statt ersetzt, und beim Datum gilt
+  das frühere. Das gleiche galt für zwei eigene Funde nacheinander: Der zweite
+  löschte den ersten. Auch das ist behoben.
 
-### Improved
+### Verbessert
 
-- **The diagnostic report now states the patch history.** A new line below the
-  catalogue state: which game versions the history holds, and with how many
-  blueprints — for example `4.10.0 (24)`.
+- **Der Diagnosebericht nennt jetzt die Patch-Historie.** Eine neue Zeile
+  unter dem Katalogstand: welche Spielversionen die Historie führt und mit
+  wie vielen Bauplänen — zum Beispiel `4.10.0 (24)`.
 
-  The bug above could hide because the report only showed the catalogue state.
-  That was perfectly fine; the history below it was not. Anyone reporting „the
-  patch filter shows almost nothing" now has the numbers right there, with no
-  need to open a file first.
+  Der Fehler oben konnte sich verstecken, weil der Bericht nur den Katalogstand
+  zeigte. Der war völlig in Ordnung, die Historie darunter nicht. Wer jetzt
+  „der Patch-Filter zeigt fast nichts" meldet, hat die Zahlen im Bericht
+  stehen, ohne dass jemand erst eine Datei aufmachen muss.
 
 ## v3.0.0-rc87 - 2026-08-28
 
-### Improved
+### Verbessert
 
-- **Confirmation dialogs now look like the rest of the program.** Three
-  places still showed Tk's grey system box: a light panel inside a dark window,
-  a foreign font — and narrow and tall, turning a longer sentence into a column.
+- **Die Sicherheitsabfragen sehen jetzt aus wie der Rest des Programms.**
+  Bisher kam an drei Stellen der graue System-Kasten von Tk: heller Hintergrund
+  im dunklen Fenster, fremde Schrift — und schmal und hoch, sodass ein längerer
+  Satz zu einer Säule wurde.
 
-  It is now a dialog of its own, in the same colours and with the same buttons
-  as everywhere else, **wide rather than tall** (620 px), centred over the
-  window. Enter means yes, Escape means no.
+  Jetzt ist es ein eigener Dialog in denselben Farben und mit denselben Knöpfen
+  wie überall sonst, **breit statt hoch** (620 px), mittig über dem Fenster.
+  Eingabetaste heißt ja, Escape heißt nein.
 
-  Affects: switching the text source · sending a problem report · resetting the
-  inventory.
+  Betrifft: Textquelle wechseln · Fehlerbericht absenden · Bestand zurücksetzen.
 
-  The requirement behind it: the dialog should carry the program's own design —
-  and be wide rather than tall.
+  Die Vorgabe dahinter: Die Abfrage soll das Design des Programms tragen — und
+  eher breit als hoch sein.
 
 
-- **The "In-game text" page now follows the order you read it in.** The text
-  source first — where the base text comes from — then what gets written into
-  it: blueprint details first, then the details on the item itself. Previously
-  the write switch sat above the source it depends on.
+- **„Texte im Spiel" steht jetzt in der Reihenfolge, in der man es liest.**
+  Zuerst die Textquelle — woher die Grundlage kommt —, dann was hineingeschrieben
+  wird: erst die Bauplan-Angaben, dann die Angaben am Gegenstand. Vorher stand
+  der Schreib-Schalter über der Quelle, auf die er sich bezieht.
 
-### Fixed
+### Behoben
 
-- **Dialogs had German text but English buttons.** Switching the text source
-  showed "Einsetzen?" above buttons labelled **Yes** and **No**.
+- **Abfragen hatten deutschen Text, aber englische Knöpfe.** Beim Umstellen
+  der Textquelle stand „Einsetzen?" über den Knöpfen **Yes** und **No**.
 
-  Those buttons do not come from the program's own language file but from Tk's
-  own table — which is incomplete on many Linux systems. Measured on
-  2026-08-28: Tk's locale was already set correctly to `de_de`, yet the German
-  words were simply missing from the installation. On Windows Tk ships them,
-  which is why it never showed up there.
+  Diese Knöpfe kommen nicht aus der Sprachdatei des Programms, sondern aus
+  Tks eigener Tabelle — und die ist auf vielen Linux-Systemen unvollständig.
+  Nachgemessen am 28.08.2026: Die Tk-Sprache stand bereits richtig auf
+  `de_de`, die deutschen Wörter fehlten der Installation trotzdem. Unter
+  Windows bringt Tk sie mit, deshalb ist es dort nie aufgefallen.
 
-  The program now supplies the words itself, and updates them on a language
-  switch instead of setting them once at startup.
+  Das Programm trägt die Wörter jetzt selbst ein — und zieht sie beim
+  Sprachwechsel mit, statt sie beim Start einmal zu setzen.
 
 ## v3.0.0-rc86 - 2026-08-28
 
-### Fixed
+### Behoben
 
-- **Asterisks showed up as plain text on the "In-game text" page.** The
-  explanation of the text source read "after that the `**entire game**` is in
-  that language" — asterisks included.
+- **Auf „Texte im Spiel" standen Sternchen im Klartext.** In der Erklärung
+  zur Textquelle war »danach ist das `**ganze Spiel**` in dieser Sprache« zu
+  lesen — mit den Sternchen.
 
-  The `**bold**` markup in the language file is meant for whoever reads that
-  file; a Tk label cannot mix formats and simply displays it. The credits page
-  already stripped it, the settings rows did not — the same job in two places,
-  one of them forgotten. Both now go through the same function.
+  Die Auszeichnung `**fett**` in der Sprachdatei ist für den gedacht, der die
+  Datei liest; ein Tk-Label kann kein Mischformat und zeigt sie deshalb
+  einfach mit an. Die Danke-Seite nahm sie schon heraus, die
+  Einstellungszeilen nicht — dieselbe Aufgabe an zwei Stellen, eine davon
+  vergessen. Beide gehen jetzt durch dieselbe Funktion.
 
-  Spotted in a screenshot of rc85. The self-test had missed it: it looked for German text in the English interface, not for
-  markup. **It now checks for this too** — and the check was verified by
-  putting the bug back in.
+  Aufgefallen auf einem Bildschirmfoto von rc85. Der Selbsttest hatte es nicht
+  gesehen: Er suchte nach deutschem Text in der
+  englischen Oberfläche, nicht nach Auszeichnung. **Er prüft es jetzt mit** —
+  und die Prüfung wurde gegengeprobt, indem der Fehler noch einmal eingebaut
+  wurde.
 
 ## v3.0.0-rc85 - 2026-08-28
 
-### Fixed
+### Behoben
 
-- **On Linux, description texts were cut off instead of wrapping — pushing the
-  switches out of the window.** Every page with body text next to a control was
-  affected: "In-game text", "Inventory", "Report a problem". At small window
-  sizes sentences ended mid-word, and the switches on the right could not be
-  reached at all.
+- **Unter Linux wurden Beschreibungstexte abgeschnitten statt umgebrochen — und
+  drückten die Schalter aus dem Fenster.** Betroffen war jede Seite mit
+  Fließtext neben einem Bedienelement: „Texte im Spiel“, „Bestand“, „Fehler
+  melden“. Bei kleiner Fenstergröße endeten die Sätze mitten im Wort, und die
+  Schalter rechts waren gar nicht erreichbar.
 
-  The cause sits one level deeper than it looks. The function that ties line
-  wrapping to the window width asks the label for its own border size. Depending
-  on the build, Tk returns such a measurement as a number, as text, **or as a
-  Tcl object** — and on the last one `int()` raises a `TypeError`. Only
-  `TclError` and `ValueError` were caught, and a `TypeError` is neither. So the
-  error escaped and ended the function **before** it could set the wrap width.
-  The text stayed on one long line — exactly the state this function exists to
-  prevent.
+  Der Grund lag eine Ebene tiefer, als es aussieht. Die Funktion, die den
+  Zeilenumbruch an die Fensterbreite hängt, fragt beim Label nach seinem
+  eigenen Rand. Tk gibt so eine Maßangabe je nach Aufbau als Zahl, als Text
+  **oder als Tcl-Objekt** zurück — und auf Letzteres wirft `int()` einen
+  `TypeError`. Aufgefangen wurden aber nur `TclError` und `ValueError`, und ein
+  `TypeError` ist keins von beiden. Der Fehler flog also durch und beendete die
+  Funktion, **bevor** sie den Umbruch setzen konnte. Der Text blieb einzeilig
+  und breit — genau der Zustand, den diese Funktion verhindern soll.
 
-  Why it surfaced only now: the Tk in the Windows build returns these values as
-  numbers, the Tk in the Linux AppImage as Tcl objects. The bug could not occur
-  on Windows.
+  Warum es erst jetzt auffiel: Das Tk im Windows-Bau liefert diese Angaben als
+  Zahl, das Tk im Linux-AppImage als Tcl-Objekt. Unter Windows konnte der
+  Fehler nicht auftreten.
 
-  Spotted during the first Linux test round after updating to rc84 — first by
-  the cut-off text, then confirmed in the problem report: **50 out of 50** recorded errors came from this single line.
+  Aufgefallen in der ersten Linux-Testrunde nach dem Update auf rc84 — zuerst am
+  abgeschnittenen Text, dann bestätigt im Fehlerbericht: **50 von 50** aufgehobenen Fehlern kamen aus dieser
+  einen Zeile.
 
-  Measurements are now read with Tk's own converter, which understands all three
-  forms. The same trap was present at two further points in the wrapping code
-  and was removed there as well.
+  Maßangaben werden jetzt mit Tks eigenem Umwandler gelesen, der alle drei
+  Formen versteht. Dieselbe Falle steckte an zwei weiteren Stellen im
+  Zeilenumbruch und wurde dort gleich mit beseitigt.
 
-- **Uninstalling left the autostart entry behind.** The registry kept pointing
-  at a file that no longer existed — Windows tried to start it at every sign-in
-  and failed silently.
+- **Deinstallieren ließ den Autostart-Eintrag liegen.** Danach stand in der
+  Registry weiter ein Verweis auf eine Datei, die es nicht mehr gab — Windows
+  versuchte sie bei jeder Anmeldung zu starten und scheiterte still.
 
-  The reason: the entry is written in **two** places. The installer creates it
-  when you tick "Start with Windows" during setup, and it cleans up exactly that
-  case. But turning autostart on **inside the program** writes the same value —
-  and the uninstaller knew nothing about it.
+  Der Grund: Der Eintrag wird an **zwei** Stellen gesetzt. Der Installer legt ihn
+  an, wenn man beim Installieren „Mit Windows starten“ wählt, und räumt genau
+  diesen Fall auch wieder weg. Schaltet man den Autostart aber **im Programm**
+  ein, schreibt das Programm denselben Wert — und davon wusste der Deinstaller
+  nichts.
 
-  Spotted while cleaning up after a test run. It is the same autostart that made the update fail earlier that morning (code 5) —
-  it was only half handled at both ends.
+  Aufgefallen beim Aufräumen nach einem Testlauf. Es ist derselbe Autostart, der am selben Morgen das Update scheitern ließ
+  (Code 5) — er war an beiden Enden nur halb geregelt.
 
-  The uninstaller now always removes the value, no matter who set it. Only that
-  one value — autostart entries of other programs are left alone.
+  Der Deinstaller entfernt den Wert jetzt immer, unabhängig davon, wer ihn
+  gesetzt hat. Nur diesen einen Wert — die Autostart-Einträge anderer Programme
+  bleiben unangetastet.
 
 ## v3.0.0-rc84 - 2026-08-28
 
-### Fixed
+### Behoben
 
-- **Updating failed when autostart cut in halfway through.**
-  Measured while updating rc75 → rc83: the installer got halfway and then stopped with
+- **Das Update scheiterte, wenn der Autostart mitten hineinfuhr.**
+  Gemessen beim Update rc75 → rc83: Der Installer lief bis zur Hälfte und brach dann ab mit
 
-      An error occurred while trying to replace the existing file:
-      DeleteFile failed; code 5. Access is denied.
+      Fehler beim Ersetzen einer vorhandenen Datei:
+      DeleteFile schlug fehl; Code 5. Zugriff verweigert.
 
-  The Windows Restart Manager was **not** at fault — it had done its job. The
-  setup log shows the whole chain:
+  Der Windows-Restart-Manager war **nicht** schuld — er hatte sauber gearbeitet.
+  Das Setup-Protokoll zeigt die ganze Kette:
 
       05:43:47  Shutting down applications using our files. (forced)
-      05:43:55  << the watcher is running again — parent process explorer.exe >>
+      05:43:55  << der Watcher läuft wieder — Elternprozess explorer.exe >>
       05:44:17  DeleteFile: The existing file appears to be in use (5).
 
-  Eight seconds after the shutdown, **autostart** brought the program back up.
-  Windows processes autostart entries with a delay after `explorer.exe` starts;
-  if the shell had restarted shortly before (a crash, a fresh sign-in), that
-  delay lands right inside the running installation. The proof is the **parent
-  process**: `explorer.exe` — had the watcher restarted itself, something else
-  would be there.
+  Acht Sekunden nach dem Schließen hat der **Autostart** das Programm wieder
+  hochgefahren. Windows arbeitet die Autostart-Einträge verzögert nach dem Start
+  von `explorer.exe` ab; war die Bedienoberfläche kurz vorher neu gestartet
+  (Absturz, frische Anmeldung), fällt diese Verzögerung genau in die laufende
+  Installation. Bewiesen ist es über den **Elternprozess**: `explorer.exe` —
+  hätte sich der Watcher selbst neu gestartet, stünde dort etwas anderes.
 
-  Deleting the running program cannot win that race: the installer closes it
-  **once**, and it never sees what comes back afterwards. On its own it only
-  retries four times, one second apart.
+  Das Löschen des laufenden Programms ist damit chancenlos: Der Installer
+  schließt **einmal**, und was danach hochkommt, sieht er nicht mehr. Von sich
+  aus wiederholt er nur viermal im Sekundenabstand.
 
-  The installer now follows up immediately before copying and terminates a
-  program that has come back — three times in short succession, so it also
-  catches an autostart firing at that very moment. Only on **updates**; a fresh
-  installation waits no longer than before.
+  Der Installer fasst jetzt direkt vor dem Kopieren nach und beendet ein wieder
+  hochgefahrenes Programm — dreimal mit kurzem Abstand, damit auch ein Autostart
+  erwischt wird, der genau in diesem Moment feuert. Nur beim **Update**; wer neu
+  installiert, wartet keine Sekunde länger.
 
-### Changed
+### Geändert
 
-- **A switch that says "off" now actually turns things off.** Both switches on
-  the "In-game text" page only stored the setting — the text file was left
-  untouched until someone pressed "Write now" under "By hand". Anyone who
-  turned the details off, restarted the game and found everything unchanged
-  concluded the tool was broken.
+- **Ein Schalter, der „aus“ sagt, macht jetzt auch aus.** Beide Schalter auf
+  der Seite „Texte im Spiel“ setzten bisher nur die Einstellung — die Textdatei
+  blieb unangetastet, bis jemand unten unter „Von Hand“ auf „Jetzt eintragen“
+  drückte. Wer die Angaben abschaltete, das Spiel neu startete und alles
+  unverändert vorfand, hielt das Werkzeug für kaputt.
 
-  The status box above made it worse: it promised "changes take effect the next
-  time you start the game" — precisely what was not true.
+  Verschlimmert wurde es durch den Kasten darüber: Der versprach „Änderungen
+  wirken beim nächsten Spielstart“ — also genau das, was nicht stimmte.
 
-  Measured while testing: switch off, status line reported "off", and **1,217**
-  details were still sitting in the text file. The same trap caught a second
-  switch, even though the note sat right next to it — the bold part gets read,
-  the smaller one does not. That
-  settled it: a note in the small print is not a fix.
+  Gemessen im Test: Schalter aus, Statuszeile meldete „aus“ — und in der
+  Textdatei standen unverändert **1.217** Angaben. Beim zweiten Schalter
+  passierte dasselbe, obwohl der Hinweis danebenstand: Gelesen wird das Fette,
+  nicht das Kleingedruckte. Damit war die Frage entschieden — ein Hinweis im
+  Kleingedruckten ist keine Lösung.
 
-  Flipping a switch now takes effect immediately — off means gone, on means
-  there. Nothing is lost: the original wording is remembered and restored
-  exactly when the details are removed. If something does remain, the status
-  box now says so instead of reporting "nothing is being written".
+  Jetzt wirkt das Umlegen sofort — aus heißt weg, an heißt da. Das ist
+  verlustfrei: Der ursprüngliche Wortlaut des Spiels ist gemerkt und wird beim
+  Entfernen buchstabengenau wiederhergestellt. Bleibt doch etwas stehen, sagt
+  der Kasten das jetzt auch, statt „es wird nichts geschrieben“ zu melden.
 
 
-- **"Launch Star Citizen" no longer appears twice.** The "In-game text" page had
-  its own section for it — even though the button sits permanently in the
-  bottom left of the sidebar, reachable from every page. The section is gone;
-  the sidebar button is unchanged.
+- **„Star Citizen starten" steht nicht mehr doppelt.** Auf der Seite „Texte im
+  Spiel" gab es einen eigenen Abschnitt dafür — obwohl der Knopf ohnehin
+  dauerhaft unten links in der Leiste steht, auf jeder Seite erreichbar.
+  Der Abschnitt ist weg, der Knopf in der Leiste bleibt unverändert.
 
 ## v3.0.0-rc83 - 2026-08-28
 
-### Fixed
+### Behoben
 
-- **The report now says whether the blueprint notes are in the game.**
-  The most common support case is "I can't see your notes in the game any
-  more". Behind it is almost always the same thing: a translation update or a
-  game patch rewrote the game's text file and silently threw the notes out.
-  The tool has no way of noticing.
+- **Der Bericht sagt jetzt, ob die Bauplan-Angaben im Spiel stehen.**
+  Der häufigste Support-Fall lautet „ich sehe deine Angaben im Spiel nicht
+  mehr". Dahinter steckt fast immer dasselbe: Ein Übersetzungs-Update oder ein
+  Spiel-Patch hat die Textdatei des Spiels neu geschrieben und die Angaben
+  dabei stillschweigend hinausgeworfen. Das Werkzeug merkt davon nichts.
 
-  Until now the report only said which text source was selected — whether
-  anything was actually in place could not be read from it, only guessed. That
-  is exactly what happened with **Morkhan** on 28 Aug 2026.
+  Im Bericht stand bisher nur, welche Textquelle eingestellt ist — ob
+  tatsächlich etwas eingetragen war, ließ sich daraus nicht ablesen, sondern
+  nur erraten. Genau so am 28.08.2026 bei **Morkhan** geschehen.
 
-  Two lines are new: whether the notes are in place, whether writing them is
-  switched on at all, whether they are refreshed automatically — and which text
-  file is meant. Anyone playing on Linux without a translation gets **no**
-  warning: there is no such file there, and that is the normal state, not a
-  fault.
+  Neu sind zwei Zeilen: ob die Angaben eingetragen sind, ob das Einspielen
+  überhaupt eingeschaltet ist, ob automatisch aufgefrischt wird — und welche
+  Textdatei gemeint ist. Wer unter Linux ohne Übersetzung spielt, bekommt
+  dabei **keine** Warnung: Dort gibt es keine solche Datei, und das ist der
+  Normalzustand, kein Fehler.
 
-- **Text was cut off instead of wrapped — everywhere it got tight.**
-  It showed up in one place: the English warning line on the Game page ("Every
-  translation update and every game patch wipes the details.") stuck out by
-  5 pixels and was silently clipped.
+- **Abgeschnittener Text statt Umbruch — überall dort, wo es knapp wurde.**
+  Aufgefallen ist es an einer einzigen Stelle: Die englische Warnzeile auf der
+  Spiel-Seite („Every translation update and every game patch wipes the
+  details.") ragte um 5 Pixel heraus und wurde stillschweigend abgeschnitten.
 
-  The cause was not the text but a sum with a missing term. The wrap limit
-  bounds the **text** only; what a label ends up occupying is text plus border
-  plus padding. With the limit set to the full available width, the label
-  needed a few pixels more than it was given — and Tk clips an oversized child
-  at its parent without an error or any other sign.
+  Die Ursache lag nicht am Text, sondern an einer Rechnung, der ein Posten
+  fehlte. Die Umbruchgrenze begrenzt nur den **Text**; was eine Beschriftung am
+  Ende belegt, ist Text plus Rand plus Innenabstand. Stand die Grenze auf der
+  vollen verfügbaren Breite, brauchte die Beschriftung ein paar Pixel mehr, als
+  sie bekam — und Tk schneidet ein zu breites Element stumm am Rahmen ab, ohne
+  Fehler, ohne Hinweis.
 
-  The border is now read from the widget itself rather than guessed, and
-  subtracted. This applies to **every** place that wraps automatically,
-  including those that just barely fit today and would have tipped over with
-  the next longer string. Measured afterwards: nothing is clipped any more,
-  across 11 pages × 2 languages × 2 window sizes.
+  Der Rand wird jetzt beim Element selbst erfragt statt geschätzt und
+  abgezogen. Das wirkt an **jeder** Stelle mit selbsttätigem Umbruch, auch an
+  denen, die heute knapp durchgingen und beim nächsten längeren Text gekippt
+  wären. Nachgemessen: nichts wird mehr abgeschnitten, über 11 Seiten × 2
+  Sprachen × 2 Fenstergrößen.
 
 ## v3.0.0-rc82 - 2026-08-28
 
-### Fixed
+### Behoben
 
-- **A contract with several payout tiers lost nearly all its blueprints.**
-  Contracts sharing a text key overwrote each other while the catalogue was
-  built — the last one read won, the rest were dropped. Measured against game
-  build 4.10.0: **123 of 353** contract keys are shared, **319** contracts were
-  dropped, and **797 blueprint entries** were never shown to anyone. The bounty
-  contract listed 8 blueprints instead of 25.
+- **Ein Auftrag mit mehreren Preisstufen verlor fast alle seine Baupläne.**
+  Verträge, die sich einen Textschlüssel teilen, haben sich beim Aufbauen des
+  Katalogs gegenseitig überschrieben — der zuletzt eingelesene gewann, alle
+  anderen fielen weg. Gemessen am Spielstand 4.10.0: **123 von 353**
+  Auftrags-Schlüsseln sind mehrfach belegt, **319** Verträge fielen weg, und
+  **797 Bauplan-Einträge** hat dadurch nie jemand zu Gesicht bekommen. Beim
+  Kopfgeld-Auftrag standen 8 Baupläne statt 25.
 
-  Found by **Morkhan**, who kept pushing: "I still don't get shown which
-  blueprints I can get from the beginner contract, only the ones from the
-  highest tier." It wasn't the highest tier — it was the last one read. All
-  tiers are now merged.
+  Gefunden von **Morkhan**, der nicht lockergelassen hat: „ich bekomme nicht
+  angezeigt, welche Baupläne ich beim Neulingsauftrag bekommen kann, sondern
+  NUR die auf der höchsten Stufe." Es war nicht die höchste Stufe — es war die
+  zuletzt gelesene. Jetzt werden alle Stufen zusammengeführt.
 
-- **A catalogue already on disk would never have picked up this rebuild.** It
-  was only refreshed when Star Citizen shipped a new version. It now carries
-  its own build number — if its structure changes, it is rebuilt, patch or no
-  patch.
+- **Ein Katalog, der schon auf der Platte lag, hätte den Umbau nie
+  mitbekommen.** Er wurde bisher nur erneuert, wenn Star Citizen eine neue
+  Version bringt. Er trägt jetzt eine eigene Aufbau-Nummer — ändert sich sein
+  Inneres, wird er neu gebaut, auch ohne Patch.
 
-### Changed
+### Geändert
 
-- **The heading now reads "POSSIBLE BLUEPRINTS FOR THIS MISSION TYPE".** It
-  previously said "BLUEPRINTS FROM THIS CONTRACT" — promising more than the data
-  can deliver. Read literally, you accept the contract and get nothing. Morkhan
-  on 28 Aug 2026: "it's confusing no matter how you turn it." He was right, and
-  the confusion sat in the heading, not in the list.
+- **Die Überschrift heißt jetzt „MÖGLICHE BAUPLÄNE FÜR DIESEN MISSIONSTYP".**
+  Vorher stand dort „BAUPLÄNE AUS DIESEM AUFTRAG" — und das versprach mehr, als
+  die Daten hergeben. Wer das wörtlich liest, nimmt den Auftrag an und bekommt
+  nichts. Morkhan am 28.08.2026: „is trotzdem verwirrend, egal wie man's dreht."
+  Er hatte recht, und die Verwirrung saß in der Überschrift, nicht in der Liste.
 
-  The SC Deutsch Launcher words it the same way for the same reason — 367 times
-  in its data file.
-
-
-- **The `[BP 3/12]` count in the title is gone; it now reads just `[BP]`.** The
-  number looked useful but was not true: a contract's list merges all payout
-  tiers, and which of them your own tier grants cannot be resolved — 123 of 353
-  contracts share their text key across tiers. "3 of 12" really meant "3 of 12
-  that someone, somewhere, can get". The same number is gone from the list
-  heading too.
-
-  What remains is the honest part: **ticked means you have it** — regardless of
-  whether this tier grants it, or where it came from.
-
-- **Where tiers differ, the required rank is shown behind the blueprint.** For
-  example "needs Head Contractor (38,000 XP)" next to plans only available far
-  up, while others from the same contract drop from 800 XP. Shown only where it
-  actually tells blueprints apart — if they all need the same rank, it is
-  already stated above under "Min. reputation".
-
-- **Contracts with tiers that grant nothing now say so.** "Note: 1 of the 3
-  tiers of this contract give no blueprints at all."
+  Der SC Deutsch Launcher formuliert es aus demselben Grund so — 367 mal in
+  seiner Datendatei.
 
 
-### Changed
+- **Die Zählung `[BP 3/12]` im Titel ist weg, es steht nur noch `[BP]`.** Die
+  Zahl sah nützlich aus, war aber nicht wahr: Die Liste eines Auftrags führt
+  alle Preisstufen zusammen, und welche davon die eigene Stufe hergibt, lässt
+  sich nicht auflösen — 123 von 353 Aufträgen teilen sich den Textschlüssel
+  über ihre Stufen hinweg. „3 von 12" hieß in Wahrheit „3 von 12, die
+  irgendjemand irgendwo bekommen kann". Dieselbe Zahl ist auch aus der
+  Listen-Überschrift verschwunden.
 
-- **The „Diagnostics" tab is now called „Report a problem" and carries red.**
-  Nobody looks under „Diagnostics" when something is stuck — least of all
-  inside a collapsed menu, where it used to sit.
+  Was bleibt, ist das Ehrliche: **Angehakt heißt „hab ich"** — unabhängig
+  davon, ob diese Stufe den Bauplan hergibt oder woher er kam.
 
-  The red works in two stages so that it means something: **the word is always
-  red**, so the tab can be found. **The icon only turns red when errors have
-  actually been recorded** — otherwise the watcher would sit on permanent alert
-  while everything is fine, and nobody would take the colour seriously.
+- **Wo sich die Stufen unterscheiden, steht der nötige Rang hinter dem
+  Bauplan.** Zum Beispiel „erst ab Head Contractor (38.000 XP)" neben Plänen,
+  die es erst weit oben gibt, während andere desselben Auftrags schon ab 800
+  XP fallen. Steht nur dort, wo es die Baupläne wirklich unterscheidet —
+  brauchen alle denselben Rang, steht er ohnehin oben unter „Min. Reputation".
 
-### Fixed
+- **Aufträge, bei denen einzelne Stufen leer ausgehen, sagen das jetzt.**
+  „Achtung: 1 der 3 Stufen dieses Auftrags geben gar keine Baupläne."
 
-- **Revisiting a page left no trace in the report.** It was only written while a
-  page was first built; if something went wrong on a later visit, the line was
-  missing entirely rather than half — and the report promises that the last line
-  without „ready" is where it stopped. It now says „showing", so you can tell
-  „died while building" from „died while showing".
-- **The error report only scrolled once the page was at the bottom.** The mouse
-  wheel went to the page behind instead of the text field under the pointer, so
-  you had to push the whole diagnostics page down before anything moved inside
-  the report. Now whatever sits under the pointer scrolls, the way browsers do
-  it. Reported by **Morkhan**.
-- **The send button is red all the time**, not only on hover — a warning button
-  you only see once the mouse is on it warns nobody.
-- **The second reporting route is now called „GitHub issue"** instead of
-  „Report a problem". Two buttons promised the same thing, while one opens the
-  browser and needs a GitHub account.
+
+### Geändert
+
+- **Der Reiter „Diagnose" heißt jetzt „Fehler melden" und trägt Rot.** Niemand
+  sucht unter „Diagnose", wenn etwas klemmt — und schon gar nicht in einem
+  zugeklappten Menü, wo er vorher steckte.
+
+  Das Rot arbeitet in zwei Stufen, damit es etwas bedeutet: **Das Wort ist
+  immer rot**, damit man den Reiter findet. **Das Symbol wird nur rot, wenn
+  wirklich Fehler mitgeschrieben wurden** — sonst stünde der Watcher dauerhaft
+  auf Alarm, obwohl alles läuft, und niemand nähme die Farbe noch ernst.
+
+### Behoben
+
+- **Beim zweiten Besuch einer Seite fehlte die Spur im Bericht.** Sie wurde nur
+  beim ersten Aufbauen geschrieben; ging beim erneuten Einblenden etwas schief,
+  fehlte die Zeile ganz statt zur Hälfte — und der Bericht verspricht, dass die
+  letzte Zeile ohne „steht" die ist, an der es hing. Jetzt steht dort „zeigen",
+  und man sieht den Unterschied zwischen „beim Aufbauen gestorben" und „beim
+  Einblenden gestorben".
+- **Im Fehlerbericht ließ sich erst rollen, wenn die Seite ganz unten war.**
+  Das Mausrad ging an die Seite dahinter statt an das Textfeld unter dem
+  Zeiger — man musste also erst die ganze Diagnose-Seite nach unten schieben,
+  bevor sich im Bericht etwas bewegte. Jetzt rollt, was unter dem Zeiger liegt,
+  wie man es aus dem Browser kennt. Gemeldet von **Morkhan**.
+- **Der Knopf zum Absenden ist dauerhaft rot**, nicht erst beim Überfahren —
+  ein Warnknopf, den man erst sieht, wenn die Maus darauf steht, warnt
+  niemanden.
+- **Der zweite Meldeweg heißt jetzt „GitHub Issue"** statt „Fehler melden".
+  Zwei Knöpfe, die dasselbe versprachen, während der eine den Browser öffnet
+  und ein GitHub-Konto verlangt.
 
 ## v3.0.0-rc81 - 2026-08-28
 
-> **One button instead of nine steps: send the error report.**
+> **Ein Knopf statt neun Schritten: Fehlerbericht absenden.**
 
-### Added
+### Hinzugefügt
 
-- **The diagnostics page now sits in the main sidebar**, right below
-  „Server status“ — no longer inside the collapsed „Advanced“ menu. Anyone
-  who needs it has a problem, and will not look for it under a heading that
-  reads „not for me“.
-- **A red „Send error report" button.** If something is stuck, you press it —
-  and the report is with the developer. No copying, no hunting for the right
-  channel, no „message too long".
+- **Die Diagnose-Seite steht jetzt in der Hauptleiste**, direkt unter
+  „Serverstatus“ — nicht mehr im zugeklappten Menü „Für Fortgeschrittene“.
+  Wer sie braucht, hat ein Problem und sucht sie nicht dort, wo „nichts für
+  mich“ draufsteht.
+- **Ein roter Knopf „Fehlerbericht absenden".** Klemmt etwas, drückst du ihn —
+  und der Bericht ist beim Entwickler. Kein Kopieren, kein Suchen nach dem
+  richtigen Kanal, kein „die Nachricht ist zu lang".
 
-  It used to take nine steps: expand, copy, find Discord, paste, discover it is
-  too long, save as a file, find that file again, upload, send. Now it takes
-  one.
+  Vorher waren es neun Schritte: aufklappen, kopieren, Discord finden,
+  einfügen, feststellen dass es zu lang ist, als Datei speichern, die Datei
+  wiederfinden, hochladen, abschicken. Jetzt einer.
 
-  **You see exactly what goes out beforehand** — the same text shown on the
-  page, in a window to read through, and only then are you asked. Names, paths
-  and credentials have already been stripped. Nothing happens without your
-  yes.
+  **Du siehst vorher genau, was rausgeht** — derselbe Text, der auf der Seite
+  steht, in einem Fenster zum Nachlesen, und erst dann wird gefragt. Namen,
+  Pfade und Zugangsdaten sind ohnehin schon herausgenommen. Ohne dein Ja
+  passiert nichts.
 
 ## v3.0.0-rc80 - 2026-08-28
 
-> **Blueprints from the launcher get ticked off again — existing collections migrate themselves.**
+> **Baupläne aus dem Launcher werden wieder abgehakt — vorhandene Bestände ziehen selbst um.**
 
-### Fixed
+### Behoben
 
-- **Blueprints from the launcher or a backup were not ticked off.** Anyone
-  bringing their collection over from the SC Deutsch Launcher, the KRT Profit
-  Basetool, scmdb.net or their own backup saw empty boxes in the list — even
-  though the blueprints were in the collection.
+- **Baupläne aus dem Launcher oder einer Sicherung wurden nicht abgehakt.** Wer
+  seinen Stand aus dem SC Deutsch Launcher, dem KRT Profit Basetool, von
+  scmdb.net oder aus einer eigenen Sicherung mitbrachte, sah in der Liste leere
+  Kästchen — obwohl die Baupläne im Bestand standen.
 
-  The reason: names from those sources often carry the class suffix
-  (`XL-1 (Mil/2/A)`), but it was only stripped when reading the game logs. So
-  `xl-1 (mil/2/a)` and `xl-1` stood there as two separate entries and never
-  found each other. That now happens centrally, no matter where a name comes
-  from.
+  Der Grund: Namen dieser Quellen tragen oft den Klassen-Zusatz
+  (`XL-1 (Mil/2/A)`), abgeschnitten wurde er aber nur beim Lesen der
+  Spielprotokolle. Damit standen `xl-1 (mil/2/a)` und `xl-1` als zwei
+  verschiedene Einträge da und fanden nie zueinander. Das passiert jetzt an der
+  zentralen Stelle — gleich, woher ein Name kommt.
 
-  This hit precisely those who have been playing longer and bring their
-  collection with them. Found while following up a report from **Morkhan**.
+  Betroffen war ausgerechnet, wer schon länger spielt und seinen Stand
+  mitbringt. Gefunden beim Nachgehen einer Meldung von **Morkhan**.
 
-  **Existing collections migrate themselves on first start.** The keys are
-  rebuilt once and duplicate entries merged — the older find wins, because when
-  a blueprint first turned up is the date that matters. Nothing is lost, nothing
-  has to be done by hand.
+  **Vorhandene Bestände ziehen beim ersten Start selbst um.** Die Schlüssel
+  werden einmalig neu gebildet, doppelte Einträge zusammengeführt — dabei
+  gewinnt der ältere Fund, denn wann ein Bauplan zum ersten Mal auftauchte, ist
+  die Angabe, die zählt. Nichts geht verloren, nichts muss von Hand gemacht
+  werden.
 
-- **The tool did not say that changes only take effect the next time the game
-  starts.** Star Citizen reads the text file **once, while launching**. Anyone
-  with the game running would install the details, read „in place (1608
-  spots)" — and see nothing in game. The obvious conclusion: broken. The note
-  now sits in the success message itself and in the status box under *In-game
-  text*.
+- **Das Werkzeug sagte nicht, dass die Änderungen erst beim nächsten
+  Spielstart wirken.** Star Citizen liest die Textdatei **einmal beim
+  Hochfahren**. Wer das Spiel offen hatte, spielte die Angaben ein, las
+  „eingetragen (1608 Stellen)" — und sah im Spiel nichts. Naheliegender
+  Schluss: kaputt. Der Hinweis steht jetzt direkt in der Erfolgsmeldung und im
+  Zustandskasten unter *Texte im Spiel*.
 
 ## v3.0.0-rc79 - 2026-08-28
 
-> **Three finds from Morkhan's questions — one would have silently swallowed blueprints.**
+> **Drei Funde aus Morkhans Fragen — einer davon hätte still Baupläne verschluckt.**
 
-### Fixed
+### Behoben
 
-- **Blueprints whose name carries a suffix stopped being ticked off.** Now that
-  item details are written in, the game puts the name **including the suffix**
-  into its log — `Blueprint received: Spectre (Sth/1/A)`. Only the five faction
-  suffixes were stripped; everything new stayed stuck to the name, and the
-  blueprint went into the collection under the wrong one. **344 weapons and 62
-  missiles** would have been affected — and nobody would have noticed, because
-  something was still being displayed. Found while following up a question from
-  **Morkhan**.
+- **Baupläne, deren Name ein Kürzel trägt, wurden nicht mehr abgehakt.** Seit
+  die Angaben am Gegenstand eingetragen werden, schreibt das Spiel den Namen
+  **mitsamt Kürzel** in seine Logdatei — `Bauplan erhalten: Spectre (Sth/1/A)`.
+  Abgeschnitten wurden bisher nur die fünf Fraktions-Kürzel; alles Neue blieb
+  am Namen kleben, und der Bauplan landete unter falschem Namen im Bestand.
+  Betroffen wären **344 Waffen und 62 Raketen** gewesen — und niemand hätte es
+  bemerkt, weil ja etwas angezeigt wurde. Gefunden beim Nachgehen einer Frage
+  von **Morkhan**.
 
-- **A mission promised „12 blueprints" in its title and showed none below.**
-  A mission has **more descriptions** in game than the catalogue knows —
-  different destinations and cargo for the same mission. Measured:
-  `Covalex_HaulCargo_SingleToMulti` lists three descriptions in the catalogue,
-  the game's text file holds **eight**. Anyone hitting one of the other five saw
-  the counter and nothing underneath. The route via the SCDL team's contract
-  data had long solved this; our own route via the blueprint catalogue had not.
-  Reported by **Morkhan**.
+- **Eine Mission versprach „12 Baupläne" im Titel und zeigte darunter
+  keine.** Eine Mission hat im Spiel **mehr Beschreibungen**, als der Katalog
+  kennt — verschiedene Zielorte und Waren derselben Mission. Gemessen:
+  `Covalex_HaulCargo_SingleToMulti` führt drei Beschreibungen im Katalog, in
+  der Textdatei des Spiels stehen **acht**. Wer eine der übrigen fünf erwischte,
+  sah den Zähler und darunter nichts. Der Weg über die Vertragsdaten des
+  SCDL-Teams löste das längst, der eigene Weg über den Bauplan-Katalog nicht.
+  Gemeldet von **Morkhan**.
 
-### Added
+### Hinzugefügt
 
-- **An exclamation mark in the contract title when blueprints come with
-  conditions.** `[BP 0/19!]` instead of `[BP 0/19]`. In **332 of 818 contracts**
-  (41 %) blueprints only drop at certain payout tiers or from a given rank —
-  „only for the 256,500 / 264,000 aUEC mission", „only from Master rank". That
-  was in the description text, but the contract list only showed the counter,
-  and that is what you decide on. Reported by **Morkhan**, who flew a hauling
-  mission repeatedly in which none could ever drop.
+- **Ein Rufzeichen im Auftragstitel, wenn die Baupläne an Bedingungen hängen.**
+  `[BP 0/19!]` statt `[BP 0/19]`. Bei **332 von 818 Aufträgen** (41 %) fallen
+  Baupläne nur in bestimmten Preisstufen oder ab einem Rang — „nur für
+  256.500 / 264.000 aUEC", „nur ab Meister-Rang". Das stand zwar im
+  Beschreibungstext, aber in der Auftragsliste sah man nur den Zähler, und
+  genau danach entscheidet man, ob man annimmt. Gemeldet von **Morkhan**, der
+  eine Transportmission mehrfach flog, in der nie einer fallen konnte.
 
-  ⚠️ Why it cannot be cleaner: all payout tiers of a mission share **one**
-  description text in the game. Star Citizen shows the small variant the same
-  text as the large one — there is no way to tell them apart.
+  ⚠️ Warum es nicht sauberer geht: Alle Preisstufen einer Mission teilen sich
+  **einen** Beschreibungstext im Spiel. Für die kleine Variante zeigt Star
+  Citizen denselben Text wie für die große — unterscheiden lässt sich das nicht.
 
 ## v3.0.0-rc78 - 2026-08-28
 
-> **Passing clicks through to the game is no longer a one-way street.**
+> **Klicks ins Spiel durchreichen ist keine Einbahnstraße mehr.**
 
-### Added
+### Hinzugefügt
 
-- **A lock on the overlay brings you back when clicks pass through to the
-  game.** Until now this was a one-way street: turning the setting on made the
-  overlay unreachable — no button, no bar, and certainly not the settings
-  themselves. The only way back was starting the program a second time. Which
-  means leaving the game — exactly what the setting is meant to avoid.
+- **Ein Schloss am Overlay holt dich zurück, wenn Klicks ins Spiel
+  durchgereicht werden.** Bisher war das eine Einbahnstraße: Wer die
+  Einstellung einschaltete, kam an das Overlay nicht mehr heran — kein Knopf,
+  keine Leiste, und die Einstellungen selbst schon gar nicht. Der einzige
+  Rückweg war, das Programm ein zweites Mal zu starten. Dafür muss man aus dem
+  Spiel heraus — also genau das tun, was die Einstellung vermeiden soll.
 
-  There is now a small lock at the top right of the overlay, the one thing that
-  stays clickable. One click and the overlay catches clicks again. It only
-  appears when clicks really do pass through, and disappears by itself — also
-  when you switch it over in the settings.
+  Jetzt liegt oben rechts am Overlay ein kleines Schloss, das als Einziges
+  klickbar bleibt. Ein Klick, und das Overlay fängt wieder Klicks ab. Es
+  erscheint nur, wenn wirklich durchgereicht wird, und verschwindet von selbst
+  — auch wenn du drüben in den Einstellungen umschaltest.
 
 ## v3.0.0-rc77 - 2026-08-27
 
-> **„Original texts from the game" now works without a helper program.**
+> **„Originaltexte aus dem Spiel" funktioniert jetzt ohne Zusatzprogramm.**
 
-### Fixed
+### Behoben
 
-- **Choosing the „Original" text source often ran into a wall.** That source
-  takes the English `global.ini` straight from your own `Data.p4k` — no
-  download, no third-party translation. CIG compresses that file with **zstd**,
-  though, and the bundled Python could not handle it. What was left was a
-  message asking you to install 7-Zip — quite something for a tool you just
-  download and run.
+- **Wer die Textquelle „Original" wählte, lief oft gegen eine Wand.** Diese
+  Quelle holt die englische `global.ini` aus deiner eigenen `Data.p4k` — ohne
+  Download, ohne fremde Übersetzung. CIG komprimiert diese Datei allerdings mit
+  **zstd**, und das gebündelte Python konnte das nicht. Übrig blieb die
+  Meldung, man möge sich 7-Zip installieren — für ein Werkzeug, das man
+  herunterlädt und startet, eine Zumutung.
 
-  The program now brings the decompressor along itself. This mainly affected
-  anyone **playing in English who only wants the item details**, without a
-  translation: for them this route was the only one.
+  Das Programm bringt den Entpacker jetzt selbst mit. Betroffen war vor allem,
+  wer **englisch spielt und nur die Angaben am Gegenstand** möchte, ohne
+  Übersetzung: Für den war dieser Weg der einzige.
 
-  If you installed 7-Zip solely for this — you no longer need it.
+  Falls du bisher 7-Zip nur deswegen installiert hast — du brauchst es nicht
+  mehr.
 
 ## v3.0.0-rc76 - 2026-08-27
 
-> **The tractor beam now tells you what you are looking at — and on Windows
-> there is only one route left.**
+> **Am Traktorstrahl steht jetzt, womit man es zu tun hat — und unter Windows
+> gibt es nur noch einen Weg.**
 
 > [!important]
-> **Windows: the installer is the only download now.** The standalone
-> `SC-BP-Watcher.exe` is no longer attached to releases as of this version.
+> **Windows: Es gibt nur noch den Installer.** Die einzelne
+> `SC-BP-Watcher.exe` hängt ab dieser Fassung nicht mehr am Release.
 >
-> The reason concerns you, not us: an update used to place the new version
-> **beside** the old file instead of replacing it. Anyone clicking their usual
-> shortcut afterwards kept using the old version for months without noticing.
-> With the installer that cannot happen.
+> Der Grund betrifft dich, nicht uns: Ein Update legte die neue Fassung
+> **neben** die alte Datei, statt sie zu ersetzen. Wer danach seine gewohnte
+> Verknüpfung anklickte, benutzte monatelang unbemerkt die alte Version. Mit
+> dem Installer kann das nicht passieren.
 >
-> **If you have been using the standalone file:** download
-> `SC-BP-Watcher-Setup.exe` once and install over it — your blueprint
-> collection stays, it lives elsewhere anyway. You can delete the old file
-> afterwards. Nothing changes on Linux.
+> **Wenn du bisher die einzelne Datei benutzt hast:** Lade einmal
+> `SC-BP-Watcher-Setup.exe`, installiere darüber — dein Bauplan-Bestand bleibt,
+> er liegt ohnehin woanders. Die alte Datei kannst du danach löschen.
+> Unter Linux ändert sich nichts.
 
-### Fixed
+### Behoben
 
-- **On Windows there is only one download now: the installer.** The standalone
-  `SC-BP-Watcher.exe` is gone.
+- **Unter Windows gibt es nur noch einen Download: den Installer.** Die
+  einzelne `SC-BP-Watcher.exe` entfällt.
 
-  **What you get out of it:** no more wondering which of the two files is the
-  right one. The watcher ends up in your start menu instead of sitting
-  somewhere in your downloads folder. Updates genuinely replace the program
-  rather than putting a second copy next to it — the most common reason someone
-  keeps using an old version for months without noticing. Autostart is a
-  checkbox during setup, and *Apps & Features* removes everything cleanly.
+  **Was du davon hast:** Du musst nicht mehr überlegen, welche der beiden
+  Dateien die richtige ist. Der Watcher steht danach im Startmenü, statt
+  irgendwo im Download-Ordner zu liegen. Updates ersetzen wirklich das
+  Programm, statt eine zweite Fassung danebenzulegen — der häufigste Grund
+  dafür, dass jemand monatelang unbemerkt eine alte Version benutzt. Autostart
+  ist ein Häkchen bei der Installation, und über *Apps & Features* wird alles
+  wieder sauber los.
 
-  The standalone file dates from the early days: an unsigned program without an
-  installer looks less alarming, and the point back then was to earn trust at
-  all. That is done — and two routes side by side mean twice as many places
-  where something can go wrong. Better one route that works.
+  Die einzelne Datei stammte aus der Anfangszeit: Ein unsigniertes Programm
+  ohne Installer wirkt harmloser, und es ging darum, überhaupt erst Vertrauen
+  zu gewinnen. Das ist erreicht — und zwei Wege nebeneinander heißen doppelt so
+  viele Stellen, an denen etwas klemmen kann. Lieber ein Weg, der zuverlässig
+  funktioniert.
 
-  Nothing changes on Linux: the AppImage stays.
-- **Anyone still on v2.0.0 comes along anyway.** Their update path picks the
-  first file ending in `.exe` — which is now the installer — and starts it
-  afterwards. So it runs by itself and sets everything up properly. The
-  blueprint collection moves across automatically on first start.
-- **An update now installs where the program already is** — instead of putting a
-  second copy beside it. v2.0.0 shipped only as a bare `.exe`, so all of its
-  users run „portable" without ever choosing to. Without this, the installer
-  would have gone to `%LOCALAPPDATA%\Programs` on the update after next and left
-  the old file behind — anyone starting it from a shortcut would have kept
-  using the old version forever.
+  Unter Linux ändert sich nichts: dort bleibt es beim AppImage.
+- **Wer noch v2.0.0 hat, kommt trotzdem mit.** Deren Update-Weg greift die
+  erste Datei auf `.exe` — das ist jetzt der Installer — und startet sie
+  anschließend. Er läuft damit von selbst und richtet alles ordentlich ein.
+  Der eigene Bauplan-Bestand zieht beim ersten Start automatisch mit um.
+- **Ein Update installiert dorthin, wo das Programm liegt** — statt eine zweite
+  Fassung daneben anzulegen. v2.0.0 gab es nur als nackte `.exe`, alle ihre
+  Nutzer laufen also „portabel", ohne es gewollt zu haben. Ohne diesen Zusatz
+  hätte der Installer beim übernächsten Update unter
+  `%LOCALAPPDATA%\Programs` installiert und die alte Datei liegen lassen — wer
+  sie per Verknüpfung startet, benutzte für immer die alte Fassung.
 
-### Added
+### Hinzugefügt
 
-- **Details on the item — class, size and grade now sit next to the name.**
-  Aiming at something with the tractor beam used to show just „Glacier". It now
-  reads **„Glacier (Mil/1/A)"** — military, size 1, grade A. Missiles are judged
-  by something else, so they carry their seeker instead: **„'Arrow' I Missile
-  (IR1)"** for infrared, `EM` for electromagnetic, `CS` for cross-section.
-  Nobody expands a description mid-fight.
+- **Angaben am Gegenstand — Klasse, Größe und Gütegrad stehen jetzt am Namen.**
+  Wer im Spiel etwas mit dem Traktorstrahl anvisiert, sah bisher nur
+  „Glacier". Jetzt steht dort **„Glacier (Mil/1/A)"** — militärisch, Größe 1,
+  Gütegrad A. Bei Raketen zählt etwas anderes, deshalb steht dort der Suchkopf:
+  **„'Arrow' I Missile (IR1)"** für Infrarot, `EM` für elektromagnetisch, `CS`
+  für Querschnitt. Im Gefecht klappt niemand eine Beschreibung auf.
 
-  **856 items** get such a note: 450 with class, size and grade, 344 weapons
-  with their class (ballistic, laser, plasma …) and 62 missiles.
+  **856 Gegenstände** bekommen so eine Angabe: 450 mit Klasse, Größe und Güte,
+  344 Waffen mit ihrer Klasse (ballistisch, Laser, Plasma …) und 62 Raketen.
 
-  The details come from the game's **own** text file — they have always been
-  there, just inside the description you have to open first. The tool merely
-  moves them to where you can actually see them.
+  Die Angaben stammen aus der Textdatei des Spiels **selbst** — sie stehen dort
+  längst, nur in der Beschreibung, die man erst aufklappen muss. Das Werkzeug
+  schreibt sie dorthin um, wo man sie im Gefecht auch sieht.
 
-  Suggested by **Morkhan**.
+  Vorgeschlagen von **Morkhan**.
 
-  Can be switched off under *In-game text → Details on the item*. To undo it,
-  use „Remove again" — the original names come back to the character.
+  Abschaltbar unter *Texte im Spiel → Angaben am Gegenstand*. Wer sie wieder
+  loswerden will, nimmt „Wieder entfernen" — die ursprünglichen Namen kommen
+  auf das Zeichen genau zurück.
 
 ## v3.0.0-rc75 - 2026-08-27
 
-> **The startup trace is back in the report.**
+> **Der Startverlauf steht wieder im Bericht.**
 
-### Fixed
+### Behoben
 
-- **Usage pushed the startup trace out of the report.** rc74 wrote startup steps
-  and page switches into one list, and the report only shows the last twelve
-  lines — five clicks were enough to hide the entire startup. Precisely the part
-  the trace was built for. Both now appear as **two separate sections**, each
-  capped on its own; trimming the file keeps the startup part as well. Found in
-  the first rc74 report, fifteen minutes after release.
-- **The diagnostics page was the last line of its own report.** The report is
-  built while that page is being drawn, so every trace ended with "Page
-  diagnostics: building" and looked as if that was where it stopped. Those lines
-  are now left out.
+- **Der Startverlauf wurde von der Bedienung aus dem Bericht gedrängt.** rc74
+  schrieb Startschritte und Seitenwechsel in einen Topf, und der Bericht zeigt
+  nur die letzten zwölf Zeilen — fünf Klicks genügten, und der komplette Start
+  war nicht mehr zu sehen. Ausgerechnet der Teil, für den die Spur gebaut wurde.
+  Beides steht jetzt in **zwei getrennten Abschnitten**, jeder für sich
+  gedeckelt; auch beim Kürzen der Datei bleibt der Startverlauf stehen.
+  Gefunden im ersten rc74-Bericht, eine Viertelstunde nach der Veröffentlichung.
+- **Die Diagnose-Seite stand als letzte Zeile in ihrem eigenen Bericht.** Der
+  Bericht entsteht, während die Seite gebaut wird — dadurch endete jede Spur mit
+  „Seite diagnose: bauen beginnt" und sah aus, als wäre genau dort Schluss
+  gewesen. Diese Zeilen bleiben jetzt draußen.
 
 ## v3.0.0-rc74 - 2026-08-27
 
-> **A crash now leaves a trace.**
+> **Ein Absturz hinterlässt jetzt eine Spur.**
 
-### Added
+### Hinzugefügt
 
-- **Hard crashes are recorded.** Until now the tool only caught Python errors.
-  A crash that kills the process mid-instruction (from inside the Tk library,
-  say) left **nothing behind**: no entry, no message, nothing to attach. From
-  now on a handler writes the call path of every thread to a file, and the next
-  diagnostic report shows it under "Hard crash during the previous run".
-- **The trace now covers usage, not just startup.** It stopped after the last
-  startup step — which page someone opened was recorded nowhere. Every page
-  switch now writes two lines. If the second one is missing, it broke while
-  building exactly that page. The file is capped so it cannot grow forever.
+- **Harte Abbrüche werden festgehalten.** Bisher fing das Programm nur
+  Python-Fehler ab. Ein Absturz, der den Prozess mitten im Befehl beendet
+  (etwa aus der Tk-Bibliothek heraus), hinterließ **nichts**: keinen Eintrag,
+  keine Meldung, nichts zum Mitschicken. Ab jetzt schreibt ein Fänger den
+  Aufrufweg aller Fäden in eine Datei, und der nächste Diagnose-Bericht zeigt
+  ihn unter „Harter Abbruch beim vorigen Lauf".
+- **Die Spur führt jetzt auch über die Bedienung.** Sie hörte nach dem letzten
+  Startschritt auf — welche Seite jemand geöffnet hat, stand nirgends. Jetzt
+  schreibt jeder Seitenwechsel zwei Zeilen mit. Fehlt die zweite, hat es beim
+  Bauen genau dieser Seite geknallt. Damit die Datei nicht wächst, wird sie
+  gedeckelt.
 
-### Notes
+### Hinweise
 
-- **The crash Bomb20 reported when opening "What's new" is not fixed by this,
-  it is measurable.** It could not be reproduced here, and his report could not
-  show it at all — that is the gap rc74 closes. If it happens again, it will be
-  in the next report.
+- **Der von Bomb20 gemeldete Absturz beim Öffnen von „Was ist neu" ist damit
+  nicht behoben, sondern messbar.** Er ließ sich hier nicht nachstellen, und
+  sein Bericht konnte ihn gar nicht zeigen — genau diese Lücke schließt rc74.
+  Tritt er erneut auf, steht er im nächsten Bericht.
 
-### Thanks
+### Dank
 
-- **Bomb20** (pr0) — for a report that turned out to be about something
-  bigger than a single crash: the tool was blind at that spot. And for sending
-  it even though it looked like a false alarm.
-- **Haldjas** (pr0) — for the counter-test on Windows: the
-  update from rc71 to rc73 and the interface since rc61, both without findings.
+- **Bomb20** (pr0) — für die Meldung, die sich am Ende als etwas
+  Größeres entpuppte als ein einzelner Absturz: Das Werkzeug war an dieser
+  Stelle blind. Und dafür, dass er sie geschickt hat, obwohl sie nach einem
+  Fehlalarm aussah.
+- **Haldjas** (pr0) — für den Gegentest unter Windows: Update
+  von rc71 auf rc73 und die Oberfläche seit rc61, beides ohne Befund.
 
 ## v3.0.0-rc73 - 2026-08-27
 
-> **The thanks page now says what actually happened today.**
+> **Die Danke-Seite sagt jetzt, was heute wirklich passiert ist.**
 
-### Changed
+### Geändert
 
-- **The "Thanks & licences" page in the tool lists Bomb20's findings from
-  today.** It still showed only his contribution from 25 Aug, while over this one
-  morning he uncovered three bugs that would have hit **every** user on release
-  day: the launch button for Star Citizen, the aborted download, and the restart
-  that never came.
-  - The thanks were properly recorded in both changelogs — but nobody sees those
-    inside the tool. **Anyone missing from the tool has not been thanked.** The
-    release checklist now names this third place explicitly.
+- **Die Seite „Danke & Lizenzen" im Programm nennt Bomb20s heutige Funde.** Sie
+  stand noch auf seinem Beitrag vom 25.08., während er an diesem Vormittag drei
+  Fehler freigelegt hat, die am Ausliefertag **jeden** Nutzer getroffen hätten:
+  der Startknopf für Star Citizen, der abgebrochene Download und der Neustart,
+  der nie kam.
+  - Der Dank stand ordentlich in beiden CHANGELOGs — nur sieht die im Programm
+    niemand. **Wer im Programm nicht auftaucht, dem wurde nicht gedankt.** Die
+    Release-Checkliste führt diese dritte Stelle jetzt ausdrücklich auf.
 
-### Confirmed
+### Bestätigt
 
-- **The restart after an update works** — verified on a second machine (CachyOS),
-  from rc71 to rc72, without a single entry in the error log. So it does not
-  depend on any quirk of one installation.
+- **Der Neustart nach dem Update funktioniert** — nachgewiesen auf einem zweiten
+  Rechner (CachyOS), von rc71 auf rc72, ohne einen einzigen Eintrag im
+  Fehlerprotokoll. Damit hängt es an keiner Eigenheit einer einzelnen
+  Installation.
 
-### Thanks
+### Dank
 
-- **Bomb20** (pr0) — for a morning in which he sent three reports even
-  though he actually had to work, and for his patience while his reports were
-  first taken for user error. They never were.
+- **Bomb20** (pr0) — für einen Vormittag, an dem er dreimal einen Bericht
+  geschickt hat, obwohl er eigentlich arbeiten musste, und für die Geduld, als
+  seine Meldungen zunächst nach Bedienfehler aussahen. Sie waren es nie.
 
 
 ## v3.0.0-rc72 - 2026-08-27
 
-> **The update page now tells the truth** — it checks by itself, and the route to
-> the stable version is no longer a dead end.
+> **Die Update-Seite sagt jetzt die Wahrheit** — sie sieht von allein nach, und
+> der Weg zur stabilen Version ist keine Sackgasse mehr.
 
-### Fixed
+### Behoben
 
-- **The page showed an outdated version number as long as it stayed open.** It
-  asked **once per page build**. Anyone with the page open while a new version
-  appeared kept seeing the old number on the button — and assumed they were up to
-  date. Reported by **Bomb20** (pr0): "I still get 67 shown", while rc68
-  had been published minutes earlier. It now checks every five minutes while the
-  page is open.
-  - Five minutes is the compromise: often enough that nobody misses a version,
-    rare enough for GitHub's limit of 60 requests per hour.
-- **The "Stable version" box was a dead end.** Instead of a button it said "First
-  press 'Check now' above" — anyone wanting the stable version saw no route, just
-  homework.
-  - **The cause was too small a query:** the last **20** releases were fetched,
-    and among 83 published releases not a single one of those was stable — only
-    test versions. Now 100 are fetched (the most GitHub returns in one query),
-    and it stays **one** request: the hourly limit counts requests, not entries.
-  - Measured: 20 releases → 0 stable, 100 releases → 3.
+- **Die Seite zeigte eine veraltete Versionsnummer, solange sie offen blieb.**
+  Nachgefragt wurde **einmal je Seitenaufbau**. Wer die Seite offen hatte,
+  während draußen eine neue Version erschien, sah weiter die alte Nummer auf dem
+  Knopf — und hielt sich für aktuell. Gemeldet von **Bomb20** (pr0): „ich
+  krieg noch 67 angezeigt", während rc68 seit Minuten veröffentlicht war.
+  Nachgesehen wird jetzt alle fünf Minuten, solange die Seite offen ist.
+  - Fünf Minuten sind der Kompromiss: oft genug, dass niemand eine Version
+    verpasst, und selten genug für GitHubs Grenze von 60 Abfragen pro Stunde.
+- **Der Kasten „Stabile Version" war eine Sackgasse.** Statt eines Knopfes stand
+  dort „Erst oben auf ‚Jetzt nachsehen' drücken" — wer die stabile Version
+  wollte, sah keinen Weg, sondern eine Hausaufgabe.
+  - **Der Grund war eine zu kleine Abfrage:** Geholt wurden die letzten **20**
+    Freigaben, und darunter war bei inzwischen 83 Veröffentlichungen **keine
+    einzige stabile** mehr — nur Testversionen. Jetzt werden 100 geholt (das
+    Höchste, was GitHub in einer Abfrage hergibt), und es bleibt bei **einer**
+    Anfrage: Die Stundengrenze zählt Anfragen, nicht Einträge.
+  - Gemessen: 20 Freigaben → 0 stabile, 100 Freigaben → 3.
 
-### Thanks
+### Dank
 
-- **Bomb20** (pr0) — for "I still get 67 shown". It sounded like a
-  triviality and pointed at two bugs at once.
+- **Bomb20** (pr0) — für „ich krieg noch 67 angezeigt". Das klang nach
+  einer Kleinigkeit und war der Hinweis auf zwei Fehler auf einmal.
 
 
 ## v3.0.0-rc71 - 2026-08-27
 
-> **The restart after an update works** — the cause was entirely different from
-> what everyone assumed.
+> **Der Neustart nach dem Update funktioniert** — die Ursache war eine ganz
+> andere, als alle dachten.
 
-### Fixed
+### Behoben
 
-- **After an update the watcher shut down and never came back.** Reported by
-  **Bomb20** (pr0) in the morning, reproduced here all through
-  the day. Three attempts (rc67, rc68, rc70) failed to solve it, because they
-  assumed the new version was crashing.
-  - **It was not a crash.** The new version starts, finds the single-instance
-    guard still occupied, considers itself the **second** instance and exits as
-    designed — with return code 0. A cleanly exited process looks exactly like a
-    crashed one afterwards, until someone reads the return code.
-  - **Why the port stayed occupied:** the guard is closed with `close()` before
-    the restart. But that does not wake the thread waiting in `accept()` — it
-    stays blocked, the descriptor stays valid, the port stays taken.
-    `shutdown()` aborts the waiting `accept()`; only then does `close()` actually
-    release the port.
-  - Proven, not assumed: the probe previously failed with `Address already in
-    use` and now goes through. Self-test section 24 keeps it that way.
+- **Nach dem Update ging der Watcher aus und kam nicht wieder.** Gemeldet von
+  **Bomb20** (pr0) am Morgen, hier den ganzen Vormittag über
+  reproduziert. Drei Anläufe (rc67, rc68, rc70) haben es nicht gelöst, weil sie
+  von einem Absturz der neuen Version ausgingen.
+  - **Es war kein Absturz.** Die neue Version startet, sieht den
+    Einzelinstanz-Wächter noch belegt, hält sich für die **zweite** Instanz und
+    beendet sich planmäßig — mit Rückgabewert 0. Ein sauber beendeter Prozess
+    sieht im Nachhinein genauso aus wie ein abgestürzter, bis jemand den
+    Rückgabewert liest.
+  - **Warum der Port belegt blieb:** Vor dem Neustart wird der Wächter mit
+    `close()` geschlossen. Das weckt aber den Faden nicht, der in `accept()`
+    wartet — der bleibt hängen, der Deskriptor bleibt gültig, der Port belegt.
+    `shutdown()` bricht das wartende `accept()` ab; erst danach gibt `close()`
+    den Port wirklich frei.
+  - Belegt statt vermutet: Die Probe scheiterte vorher mit `Address already in
+    use` und läuft jetzt durch. Selbsttest-Abschnitt 24 hält das fest.
 
-### Thanks
+### Dank
 
-- **Bomb20** (pr0) — for the first report and for not letting go when it
-  looked like a user error. He was right, we were not.
+- **Bomb20** (pr0) — für die erste Meldung und dafür, nicht lockergelassen
+  zu haben, als es nach einem Bedienfehler aussah. Er lag richtig, wir nicht.
 
 
 ## v3.0.0-rc70 - 2026-08-27
 
-> **If the restart fails, the report will now say why.**
+> **Wenn der Neustart scheitert, steht künftig im Bericht, warum.**
 
-### Fixed
+### Behoben
 
-- **`'Overlay' object has no attribute '_dx'` when dragging the overlay.** Tk
-  does not always deliver a mouse motion after a click on the same window:
-  press the button outside and drag into the overlay, and only the motion
-  fires — leaving no starting point. Dragging did nothing once, and the error
-  landed silently in the log. Reported by **Bomb20** (pr0, 25 Aug 2026 on
-  rc18) and again on 27 Aug 2026 on rc69 — never fixed in between, because
-  it breaks nothing you can see.
+- **`'Overlay' object has no attribute '_dx'` beim Ziehen des Overlays.** Tk
+  liefert eine Mausbewegung nicht immer nach einem Klick auf dasselbe Fenster:
+  Wer den Knopf außerhalb drückt und ins Overlay zieht, löst nur die Bewegung
+  aus — und den Startpunkt gab es dann nicht. Das Ziehen tat einmal nichts, der
+  Fehler landete lautlos im Protokoll. Gemeldet von **Bomb20** (pr0, am
+  25.08.2026 auf rc18) und erneut am 27.08.2026 auf rc69 — dazwischen nie
+  behoben, weil er nichts kaputt macht, was man sieht.
 
-### Changed
+### Geändert
 
-- **A failed restart now leaves a trace.** The error output of the freshly
-  started version used to go to `/dev/null` — which is why "it shuts down and
-  never comes back" could not be diagnosed: the report contained **nothing** about
-  it. It is now captured, and if the new version does not come up, its last words
-  are attached to the error log and thus to the report.
-  - This is not a fix but a measurement. After two attempts that did not solve
-    the restart, there will be no third guess.
+- **Ein gescheiterter Neustart hinterlässt jetzt eine Spur.** Die
+  Fehlerausgabe der frisch gestarteten Version lief bisher nach `/dev/null` —
+  deshalb war „geht aus, kommt nicht wieder" nicht aufzuklären: Im
+  Diagnosebericht stand dazu **gar nichts**. Sie wird jetzt aufgefangen, und
+  kommt die neue Version nicht hoch, hängt ihr letztes Wort im Fehlerprotokoll
+  und damit im Bericht.
+  - Das ist keine Reparatur, sondern eine Messung. Nach zwei Anläufen, die den
+    Neustart nicht gelöst haben, wird nicht ein drittes Mal
+    geraten.
 
-### Thanks
+### Dank
 
-- **Bomb20** (pr0) — for the drag error that sat in reports for two days
-  without anyone taking it seriously.
+- **Bomb20** (pr0) — für den Ziehen-Fehler, der zwei Tage lang in
+  Berichten stand, ohne dass ihn jemand ernst genommen hat.
 
 
 ## v3.0.0-rc69 - 2026-08-27
 
-> **For some, the update was never downloaded at all** — the progress display
-> was to blame.
+> **Das Update wurde bei manchen gar nicht erst heruntergeladen** — schuld war
+> die Fortschrittsanzeige.
 
-### Fixed
+### Behoben
 
-- **Click "get version", and nothing happened.** No progress, no restart, no
-  message — after a restart the old version was still running. Reported by
-  **Bomb20** (pr0): "I clicked get 68, but nothing came up about restart
-  or install."
-  - **The cause was the display, not the download.** Downloading runs in its own
-    thread that reports progress to the window. That call can throw
-    (`RuntimeError: main thread is not in main loop`) — and the exception took
-    the **entire thread** with it, on the very first percent step. Bomb20's
-    report showed the error three times, once per click.
-  - Drawing is incidental, downloading is the point. Every display call in the
-    update thread is now wrapped: if it fails, that is recorded and the work
-    carries on.
-- **"Check for updates" wrongly gave the all-clear.** Bomb20 was told "you have
-  the latest, rc67" while rc68 had been published two minutes earlier. GitHub
-  allows only **60 requests per hour per address** anonymously; anyone clicking a
-  lot in one morning runs into it. The request failed — and was swallowed
-  silently, so the old state was used instead.
-  - "Nothing new" and "could not check" are opposites and are now kept apart.
-    When the hourly limit is reached, the message says so and that it will work
-    again within the hour.
-  - **A check button that wrongly gives the all-clear is worse than none.**
+- **Klick auf „Version holen", und es passierte nichts.** Kein Fortschritt, kein
+  Neustart, keine Meldung — nach einem Neustart lief weiter die alte Version.
+  Gemeldet von **Bomb20** (pr0): „ich habe auf get 68 geklickt, aber da
+  kam nix mit restart oder install."
+  - **Die Ursache war die Anzeige, nicht der Download.** Heruntergeladen wird in
+    einem eigenen Faden, der den Fortschritt ans Fenster meldet. Dieser Aufruf
+    kann werfen (`RuntimeError: main thread is not in main loop`) — und die
+    Ausnahme riss den **ganzen Faden** mit, gleich beim ersten Prozentschritt. In
+    Bomb20s Bericht stand der Fehler dreimal, einmal pro Klick.
+  - Zeichnen ist Beiwerk, das Herunterladen ist der Zweck. Jede Anzeige im
+    Update-Faden läuft jetzt gekapselt: Geht sie schief, wird das vermerkt und
+    der Vorgang läuft weiter.
+- **„Auf Aktualität prüfen" gab fälschlich Entwarnung.** Bomb20 bekam „du hast
+  die neueste rc67" gemeldet, während rc68 seit zwei Minuten veröffentlicht war.
+  GitHub erlaubt anonym **60 Abfragen pro Stunde und Adresse**; wer an einem
+  Vormittag viel klickt, läuft dagegen. Der Abruf scheiterte — und wurde still
+  verschluckt, sodass mit dem alten Stand weitergerechnet wurde.
+  - „Nichts Neues" und „konnte nicht nachsehen" sind das Gegenteil voneinander
+    und werden jetzt auseinandergehalten. Bei erreichter Stundengrenze steht da,
+    was los ist und dass es in einer Stunde wieder geht.
+  - **Ein Prüfknopf, der fälschlich Entwarnung gibt, ist schlimmer als keiner.**
 
-### Thanks
+### Dank
 
-- **Bomb20** (pr0) — for the third diagnostic report of the morning, sent
-  at exactly the right moment. Without it, "nothing came up" could not have been
-  told apart from "the download is stuck"; with it, the cause was there in one
-  line.
+- **Bomb20** (pr0) — für den dritten Diagnosebericht an einem Vormittag,
+  genau im richtigen Moment abgeschickt. Ohne ihn wäre „da kam nix" nicht von
+  „Download klemmt" zu unterscheiden gewesen; mit ihm stand die Ursache in einer
+  Zeile da.
 
 
 ## v3.0.0-rc68 - 2026-08-27
 
-> **The update button is where you look for it** — and "Fassung" is now called
-> "Version" throughout the German interface.
+> **Der Update-Knopf steht da, wo man ihn sucht** — und „Fassung" heißt jetzt
+> überall „Version".
 
-### Changed
+### Geändert
 
-- **The "Get the latest version" button now sits at the very top**, right below
-  the version card. Previously it came after the button row and the daily
-  toggle, which put it **below the edge** at the window's minimum size — someone
-  who cannot find it will not update.
-  - Making the window taller would have been the wrong answer: on a 1366×768
-    laptop it would no longer fit at all. The most important button belongs at
-    the top, not the window in the sky.
-- **Both channel boxes are fully visible at minimum size too** — they hold the
-  button that fetches the stable version specifically. The daily toggle moved
-  below them; it is a side setting, the boxes are the point of the page.
-- **"Finished versions only" is now "Stable version".** "Finished" sounds like
-  something that is done — this tool is under continuous development.
-- **"rcXX is already there" is now "rcXX is already installed"** — clearer, and
-  the English string already said so.
+- **Der Knopf „Jetzt die neueste Version holen" steht ganz oben**, direkt unter
+  der Versionskarte. Vorher kam er erst nach der Knopfreihe und dem
+  Tagesschalter und lag bei der Mindestgröße des Fensters **unterhalb der
+  Kante** — wer ihn nicht findet, updatet nicht.
+  - Das Fenster größer zu machen wäre die falsche Antwort gewesen: Auf einem
+    1366×768-Laptop passt es dann gar nicht mehr. Der wichtigste Knopf gehört
+    nach oben, nicht das Fenster in die Höhe.
+- **Auch die beiden Kanal-Kästen sind bei der Mindestgröße vollständig
+  sichtbar** — in ihnen sitzt der Knopf, mit dem man gezielt die stabile Version
+  holt. Der Tagesschalter steht dafür jetzt darunter; er ist eine
+  Nebeneinstellung, die Kästen sind der Zweck der Seite.
+- **„Nur fertige Fassungen" heißt jetzt „Stabile Version".** „Fertig" klingt nach
+  abgeschlossen — das Werkzeug wird laufend weiterentwickelt.
+- **„Fassung" heißt überall „Version".** Ein sperriges Wort, das sonst niemand
+  benutzt; in der Oberfläche, in der Anleitung und in den Kommentaren steht jetzt
+  durchgehend „Version". Einzige Ausnahme ist die **Sprachfassung** — damit ist
+  die Übersetzung gemeint, nicht die Programmversion.
+- **„rcXX ist schon da" heißt jetzt „rcXX ist schon installiert"** — klarer, und
+  im Englischen stand es längst so.
 
-### Thanks
+### Dank
 
 
 
 ## v3.0.0-rc67 - 2026-08-27
 
-> **The restart after an update works on Linux** — and can no longer fail
-> silently.
+> **Der Neustart nach dem Update funktioniert unter Linux** — und kann nicht mehr
+> stumm scheitern.
 
-### Fixed
+### Behoben
 
-- **After an update the watcher shut down and never came back.** It downloaded
-  the new version, installed it, closed itself — and stayed closed. Reported by
-  **Bomb20** (pr0) with the decisive sentence "it does shut down but
-  doesn't start", reproduced the same day on a second machine.
-  - **The cause:** when starting the new version, only `APPIMAGE`, `APPDIR`,
-    `OWD` and `ARGV0` were removed from the environment — `LD_LIBRARY_PATH`,
-    `PYTHONHOME` and `PYTHONPATH` stayed. Inside an AppImage those point into the
-    **extracted mount of the old version**. Two seconds later the old one exits,
-    its mount disappears, and the new one looks for its libraries in a directory
-    that no longer exists. It dies before a window appears.
-  - The proper cleanup already existed (`saubere_umgebung`); the restart just
-    carried its own incomplete copy. Both now live in `scbp/pfade.py` — **one**
-    cleanup, used by everyone.
-- **And it can no longer fail silently.** The old version only steps aside once
-  the new one has survived its first seconds. If it dies, the watcher stays open
-  and says so: "The new version did not come up." Previously the old one closed
-  dutifully while the new one was already dead — leaving the machine without a
-  watcher and without a word of explanation.
-  - Same lesson as the launch button in rc65: **starting a program does not mean
-    it is running.** `Popen` reports success as soon as the process exists.
+- **Nach dem Update ging der Watcher aus und kam nicht wieder.** Er lud die neue
+  Version, spielte sie ein, schloss sich — und blieb zu. Gemeldet von **Bomb20**
+  (pr0) mit dem entscheidenden Satz „es geht dann aus aber startet nicht",
+  am selben Tag auf einem zweiten Rechner reproduziert.
+  - **Die Ursache:** Beim Start der neuen Version wurden nur `APPIMAGE`, `APPDIR`,
+    `OWD` und `ARGV0` aus der Umgebung entfernt — `LD_LIBRARY_PATH`, `PYTHONHOME`
+    und `PYTHONPATH` blieben stehen. Die zeigen im AppImage in den **entpackten
+    Mount der alten Version**. Zwei Sekunden später beendet sich die alte, ihr
+    Mount verschwindet, und die neue sucht ihre Bibliotheken in einem Verzeichnis,
+    das es nicht mehr gibt. Sie stirbt, bevor ein Fenster erscheint.
+  - Die passende Wäsche gab es längst (`saubere_umgebung`), nur führte der
+    Neustart eine eigene, unvollständige Version davon mit. Beide liegen jetzt in
+    `scbp/pfade.py` — **eine** Wäsche, benutzt von allen.
+- **Und er kann nicht mehr stumm scheitern.** Die alte Version tritt erst ab,
+  wenn die neue die ersten Sekunden überlebt hat. Stirbt sie, bleibt der Watcher
+  offen und sagt es: „Die neue Version ist nicht hochgekommen." Vorher schloss
+  sich die alte pflichtschuldig, während die neue schon tot war — und der Rechner
+  stand ohne Watcher da, ohne ein Wort dazu.
+  - Dahinter derselbe Merksatz wie beim Startknopf in rc65: **Ein Programm zu
+    starten heißt nicht, dass es läuft.** `Popen` meldet Erfolg, sobald der
+    Prozess angelegt ist.
 
-### Thanks
+### Dank
 
-- **Bomb20** (pr0) — for sticking with it. His matter-of-fact "it does
-  shut down but doesn't start" pinned down the bug after it had first been
-  dismissed as a user error. He was right, we were not.
+- **Bomb20** (pr0) — fürs Dranbleiben. Seine nüchterne Beschreibung „es
+  geht dann aus aber startet nicht" hat den Fehler festgenagelt, nachdem er
+  zunächst für einen Bedienfehler gehalten wurde. Er lag richtig, wir nicht.
 
 ## v3.0.0-rc66 - 2026-08-27
 
-> **The export files keep themselves up to date** — and the file chooser finally
-> looks like the system it runs on.
+> **Die Ausgabe-Dateien halten sich von allein aktuell** — und die Dateiauswahl
+> sieht endlich nach dem System aus, auf dem sie läuft.
 
-### Added
+### Hinzugefügt
 
-- **The export folder is updated with every new blueprint.** Until now the three
-  files (KRT Profit Basetool, scmdb.net, full backup) were only written on a
-  button press — anyone who had clicked once assumed they were current, while
-  they stayed frozen at the moment of that click. Writing is now tied to the
-  inventory itself: every find in the game, every catch-up at startup, every
-  confirmation from the launcher and every import carries the files along.
-  - **Fixed file names in the folder.** With a date in the name, three new files
-    would appear there every day and nobody would know which one is current. The
-    save dialog still suggests a name with a date — saving by hand means
-    deliberately preserving a state.
-  - **Previously stored dated files move to `Ältere/`** — moved, not deleted.
-    Anything else in the folder is left alone.
-- **A save button per format**, right next to the format, instead of one shared
-  button further down.
+- **Die Ablage wird bei jedem neuen Bauplan mitgeschrieben.** Bisher entstanden
+  die drei Ausgabe-Dateien (KRT Profit Basetool, scmdb.net, Vollsicherung) nur
+  auf Knopfdruck — wer einmal geklickt hatte, hielt sie für aktuell, dabei
+  standen sie für immer auf dem Stand jenes Klicks. Jetzt hängt das Schreiben am
+  Bestand selbst: Jeder Fund im Spiel, jede Nachlese beim Start, jede Bestätigung
+  durch den Launcher und jeder Import ziehen die Dateien mit.
+  - **Feste Dateinamen in der Ablage.** Mit Datum im Namen wären dort täglich
+    drei neue Dateien entstanden, und niemand wüsste, welche die aktuelle ist.
+    Der Speichern-Dialog schlägt weiterhin einen Namen mit Datum vor — wer von
+    Hand speichert, hält bewusst einen Stand fest.
+  - **Früher abgelegte Dateien mit Datum wandern nach `Ältere/`** — verschoben,
+    nicht gelöscht. Was sonst noch im Ordner liegt, bleibt unangetastet.
+- **Ein Speichern-Knopf je Version**, direkt an der Version, statt eines
+  gemeinsamen Knopfes weiter unten.
 
-### Fixed
+### Behoben
 
-- **"Save individually …" always saved the Basetool format.** The format was
-  hard-coded; scmdb and the full backup were not reachable through the dialog at
-  all.
-- **The file chooser on Linux was the old Tk box** — a column list showing every
-  hidden folder, no sorting, no preview. It now opens the desktop's own dialog
-  (`kdialog` on KDE, otherwise `zenity`), everywhere a file or folder is chosen:
-  import inventory, save inventory, game folder, launcher folder, own folder and
-  the setup assistant. If neither is present, the Tk dialog remains as a
-  fallback — **nothing depends on it.** Nothing changes on Windows and macOS,
-  where Tk already passes through the real system dialog.
-  - Folders already had this path; files did not. Both now live in one place
-    (`scbp/dateiwahl.py`) instead of three.
+- **„Einzeln speichern …" speicherte immer die Basetool-Version.** Die Version
+  war im Code fest verdrahtet; scmdb und die Vollsicherung waren über den Dialog
+  überhaupt nicht erreichbar.
+- **Die Dateiauswahl unter Linux war der alte Tk-Kasten** — eine Spaltenliste mit
+  jedem versteckten Ordner, kein Sortieren, keine Vorschau. Jetzt öffnet sich der
+  Dialog des Schreibtischs (`kdialog` unter KDE, sonst `zenity`), überall dort,
+  wo eine Datei oder ein Ordner gewählt wird: Bestand einlesen, Bestand
+  speichern, Spielordner, Launcher-Ordner, eigener Ordner und der
+  Einrichtungs-Assistent. Fehlt beides, bleibt der Tk-Dialog als Rückfall —
+  **nichts hängt davon ab.** Unter Windows und macOS ändert sich nichts, dort
+  reicht Tk schon den echten Systemdialog durch.
+  - Für Ordner gab es diesen Weg längst; für Dateien nicht. Beides steht jetzt
+    an einer Stelle (`scbp/dateiwahl.py`) statt an dreien.
 
 
-### Thanks
+### Dank
 
 
 ## v3.0.0-rc65 - 2026-08-27
 
-> **The launch button called the wrong program on Linux.**
+> **Der Startknopf rief unter Linux das falsche Programm auf.**
 
-### Fixed
+### Behoben
 
-- **The "Launch Star Citizen" button started nothing on Linux.** It said
-  "Launching Star Citizen …" and then nothing happened — without any error. It
-  called `lug-helper`, which **cannot launch the game at all**: it manages the
-  Wine prefix, runners and DXVK, and has no launch option. The watcher now uses
-  the `sc-launch.sh` launch script the helper creates inside the prefix, and
-  finds it via the game folder (one level above `drive_c`) — no matter where
-  someone installed it. Reported by **Bomb20** (pr0).
-  - No more fallback to `lug-helper`: it would be found, the button would
-    appear, and it would do nothing again. Anyone playing through Lutris or
-    Heroic still enters their launch command in the `spielstarter` setting.
+- **Der Knopf „Star Citizen starten" startete unter Linux nichts.** Er meldete
+  „Star Citizen wird gestartet …" und danach geschah nichts — ohne jede
+  Fehlermeldung. Aufgerufen wurde der `lug-helper`, und der **kann das Spiel gar
+  nicht starten**: Er verwaltet Wine-Präfix, Runner und DXVK; eine Startoption
+  hat er nicht. Der Watcher nimmt jetzt das Startskript `sc-launch.sh`, das der
+  Helper beim Einrichten im Präfix anlegt, und findet es über den Spielordner
+  (eine Ebene über `drive_c`) — unabhängig davon, wohin jemand installiert hat.
+  Gemeldet von **Bomb20** (pr0).
+  - Kein Rückfall mehr auf den `lug-helper`: Er würde gefunden, der Knopf
+    erschiene, und er täte wieder nichts. Wer über Lutris oder Heroic spielt,
+    trägt seinen Startbefehl weiterhin in der Einstellung `spielstarter` ein.
 
 
-### Thanks
+### Dank
 
-- **Bomb20** (pr0) — for reporting that Star Citizen could not be launched
-  from the tool, and for the patience of sending two diagnostic reports in one
-  morning. Without the second one it would not have come out that `lug-helper`
-  cannot launch the game at all.
+- **Bomb20** (pr0) — für die Meldung, dass Star Citizen sich nicht aus dem
+  Werkzeug starten lässt, und für die Geduld mit zwei Diagnoseberichten an einem
+  Vormittag. Ohne den zweiten wäre nicht herausgekommen, dass der `lug-helper`
+  das Spiel überhaupt nicht starten kann.
 
 ## v3.0.0-rc64 - 2026-08-27
 
-> **The rebuild eats the message** — the same trap three times, in three
-> different places.
+> **Der Neuaufbau frisst die Meldung** — dreimal dieselbe Falle, an drei
+> verschiedenen Stellen.
 
-### Fixed
+### Behoben
 
-- **"Check for updates" still reported nothing.** The rc63 crash was gone but no
-  answer appeared: the button stayed on "Looking for a new version …".
-  `neu_aufbauen()` destroys **every** child of the window — including the footer
-  the message lives in. It was set and torn down milliseconds later. It now
-  rebuilds first and reports afterwards.
+- **„Auf Aktualität prüfen" meldete weiterhin kein Ergebnis.** Der Fehler aus
+  rc63 war weg, die Antwort kam trotzdem nicht: Der Knopf blieb bei „Suche nach
+  einer neuen Version …" stehen. `neu_aufbauen()` zerstört **alle** Kinder des
+  Fensters — auch die Fußzeile, in der die Meldung steht. Sie wurde gesetzt und
+  Millisekunden später mitzerstört. Jetzt wird erst aufgebaut, dann gemeldet.
 
-- **Same trap after updating on Linux.** "Ready — restart now" was said at
-  `after(0)` and swept away at `after(50)`. Order swapped.
+- **Dieselbe Falle nach dem Update unter Linux.** „Fertig — jetzt neu starten"
+  wurde bei `after(0)` gesagt und bei `after(50)` weggeräumt. Reihenfolge
+  getauscht.
 
-- **At "very large" half the sidebar was missing.** "Launch Star Citizen", "Buy
-  me a coffee" and "Discord" dropped out of the window — they are packed from
-  the bottom, and whatever does not fit between tabs and footer falls out. The
-  window's minimum size depends on the sidebar height, which depends on the
-  font. The program always calculated this correctly; the calculation simply
-  never ran after a font or language change. It is now part of the rebuild.
+- **Bei „sehr groß" fehlte die halbe linke Leiste.** „Star Citizen starten",
+  „Kaffee spendieren" und „Discord" fielen unten aus dem Fenster — sie werden
+  von unten gepackt, und was zwischen Reitern und Fußzeile nicht hineinpasst,
+  fällt heraus. Die Mindestgröße des Fensters hängt an der Höhe der
+  Seitenleiste, und die hängt an der Schrift. Gerechnet hat das Programm das
+  immer richtig, nur lief die Rechnung nie nach einem Schrift- oder
+  Sprachwechsel — jetzt gehört sie zum Neuaufbau. Der Gedanke dahinter: Wer
+  schlecht sieht und die Schrift größer stellt, braucht auch ein Fenster, das
+  im Verhältnis mitwächst.
 
-- **The two boxes under "What do you want to hear about?" were unequal.**
-  `pack(expand=True)` distributes only the **surplus** evenly — whichever has
-  more text stays wider. They now sit in a `grid` with `uniform`, the only
-  guarantee in Tk that makes two columns truly equal; measured 545 px to
-  545 px, same height.
+- **Die beiden Kästen unter „Wovon willst du Bescheid bekommen?" waren
+  ungleich groß.** `pack(expand=True)` verteilt nur den **Überschuss**
+  gleichmäßig — wer mehr Text hat, bleibt breiter. Sie liegen jetzt in einem
+  `grid` mit `uniform`, der einzigen Zusage in Tk, die zwei Spalten wirklich
+  gleich breit macht; gemessen 545 px zu 545 px, gleiche Höhe.
 
-- **At "very large" the buttons were cut off.** A named Tk font applies to every
-  text instantly — but the drawn round buttons fix their canvas to the measured
-  text width **once**, at build time. Measured on the overlay choice: canvas
-  177 px, text 206 px, **29 px short**. Changing the font size now rebuilds the
-  interface — as the language switch has always done — so every canvas measures
-  anew.
+- **Bei „sehr groß" waren die Knöpfe abgeschnitten.** Ein benanntes Tk-Font
+  wirkt sofort auf jeden Text — aber die gezeichneten Rundknöpfe legen ihre
+  Leinwand beim Bauen **einmal** auf die gemessene Textbreite fest. Nachgemessen
+  an der Overlay-Wahl: Kasten 177 px, Text 206 px, **29 px fehlten**. Das
+  Umstellen der Schriftgröße baut die Oberfläche jetzt neu auf — wie der
+  Sprachwechsel es längst tut —, damit jede Leinwand neu misst.
 
-### Notes
+### Hinweise
 
-- **Self-test section 21.** Checks both halves: that a finished round button
-  really does not grow on its own (otherwise the second check would pass
-  vacuously), and that the font switch rebuilds **and then** reports.
+- **Selbsttest-Abschnitt 21.** Prüft beides zusammen: dass ein fertiger
+  Rundknopf tatsächlich nicht von allein wächst (sonst liefe die zweite Prüfung
+  ins Leere), und dass der Schriftwechsel neu aufbaut **und danach** meldet.
 
 ## v3.0.0-rc63 - 2026-08-27
 
-> **"Check for updates" checks again** — and the notice before an update finally
-> shows up.
+> **„Auf Aktualität prüfen" prüft wieder** — und der Hinweis vor dem Update
+> kommt endlich an.
 
-### Fixed
+### Behoben
 
-- **"Check for updates" answered with `name 'datei' is not defined`.** The
-  button did not hold the *look* routine but the *fetch* one — download,
-  install, step aside — using two variables that never existed in that
-  function. Whether a new version was out or not, the status line said it had
-  not worked. The button now reports what it finds: the version — or **"You
-  have the latest version."** That sentence existed all along; nothing ever
-  showed it.
+- **„Auf Aktualität prüfen" antwortete mit `name 'datei' is not defined`.**
+  Im Knopf stand nicht das Nachsehen, sondern der **Holen**-Ablauf: herunter-
+  laden, einspielen, abtreten — mit zwei Variablen, die es in dieser Funktion
+  nie gab. Egal ob eine neue Version da war oder nicht, unten stand „Das hat
+  nicht geklappt". Jetzt meldet der Knopf wieder, was er findet: die gefundene
+  Version — oder **„Du hast die neueste Version."** Diesen Satz gab es die
+  ganze Zeit, ihn zeigte nur niemand.
 
-- **The notice before an update never appeared, not once.** Since rc52 the
-  watcher is meant to announce that it will close, run the installer and needs
-  a double-click afterwards — a program that vanishes without a word looks like
-  a crash. The dialog sat in that same dead function. It now runs in the real
-  update, before installing, and the installer waits until it has been read.
+- **Der Hinweis vor dem Update kam bei keinem einzigen Update.** Seit rc52 soll
+  der Watcher ansagen, dass er sich gleich schließt, das Setup läuft und danach
+  ein Doppelklick nötig ist — ein Programm, das wortlos verschwindet, sieht aus
+  wie ein Absturz. Der Dialog saß aber in **derselben toten Funktion** und ist
+  deshalb nie erschienen. Er steht jetzt im echten Update, vor dem Einspielen,
+  und das Setup wartet, bis er gelesen ist. Bestätigt beim Update
+  auf rc62: Es kam kein Fenster.
 
-- **The export folder never opened.** `os.startfile()` in the inventory window
-  used an `os` that was never imported there, and the error fell silently into
-  an `except Exception`. During the folder migration `t(...)` was used instead
-  of `sprache.t(...)`, so the success message went missing. Both found by the
-  new check below, not by hand.
+- **Der Ablage-Ordner ging nach dem Export nie auf.** `os.startfile()` im
+  Bestandsfenster griff auf ein `os`, das dort nie importiert war; der Fehler
+  fiel still in ein `except Exception`. Beim Ordner-Umzug stand `t(...)` statt
+  `sprache.t(...)` — dort blieb die Erfolgsmeldung weg. Beide gefunden von der
+  neuen Prüfung unten, nicht von Hand.
 
-### Notes
+### Hinweise
 
-- **The self-test now looks for names that do not exist** (section 20, via
-  `pyflakes`). This class of bug otherwise surfaces only on a **click**: Python
-  resolves names at runtime, and when the callback ends in an `except`, nobody
-  sees it. The check found three cases straight away. It runs in the build
-  pipeline before every release; if `pyflakes` is missing on a dev machine it
-  is skipped rather than failing.
+- **Der Selbsttest sucht jetzt Namen, die es nicht gibt** (Abschnitt 20, über
+  `pyflakes`). Genau diese Fehlerklasse fliegt sonst erst beim **Klicken** auf:
+  Python prüft Namen erst beim Ausführen, und wenn der Rückruf in einem
+  `except` endet, sieht es niemand. Die Prüfung fand auf Anhieb drei Fälle. Sie
+  läuft im Bau-Ablauf vor jedem Release mit; fehlt `pyflakes` auf einem
+  Entwicklungsrechner, wird sie übersprungen statt zu scheitern.
 
-### Changed
+### Geändert
 
-- **The ⓘ at the right edge of the blueprint list is bigger** — it opens the
-  origin panel and was hard to recognise as a control at pure line size. New
-  size set `ANTIPPBAR`, one step above the other in-line marks: 16 px instead
-  of 14 at "normal", 22 instead of 18 at "very large". The status dots in the
-  overlay are unchanged — nobody clicks those.
+- **Das ⓘ am rechten Rand der Bauplan-Liste ist größer** — es öffnet den
+  Herkunftskasten und war in reiner Zeilengröße kaum als Schaltfläche zu
+  erkennen. Neuer Größensatz `ANTIPPBAR`, eine Stufe über den übrigen
+  Zeilenzeichen: 16 px statt 14 bei „normal", 22 statt 18 bei „sehr groß". Die
+  Statuspunkte im Overlay bleiben unverändert — die will niemand anklicken.
 
 ## v3.0.0-rc62 - 2026-08-27
 
-> **The patch filter shows again what the patch brought.**
+> **Der Patch-Filter zeigt wieder, was der Patch gebracht hat.**
 
-### Fixed
+### Behoben
 
-- **The patch filter found nothing and "new in game" stayed empty.** Anyone who
-  used the Watcher before rc55 has a catalogue without origin stamps — stamping
-  only happened on a rebuild, and a rebuild only happens on a new game version.
-  So the dropdown showed "4.10.0 (21)" (it reads the history directly) while the
-  list below said "Nothing found". The stamps are now filled in at startup, with
-  no rebuild and no network needed.
-- **The next patch would have been silent.** The comparison baseline
-  (`bauplaene-gesehen.json`) also arrived only with rc55. Without it the rule
-  "very first catalogue build — nothing is new" kicked in, and the next patch
-  would have reported **zero** additions. If the file is missing, the existing
-  catalogue is now used as the baseline: whatever is in it was in the game
-  before.
+- **Der Patch-Filter fand nichts, „neu im Spiel" blieb leer.** Wer den Watcher
+  schon vor rc55 benutzt hat, sitzt auf einem Katalog ohne Herkunftsstempel —
+  gestempelt wurde bisher nur beim Neubau, und neu gebaut wird nur bei einer
+  neuen Spielversion. Das Auswahlfeld zeigte deshalb „4.10.0 (21)" (es liest die
+  Historie direkt), die Liste darunter aber „Nichts gefunden". Die Stempel werden
+  jetzt beim Start nachgetragen, ohne Neubau und ohne Netz.
+- **Der nächste Patch wäre stumm geblieben.** Die Vergleichsgrundlage
+  (`bauplaene-gesehen.json`) kam ebenfalls erst mit rc55. Fehlte sie, griff die
+  Regel „erster Katalogbau überhaupt — nichts ist neu", und der nächste Patch
+  hätte **keinen einzigen** Zugang gemeldet. Fehlt die Datei, gilt jetzt der
+  vorhandene Katalog als Grundlage: Was darin steht, war vorher im Spiel.
 
-### Notes
+### Hinweise
 
-- **The self-test now covers this case** (section 19, eleven new checks). It paid
-  off immediately: the catch-up ran *behind* the `SC_BP_NO_NET` network switch at
-  first — anyone starting without a network would never have got a stamp, even
-  though both history and catalogue sit on disk.
+- **Der Selbsttest prüft diesen Fall jetzt selbst** (Abschnitt 19, elf neue
+  Prüfungen). Er hat sich sofort gelohnt: Das Nachziehen stand zuerst *hinter*
+  der Netzsperre `SC_BP_NO_NET` — wer ohne Netz startet, hätte nie einen Stempel
+  bekommen, obwohl Historie und Katalog beide auf der Platte liegen.
 
 ## v3.0.0-rc61 - 2026-08-27
 
-> **The Discord announcement now says what it is about.**
+> **Die Meldung im Discord sagt jetzt, worum es geht.**
 
-### Added
+### Hinzugefügt
 
-- **The Discord release announcement is now a readable card.** Instead of
-  `[Repo] New release published: v3.0.0-rc60` it shows the changelog section for
-  **this** build — the same text the tool shows under "What's new". Test builds
-  in gold with a "less thoroughly tested" note, finished ones in Xharig green,
-  plus the program icon. after comparing with the
-  StarStrings channel. Without a stored key nothing happens and the build stays
-  green — a chat message must never turn a finished release red.
+- **Die Release-Meldung im Discord ist jetzt eine lesbare Karte.** Statt
+  `[Repo] New release published: v3.0.0-rc60` steht dort der Changelog-Abschnitt
+  **dieser** Version — derselbe Text wie im Werkzeug unter „Was ist neu".
+  Testfassungen in Gold mit dem Hinweis „weniger lange erprobt", fertige in
+  Xharig-Grün, dazu das Programmsymbol — nach dem Vergleich mit dem
+  StarStrings-Kanal. Ohne hinterlegten Schlüssel passiert nichts und der
+  Bau bleibt grün — eine Chat-Meldung darf keine fertige Veröffentlichung rot
+  färben.
 
 ## v3.0.0-rc60 - 2026-08-27
 
-> **What the diagnostics report revealed.** An invisible cross, eight errors per
-> page switch — and a new check that finds both in advance from now on.
+> **Was der Diagnosebericht verriet.** Ein unsichtbares Kreuz, acht Fehler je
+> Seitenwechsel — und eine neue Prüfung, die beides künftig vorher findet.
 
-### Fixed
+### Behoben
 
-- **Eight log entries on every page switch.** `invalid command name …!label` —
-  callbacks that adjust the line wrapping ran after their label had been
-  destroyed. Nothing was visible: the hook in `fehler.py` caught them, they only
-  filled up the report and buried what actually mattered. The same trap sat in
-  the button row and in the drawn-border entry field; all three now check whether
-  their widget still exists. Measured: 39 page switches, **0** errors.
+- **Acht Fehler im Protokoll bei jedem Seitenwechsel.** `invalid command name
+  …!label` — Rückrufe, die den Zeilenumbruch nachziehen, kamen dran, wenn ihr
+  Label längst zerstört war. Sichtbar war davon nichts: Der Haken in `fehler.py`
+  fing sie ab, sie füllten nur den Bericht und verdeckten damit, was wirklich
+  wichtig gewesen wäre. Dieselbe Falle steckte in der Knopfreihe und im
+  Eingabefeld mit gezeichnetem Rahmen; alle drei prüfen jetzt vorher, ob es ihr
+  Widget noch gibt. Nachgemessen: 39 Seitenwechsel, **0** Fehler.
 
-- **The cross that closes the source box was invisible.** In the blueprint list
-  it left an empty gap: the `schliessen` symbol only existed at button size while
-  it was used at row size. `zeichen.bild()` silently returns `None` for a missing
-  file — deliberately, so a missing symbol never halts the program, which is
-  exactly what hid the bug. `tools/oberflaeche_pruefen.py` now checks for it.
+- **Das Kreuz zum Schließen des Herkunftskastens war unsichtbar.** In der
+  Bauplan-Liste blieb dort eine leere Lücke: Das Symbol `schliessen` gab es nur
+  in Knopfgröße, gebraucht wurde es in Zeilengröße. `zeichen.bild()` gibt bei
+  einer fehlenden Datei still `None` zurück — mit Absicht, damit ein fehlendes
+  Symbol das Programm nicht anhält, wodurch der Fehler aber unsichtbar blieb.
+  `tools/oberflaeche_pruefen.py` prüft das ab sofort mit.
 
 ## v3.0.0-rc59 - 2026-08-27
 
-> **The readme is accurate again.** All screenshots redone, a separate set
-> per language, and every symbol in them comes from the program's own set.
+> **Die Anleitung stimmt wieder.** Alle Bildschirmfotos neu, je Sprache ein
+> eigener Satz, und alle Symbole darin stammen aus dem Satz des Programms.
 
-### Added
+### Hinzugefügt
 
-- **The coloured dots were still emoji in the running text.** The symbol key
-  already showed the real images while the description below it kept using
-  `🟢 🟡 🔵 ⭐` — two different renderings of the same symbol on one page.
+- **Die farbigen Punkte standen im Fließtext noch als Emoji.** Die
+  Zeichen-Erklärung zeigte längst die echten Bilder, die Beschreibung darunter
+  aber weiter `🟢 🟡 🔵 ⭐` — zwei verschiedene Darstellungen desselben Zeichens
+  auf einer Seite.
 
-- **The English readme now shows the English interface.** Until now it presented
-  German screenshots — with eleven images, and a tool whose Linux users mostly
-  run the English client, that is not a detail. `tools/sprachen_pruefen.py` now
-  checks for it: it only counted sections and never looked at images.
+- **Auch die englische Anleitung zeigt jetzt die englische Oberfläche.** Sie
+  führte bis hierher deutsche Bildschirmfotos vor — bei elf Bildern und einem
+  Werkzeug, dessen Nutzer unter Linux überwiegend den englischen Client fahren,
+  keine Kleinigkeit. `tools/sprachen_pruefen.py` achtet ab sofort darauf: Er
+  zählte nur Abschnitte und hat Bilder nie angesehen.
 
-- **Every screenshot in the readme is new.** The old ones were from v3.0.0-rc11
-  and showed not just the replaced symbols but a build without the server status
-  tab and without the patch filter. Two pages got their first screenshot at all:
-  **Server status** and **Thanks & Licenses**.
+- **Alle Bilder in der Anleitung sind neu.** Die alten stammten aus
+  v3.0.0-rc11 und zeigten nicht nur die abgelösten Symbole, sondern auch einen
+  Stand ohne Serverstatus und ohne Patch-Filter. Dazu zwei Seiten, die noch nie
+  eins hatten: **Serverstatus** und **Danke & Lizenzen**.
 
-- **The feature table in the readme used emoji instead of the real symbols.**
-  `⚡ 📋 🧭 ⭐ 🔔 …` have nothing to do with the program's icon set and look
-  different on every system. All sixteen now come from the same set as the
-  interface.
+- **Die Merkmalstabelle in der Anleitung zeigte Emoji statt der echten Symbole.**
+  `⚡ 📋 🧭 ⭐ 🔔 …` haben mit dem Symbolsatz des Programms nichts zu tun und sehen
+  auf jedem System anders aus. Alle sechzehn stammen jetzt aus demselben Satz wie
+  die Oberfläche.
 
-- **A screenshot exposed the author's home path.** `screenshot-pfade.png` had
-  been in the repo since v3.0.0-rc11, showing `/home/<user>/` three times — the
-  very thing `pfade.kuerzen()` strips from error reports. Removed; the folder
-  page gets no screenshot at all, since it necessarily shows paths. The server
-  status tab took its place.
+- **Ein Bildschirmfoto zeigte den Heimatpfad des Autors.** `screenshot-pfade.png`
+  lag seit v3.0.0-rc11 im Repo und führte dreimal `/home/<benutzer>/` vor —
+  genau das, was der Fehlerbericht mit `pfade.kuerzen()` sonst herausnimmt.
+  Entfernt; die Ordner-Seite bekommt kein Bild mehr, weil dort zwangsläufig
+  Pfade stehen. An ihrer Stelle steht jetzt der Serverstatus, der nie eins
+  hatte.
 
-### Fixed
+### Behoben
 
-- **The filter buttons on "What's new" stayed German in English.** "Alles / Neu /
-  Verbessert / Behoben" were hard-coded instead of living in `sprache.py` — right
-  next to a properly translated changelog. Spotted on a screenshot of the English
-  interface.
+- **Die Filterknöpfe auf „Was ist neu" blieben auf Englisch deutsch.** „Alles /
+  Neu / Verbessert / Behoben" standen fest im Code statt in `sprache.py` — direkt
+  neben einem sauber übersetzten Änderungstext. Aufgefallen auf einem
+  Bildschirmfoto der englischen Oberfläche.
 
 ## v3.0.0-rc58 - 2026-08-27
 
-> **What belongs to whom — in one place.** A new "Thanks & Licenses" tab that
-> brings the licences and the people together. Plus names and symbols that
-> finally match what they do.
+> **Wem was gehört — an einer Stelle.** Neuer Reiter „Danke & Lizenzen", der
+> die Lizenzen und die Beteiligten zusammenführt. Dazu Namen und Symbole, die
+> endlich zu dem passen, was sie tun.
 
-### Added
+### Hinzugefügt
 
-- **The "Mission text" tab is now "In-game text".** The old name did not say
-  **where** those texts appear.
-- **The program icon now sits next to the version on "Update & About".** The page
-  had no image at all after the author block moved to "Thanks & Licenses".
+- **Der Reiter „Auftragstexte" heißt jetzt „Texte im Spiel".** Der alte Name
+  sagte nicht, **wo** diese Texte auftauchen. „Ingame-Texte" stand kurz zur Wahl
+  und ist unter Spielern gängig — dagegen sprach, dass jeder andere Reiter der
+  Leiste deutsch ist und ein einzelner Anglizismus dazwischen auffällt.
+- **Auf „Update & Über" steht das Programmsymbol neben der Version.** Die Seite
+  hatte gar kein Bild mehr, seit der Autor-Block auf „Danke & Lizenzen" gewandert
+  ist.
 
-- **The readme showed symbols the tool no longer has.** The button legend in
-  both readmes listed `☰`, `ⓘ`, `⟳`, `⏻` and `🗑` — two of them are long gone,
-  the others look different now. It now shows the **actual image files** from
-  `assets/symbole/`, so it can no longer go stale: swapping a symbol updates the
-  readme picture by itself. Same for the message symbol key.
-- **"Who built this" suddenly appeared twice.** The block naming the author,
-  scmdb, the SC Deutsch Launcher and StarStrings sat on "Update & About" — and
-  the new "Thanks & Licenses" page listed the same projects again. It now lives
-  only on "Thanks & Licenses", with the author **at the top**: a page listing
-  other people's work has to name its own first.
+- **Die Anleitung zeigte Zeichen, die es im Werkzeug nicht mehr gibt.** Die
+  Knopf-Legende in beiden READMEs führte `☰`, `ⓘ`, `⟳`, `⏻` und `🗑` auf — zwei
+  davon sind längst entfernt, die anderen sehen anders aus. Sie zeigt jetzt die
+  **echten Bilddateien** aus `assets/symbole/`; damit kann sie nicht mehr
+  veralten, weil sich mit einem getauschten Symbol das Bild in der Anleitung von
+  selbst mitändert. Dasselbe für die Zeichen-Erklärung der Meldungen.
+- **„Wer das gebaut hat" stand plötzlich zweimal.** Der Block mit Autor,
+  scmdb, SC Deutsch Launcher und StarStrings lag auf „Update & Über" — und die
+  neue Seite „Danke & Lizenzen" nannte dieselben Projekte noch einmal. Er liegt
+  jetzt nur noch auf „Danke & Lizenzen", und zwar mit dem Autor **ganz oben**:
+  Eine Seite, die fremde Arbeit aufzählt, muss die eigene zuerst nennen.
 
-- **The donation link was nowhere to be seen on GitHub.** The "Buy me a coffee"
-  button has been in the tool for a long time — but the project page itself had
-  nothing: no sponsor button, no mention in the readme. Anyone who had not
-  installed the tool yet could not find it at all. Both are there now.
+- **Der Spenden-Link war auf GitHub nirgends zu sehen.** Der Knopf „Kaffee
+  spendieren" gibt es im Werkzeug seit Langem — auf der Projektseite selbst
+  fehlte er aber komplett: kein Sponsor-Knopf, keine Erwähnung in der Anleitung.
+  Wer das Werkzeug noch nicht installiert hatte, konnte ihn also gar nicht
+  finden. Jetzt gibt es beides.
 
-- **New "Thanks & Licenses" tab** under *Info*. Until now the program showed
-  **no licence information at all** — neither its own (GPL-3.0) nor that of the
-  bundled symbols, and third-party projects were only mentioned in passing where
-  they happened to be used. There is now one place stating what belongs to whom:
-  the program itself, the Lucide symbols, the scmdb data, StarStrings and the SC
-  Deutsch Launcher — each with its licence and a clickable link. Plus thanks to
-  the people whose feedback turned into something.
+- **Neuer Reiter „Danke & Lizenzen"** unter *Info*. Bis hierher stand im ganzen
+  Programm **keine einzige Lizenzangabe** — weder die eigene (GPL-3.0) noch die
+  der mitgelieferten Symbole, und fremde Projekte wurden nur nebenbei genannt,
+  dort wo sie gerade gebraucht wurden. Jetzt steht an einer Stelle, wem was
+  gehört: das Programm selbst, die Symbole von Lucide, die Daten von scmdb,
+  StarStrings und der SC Deutsch Launcher — jeweils mit Lizenz und anklickbarem
+  Verweis. Dazu der Dank an die, aus deren Rückmeldung etwas geworden ist.
 
 ## v3.0.0-rc57 - 2026-08-27
 
-> **One icon set instead of fourteen glyphs.** The symbols in the notification
-> bar had different sizes, mixed styles, and looked different on every operating
-> system. Replaced with rendered images from a single, consistently drawn set.
+> **Ein Symbolsatz statt vierzehn Schriftzeichen.** Die Zeichen der Melde-Leiste
+> waren unterschiedlich groß, im Stil gemischt und sahen auf jedem Betriebssystem
+> anders aus. Ersetzt durch fertige Bilder aus einem einzigen, einheitlich
+> gezeichneten Satz.
 
-### Changed
+### Geändert
 
-- **All symbols are the same size now — and come from one set.** The glyphs in
-  the notification bar had different sizes, the bell being the largest. Three
-  causes with the same root: *the font decided, not the program.* A glyph fills
-  only 50–70 % of its box, each one differently; `🗑` and `▶` are solid shapes
-  while `⚙ ⟳ ✕` are thin strokes; and every operating system picks a different
-  fallback font. Replaced with rendered images from the **Lucide** set — all
-  drawn on a 24×24 grid with the same stroke width.
-- **The interface now looks identical on Windows, Linux and macOS.** It did not
-  before: Windows used `Segoe UI Symbol`, other systems something else. Anyone
-  developing on a Mac saw different glyphs than their users on Windows.
-- **The coloured dots in front of blueprints are no longer emoji.** `🟢 🟡 🔵 ⭐`
-  live outside the basic plane; Windows rendered them through the colour emoji
-  font as coloured blocks that **ignored** the configured colour — in the very
-  place you look at most often.
-- **Launching Star Citizen now shows a rocket instead of a play arrow.** A `▶`
-  means "play video" everywhere, not "start a program".
-- **Clearing messages now shows an eraser instead of a bin.** The button deletes
-  nothing — it only tidies the display, the blueprints stay. A bin promises
-  destruction and puts people off clicking it.
-- **"Setup" is now "Run setup".** A verb says something is about to happen; the
-  noun alone sounded like a place to look things up.
-- The height of the notification bar now grows with the configured font size. It
-  was fixed at 26 pixels, which made symbols stick out at "large".
+- **Alle Symbole sind jetzt gleich groß — und stammen aus einem Satz.** Die
+  Zeichen in der Melde-Leiste waren unterschiedlich groß, die Glocke war die
+  größte. Dahinter steckten drei Ursachen mit demselben Kern: *Die Schrift
+  entschied, nicht das Programm.* Ein Schriftzeichen füllt seine Box nur zu
+  50–70 % aus, und jedes anders; `🗑` und `▶` sind gefüllte Flächen, `⚙ ⟳ ✕`
+  dünne Striche; und jedes Betriebssystem greift zu einer anderen Ersatzschrift.
+  Ersetzt durch fertige Bilder aus dem **Lucide**-Satz — alle auf einem
+  24×24-Raster mit gleicher Strichstärke gezeichnet.
+- **Auf Windows, Linux und Mac sieht die Oberfläche jetzt gleich aus.** Das war
+  vorher nicht so: Windows nahm `Segoe UI Symbol`, die anderen Systeme etwas
+  anderes. Wer auf einem Mac entwickelt, sah damit andere Zeichen als die
+  Nutzer unter Windows.
+- **Die farbigen Punkte vor den Bauplänen sind keine Emoji mehr.** `🟢 🟡 🔵 ⭐`
+  liegen außerhalb der Grundebene; Windows malte sie über die Farb-Emoji-Schrift
+  als bunte Klötzchen, die die eingestellte Farbe **ignorierten** — ausgerechnet
+  an der Stelle, die man am häufigsten sieht.
+- **Star Citizen starten heißt jetzt Rakete statt Abspielpfeil.** Ein `▶` heißt
+  überall „Video ab", nicht „Programm starten".
+- **Meldungen wegräumen heißt jetzt Radiergummi statt Mülleimer.** Der Knopf
+  löscht nichts — er räumt nur die Anzeige auf, die Baupläne bleiben. Ein
+  Mülleimer verspricht Vernichtung und schreckt vom Klicken ab.
+- **„Einrichtung" heißt jetzt „Einrichtung starten".** Ein Verb sagt, dass etwas
+  losgeht; das Wort allein klang nach einem Ort zum Nachschlagen.
+- Die Höhe der Melde-Leiste wächst jetzt mit der eingestellten Schriftgröße mit.
+  Sie stand fest auf 26 Pixel, wodurch die Symbole bei „groß" oben und unten
+  herausragten.
 
-### Removed
+### Entfernt
 
-- **The autostart switch is gone from the notification bar.** A power symbol
-  means "turn the device off" everywhere, and it sat right next to the cross
-  that really does close the program — two buttons that both looked like "off".
-  The setting is unchanged under "General".
-- **The setup assistant button is gone from the notification bar.** It remains
-  available in the main window, top right — the settings are where everyone goes anyway once they notice something is off.
+- **Der Autostart-Schalter ist aus der Melde-Leiste verschwunden.** Ein
+  Ein/Aus-Zeichen heißt überall „Gerät ausschalten", und es saß direkt neben dem
+  Kreuz, das das Programm wirklich schließt — zwei Knöpfe, die beide nach „aus"
+  aussahen. Die Einstellung steht unverändert unter „Allgemein".
+- **Der Knopf für den Einrichtungs-Assistenten ist aus der Melde-Leiste
+  verschwunden.** Er bleibt im großen Fenster oben rechts erreichbar — in den
+  Einstellungen reicht er, dorthin geht ohnehin jeder, der merkt, dass etwas
+  klemmt.
 
-### Fixed
+### Behoben
 
-- **A help text pointed at a glyph that no longer existed.** "Use ☰ to open the
-  blueprint list at any time" was still in the setup assistant, even though `☰`
-  had been replaced by the clipboard back in v3.0.0-rc55. All texts now name the
-  symbols in words instead of depicting them.
+- **Ein Hilfetext zeigte auf ein Zeichen, das es nicht mehr gab.** „Mit ☰
+  öffnest du jederzeit die Bauplan-Liste" stand noch im Einrichtungs-Assistenten,
+  obwohl das `☰` seit v3.0.0-rc55 durch das Klemmbrett ersetzt war. Alle
+  Texte benennen die Symbole jetzt in Worten statt sie abzubilden.
 
-### Thanks
+### Dank
 
 
 ## v3.0.0 - 2026-08-29
 
-> **One window for everything.** The blueprint list and the settings used to live in
-> two separate windows, and you had to know which one held what. They are now together —
-> tabs on the left, a visible folder for your files, and an installer instead of
-> dragging a file somewhere by hand.
+> **Ein Fenster für alles.** Bauplan-Liste und Einstellungen lagen bisher in zwei
+> getrennten Fenstern, und man musste wissen, in welchem etwas steckt. Jetzt liegen sie
+> zusammen — mit Reitern links, einer sichtbaren Ablage für deine Dateien und einem
+> Installer, statt eine Datei von Hand irgendwohin zu ziehen.
 
-### The short version
+### Das Wichtigste in Kürze
 
-- **The list shows what the patch brought into the game.** Next to "watching"
-  there is now **🔵 new in game**. The catalogue stamps every blueprint with the
-  game version it first appeared in; the filter shows the current patch. When the
-  next one lands, the new ones move in and the old ones drop out — but the stamp
-  stays, so you can still tell which patch a blueprint came with. A **patch
-  dropdown** next to the other filters lets you look up any earlier patch, and it
-  extends itself as patches arrive. 4.10.0 added 21.
-- **A patch history of its own**, so that number is actually right. Comparison
-  now runs against **every blueprint ever seen**, not against last week's
-  catalogue. The first attempt reported 74 additions, 53 of which had been in
-  the game for ages — the data source simply had not listed them for a while.
-  And it could not be checked afterwards: scmdb only keeps the current game
-  version, and the 4.9.0 data was already gone the same day. So the tool now
-  records what each patch brought (`daten/patch-historie.json`, readable in the
-  repo) — additions only, never the whole catalogue.
-- **An installer for Windows** — download, run, done. No more moving files around.
-- **One window instead of two**, with tabs on the left. Plus a tray icon to bring
-  it back whenever you need it.
-- **The overlay can step aside** and only appears when something is found — a
-  narrow green strip stays at the edge, and the mouse brings it back.
-- **Self-update now works on Linux too.** It used to fail there **every single
-  time**; anyone on the AppImage had to fetch each version by hand.
-- **Star Citizen can be launched from the tool**, and a diagnostic report collects
-  everything a bug report needs at the press of a button — no names, no paths.
+- **Die Liste zeigt, was mit dem Patch neu ins Spiel kam.** Neben „beobachtet"
+  steht jetzt **🔵 neu im Spiel**. Der Katalog stempelt jedem Bauplan die
+  Spielversion auf, in der es ihn zum ersten Mal gab; der Filter zeigt die des
+  aktuellen Patches. Kommt der nächste, rücken die neuen nach und die alten
+  fallen heraus — der Stempel bleibt aber stehen, du siehst später noch, mit
+  welchem Patch ein Bauplan kam. Mit 4.10.0 sind es 21.
+- **Eine eigene Patch-Historie**, damit die Angabe auch stimmt. Verglichen wird
+  nicht mehr gegen den Katalog von letzter Woche, sondern gegen **alle je
+  gesehenen** Baupläne. Der erste Versuch meldete 74 Zugänge, von denen 53
+  längst im Spiel waren — die Datenquelle hatte sie zwischendurch schlicht nicht
+  geführt. Nachsehen ließ es sich nicht mehr: scmdb hält nur die aktuelle
+  Spielversion vor, die Daten zu 4.9.0 waren am selben Tag schon gelöscht.
+  Deshalb schreibt das Werkzeug jetzt selbst mit, was ein Patch gebracht hat
+  (`daten/patch-historie.json`, im Repo nachlesbar) — nur die Zugänge, nie der
+  ganze Katalog.
+- **Ein Auswahlfeld „Patch"** neben den übrigen Filtern: dort lässt sich jeder
+  frühere Patch nachschlagen — „was kam mit 4.10.0?". Das Feld **erweitert sich
+  von allein**; jeder Patch, der Baupläne bringt, steht beim nächsten Öffnen
+  darin, mit der Anzahl dahinter.
+- **Ein Installer für Windows** — herunterladen, starten, fertig. Kein Herumschieben
+  von Dateien mehr.
+- **Ein Fenster statt zwei**, mit Reitern links. Dazu ein Symbol neben der Uhr,
+  über das du es jederzeit zurückholst.
+- **Das Overlay kann sich zurückhalten** und blendet sich nur bei einem Fund ein —
+  ein schmaler grüner Streifen bleibt am Rand, die Maus holt es zurück.
+- **Das Selbst-Update funktioniert jetzt auch unter Linux.** Dort scheiterte es
+  bisher **immer**; wer ein AppImage nutzt, musste jede Version von Hand holen.
+- **Star Citizen lässt sich aus dem Werkzeug heraus starten**, und ein
+  Diagnose-Bericht sammelt auf Knopfdruck alles, was eine Fehlermeldung braucht —
+  ohne Namen und ohne Pfade.
 
-### Upgrading from v2.0.0
+### Beim Umstieg von v2.0.0
 
-- **Your blueprint collection moves along by itself.** It used to sit hidden in
-  `%APPDATA%`, now it lives visibly in `Documents\SC BP Watcher`. On the first
-  start it is **copied**, not moved — the old folder stays untouched in case
-  something is missing after all.
-- **For this one update, use the setup rather than the button in the program.**
-  The button works, but it still runs v2.0.0's update path — and on Windows
-  that leaves a console window sitting there until you quit the program. A bug
-  in the update path cannot fix itself; from v3.0.0 on it is sorted and the
-  button is enough.
-- **If you put the `.exe` somewhere by hand, delete it after installing.** The
-  setup places the program in `%LOCALAPPDATA%\Programs\SC BP Watcher`. The old
-  file would otherwise stay behind, and one day you would start the old version
-  by accident.
-- **On Linux there is nothing to do** — the AppImage replaces itself.
+- **Dein Bauplan-Bestand zieht von allein mit.** Er lag versteckt in
+  `%APPDATA%`, jetzt liegt er sichtbar unter `Dokumente\SC BP Watcher`. Beim
+  ersten Start wird er **kopiert**, nicht verschoben — der alte Ordner bleibt
+  unangetastet stehen, falls doch etwas fehlt.
+- **Nimm für dieses eine Update das Setup, nicht den Knopf im Programm.** Der
+  Knopf tut es auch, benutzt aber noch den Update-Weg von v2.0.0 — und der
+  lässt unter Windows ein Konsolenfenster stehen, bis du das Programm beendest.
+  Ein Fehler im Update-Weg kann sich nicht selbst reparieren; ab v3.0.0 ist das
+  erledigt, ab dann genügt der Knopf.
+- **Hast du die `.exe` bisher von Hand irgendwohin gelegt, lösch sie nach der
+  Installation.** Das Setup legt das Programm unter
+  `%LOCALAPPDATA%\Programs\SC BP Watcher` ab. Die alte Datei bleibt sonst
+  liegen, und irgendwann startest du versehentlich wieder die alte Version.
+- **Unter Linux ist nichts zu tun** — das AppImage tauscht sich selbst aus.
 
-### Added
+### Hinzugefügt
 
-- **A "Server status" tab of its own.** Is Star Citizen up? If you cannot get
-  into the game, you look for the fault on your own machine first — this
-  answers that beforehand. It shows what CIG reports on its status page: the
-  state of all three systems, plus the incidents of the last two months in full,
-  update lines included. The layout follows the status page, and the states stay
-  **in CIG's own wording** (`operational`, `maintenance`) — translating them
-  would be a statement RSI never made. While the tab is open it checks once a
-  minute; that costs almost nothing because it asks with `ETag` and an unchanged
-  page is answered without content. The source is linked below it.
-  ⚠️ These entries are **maintained by hand, not measured** — the page says so
-  too, so nobody mistakes it for a measurement.
-- **A button for „just give me the latest".** Until now you first had to
-  understand what a channel is and pick the right one of the two boxes — anyone
-  choosing the wrong one was offered nothing at all. There is now a full-width
-  button above them that immediately fetches whatever is available, including a
-  test build. It changes nothing about the setting below.
+- **Ein eigener Reiter „Serverstatus".** Läuft Star Citizen gerade? Wer nicht
+  ins Spiel kommt, sucht den Fehler zuerst bei sich — ein Blick ins Werkzeug
+  beantwortet das vorher. Gezeigt wird, was CIG auf seiner Statusseite meldet:
+  die Lage der drei Systeme, dazu die Meldungen der letzten zwei Monate im
+  Volltext samt Update-Zeilen. Der Aufbau folgt der Statusseite, die Zustände
+  bleiben im **Wortlaut von CIG** (`operational`, `maintenance`) — eine
+  Übersetzung wäre eine Aussage, die RSI nie gemacht hat. Die Seite fragt
+  jede Minute nach, solange der Reiter offen ist; das kostet fast nichts, weil
+  mit `ETag` gefragt wird und der unveränderte Fall ohne Inhalt beantwortet
+  wird. Die Quelle steht als anklickbarer Verweis darunter.
+  ⚠️ Die Angaben sind **von Hand gepflegt, keine Messung** — das steht auch in
+  der Anzeige, damit niemand sie für eine Messung hält.
+- **Ein Knopf für „gib mir einfach die neueste".** Bisher musste man erst
+  verstehen, was ein Kanal ist, und den richtigen der beiden Kästen anklicken —
+  wer den falschen wählte, bekam gar nichts angeboten. Jetzt steht darüber ein
+  Knopf über die volle Breite, der sofort holt, was es gerade gibt, auch eine
+  Testfassung. An der Einstellung darunter ändert er nichts.
 
-- **Star Citizen can be launched from the tool.** The „In-game details" page
-  has a button that starts the game the way you already do: the RSI Launcher on
-  Windows, `lug-helper` on Linux. If neither is found the button does not appear
-  at all — anyone using a different route (Lutris, Heroic) sets `spielstarter`
-  in the settings file. Suggested by Morkhan.
+- **Star Citizen lässt sich aus dem Werkzeug heraus starten.** Auf der Seite
+  „Angaben im Spiel" steht ein Knopf, der das Spiel über den Weg startet, den
+  man ohnehin benutzt: den RSI Launcher unter Windows, den `lug-helper` unter
+  Linux. Wird keiner der beiden gefunden, erscheint der Knopf gar nicht erst —
+  wer einen eigenen Weg hat (Lutris, Heroic), trägt ihn als `spielstarter` in
+  die Einstellungsdatei ein. Vorgeschlagen von Morkhan.
 
-- **The mouse brings the overlay back.** In pop-up mode just move to where it sits — it
-  reappears by itself and stays as long as the pointer is on it. Previously you had to
-  restart the program for that, which no other overlay asks of you.
+- **Die Maus holt das Overlay zurück.** Im Aufblend-Betrieb genügt es, dorthin zu fahren, wo
+  es steht — es kommt von selbst und bleibt, solange der Zeiger darauf ist. Vorher musste
+  man das Programm dafür neu starten, und das verlangt kein anderes Overlay.
 
-- **Restart right after an update.** It used to say „the new version runs on next start" —
-  you had to quit and start it yourself. The fetch button now turns into **„⟳ Restart now"**
-  once the download is done. The single-instance guard is closed first, otherwise the new
-  copy would think it is the second one and quit immediately.
+- **Neustart direkt nach dem Update.** Bisher hieß es „beim nächsten Start läuft die neue
+  Version" — man musste selbst beenden und wieder starten. Jetzt wird der Holen-Knopf nach
+  dem Laden zu **„⟳ Jetzt neu starten"**. Der Einzelinstanz-Wächter wird dabei zuerst
+  geschlossen, sonst hielte sich die neue Version für die zweite und beendete sich sofort.
 
-- **Start trace in the problem report.** A crash ends the program instantly — no report gets
-  written, and all that remains is „it crashes". Every startup step is now written straight
-  to disk; the last line in the report shows how far it got.
+- **Startverlauf im Diagnose-Bericht.** Ein Absturz beendet das Programm sofort — kein
+  Fehlerbericht wird mehr geschrieben, und es bleibt nur „es stürzt ab". Jeder Startschritt
+  wird jetzt sofort auf die Platte geschrieben; die letzte Zeile im Bericht sagt, wie weit
+  es kam.
 
-- **Get a release straight from the window.** Under each of the two cards („Stable
-  releases only" / „Test builds too") there is a full-width button that downloads and
-  installs the latest release of that channel — including going back from a test build to
-  the last stable one.
+- **Version holen, direkt aus dem Fenster.** Unter jeder der beiden Karten („Nur fertige
+  Versionen" / „Auch Testfassungen") steht ein Knopf über die volle Breite, der die letzte
+  Version dieses Kanals lädt und einspielt — auch zurück von einer Testfassung auf die
+  letzte fertige.
 
-- **Application menu entry (Linux).** The wizard offers it at the end, the settings any
-  time. On Windows the installer handles this — on Linux the AppImage sat in the downloads
-  folder and appeared in no menu. You can also put a keyboard shortcut on the entry to
-  bring the overlay back.
-- **Notification area icon (Windows).** Left click brings the window back, right click
-  opens a small menu. The switch for it was already in the settings; the icon itself never
-  existed.
+- **Eintrag im Startmenü (Linux).** Der Assistent bietet ihn am Ende an, die Einstellungen
+  jederzeit. Unter Windows macht das der Installer — unter Linux lag das AppImage bisher
+  im Download-Ordner und stand in keinem Menü. Auf den Eintrag lässt sich außerdem eine
+  Tastenkombination legen, mit der das Overlay zurückkommt.
+- **Symbol im Infobereich (Windows).** Linksklick holt das Fenster, Rechtsklick zeigt ein
+  kleines Menü. Der Schalter dafür stand schon in den Einstellungen; das Symbol selbst
+  gab es nie.
 
-- **The overlay can hold back.** Now selectable: permanently visible as before, or only
-  popping up briefly when a blueprint actually arrives. You bring it back by starting the
-  program again — you can put a system keyboard shortcut on the shortcut. Suggested by
-  Haldjas (pr0): „when I get into the overlay with my mouse during combat, that
-  will be unpleasant."
-- **Mouse clicks can be passed through to the game.** The overlay stays visible but no
-  longer catches clicks. On Windows via `WS_EX_TRANSPARENT`, on Linux via the XShape
-  extension; under native Wayland it is not possible, and the setting says so instead of
-  showing a switch that does nothing.
-- **Starting the program a second time no longer opens a second copy** — it brings the
-  running one to the front.
+- **Das Overlay kann sich zurückhalten.** Neu wählbar: dauerhaft sichtbar wie bisher,
+  oder nur kurz aufblenden, wenn wirklich ein Bauplan dazukommt. Zurück holt man es,
+  indem man das Programm noch einmal startet — auf die Verknüpfung lässt sich eine
+  Tastenkombination des Systems legen. Angeregt von Haldjas (pr0): „Wenn ich im
+  Kampf mit der Maus ins Overlay komme, wird das unangenehm."
+- **Mausklicks lassen sich ins Spiel durchreichen.** Das Overlay bleibt sichtbar, fängt
+  aber keine Klicks mehr ab. Unter Windows über `WS_EX_TRANSPARENT`, unter Linux über die
+  XShape-Erweiterung; unter nativem Wayland geht es nicht, und das sagt die Einstellung
+  dann auch statt einen wirkungslosen Schalter zu zeigen.
+- **Ein zweiter Programmstart öffnet keine zweite Version mehr,** sondern holt die
+  laufende hervor.
 
-- **One window with tabs.** Blueprints on top, settings below, and everything only
-  advanced users need collapsed at the bottom. The overlay stays as small as before; this
-  window is what opens behind it.
-- **An installer for Windows.** Start menu entry, optional desktop icon, optional
-  autostart — and a proper uninstall. If you would rather not install anything, the plain
-  `.exe` is still in the release.
-- **Your files are now visible** under `Documents\SC BP Watcher`, split into blueprints,
-  exports, settings and diagnostics. They used to sit hidden in the system — nobody looks
-  there for their blueprint inventory. On first start they are **copied**, the old folder
-  stays as a way back.
-- **Import an existing inventory** — from the KRT Profit Basetool, from scmdb.net, from
-  the launcher file or from your own backup. The format is recognised by its content, you
-  just pick a file. Merged, never replaced.
-- **Report a problem with one click.** "Report a problem" opens a pre-filled form; all
-  you add is what happened. The report contains no names and no paths with your user name.
-- **Test versions on request.** If you want to help checking, turn them on under *About*
-  and get new versions before everyone else — through the same update notice.
-- **Text size in four steps**, affecting text, icons and buttons alike.
-- **Where blueprints without a contract come from.** 55 blueprints are not handed out by
-  any regular contract — they come from named pools such as XenoThreat, RDC-Boss or
-  RedWind. Instead of a question mark the source is shown, and you can filter by it.
-- **What's new** as its own tab, split into new, improved and fixed.
-- **Starter blueprints** are detected and entered — the eight everyone has from the
-  start, marked with ◆.
-- **Export your inventory** in three formats: KRT Profit Basetool, scmdb.net and a full
-  backup.
+- **Ein Fenster mit Reitern.** Oben die Baupläne, darunter die Einstellungen, ganz unten
+  eingeklappt, was nur Fortgeschrittene brauchen. Das Overlay bleibt klein wie bisher;
+  dieses Fenster ist das, was sich dahinter öffnet.
+- **Ein Installer für Windows.** Startmenü-Eintrag, optionales Desktop-Symbol, optionaler
+  Autostart — und eine ordentliche Deinstallation. Wer lieber nichts installiert, findet
+  die blanke `.exe` weiterhin im Release.
+- **Deine Dateien liegen jetzt sichtbar** unter `Dokumente\SC BP Watcher`, getrennt nach
+  Bauplänen, Exporten, Einstellungen und Diagnose. Vorher lagen sie versteckt im
+  System — dort sucht niemand seinen Bauplan-Bestand. Beim ersten Start werden sie
+  **kopiert**, der alte Ordner bleibt als Rückweg liegen.
+- **Vorhandenen Bestand einlesen** — aus dem KRT Profit Basetool, von scmdb.net, aus der
+  Launcher-Datei oder einer eigenen Sicherung. Das Format wird am Inhalt erkannt, du
+  wählst nur eine Datei. Zusammengeführt, nie ersetzt.
+- **Fehler melden mit einem Klick.** „Fehler melden" öffnet ein fertig ausgefülltes
+  Formular; du schreibst nur noch dazu, was passiert ist. Der Bericht enthält keine Namen
+  und keine Pfade mit deinem Benutzernamen.
+- **Testfassungen auf Wunsch.** Wer beim Prüfen helfen will, schaltet sie unter *Über*
+  ein und bekommt neue Versionen vor allen anderen — über dieselbe Update-Meldung.
+- **Schriftgröße in vier Stufen**, wirkt auf Schrift, Symbole und Knöpfe zugleich.
+- **Woher Baupläne ohne Auftrag kommen.** 55 Baupläne schüttet kein regulärer Auftrag
+  aus — sie stammen aus benannten Töpfen wie XenoThreat, RDC-Boss oder RedWind. Statt
+  eines Fragezeichens steht dort jetzt die Quelle, und man kann danach filtern.
+- **Was ist neu** als eigener Reiter, getrennt nach Neu, Verbessert und Behoben.
+- **Startbaupläne** werden erkannt und eingetragen — die acht, die jeder von Anfang an
+  hat, mit ◆ gekennzeichnet.
+- **Bestand ausgeben** in drei Formaten: KRT Profit Basetool, scmdb.net und eine
+  vollständige Sicherung.
 
-### Changed
+### Geändert
 
-- **"Paths" moved to the advanced section.** The game folder and the launcher
-  are found automatically; anyone who does need to step in is guided by the
-  setup assistant, which explains what the page only shows as fields. A tab
-  almost nobody needs was just in the way at the top.
+- **„Pfade" ist zu den Fortgeschrittenen gewandert.** Spielordner und Launcher
+  werden gesucht und gefunden; wer doch nachhelfen muss, wird vom
+  Einrichtungsassistenten geführt, der erklärt, was die Seite nur als Felder
+  zeigt. Ein Reiter, den fast niemand braucht, stand oben nur im Weg.
 
-- **Launching Star Citizen now sits at the bottom left**, in the accent green
-  above "Advanced". The button used to live on the "Mission text" page — where
-  blueprint wording is handled — and after that only in the overlay, so only
-  while that was visible. Now it is there on **every** page.
+- **Star Citizen starten sitzt jetzt links unten**, im markanten Grün über
+  „Für Fortgeschrittene". Vorher stand der Knopf auf der Seite „Auftragstexte" —
+  dort, wo es um Bauplan-Angaben geht — und war danach nur im Overlay zu sehen,
+  also nur solange das eingeblendet ist. Jetzt ist er auf **jeder** Seite da.
 
-- **A Discord button** below it, deliberately quieter: launching the game is what
-  you keep this window open for, the Discord link is an offer. Two equally loud
-  buttons cancel each other out.
+- **Ein Discord-Knopf** darunter, bewusst ruhiger gehalten: Das Spiel zu starten
+  ist die Handlung, für die man das Fenster offen hat, der Weg zum Discord ist
+  ein Angebot. Zwei gleich laute Knöpfe nehmen sich gegenseitig die Wirkung.
 
-- **"Check now" is now "Check for updates".** The old label never said what it
-  checked for. "Update" would have been wrong — the button only looks, it
-  fetches nothing.
+- **„Jetzt nachsehen" heißt jetzt „Auf Aktualität prüfen".** Der alte Text sagte
+  nicht, wonach nachgesehen wird. „Aktualisieren" wäre falsch gewesen — der Knopf
+  prüft nur, geholt wird nichts.
 
-- **„No release known yet" sounded like an error.** The button did not say what
-  to do — it now reads „Press ‚Check now' above first". And the „Finished
-  versions only" box is marked „recommended", so nobody has to guess what to
-  pick. Both came up during Morkhan's test.
+- **„Noch keine Version bekannt" klang nach einem Fehler.** Der Knopf sagte
+  nicht, was zu tun ist — jetzt steht dort „Erst oben auf ‚Jetzt nachsehen'
+  drücken". Und der Kasten „Nur fertige Versionen" trägt den Zusatz
+  „empfohlen", damit niemand raten muss, was er wählen soll. Beides fiel bei
+  Morkhans Test auf.
 
-- **The tab is now called „Update & About".** Nobody looking for an update finds
-  it under „About" — not even the author looked there.
+- **Der Reiter heißt „Update & Über".** „Über" allein findet niemand, der ein
+  Update sucht — der Autor selbst hat dort nicht danach gesucht.
 
-- **The „launch Star Citizen" button sat where nobody would look for it.** It
-  was on the „In-game details" page, which is about mission text — even the
-  author could not find it again. It now sits as a green „▶" in the overlay's
-  top bar with the other icons: anyone who wants to start the game does not have
-  the main window open anyway. Hovering it explains what the click does.
+- **Der Startknopf für Star Citizen saß an einer Stelle, an der ihn niemand
+  sucht.** Er stand unter „Angaben im Spiel", also dort, wo es um Auftragstexte
+  geht — selbst der Autor fand ihn nicht wieder. Jetzt sitzt er als grünes „▶"
+  oben im Overlay bei den übrigen Zeichen: Wer das Spiel starten will, hat das
+  große Fenster ohnehin nicht offen. Beim Überfahren sagt die Statuszeile, was
+  der Klick tut.
 
-- **You are asked before a translation is installed.** „German" and
-  „StarStrings" replace the game’s text file completely — after that the whole
-  game is in that language, not just the blueprint details. That was documented
-  nowhere; now the help text says so, and a prompt appears before the first
-  install. Confirmed once, it does not ask again. „Original" does not ask,
-  because it does not change the language.
+- **Vor dem Einsetzen einer Übersetzung wird gefragt.** „Deutsch" und
+  „StarStrings" ersetzen die Textdatei des Spiels vollständig — danach ist das
+  ganze Spiel in dieser Sprache, nicht nur die Bauplan-Angaben. Das stand
+  nirgends; jetzt sagt es der Erklärtext, und vor dem ersten Einsetzen kommt
+  eine Rückfrage. Einmal bestätigt, wird nicht wieder gefragt. „Original"
+  fragt nicht, weil es die Sprache nicht ändert.
 
-- **In pop-up mode the overlay leaves a narrow green strip behind.** Hover it and the
-  overlay is back. The first attempt polled the mouse position — which cannot work under
-  Wayland: measured, Tk reported the same coordinates twelve times in a row while the mouse
-  moved across the screen. An application only learns the pointer position there while it is
-  over one of **its own** windows. The strip is such a window — and it is more honest than
-  an invisible magic zone: you can see where the overlay is waiting.
+- **Das Overlay hinterlässt im Aufblend-Betrieb einen schmalen grünen Streifen.** Maus
+  darauf, und es ist wieder da. Der erste Versuch fragte dafür die Mausposition ab — das
+  kann unter Wayland nicht funktionieren: Gemessen meldete Tk zwölfmal denselben Wert,
+  während die Maus quer über den Schirm fuhr. Eine Anwendung erfährt die Zeigerposition
+  dort nur, solange er über einem **ihrer eigenen** Fenster steht. Der Streifen ist so ein
+  Fenster — und nebenbei ehrlicher als eine unsichtbare Zauberzone: Man sieht, wo das
+  Overlay wartet.
 
-- **The problem report says which version an error came from** — and marks those from an
-  older one. The store keeps the last ten across restarts; after an update it listed errors
-  that had long been fixed, making the report look like nothing worked.
+- **Der Fehlerbericht sagt, aus welcher Version ein Fehler stammt** — und markiert die, die
+  aus einer älteren kommen. Der Speicher hebt die letzten zehn über Programmstarts hinweg
+  auf; nach einem Update standen dort Fehler, die längst behoben waren, und der Bericht sah
+  aus, als sei alles noch kaputt.
 
-- **Up to twelve sources per blueprint** instead of three. Measured: more than half of
-  all blueprints had sources cut off before. The easiest route is still shown first, the
-  rest unfolds.
-- **The source details appear on click** and can be closed again — in a small window they
-  used to eat a third of the list.
-- **Filter by type, class, size, grade and source**, on top of search and the
-  "watched / owned / still missing" lists.
-- **Collapse the overlay** (▾): it folds into its title bar.
-- **No more save button** — changes take effect right away.
+- **Bis zu zwölf Bezugswege je Bauplan** statt drei. Gemessen: Über die Hälfte aller
+  Baupläne hatte vorher abgeschnittene Wege. Angezeigt wird weiterhin der leichteste, der
+  Rest klappt auf.
+- **Die Herkunft erscheint erst auf Klick** und lässt sich wieder schließen — bei kleinem
+  Fenster fraß sie sonst ein Drittel der Liste.
+- **Filtern nach Art, Klasse, Größe, Gütegrad und Quelle**, zusätzlich zu Suche und den
+  Listen „beobachtet / vorhanden / fehlt noch".
+- **Overlay einklappen** (▾): schiebt sich auf die Titelleiste zusammen.
+- **Kein Speichern-Knopf mehr** — Änderungen greifen sofort.
 
-### Fixed
+### Behoben
 
-- **A collapsed overlay could not be opened again.** The button toggled, but
-  nothing happened on screen — the tool was shut and stayed shut. Cause: on
-  collapsing, the current window height was stored as the "open" height. Once
-  the stored state and the actual geometry drifted apart, the next collapse
-  wrote the **title bar height** as the open height; from then on the window
-  "expanded" to its own size. The height is now only remembered while the window
-  really is open, and expanding enforces a minimum height.
-- **The resize grip covered the ✕ while collapsed.** It sits at the bottom
-  right — on a window shrunk to title bar height that is the same spot as the
-  top right, and you had to aim to close the tool at all. It now belongs to the
-  **list** rather than the window — when the list is collapsed it has no height,
-  so the grip is necessarily gone with it. Hiding it in time instead failed
-  three times: a state that follows from how things are built is more reliable
-  than one restored afterwards.
-- **Blueprint names were unreadable without the launcher** — "Golemmc4Orepod"
-  instead of "GOLEM MC-4 Ore Pod". The fallback ran `.title()` on the comparison
-  key, which has no word boundaries left; the readable name sat right next to it
-  in the cache the whole time. This affected **every Linux user**, because there
-  is never a launcher there.
-- **Self-update never arrived on Windows.** Clicking "get it" produced a warning
-  and then nothing at all — except an orphaned 14 MB file in the program folder,
-  once per attempt. Two separate bugs were behind it, either of which would have
-  been enough on its own:
+- **Das eingeklappte Overlay ließ sich nicht wieder aufklappen.** Der Knopf
+  schaltete um, sichtbar passierte nichts — das Werkzeug war zu und blieb es.
+  Ursache: Beim Einklappen wurde die aktuelle Fensterhöhe als „offene" Höhe
+  gemerkt. Liefen der gemerkte Zustand und die tatsächliche Geometrie einmal
+  auseinander, schrieb der nächste Einklapp-Vorgang die **Leistenhöhe** als
+  offene Höhe fest; ab da klappte das Fenster auf seine eigene Größe „auf".
+  Jetzt wird die Höhe nur gemerkt, wenn das Fenster wirklich offen ist, und
+  beim Aufklappen gilt eine Mindesthöhe.
+- **Der Ziehgriff für die Fenstergröße deckte im eingeklappten Zustand das ✕
+  zu.** Er sitzt unten rechts — bei einem auf Leistenhöhe geschrumpften Fenster
+  ist das dieselbe Stelle wie oben rechts, und man musste zielen, um das
+  Werkzeug überhaupt schließen zu können. Er hängt jetzt an der **Liste** statt
+  am Fenster — ist die eingeklappt, hat sie keine Höhe, und der Griff ist
+  zwangsläufig mit weg. Ihn stattdessen rechtzeitig auszublenden hat dreimal
+  nicht verlässlich geklappt: Ein Zustand, der sich aus dem Aufbau ergibt, ist
+  verlässlicher als einer, den man nachträglich herstellt.
+- **Bauplan-Namen waren ohne Launcher unlesbar** — „Golemmc4Orepod" statt
+  „GOLEM MC-4 Ore Pod". Der Rückfall war `.title()` auf den Vergleichsschlüssel,
+  in dem es keine Wortgrenzen mehr gibt; der lesbare Name lag die ganze Zeit
+  daneben im Zwischenspeicher. Betraf **jeden Linux-Nutzer**, weil es dort nie
+  einen Launcher gibt.
+- **Das Selbst-Update unter Windows kam nie an.** Wer auf „holen" klickte, bekam
+  eine Warnung und danach passierte nichts — außer 14 MB verwaister Datei im
+  Programmordner, bei jedem Versuch aufs Neue. Dahinter steckten **zwei**
+  Fehler, von denen jeder allein schon gereicht hätte:
 
-  The **wrong file** was fetched. Every release carries three assets, and the
-  code took the first one ending in `.exe`. GitHub sorts alphabetically and a
-  `-` sorts before a `.`, so `SC-BP-Watcher-Setup.exe` came first. The installer
-  was moved on top of the program file without ever being run: opening the
-  watcher afterwards gave you a setup window.
+  Geholt wurde die **falsche Datei**. An jeder Freigabe hängen drei Anhänge,
+  gesucht wurde die erste auf `.exe` — und weil GitHub alphabetisch sortiert und
+  ein `-` vor einem `.` steht, kam `SC-BP-Watcher-Setup.exe` zuerst. Der
+  Installer wurde also über die Programmdatei geschoben, ohne je ausgeführt zu
+  werden: Wer den Watcher danach öffnete, bekam ein Setup-Fenster.
 
-  And the swap could not have happened anyway. After the app exits, the
-  bootloader stays alive to clean up its folder under `%TEMP%`; when a file
-  there stayed locked it sat in a "Failed to remove temporary directory" dialog
-  — holding the very `.exe` the helper script was waiting to be released. After
-  two minutes it gave up. The user would have had to dismiss a warning nobody
-  knew was part of the update.
+  Und der Tausch konnte ohnehin nicht stattfinden. Nach dem Beenden lebt der
+  Bootloader weiter und räumt seinen Ordner unter `%TEMP%` auf; blieb dabei eine
+  Datei gesperrt, stand er im Fenster „Failed to remove temporary directory"
+  still — und hielt damit die `.exe`, auf deren Freigabe das Hilfsskript wartete.
+  Nach zwei Minuten gab es auf. Der Nutzer hätte eine Warnung wegklicken müssen,
+  von der niemand wusste, dass sie zum Update gehört.
 
-  **On Windows the installer is now launched** instead of the program swapping
-  its own file. It closes the running watcher itself, replaces it, keeps the
-  "Apps & Features" entry current and starts it back up. On Linux the proven
-  AppImage swap stays as it was.
+  **Unter Windows startet jetzt der Installer**, statt dass das Programm seine
+  eigene Datei tauscht. Er beendet den laufenden Watcher selbst, ersetzt ihn,
+  pflegt den Eintrag in „Apps & Features" und fährt ihn wieder hoch. Unter Linux
+  bleibt es beim bewährten Tausch des AppImage.
 
-- **The tray icon never appeared on Windows.** It was created on every start and
-  failed at the same spot every time, visible only in the error report:
-  `argument 11: OverflowError: int too long to convert`. The call that creates
-  the window had no type declarations, and without them Python passes every
-  value as a 32-bit number — the handle involved is wider than that on 64-bit
-  Windows. The same mistake sat in the window procedure's return type. Shutdown
-  now cleans the icon up for real, too: the previous route was not allowed to
-  work from outside and failed silently.
+- **Das Symbol neben der Uhr erschien unter Windows nie.** Es wurde bei jedem
+  Start angelegt und scheiterte jedes Mal an derselben Stelle, sichtbar nur im
+  Fehlerbericht: `argument 11: OverflowError: int too long to convert`. Der
+  Aufruf zum Anlegen des Fensters hatte keine Typangaben, und ohne die reicht
+  Python jeden Wert als 32-Bit-Zahl weiter — die Kennung, um die es ging, ist
+  unter 64-Bit-Windows breiter. Derselbe Fehler steckte im Rückgabetyp der
+  Fensterfunktion. Beim Beenden räumt das Symbol sich jetzt auch wirklich auf:
+  Der bisherige Weg durfte von außen gar nicht greifen und lief still ins Leere.
 
-- **The version shown in "Apps & Features" stayed put.** Only the per-user
-  registry branch was checked. Anyone who picked "for all users" during install
-  has their entry in the machine branch, which was never updated — so Windows
-  kept showing a version that no longer existed. Both branches are searched now.
-  On top of that the installer no longer asks "just me" or "all users": the
-  program lands in your own user folder either way, which removes the question
-  and any administrator prompt when updating.
+- **Die angezeigte Version in „Apps & Features" blieb stehen.** Nachgesehen
+  wurde nur im Benutzerzweig der Registry. Wer beim Installieren „für alle
+  Nutzer" gewählt hatte, dessen Eintrag liegt aber im Maschinenzweig — dort
+  wurde nie nachgezogen, und Windows zeigte weiter eine Nummer, die es nicht
+  mehr gab. Jetzt werden beide Zweige durchsucht. Zusätzlich fragt der Installer
+  nicht mehr nach „für mich" oder „für alle": Das Programm landet ohnehin im
+  eigenen Benutzerordner, damit entfällt die Rückfrage und jede
+  Administrator-Abfrage beim Aktualisieren.
 
-- **The icons in the bar looked mangled on Windows.** `Segoe UI` contains
-  **not one** of the fourteen glyphs — Windows picked a fallback per character
-  and reached for **Segoe UI Emoji**: colourful, square emoji images in a slim
-  dark bar, at uneven widths (10 to 21 pixels at the same size). That is also
-  why the icons could never be evened out via the font size — they came from
-  different font files. Windows now explicitly asks for **Segoe UI Symbol**:
-  all fourteen glyphs monochrome, in the configured text colour, with half the
-  spread. On Linux this was never a problem and nothing changes.
+- **Die Symbole in der Leiste sahen unter Windows entstellt aus.** In
+  `Segoe UI` steckt **kein einziges** der vierzehn Zeichen — Windows suchte
+  sich je Zeichen selbst eine Ersatzschrift und griff dabei zu **Segoe UI
+  Emoji**: bunte, quadratische Emoji-Bildchen in einer schlanken dunklen
+  Leiste, dazu in ungleichen Breiten (10 bis 21 Pixel bei gleicher Größe).
+  Deshalb ließen sich die Symbole auch nie über die Schriftgröße angleichen —
+  sie kamen aus verschiedenen Schriftdateien. Jetzt wird unter Windows
+  ausdrücklich **Segoe UI Symbol** verlangt: alle vierzehn Zeichen einfarbig,
+  in der eingestellten Textfarbe, halb so breit gestreut. Unter Linux war es
+  nie ein Problem und bleibt unverändert.
 
-- **The overlay stayed German when you switched to English.** Changing the
-  language gave you an English window and a German status bar:
-  „8 Baupläne · Log ✓ · ohne Launcher · geprüft", plus the waiting message and
-  the autostart text. English versions of those strings had existed all along —
-  nobody used them, the code kept assembling the German ones. On top of that
-  the overlay never heard about a language change at all; only the settings
-  window relabelled itself.
-  The catalogue watch message „newly craftable in game“ had the same
-  problem. Messages **already sitting in the bar** when you switched stayed
-  German too — „Keine Log-Sicherungen gefunden", for one. They had been written
-  into the line as finished sentences, frozen in the language of the moment;
-  only a restart cleared them. Messages now carry their text key along and are
-  rewritten on a language change — including the date, which reads differently
-  in English (2026-08-22 rather than 22.08.2026).
+- **Das Overlay blieb beim Umschalten auf Englisch deutsch.** Wer die Sprache
+  wechselte, bekam ein englisches Fenster und eine deutsche Melde-Leiste:
+  „8 Baupläne · Log ✓ · ohne Launcher · geprüft", dazu „Warte auf neue
+  Baupläne …" und der Autostart-Text. Die englischen Versionen dieser Sätze
+  gab es längst — benutzt hat sie niemand, der Code setzte die deutschen
+  weiter fest zusammen. Zusätzlich erfuhr das Overlay vom Sprachwechsel
+  überhaupt nichts; nur das Einstellungsfenster beschriftete sich neu.
+  Dasselbe betraf die Meldung „neu im Spiel craftbar" der Katalog-Wache.
+  Und Meldungen, die beim Umschalten **schon in der Leiste standen**, blieben
+  ebenfalls deutsch — etwa „Keine Log-Sicherungen gefunden". Sie wurden fertig
+  zusammengesetzt in die Zeile geschrieben und waren damit in der Sprache von
+  vorhin eingefroren; erst ein Neustart räumte das auf. Meldungen tragen jetzt
+  ihren Textschlüssel mit und werden beim Sprachwechsel neu gesetzt — samt
+  Datum, das im Englischen anders geschrieben wird (2026-08-22 statt
+  22.08.2026).
 
-- **The hint on the ▶ launch button overwrote the status bar.** It was the only
-  one of the ten icons without a tooltip; instead it wrote into the status bar
-  and afterwards restored a value that was never kept up to date — so a
-  blueprint message was gone after the mouse passed over the icon.
+- **Der Hinweis am Startknopf ▶ überschrieb die Statuszeile.** Als einziges der
+  zehn Zeichen hatte er keine Erklärblase, sondern schrieb in die Statuszeile
+  und stellte danach einen Merker wieder her, der nie fortgeschrieben wurde —
+  eine Fundmeldung war nach einem Mausschlenker über das Zeichen weg.
 
-- **The logo was missing from the finished build.** On „Update & About" the
-  program loaded `assets/xharig.png`, but the build never packed that file — it
-  never showed when starting from source, where the file is present.
+- **Das Logo fehlte in der fertigen Version.** Auf „Update & Über" lud das
+  Programm `assets/xharig.png`, der Bau packte diese Datei aber nie ein — beim
+  Start aus dem Quellcode fiel das nie auf, weil sie dort liegt.
 
-- **The „ⓘ" on the overlay opened a separate window with its own update logic** —
-  and that one had no restart button. Anyone going that way downloaded the new
-  version and was then left with a sentence instead of a button. It now opens the
-  main window on „What's new", with the „Update & About" tab right beside it.
-  **One route instead of two.** Reported by Morkhan.
-- **Stretched buttons only filled half the width.** Mostly affected the buttons
-  below the two update boxes. Reported by Morkhan.
+- **Das „ⓘ" am Overlay öffnete ein eigenes Fenster mit eigener Update-Logik** —
+  und in dem fehlte der Neustart-Knopf. Wer darüber ging, lud die neue Version
+  herunter und stand dann vor einem Satz statt vor einem Knopf. Jetzt führt es
+  ins Hauptfenster auf „Was ist neu"; der Reiter „Update & Über" liegt daneben.
+  **Ein Weg statt zwei.** Gemeldet von Morkhan.
+- **Gestreckte Knöpfe füllten nur die halbe Breite.** Betraf vor allem die
+  Knöpfe unter den beiden Update-Kästen. Gemeldet von Morkhan.
 
-- **Updating through the info window never arrived.** Anyone using the green
-  „ⓘ" on the overlay instead of the settings page only got the line „the new
-  version runs on next start" — **and no button for it**. On Windows that line
-  is not even true: a helper script only swaps the file once the program has
-  quit, and gives up after two minutes. Anyone who kept playing ended up with no
-  update at all. The same „⟳ Restart now" button as in the settings is now
-  there. Reported by Morkhan.
-- **A console window flashed up briefly during updates.** The helper script has
-  run invisibly since v3.0.0 — the `taskkill` before it, which clears away an
-  already running script, was overlooked. Reported by Morkhan.
+- **Das Update über das Infofenster kam nie an.** Wer über das grüne „ⓘ" am
+  Overlay ging statt über die Einstellungen, bekam nach dem Laden nur den Satz
+  „Beim nächsten Start läuft die neue Version" — **und keinen Knopf dafür**.
+  Unter Windows stimmt der Satz zudem nicht: Dort tauscht ein Hilfsskript die
+  Datei erst, wenn das Programm beendet ist, und gibt nach zwei Minuten auf. Wer
+  weiterspielte, hatte am Ende gar kein Update. Jetzt steht dort derselbe
+  „⟳ Jetzt neu starten"-Knopf wie in den Einstellungen. Gemeldet von Morkhan.
+- **Beim Update blitzte kurz ein Konsolenfenster auf.** Das Hilfsskript läuft
+  seit v3.0.0 unsichtbar — der `taskkill` davor, der ein schon laufendes Skript
+  wegräumt, wurde dabei übersehen. Gemeldet von Morkhan.
 
-- **Five failures used to happen silently.** If the settings, the watchlist, the
-  „new" markers, the autostart entry or a saved report could not be written,
-  nothing happened at all — the setting was simply back to its old value after a
-  restart, and the error report said nothing. Those places now report.
+- **Fünf Fehler scheiterten bisher lautlos.** Ließen sich Einstellungen, die
+  Merkliste, der „Neu"-Stand, der Autostart oder ein gespeicherter Bericht nicht
+  schreiben, passierte einfach nichts — die Einstellung war nach dem Neustart
+  wieder alt, und im Fehlerbericht stand nichts. Diese Stellen melden jetzt.
 
-- **The error report left the game language empty.** It showed only a dash even
-  though detection worked perfectly — the query returned two values, the report
-  expected one, and the error was swallowed silently. It now states what is being
-  searched for in the log **and where the wording comes from**: the game's
-  `global.ini` or the built-in table. That is the first question whenever someone
-  says „it doesn't detect my blueprints".
-- **Truncated descriptions in three places.** On a narrow window a few pixels
-  were missing and the last characters fell off. Affected were the update
-  channels, „Write details into mission text" and „How often to look".
+- **Der Fehlerbericht ließ die Spielsprache leer.** Dort stand nur ein Strich,
+  obwohl die Erkennung einwandfrei lief — die Abfrage lieferte zwei Werte, der
+  Bericht erwartete einen, und der Fehler wurde stillschweigend verschluckt.
+  Jetzt steht dort, wonach im Log gesucht wird **und woher die Formulierung
+  stammt**: aus der `global.ini` des Spiels oder aus der eingebauten Tabelle.
+  Das ist die erste Frage bei „er erkennt meine Baupläne nicht".
+- **Abgeschnittene Beschreibungen an drei Stellen.** Bei schmalem Fenster fehlten
+  wenige Pixel, und die letzten Zeichen fielen weg. Betroffen waren die
+  Update-Kanäle, „Angaben in die Auftragstexte schreiben" und „Wie oft
+  nachgesehen wird".
 
-- **The setup wizard did not remember the chosen text source.** It fetched and
-  installed the texts but never stored the choice — afterwards none of the three
-  sources was selected under „In-game details". Reported by Haldjas.
-- **Updating on Windows spawned console windows.** The helper script that
-  swaps the running `.exe` looped forever while the file was locked — and it
-  stays locked until the program quits. Every further click on „get" started
-  another window. It now gives up after two minutes, stays invisible, and an
-  already running helper is stopped first.
-- **„Check now" did not check.** The button showed „Looking for a new version …" and did
-  nothing else. Anyone with a stale cache could not get out of it — one tester was still
-  offered rc12 while running rc18. It now really asks, reports the result and updates the
-  display.
-- **Self-update took the Windows path on Linux** and reported „[Errno 2] No such file or
-  directory: 'cmd'". The guard against foreign programs compared our own code against
-  `APPDIR` — but PyInstaller extracts into a directory of its own, so the comparison always
-  failed. The filename decides now.
-- **Self-update could have overwritten other programs.** It treated any file the `APPIMAGE`
-  environment variable pointed at as its own — and that variable is set in **every** program
-  started from an AppImage. Now our own code must come from the matching `APPDIR`, and a
-  second guard rejects any target whose filename does not belong to this program.
-- **Self-update always failed on Linux.** The download went to `/tmp` and was installed
-  with `os.replace()` — and on virtually every Linux `/tmp` is a separate filesystem.
-  `os.replace` cannot move across filesystems; it ends in „[Errno 18] Invalid cross-device
-  link". The comment in the code always promised „next to the running program" — now the
-  code does too, and installing became atomic along the way.
-- **Crash on the very first start** (`SIGSEGV`), reported by Bomb20. The wizard created its
-  **own** Tk instance and destroyed it at the end; the overlay then created a second one.
-  After the first is destroyed, fonts, images and pending callbacks live on pointing at a
-  dead interpreter — whether that goes well is a matter of timing. His „it ran fine with
-  debugging on" is the fingerprint of exactly that. There is now only **one** Tk instance in
-  the whole program.
-- **The `[SCBPW]` markers were visible in game.** The contract title read „Security
-  Patrol**[SCBPW]** [BP 3/6]**[/SCBPW]**". They made sure inserted text could be removed
-  exactly — but nobody wants to read that in their game. There is no marker in the text at
-  all now: the **wording before the insertion** is remembered, and removing restores it.
-  That is more precise than before. Verified with `tools/injektion_pruefen.py` against the
-  real file: inserting and removing leaves all 743 passages character-for-character as they
-  were.
-- **In game only the number showed, not which blueprints.** A contract has one title but
-  often a dozen descriptions — one for „to the ruin station", one for „to the distribution
-  centre" and so on. The contract data names only **one** of them; the rest stayed empty.
-  The title said „[BP 0/12]", and anyone opening the description to see *which* twelve
-  found nothing. Measured: 51 Covalex descriptions in the game, 7 of them with details.
-  They are now filled via the shared key prefix.
-- **„Personal weapon" and „FPS weapon" were two groups for the same thing** — 87 under one
-  key, two under the other.
-- **„Rows in the overlay" had no effect.** The setting was saved and never read; the
-  overlay used a fixed 200. The configured value now applies, with 20 as the default — no
-  one collects 200 blueprints in one session anyway.
-- **„Browse" opened no dialog** — neither for the Star Citizen folder nor for your own
-  files. Both do now, and on Linux with the system's dialog instead of Tk's grey one.
-- **The last blueprints in the list overlapped.** X11 uses 16-bit window coordinates; all
-  722 in one frame come to about 33000 pixels, putting 16 rows past the limit. The list is
-  now shown in blocks when needed — nothing is hidden.
-- **The scrollbar could not be grabbed.** The handle was drawn with a minimum height but
-  tested against the calculated one — hitting its lower half counted as „beside it".
-- **The window started off-screen.** With no remembered position Tk placed it at `+0+0`;
-  with a portrait monitor on the left there is no picture there. Startup and „Reset window
-  position" now centre it on the main screen.
-- **Autostart was out of sync between overlay and settings.** Both read their state only
-  when drawn.
-- **The window icon was missing from every finished build** — on both systems. The file
-  was not shipped with the program at all.
+- **Der Assistent merkte sich die gewählte Textquelle nicht.** Er holte die
+  Texte und setzte sie ein, schrieb die Wahl aber nirgends hin — unter „Angaben
+  im Spiel" stand danach keine der drei Quellen angewählt. Gemeldet von Haldjas.
+- **Update unter Windows spuckte Konsolenfenster aus.** Das Hilfsskript, das die
+  laufende `.exe` austauscht, lief in einer Endlosschleife weiter, solange die
+  Datei gesperrt war — und sie bleibt gesperrt, bis das Programm beendet wird.
+  Jeder weitere Klick auf „holen" startete noch ein Fenster. Jetzt ist nach zwei
+  Minuten Schluss, das Fenster bleibt unsichtbar, und ein schon laufendes
+  Hilfsskript wird vorher beendet.
+- **„Jetzt nachsehen" hat nicht nachgesehen.** Der Knopf zeigte die Meldung „Suche nach
+  einer neuen Version …" und suchte nicht. Wessen Zwischenspeicher veraltet war, kam damit
+  nicht heraus — ein Tester bekam auf rc18 weiterhin rc12 angeboten. Jetzt wird wirklich
+  gefragt, das Ergebnis gesagt und die Anzeige nachgezogen.
+- **Das Selbst-Update ging unter Linux in den Windows-Zweig** und meldete „[Errno 2] No such
+  file or directory: 'cmd'". Der Riegel gegen fremde Programme verglich den eigenen Code mit
+  `APPDIR` — nur entpackt sich PyInstaller in ein **eigenes** Verzeichnis, der Vergleich
+  schlug also immer fehl. Maßgeblich ist jetzt der Dateiname.
+- **Das Selbst-Update hätte fremde Programme überschreiben können.** Es hielt jede Datei
+  für sich selbst, auf die die Umgebungsvariable `APPIMAGE` zeigte — und die steht in
+  **jedem** Programm, das aus einem AppImage heraus gestartet wurde. Jetzt muss auch der
+  eigene Code aus dem zugehörigen `APPDIR` kommen, und ein zweiter Riegel lehnt jede
+  Zieldatei ab, deren Name nicht zum Programm gehört.
+- **Das Selbst-Update scheiterte unter Linux immer.** Geladen wurde nach `/tmp`,
+  eingespielt mit `os.replace()` — und `/tmp` ist auf so gut wie jedem Linux ein eigenes
+  Dateisystem. Über Dateisystemgrenzen kann `os.replace` nicht verschieben, das endet mit
+  „[Errno 18] Invalid cross-device link". Der Kommentar im Code versprach schon immer
+  „neben das laufende Programm" — jetzt tut es der Code auch, und das Einspielen ist
+  nebenbei atomar geworden.
+- **Absturz beim allerersten Start** (`SIGSEGV`), gemeldet von Bomb20. Der Assistent legte
+  eine **eigene** Tk-Instanz an und zerstörte sie am Ende; das Overlay legte danach eine
+  zweite an. Nach dem `destroy()` der ersten leben Schriften, Bilder und offene Aufträge
+  weiter und zeigen auf einen toten Interpreter — ob das gutgeht, hängt am Zeitpunkt. Sein
+  Satz „mit Debugging an lief es durch" ist der Fingerabdruck dafür. Es gibt jetzt nur noch
+  **eine** Tk-Instanz im ganzen Programm.
+- **Die Marken `[SCBPW]` waren im Spiel sichtbar.** Im Auftragstitel stand „Security
+  Patrol**[SCBPW]** [BP 3/6]**[/SCBPW]**". Sie sorgten dafür, dass sich Eingefügtes exakt
+  wieder entfernen lässt — nur will das niemand in seinem Spiel lesen. Jetzt steht gar
+  keine Marke mehr im Text: Der **Wortlaut vor der Einfügung** wird gemerkt, und das
+  Zurücksetzen stellt ihn wieder her. Das ist genauer als vorher. Geprüft mit
+  `tools/injektion_pruefen.py` an der echten Datei: einspielen und entfernen lässt 743
+  Textstellen auf das Zeichen genau so, wie sie waren.
+- **Im Spiel stand nur die Zahl, nicht welche Baupläne.** Ein Auftrag hat einen Titel, aber
+  oft ein Dutzend Beschreibungen — je eine für „zur Ruinenstation", „zum Verteilzentrum"
+  und so weiter. Die Vertragsdaten nennen dazu nur **eine**; die übrigen blieben leer. Im
+  Titel stand „[BP 0/12]", und wer die Beschreibung öffnete, um zu sehen *welche* zwölf,
+  fand nichts. Gemessen: allein bei Covalex 51 Beschreibungen im Spiel, davon 7 mit
+  Angaben. Sie werden jetzt über den gemeinsamen Namensanfang mitversorgt.
+- **„Handfeuerwaffe" und „FPS-Waffe" waren zwei Gruppen für dieselbe Sache** — 87 unter
+  der einen Kennung, zwei unter der anderen.
+- **„Zeilen im Overlay" hatte keine Wirkung.** Die Einstellung wurde gespeichert und nie
+  gelesen; im Overlay galt fest die Zahl 200. Jetzt gilt der eingestellte Wert, mit 20 als
+  Vorgabe — 200 Baupläne sammelt in einer Sitzung ohnehin niemand.
+- **„Durchsuchen" öffnete keinen Dialog** — weder beim Star-Citizen-Ordner noch bei den
+  eigenen Dateien. Beide tun es jetzt, und unter Linux mit dem Dialog des Systems statt
+  dem grauen von Tk.
+- **Die letzten Baupläne der Liste lagen übereinander.** X11 rechnet Fensterkoordinaten in
+  16 Bit; alle 722 in einem Rahmen ergeben rund 33000 Pixel und damit 16 Zeilen jenseits
+  der Grenze. Die Liste wird jetzt bei Bedarf in Blöcken gezeigt — sichtbar bleibt alles.
+- **Die Rollleiste ließ sich nicht anfassen.** Gezeichnet wurde der Griff mit einer
+  Mindesthöhe, geprüft wurde mit der rechnerischen — wer die untere Hälfte traf, galt als
+  „daneben".
+- **Das Fenster startete außerhalb des Bildschirms.** Ohne gemerkte Lage stellte Tk es
+  nach `+0+0`; bei einem hochkant stehenden Monitor links außen liegt dort kein Bild.
+  Start und „Fensterlage zurücksetzen" setzen es jetzt mittig auf den Hauptbildschirm.
+- **Der Autostart war zwischen Overlay und Einstellungen nicht synchron.** Beide lasen
+  ihren Zustand nur beim Zeichnen.
+- **Das Fenster-Icon fehlte in jeder fertigen Version** — auf beiden Systemen. Die Datei
+  lag zur Laufzeit gar nicht bei.
 
-### Thanks
+### Dank
 
-This release owes a great deal to two testers who took the trouble not just to
-notice problems, but to describe them precisely enough to be found:
+Diese Version ist zu einem großen Teil das Verdienst von zwei Testern, die sich
+die Mühe gemacht haben, Fehler nicht nur zu bemerken, sondern sie so genau zu
+beschreiben, dass sie zu finden waren:
 
-- **Haldjas** (pr0) — the pop-up mode suggestion; plus the setup that
-  failed on the running file, the console windows during updates, the missing
-  tray icon, the crash after restarting, the font size that never reached the
-  overlay, the text source the wizard forgot — and the observation that
-  explained everything: „it stays on rc25".
-- **Bomb20** (pr0) — the crash on the very first start (a bug only new users
-  would ever have hit), the „check now" button that did nothing, and the note
-  that the „German" text source translates the entire game.
-- **Morkhan** (KRT) — the suggestion to launch Star Citizen straight from
-  the tool.
+- **Haldjas** (pr0) — der Vorschlag mit dem Aufblend-Betrieb; dazu das
+  Setup, das an der laufenden Datei abbrach, die Konsolenfenster beim Update,
+  das verschwundene Symbol neben der Uhr, der Absturz nach dem Neustart, die
+  Schriftgröße, die das Overlay nicht erreichte, die vergessene Textquelle im
+  Assistenten — und der Fund, der alles erklärte: „da bleibt er bei rc25".
+- **Bomb20** (pr0) — der Absturz beim allerersten Start (der Fehler, den nur
+  neue Nutzer je gesehen hätten), der wirkungslose Knopf „Jetzt nachsehen" und
+  der Hinweis, dass die Textquelle „Deutsch" das ganze Spiel übersetzt.
+- **Morkhan** (KRT) — der Vorschlag, Star Citizen gleich aus dem Werkzeug
+  heraus starten zu können.
 
-The blueprint details are based on the openly published contract data of the
-**SC Deutsch Launcher team** and on **scmdb.net**.
+Die Bauplan-Angaben beruhen auf den offen veröffentlichten Vertragsdaten des
+**SC-Deutsch-Launcher-Teams** und auf **scmdb.net**.
 
 ## v2.0.0 - 2026-08-24
 
-**The Windows overlay has become a standalone tool for Windows and Linux — and on
-request it writes blueprint details straight into the game.**
+**Aus dem Windows-Overlay ist ein eigenständiges Werkzeug für Windows und Linux
+geworden — und es schreibt die Bauplan-Angaben auf Wunsch direkt ins Spiel.**
 
-The SC Deutsch Launcher is no longer required. Verified against a real Star Citizen
-installation, with both a German **and** an English client.
+Der SC Deutsch Launcher wird nicht mehr gebraucht. Geprüft an einer echten
+Star-Citizen-Installation, mit deutschem **und** englischem Client.
 
-### Without the launcher
+### Ohne Launcher
 
-- **`Game.log` is the source.** Your collection is maintained by the tool itself; on
-  first start the stored session logs are read. If a gap remains, the tool says so
-  instead of presenting an incomplete list as complete.
-- **The game language works itself out.** The in-game blueprint message is localised;
-  the tool derives the wording from your own logs — it knows over 700 blueprint names,
-  and where one appears in a log line, the text before it is the phrase. German and
-  English are measured; other languages it figures out by itself.
-- **If the launcher is present it is still used** — including when it sits on a mounted
-  Windows drive, which is the normal case on dual-boot systems.
+- **Die `Game.log` ist die Quelle.** Der Bauplan-Bestand wird selbst geführt; beim ersten
+  Start werden die aufgehobenen Spielprotokolle nachgelesen. Bleibt eine Lücke, sagt das
+  Werkzeug das, statt eine unvollständige Liste als vollständig auszugeben.
+- **Die Spielsprache erschließt sich von selbst.** Die Bauplan-Meldung im Log ist
+  übersetzt; das Werkzeug leitet den Wortlaut aus den eigenen Logs ab — es kennt über 700
+  Bauplan-Namen, und steht einer davon in einer Logzeile, ist der Text davor die gesuchte
+  Formulierung. Deutsch und Englisch sind gemessen, andere Sprachen findet es selbst.
+- **Ist der Launcher da, wird er weiter genutzt** — auch wenn er auf einer eingehängten
+  Windows-Platte liegt, was bei Dual-Boot der Normalfall ist.
 
-### Blueprint list
+### Bauplan-Liste
 
-- **Every blueprint to look up**, with search, filters and progress. Search covers name,
-  category, class (`military`, `stealth`, `civilian`, …), manufacturer and grade.
-- **Where each blueprint comes from** — faction, contract, required standing, payout
-  **and where the contract can be picked up**.
-- **Four sections** to show and hide: ship parts, FPS weapons, armor & clothing, other.
-  Ordered by section rather than alphabetically.
-- **Watchlist by click.** When a watched blueprint shows up the tool says so loudly —
-  and removes the fulfilled wish by itself.
+- **Alle Baupläne zum Nachschlagen**, mit Suche, Filtern und Fortschritt. Gesucht wird
+  über Name, Kategorie, Klasse (`military`, `stealth`, `civilian`, …), Hersteller und
+  Gütegrad.
+- **Woher jeder Bauplan kommt** — Fraktion, Auftrag, nötiger Ruf, Belohnung **und wo sich
+  der Auftrag annehmen lässt**.
+- **Vier Bereiche** zum Ein- und Ausblenden: Schiffsteile, FPS-Waffen, Rüstung & Kleidung,
+  Sonstiges. Sortiert nach Bereichen statt nach Alphabet.
+- **Merkliste per Klick.** Taucht ein beobachteter Bauplan auf, meldet das Werkzeug ihn
+  auffällig — und trägt den erfüllten Wunsch selbst wieder aus.
 
-### Blueprint details in game
+### Bauplan-Angaben im Spiel
 
-- **Every contract that awards blueprints** gets the list inside its mission text — with
-  tick boxes: ticked for what you own, empty for what you lack. Plus a marker in the
-  title (`[BP 2/3]`), visible in the contract list itself. **681 text spots**, German and
-  English.
-- **Three ways to get the base text:** the German translation by
+- **An jede Mission, die Baupläne ausschüttet**, kommt die Liste in den Missionstext —
+  mit Kästchen: angehakt, was man hat, leer, was fehlt. Dazu ein Kürzel im Titel
+  (`[BP 2/3]`), sichtbar schon in der Auftragsliste. **681 Textstellen**, deutsch und
+  englisch.
+- **Drei Wege zur Grundlage:** die deutsche Übersetzung von
   [rjcncpt](https://github.com/rjcncpt/StarCitizen-Deutsch-INI),
-  [StarStrings](https://github.com/MrKraken/StarStrings) by MrKraken — or the English
-  originals from your own `Data.p4k`, with no download at all.
-- **Undo is byte-exact.** StarStrings users keep it: its markup stays, ours is added.
-- You are **asked**, never surprised. Nothing is preselected.
-- **It stays current by itself.** On startup and every six hours after, the tool checks
-  for a newer translation, newer blueprint data — or a `global.ini` that a game patch
-  has replaced. All three are re-applied automatically.
-  - **Why this is not a nicety:** every translation update and every patch rewrites the
-    file, so the details are simply **gone** — and after a patch, contracts award
-    different blueprints. Neither is noticeable, because the game runs fine either way.
-    Without this check you eventually play on wrong data.
-  - Only what the player set up themselves is ever touched.
+  [StarStrings](https://github.com/MrKraken/StarStrings) von MrKraken — oder die
+  englischen Originaltexte aus dem eigenen `Data.p4k`, ganz ohne Download.
+- **Rückgängig auf den Buchstaben genau.** Wer StarStrings nutzt, behält es: Dessen
+  Auszeichnungen bleiben stehen, die eigenen kommen dazu.
+- Es wird **gefragt**, nie stillschweigend gemacht. Voreingestellt ist nichts.
+- **Es bleibt von selbst aktuell.** Beim Start und danach alle sechs Stunden wird
+  nachgesehen: neue Übersetzung, neue Bauplan-Daten — oder eine `global.ini`, die ein
+  Spiel-Patch ersetzt hat. Alles drei trägt sich dann selbst wieder ein.
+  - **Warum das kein Beiwerk ist:** Jedes Übersetzungs-Update und jeder Patch schreibt
+    die Datei neu, die Angaben sind dann **weg** — und nach einem Patch geben Missionen
+    andere Baupläne aus. Beides fällt niemandem auf, weil das Spiel normal weiterläuft.
+    Ohne diesen Abgleich spielt man irgendwann mit falschen Daten.
+  - Angefasst wird nur, was der Spieler selbst eingerichtet hat.
 
-### Using it
+### Bedienung
 
-- **Setup wizard** in five steps, repeatable at any time — and a **settings window** for
-  everything at once.
-- **German and English**, switchable, effective immediately.
-- Hover explanations on every icon, adjustable opacity (which matters with a single
-  screen), sound, autostart.
-- **Update notice with a version history** — including releases you skipped.
+- **Einrichtungsassistent** in fünf Schritten, jederzeit wiederholbar — und ein
+  **Einstellungsfenster** für alle Angaben auf einmal.
+- **Deutsch und Englisch**, umschaltbar, wirkt sofort.
+- Erklärtexte beim Überfahren jedes Zeichens, einstellbare Durchsichtigkeit (wichtig für
+  alle mit nur einem Bildschirm), Signalton, Autostart.
+- **Update-Meldung mit Änderungsprotokoll** — auch für übersprungene Versionen.
 
-### Distribution
+### Verteilung
 
-- **Ready-made files for both systems**, built by GitHub on every version tag. The
-  AppImage is built in an Ubuntu 22.04 container so it starts on common systems.
-- ⚠️ **Important for Arch, Fedora and openSUSE:** that same container was also a trap.
-  The bundled Python looked for its certificate store under the Ubuntu path
-  `/usr/lib/ssl`, which does not exist there — **every** HTTPS connection failed
-  silently. No blueprint catalogue, no translation, no update notice; the program
-  started but could load nothing. The launcher now looks for the store in all the usual
-  places. On Ubuntu and Debian this never showed up.
-- **Nothing third-party is bundled.** The blueprint catalogue (scmdb), the translation
-  and StarStrings are fetched at runtime, from their own addresses, on your machine.
+- **Fertige Dateien für beide Systeme**, von GitHub bei jedem Versions-Tag gebaut. Das
+  AppImage entsteht in einem Ubuntu-22.04-Container, damit es auf verbreiteten Systemen
+  startet.
+- ⚠️ **Wichtig für Arch, Fedora und openSUSE:** Genau dieser Container war auch eine
+  Falle. Das gebündelte Python suchte seinen Zertifikatsspeicher unter dem Ubuntu-Pfad
+  `/usr/lib/ssl`, den es dort nicht gibt — **jede** HTTPS-Verbindung scheiterte still.
+  Kein Bauplan-Katalog, keine Übersetzung, keine Update-Meldung; das Programm startete,
+  konnte aber nichts laden. Der Starter sucht den Speicher jetzt an allen üblichen
+  Stellen. Auf Ubuntu und Debian fiel das nie auf.
+- **Nichts Fremdes wird mitgeliefert.** Bauplan-Katalog (scmdb), Übersetzung und
+  StarStrings werden zur Laufzeit beim Nutzer von ihrer eigenen Adresse geholt.
 
-### Thanks
+### Dank
 
-The in-game blueprint details build on the openly published contract data of the
-**SC Deutsch Launcher team** (813 contracts, German and English) and on **scmdb.net**.
-Without either, this release would not exist.
+Die Bauplan-Angaben beruhen auf den offen veröffentlichten Vertragsdaten des
+**SC-Deutsch-Launcher-Teams** (813 Verträge, deutsch und englisch) und auf **scmdb.net**.
+Ohne beide gäbe es diese Version nicht.
 
 ## v2.0.0-rc1 - 2026-08-24
 
-> **A pre-release for testing.** Feature-complete and thoroughly tested, but never
-> yet run against a real Star Citizen installation other than the author's — that
-> is what testers help with. Feedback welcome as an [issue](../../issues).
+> **Vorabversion zum Ausprobieren.** Der Umbau ist inhaltlich fertig und gründlich
+> geprüft — aber noch nie an einer echten Star-Citizen-Installation gelaufen, nur
+> an nachgebauten Logs. Wer sie testet, hilft genau dabei. Rückmeldungen gern als
+> [Issue](../../issues).
 
-**The Windows overlay has become a standalone tool for Windows and Linux.** The
-SC Deutsch Launcher is no longer required, the blueprint inventory is kept by the
-tool itself, and for most blueprints it now says where to get them.
+**Aus dem Windows-Overlay ist ein eigenständiges Werkzeug für Windows und Linux
+geworden.** Der SC Deutsch Launcher ist nicht mehr nötig, der Bauplan-Bestand wird
+selbst geführt, und zu den meisten Bauplänen steht dabei, woher man sie bekommt.
 
-### Added
+### Hinzugefügt
 
-- **Runs on Linux.** One codebase for both systems, not a second branch. Where files live is decided in one place (`scbp/pfade.py`): `%APPDATA%` and `C:\Program Files` on Windows, `~/.config` and the Wine prefix on Linux (searched where lug-helper, Lutris, Bottles and Heroic put their installations).
-- **Its own blueprint inventory** (`bestand.json`), with a note where each entry came from. Written via a temporary file and a rename, so a crash mid-write cannot corrupt it; the previous state is kept as a backup.
-- **Catch-up on start.** The stored logs of earlier sessions are read and quietly added — nothing is lost if you played without the watcher running. On the very first start the *current* log is read from the beginning too, otherwise the session in progress would be the one gap.
-- **An honest gap notice.** If the stored logs do not reach back to the last known state, the watcher says so as its own line (ℹ) instead of passing off an incomplete list as your inventory. That is what the tick-off list is for.
-- **Blueprint catalogue with origins** (`scbp/katalog.py`). 714 blueprints; for 655 of them it lists faction, contract, required standing with reputation points, payout in aUEC and reputation gain — sorted by the easiest route, at most three sources each. The 12 MB source dump is not kept but boiled down to 347 KB, fetched once per game version with retries.
-- **Management window** (`scbp/bestandsfenster.py`): searchable list grouped by type, filters *all / owned / missing*, progress count, tick entries with a click, expand origins with a click.
-- **Watchlist by click** (`scbp/merkliste.py`). The star turns any entry into a wish — when it appears the watcher announces it in gold. **Fulfilled wishes remove themselves** once the blueprint reaches your inventory. Externally added patterns keep working.
-- **Setup wizard** (`scbp/assistent.py`) — four steps, **repeatable at any time** from the title bar. Language, finding Star Citizen (with a browse button and validation *as you type* — any level works, even the `Game.log` itself), collecting past blueprints, done. Repeatability is deliberate: someone who is not comfortable with computers should be able to redo something without knowing which menu it hides in.
-- **German and English, switchable** (`scbp/sprache.py`). The default follows the system, but the `sprache` field in `einstellungen.json` overrides it — running an English system and still wanting to read German is a legitimate choice. Switching takes effect immediately.
-- **The tool works out the in-game language by itself.** The blueprint message in the log is localised; only the German wording had ever been measured, the English ones were guesses and other languages were not covered at all. It now derives the phrase from your own logs: it knows over 700 blueprint names — if a log line contains one, the text in front of it is the phrase. Two distinct matches are required so coincidence is ruled out. Verified against an invented French build.
-- **Update notice and version history** (`scbp/aktualisierung.py`, `scbp/versionsfenster.py`). The tool checks at most once a day; when something new exists, ⓘ in the title bar turns green. Behind it is the version history — **including older releases**, so you can read what you skipped. Downloads come from `github.com` only; anything else is refused.
-- **Ready-made files for both systems, built by GitHub** on every version tag. The Linux build runs in an Ubuntu 22.04 container (glibc 2.35) — built against a newer glibc it would not start on common systems at all. The build aborts if the tag and `__version__` disagree.
-- **Own paths can be entered** (`einstellungen.json`), and the file is created automatically with the searched locations listed next to each field. Check interval and sound are configurable too.
-- **Start script for Linux** (`SC-BP-Watcher starten.sh`), which checks for `tkinter` first and names the right package per distribution.
-- **Self-test** (`tools/selbsttest.py`) that reconstructs an installation in a throwaway folder and works through the known pitfalls.
-- **Project page in English and German** — English is the default page, German is one click away at the top.
 
-### Fixed
+- **Der Watcher findet die Spielsprache selbst heraus.** Die Bauplan-Meldung im Log ist übersetzt; bisher war nur die deutsche Formulierung gemessen, die englischen waren geraten und andere Sprachen gar nicht vorgesehen. Jetzt erschließt er sie aus den eigenen Logs: Er kennt über 700 Bauplan-Namen — steht in einer Logzeile einer davon, ist der Text davor die gesuchte Formulierung. An einer erfundenen französischen Version geprüft.
+  - Verlangt werden **zwei** verschiedene Treffer für dieselbe Formulierung. Bei einem könnte es Zufall sein (ein Bauplan-Name taucht auch in anderen Meldungen auf).
+  - Gefundenes landet in `phrasen.json` — derselben Datei, die man auch von Hand pflegen kann. Keine zweite, versteckte Wahrheit.
+  - Damit ist das Werkzeug nicht mehr auf die Sprachen angewiesen, die jemand vorher eingetragen hat.
+- **Projektseite auf Englisch und Deutsch**, mit Umschalter oben in beiden Versionen. **Englisch ist die Hauptseite** (`README.en.md`), Deutsch liegt daneben (`README.md`) — auf GitHub ist das Publikum international, und wer über die Star-Citizen-Foren kommt, sollte nicht erst einen Umschalter suchen müssen. Deutschsprachige Spieler kommen mit Englisch zurecht; umgekehrt gilt das seltener.
+- **Merkliste per Klick** (`scbp/merkliste.py`). In der Bauplan-Liste macht ein Klick auf den Stern aus jedem Eintrag einen Wunsch — taucht er auf, meldet ihn der Watcher auffällig in Gold. Dafür muss niemand mehr eine `watchlist.json` von Hand anlegen.
+  - Eigener Filter **⭐ beobachtet** zeigt, worauf man gerade wartet.
+  - **Erfüllte Wünsche verschwinden von selbst.** Landet ein beobachteter Bauplan im Bestand, sagt der Watcher einmal Bescheid und trägt ihn aus — eine Liste voller längst erledigter Wünsche wäre keine Merkliste, sondern ein Archiv.
+  - Von außen eingetragene **Muster** funktionieren weiter (ein eigenes Werkzeug des Autors schreibt dort Teile einer Rüstung hinein, deren endgültige Namen noch niemand kennt).
+- **Fertige Dateien für beide Systeme, gebaut von GitHub.** Ein Versions-Tag löst den Bau aus: ein Windows-Rechner baut die `.exe`, ein Linux-Rechner das AppImage, beide werden ans Release gehängt — samt Beschreibung aus dem CHANGELOG, damit im Werkzeug unter „Was ist neu" dasselbe steht wie auf GitHub.
+  - Das AppImage wird **in einem Ubuntu-22.04-Container** gebaut (glibc 2.35). Auf neuerem glibc gebaut, würde es auf verbreiteten Systemen gar nicht erst starten.
+  - Der Bau bricht ab, wenn Tag und `__version__` nicht zusammenpassen. Wer „v2.0.0" lädt, soll im Fenster nicht etwas anderes lesen.
+  - Niemand baut mehr selbst — weder die Nutzer noch der Entwickler.
+- **Neue Versionen werden gemeldet und lassen sich nachlesen** (`scbp/aktualisierung.py`, `scbp/versionsfenster.py`). Das Werkzeug sieht höchstens einmal am Tag nach; gibt es etwas Neues, färbt sich ⓘ in der Titelleiste. Dahinter liegt die Versionsgeschichte — **auch für ältere Versionen**, damit man nachlesen kann, was man übersprungen hat.
+  - Geladen wird ausschließlich von `github.com`; eine Datei von woanders wird abgelehnt.
+  - Unter Linux ersetzt sich das AppImage selbst, unter Windows übernimmt ein Hilfsskript nach dem Beenden (eine laufende `.exe` kann sich nicht selbst überschreiben). Wer aus dem Quellcode startet, bekommt keinen Selbstersatz angeboten — dort ist `git pull` der richtige Weg.
+- **Prüfintervall und Signalton sind einstellbar** (`pruefintervall_sekunden`, `signalton` in `einstellungen.json`). Grenzen 1–60; eine vertippte `0` wird auf 1 gezogen statt zur Dauerschleife.
+- **Einrichtungsassistent** (`scbp/assistent.py`) — vier Schritte, **jederzeit wiederholbar** über ⟳ in der Titelleiste. Läuft beim ersten Start von allein und immer dann, wenn Star Citizen nicht gefunden wird.
+  1. **Sprache** — zuerst, damit der Rest lesbar ist
+  2. **Star Citizen finden** — mit Auswahlknopf und Prüfung *beim Tippen*, nicht erst beim Speichern. Der Spieler darf jede Ebene treffen: den LIVE-Ordner, den darüber, den Programme-Ordner oder gleich das Wine-Präfix — sogar die `Game.log` selbst. Es wird daraus der richtige Ordner gemacht und angezeigt, welcher genommen wird.
+  3. **Bisherige Baupläne holen** — läuft von selbst, hier bekommt der Spieler seinen ganzen Bestand aus den aufgehobenen Logs geschenkt
+  4. **Fertig** — was jetzt passiert und wo die Liste steckt
+  - Wiederholbar ist Absicht: Wer sich mit Rechnern nicht auskennt, soll etwas nachstellen können, ohne zu wissen, in welchem Menü es steckt. Ein Assistent führt; ein Einstellungsfenster setzt voraus, dass man weiß, wonach man sucht.
+- **Verwaltungsfenster aus der Melde-Leiste** — ☰ in der Titelleiste öffnet die Bauplan-Liste, ein zweiter Klick holt sie nach vorn statt ein zweites Fenster aufzumachen.
 
-- **The watcher would have crashed on start under Linux.** The `size_nw_se` mouse cursor on the resize handle only exists on Windows; elsewhere Tk raises an error before the window ever appears.
-- **Window position from someone else's machine.** The remembered position was applied unchecked. On a machine with a different monitor setup the window sat outside every screen — invisible, and on macOS it took the program down with it. It is now checked for plausibility, and the built-in default carries **no position at all**, only a size. Where the overlay belongs is something everyone drags into place themselves.
-- **Endless loop without the launcher.** On start the watcher waited until the launcher file became readable — without a launcher, forever. Under Linux it would never have come up.
-- **The catalogue watch did nothing without the launcher.** "What became newly craftable" depended on a launcher file. Without it, the scmdb data now takes over.
-- **Sound without `winsound`.** That module does not exist on Linux; tkinter rings the bell there instead.
+**Was sich am Verhalten ändert:** Wird Star Citizen nicht gefunden, zeigte das Programm bisher eine Meldung und **beendete sich** — der Spieler hätte eine JSON-Datei von Hand bearbeiten und neu starten müssen. Das macht niemand. Jetzt wird gefragt, und die Angabe wirkt sofort.
 
-### Changed
+- **Bauplan-Katalog mit Herkunft** (`scbp/katalog.py`). 714 Baupläne, für 655 davon (92 %) steht dabei, **woher man sie bekommt**: Fraktion, Auftrag, nötiger Rang samt Rufpunkten, Belohnung in aUEC und Rufgewinn. Das kann der SC Deutsch Launcher nicht — „mir fehlt X" ist die halbe Information, „X droppt bei Fraktion Y ab Rang Z" die ganze.
+  - Die Kette durch die scmdb-Daten: `contracts[].blueprintRewards[].blueprintPool` → `blueprintPools[…].blueprints[].name`, dazu `factions`, `minStanding` und `factionRewardsPools`.
+  - Bezugsquellen sind nach **leichtestem Weg** sortiert (niedrigste Ruf-Anforderung zuerst), höchstens drei je Bauplan.
+  - Der Sammel-Dump ist rund 12 MB und wird **nicht** aufgehoben, sondern sofort zu 347 KB eingedampft. Geholt wird einmal je Spielversion, mit Wiederholversuchen — bei der Größe reißt die Leitung gern mitten drin ab (beim Bauen zweimal passiert).
+- **Verwaltungsfenster** (`scbp/bestandsfenster.py`): durchsuchbare Liste, nach Art gruppiert, Filter *alle / habe ich / fehlt mir*, Fortschrittsanzeige, Häkchen per Klick, Herkunft per Klick ausklappbar.
+- **Deutsch und Englisch, umschaltbar** (`scbp/sprache.py`). Standard ist die Systemsprache, aber das Feld `sprache` in `einstellungen.json` (`de`/`en`/`auto`) sticht sie — wer ein englisches System fährt und trotzdem Deutsch lesen will, soll das dürfen. Umschalten wirkt sofort, ohne Neustart.
+  - Auch die **Bauplan-Arten** hängen daran: `Char_Armor_Helmet` ist nichts für Menschen, „Helm" nichts für eine englische Liste.
+  - Der Selbsttest prüft, dass jeder Text beide Sprachen hat und **jede Art aus dem Katalog übersetzt ist** — nach einem SC-Patch können neue dazukommen.
 
-- **The status line shows your own inventory**, not the launcher's count, and whether it is working with or without the launcher. Reason: the launcher demonstrably counts too low — the P4-AR Rifle is missing from it although the Fabricator lists it as owned. Starter blueprints were never "received" and appear in no log. Its number is a lower bound, not an inventory.
-- **The SC Deutsch Launcher is optional.** If present it still confirms finds (🟡 → 🟢) and supplies its maintained catalogue. Without it only that falls away — the log is the actual source either way.
-- **Starting no longer requires the launcher file**, only that Star Citizen itself is found. If it is not, the wizard **asks** — instead of showing a message and quitting, which would have meant editing a JSON file by hand and restarting. Nobody does that.
-- **Brand colour** moved to `#9ce430`; the overlay was still running on the pre-logo-change green.
+### Entfernt
 
-### Removed
+- **`EXE bauen.bat`.** Seit GitHub die Dateien baut, braucht sie niemand mehr — und sie war bereits falsch: Sie baute ohne `--add-data`, die daraus entstandene `.exe` hätte weder Änderungsprotokoll noch Katalogdaten gehabt. Zum Ausprobieren lässt sich der Bau-Workflow ohne Tag von Hand starten.
 
-- **The "build the EXE yourself" script.** Since GitHub builds the files, nobody needs it — and it had already gone stale: built without `--add-data`, the resulting executable would have had neither the changelog nor the catalogue data.
+### Wissenswert
+
+- **714 Baupläne, nicht 1573.** Die Datei `crafting_items` zählt alle craftbaren Gegenstände; ein Bauplan droppt nur für einen Teil davon. Für eine Liste zum Abhaken wäre die große Zahl irreführend — maßgeblich sind die `blueprintPools`.
+- **Die scmdb-Daten werden weiterhin nicht mitgeliefert** (CC BY-NC-ND), sondern beim Nutzer geholt. `SC_BP_NO_NET=1` schaltet es ab; ohne Katalog fehlt nur die Liste, die Erkennung läuft weiter.
+
+
+- **Läuft unter Linux.** Eine Codebasis für beide Systeme, keine zweite Version. Wo die Dateien liegen, entscheidet der neue Baustein `scbp/pfade.py`: unter Windows `%APPDATA%` und `C:\Program Files`, unter Linux `~/.config` und das Wine-Präfix (gesucht wird an den Stellen, an denen lug-helper, Lutris, Bottles und Heroic ihre Installationen ablegen). Eigene Wege gehen über `SC_BP_HOME`, `SC_INSTALL_DIR` und `SC_BP_LAUNCHER`.
+- **Eigener Bauplan-Bestand** (`bestand.json` im eigenen Ordner). Jeder Fund wird dauerhaft festgehalten, mit Herkunft (Log, Nachlese, Launcher, von Hand). Geschrieben wird über eine Nebendatei und Umbenennen, damit ein Absturz mitten im Speichern nichts zerreißt; die Vorgängerfassung bleibt als `bestand.bak.json` liegen.
+- **Nachlese beim Start.** Die aufgehobenen Logs vergangener Sitzungen (`logbackups/`) werden durchgesehen und still in den Bestand übernommen — wer ohne laufenden Watcher gespielt hat, verliert nichts mehr. Beim allerersten Start wird auch die **laufende** Game.log von vorn gelesen, sonst wäre ausgerechnet die gerade laufende Sitzung ein Loch.
+- **Ehrlicher Lückenhinweis.** Reichen die vorhandenen Sicherungen nicht bis zum letzten bekannten Stand zurück, sagt der Watcher das als eigene Zeile (ℹ) — statt eine unvollständige Liste als Bestand auszugeben. Dafür gibt es die Liste zum Abhaken.
+- **Lesestand übersteht Neustarts** (`logstand.json`). Wer den Watcher neu startet, während Star Citizen läuft, verliert die Baupläne dieser Sitzung nicht mehr.
+- **Spracherkennung statt fester deutscher Phrase** (`scbp/phrasen.py`). Gesucht wird nach einer Tabelle deutscher und englischer Formulierungen; liegt eine entpackte `global.ini` vor, wird der Wortlaut daraus exakt übernommen (Schlüssel `crafting_hud_notification_received_blueprint`). Eigene Ergänzungen gehen in `phrasen.json`. Bis v1.5.0 griff die Sofort-Meldung bei englischem Client gar nicht — unter Linux spielen die meisten auf Englisch.
+- **Autostart auf beiden Systemen** (`scbp/autostart.py`): unter Windows wie bisher der Registry-Wert, unter Linux eine `.desktop`-Datei in `~/.config/autostart/`.
+- **Startskript für Linux** (`SC-BP-Watcher starten.sh`) als Gegenstück zur `.bat` — prüft vorher, ob `tkinter` da ist, und nennt sonst den passenden Paketbefehl je Distribution.
+- **Eigene Pfade eintragbar** (`einstellungen.json` im eigenen Ordner). Wer Star Citizen oder den Launcher woanders liegen hat, trägt den Ordner dort ein, statt auf die Suche angewiesen zu sein. Findet der Watcher das Spiel nicht, legt er die Datei beim Start selbst an und nennt sie in der Fehlermeldung. Rangfolge: Umgebungsvariable → Einstellungsdatei → Suche an den üblichen Stellen.
+  - **Die durchsuchten Orte werden genannt** — ausgegraut im Fenster und als Zeile direkt unter dem jeweiligen Feld in der Datei. Ohne dieses Vorbild müsste man den einzutragenden Pfad raten; gerade wenn nichts gefunden wurde, hat man ja keinen zum Abschauen. Findet der Rechner keinen einzigen Wine-Präfix, werden trotzdem die typischen Orte gezeigt statt einer leeren Liste.
+- **Selbsttest** (`tools/selbsttest.py`). Baut eine Spielinstallation im Wegwerf-Ordner nach und prüft die Erkennung samt ihrer bekannten Fallstricke.
+
+### Behoben
+
+- **Der Watcher wäre unter Linux beim Start abgestürzt.** Der Mauszeiger `size_nw_se` am Größengriff gibt es nur unter Windows; auf anderen Systemen wirft Tk dafür einen Fehler, bevor das Fenster überhaupt erscheint.
+- **Fensterlage vom fremden Rechner.** Die gemerkte Position wurde ungeprüft übernommen. Auf einem Rechner mit anderem Monitoraufbau stand das Fenster damit außerhalb jedes Bildschirms — unsichtbar, unter macOS mit Absturz. Sie wird jetzt auf Plausibilität geprüft; die Vorgabe im Code enthält **gar keine Position** mehr, sondern nur noch eine Größe. Wo das Fenster stehen soll, zieht sich jeder selbst hin.
+- **Endlosschleife ohne Launcher.** Beim Start wartete der Watcher, bis die Launcher-Datei lesbar war — ohne Launcher also ewig. Unter Linux wäre er nie hochgekommen.
+- **Katalog-Wache lief ohne Launcher ins Leere.** „Was ist im Spiel neu craftbar" hing an einer Launcher-Datei. Fehlt sie, treten jetzt die scmdb-Craftdaten an ihre Stelle, die ohnehin schon vorliegen.
+- **Signalton ohne `winsound`.** Unter Linux gibt es das Modul nicht; dort klingelt jetzt tkinter selbst.
+
+### Geändert
+
+- **Markenfarbe auf `#9ce430` gezogen.** Das Overlay lief noch mit `#47aa42` — der Xharig-Farbe von vor dem Logo-Wechsel. Betrifft `ACCENT` im Overlay und `GREEN` im Icon-Werkzeug. Für helle Flächen (README-Badges) bleibt es beim Text-Grün `#5fa522`.
+- **Die Statuszeile zeigt den eigenen Bestand**, nicht mehr die Launcher-Zahl, und dazu, ob mit oder ohne Launcher gearbeitet wird. Grund: Der Launcher zählt nachweislich zu niedrig — ihm fehlt die P4-AR Rifle, obwohl sie im Fabricator als „im Besitz" steht (gemessen 11.08.2026). Startbaupläne wurden nie „erhalten" und stehen in keinem Log.
+- **Der SC Deutsch Launcher ist optional.** Ist er da, wird er weiter genutzt: Er bestätigt die Funde (🟡 → 🟢) und liefert den gepflegten Katalog. Fehlt er, entfällt nur das — gemeldet wird trotzdem, denn die Game.log ist die eigentliche Quelle.
+- **Startbedingung.** Der Watcher verlangt beim Start nicht mehr die Launcher-Datei, sondern nur noch, dass Star Citizen selbst gefunden wird.
 
 ## v1.5.0 - 2026-08-11
 
-### Added
+### Hinzugefügt
 
-- **Value fallback via scmdb.net.** When the launcher catalogue does not know an item, the watcher now takes type, size, grade, class and manufacturer from scmdb's crafting data (`versions.json` → `crafting_items-<version>.json`). Blueprints missing from the catalogue finally get a tag too — QuadraCell, FR-66 and the skin variants among them. Plain `urllib` from the standard library, no extra package.
-  - Cached locally; refetched only when a **new game version** appears (checked every 6 hours).
-  - Without a connection the last state applies, without a cache everything behaves as before v1.5.0 — the watcher never aborts over it.
-  - Can be switched off with `SC_BP_NO_NET=1`.
-- **Start with Windows — voluntarily.** New `⏻` switch in the title bar (green = on, grey = off). It adds or removes an entry under `HKCU\…\CurrentVersion\Run`. Nothing is enabled without asking, and the state lives only in the registry — there is no second source of truth to drift apart from.
-  - Started from source it registers `pythonw.exe`, not `python.exe`: otherwise a console window would sit open after every login and steal focus from the game.
-- **New app icon.** Dark round emblem in Xharig green: segmented scanner ring, blueprint sheet with a cube, horizontal scan beam. Built from two artworks — a detailed one from 40 pixels up and a **simplified one for 16–32 pixels** (solid cube instead of wireframe, no corner brackets). A single motif across all sizes would have turned to mush when small.
+- **Werte-Rückfall über scmdb.net.** Kennt der Launcher-Katalog einen Gegenstand nicht, holt der Watcher Art, Größe, Gütegrad, Klasse und Hersteller jetzt aus den Craftdaten von scmdb (`versions.json` → `crafting_items-<version>.json`). Damit bekommen auch Baupläne ein Kürzel, die im Katalog fehlen — z. B. **QuadraCell**, **FR-66** und die Skin-Varianten. Reines `urllib` aus der Standardbibliothek, kein Zusatzpaket.
+  - Zwischenspeicher: `%APPDATA%\sc-bp-watcher\scmdb-items.json`; neu geholt wird nur bei einer **neuen Spielversion** (Prüfung alle 6 Stunden).
+  - Ohne Netz gilt der letzte Stand, ohne Zwischenspeicher läuft alles wie vor v1.5.0 — der Watcher bricht nie deswegen ab.
+  - Abschaltbar über die Umgebungsvariable `SC_BP_NO_NET=1`.
+- **Mit Windows starten — freiwillig.** Neuer Schalter `⏻` in der Titelleiste (grün = an, grau = aus). Er trägt den Watcher unter `HKCU\…\CurrentVersion\Run` ein bzw. wieder aus. Nichts wird ungefragt aktiviert, und der Zustand steht ausschließlich in der Registry — es gibt keine zweite Wahrheit, die damit auseinanderlaufen könnte.
+  - Aus dem Quellcode heraus wird `pythonw.exe` eingetragen, nicht `python.exe`: Sonst stünde bei jedem Anmelden ein Konsolenfenster offen, das im Spiel den Fokus klaut.
 
-### Worth knowing
+- **Neues App-Icon.** Dunkles Rundemblem im Xharig-Grün: segmentierter Scanner-Ring, Blaupausen-Blatt mit Würfel, waagerechter Scanstrahl. Gebaut von `tools/make_icon_from_art.py` aus zwei Vorlagen — einer detaillierten ab 40 Pixel und einer **vereinfachten für 16–32 Pixel** (massiver Würfel statt Drahtgitter, keine Eckklammern). Ein einziges Motiv über alle Größen wäre klein zu Matsch zerfallen.
 
-- **Order of precedence:** `bp-overrides.json` → launcher catalogue / game data → scmdb. scmdb only fills gaps and never overrides. Reason: a comparison against 56 messages from the game log produced **55 exact matches** on size, grade and class — but for the *Elsen* cooler scmdb says grade A while both the game log *and* `components.ini` agree on B (the manufacturer is wrong there too). An excellent source, but not an infallible one.
-- **The scmdb data is deliberately NOT bundled.** It is fetched on the user's machine directly from scmdb.net, the way a browser would. scmdb is licensed CC BY-NC-ND 4.0; shipping a copy would be redistribution and would conflict with that licence as well as this project's GPL. Requests carry an honest identifier so the operator can see who is asking.
-- **Armour and FPS weapons still get no tag.** scmdb assigns `size` and `grade` to every item, helmets included — taken at face value, every piece of armour would carry an invented "Grade A, Size 1". Class and grade are therefore only used when scmdb lists a `componentClass` (actual ship components); ship weapons get size only.
+### Wissenswert
+
+- **Rangfolge der Quellen:** `bp-overrides.json` → Launcher-Katalog/Spieldaten → scmdb. scmdb füllt nur Lücken und überschreibt nie. Grund: Ein Abgleich am 11.08.2026 gegen 56 Meldungen aus der Spiel-Log ergab **55 exakte Treffer** bei Größe, Gütegrad und Klasse — beim Kühler **Elsen** nennt scmdb aber Grad A, während die Spiel-Log *und* `components.ini` übereinstimmend B sagen (auch der Hersteller stimmt dort nicht). Sehr gute Quelle, aber keine unfehlbare.
+- **Die scmdb-Daten werden bewusst NICHT mitgeliefert**, sondern auf dem Rechner des Nutzers direkt bei scmdb.net geholt — so wie es ein Browser täte. scmdb steht unter CC BY-NC-ND 4.0; eine mitgelieferte Kopie wäre eine Weitergabe und würde sowohl dieser Lizenz als auch der GPL dieses Projekts widersprechen. Der Abruf trägt eine ehrliche Kennung (`SC-BP-Watcher/<Version>` mit Projektadresse), damit der Betreiber sieht, wer abruft. Dank an scmdb steht in der `README.en.md`.
+- **Rüstung und FPS-Waffen bekommen weiterhin kein Kürzel.** scmdb vergibt `size` und `grade` an jeden Gegenstand, auch an Helme — ungefiltert übernommen stünde hinter jedem Rüstungsteil ein erfundenes „Grade A, Size 1". Klasse und Gütegrad werden deshalb nur übernommen, wenn scmdb eine `componentClass` führt (echte Schiffskomponenten); Schiffswaffen bekommen nur die Größe.
 
 ## v1.4.0 - 2026-08-02
 
-### Changed
+### Geändert
 
-- **Licence changed from MIT to GNU GPL v3.0** (version 3 only, `SPDX-License-Identifier: GPL-3.0-only`). The source is being opened: a single public repository instead of the planned split into a private source and a public distribution repository. The GPL lets anyone use and modify the code, but requires the source to come along under the same licence when distributed.
-- `README.md`: new **"Star Citizen Fan Content"** section with the wording required by RSI and a link to the official page — a prerequisite for public distribution.
+- **Lizenzwechsel von MIT auf GNU GPL v3.0** (nur Version 3, `SPDX-License-Identifier: GPL-3.0-only`). Der Quellcode wird offengelegt: ein einziges öffentliches Repo statt der geplanten Trennung in privates Quell- und öffentliches Auslieferungs-Repo. Die GPL erlaubt Nutzung und Änderung durch jeden, verlangt bei Weitergabe aber die Offenlegung des Quellcodes unter derselben Lizenz.
+- `README.en.md`: neuer Abschnitt **„Star Citizen Fan Content"** mit dem von RSI vorgeschriebenen Wortlaut und dem Link zur offiziellen Seite — Voraussetzung für eine öffentliche Weitergabe.
 
-### Fixed
+### Behoben
 
-- **Hard-coded local path removed.** `OVERRIDES_FILE` pointed at a directory that only exists on the developer's machine — for everybody else it led nowhere, and opening the source would have made the path public. The optional overrides file is now looked for in the user's own folder; a different location can be given via `SC_BP_OVERRIDES`. With neither, the launcher catalogue applies unchanged.
+- **Fest verdrahteter lokaler Pfad entfernt.** `OVERRIDES_FILE` zeigte auf ein Verzeichnis, das es nur auf dem Rechner des Entwicklers gibt — bei allen anderen lief die Datei ins Leere, und mit der Offenlegung wäre der Pfad öffentlich geworden. Die optionale Overrides-Datei wird jetzt unter `%APPDATA%\sc-bp-watcher\bp-overrides.json` gesucht; ein abweichender Ort lässt sich über die Umgebungsvariable `SC_BP_OVERRIDES` angeben. Fehlt beides, gilt der Launcher-Katalog unverändert.
 
 ## v1.3.0 - 2026-07-31
 
-### Added
+### Hinzugefügt
 
-- **Catalogue watch — reports what became NEWLY craftable in the game.** Until now the watcher only reported what *you* unlocked. It now also keeps an eye on `bp_item_types.json`, the list of everything that has a blueprint at all. The SC Deutsch Launcher refreshes it with each patch; when something is added it appears as 🔵 **newly craftable**. That way you notice when CIG adds an item that simply had no blueprint before.
-- **Watchlist for wanted items:** if `watchlist.json` exists, matches from it are announced prominently in gold with ⭐ and their own sound (`<title> — now craftable!`). Format: `{"eintraege": [{"titel": "…", "muster": ["substring", …]}]}`, patterns lowercase, matched as substrings. Without the file the watcher simply reports every addition.
-- The comparison state lives in `catalog-seen.json` and **survives restarts** — otherwise half the catalogue would arrive as "new" after every start. The very first start only establishes the baseline and reports nothing.
+- **Katalog-Wache — meldet, was im Spiel NEU craftbar geworden ist.** Bisher meldete der Watcher nur, was *du* freischaltest. Jetzt behält er zusätzlich `bp_item_types.json` im Auge — die Liste dessen, was überhaupt einen Bauplan hat. Der SC Deutsch Launcher frischt sie mit den Patches auf; kommt etwas dazu, erscheint es als 🔵 **neu im Spiel craftbar**. So bekommt man mit, wenn CIG einen Gegenstand nachreicht, den es vorher schlicht nicht als Bauplan gab.
+- **Beobachtungsliste für Wunsch-Gegenstände:** Liegt `%APPDATA%\sc-bp-watcher\watchlist.json`, werden Treffer daraus auffällig in Gold mit ⭐ und eigenem Signalton gemeldet (`<Titel> — jetzt craftbar!`). Format: `{"eintraege": [{"titel": "…", "muster": ["teilstring", …]}]}`, Muster kleingeschrieben, Treffer per Teilstring. Ohne die Datei meldet der Watcher einfach jeden Zuwachs.
+- Der Vergleichsstand liegt in `%APPDATA%\sc-bp-watcher\catalog-seen.json` und **überlebt Neustarts** — sonst käme nach jedem Programmstart der halbe Katalog als „neu". Beim allerersten Start wird nur die Basis gesetzt, es wird nichts gemeldet.
 
-### Fixed
+### Behoben
 
-- **Widening the window did nothing:** the list width was hard-coded at `312` pixels. Dragging the window wider still gave you the same narrow content — long blueprint names stayed cut off. The list now follows every resize; long subtitles wrap instead of disappearing off the edge.
-- **Default size** raised from `341x1098` to `440x1098` (the right edge stays put) so the longer catalogue-watch messages fit without wrapping.
+- **Breiterziehen brachte nichts:** Die Breite der Liste war mit `312` Pixeln fest verdrahtet (`create_window(..., width=312)`). Wer das Fenster breiter zog, bekam trotzdem denselben schmalen Inhalt — lange Bauplan-Namen blieben abgeschnitten. Die Liste zieht jetzt bei jeder Größenänderung mit; lange Untertitel brechen um, statt am Rand zu verschwinden.
+- **Standardgröße** von `341x1098` auf `440x1098` erhöht (rechte Fensterkante bleibt gleich), damit die längeren Meldungen der Katalog-Wache ohne Umbruch passen.
 
-### Notes
+### Hinweise
 
-- The catalogue file is read only **once a minute**, and even then only if its timestamp changed — it only ever changes with patches.
-- Catalogue lines are notifications only: they are never confirmed to 🟢, because they have nothing to do with your own unlocks.
-- The watcher keeps its catalogue state in a **separate** file — so a second tool working on the same data cannot steal its notification.
+- Die Katalogdatei wird nur **einmal pro Minute** und auch dann nur bei geändertem Zeitstempel gelesen (`CAT_POLL`) — sie ändert sich ohnehin nur bei Patches.
+- Katalog-Zeilen sind reine Meldungen: Sie werden nie auf 🟢 „bestätigt", weil sie nichts mit dem eigenen Freischalt-Stand zu tun haben.
+- Der Watcher führt seinen Katalogstand in einer **eigenen** Datei — so nimmt ein zweites Werkzeug auf denselben Daten ihm nicht die Meldung weg.
 
 ## v1.2.0 - 2026-07-30
 
-### Added
+### Hinzugefügt
 
-- **Instant reporting from `Game.log`:** the watcher now reads Star Citizen's log itself and shows a new blueprint **within seconds** instead of waiting for the launcher's export. Background: the SC Deutsch Launcher rewrites `sc_bp_erledigt.json` only every few minutes — measured on 2026-07-30, **2.5 minutes** passed between the unlock in game (21:23:49) and the launcher export (21:26:24). Reading the log closes exactly that gap.
-- **Two-stage display:** blueprints freshly read from the log appear as 🟡 **provisional**; once the launcher catches up, the line is confirmed to 🟢 and refreshed with its data. The launcher file remains the authoritative source — type, size, grade and class still come from its catalogue.
-- **Name matching between log and launcher:** ship components appear in the log with a suffix (`7CA 'Nargun' (Civ/3/A)`) and without it in the launcher — the suffix is stripped (and doubles as a fallback for the `M/A/1` tag if an item is not yet in the catalogue after a patch). Genuine name brackets such as `(30 cap)` or `Singe Cannon (S2)` are left alone. Where translations differ (seen: `(12 Schuss)` in the log versus `(12 cap)` in the launcher), a fallback match without the bracket applies — but only when it is unambiguous. Verified against all 127 stored log backups: 148 blueprint messages, 147 exact matches, the remaining one via the fallback.
-- **Automatic log discovery** and detection of a game restart (rotated log).
-- **Status line** now also shows whether the log is being read.
+- **Sofort-Meldung aus der `Game.log`:** Der Watcher liest die Star-Citizen-Log jetzt zusätzlich selbst mit und zeigt einen neuen Bauplan **in Sekunden** an, statt auf den Export des Launchers zu warten. Hintergrund: Der SC Deutsch Launcher schreibt `sc_bp_erledigt.json` nur alle paar Minuten neu — gemessen am 30.07.2026 lagen zwischen Freischaltung im Spiel (21:23:49) und Launcher-Export (21:26:24) **2,5 Minuten**. Genau diese Lücke schließt die Log-Mitlesung.
+- **Zwei-Stufen-Anzeige:** Frisch aus der Log gemeldete Baupläne stehen als 🟡 **vorläufig** in der Liste; sobald der Launcher nachzieht, wird die Zeile auf 🟢 bestätigt und mit dessen Daten aufgefrischt. Die Launcher-Datei bleibt die verbindliche Quelle — Art, Size/Grade/Klasse kommen weiterhin aus dem Launcher-Katalog.
+- **Namens-Abgleich Log ↔ Launcher:** Schiffskomponenten stehen im Log mit Zusatz (`7CA 'Nargun' (Civ/3/A)`), beim Launcher ohne — der Zusatz wird abgeschnitten (und dient als Rückfall fürs `M/A/1`-Kürzel, falls ein Item nach einem SC-Patch noch nicht im Katalog steht). Echte Namens-Klammern wie `(30 cap)` oder `Singe Cannon (S2)` bleiben unangetastet. Weichen die Übersetzungen ab (gesehen: `(12 Schuss)` im Log vs. `(12 cap)` beim Launcher), greift ein Notfall-Abgleich ohne Klammer-Zusatz — aber nur, wenn er eindeutig ist. Geprüft gegen alle 127 vorhandenen Log-Backups: 148 Bauplan-Meldungen, 147 exakte Treffer, der eine Rest über den Notfall-Abgleich.
+- **Automatische Log-Findung** über den `Installfolder` aus `scdl-settings.json`, ersatzweise über den Lesestand des Launchers (`scan-state.json`) oder den Standard-Installationspfad. Spiel-Neustart (rotierte Log) wird erkannt.
+- **Statuszeile** zeigt jetzt auch, ob die Log mitgelesen wird: `Überwache 377 BPs · Log ✓ · geprüft 21:26:27`.
 
-### Fixed
+### Behoben
 
-- **"Newest on top" never worked:** new lines were inserted using `winfo_children()` — that is the order of *creation*, not the order in the window. From the third entry on, every new arrival ended up **below** the older ones. `pack_slaves()` is used now.
-- **`MAX_ROWS` had no effect:** the setting was documented in the README but never applied in the code — the list grew without limit. The oldest lines beyond `MAX_ROWS` (default 200) are now dropped.
-- **Type lookup refreshes itself:** if a just-unlocked item is not yet in `bp_item_types.json`, the file is reloaded once instead of immediately showing `—`.
+- **„Neueste oben" hat nie funktioniert:** Neue Zeilen wurden per `winfo_children()` einsortiert — das ist die Reihenfolge der *Erzeugung*, nicht die im Fenster. Dadurch landete jeder Neuzugang ab dem dritten **unter** den älteren. Jetzt wird `pack_slaves()` genutzt.
+- **`MAX_ROWS` war wirkungslos:** Die Einstellung stand in der README, wurde im Code aber nie angewendet — die Liste wuchs unbegrenzt. Jetzt fliegen die ältesten Zeilen über `MAX_ROWS` (Standard 200) raus.
+- **Art-Nachschlag frischt sich auf:** Ist ein gerade freigeschaltetes Item noch nicht in `bp_item_types.json`, wird die Datei einmal neu geladen, statt sofort `—` anzuzeigen.
 
-### Notes
+### Hinweise
 
-- Log reading recognises the **German** in-game message. With another game language it does not apply — the tool then behaves as before. *(Resolved in v2.0.0: the wording is now worked out automatically.)*
-- Still read-only: `Game.log` is only ever read, never modified.
+- Die Log-Mitlesung erkennt die **deutsche** Spielmeldung (`Bauplan erhalten: <Name>: `). Bei anderer Spielsprache greift sie nicht — dann verhält sich das Tool wie bisher (Meldung, sobald der Launcher exportiert hat). Weitere Sprachen lassen sich in `LOG_PHRASES` ergänzen.
+- Weiterhin nur lesend: die `Game.log` wird ausschließlich gelesen, nie verändert.
 
 ## v1.1.0 - 2026-07-19
 
-### Added
+### Hinzugefügt
 
-- **Size / grade / class per blueprint** as a compact `class/grade/size` tag, e.g. `M/A/1` (Military · Grade A · Size 1). Letters: **M** Military, **S** Stealth, **I** Industrial, **C** Civilian, **K** Competition. Ship weapons only have a size → `–/–/2`; FPS weapons and armour have none of it → no tag. Data from the launcher catalogue plus manual corrections from `bp-overrides.json` (which take precedence).
-- **The window remembers position and size:** on moving, resizing and closing, the geometry is saved and restored on the next start.
+- **Size / Grade / Klasse je Bauplan** als Kompakt-Kürzel `Klasse/Grade/Size`, z. B. `M/A/1` (Military · Grade A · Size 1). Kürzel: **M** Military, **S** Stealth, **I** Industrial, **C** Civilian, **K** Competition. Schiffswaffen haben nur Size → `–/–/2`; FPS-Waffen und Rüstung haben nichts davon → kein Kürzel. Datenbasis: Launcher-Katalog `catalog\components.ini` + `items_raw.ini`, plus manuelle Korrekturen aus `bp-overrides.json` (Vorrang).
+- **Fenster merkt sich Position & Größe:** beim Verschieben, Skalieren und Beenden wird die Lage in `%APPDATA%\sc-bp-watcher\watcher.json` gespeichert und beim nächsten Start wiederhergestellt.
 
-### Changed
+### Geändert
 
-- **Default start position** is now the upper monitor rather than the gaming monitor, so you no longer tab out of Star Citizen by accident. *(Removed again in v2.0.0 — a fixed position from someone else's setup is invisible on yours.)*
+- **Standard-Startposition** ist jetzt der obere Monitor (nicht der Spiel-Monitor) → man tabbt nicht mehr versehentlich aus Star Citizen. Wird über `DEFAULT_GEOM` gesetzt (nur beim allerersten Start relevant, danach greift die gemerkte Position).
 
 ## v1.0.3 - 2026-06-29
 
-### Added
+### Hinzugefügt
 
-- **GitHub release** with the finished `SC-BP-Watcher.exe` attached — download, double-click, done (no Python, no building it yourself)
+- **GitHub-Release** mit der fertigen `SC-BP-Watcher.exe` als Anhang — herunterladen, Doppelklick, läuft (kein Python, kein Selbst-Bauen nötig)
 
-### Changed
+### Geändert
 
-- README: "download the ready-made `.exe`" is now the **recommended** way to start
+- README: „Fertige `.exe` herunterladen" ist jetzt die **empfohlene** Start-Variante (A); Python (B) und Selbst-Bauen (C) dahinter
 
 ## v1.0.2 - 2026-06-29
 
-### Added
+### Hinzugefügt
 
-- **App icon** in the Xharig style (dark background, Xharig green, scope ring with a "new" dot) — `icon.ico` for the executable, `assets/icon.png` as a preview
-- The executable is now built with the icon
-- The window and taskbar icon is also set when starting from source
-- Reproducible icon generator (needs Pillow, which the tool itself does not)
+- **App-Icon** im Xharig-Stil (dunkler Grund, Xharig-Grün, Scope-Ring mit „neu"-Punkt) — `icon.ico` für die EXE, `assets/icon.png` als Vorschau
+- EXE wird jetzt mit dem Icon gebaut (`EXE bauen.bat` → `--icon`)
+- Fenster-/Taskleisten-Icon wird auch beim Start als Skript gesetzt (falls `icon.ico` daneben liegt)
+- Icon-Generator `make_icon.py` (reproduzierbar; braucht nur Pillow, nicht fürs Tool selbst)
 
 ## v1.0.1 - 2026-06-29
 
-### Added
+### Hinzugefügt
 
-- **Thanks and credits** to the SC Deutsch Launcher (the tool's data source at the time), including a note that SC BP Watcher is an independent, unofficial companion tool
-- Official link to the **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)**
+- **Danksagung & Credits** an den SC Deutsch Launcher (Datenquelle des Tools) inkl. Hinweis, dass SC BP Watcher ein eigenständiges, inoffizielles Zusatz-Tool ist
+- Offizieller Link zum **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** im Pflicht-Hinweis und in den Credits
 
-### Changed
+### Geändert
 
-- The mandatory prerequisite (SC Deutsch Launcher) highlighted at the top of the README
+- Pflicht-Voraussetzung (SC Deutsch Launcher) prominent ganz oben in der README hervorgehoben
 
 ## v1.0.0 - 2026-06-29
 
-First release.
+Erstveröffentlichung.
 
-### Added
+### Hinzugefügt
 
-- Live overlay (borderless, always on top, translucent) showing new Star Citizen blueprints in real time
-- Background monitoring of `sc_bp_erledigt.json` (3-second interval, its own thread)
-- Per arrival: 🟢 name · type · time, newest on top
-- Sound on every new blueprint
-- Window movable (title bar) and resizable (◢ handle), clear the list (🗑), close (✕)
-- Type shown in whichever language the source provides
-- Automatic path discovery
-- Start via a batch file (no console window) or as a standalone executable
+- Live-Overlay (randlos, immer im Vordergrund, durchscheinend), das neue Star-Citizen-Baupläne in Echtzeit anzeigt
+- Hintergrund-Überwachung von `sc_bp_erledigt.json` (Prüf-Intervall 3 s, eigener Thread)
+- Anzeige je Neuzugang: 🟢 Name · Art · Uhrzeit, neueste oben
+- Signalton bei jedem neuen Bauplan
+- Fenster verschiebbar (Titelleiste) und skalierbar (Griff ◢), Liste leeren (🗑), schließen (✕)
+- Art-Anzeige zweisprachig — übernimmt den Wert direkt aus `bp_item_types.json` (deutsch oder englisch)
+- Automatische Pfad-Findung über `%APPDATA%`
+- Start per `SC-BP-Watcher starten.bat` (ohne Konsolenfenster) oder als eigenständige `.exe` via `EXE bauen.bat`
+
+### Hinweise
+
+- Reines Python-Standardbibliothek-Tool (`tkinter`) — keine Zusatzpakete nötig
+- Nur lesend: verändert oder sendet keine Daten

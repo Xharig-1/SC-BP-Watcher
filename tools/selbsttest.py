@@ -3296,8 +3296,8 @@ def main():
     # Groesse nicht baut, erfaehrt es hier statt gar nicht.
     import re as _re45
     _tot45 = []
-    for _d45 in ('README.md', 'README.de.md', 'CHANGELOG.md', 'CHANGELOG.de.md',
-                 'ROADMAP.md', 'ROADMAP.de.md'):
+    for _d45 in ('README.en.md', 'README.md', 'CHANGELOG.en.md', 'CHANGELOG.md',
+                 'ROADMAP.en.md', 'ROADMAP.md'):
         _pfad45 = os.path.join(WURZEL, _d45)
         if not os.path.exists(_pfad45):
             continue
@@ -3337,7 +3337,7 @@ def main():
            'und der Text „vorlaeufig" ist aus der Sprachdatei raus')
     # ⚠ Und die Anleitung darf die zwei Stufen nicht weiter versprechen — sonst
     #   sucht jemand einen gelben Punkt, den es nicht gibt.
-    for _d46 in ('README.de.md', 'README.md'):
+    for _d46 in ('README.md', 'README.en.md'):
         _t46 = open(os.path.join(WURZEL, _d46), encoding='utf-8').read()
         pruefe('vorlaeufig-gelb' not in _t46,
                '%s zeigt keinen gelben Wartepunkt mehr' % _d46)
@@ -5710,7 +5710,7 @@ def main():
            'mit seiner Lizenz')
     pruefe('github.com/rjcncpt/StarCitizen-Deutsch-INI' in _q71,
            'und mit seinem Repository')
-    for _readme71 in ('README.md', 'README.de.md'):
+    for _readme71 in ('README.en.md', 'README.md'):
         _r71 = open(os.path.join(WURZEL, _readme71), encoding='utf-8').read()
         pruefe('rjcncpt' in _r71 and 'CC BY-NC-SA' in _r71,
                '%s nennt Urheber und Lizenz' % _readme71)
@@ -5897,7 +5897,7 @@ def main():
                 einzeln.add(int(_m.group(1).replace('.', '').replace(',', '')))
             return paare, einzeln
 
-        for _name73 in ('README.de.md', 'README.md'):
+        for _name73 in ('README.md', 'README.en.md'):
             _txt73 = open(os.path.join(WURZEL, _name73), encoding='utf-8').read()
             _paare73, _einzeln73 = _zahlen73(_txt73)
             _falsch73 = [pa for pa in _paare73

@@ -1,162 +1,162 @@
 <div align="center">
 
-<img src="assets/icon.png" alt="SC BP Watcher icon" width="128">
+<img src="assets/icon.png" alt="SC BP Watcher Icon" width="128">
 
 # SC BP Watcher
 
-**Live overlay that shows new Star Citizen blueprints the moment you unlock them**
+**Live-Overlay, das neue Star-Citizen-Baupläne anzeigt, sobald du sie freischaltest**
 
-<sub>Windows · Linux · no account, no cloud — installer on Windows, single file on Linux</sub>
+<sub>Windows · Linux · ohne Konto, ohne Cloud — Installer unter Windows, einzelne Datei unter Linux</sub>
 
 [![Version](https://img.shields.io/github/v/release/Xharig-1/SC-BP-Watcher?include_prereleases&label=Version&color=5fa522)](../../releases)
-[![Downloads](https://img.shields.io/github/downloads/Xharig-1/SC-BP-Watcher/total?label=Downloads&color=5fa522)](../../releases)
-[![License](https://img.shields.io/badge/License-GPL--3.0-5fa522)](LICENSE)
-[![Discord](https://img.shields.io/badge/Discord-join-5fa522?logo=discord&logoColor=white)](https://discord.gg/g2E7e6XxZC)
-[![Ko-fi](https://img.shields.io/badge/Ko--fi-buy%20me%20a%20coffee-5fa522?logo=kofi&logoColor=white)](https://ko-fi.com/xharig)
+[![Heruntergeladen](https://img.shields.io/github/downloads/Xharig-1/SC-BP-Watcher/total?label=Heruntergeladen&color=5fa522)](../../releases)
+[![Lizenz](https://img.shields.io/badge/Lizenz-GPL--3.0-5fa522)](LICENSE)
+[![Discord](https://img.shields.io/badge/Discord-beitreten-5fa522?logo=discord&logoColor=white)](https://discord.gg/g2E7e6XxZC)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Kaffee%20spendieren-5fa522?logo=kofi&logoColor=white)](https://ko-fi.com/xharig)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-0a4a7a?logo=python&logoColor=white)](https://www.python.org/)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%C2%B7%20Linux-0a4a7a)](#requirements)
-[![Star Citizen](https://img.shields.io/badge/Star%20Citizen-compatible-0a4a7a)](https://robertsspaceindustries.com/)
+[![System](https://img.shields.io/badge/System-Windows%20%C2%B7%20Linux-0a4a7a)](#voraussetzungen)
+[![Star Citizen](https://img.shields.io/badge/Star%20Citizen-kompatibel-0a4a7a)](https://robertsspaceindustries.com/)
 
-**English** · [Deutsch](README.de.md)
+**Deutsch** · [English](README.en.md)
 
 </div>
 
 ---
 
-A small, borderless overlay that tells you **in real time** when a new blueprint drops — name, type and time. No account, no cloud. Runs on **Windows and Linux**.
+Ein kleines, randloses Overlay, das beim Spielen **in Echtzeit** meldet, sobald ein neuer Bauplan (Blueprint) dazukommt — inklusive Name, Art und Uhrzeit. Ohne Account, ohne Cloud. Läuft unter **Windows und Linux**.
 
-> 💬 **There is a Discord.** Questions, help with problems, new releases and a forum for bugs and wishes: **[discord.gg/g2E7e6XxZC](https://discord.gg/g2E7e6XxZC)**. If you would rather stay here, open an [issue](../../issues) — both are read.
+> 💬 **Es gibt einen Discord.** Fragen, Hilfe bei Problemen, neue Versionen und ein Forum für Fehler und Wünsche: **[discord.gg/g2E7e6XxZC](https://discord.gg/g2E7e6XxZC)**. Wer lieber hier bleibt, macht ein [Issue](../../issues) auf — beides wird gelesen.
 
-> 🧪 **Trying a test build.** Before every release there are **pre-releases** (`-rc`) under [Releases](../../releases) — each one says what it brings and what changed since the previous one. They are **never offered as an update** to anyone: if you want one, you download it there. If you try one and find something, please open an [issue](../../issues) — that is exactly what they are for.
+> 🧪 **Testversionen ausprobieren.** Vor jeder Veröffentlichung gibt es **Vorabversionen** (`-rc`) unter [Releases](../../releases) — dort steht bei jeder, was sie bringt und was sich seit der vorigen geändert hat. Sie werden **niemandem als Update angeboten**: Wer sie will, lädt sie dort herunter. Wer eine ausprobiert und etwas findet, macht bitte ein [Issue](../../issues) auf — genau dafür sind sie da.
 
-> ℹ️ **The SC Deutsch Launcher is no longer required.** The actual source is Star Citizen's own `Game.log` — every unlocked blueprint is written there in plain text. If the launcher is installed it is still used: it confirms finds and supplies German names. If it isn't (always the case on Linux), the watcher works anyway.
+> ℹ️ **Der SC Deutsch Launcher ist nicht mehr Voraussetzung.** Die eigentliche Quelle ist die `Game.log` von Star Citizen — dort steht jeder freigeschaltete Bauplan im Klartext. Ist der Launcher da, wird er weiter genutzt: Er liefert deutsche Bezeichnungen und meldet nach, was in den Protokollen nicht mehr steht. Ist er nicht da (unter Linux immer), läuft der Watcher trotzdem.
 
 <table>
 <tr>
 <td width="32%" valign="top" align="center">
-<img src="assets/screenshot-overlay-en.png" alt="The overlay while playing" width="100%"><br>
-<sub>The overlay — narrow, always on top, opacity adjustable</sub>
+<img src="assets/screenshot-overlay.png" alt="Das Overlay beim Spielen" width="100%"><br>
+<sub>Das Overlay — schmal, immer im Vordergrund, Durchsichtigkeit einstellbar</sub>
 </td>
 <td width="68%" valign="top" align="center">
-<img src="assets/screenshot-liste-en.png" alt="The window with the blueprint list" width="100%"><br>
-<sub>The blueprint list — search, five filters, and where each blueprint comes from</sub>
+<img src="assets/screenshot-liste.png" alt="Das Fenster mit der Bauplan-Liste" width="100%"><br>
+<sub>Die Bauplan-Liste — Suche, fünf Filter und die Herkunft je Bauplan</sub>
 </td>
 </tr>
 </table>
 
-### In game, without tabbing out
+### Im Spiel, ohne herauszutabben
 
-The watcher writes into the game's mission text **which** blueprints a contract hands out — with `[x]` for the ones you already have. The count is in the title, the names are in the description.
+Der Watcher schreibt in die Auftragstexte des Spiels, **welche** Baupläne ein Auftrag ausschüttet — mit `[x]` für das, was du schon hast. Die Zählung steht schon im Titel, die Namen in der Beschreibung.
 
 <table>
 <tr>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-ingame-teils.jpg" alt="Contract with some blueprints already owned" width="100%"><br>
-<sub><b>3 of 6</b> — <code>[x]</code> you have, <code>[&nbsp;&nbsp;]</code> still missing</sub>
+<img src="assets/screenshot-ingame-teils.jpg" alt="Auftrag mit teilweise vorhandenen Bauplänen" width="100%"><br>
+<sub><b>3 von 6</b> — <code>[x]</code> hast du, <code>[&nbsp;&nbsp;]</code> fehlt noch</sub>
 </td>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-ingame-keine.jpg" alt="Contract with none of the blueprints owned" width="100%"><br>
-<sub><b>0 of 12</b> — nothing here that you already own</sub>
+<img src="assets/screenshot-ingame-keine.jpg" alt="Auftrag ohne vorhandene Baupläne" width="100%"><br>
+<sub><b>0 von 12</b> — hier ist noch nichts dabei, was du hast</sub>
 </td>
 </tr>
 </table>
 
-### The workshop
+### Die Werkstatt
 
-The blueprint is the start. The workshop answers what comes after it: **what do I need, do I have it, and what will it turn into?**
+Der Bauplan ist der Anfang. Die Werkstatt beantwortet, was danach kommt: **was brauche ich, habe ich das, und was wird daraus?**
 
 <table>
 <tr>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-herstellung-en.png" alt="Crafting with an expanded recipe" width="100%"><br>
-<sub><b>Crafting</b> — ingredients, craft time and what <i>your</i> material does to the stats</sub>
+<img src="assets/screenshot-herstellung.png" alt="Herstellung mit aufgeklapptem Rezept" width="100%"><br>
+<sub><b>Herstellung</b> — Zutaten, Herstellzeit und was <i>dein</i> Material aus den Werten macht</sub>
 </td>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-lager-en.png" alt="My stock with recorded resources" width="100%"><br>
-<sub><b>My stock</b> — material, amount, quality and storage location, kept by hand</sub>
+<img src="assets/screenshot-lager.png" alt="Mein Lager mit eingetragenen Rohstoffen" width="100%"><br>
+<sub><b>Mein Lager</b> — Material, Menge, Qualität und Lagerort, von Hand gepflegt</sub>
 </td>
 </tr>
 <tr>
 <td colspan="2" valign="top" align="center">
-<img src="assets/screenshot-bergbau-en.png" alt="Mining showing where Iron is found" width="100%"><br>
-<sub><b>Mining</b> — type a resource and see where it sits; or enter the scanner reading and see what it found</sub>
+<img src="assets/screenshot-bergbau.png" alt="Bergbau mit den Fundorten von Iron" width="100%"><br>
+<sub><b>Bergbau</b> — Rohstoff eintippen und sehen, wo er liegt; oder den Scan-Wert eingeben und sehen, was der Scanner da gefunden hat</sub>
 </td>
 </tr>
 </table>
 
-### Trading
+### Handel
 
-Cargo hold full — now what? **Where do I offload it, and what does it pay per SCU?**
+Der Laderaum ist voll — und jetzt? **Wo werde ich die Ladung los, und was bringt sie je SCU?**
 
 <table>
 <tr>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-handelslager-en.png" alt="Cargo hold with entered goods" width="100%"><br>
-<sub><b>Cargo hold</b> — what you carry to sell, kept apart from the workshop stock</sub>
+<img src="assets/screenshot-handelslager.png" alt="Handelslager mit eingetragener Ladung" width="100%"><br>
+<sub><b>Handelslager</b> — was zum Verkauf im Laderaum liegt, getrennt vom Werkstatt-Lager</sub>
 </td>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-verkauf-en.png" alt="Selling tab with the best buyers" width="100%"><br>
-<sub><b>Selling</b> — the best buyers, sorted by how many of your goods a place takes</sub>
+<img src="assets/screenshot-verkauf.png" alt="Verkauf mit den besten Ankaufsorten" width="100%"><br>
+<sub><b>Verkauf</b> — die besten Ankäufer, sortiert danach, wie viele deiner Waren ein Ort abnimmt</sub>
 </td>
 </tr>
 </table>
 
-### The window
+### Das Fenster
 
 > [!NOTE]
-> The screenshots below show **v3.0.0**. In v2.0.0 the window still looks different — if you are looking for something shown here and cannot find it, that is the older version, not a bug.
+> Die folgenden Bilder zeigen **v3.0.0**. In v2.0.0 sieht das Fenster noch anders aus — wer dort etwas sucht, was hier zu sehen ist, findet es nicht. Das ist kein Fehler, sondern die ältere Version.
 
 <table>
 <tr>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-fortschritt-en.png" alt="Progress by area" width="100%"><br>
-<sub><b>Progress</b> — per area, details on click</sub>
+<img src="assets/screenshot-fortschritt.png" alt="Fortschritt nach Bereichen" width="100%"><br>
+<sub><b>Fortschritt</b> — je Bereich, Einzelheiten auf Klick</sub>
 </td>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-auftragstexte-en.png" alt="Mission text settings" width="100%"><br>
-<sub><b>In-game text</b> — pick a text source, switch it on and off</sub>
+<img src="assets/screenshot-auftragstexte.png" alt="Einstellungen für die Auftragstexte" width="100%"><br>
+<sub><b>Texte im Spiel</b> — Textquelle wählen, ein- und ausschalten</sub>
 </td>
 </tr>
 <tr>
 <td valign="top" align="center">
-<img src="assets/screenshot-bestand-en.png" alt="Export and import your inventory" width="100%"><br>
-<sub><b>Inventory</b> — export for the basetool, or import an existing one</sub>
+<img src="assets/screenshot-bestand.png" alt="Bestand ausgeben und einlesen" width="100%"><br>
+<sub><b>Bestand</b> — ausgeben fürs Basetool, oder einen vorhandenen einlesen</sub>
 </td>
 <td valign="top" align="center">
-<img src="assets/screenshot-anzeige-en.png" alt="Display settings" width="100%"><br>
-<sub><b>Display</b> — pop-up mode, click-through, font size</sub>
+<img src="assets/screenshot-anzeige.png" alt="Anzeige-Einstellungen" width="100%"><br>
+<sub><b>Anzeige</b> — Aufblend-Betrieb, Klicks durchreichen, Schriftgröße</sub>
 </td>
 </tr>
 <tr>
 <td valign="top" align="center">
-<img src="assets/screenshot-ueber-en.png" alt="About and update channel" width="100%"><br>
-<sub><b>About</b> — stable releases or test builds, with a button to fetch one</sub>
+<img src="assets/screenshot-ueber.png" alt="Über und Update-Kanal" width="100%"><br>
+<sub><b>Über</b> — stabile Version oder Testversionen, mit Knopf zum Holen</sub>
 </td>
 <td valign="top" align="center">
-<img src="assets/screenshot-wasistneu-en.png" alt="What's new" width="100%"><br>
-<sub><b>What's new</b> — every release expandable, filtered by kind</sub>
+<img src="assets/screenshot-wasistneu.png" alt="Was ist neu" width="100%"><br>
+<sub><b>Was ist neu</b> — jede Version aufklappbar, gefiltert nach Art</sub>
 </td>
-</tr>
 </tr>
 <tr>
 <td valign="top" align="center">
-<img src="assets/screenshot-danke-en.png" alt="Thanks and licenses" width="100%"><br>
-<sub><b>Thanks &amp; Licenses</b> — what belongs to whom, and who helped</sub>
+<img src="assets/screenshot-danke.png" alt="Danke und Lizenzen" width="100%"><br>
+<sub><b>Danke &amp; Lizenzen</b> — wem was gehört, und wer mitgeholfen hat</sub>
 </td>
 <td valign="top" align="center">
-<img src="assets/screenshot-serverstatus-en.png" alt="Server status" width="100%"><br>
-<sub><b>Server status</b> — is Star Citizen up?</sub>
+<img src="assets/screenshot-serverstatus.png" alt="Serverstatus" width="100%"><br>
+<sub><b>Serverstatus</b> — läuft Star Citizen gerade?</sub>
 </td>
+</tr>
 </table>
 
 <details>
-<summary>And the rest: General</summary>
+<summary>Und der Rest: Allgemein</summary>
 
 <table>
 <tr>
 <td width="50%" valign="top" align="center">
-<img src="assets/screenshot-allgemein-en.png" alt="General settings" width="100%"><br>
-<sub><b>General</b> — language, sound, autostart, menu entry</sub>
+<img src="assets/screenshot-allgemein.png" alt="Allgemeine Einstellungen" width="100%"><br>
+<sub><b>Allgemein</b> — Sprache, Signalton, Autostart, Startmenü-Eintrag</sub>
 </td>
 <td width="50%" valign="top" align="center">
 </td>
@@ -165,308 +165,352 @@ Cargo hold full — now what? **Where do I offload it, and what does it pay per 
 
 </details>
 
-## Why this tool
+## Warum dieses Tool
 
-There are several blueprint lists. Four things make the difference day to day:
+Bauplan-Listen gibt es mehrere. Vier Dinge machen den Unterschied im Alltag:
 
-- **You never leave the game.** The overlay sits on top of Star Citizen. No second window, no alt-tab, no browser — the new blueprint is simply there while you keep playing.
-- **It knows what you already have.** The watcher keeps your blueprint inventory itself and reads Star Citizen's stored session logs on first start — you get your existing collection for free, without typing anything. If a gap remains anyway, it says so instead of passing off an incomplete list as complete.
-- **It tells you where to get what's missing.** For **670 of the 738** blueprints it shows which faction offers it, in which contract, from which standing, and what it pays — sorted by the easiest route. "I'm missing X" is half the information; "X drops at Foxwell from Veteran Contractor" is all of it.
-- **Nothing leaves your machine.** No account, no sign-in, no cloud. It reads files that are already on your disk and writes nothing back into the game.
+- **Du musst nicht aus dem Spiel.** Das Overlay liegt über Star Citizen. Kein zweites Fenster, kein Alt-Tab, kein Nachschlagen im Browser — der neue Bauplan steht einfach da, während du weiterspielst.
+- **Es weiß, was du schon hast.** Der Watcher führt deinen Bauplan-Bestand selbst und liest beim ersten Start die aufgehobenen Spielprotokolle nach — du bekommst deinen bisherigen Stand geschenkt, ohne etwas einzutippen. Bleibt trotzdem eine Lücke, sagt er das, statt eine unvollständige Liste als vollständig auszugeben.
+- **Es sagt dir, woher du das Fehlende bekommst.** Für **670 der 738** Baupläne steht dabei, welche Fraktion sie auslobt, in welchem Auftrag, ab welchem Rang und was er einbringt — sortiert nach dem leichtesten Weg. „Mir fehlt X" ist die halbe Information; die ganze ist „X gibt es bei Foxwell ab Veteran Contractor".
+- **Es meldet auch, was du noch gar nicht haben kannst.** Die Katalog-Wache erkennt, wenn CIG mit einem Patch etwas **neu craftbar** macht — unabhängig von deinem eigenen Freischalt-Stand — solche Zeilen sind blau. Wer auf ein bestimmtes Teil wartet, trägt es in die Beobachtungsliste ein und wird beim Auftauchen auffällig darauf gestoßen.
+- **Nichts verlässt deinen Rechner.** Kein Konto, keine Anmeldung, keine Cloud. Das Tool liest ausschließlich Dateien, die ohnehin auf deiner Platte liegen, und schreibt nichts zurück ins Spiel.
 
-On top of that: class, size and grade are right there in the line (`M/1/A`), the interface speaks German and English, and the whole thing runs on the plain Python standard library — no extra packages, no dependencies that break tomorrow.
+Dazu: Klasse, Größe und Gütegrad stehen direkt in der Zeile (`M/1/A`), die Oberfläche gibt es auf Deutsch und Englisch, und das Ganze läuft mit reiner Python-Standardbibliothek — keine Zusatzpakete, keine Abhängigkeiten, die morgen zerbrechen.
 
 ## Features
 
 | | |
 |---|---|
-| <img src="assets/symbole/22/blitz-gruen.png" width="22" alt=""> **Instant** | Reads Star Citizen's `Game.log` → the blueprint is in the list **within seconds** |
-| <img src="assets/symbole/22/liste-gruen.png" width="22" alt=""> **Blueprint list** | Search everything, grouped by type, filters *all / owned / missing / watching / new in game*, with progress. Tick items with one click |
-| <img src="assets/symbole/22/herkunft-gruen.png" width="22" alt=""> **Where it drops** | One click shows faction, contract, required standing and payout — for **670 of 738** blueprints, sorted by the easiest route |
-| <img src="assets/symbole/22/auftragstexte-gruen.png" width="22" alt=""> **Contract accepted** | Accept a contract and you see right away whether blueprints are part of it — and **which of those you are still missing**. If the catalogue does not know the contract, it stays quiet rather than guessing |
-| <img src="assets/symbole/22/blitz-gruen.png" width="22" alt=""> **Crafting** | For each of the **1,597** craftable items: the ingredients with amounts and the craft time — and whether you have the blueprint. Clicking a resource jumps to where it can be mined |
-| <img src="assets/symbole/22/herkunft-gruen.png" width="22" alt=""> **Mining** | Both directions in one search: type a resource → its locations (Iron: 27). Type a location → what is found there (Daymar: 14 ores). With mining type FPS · vehicle · ship, a **refinery comparison** per ore (which method yields how much and how long it takes) and the **scan signature** to recognise it in game |
-| <img src="assets/symbole/22/bestand-gruen.png" width="22" alt=""> **My stock** | Enter what resources you have — **material, amount, quality, location**. Recipes then show what is missing, and a button subtracts the ingredients when you craft. **And because the recipes carry how material quality changes the item\'s values, you see what *your* material would produce** |
-| <img src="assets/symbole/22/bestand-gruen.png" width="22" alt=""> **Prices** | What a material costs at the terminal and what it sells for — the numbers come from **[UEX Corp](https://uexcorp.space/)** and refresh daily. That way crafting answers not only "what am I missing" but also "what will it cost me". Without a connection the column simply stays empty |
-| <img src="assets/symbole/22/einrichtung-gruen.png" width="22" alt=""> **Setup wizard** | Five steps on first start — and **repeatable any time**, no digging through menus |
-| <img src="assets/symbole/18/punkt-blau.png" width="22" alt=""> **Catalogue watch** | Also reports when something becomes **newly craftable in the game** — a blueprint CIG added that did not exist before |
-| <img src="assets/symbole/22/serverstatus-gruen.png" width="22" alt=""> **Server status** | A tab of its own: **is Star Citizen up?** Shows what CIG reports on its status page — all three systems plus the incidents of the last two months in full. Refreshes itself once a minute. States stay in CIG's own wording; the entries are maintained by hand, not measured |
-| <img src="assets/symbole/18/punkt-blau.png" width="22" alt=""> **New in game** | Its own filter in the list: **only what the current patch added**. Every blueprint carries the game version it first appeared in; when the next patch lands, the new ones move in and the old ones drop out of the filter — the stamp stays |
-| <img src="assets/symbole/18/gemerkt-gruen.png" width="22" alt=""> **Watchlist** | Click the star next to anything you are waiting for. When it shows up it is announced in gold — and **removed from the watchlist by itself** |
-| <img src="assets/symbole/22/kuerzel-gruen.png" width="22" alt=""> **Class · size · grade** | Compact tag `class/size/grade` per blueprint, e.g. `M/1/A` (Military · Size 1 · Grade A) |
-| <img src="assets/symbole/22/ton-gruen.png" width="22" alt=""> **Sound** | A short beep on every find — you don't have to watch the window |
-| <img src="assets/symbole/22/vordergrund-gruen.png" width="22" alt=""> **Always on top** | Borderless, slightly translucent overlay above the game |
-| <img src="assets/symbole/22/schloss_auf-gruen.png" width="22" alt=""> **Pass clicks through** | One click on the lock in the bar and the overlay lets mouse clicks through — still in view, no longer in the way. The same lock turns green and brings it back with one click, with no detour through the settings |
-| <img src="assets/symbole/22/verschieben-gruen.png" width="22" alt=""> **Movable & resizable** | Drag the title bar, resize at the ◢ handle — **position and size are remembered** |
-| <img src="assets/symbole/22/sprachen-gruen.png" width="22" alt=""> **German and English** | Interface switchable; the in-game blueprint message is recognised in both languages |
-| <img src="assets/symbole/22/abhaken-gruen.png" width="22" alt=""> **Tells you about updates** | Notices new versions by itself — with „What's new" to read up on, including older releases |
-| <img src="assets/symbole/22/nurlesend-gruen.png" width="22" alt=""> **Read only** | Changes nothing in the game — reads `Game.log` and, if present, the launcher files |
-| <img src="assets/symbole/22/eigenbuch-gruen.png" width="22" alt=""> **Own inventory** | Keeps track of which blueprints you have — without the SC Deutsch Launcher |
-| 🕓 **Catch-up** | Reads stored logs of earlier sessions **and the running one** on start, picking up what was unlocked while it wasn't running — finds are reported, not added silently. A **Read the logs again** button (overlay and settings) goes through everything once more on demand |
-| 🐧 **Windows and Linux** | One build for both systems, including autostart and log language detection |
+| <img src="assets/symbole/22/blitz-gruen.png" width="22" alt=""> **Sofort-Meldung** | Liest die Star-Citizen-`Game.log` mit → der Bauplan steht **in Sekunden** in der Liste |
+| <img src="assets/symbole/22/liste-gruen.png" width="22" alt=""> **Bauplan-Liste** | Alle Baupläne durchsuchen, nach Art gruppiert, Filter *alle / habe ich / fehlt mir / beobachtet / neu im Spiel*, mit Fortschrittsanzeige. Häkchen per Klick |
+| <img src="assets/symbole/22/herkunft-gruen.png" width="22" alt=""> **Herkunft je Bauplan** | Ein Klick zeigt Fraktion, Auftrag, nötigen Rang und Belohnung — für **670 von 738** Bauplänen, sortiert nach dem leichtesten Weg |
+| <img src="assets/symbole/22/auftragstexte-gruen.png" width="22" alt=""> **Auftrag angenommen** | Nimmst du einen Auftrag an, steht sofort da, ob Baupläne dabei sind — und **welche dir davon noch fehlen**. Kennt der Katalog den Auftrag nicht, wird geschwiegen statt geraten |
+| <img src="assets/symbole/22/blitz-gruen.png" width="22" alt=""> **Herstellung** | Zu jedem der **1.597** herstellbaren Gegenstände die Zutaten mit Menge und die Herstellzeit — und ob du den Bauplan dafür hast. Ein Klick auf einen Rohstoff springt zu seinen Fundorten |
+| <img src="assets/symbole/22/herkunft-gruen.png" width="22" alt=""> **Bergbau** | Beide Richtungen in einer Suche: Rohstoff eintippen → seine Fundorte (Iron: 27 Orte). Ort eintippen → was es dort gibt (Daymar: 14 Erze). Mit Abbauart FPS · Fahrzeug · Schiff, **Raffinerie-Vergleich** je Erz (welche Methode wie viel Ausbeute bringt und wie lange sie braucht) und der **Scan-Signatur** zum Wiedererkennen im Spiel |
+| <img src="assets/symbole/22/bestand-gruen.png" width="22" alt=""> **Mein Lager** | Trag ein, was du an Rohstoffen hast — **Material, Menge, Qualität, Lagerort**. Im Rezept steht dann, was fehlt, und ein Knopf zieht die Zutaten ab, wenn du etwas herstellst. **Und weil die Rezepte mittragen, wie die Materialqualität die Werte des Produkts verändert, siehst du, was mit *deinem* Material herauskäme** |
+| <img src="assets/symbole/22/bestand-gruen.png" width="22" alt=""> **Preise** | Was ein Rohstoff am Terminal kostet und was er einbringt — die Zahlen kommen von **[UEX Corp](https://uexcorp.space/)** und frischen sich täglich auf. Damit beantwortet die Herstellung nicht nur „was fehlt mir", sondern auch „was kostet mich das". Ohne Netz bleibt das Feld einfach leer |
+| <img src="assets/symbole/22/handelslager-gruen.png" width="22" alt=""> **Handelslager** | Was du zum Verkauf im Laderaum hast — bewusst getrennt vom Werkstatt-Lager: Das eine ist Baumaterial, das du behältst, das andere Ladung, die du loswerden willst. Ware, Ort und SCU eintragen; im Mengenfeld darfst du rechnen (`100+5`). Statt einer Güte gibt es den Haken **„als gestohlen markiert"** — beim Verkauf zählt die Qualität nicht, und erbeutete Ware hat ohnehin immer Q 0 |
+| <img src="assets/symbole/22/verkauf-gruen.png" width="22" alt=""> **Verkauf** | Wo du deine Ware los wirst und was sie **je SCU** bringt — für **mehrere Waren auf einmal**. Sortiert wird nicht nach dem höchsten Preis, sondern danach, **wie viele deiner Waren ein Ort abnimmt**: 100 SCU Gold, 40 Copper und 25 Iron bringen an einem Ort 3.533.000 aUEC, verteilt auf drei Orte 3.566.000 — ein Prozent mehr für zwei zusätzliche Anflüge. Ist die Ladung als gestohlen markiert, blendet der Reiter auf die 15 Terminals ein, die keine Fragen stellen |
+| <img src="assets/symbole/22/einrichtung-gruen.png" width="22" alt=""> **Einrichtungsassistent** | Fünf Schritte beim ersten Start — und **jederzeit wiederholbar**, ohne sich durch Menüs zu klicken |
+| <img src="assets/symbole/18/punkt-blau.png" width="22" alt=""> **Katalog-Wache** | Meldet auch, wenn im **Spiel** etwas neu craftbar wird — also wenn CIG einen Bauplan nachreicht, den es vorher gar nicht gab (nicht nur, was du selbst freischaltest) |
+| <img src="assets/symbole/22/serverstatus-gruen.png" width="22" alt=""> **Serverstatus** | Eigener Reiter: **Läuft Star Citizen gerade?** Zeigt, was CIG auf seiner Statusseite meldet — die drei Systeme und die Meldungen der letzten zwei Monate im Volltext. Frischt sich jede Minute selbst auf. Die Zustände bleiben im Wortlaut von CIG; die Angaben sind von Hand gepflegt, keine Messung |
+| <img src="assets/symbole/18/punkt-blau.png" width="22" alt=""> **Neu im Spiel** | Eigener Filter in der Liste: **nur das, was mit dem aktuellen Patch dazukam**. Jeder Bauplan trägt die Spielversion, in der es ihn zuerst gab; beim nächsten Patch rücken die neuen nach und die alten fallen aus dem Filter — der Stempel bleibt. Ein Auswahlfeld **Patch** zeigt zusätzlich jeden früheren Patch und erweitert sich von allein |
+| <img src="assets/symbole/18/gemerkt-gruen.png" width="22" alt=""> **Merkliste** | Klick auf den Stern in der Liste — taucht der Bauplan auf, wird er auffällig gemeldet und **verschwindet danach von selbst** von der Merkliste |
+| <img src="assets/symbole/22/kuerzel-gruen.png" width="22" alt=""> **Klasse · Size · Grade** | Kompakt-Kürzel `Klasse/Size/Grade` je Bauplan, z. B. `M/1/A` (Military · Size 1 · Grade A) |
+| <img src="assets/symbole/22/ton-gruen.png" width="22" alt=""> **Signalton** | Kurzer Ton bei jedem Neuzugang — du musst nicht aufs Fenster schauen |
+| <img src="assets/symbole/22/vordergrund-gruen.png" width="22" alt=""> **Immer im Vordergrund** | Randloses, leicht durchscheinendes Overlay über dem Spiel |
+| <img src="assets/symbole/22/schloss_auf-gruen.png" width="22" alt=""> **Klicks ins Spiel durchreichen** | Ein Klick auf das Schloss in der Leiste, und das Overlay lässt Mausklicks durch — es steht weiter im Bild, ist aber nicht mehr im Weg. Dasselbe Schloss wird dabei grün und holt es mit einem Klick wieder zurück, ohne Umweg über die Einstellungen |
+| <img src="assets/symbole/22/verschieben-gruen.png" width="22" alt=""> **Verschiebbar & skalierbar** | An der Titelleiste ziehen, Größe am Griff ◢ unten rechts — **Position & Größe werden gemerkt** |
+| <img src="assets/symbole/22/sprachen-gruen.png" width="22" alt=""> **Deutsch und Englisch** | Oberfläche umschaltbar. Die Bauplan-Meldung im Log erkennt der Watcher **in jeder Spielsprache** — er findet die Formulierung selbst heraus |
+| <img src="assets/symbole/22/abhaken-gruen.png" width="22" alt=""> **Sagt Bescheid** | Merkt selbst, wenn es eine neue Version gibt — mit „Was ist neu" zum Nachlesen, auch für ältere Versionen |
+| <img src="assets/symbole/22/nurlesend-gruen.png" width="22" alt=""> **Nur lesend** | Verändert am Spiel nichts — liest die `Game.log` und, falls vorhanden, die Launcher-Dateien |
+| <img src="assets/symbole/22/eigenbuch-gruen.png" width="22" alt=""> **Eigener Bestand** | Führt selbst Buch, welche Baupläne du hast — auch ohne den SC Deutsch Launcher |
+| 🕓 **Nachlese** | Liest beim Start die aufgehobenen Logs früherer Sitzungen **und die laufende** und holt nach, was ohne laufenden Watcher freigeschaltet wurde — die Funde werden gemeldet, nicht still eingetragen. Ein Knopf **Protokolle erneut einlesen** (Overlay und Einstellungen) geht auf Wunsch noch einmal alles durch |
+| 🐧 **Windows und Linux** | Eine Version für beide Systeme, inklusive Autostart und Spracherkennung im Log |
 
-## Requirements
+## Voraussetzungen
 
-- **Windows or Linux**
-- **Star Citizen** installed — the folder containing `Game.log` is what's looked for. On Linux the usual Wine prefixes are searched (lug-helper, Lutris, Bottles, Heroic). If nothing is found, the wizard asks.
+- **Windows oder Linux**
+- **Star Citizen** installiert — gesucht wird der Ordner mit der `Game.log` darin. Unter Linux werden die üblichen Wine-Präfixe abgesucht (lug-helper, Lutris, Bottles, Heroic). Wird nichts gefunden, fragt der Assistent danach.
 
-Nothing else. No Python, no account — and whether you install is your call (see below).
+Sonst nichts. Kein Python, kein Konto — und ob du installieren willst, entscheidest du (siehe unten).
 
-**Optional:** the **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** (Windows only). With it, names come in German and anything the log missed is filled in.
+**Optional:** der **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** (nur Windows). Mit ihm kommen die Bezeichnungen auf Deutsch, und was in den Protokollen nicht mehr steht, wird nachgemeldet.
 
-> ⚠️ **Both write into the same game text file.** That is not a problem, but worth knowing: where the launcher has already put a blueprint list into a contract, the watcher **replaces** it with the same list **plus checkboxes** — it does not add a second one. Undo the notes and the launcher's state is back, character for character.
+> ⚠️ **Beide schreiben in dieselbe Textdatei des Spiels.** Das ist kein Problem, aber man sollte es wissen: Wo der Launcher schon eine Bauplan-Liste in einen Auftrag gesetzt hat, **ersetzt** der Watcher sie durch dieselbe Liste **mit Kästchen** — er stellt keine zweite daneben. Nimmst du die Angaben zurück, steht der Stand des Launchers wieder da, Zeichen für Zeichen.
 >
-> If the launcher runs **afterwards**, it writes its own version back and the checkboxes are gone. The watcher notices by itself and puts them back — at the next check at the latest (every six hours), immediately via *In-game text → Refresh*.
+> Läuft der Launcher **danach** noch einmal, schreibt er seine eigene Fassung zurück und die Kästchen sind weg. Der Watcher merkt das von selbst und trägt sie wieder ein — spätestens beim nächsten Blick (alle sechs Stunden), sofort über *Texte im Spiel → Auffrischen*.
 
-## Getting started
+## Start
 
-1. Download the file for your system from the **[releases page](../../releases)**:
+1. Auf der **[Releases-Seite](../../releases)** die Datei für dein System herunterladen:
 
-   | System | File | What happens |
+   | System | Datei | Was passiert |
    |---|---|---|
-   | **Windows** | `SC-BP-Watcher-Setup.exe` | Installs with a start menu entry, optional desktop icon and autostart — and uninstalls cleanly |
-   | **Linux** | `SC-BP-Watcher-x86_64.AppImage` | A single file. The wizard offers an application menu entry if you want one |
+   | **Windows** | `SC-BP-Watcher-Setup.exe` | Installiert mit Startmenü-Eintrag, optionalem Desktop-Symbol und Autostart — und lässt sich ordentlich wieder deinstallieren |
+   | **Linux** | `SC-BP-Watcher-x86_64.AppImage` | Eine einzelne Datei. Einen Startmenü-Eintrag bietet der Assistent auf Wunsch an |
 
-2. Run it. Done.
+2. Starten. Fertig.
 
-No Python, no extra packages — the installer brings everything with it and can be removed again through *Apps & Features*.
+Kein Python, keine Zusatzpakete — der Installer bringt alles mit und lässt sich über *Apps & Features* wieder entfernen.
 
-> **Why the standalone `.exe` is gone** (as of v3.0.0): it existed for a long
-> time as a second route, for anyone who did not want to install anything. That
-> came at a price you only noticed later — an update put the new version
-> **beside** the old file instead of replacing it. Anyone clicking their usual
-> shortcut afterwards kept using the old version for months without noticing.
-> With the installer that cannot happen: a start-menu entry, updates that
-> genuinely replace, autostart as a checkbox, and a clean uninstall. On Linux
-> the AppImage stays as it is. On Linux, make the AppImage executable once (right click → Properties → *Executable as program*, or `chmod +x SC-BP-Watcher-x86_64.AppImage`).
+> **Warum es die einzelne `.exe` nicht mehr gibt** (seit v3.0.0): Es gab sie
+> lange als zweiten Weg, für alle, die nichts installieren wollten. Das hatte
+> aber einen Preis, den man erst später merkte — ein Update legte die neue
+> Fassung **neben** die alte Datei, statt sie zu ersetzen. Wer danach seine
+> gewohnte Verknüpfung anklickte, benutzte monatelang unbemerkt die alte
+> Version. Mit dem Installer kann das nicht passieren: Startmenü-Eintrag,
+> Updates ersetzen wirklich, Autostart ist ein Häkchen, und deinstallieren
+> lässt es sich ordentlich. Unter Linux bleibt alles beim AppImage. Unter Linux muss das AppImage einmalig ausführbar gemacht werden (Rechtsklick → Eigenschaften → *Als Programm ausführbar*, oder `chmod +x SC-BP-Watcher-x86_64.AppImage`).
 
-On first start a **wizard** walks you through setup: language, finding Star Citizen, collecting your existing blueprints. It takes a minute, and then your inventory is there.
+Beim ersten Start führt dich ein **Assistent** durch die Einrichtung: Sprache, Star Citizen finden, bisherige Baupläne holen. Das dauert eine Minute, danach steht dein Bestand.
 
-### Code signing
+### Signatur der Dateien
 
-This project has applied to the [SignPath Foundation](https://signpath.org/)
-for free code signing for open source projects. Once approved, released
-Windows binaries will be signed by SignPath, and Windows will show the
-publisher name instead of "unknown publisher".
+Für dieses Projekt ist eine kostenlose Code-Signatur bei der
+[SignPath Foundation](https://signpath.org/) beantragt — einem Angebot für
+quelloffene Projekte. Sobald sie bewilligt ist, werden die Windows-Dateien
+von SignPath unterschrieben, und Windows zeigt statt „unbekannter
+Herausgeber" einen Namen an.
 
-Builds are produced exclusively by a public GitHub Actions workflow — see
-[SECURITY.md](SECURITY.md) for how releases are built and what the program
-does and does not send.
+Gebaut wird ausschließlich über einen öffentlichen GitHub-Actions-Ablauf —
+[SECURITY.md](SECURITY.md) beschreibt, wie eine Version entsteht und was das
+Programm sendet (und was nicht).
 
-### ⚠️ Windows says "Windows protected your PC"
+### ⚠️ Windows meldet „Der Computer wurde durch Windows geschützt"
 
-This appears on the first launch, and it is **not a virus detection**:
+Das kommt beim ersten Start, und es ist **kein Virenfund**:
 
-> Microsoft Defender SmartScreen prevented an unrecognised app from starting.
+> Von Microsoft Defender SmartScreen wurde der Start einer unbekannten App verhindert.
 
-**To run it anyway:** click **More info** → **Run anyway**. It will not ask again.
+**So startest du trotzdem:** **Weitere Informationen** anklicken → **Trotzdem ausführen**. Danach kommt die Meldung nicht wieder.
 
-**Why this happens:** SmartScreen does not check whether a program is harmful — it checks whether it is **known**. A file becomes known through a purchased code-signing certificate (several hundred euros a year) or by being downloaded by very many people. A free fan tool has neither, and every new version starts from zero again.
+**Warum das passiert:** SmartScreen prüft nicht, *ob* ein Programm schädlich ist, sondern ob es **bekannt** ist. Bekannt wird eine Datei durch eine gekaufte Code-Signatur (mehrere hundert Euro im Jahr) oder dadurch, dass sie sehr viele Leute heruntergeladen haben. Ein kostenloses Fan-Werkzeug hat beides nicht — jede neue Version fängt wieder bei null an.
 
-**If you would rather not take my word for it — you don't have to:**
+**Wenn du das nicht einfach glauben willst — musst du auch nicht:**
 
-- The **source is open** ([here](../../)), and the file is not built by me but by **GitHub Actions** from exactly that source. The build is there to read: [`.github/workflows/release.yml`](.github/workflows/release.yml)
-- Every file on the releases page carries its **SHA-256 checksum** — GitHub shows it directly
-- Upload it to **[VirusTotal](https://www.virustotal.com)** if you like. Individual scanners are known to flag PyInstaller executables; that is a classic false positive
+- Der **Quellcode ist offen** ([hier](../../)), und die Datei wird nicht von mir gebaut, sondern von **GitHub Actions** aus genau diesem Quellcode. Wer will, kann den Bauvorgang nachlesen: [`.github/workflows/release.yml`](.github/workflows/release.yml)
+- Jede Datei auf der Releases-Seite trägt ihre **SHA-256-Prüfsumme** — GitHub zeigt sie direkt an
+- Lade sie bei **[VirusTotal](https://www.virustotal.com)** hoch, wenn du magst. Einzelne Prüfprogramme schlagen bei PyInstaller-Dateien gern mal an, das ist ein bekannter Fehlalarm-Klassiker
 
-On **Linux** this message does not exist — the file just needs to be made executable once.
+Unter **Linux** gibt es diese Meldung nicht — dort muss die Datei nur einmal ausführbar gemacht werden.
 
-> ℹ️ Verified against a real Star Citizen installation, with both a **German and an English** game client. Feedback from other machines is still welcome — different install locations, different screen setups, Windows. As an [issue](../../issues).
+> ℹ️ Geprüft an einer echten Star-Citizen-Installation, mit **deutschem und englischem** Spiel-Client. Rückmeldungen von anderen Rechnern sind weiter willkommen — andere Installationsorte, andere Bildschirmaufbauten, Windows. Gern als [Issue](../../issues).
 
 <details>
-<summary>Running from source (for the curious and for developers)</summary>
+<summary>Aus dem Quellcode starten (für Neugierige und Entwickler)</summary>
 
-You need [Python 3.8+](https://www.python.org/downloads/) — on Windows tick **„Add Python to PATH"** during setup. No extra packages required.
+Dafür brauchst du [Python 3.8+](https://www.python.org/downloads/) — unter Windows beim Setup **„Add Python to PATH"** anhaken. Zusatzpakete sind keine nötig.
 
 ```bash
 git clone https://github.com/Xharig-1/SC-BP-Watcher.git
 ```
 
-| System | Start with |
+| System | Starten mit |
 |---|---|
 | Windows | `SC-BP-Watcher starten.bat` |
 | Linux | `SC-BP-Watcher starten.sh` |
 
-On Linux the `tk` package (Python's window library) is often missing. The start script tells you what it is called on your distribution — on Arch `sudo pacman -S tk`, on Debian and Ubuntu `sudo apt install python3-tk`.
+Unter Linux fehlt oft das Paket `tk` (die Fenster-Bibliothek von Python). Das Startskript sagt dir, wie es auf deiner Distribution heißt — bei Arch etwa `sudo pacman -S tk`, bei Debian und Ubuntu `sudo apt install python3-tk`.
 
-The finished files are built by **GitHub** on every version tag ([`.github/workflows/release.yml`](.github/workflows/release.yml)) — nobody has to build by hand, not even the author.
+Die fertigen Dateien baut **GitHub** bei jedem Versions-Tag automatisch ([`.github/workflows/release.yml`](.github/workflows/release.yml)) — von Hand muss das niemand, auch der Autor nicht.
 
 </details>
 
-## Using it
+## Bedienung
 
-The narrow bar sits above the game and reports new finds. Everything else is behind the symbols in its title bar:
+Die schmale Leiste liegt über dem Spiel und meldet Neuzugänge. Alles Weitere steckt hinter den Zeichen in ihrer Titelleiste:
 
-| Symbol | What it does |
+| Zeichen | Was es tut |
 |---|---|
-| <img src="assets/symbole/22/glocke-grau.png" width="22" alt=""> | **Bell** — a new build is available; turns green as soon as there is one |
-| <img src="assets/symbole/22/starten-grau.png" width="22" alt=""> | **Rocket** — launch Star Citizen. Only appears if a way to start it was found |
-| <img src="assets/symbole/22/einstellungen-grau.png" width="22" alt=""> | **Gear** — open the settings |
-| <img src="assets/symbole/22/liste-grau.png" width="22" alt=""> | **Clipboard** — blueprint list: search, filter, tick off, look up where things drop |
-| <img src="assets/symbole/22/schloss_auf-grau.png" width="22" alt=""> | **Lock** — pass mouse clicks through to the game. It turns green and closed while they do; one click on it catches them again |
-| <img src="assets/symbole/22/einklappen-grau.png" width="22" alt=""> | **Chevron** — fold the overlay down to just its bar |
-| <img src="assets/symbole/22/leeren-grau.png" width="22" alt=""> | **Eraser** — clear the messages on screen. Your blueprints stay |
-| <img src="assets/symbole/22/schliessen-grau.png" width="22" alt=""> | **Cross** — close |
-| <img src="assets/symbole/22/handelslager-gruen.png" width="22" alt=""> **Cargo hold** | What you carry to sell — deliberately kept apart from the workshop stock: one is building material you keep, the other is cargo you want gone. Enter commodity, location and SCU; the amount field does maths (`100+5`). Instead of a quality there is a **"marked as stolen"** tick — quality does not affect selling, and looted cargo is always Q 0 anyway |
-| <img src="assets/symbole/22/verkauf-gruen.png" width="22" alt=""> **Selling** | Where to offload your goods and what they pay **per SCU** — for **several commodities at once**. Sorted not by the highest price but by **how many of your goods a place takes**: 100 SCU gold, 40 copper and 25 iron pay 3,533,000 aUEC at one place, 3,566,000 spread over three — one percent more for two extra approaches. If the cargo is marked as stolen, the tab narrows down to the 15 terminals that ask no questions |
+| <img src="assets/symbole/22/glocke-grau.png" width="22" alt=""> | **Glocke** — neue Version verfügbar; färbt sich grün, sobald es eine gibt |
+| <img src="assets/symbole/22/starten-grau.png" width="22" alt=""> | **Rakete** — Star Citizen starten. Erscheint nur, wenn ein Weg dorthin gefunden wurde |
+| <img src="assets/symbole/22/einstellungen-grau.png" width="22" alt=""> | **Zahnrad** — Einstellungen öffnen |
+| <img src="assets/symbole/22/liste-grau.png" width="22" alt=""> | **Klemmbrett** — Bauplan-Liste: durchsuchen, filtern, abhaken, Herkunft nachschlagen |
+| <img src="assets/symbole/22/schloss_auf-grau.png" width="22" alt=""> | **Schloss** — Mausklicks ins Spiel durchreichen. Es wird grün und zu, solange sie durchgehen; ein Klick darauf fängt sie wieder ab |
+| <img src="assets/symbole/22/einklappen-grau.png" width="22" alt=""> | **Pfeil** — Overlay einklappen, bis nur noch die Leiste dasteht |
+| <img src="assets/symbole/22/leeren-grau.png" width="22" alt=""> | **Radiergummi** — angezeigte Meldungen wegräumen. Deine Baupläne bleiben |
+| <img src="assets/symbole/22/schliessen-grau.png" width="22" alt=""> | **Kreuz** — schließen |
 
-| Action | How |
+| Aktion | Wie |
 |---|---|
-| Move the window | Drag the bar at the top |
-| Resize | Drag the **◢** handle at the bottom right |
+| Fenster verschieben | Oben an der Leiste ziehen |
+| Größe ändern | Griff **◢** unten rechts ziehen |
 
-## How it works
+## Wie es funktioniert
 
-What the coloured dots mean:
+Was die Farbpunkte in der Liste bedeuten:
 
 | | |
 |---|---|
-| <img src="assets/symbole/18/bestaetigt-gruen.png" width="18" alt=""> | Blueprint unlocked — it's in your inventory |
-| <img src="assets/symbole/18/punkt-blau.png" width="18" alt=""> | Became newly craftable **in the game** — not something *you* have yet |
-| <img src="assets/symbole/18/gemerkt-gelb.png" width="18" alt=""> | Something from your watchlist has appeared |
-| <img src="assets/symbole/18/hinweiszeile-grau.png" width="18" alt=""> | A note, not an unlock (e.g. a gap in your inventory) |
+| <img src="assets/symbole/18/bestaetigt-gruen.png" width="18" alt=""> | Bauplan freigeschaltet — steht in deinem Bestand |
+| <img src="assets/symbole/18/punkt-blau.png" width="18" alt=""> | im **Spiel** neu craftbar geworden — noch nichts, was *du* hast |
+| <img src="assets/symbole/18/gemerkt-gelb.png" width="18" alt=""> | etwas von deiner Merkliste ist aufgetaucht |
+| <img src="assets/symbole/18/hinweiszeile-grau.png" width="18" alt=""> | ein Hinweis, keine Freischaltung (z. B. eine Lücke im Bestand) |
 
-1. **On start** the tool goes through the stored logs of earlier sessions (`logbackups/`) and quietly adds everything it finds to your inventory — nothing is lost if you played without the watcher running. Those blueprints are **not** reported as new. If the stored logs don't reach far enough back, the watcher says so as an <img src="assets/symbole/16/hinweiszeile-grau.png" width="16" alt=""> line instead of passing off an incomplete list as complete.
-2. **In the background** the **`Game.log`** is read — every 3 seconds, adjustable. *(The wording of the blueprint message depends on your game language — the watcher works it out by itself, see below.)* When the game writes `Added notification "Blueprint Received: <name>: "` on unlock, the blueprint is in the list **immediately** (<img src="assets/symbole/16/bestaetigt-gruen.png" width="16" alt="">) and in your inventory.
-   - **If the SC Deutsch Launcher is installed as well**, it fills in the details (German names) and reports anything the log missed. There is no intermediate stage: what the `Game.log` says is what the game did — there is nothing to confirm.
-3. Every new line is inserted at the top (name · type · `M/1/A` · time) and a short sound plays.
-   - **Once a minute** the craftable catalogue is checked. If it grew, CIG made something **newly craftable** with a patch → a blue line. This has nothing to do with your own unlocks.
-4. **Type, size, grade and class** come from scmdb.net's crafting data and from the bundled game data. If the SC Deutsch Launcher is present, its maintained catalogue takes precedence (German names). Above all of it are your own corrections from `bp-overrides.json`.
-5. **Your inventory** grows along and stays in `bestand.json` — with a note where each blueprint came from (log, catch-up, launcher).
 
-> **Why read the log directly?** The SC Deutsch Launcher reads the same file but only exports its own every few minutes. Measured on 2026-07-30: unlock in game **21:23:49** → launcher export **21:26:24** = **2.5 minutes** of delay. Reading it yourself gets you there in seconds — with nobody in between.
+1. **Beim Start** sieht das Tool die aufgehobenen Logs vergangener Sitzungen durch (`logbackups/`) und übernimmt alles Gefundene still in deinen Bestand — wer ohne laufenden Watcher gespielt hat, verliert nichts. Diese Baupläne werden **nicht** als neu gemeldet. Reichen die Sicherungen nicht weit genug zurück, sagt der Watcher das als <img src="assets/symbole/16/hinweiszeile-grau.png" width="16" alt="">-Zeile, statt eine unvollständige Liste als vollständig auszugeben.
+2. **Im Hintergrund** (eigener Thread) wird die **`Game.log`** gelesen — alle 3 Sekunden, einstellbar. Schreibt das Spiel beim Freischalten `Added notification "Bauplan erhalten: <Name>: "`, steht der Bauplan **sofort** in der Liste (<img src="assets/symbole/16/bestaetigt-gruen.png" width="16" alt="">) und im Bestand.
+   - **Ist zusätzlich der SC Deutsch Launcher installiert**, ergänzt er die Angaben (deutsche Bezeichnungen) und meldet nach, was im Log fehlte. Eine Zwischenstufe gibt es nicht: Was in der `Game.log` steht, steht im Spiel — da ist nichts zu bestätigen.
+3. Jede neue Zeile wird oben eingefügt (Name · Art · `M/1/A` · Uhrzeit) und ein kurzer Ton gespielt.
+   - **Einmal pro Minute** wird der Craftbar-Katalog geprüft. Ist er gewachsen, hat CIG mit einem Patch etwas **neu craftbar** gemacht → eine blaue Zeile. Das hat nichts mit deinem Freischalt-Stand zu tun. Der Vergleichsstand liegt als `catalog-seen.json` im eigenen Ordner und überlebt Neustarts; beim allerersten Start wird nur die Basis gesetzt.
+4. **Art, Größe, Gütegrad und Klasse** kommen aus den Craftdaten von scmdb.net und aus den mitgelieferten Spieldaten. Ist der SC Deutsch Launcher da, hat sein gepflegter Katalog Vorrang (deutsche Bezeichnungen). Über allem stehen deine eigenen Korrekturen aus `bp-overrides.json`.
+5. **Dein Bestand** wächst dabei mit und bleibt in `bestand.json` erhalten — mit Vermerk, woher jeder Bauplan stammt (Log, Nachlese, Launcher). Das ist die Liste „welche habe ich", die bisher allein vom Launcher kam.
 
-Files watched:
+> **Warum direkt aus der Log?** Der SC Deutsch Launcher liest dieselbe Datei, exportiert seine eigene aber nur alle paar Minuten. Gemessen am 30.07.2026: Freischaltung im Spiel **21:23:49** → Launcher-Export **21:26:24** = **2,5 Minuten** Verzug. Wer selbst mitliest, ist in Sekunden dran — und braucht dafür niemanden dazwischen.
+
+Überwachte Dateien:
 
 ```text
-…\StarCitizen\LIVE\Game.log                 (the game — the actual source)
-…\StarCitizen\LIVE\logbackups\              (earlier sessions, read on start)
-…\sc-deutsch-launcher\blueprints\           (optional: German names, fills gaps)
+…\StarCitizen\LIVE\Game.log                 (Spiel — die eigentliche Quelle)
+…\StarCitizen\LIVE\logbackups\             (frühere Sitzungen, beim Start nachgelesen)
+…\sc-deutsch-launcher\blueprints\           (optional: deutsche Namen, füllt Lücken)
 ```
 
-Its own files (inventory, settings, cache) live here:
+Eigene Dateien (Bestand, Einstellungen, Zwischenspeicher) liegen hier:
 
-| System | Folder |
+| System | Ordner |
 |---|---|
 | Windows | `%APPDATA%\sc-bp-watcher\` |
 | Linux | `~/.config/sc-bp-watcher/` |
 
-Both can be moved with the `SC_BP_HOME` environment variable.
+Beides lässt sich mit der Umgebungsvariablen `SC_BP_HOME` verlegen.
 
-### Game language
+### Spielsprache
 
-The blueprint message in the log is translated, and the watcher **works out by itself** how it reads in your client. It knows over 700 blueprint names; if a log line contains one of them, the text in front of it is the phrase it was looking for. That works for languages nobody planned for — French and Spanish just as well as English.
+Die Bauplan-Meldung im Log ist übersetzt — und der Watcher **findet selbst heraus**, wie sie in deinem Client lautet. Er kennt über 700 Bauplan-Namen; steht in einer Logzeile einer davon, ist der Text davor die gesuchte Formulierung. Das klappt auch bei Sprachen, die niemand vorgesehen hat: Französisch und Spanisch genauso wie Englisch.
 
-German and English are additionally built in, and you can add your own in `phrasen.json` in its own folder:
+Deutsch und Englisch sind zusätzlich fest hinterlegt, und wer möchte, trägt eigene in `phrasen.json` im eigenen Ordner ein:
 
 ```json
 { "phrasen": ["Blueprint Received"] }
 ```
 
-### Setting your own paths
+### Eigene Pfade eintragen
 
-If Star Citizen (or the SC Deutsch Launcher) isn't in one of the usual places, you enter the folder yourself — in `einstellungen.json` in the folder above:
+Liegt Star Citizen (oder der SC Deutsch Launcher) nicht an einer der üblichen Stellen, trägst du den Ordner selbst ein — in `einstellungen.json` im Ordner oben:
 
 ```json
 {
-  "spiel_ordner": "D:\\Games\\StarCitizen\\LIVE",
+  "spiel_ordner": "D:\\Spiele\\StarCitizen\\LIVE",
   "launcher_ordner": ""
 }
 ```
 
-`spiel_ordner` is the folder containing `Game.log` (usually `LIVE`). An empty field means „search automatically". Restart the watcher after changing it.
+In `spiel_ordner` gehört der Ordner, in dem die `Game.log` liegt (meist `LIVE`). Ein leeres Feld heißt „bitte suchen". Nach dem Ändern den Watcher neu starten.
 
-> If the watcher can't find the game, it creates this file **by itself** on start and tells you where it is — you don't have to create it by hand. The file lists the places that were searched next to each field, as does the window. So you can see what such a path looks like on your system instead of guessing.
+> Findet der Watcher das Spiel nicht, legt er diese Datei beim Start **von selbst** an und sagt dir, wo sie liegt — du musst sie nicht von Hand erzeugen. In der Datei stehen bei jedem Feld die Orte, an denen gesucht wurde; dieselben nennt auch das Fenster. So siehst du, wie so ein Pfad auf deinem System aussieht, statt ihn raten zu müssen.
 
-### Waiting for specific items
+### Auf bestimmte Gegenstände warten
 
-Waiting for one particular blueprint? Click the **star** next to its name in the blueprint list. The search box finds it in seconds, and the **watching** filter shows what you're waiting for.
+Wartest du auf einen ganz bestimmten Bauplan, klick in der Bauplan-Liste auf den **Stern** neben seinem Namen. Über das Suchfeld findest du ihn in Sekunden, und der Filter **beobachtet** zeigt dir, worauf du gerade wartest.
 
-When a watched blueprint appears, the watcher announces it in gold with a star and its own sound — and then **removes it from the watchlist by itself**. What you have doesn't need to be on there.
+Taucht ein beobachteter Bauplan auf, meldet ihn der Watcher auffällig in Gold mit einem Stern und eigenem Signalton — und **nimmt ihn danach von selbst von der Merkliste**. Was du hast, muss dort nicht mehr stehen.
 
-## Settings
+<details>
+<summary>Für Fortgeschrittene: Muster statt Namen</summary>
 
-In `einstellungen.json` in its own folder — a text file, not code. Restart the watcher after changing it. The file is created on first start and explains every field itself.
+Manchmal wartet man auf etwas, dessen genauen Namen es noch gar nicht gibt — „irgendein Helm für den schweren Anzug". Dafür kennt die `watchlist.json` im eigenen Ordner neben den angeklickten Namen auch **Muster**:
 
-| Field | Meaning | Default |
+```json
+{
+  "namen": ["Attrition-5 Repeater"],
+  "eintraege": [
+    { "titel": "Helm für den schweren Anzug", "muster": ["manticore helmet"] },
+    { "titel": "Kühler, egal welcher", "muster": ["cooler"] }
+  ]
+}
+```
+
+Ein Muster-Eintrag hat einen frei gewählten **Titel** (der steht später in der Meldung) und beliebig viele **Muster**, die kleingeschrieben als Teilstück gegen jeden neuen Katalog-Eintrag geprüft werden — `cooler` trifft also jeden Kühler, `manticore helmet` nur diesen einen.
+
+Von Hand nötig ist das nicht: Für einen bestimmten Bauplan genügt der Stern in der Liste.
+
+</details>
+
+## Einstellungen
+
+In `einstellungen.json` im eigenen Ordner — eine Textdatei, kein Code. Nach dem Ändern den Watcher neu starten. Die Datei wird beim ersten Start angelegt und erklärt jedes Feld selbst.
+
+| Feld | Bedeutung | Standard |
 |---|---|---|
-| `sprache` | Interface language: `auto`, `de` or `en` | `auto` |
-| `spiel_ordner` | Where Star Citizen is (empty = search automatically) | empty |
-| `launcher_ordner` | Where the SC Deutsch Launcher is (empty = search automatically) | empty |
-| `pruefintervall_sekunden` | How often `Game.log` is checked — 1 to 60 allowed | `3` |
-| `signalton` | Short sound on a find | `true` |
+| `sprache` | Oberflächensprache: `auto`, `de` oder `en` | `auto` |
+| `spiel_ordner` | Wo Star Citizen liegt (leer = automatisch suchen) | leer |
+| `launcher_ordner` | Wo der SC Deutsch Launcher liegt (leer = automatisch suchen) | leer |
+| `pruefintervall_sekunden` | Wie oft die `Game.log` angesehen wird — erlaubt 1 bis 60 | `3` |
+| `signalton` | Kurzer Ton bei einem Fund | `true` |
 
-**Environment variables** — for a one-off case, without changing anything permanently:
+> Position und Größe des Fensters merkt sich der Watcher beim Verschieben und Beenden (`watcher.json` im selben Ordner) — zieh es einfach dorthin, wo du es haben willst. Eine feste Startlage gibt das Programm bewusst **nicht** vor: Wo ein Overlay gut sitzt, hängt am Monitoraufbau. Zum Zurücksetzen die Datei löschen.
 
-| Variable | Effect |
+> **Eigene Korrekturen:** Stimmt bei einem Bauplan die Angabe zu Klasse, Größe oder Gütegrad nicht, kannst du sie in `bp-overrides.json` im eigenen Ordner überschreiben — sie hat Vorrang vor allen anderen Quellen. Liegt die Datei woanders, gib den Pfad über die Umgebungsvariable `SC_BP_OVERRIDES` an.
+
+**Umgebungsvariablen** — für einen einmaligen Sonderfall, ohne etwas dauerhaft zu ändern:
+
+| Variable | Wirkung |
 |---|---|
-| `SC_BP_HOME` | different folder for inventory and settings |
-| `SC_INSTALL_DIR` | different game folder |
-| `SC_BP_LAUNCHER` | different launcher folder |
-| `SC_BP_NO_NET=1` | **no** network access — neither crafting data nor update check |
-| `SC_BP_SPRACHE` | language for this run (`de` / `en`) |
+| `SC_BP_HOME` | anderer Ordner für Bestand und Einstellungen |
+| `SC_INSTALL_DIR` | anderer Spielordner |
+| `SC_BP_LAUNCHER` | anderer Launcher-Ordner |
+| `SC_BP_NO_NET=1` | **keine** Netzabfragen — weder Craftdaten noch Versionsprüfung |
+| `SC_BP_SPRACHE` | Sprache für diesen Start (`de` / `en`) |
 
-## Helping to test
+<details>
+<summary>Für Bastler: Werte im Quellcode</summary>
 
-New versions appear **on Saturdays**. If you would rather not wait, you can get them earlier:
+Oben in `sc_bp_watcher.py` stehen weitere Konstanten — sie sind Vorgabewerte und werden von der `einstellungen.json` gestochen, wo es dort ein Feld gibt.
 
-**Info → Update & About → "Offer test versions too"**
+| Konstante | Bedeutung | Standard |
+|---|---|---|
+| `CAT_POLL` | Prüf-Intervall für den Craftbar-Katalog (ändert sich nur bei Patches) | `60` |
+| `MAX_ROWS` | Höchstzahl Zeilen in der Melde-Liste (ältere fallen unten raus) | `200` |
+| `CLASS_LETTER` | Kürzel je Klasse (M/S/I/C/K) | Military/Stealth/Industrial/Civilian/Competition |
+| `BG / FG / ACCENT / …` | Farben des Overlays | dunkel + Xharig-Grün |
 
-From then on the tool also reports test versions (recognisable by the `rc` in the number)
-— through the same update notice as always. Nothing to download by hand, nothing to hunt for.
+Die Formulierungen, an denen ein Bauplan im Log erkannt wird, stehen nicht mehr im Code, sondern in `scbp/sprache.py` beziehungsweise in deiner eigenen `phrasen.json`.
 
-- **Test versions are fully built and runnable**, but have not been proven for long.
-  Something may act up — that is exactly what they are for.
-- **The way back is always open.** Switch it off again and you will be offered the next
-  finished version: a finished version always counts as newer than any test version of
-  the same number. So nobody gets stuck on the test channel by accident.
-- **Without this setting you never see a test version.** If you want peace and quiet,
-  do nothing — that is the default.
+</details>
 
-Found something? An [issue](../../issues) helps more than any guess — or the **Report a bug**
-forum on [Discord](https://discord.gg/g2E7e6XxZC), if a screenshot is quicker than a description. Under
-**For advanced users → Diagnostics** there is "Copy details" — that block holds everything
-needed to track a problem down, without any personal information.
+## Beim Testen mithelfen
 
-## Passing it on
+Neue Versionen erscheinen **samstags**. Wer nicht warten will, bekommt sie vorher:
 
-> 🔒 **It's yours.** No account, no sign-in, no cloud. The tool reads files that are on your disk anyway and changes nothing about the game installation. It only reaches out to the network to **fetch** data — never to hand any over:
+**Info → Update & Über → „Auch Testversionen"**
+
+Danach meldet das Werkzeug auch Testversionen (erkennbar am `rc` in der Nummer) — über
+dieselbe Update-Meldung wie sonst. Nichts von Hand herunterladen, nichts suchen.
+
+- **Testversionen sind fertig gebaut und lauffähig**, aber noch nicht lange erprobt.
+  Es kann etwas klemmen — genau dafür sind sie da.
+- **Der Rückweg steht immer offen.** Schaltest du wieder um, bekommst du die nächste
+  stabile Version angeboten: Eine stabile gilt immer als neuer als jede Testversion
+  derselben Nummer. Man bleibt also nicht versehentlich im Testkanal hängen.
+- **Ohne diese Einstellung merkst du von Testversionen nichts.** Wer Ruhe will, muss
+  nichts tun — das ist die Voreinstellung.
+
+Etwas gefunden? Ein [Issue](../../issues) hilft mehr als jede Vermutung — oder das Forum
+**Fehler-Melden** im [Discord](https://discord.gg/g2E7e6XxZC), wenn ein Bildschirmfoto schneller geht als eine
+Beschreibung. Unter **Für Fortgeschrittene → Diagnose** gibt es „Angaben kopieren" — der
+Textblock enthält alles, was zur Fehlersuche gebraucht wird, ohne persönliche Angaben.
+
+## Weitergeben
+
+> 🔒 **Es gehört dir.** Kein Konto, keine Anmeldung, keine Cloud. Das Werkzeug liest Dateien, die ohnehin auf deiner Platte liegen, und verändert an der Spielinstallation nichts. Ins Netz greift es nur, um Daten **zu holen** — nie, um welche abzuliefern:
 >
-> | What for | How often |
+> | Wofür | Wie oft |
 > |---|---|
-> | Values and origins from scmdb.net | once per game version |
-> | Resource prices and storage locations from UEX Corp | at most once a day |
-> | Contract texts and translation sources | when you switch them on |
-> | Whether there is a new build | at start |
-> | CIG's server status | while the page is open |
+> | Werte und Herkunft von scmdb.net | einmal je Spielversion |
+> | Rohstoffpreise und Lagerorte von UEX Corp | höchstens einmal am Tag |
+> | Auftragstexte und Übersetzungsquellen | wenn du sie einschaltest |
+> | Ob es eine neue Version gibt | beim Start |
+> | Der Serverstatus von CIG | solange die Seite offen ist |
 >
-> **All of it** can be switched off with `SC_BP_NO_NET=1`. The one exception is the problem report — that only goes out when you press the button yourself, and you see the contents beforehand.
+> **Alles davon** lässt sich mit `SC_BP_NO_NET=1` abschalten. Einzige Ausnahme ist der Fehlerbericht — der geht nur raus, wenn du selbst den Knopf drückst, und du siehst vorher, was drinsteht.
 
-Just pass on the file from the [releases page](../../releases) — the recipient needs neither Python nor a launcher, only Star Citizen.
+Gib einfach die Datei von der [Releases-Seite](../../releases) weiter — der Empfänger braucht weder Python noch einen Launcher, nur Star Citizen.
 
-> ℹ️ Windows SmartScreen reports „unknown publisher" for unsigned files → **More info → Run anyway**.
+> ℹ️ Windows SmartScreen meldet bei unsignierten Dateien „unbekannter Herausgeber" → **Weitere Informationen → Trotzdem ausführen**.
 
-## Thanks & credits
+## Danksagung & Credits
 
-This tool grew up with the **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)**: it was the only data source in the beginning, and without it this project would not exist. If it is installed, it is still used — it confirms finds and supplies German names. **Many thanks** to the team behind it! 🙏
+Dieses Werkzeug ist mit dem **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** groß geworden: Er war anfangs die einzige Datenquelle, und ohne ihn gäbe es dieses Projekt nicht. Ist er installiert, wird er weiter genutzt — er bestätigt die Funde und liefert deutsche Bezeichnungen. **Vielen Dank** an das Team dahinter! 🙏
 
-The values for type, size, grade and class as well as the origin of each blueprint come from the **[Star Citizen Mission DataBase (scmdb.net)](https://scmdb.net)** — a hobby project that prepares the game data and makes it freely available. **Thank you** for that! 🙏
+Die Werte zu Art, Größe, Gütegrad und Klasse sowie die Herkunft je Bauplan stammen aus der **[Star Citizen Mission DataBase (scmdb.net)](https://scmdb.net)** — ein Hobbyprojekt, das die Spieldaten aufbereitet und frei zugänglich macht. **Herzlichen Dank** dafür! 🙏
 
-> The watcher **does not ship this data**; it fetches it on your machine directly from scmdb.net, the way a browser would. scmdb is licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/); a bundled copy would be redistribution and would conflict with that licence as well as with this project's GPL. Fetching is sparing: only when a **new game version** is out.
+> Der Watcher **liefert diese Daten nicht mit**, sondern lädt sie auf deinem Rechner direkt bei scmdb.net — so wie es ein Browser täte. scmdb steht unter [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/); eine mitgelieferte Kopie wäre eine Weitergabe und würde sowohl dieser Lizenz als auch der GPL dieses Projekts widersprechen. Abgerufen wird sparsam: nur, wenn eine **neue Spielversion** vorliegt.
 
-As a base for the blueprint details you can pick **[StarStrings](https://github.com/MrKraken/StarStrings)** by **MrKraken** — cleaned-up English game text, used across many organisations. **Thanks** to MrKraken! 🙏
+Als Grundlage für die Bauplan-Angaben lässt sich **[StarStrings](https://github.com/MrKraken/StarStrings)** von **MrKraken** wählen — aufgeräumte englische Spieltexte, die in vielen Organisationen benutzt werden. **Danke** an MrKraken! 🙏
 
-> StarStrings is **not bundled** either; it is fetched from its own address when you ask for it. The project states no licence — all the more reason the text stays his.
+> Auch StarStrings **liegt nicht bei**, sondern wird auf Wunsch von der Original-Adresse geholt. Eine Lizenz gibt das Projekt nicht an — umso mehr gilt: Der Text bleibt seiner.
 
-**The watcher gets along with other tools.** StarStrings and the SC Deutsch Launcher mark blueprint contracts too, with the same `[BP]` mark. So the watcher adds **no second mark where one already stands**, and leaves any item name alone that already carries a tag. With the launcher its blueprint list **replaces** the launcher's instead of sitting beside it — it is the same list, only with the **tick boxes** for your own collection. Take the details back out and the other tool's state is there again, character for character.
+**Der Watcher verträgt sich mit anderen Werkzeugen.** StarStrings und der SC Deutsch Launcher kennzeichnen Bauplan-Aufträge ebenfalls, mit derselben Marke `[BP]`. Der Watcher setzt deshalb **keine zweite dazu, wo schon eine steht**, und lässt jeden Gegenstandsnamen in Ruhe, der bereits ein Kürzel trägt. Beim Launcher **ersetzt** seine Bauplan-Liste dessen Liste, statt eine zweite danebenzustellen — es ist dieselbe Liste, nur mit den **Kästchen** für deinen eigenen Bestand. Nimmst du die Angaben zurück, steht der Stand des anderen Werkzeugs wieder da, Zeichen für Zeichen.
 
-**The German translation of the game** is by **rjcncpt** — [StarCitizen-Deutsch-INI](https://github.com/rjcncpt/StarCitizen-Deutsch-INI), licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). It is distributed through the SC Deutsch Launcher and also exists in **Swiss German**; the watcher recognises both. The watcher does **not bundle** it and never passes on a modified copy — it only extends the file on your own machine, and the **source note in its first line is left untouched**. **Thanks** to rjcncpt! 🙏
+**Die deutsche Übersetzung des Spiels** stammt von **rjcncpt** — [StarCitizen-Deutsch-INI](https://github.com/rjcncpt/StarCitizen-Deutsch-INI), lizenziert unter [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de). Sie wird über den SC Deutsch Launcher verteilt und gibt es auch auf **Schweizerdeutsch**; der Watcher erkennt beide Fassungen. Der Watcher **liefert sie nicht mit** und gibt auch keine veränderte Fassung weiter — er ergänzt die Datei ausschließlich auf deinem Rechner, und die **Quellenangabe in ihrer ersten Zeile bleibt dabei unangetastet**. **Danke** an rjcncpt! 🙏
 
-**Resource prices** come from **[UEX Corp](https://uexcorp.space)** — a data project maintained by players. That is what puts a price next to every missing ingredient, or says it cannot be bought at all. These data are **not bundled** either; they are fetched on your machine, at most once a day. **Thanks** to UEX Corp! 🙏
+**Die Rohstoffpreise** kommen von **[UEX Corp](https://uexcorp.space)** — ein von Spielern gepflegtes Datenprojekt. Damit steht neben jeder fehlenden Zutat, was sie kostet, oder dass sie sich gar nicht kaufen lässt. Auch diese Daten **liegen nicht bei**, sondern werden auf deinem Rechner geholt — höchstens einmal am Tag. **Danke** an UEX Corp! 🙏
 
-The interface symbols come from the **[Lucide](https://lucide.dev)** set (ISC licence) — all drawn on the same grid with the same stroke width, which is why they look identical on Windows, Linux and macOS. **Thanks** to the Lucide community! 🙏 The licence text ships with the tool (`assets/symbole/LIZENZ.txt`) and is shown under **Thanks & Licenses**.
+Die Symbole der Oberfläche stammen aus dem **[Lucide](https://lucide.dev)**-Satz (ISC-Lizenz) — alle auf demselben Raster mit gleicher Strichstärke gezeichnet, weshalb sie unter Windows, Linux und macOS gleich aussehen. **Danke** an die Lucide-Gemeinschaft! 🙏 Der Lizenztext liegt bei (`assets/symbole/LIZENZ.txt`) und steht im Werkzeug unter **Danke & Lizenzen**.
 
-SC BP Watcher is an independent, unofficial companion tool with **no** official connection to the SC Deutsch Launcher or Cloud Imperium Games. All brand and project names belong to their respective owners.
+SC BP Watcher ist ein eigenständiges, inoffizielles Zusatz-Tool und steht in **keiner** offiziellen Verbindung zum SC Deutsch Launcher oder zu Cloud Imperium Games. Alle Marken- und Projektnamen gehören ihren jeweiligen Eigentümern.
 
 ## Author
 
@@ -475,13 +519,13 @@ SC BP Watcher is an independent, unofficial companion tool with **no** official 
 
 If you fork this project, please keep the credit in the footer or mention the original source.
 
-## What's next
+## Was noch kommt
 
-Work continues — what exactly is not on a list. What a build brought you can read in [`CHANGELOG.md`](CHANGELOG.md) or right in the tool under **„What's new"**.
+Es wird weitergebaut — was genau, steht in keiner Liste. Was eine Version gebracht hat, liest du im [`CHANGELOG.md`](CHANGELOG.md) oder direkt im Werkzeug unter **„Was ist neu"**.
 
-**Which version is being worked on right now** is in the changelog of the working branch: [CHANGELOG on `arbeit`](https://github.com/Xharig-1/SC-BP-Watcher/blob/arbeit/CHANGELOG.md). That is where finished but unreleased work collects — if you try a [test build](https://github.com/Xharig-1/SC-BP-Watcher/releases), that is where you read what is in it. This page always shows the **released** version.
+**An welcher Version gerade gearbeitet wird**, steht im Änderungsprotokoll des Arbeitszweigs: [CHANGELOG auf `arbeit`](https://github.com/Xharig-1/SC-BP-Watcher/blob/arbeit/CHANGELOG.md). Dort sammelt sich, was fertig gebaut, aber noch nicht veröffentlicht ist — wer eine [Testfassung](https://github.com/Xharig-1/SC-BP-Watcher/releases) ausprobiert, liest dort nach, was drin ist. Diese Seite hier zeigt immer die **veröffentlichte** Version.
 
-Wishes and bug reports are welcome as an [issue](../../issues) or on [Discord](https://discord.gg/g2E7e6XxZC) — suggestions make it into the next build more reliably than mind reading.
+Wünsche und Fehlermeldungen gern als [Issue](../../issues) oder im [Discord](https://discord.gg/g2E7e6XxZC) — Vorschläge landen eher im nächsten Bau als Gedankenlesen.
 
 ## Star Citizen Fan Content
 
@@ -496,25 +540,29 @@ Wishes and bug reports are welcome as an [issue](../../issues) or on [Discord](h
 > companies. All content on this site not authored by its host or users are property of their
 > respective owners.
 
-SC BP Watcher is an unofficial, non-commercial fan project for the *Star Citizen* community.
-It is **not affiliated with, endorsed, sponsored, or approved by** Cloud Imperium Rights LLC,
-Cloud Imperium Rights Ltd., or Roberts Space Industries.
+SC BP Watcher ist ein inoffizielles, nicht-kommerzielles Fan-Projekt für die
+Star-Citizen-Gemeinschaft. Es steht in **keiner Verbindung zu** Cloud Imperium Rights LLC,
+Cloud Imperium Rights Ltd. oder Roberts Space Industries und wird von ihnen weder unterstützt
+noch gebilligt.
 
-This project makes use of assets from the official
-[Star Citizen Fankit](https://robertsspaceindustries.com/fankit). Those materials are published
-for fan use and may only be used as explained by the terms of the **Fankit Agreement**, the
-**Fan Style Guide**, and the
-[Roberts Space Industries Terms of Service](https://robertsspaceindustries.com/tos) —
-specifically the section on User Generated Content (UGC).
+Dieses Projekt verwendet Material aus dem offiziellen
+[Star Citizen Fankit](https://robertsspaceindustries.com/fankit). Dieses Material ist für die
+Verwendung durch Fans veröffentlicht und darf nur nach den Bedingungen des
+**Fankit Agreement**, des **Fan Style Guide** und der
+[Roberts Space Industries Terms of Service](https://robertsspaceindustries.com/tos) verwendet
+werden — dort besonders der Abschnitt über nutzergenerierte Inhalte (UGC).
 
-> **Star Citizen®, Roberts Space Industries® and Cloud Imperium® are registered trademarks of
+> **Star Citizen®, Roberts Space Industries® und Cloud Imperium® sind eingetragene Marken der
 > Cloud Imperium Rights LLC.**
 
-All other Star Citizen content, artwork, names, logos and trademarks are the property of their
-respective owners. © 2025 Cloud Imperium Rights LLC and Cloud Imperium Rights Ltd.
+Alle übrigen Star-Citizen-Inhalte, Grafiken, Namen, Logos und Marken gehören ihren jeweiligen
+Eigentümern. © 2025 Cloud Imperium Rights LLC und Cloud Imperium Rights Ltd.
 
-Official site: **[robertsspaceindustries.com](https://robertsspaceindustries.com)**
+Offizielle Seite: **[robertsspaceindustries.com](https://robertsspaceindustries.com)**
 
-## License
+## Lizenz
 
-[GNU GPL v3.0](LICENSE) — free to use and modify; if you distribute it, the source has to come along under the same licence.
+**GNU General Public License v3.0** — Volltext in [LICENSE](LICENSE).
+
+Kurz: Du darfst das Programm nutzen, verändern und weitergeben. Wer es weitergibt — verändert
+oder nicht —, muss den Quellcode unter derselben Lizenz mitliefern. Es gibt keine Garantie.

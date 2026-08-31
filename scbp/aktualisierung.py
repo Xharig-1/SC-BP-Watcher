@@ -28,7 +28,7 @@ Drei Teile:
 
   **Nachsehen.** Einmal am Tag gegen die GitHub-API, im Hintergrund. Ohne Netz
   passiert nichts und es wird auch nichts gemeldet.
-  **Nachlesen.** Das Änderungsprotokoll liegt als `CHANGELOG.md` bei; neuere
+  **Nachlesen.** Das Änderungsprotokoll liegt als `CHANGELOG.en.md` bei; neuere
   Einträge kommen aus den Release-Texten. Beides zusammen ergibt die Historie.
   **Holen.** Die zur eigenen Verpackung passende Datei (`.exe` oder AppImage)
   wird geladen und ersetzt die laufende.
@@ -286,14 +286,14 @@ def freigaben():
 def _changelog_datei():
     """Die mitgelieferte Änderungsliste in der Sprache des Nutzers finden.
 
-    Es gibt zwei: `CHANGELOG.md` (englisch) und `CHANGELOG.de.md` (deutsch).
+    Es gibt zwei: `CHANGELOG.en.md` (englisch) und `CHANGELOG.md` (deutsch).
     Wer die Oberfläche auf Deutsch stehen hat, soll auch die Einträge auf
     Deutsch lesen — sonst wäre die Zweisprachigkeit an der Stelle nur behauptet.
     Fehlt die eigene Sprache, gilt die andere: eine fremdsprachige Auskunft ist
     besser als gar keine."""
     from . import sprache
-    namen = (['CHANGELOG.de.md', 'CHANGELOG.md'] if sprache.aktuelle() == 'de'
-             else ['CHANGELOG.md', 'CHANGELOG.de.md'])
+    namen = (['CHANGELOG.md', 'CHANGELOG.en.md'] if sprache.aktuelle() == 'de'
+             else ['CHANGELOG.en.md', 'CHANGELOG.md'])
     ordner = []
     if getattr(sys, 'frozen', False):        # PyInstaller legt Beigaben hierhin
         ordner.append(getattr(sys, '_MEIPASS', ''))
@@ -389,8 +389,8 @@ def punkte_nach_art(text):
 def protokoll():
     """Die Versionsgeschichte als Liste, neueste zuerst.
 
-    Zusammengesetzt aus zwei Quellen: der **mitgelieferten** `CHANGELOG.de.md`
-    bzw. `CHANGELOG.md` — je nach eingestellter Sprache — und den Release-Texten
+    Zusammengesetzt aus zwei Quellen: der **mitgelieferten** `CHANGELOG.md`
+    bzw. `CHANGELOG.en.md` — je nach eingestellter Sprache — und den Release-Texten
     von GitHub, die auch Versionen kennen, die neuer sind als die eigene.
 
     ⚠ Der mitgelieferte Changelog hat Vorrang, **weil nur er die Sprache kennt**.

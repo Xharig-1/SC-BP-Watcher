@@ -53,7 +53,7 @@ def nur_diese_fassung(tag):
     Gibt `None` zurück, wenn es keinen eigenen Abschnitt gibt. Der Aufrufer
     postet dann nur den Link statt eines fremden Textes.
     """
-    pfad = os.path.join(os.path.dirname(HIER), '..', 'CHANGELOG.de.md')
+    pfad = os.path.join(os.path.dirname(HIER), '..', 'CHANGELOG.md')
     pfad = os.path.normpath(pfad)
     try:
         with open(pfad, encoding='utf-8') as f:

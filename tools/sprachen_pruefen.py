@@ -40,9 +40,9 @@ import sys
 WURZEL = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PAARE = [
-    ('README.md', 'README.de.md', 'abschnitte'),
-    ('CHANGELOG.md', 'CHANGELOG.de.md', 'versionen'),
-    ('ROADMAP.md', 'ROADMAP.de.md', 'abschnitte'),
+    ('README.en.md', 'README.md', 'abschnitte'),
+    ('CHANGELOG.en.md', 'CHANGELOG.md', 'versionen'),
+    ('ROADMAP.en.md', 'ROADMAP.md', 'abschnitte'),
 ]
 
 
@@ -108,8 +108,8 @@ def pruefe(melden=print):
     # die **deutsche** Oberfläche — dem Prüfer war das entgangen, weil er nur
     # Abschnitte zählt. Wer die Bilder tauscht, tauscht damit einen Teil der
     # Übersetzung; genau darauf achtet dieser Block.
-    t_en = _lies('README.md') or ''
-    t_de = _lies('README.de.md') or ''
+    t_en = _lies('README.en.md') or ''
+    t_de = _lies('README.md') or ''
     bilder_en = set(re.findall(r'assets/(screenshot-[a-z0-9-]+\.png)', t_en))
     bilder_de = set(re.findall(r'assets/(screenshot-[a-z0-9-]+\.png)', t_de))
 
@@ -127,13 +127,13 @@ def pruefe(melden=print):
         # anzuhalten. Als Fehler gezählt stünde der Selbsttest so lange rot, bis
         # jemand elf Bildschirmfotos gemacht hat — und ein dauerhaft roter Test
         # wird irgendwann ignoriert, dann fällt auch das Echte nicht mehr auf.
-        melden('  HINWEIS  README.md zeigt %d deutsche Bilder — englische '
+        melden('  HINWEIS  README.en.md zeigt %d deutsche Bilder — englische '
                'Version fehlt noch' % len(geteilt))
         melden('           (%s%s)'
                % (', '.join(geteilt[:3]), ' …' if len(geteilt) > 3 else ''))
 
     # Jedes eingebundene Bild muss es auch geben.
-    for datei, bilder in (('README.md', bilder_en), ('README.de.md', bilder_de)):
+    for datei, bilder in (('README.en.md', bilder_en), ('README.md', bilder_de)):
         for b in sorted(bilder):
             if not os.path.exists(os.path.join('assets', b)):
                 fehler.append('%s bindet assets/%s ein — Datei fehlt'
