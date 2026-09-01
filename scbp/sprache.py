@@ -1320,7 +1320,12 @@ TEXTE = {
                         'Stable version  ·  recommended'),
     's_ub_fertig_h':      ('Das Übliche: eine Meldung, wenn eine geprüfte Version erscheint. Samstags, höchstens einmal die Woche.',
                                       'The usual: a notice when a tested version appears. Saturdays, at most once a week.'),
-    's_ub_test':       ('Auch Testversionen', 'Test versions too'),
+    # ⚠ Gleiches Muster wie `s_ub_fertig` direkt darüber: Name · Zweck, mit
+    # denselben doppelten Leerzeichen um den Punkt. „Auch Testversionen" stand
+    # als einziger Kasten ohne Zusatz da und las sich wie ein angehängter
+    # Nachsatz statt wie eine Wahl. Geändert am 01.09.2026.
+    's_ub_test':       ('Testversion  ·  zum Testen',
+                        'Test version  ·  for testing'),
     's_ub_test_h':        ('Du siehst Neues zuerst und hilfst beim Prüfen. Läuft ganz normal, ist aber weniger lange erprobt — es kann mal klemmen.',
                                     'You see new things first and help with testing. Runs normally, but has been tried out for less time — it can occasionally hiccup.'),
     # Die Herkunftsangaben im Dank-Block. ⚠ Sie standen als Datentabelle im
