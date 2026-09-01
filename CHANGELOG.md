@@ -6,6 +6,24 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc1 - 2026-09-01
+
+Eine Testfassung mit einer Korrektur an der wählbaren Ecke.
+
+### Behoben
+
+- **Das Schloss blieb in der alten Ecke stehen.** Wird eine Ecke für das
+  Overlay gewählt, wandert das Fenster dorthin — das Schloss blieb aber, wo es
+  war. Im eingeklappten Zustand fiel es besonders auf: Der schmale Streifen saß
+  in der Ecke, das Schloss irgendwo mitten auf dem Bildschirm.
+  Der Grund: Das Schloss ist ein **eigenes Fenster**, das passgenau über dem
+  Schloss der Leiste liegt (nötig, weil ein durchklickbares Overlay auch seine
+  eigenen Knöpfe nicht mehr annimmt). Es wurde bisher nur beim Verschieben und
+  bei Größenänderungen nachgezogen — nicht beim Klappen und nicht beim Wechsel
+  der Ecke. Beides holt es jetzt nach.
+  Gemeldet von **Haldjas (pr0)**, samt einem Bildschirmfoto, das zeigt, wohin
+  es gehört.
+
 ## v3.9.1 - 2026-09-01
 
 Drei Dinge, die der Fehlerbericht selbst ans Licht gebracht hat. Zwei davon

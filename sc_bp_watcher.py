@@ -59,7 +59,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.9.1'
+__version__ = '3.9.2-rc1'
 
 
 def _mitgeliefert(name):
@@ -2679,6 +2679,15 @@ class Overlay:
                                           else 'einklappen')
             self.eingeklappt = zu
             self._grip_nachziehen()
+            # ⚠ Das Schloss ist ein EIGENES Fenster und wandert nicht von
+            # allein mit. Beim Klappen ändert sich Höhe UND Lage (in einer
+            # unteren Ecke rutscht das Fenster nach oben, weil es kürzer
+            # wird) — ohne diese Zeile bleibt das Schloss stehen, wo das
+            # Overlay vorher war. Gemeldet von Haldjas (pr0) am 01.09.2026:
+            # „das Overlay wird zwar in die jeweiligen Ecken verschoben, aber
+            # der Grüne Balken im eingeklappten Zustand sitzt weiter am
+            # selben Ort."
+            self._schloss_nachziehen()
             if merken:
                 pfade.einstellung_setzen('eingeklappt', zu)
         except tk.TclError:
@@ -2735,6 +2744,10 @@ class Overlay:
             b, h = self.root.winfo_width(), self.root.winfo_height()
             x, y = self._klapp_ecke(b, h)
             self.root.geometry('%dx%d+%d+%d' % (b, h, x, y))
+            # ⚠ Ohne diese Zeile bleibt das Schloss in der ALTEN Ecke stehen,
+            # waehrend das Overlay in die neue wandert. Es ist ein eigenes
+            # Fenster (siehe `_schloss_anwenden`) und folgt nicht von selbst.
+            self._schloss_nachziehen()
             self._save_geo()
         except Exception as ausnahme:
             fehler.merken('overlay.ecke_anwenden', ausnahme)

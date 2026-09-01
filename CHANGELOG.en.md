@@ -6,6 +6,23 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc1 - 2026-09-01
+
+A test build with one fix for the selectable corner.
+
+### Fixed
+
+- **The lock stayed in the old corner.** When a corner is chosen for the
+  overlay, the window moves there — but the lock stayed where it was. It showed
+  most clearly while collapsed: the narrow strip sat in the corner, the lock
+  somewhere in the middle of the screen.
+  The reason: the lock is a **separate window** placed exactly on top of the
+  lock in the title bar (necessary because a click-through overlay no longer
+  accepts its own buttons either). Until now it was only repositioned on moves
+  and resizes — not when collapsing, and not when switching corners. Both now
+  do it.
+  Reported by **Haldjas (pr0)**, with a screenshot showing where it belongs.
+
 ## v3.9.1 - 2026-09-01
 
 Three things the diagnostic report itself brought to light. Two of them were in
