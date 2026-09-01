@@ -59,7 +59,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.9.2-rc2'
+__version__ = '3.9.2-rc3'
 
 
 def _mitgeliefert(name):
@@ -1653,6 +1653,10 @@ class Overlay:
         bar.pack(fill='x', side='top')
         bar.pack_propagate(False)
         self.bar = bar
+        # Sitzt das Overlay in einer UNTEREN Ecke, gehoert die Leiste an den
+        # unteren Fensterrand — sonst klebt sie eine Fensterhoehe ueber dem
+        # Bildschirmrand. Siehe `_leiste_ausrichten`.
+        self._leisten_seite = 'top'
         titel_lbl = tk.Label(bar, text=f'● SC BP Watcher v{__version__}', bg=BAR,
                              fg=ACCENT, font=self.f_title)
         titel_lbl.pack(side='left', padx=8)
@@ -2710,6 +2714,41 @@ class Overlay:
         except Exception:
             return max(self.root.winfo_width(), 260)
 
+    def _leiste_ausrichten(self):
+        """Die Titelleiste an den Fensterrand haengen, der zur Ecke passt.
+
+        ⚠⚠ Gemeldet von Haldjas (pr0) am 02.09.2026, nachdem ein erster Versuch
+        am eigentlichen Punkt vorbeiging: *„Der Balken und das Schloss sind, der
+        Einstellung nach, mit in die Ecken gesprungen, aber eben weiterhin am
+        oberen Rand vom Watcher, was bedeutet, dass sie entsprechend weiter oben
+        im Bild sitzen, wenn man den watcher unten platziert hat."*
+
+        Das Fenster wanderte also richtig — die Leiste war nur fest oben
+        verankert (`side='top'`). Bei einer unteren Ecke sass sie damit eine
+        ganze Fensterhoehe ueber dem Bildschirmrand. Hier wechselt sie die
+        Seite: oben bleibt oben, unten wandert nach unten.
+
+        ⚠ `pack_forget()` und neu packen ist noetig — `side` laesst sich
+        nachtraeglich nicht umstellen. Und die Leiste muss **zuerst** wieder
+        gepackt werden, damit der Inhalt darunter (bzw. darueber) seinen Platz
+        bekommt; deshalb `before`/`after` ueber die Geschwister.
+        """
+        try:
+            ecke = pfade.einstellung('overlay_ecke') or 'frei'
+            seite = 'bottom' if str(ecke).startswith('unten') else 'top'
+            if seite == self._leisten_seite:
+                return
+            self.bar.pack_forget()
+            self.bar.pack(fill='x', side=seite)
+            # ⚠ Der Ziehgriff sitzt am unteren Fensterrand. Liegt die Leiste
+            # jetzt auch dort, ueberdecken sie sich — dann greift dieselbe
+            # Ueberlegung wie beim eingeklappten Fenster.
+            self._leisten_seite = seite
+            self._grip_nachziehen()
+            self._schloss_nachziehen()
+        except Exception as ausnahme:
+            fehler.merken('overlay.leiste_ausrichten', ausnahme)
+
     def _klapp_ecke(self, breite, hoehe):
         """Wohin das Fenster gehoert — Ecke oder da, wo es steht.
 
@@ -2740,6 +2779,10 @@ class Overlay:
     def ecke_anwenden(self):
         """Von der Einstellungsseite gerufen: die Ecke sofort uebernehmen."""
         try:
+            # Erst die Leiste an den richtigen Rand, dann messen: Das Umhaengen
+            # aendert nichts an der Fenstergroesse, aber die Reihenfolge haelt
+            # den Ablauf verstaendlich — Aussehen, dann Lage.
+            self._leiste_ausrichten()
             self.root.update_idletasks()
             b, h = self.root.winfo_width(), self.root.winfo_height()
             x, y = self._klapp_ecke(b, h)
@@ -2866,6 +2909,9 @@ class Overlay:
         ⚠ Erst hier, nicht im Aufbau: Beides fasst das fertige Fenster an. Vorher
         hat es unter X11 noch keine Kennung, die man einer Maske geben könnte.
         """
+        # Beim Start die Leiste an den Rand haengen, der zur gespeicherten Ecke
+        # passt — sonst sitzt sie bis zum ersten Eckenwechsel wieder oben.
+        self._leiste_ausrichten()
         self.anzeigeart = pfade.einstellung('overlay_modus') or 'immer'
         if self.anzeigeart == 'popup':
             # ⚠ Die Lage merken, **bevor** versteckt wird. Ein Fenster, das noch

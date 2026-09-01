@@ -3273,6 +3273,31 @@ def main():
             _teil44 = _teil44[:_teil44.index('    def ', 10)]
             pruefe('_schloss_nachziehen()' in _teil44,
                    'das Schloss zieht %s mit' % _was44)
+        # ⚠ Gemeldet von Haldjas (pr0) am 02.09.2026: Das Fenster sprang in die
+        #   gewaehlte Ecke, die Titelleiste blieb aber am oberen Fensterrand —
+        #   bei einer unteren Ecke sass sie damit eine Fensterhoehe ueber dem
+        #   Bildschirmrand. Sie muss die Seite wechseln, und zwar an beiden
+        #   Stellen, an denen die Ecke wirkt: beim Uebernehmen und beim Start.
+        for _wo45, _was45 in (('def ecke_anwenden', 'beim Eckenwechsel'),
+                              ('def verhalten_anwenden', 'beim Start')):
+            _teil45 = _q44[_q44.index(_wo45):]
+            _teil45 = _teil45[:_teil45.index('    def ', 10)]
+            pruefe('_leiste_ausrichten()' in _teil45,
+                   'die Leiste richtet sich %s aus' % _was45)
+        # ⚠ Erst nachsehen, ob es die Methode ueberhaupt gibt. Ein `.index()`
+        #   auf einen fehlenden Text wirft ValueError und reisst den GANZEN
+        #   Selbsttest ab — dann sagt er gar nichts mehr, statt einen Fehler zu
+        #   melden. Gemessen 02.09.2026 bei der Gegenprobe zu genau dieser
+        #   Pruefung: Zwei Faelle wurden rot, die restlichen liefen nie.
+        if 'def _leiste_ausrichten' in _q44:
+            _teil45 = _q44[_q44.index('def _leiste_ausrichten'):]
+            _teil45 = _teil45[:_teil45.index('    def ', 10)]
+            pruefe("startswith('unten')" in _teil45,
+                   'und haengt sich bei einer unteren Ecke nach unten')
+            pruefe('pack_forget()' in _teil45,
+                   'dafuer wird neu gepackt — `side` laesst sich nicht umstellen')
+        else:
+            pruefe(False, 'die Methode _leiste_ausrichten ist vorhanden')
         # ⚠ Gemessen am 28.08.2026: Ein ungezeichnetes Widget meldet Breite 1 und
         #   Position 0. `ismapped()` allein reicht deshalb nicht — sonst saesse
         #   das Schloss in der Bildschirmecke statt auf der Leiste.

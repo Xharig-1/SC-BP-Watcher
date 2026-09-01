@@ -6,6 +6,18 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc3 - 2026-09-02
+
+### Fixed
+
+- **The title bar now really moves into the chosen corner.** Until now the
+  window went there but the bar stayed at its top edge — with a bottom corner
+  it therefore sat a full window height above the screen edge. It now attaches
+  to the bottom edge for the bottom corners, together with the title, the lock
+  and the close button.
+  Reported by **Haldjas (pr0)** — twice, because the first attempt missed the
+  actual point and only moved the lock along.
+
 ## v3.9.2-rc2 - 2026-09-02
 
 A test build: the selectable corner now takes the lock with it, plus two

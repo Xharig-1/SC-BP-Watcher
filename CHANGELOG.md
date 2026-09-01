@@ -6,6 +6,18 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc3 - 2026-09-02
+
+### Behoben
+
+- **Die Titelleiste wandert jetzt wirklich in die gewählte Ecke.** Bisher
+  sprang zwar das Fenster dorthin, die Leiste blieb aber an seinem oberen
+  Rand — bei einer unteren Ecke saß sie damit eine ganze Fensterhöhe über
+  dem Bildschirmrand. Jetzt hängt sie sich bei den unteren Ecken an den
+  unteren Fensterrand, samt Titel, Schloss und Schließen-Knopf.
+  Gemeldet von **Haldjas (pr0)** — und zwar zweimal, weil der erste Versuch
+  am eigentlichen Punkt vorbeiging und nur das Schloss nachzog.
+
 ## v3.9.2-rc2 - 2026-09-02
 
 Eine Testfassung: die wählbare Ecke nimmt das Schloss mit, dazu zwei
