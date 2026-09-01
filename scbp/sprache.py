@@ -1371,6 +1371,13 @@ TEXTE = {
     # kaputt; 0 gelesen heisst, die Nachlese lief nie.
     'b_logs_gelesen':  ('%s durchgesehen', '%s read'),
     'b_logs_funde':    ('%s Baupläne daraus', '%s blueprints from them'),
+    # ⚠ Einzahl-Fassungen. Im Bericht stand „1 Baupläne daraus" und
+    # „1 Protokolle" — gemeldet am 02.09.2026 aus einem echten Bericht.
+    # Der Bericht ist das, was Nutzer verschicken; ein falscher Plural darin
+    # sieht nach Nachlässigkeit aus. `%s` bleibt, damit die Zahl an derselben
+    # Stelle steht wie in der Mehrzahl-Fassung.
+    'b_logs_funde_1':  ('%s Bauplan daraus', '%s blueprint from them'),
+    'b_protokolle_1':  ('%s Protokoll', '%s log'),
     'b_protokolle':    ('%s Protokolle', '%s logs'),
     'b_launcher':      ('Launcher', 'Launcher'),
     # ⚠ Diese Zeile wäre am 27.08.2026 die halbe Diagnose gewesen: Bomb20

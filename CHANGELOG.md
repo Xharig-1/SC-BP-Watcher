@@ -23,6 +23,16 @@ Eine Testfassung mit einer Korrektur an der wählbaren Ecke.
   der Ecke. Beides holt es jetzt nach.
   Gemeldet von **Haldjas (pr0)**, samt einem Bildschirmfoto, das zeigt, wohin
   es gehört.
+- **Einzahl im Bericht.** Dort stand „1 Baupläne daraus" und „1 Protokolle".
+  Der Bericht ist das, was Nutzer verschicken — ein falscher Plural darin
+  sieht nach Nachlässigkeit aus.
+
+### Geändert
+
+- **Auf der Update-Seite heißt der Kasten jetzt „Testversion · zum Testen".**
+  Vorher „Auch Testversionen" — als einziger Kasten ohne Zusatz las sich das
+  wie ein Nachsatz statt wie eine Wahl. Jetzt dasselbe Muster wie „Stabile
+  Version · empfohlen" daneben.
 
 ## v3.9.1 - 2026-09-01
 

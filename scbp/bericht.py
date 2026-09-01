@@ -129,7 +129,9 @@ def _protokollzeile():
         sicherungen = pfade_modul.log_sicherungen()
     except Exception:
         pass
-    teile = [t('b_protokolle') % len(sicherungen)]
+    # ⚠ Einzahl beachten: „1 Protokolle" stand so im Bericht (02.09.2026).
+    teile = [t('b_protokolle_1' if len(sicherungen) == 1 else 'b_protokolle')
+             % len(sicherungen)]
     try:
         stand = logquelle.Lesestand()
         gelesen = sum(1 for p in sicherungen if stand.kennt(p))
@@ -139,7 +141,8 @@ def _protokollzeile():
     try:
         quellen = bestand_modul.nach_quelle(bestand_modul.laden())
         aus_logs = quellen.get('log', 0) + quellen.get('nachlese', 0)
-        teile.append(t('b_logs_funde') % aus_logs)
+        teile.append(t('b_logs_funde_1' if aus_logs == 1 else 'b_logs_funde')
+                     % aus_logs)
     except Exception:
         pass
     return ' · '.join(teile)

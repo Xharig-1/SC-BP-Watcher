@@ -22,6 +22,15 @@ A test build with one fix for the selectable corner.
   and resizes — not when collapsing, and not when switching corners. Both now
   do it.
   Reported by **Haldjas (pr0)**, with a screenshot showing where it belongs.
+- **Singular in the report.** It said "1 blueprints from them" and "1 logs".
+  The report is what users send in — a wrong plural in it looks careless.
+
+### Changed
+
+- **The box on the update page is now called "Test version · for testing".**
+  Previously "Test versions too" — as the only box without a suffix it read
+  like an afterthought rather than a choice. Now it matches "Stable version ·
+  recommended" next to it.
 
 ## v3.9.1 - 2026-09-01
 
