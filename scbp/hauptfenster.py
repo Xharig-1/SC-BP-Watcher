@@ -2498,6 +2498,22 @@ class Hauptfenster:
                 self.gezeichnet.add(kennung)
                 if kennung not in self.seiten:
                     self.seiten[kennung] = tk.Frame(self.inhalt, bg=BG)
+                # ⚠⚠ **Den Eingabefokus retten.** Manche Seiten setzen ihn beim
+                # Bauen selbst — das Suchfeld der Bauplan-Liste ruft
+                # `feld.focus_set()`, damit man sofort tippen kann. Beim
+                # ANZEIGEN ist das richtig; beim Vorbauen im Hintergrund
+                # klaut eine unsichtbare Seite damit den Fokus, und die
+                # Eingabe im sichtbaren Feld kommt nicht mehr an.
+                #
+                # Gemeldet am 02.09.2026, unmittelbar nach rc4: „kann bei BP
+                # Suche nichts mehr eingeben … marker das ich nun text
+                # eingeben kann fehlt ebenso." Ein selbst eingebauter Fehler,
+                # entstanden aus einer Verbesserung.
+                vorher = None
+                try:
+                    vorher = self.root.focus_get()
+                except Exception:
+                    pass
                 try:
                     self._seite_fuellen(kennung, self.seiten[kennung])
                 except Exception as ausnahme:
@@ -2505,6 +2521,15 @@ class Hauptfenster:
                     # anderen nicht aufhalten — beim Anklicken zeigt
                     # `oeffnen()` denselben Platzhalter.
                     fehler.merken('hauptfenster.vorbau:%s' % kennung, ausnahme)
+                # Und zurueckgeben, was die vorgebaute Seite sich genommen hat.
+                # ⚠ Nur, wenn es das Widget noch gibt: Beim Neuaufbau des
+                # Fensters ist der alte Fokus-Halter schon zerstoert, und
+                # `focus_set()` darauf wirft einen TclError.
+                try:
+                    if vorher is not None and vorher.winfo_exists():
+                        vorher.focus_set()
+                except Exception:
+                    pass
             if rest:
                 self.root.after(60, lambda: self._seiten_vorbauen(rest))
         except Exception as ausnahme:

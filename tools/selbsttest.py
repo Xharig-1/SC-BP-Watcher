@@ -3346,6 +3346,15 @@ def main():
                        'und gibt zwischen den Seiten die Bedienung frei')
                 pruefe('in self.gezeichnet' in _t46,
                        'und baut keine Seite doppelt')
+                # ⚠⚠ Der Fehler, den der Vorbau selbst erzeugt hat
+                #   (02.09.2026, direkt nach rc4): Manche Seiten rufen beim
+                #   Bauen `focus_set()` — das Suchfeld der Bauplan-Liste tut
+                #   es. Im Hintergrund gebaut, klaut eine unsichtbare Seite
+                #   damit den Eingabefokus, und im sichtbaren Feld kommt
+                #   nichts mehr an. Der Vorbau muss ihn zurueckgeben.
+                pruefe('focus_get()' in _t46 and 'focus_set()' in _t46,
+                       'und gibt den Eingabefokus zurueck, den eine Seite '
+                       'sich beim Bauen nimmt')
             pruefe('_vorbau_laeuft' in _q46,
                    'er laeuft nur einmal je Fenster an')
             # ⚠ Die Sperre muss beim Neuaufbau zurueck — sonst laeuft der

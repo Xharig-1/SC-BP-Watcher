@@ -6,6 +6,19 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc6 - 2026-09-02
+
+### Fixed
+
+- **The blueprint list's search box no longer accepted any typing.** Clicking
+  looked like it worked, but no text arrived and the caret was missing. The
+  cause was the change from rc4: while pre-building pages in the background,
+  the search box calls `focus_set()` — just as it does when opened normally —
+  and pulled the input focus onto an **invisible** page. Pre-building now
+  hands it back.
+  ⚠️ A self-inflicted bug born from an improvement: what is right when showing
+  a page is wrong when building it in the background.
+
 ## v3.9.2-rc5 - 2026-09-02
 
 ### Fixed

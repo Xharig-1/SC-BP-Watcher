@@ -6,6 +6,19 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc6 - 2026-09-02
+
+### Behoben
+
+- **Im Suchfeld der Bauplan-Liste ließ sich nichts mehr eintippen.** Klicken
+  sah aus, als klappe es, aber es kam kein Text an und die Schreibmarke fehlte.
+  Ursache war die Neuerung aus rc4: Beim Vorbauen der Seiten im Hintergrund
+  ruft das Suchfeld — wie beim normalen Öffnen auch — `focus_set()` auf und
+  zog den Eingabefokus auf eine **unsichtbare** Seite. Der Vorbau gibt ihn
+  jetzt zurück.
+  ⚠️ Ein selbst eingebauter Fehler, entstanden aus einer Verbesserung: Was
+  beim Anzeigen richtig ist, ist beim Vorbauen falsch.
+
 ## v3.9.2-rc5 - 2026-09-02
 
 ### Behoben
