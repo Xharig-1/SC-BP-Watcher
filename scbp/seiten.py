@@ -48,9 +48,15 @@ GOLD    = '#e8c353'
 ROT     = '#e05252'
 
 
-def bauen(fenster, kennung, rahmen):
-    """Eine Seite füllen. `fenster` ist das Hauptfenster (Schriften, Meldungen)."""
-    bauer = {
+def _bauer_tabelle():
+    """Welche Kennung von welcher Funktion gebaut wird.
+
+    ⚠ Als eigene Funktion, damit das Hauptfenster die Kennungen abfragen kann,
+    ohne eine Seite zu bauen — nötig fürs Vorbauen im Leerlauf
+    (`_seiten_vorbauen`). Die Namen stehen erst hier unten im Modul zur
+    Verfügung, deshalb eine Funktion und keine Konstante ganz oben.
+    """
+    return {
         'liste':       _liste,
         'fortschritt': _fortschritt,
         'allgemein':   _allgemein,
@@ -69,7 +75,17 @@ def bauen(fenster, kennung, rahmen):
         'lager':       _lager,
         'verkauf':     _verkauf,
         'handelslager': _handelslager,
-    }.get(kennung)
+    }
+
+
+def kennungen():
+    """Alle Seiten-Kennungen — für das Vorbauen im Leerlauf."""
+    return tuple(_bauer_tabelle())
+
+
+def bauen(fenster, kennung, rahmen):
+    """Eine Seite füllen. `fenster` ist das Hauptfenster (Schriften, Meldungen)."""
+    bauer = _bauer_tabelle().get(kennung)
     if bauer:
         bauer(fenster, rahmen)
 

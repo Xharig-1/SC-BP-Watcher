@@ -3298,6 +3298,36 @@ def main():
                    'dafuer wird neu gepackt — `side` laesst sich nicht umstellen')
         else:
             pruefe(False, 'die Methode _leiste_ausrichten ist vorhanden')
+
+        # ⚠ Seiten im Leerlauf vorbauen (02.09.2026). Jede Seite entsteht beim
+        #   ersten Aufruf und braucht dafuer bis zu einer Sekunde — gemessen im
+        #   Startverlauf eines echten Berichts. Der Vorbau nimmt diese
+        #   Wartezeit vorweg. Zwei Dinge muessen dabei stimmen, sonst wird es
+        #   schlimmer statt besser.
+        _hf46 = os.path.join(os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__))), 'scbp', 'hauptfenster.py')
+        if os.path.isfile(_hf46):
+            with open(_hf46, encoding='utf-8') as _f46:
+                _q46 = _f46.read()
+            pruefe('def _seiten_vorbauen' in _q46,
+                   'die Seiten werden im Leerlauf vorgebaut')
+            if 'def _seiten_vorbauen' in _q46:
+                _t46 = _q46[_q46.index('def _seiten_vorbauen'):]
+                _t46 = _t46[:_t46.index('    def ', 10)]
+                # EINE Seite je Durchlauf — sonst haelt der Vorbau das Fenster
+                # sekundenlang fest, statt es freizugeben.
+                pruefe('after(' in _t46,
+                       'und gibt zwischen den Seiten die Bedienung frei')
+                pruefe('in self.gezeichnet' in _t46,
+                       'und baut keine Seite doppelt')
+            pruefe('_vorbau_laeuft' in _q46,
+                   'er laeuft nur einmal je Fenster an')
+            # ⚠ Die Sperre muss beim Neuaufbau zurueck — sonst laeuft der
+            #   Vorbau nach einem Sprachwechsel nie wieder.
+            if 'self.seiten, self.gezeichnet' in _q46:
+                _t47 = _q46[_q46.index('self.seiten, self.gezeichnet'):][:400]
+                pruefe('_vorbau_laeuft = False' in _t47,
+                       'und wird beim Neuaufbau des Fensters zurueckgesetzt')
         # ⚠ Gemessen am 28.08.2026: Ein ungezeichnetes Widget meldet Breite 1 und
         #   Position 0. `ismapped()` allein reicht deshalb nicht — sonst saesse
         #   das Schloss in der Bildschirmecke statt auf der Leiste.

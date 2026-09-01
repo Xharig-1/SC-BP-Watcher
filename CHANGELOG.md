@@ -6,6 +6,20 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc4 - 2026-09-02
+
+### Geändert
+
+- **Das Fenster nimmt Klicks sofort an, auch beim ersten Öffnen einer Seite.**
+  Jede Seite entstand bisher erst, wenn man sie anklickte — und das dauert bis
+  zu einer Sekunde, in der nichts reagiert. Im eigenen Startverlauf steht es
+  schwarz auf weiß: `Seite wasistneu: bauen beginnt` um 00:51:48,
+  `steht` um 00:51:49. Jetzt werden die übrigen Seiten im Leerlauf vorgebaut,
+  sobald die erste steht — eine nach der anderen, damit die Bedienung
+  zwischendurch frei bleibt.
+  ⚠️ Das ist **keine Beschleunigung**: Dieselbe Arbeit fällt weiter an, nur
+  bevor jemand darauf wartet.
+
 ## v3.9.2-rc3 - 2026-09-02
 
 ### Behoben

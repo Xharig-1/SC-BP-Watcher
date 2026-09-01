@@ -2339,6 +2339,15 @@ class Hauptfenster:
         self.seiten[kennung].pack(fill='both', expand=True)
         self.aktuell = kennung
         fehler.spur('Seite %s: steht' % kennung)
+        # ⚠ Erst JETZT die restlichen Seiten im Leerlauf vorbauen — nachdem die
+        # angeklickte steht. Vorher gestartet, wuerde der Vorbau genau die
+        # Seite verzoegern, die der Mensch gerade sehen will.
+        # `_vorbau_laeuft` sorgt dafuer, dass das nur einmal je Fenster
+        # anlaeuft; bei jedem Reiterwechsel neu anzustossen haette mehrere
+        # Ketten parallel erzeugt.
+        if not getattr(self, '_vorbau_laeuft', False):
+            self._vorbau_laeuft = True
+            self.root.after(400, self._seiten_vorbauen)
         self._reiter_faerben()
         # Der aktive Reiter wird fett — und fett ist breiter. Die Leiste muss
         # deshalb bei jedem Wechsel nachmessen, sonst wird der längste Eintrag
@@ -2413,6 +2422,10 @@ class Hauptfenster:
         for kind in self.root.winfo_children():
             kind.destroy()
         self.seiten, self.gezeichnet, self.knoepfe = {}, set(), {}
+        # ⚠ Mit zuruecksetzen: Sonst liefe der Vorbau nach einem Neuaufbau
+        # (Sprache, Schriftgroesse) nie wieder an — die Seiten sind ja alle
+        # weg, aber die Sperre stuende noch.
+        self._vorbau_laeuft = False
         self.aktuell = None
         self._einst = None            # das geliehene Einstellungsfenster ist weg
         self.fortgeschritten_offen = False
@@ -2444,6 +2457,58 @@ class Hauptfenster:
         """Hier hängen die Seiten ein — geliefert von `seiten.py`."""
         from . import seiten
         seiten.bauen(self, kennung, rahmen)
+
+    def _seiten_vorbauen(self, rest=None):
+        """Die noch leeren Seiten nacheinander im Leerlauf bauen.
+
+        ⚠ **Warum das nötig ist.** Jede Seite entsteht erst beim ersten
+        Aufruf. Gemessen am 02.09.2026 im eigenen Startverlauf:
+
+            00:51:48  Seite wasistneu: bauen beginnt
+            00:51:49  Seite wasistneu: steht
+
+        Eine volle Sekunde, in der das Fenster keine Klicks annimmt — und das
+        einmal je Seite. Aus dem Testlauf gemeldet: „ich muss das
+        Einstellungsfenster einmal zu und erneut aufmachen, ehe ich etwas
+        auswählen kann."
+
+        ⚠ Das macht nichts **schneller** — dieselbe Arbeit fällt weiter an, nur
+        eben bevor jemand darauf wartet. Ehrlich bleiben: verlagert, nicht
+        beschleunigt.
+
+        ⚠⚠ **Eine Seite je Durchlauf, nicht alle am Stück.** Tk zeichnet im
+        selben Strang; neunzehn Seiten hintereinander würden das Fenster
+        sekundenlang festhalten — also genau der Fehler, den das hier beheben
+        soll, nur schlimmer. `after()` gibt die Ereignisschleife zwischendurch
+        frei, sodass Klicks sofort ankommen.
+
+        ⚠ Klickt jemand währenddessen auf eine noch nicht vorgebaute Seite,
+        baut `oeffnen()` sie sofort selbst und trägt sie in `gezeichnet` ein —
+        hier wird sie dann übersprungen. Doppelt gebaut wird nie.
+        """
+        try:
+            if rest is None:
+                from . import seiten
+                rest = [k for k in seiten.kennungen()
+                        if k not in self.gezeichnet]
+            if not rest:
+                return
+            kennung, rest = rest[0], rest[1:]
+            if kennung not in self.gezeichnet:
+                self.gezeichnet.add(kennung)
+                if kennung not in self.seiten:
+                    self.seiten[kennung] = tk.Frame(self.inhalt, bg=BG)
+                try:
+                    self._seite_fuellen(kennung, self.seiten[kennung])
+                except Exception as ausnahme:
+                    # Eine Seite, die sich nicht bauen laesst, darf die
+                    # anderen nicht aufhalten — beim Anklicken zeigt
+                    # `oeffnen()` denselben Platzhalter.
+                    fehler.merken('hauptfenster.vorbau:%s' % kennung, ausnahme)
+            if rest:
+                self.root.after(60, lambda: self._seiten_vorbauen(rest))
+        except Exception as ausnahme:
+            fehler.merken('hauptfenster.seiten_vorbauen', ausnahme)
 
     # ------------------------------------------------------------------ Tat
     def _was_ist_neu(self):

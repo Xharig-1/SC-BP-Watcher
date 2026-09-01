@@ -6,6 +6,19 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc4 - 2026-09-02
+
+### Changed
+
+- **The window accepts clicks right away, even the first time a page opens.**
+  Each page used to be built only when clicked — which takes up to a second
+  with nothing responding. The program's own startup trace says it plainly:
+  `Seite wasistneu: bauen beginnt` at 00:51:48, `steht` at 00:51:49. The
+  remaining pages are now built during idle time once the first one is up, one
+  after another so the interface stays responsive in between.
+  ⚠️ This is **not a speed-up**: the same work still happens, just before
+  anyone is waiting for it.
+
 ## v3.9.2-rc3 - 2026-09-02
 
 ### Fixed
