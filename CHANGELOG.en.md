@@ -6,6 +6,31 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc5 - 2026-09-02
+
+### Fixed
+
+- **Two patches were both labelled "4.10.0" in the filter.**
+  `4.10.0-live.12519617` and `4.10.0-live.12545750` shorten to the same
+  number — the dropdown then showed two identically labelled entries with
+  different counts, "4.10.0 (34)" and "4.10.0 (24)", with no way to tell
+  them apart. The full version is now shown whenever the short form appears
+  twice. The same fix had already landed **in the report** in v3.9.1 but not
+  in the menu — the self-test now covers both places.
+  ⚠️ Why there are two 4.10.0: a hotfix went into the live channel. Values on
+  existing blueprints change, the data source picks them up again — so they
+  carry the new patch's stamp although the game has had them for a while.
+
+### Changed
+
+- **The filter "can close" is now called "lost when ranking up"** — and
+  explains itself. Nobody understood the old name, and a three-word button
+  cannot explain a game mechanic that few players know about. A warning line
+  now sits **above the list** whenever the filter is on: "These blueprints
+  only come from contracts that disappear once your reputation is too high."
+  That answers the "why?" where it comes up, instead of in a tooltip nobody
+  finds.
+
 ## v3.9.2-rc4 - 2026-09-02
 
 ### Changed

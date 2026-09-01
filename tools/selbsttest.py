@@ -3299,6 +3299,32 @@ def main():
         else:
             pruefe(False, 'die Methode _leiste_ausrichten ist vorhanden')
 
+        # ⚠⚠ Zwei Patches koennen auf dieselbe Kurzform kuerzen — ein Hotfix im
+        #   Live-Kanal erzeugt genau das: 4.10.0-live.12519617 und
+        #   4.10.0-live.12545750 heissen beide „4.10.0". Wo die Kurzform allein
+        #   steht, sind sie nicht auseinanderzuhalten. In v3.9.1 im BERICHT
+        #   behoben, im Patch-MENUE aber nicht — gemeldet 02.09.2026. Diese
+        #   Pruefung deckt beide Stellen ab, damit es nicht an einer dritten
+        #   wieder auftaucht.
+        for _datei48, _funktion48, _wo48 in (
+                ('bericht.py', 'def _patchhistorie', 'im Bericht'),
+                ('bestandsfenster.py', 'def _patches', 'im Patch-Menue')):
+            _p48 = os.path.join(os.path.dirname(os.path.dirname(
+                os.path.abspath(__file__))), 'scbp', _datei48)
+            if not os.path.isfile(_p48):
+                continue
+            with open(_p48, encoding='utf-8') as _f48:
+                _q48 = _f48.read()
+            if _funktion48 not in _q48:
+                pruefe(False, 'die Patch-Liste %s ist auffindbar' % _wo48)
+                continue
+            _t48 = _q48[_q48.index(_funktion48):]
+            _t48 = _t48[:_t48.index('\ndef ', 10) if '\ndef ' in _t48[10:]
+                        else min(len(_t48), 3000)]
+            pruefe('count(' in _t48,
+                   'die volle Version erscheint %s, wenn die Kurzform doppelt '
+                   'vorkommt' % _wo48)
+
         # ⚠ Seiten im Leerlauf vorbauen (02.09.2026). Jede Seite entsteht beim
         #   ersten Aufruf und braucht dafuer bis zu einer Sekunde — gemessen im
         #   Startverlauf eines echten Berichts. Der Vorbau nimmt diese

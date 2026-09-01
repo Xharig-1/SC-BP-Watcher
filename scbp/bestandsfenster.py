@@ -762,9 +762,29 @@ class Bestandsfenster:
         Gewählt wird die volle Kennung (`4.10.0-live.12519617`), angezeigt die
         kurze mit Anzahl: „4.10.0 (16)". Die Liste pflegt sich selbst: Was ein
         Patch bringt, trägt seine Version als Stempel und steht damit beim
-        nächsten Öffnen im Feld."""
-        return [(voll, '%s (%d)' % (kurz, anzahl))
-                for voll, kurz, anzahl in katalog_modul.patches(self.katalog)]
+        nächsten Öffnen im Feld.
+
+        ⚠⚠ **Die Kurzform allein reicht nicht.** `4.10.0-live.12519617` und
+        `4.10.0-live.12545750` kürzen beide auf „4.10.0" — im Menü standen
+        dann **zwei gleich beschriftete Einträge** mit verschiedenen Zahlen,
+        „4.10.0 (34)" und „4.10.0 (24)", und niemand konnte sagen, welcher
+        welcher ist. Gemeldet am 02.09.2026 aus dem laufenden Betrieb.
+
+        Genau dieser Fehler wurde in v3.9.1 schon **im Bericht** behoben
+        (`bericht.py`, `_patch_historie`) — hier war er noch. Wer eine Regel
+        an einer Stelle repariert, muss die anderen Stellen mitnehmen: Der
+        Bericht führt die Liste nur auf, das Menü lässt danach **auswählen**.
+        Falsch beschriftet ist es hier also schädlicher.
+
+        Warum es überhaupt zwei 4.10.0 gibt: Ein Hotfix wurde in den
+        Live-Kanal übernommen. Dabei ändern sich Werte an bestehenden
+        Bauplänen, die Datenquelle nimmt sie neu auf — und sie tragen den
+        Stempel des neuen Patches, obwohl es sie im Spiel längst gibt."""
+        liste = katalog_modul.patches(self.katalog)
+        kurzformen = [kurz for _voll, kurz, _anzahl in liste]
+        return [(voll, '%s (%d)'
+                 % (kurz if kurzformen.count(kurz) == 1 else voll, anzahl))
+                for voll, kurz, anzahl in liste]
 
     def _quellen(self):
         """Fraktionen und Sonderquellen — beides, wonach man wirklich sucht."""
@@ -1387,6 +1407,18 @@ class Bestandsfenster:
         # Auswahlfeldern gewichen — die färben sich selbst, sobald etwas
         # gesetzt ist, und brauchen kein Nachziehen von außen.)
         self._loeschkreuz_zeigen()
+
+        # ⚠ Die Warnzeile zum Filter „weg beim Aufsteigen" — sie steht ÜBER der
+        # Liste, nicht im Hilfetext. Grund: Der Knopf loest die Frage „wieso
+        # denn weg?" aus, und die muss an Ort und Stelle beantwortet sein.
+        # Ein Hilfetext, den man erst durch Draufzeigen findet, erreicht
+        # niemanden — die Mechanik dahinter (Auftraege mit Ruf-Obergrenze)
+        # kennt kaum ein Spieler. Am 02.09.2026 hiess der Knopf noch „kann
+        # zugehen" und war damit fuer alle unverstaendlich.
+        if self.filter == 'deckel':
+            tk.Label(self.inhalt, text=t('deckel_warnung'), bg=BG, fg=SUB,
+                     font=schrift(10), justify='left', anchor='w',
+                     wraplength=620).pack(fill='x', padx=24, pady=(12, 4))
 
         fehler.spur('Liste: zeichnen beginnt')
         gruppen = self._auswahl()

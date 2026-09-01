@@ -96,7 +96,21 @@ TEXTE = {
     # ⚠ Der Filter, der die unsichtbarste Falle sichtbar macht: 280 der 353
     # Auftraege haben eine Ruf-OBERGRENZE. Wer darueber steigt, bekommt sie nicht
     # mehr angeboten — und ihre Bauplaene sind fuer diesen Spielstand weg.
-    'filter_deckel':   ('kann zugehen', 'can close'),
+    # ⚠ Hiess bis 02.09.2026 „kann zugehen" — verstand niemand, auch der Autor
+    # nicht: „nichtmal ich raffe was das sein soll". Der Knopf kann die
+    # Spielmechanik auch nicht erklaeren, dafuer ist kein Platz. Deshalb zwei
+    # Dinge: ein Name, der eine HANDLUNG nennt statt eines Zustands
+    # („Aufsteigen" kennt jeder, „hoher Ruf" liest sich nicht als Gefahr) —
+    # und die Warnzeile darunter, die das „wieso?" gleich mitbeantwortet.
+    'filter_deckel':   ('weg beim Aufsteigen', 'lost when ranking up'),
+    # Steht ueber der Liste, sobald der Filter an ist. Ohne sie bleibt die
+    # Frage offen, die der Knopf ausloest.
+    'deckel_warnung':  ('⚠️ Diese Baupläne gibt es nur bei Aufträgen, die '
+                        'verschwinden, sobald dein Ruf zu hoch ist. Wer '
+                        'aufsteigt, bekommt sie nicht mehr angeboten.',
+                        '⚠️ These blueprints only come from contracts that '
+                        'disappear once your reputation is too high. Rank up '
+                        'and they are no longer offered to you.'),
     'deckel_leer':     ('Kein fehlender Bauplan hängt nur an Aufträgen mit '
                         'Ruf-Obergrenze. Nichts, was dir durch Aufsteigen '
                         'verloren gehen kann.',

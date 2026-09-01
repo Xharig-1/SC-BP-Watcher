@@ -6,6 +6,32 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc5 - 2026-09-02
+
+### Behoben
+
+- **Zwei Patches hießen im Filter beide „4.10.0".** `4.10.0-live.12519617`
+  und `4.10.0-live.12545750` kürzen auf dieselbe Nummer — im Auswahlfeld
+  standen dann zwei gleich beschriftete Einträge mit verschiedenen Zahlen,
+  „4.10.0 (34)" und „4.10.0 (24)", ohne dass man sie unterscheiden konnte.
+  Jetzt steht die volle Version da, sobald die Kurzform doppelt vorkommt.
+  Derselbe Fehler war in v3.9.1 bereits **im Bericht** behoben worden, im
+  Menü aber nicht — der Selbsttest prüft jetzt beide Stellen.
+  ⚠️ Warum es zwei 4.10.0 gibt: Ein Hotfix wurde in den Live-Kanal
+  übernommen. Dabei ändern sich Werte an bestehenden Bauplänen, die
+  Datenquelle nimmt sie neu auf — sie tragen dann den Stempel des neuen
+  Patches, obwohl es sie im Spiel längst gibt.
+
+### Geändert
+
+- **Der Filter „kann zugehen" heißt jetzt „weg beim Aufsteigen"** — und
+  erklärt sich. Der alte Name verstand niemand, und ein Knopf mit drei
+  Wörtern kann eine Spielmechanik auch nicht erklären, die kaum jemand kennt.
+  Deshalb steht jetzt eine Warnzeile **über der Liste**, sobald der Filter an
+  ist: „Diese Baupläne gibt es nur bei Aufträgen, die verschwinden, sobald
+  dein Ruf zu hoch ist." Damit beantwortet sich das „wieso?" an Ort und
+  Stelle, statt in einem Hilfetext, den niemand findet.
+
 ## v3.9.2-rc4 - 2026-09-02
 
 ### Geändert
