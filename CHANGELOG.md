@@ -6,9 +6,10 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.9.2-rc1 - 2026-09-01
+## v3.9.2-rc2 - 2026-09-02
 
-Eine Testfassung mit einer Korrektur an der wählbaren Ecke.
+Eine Testfassung: die wählbare Ecke nimmt das Schloss mit, dazu zwei
+Kleinigkeiten an der Sprache.
 
 ### Behoben
 

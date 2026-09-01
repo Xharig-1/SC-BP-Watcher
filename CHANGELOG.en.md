@@ -6,9 +6,10 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.9.2-rc1 - 2026-09-01
+## v3.9.2-rc2 - 2026-09-02
 
-A test build with one fix for the selectable corner.
+A test build: the selectable corner now takes the lock with it, plus two
+small wording fixes.
 
 ### Fixed
 
