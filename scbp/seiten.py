@@ -1111,8 +1111,27 @@ def _anzeige(fenster, rahmen):
 
     ziel = _feld(fenster, innen, t('s_ov_durch'), t('s_ov_durch_h'))
     if _durchklick_moeglich():
-        schiebeschalter(ziel, pfade.einstellung_wahrheit('durchklickbar', False),
-                        lambda: _durchklick_um(fenster)).pack()
+        # ⚠ Nicht `_schalter` nennen — so heisst in dieser Datei bereits eine
+        # Funktion, und ein lokaler Name wuerde sie verdecken (Selbsttest 67).
+        _durch_schalter = schiebeschalter(
+            ziel, pfade.einstellung_wahrheit('durchklickbar', False),
+            lambda: _durchklick_um(fenster))
+        _durch_schalter.pack()
+
+        # ⚠ Das Durchreichen laesst sich auch am Schloss des Overlays umlegen.
+        # Ohne diesen Draht zeigte der Schalter dann weiter den alten Zustand,
+        # solange die Seite offen war.
+        def _nachziehen(zustand):
+            try:
+                if _durch_schalter.winfo_exists():
+                    _durch_schalter.zeichnen(bool(zustand))
+            except tk.TclError:
+                pass                     # Seite ist weg - nichts nachzuziehen
+
+        # ⚠ `overlay` wird hier lokal geholt wie ueberall in dieser Datei:
+        # Auf Modulebene waere es ein Zirkelbezug.
+        from . import overlay as _ov
+        _ov.DURCHKLICK_ANZEIGE[0] = _nachziehen
     else:
         # Ehrlich statt still: Unter nativem Wayland kann ein gewöhnliches Fenster
         # keine Klicks weiterreichen. Ein Schalter, der nichts bewirkt, wäre

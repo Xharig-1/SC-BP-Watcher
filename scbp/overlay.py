@@ -186,6 +186,17 @@ def durchklickbar_moeglich():
 # Schloss, das anklickbar bleibt — denselben Weg gehen wir.
 SCHLOSS_RUECKRUF = [None]
 
+# ⚠⚠ **Der Schalter in den Einstellungen muss mitgehen.** Das Durchreichen
+# laesst sich an ZWEI Stellen umlegen: mit dem Schloss am Overlay und mit dem
+# Schiebeschalter auf der Seite „Anzeige". Wer die Seite offen hatte und das
+# Schloss benutzte, sah dort weiter den alten Zustand — richtig wurde er erst,
+# wenn man die Seite schloss und neu aufrief. Zwei Anzeigen fuer denselben
+# Zustand, die sich widersprechen, sind schlimmer als eine.
+#
+# Die Seite haengt hier ihre Zeichenfunktion ein; das Overlay ruft sie nach
+# jeder Aenderung. `None` heisst schlicht: Die Seite wurde nie gebaut.
+DURCHKLICK_ANZEIGE = [None]
+
 # Dasselbe für „Protokolle erneut einlesen". Beide Bedienelemente — der Knopf am
 # Overlay und der in den Einstellungen — rufen hier an; die Arbeit macht der
 # Watcher-Faden.

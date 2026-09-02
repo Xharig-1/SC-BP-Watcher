@@ -3056,6 +3056,21 @@ class Overlay:
             geklappt = False
         if an and not geklappt:
             self._status_setzen(sprache.Satz('ov_durchklick_geht_nicht'))
+        # ⚠ Den Schiebeschalter auf der Seite „Anzeige" mitziehen, falls sie
+        # gerade offen ist. Gemeldet am 02.09.2026: Wer das Durchreichen am
+        # Schloss umlegte, sah dort weiter den alten Zustand — richtig wurde er
+        # erst beim erneuten Aufrufen der Seite.
+        #
+        # ⚠ Gemeldet wird der Zustand, der WIRKLICH gilt (`an and geklappt`),
+        # nicht der gewuenschte: Spielt das System nicht mit, wird die
+        # Einstellung ohnehin zurueckgenommen — dann darf der Schalter nicht
+        # „an" zeigen.
+        try:
+            anzeigen = overlay.DURCHKLICK_ANZEIGE[0]
+            if anzeigen is not None:
+                anzeigen(an and geklappt)
+        except Exception as ausnahme:
+            fehler.merken('overlay.durchklick_anzeige', ausnahme)
         # ⚠ Der Rückgabewert wird gebraucht: Der Schloss-Knopf in der Leiste
         # muss die Einstellung zurücknehmen, wenn das System nicht mitspielt —
         # sonst steht dort „durchklickbar an", während nichts durchgereicht wird.

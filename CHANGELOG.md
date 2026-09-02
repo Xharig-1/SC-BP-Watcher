@@ -12,6 +12,18 @@ Liegt das Overlay unten am Bildschirm, sitzt die Titelleiste jetzt auch unten
 an seinem Rand — dort, wo man sie erwartet, statt eine ganze Fensterhöhe
 darüber. Damit ist der letzte Punkt aus Haldjas' Rückmeldung erledigt.
 
+> [!important]
+> **Wer in einer älteren Fassung nicht mehr an sein Overlay kommt, ist nicht
+> ausgesperrt.** Standen „Mausklicks durchreichen" und eine der Ecken oben
+> rechts, unten links oder unten rechts gemeinsam an, rutschte das eingeklappte
+> Overlay aus dem Bild — **mitsamt dem Schloss, das der einzige Rückweg ist.**
+> Klicks gingen ins Spiel, anzuklicken war nichts mehr.
+>
+> Ab dieser Fassung kann das nicht mehr passieren. Wer noch feststeckt: Das
+> Werkzeug beenden (Symbol in der Taskleiste), diese Fassung installieren und
+> neu starten — die Ecke wird dann richtig berechnet, und das Schloss ist
+> wieder da.
+
 ### Geändert
 
 - ⭐ **Die Titelleiste hängt an der Seite, die zur gewählten Ecke passt.** Bei
@@ -23,6 +35,12 @@ darüber. Damit ist der letzte Punkt aus Haldjas' Rückmeldung erledigt.
 
 ### Behoben
 
+- **Der Schalter „Mausklicks ins Spiel durchreichen" geht jetzt mit.** Das
+  Durchreichen lässt sich an zwei Stellen umlegen: mit dem Schloss am Overlay
+  und mit dem Schalter auf der Seite „Anzeige". Wer die Seite offen hatte und
+  das Schloss benutzte, sah dort weiter den alten Zustand — richtig wurde er
+  erst, wenn man die Seite schloss und neu aufrief. Zwei Anzeigen für denselben
+  Zustand, die sich widersprechen, sind schlimmer als eine.
 - **Der Umbau der Titelleiste galt vier Anläufe lang als unmöglich** — er war es
   nie. Beim Umhängen wuchs ein eingeklapptes Fenster „von 22 auf 120 Pixel" und
   ragte „86 Pixel unter den Bildschirmrand"; beide Zahlen stammten aus der

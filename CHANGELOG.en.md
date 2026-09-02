@@ -12,6 +12,17 @@ With the overlay at the bottom of the screen, the title bar now sits at its
 bottom edge too — where you expect it, instead of a whole window height above.
 That settles the last point from Haldjas' feedback.
 
+> [!important]
+> **If an older release left you unable to reach your overlay, you are not
+> locked out.** With "pass mouse clicks through" enabled together with the top
+> right, bottom left or bottom right corner, the collapsed overlay slid off the
+> screen — **taking the lock with it, which is the only way back.** Clicks went
+> to the game and there was nothing left to click.
+>
+> From this release on that can no longer happen. If you are still stuck: quit
+> the tool (tray icon), install this release and start it again — the corner is
+> then calculated correctly and the lock is back.
+
 ### Changed
 
 - ⭐ **The title bar attaches to the side that matches the chosen corner.** With
@@ -23,6 +34,12 @@ That settles the last point from Haldjas' feedback.
 
 ### Fixed
 
+- **The "pass mouse clicks to the game" switch now keeps up.** Click-through can
+  be toggled in two places: with the lock on the overlay and with the switch on
+  the "Display" page. Anyone who had that page open and used the lock kept
+  seeing the old state — it only corrected itself after closing and reopening
+  the page. Two displays of the same state that contradict each other are worse
+  than one.
 - **For four attempts the title bar rebuild was considered impossible** — it
   never was. While repacking, a collapsed window grew "from 22 to 120 pixels"
   and hung "86 pixels below the screen edge"; both numbers came from the
