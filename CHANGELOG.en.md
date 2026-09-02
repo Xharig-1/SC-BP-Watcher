@@ -6,6 +6,27 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc11 - 2026-09-02
+
+The overlay can be resized again in every corner, and the green handle in fade
+mode finally sits where the overlay is — vertically too. Both were consequences
+of a corner having two directions while only one of them was taken into account.
+
+### Fixed
+
+- ⭐ **Window resizing works again in every corner.** With the overlay stuck to
+  the bottom or right edge of the screen, dragging worked against that very
+  edge — it could only be pulled in a direction with no room left. The edges
+  that sit on the screen border now stay put and the window grows where there is
+  space: upwards in a bottom corner, leftwards in a right-hand one. The resize
+  handle moves to the free corner of the window accordingly, where it also stops
+  covering the title bar icons.
+- ⭐ **The green handle in fade mode is now correct vertically as well.** It was
+  placed at the top edge of the last remembered window. Because an overlay in a
+  bottom corner grows upwards, that top edge sat near the top of the screen — so
+  the handle ended up halfway up instead of at the bottom. The lock beside it
+  followed the same wrong path and is now aligned to the handle.
+
 ## v3.9.2-rc10 - 2026-09-02
 
 With the overlay at the bottom of the screen, the title bar now sits at its

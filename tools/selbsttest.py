@@ -3320,8 +3320,26 @@ def main():
         if 'def _grip_nachziehen' in _q44:
             _teil47 = _q44[_q44.index('def _grip_nachziehen'):]
             _teil47 = _teil47[:_teil47.index('    def ', 10)]
-            pruefe('_leiste_seite' in _teil47,
-                   'der Ziehgriff weicht der Leiste aus')
+            pruefe('_verankert()' in _teil47,
+                   'der Ziehgriff sitzt an der freien Ecke')
+        # ⚠ Und das Ziehen selbst muss dieselbe Ecke kennen. Sonst wird gegen
+        #   den Bildschirmrand gezogen, an dem das Fenster klebt — gemeldet
+        #   am 02.09.2026: „laesst sich nur nach unten ziehen".
+        if 'def _resize' in _q44:
+            _teil48 = _q44[_q44.index('def _resize'):]
+            _teil48 = _teil48[:_teil48.index('    def ', 10)]
+            pruefe('_verankert()' in _teil48,
+                   'das Ziehen kennt die verankerten Kanten')
+            pruefe('rechte_kante' in _teil48 and 'untere_kante' in _teil48,
+                   'und haelt sie fest, statt von oben links zu rechnen')
+        # ⚠ Der Streifen im Aufblend-Betrieb braucht BEIDE Achsen. Die
+        #   senkrechte fehlte und sass deshalb auf halber Bildhoehe.
+        if 'def _anfasser_zeigen' in _q44:
+            _teil49 = _q44[_q44.index('def _anfasser_zeigen'):]
+            _teil49 = _teil49[:_teil49.index('    def ', 10)]
+            pruefe('_anfasser_y(' in _teil49,
+                   'der Anfasser-Streifen richtet sich auch senkrecht '
+                   'nach der Ecke')
 
         # ⚠⚠ Zwei Patches koennen auf dieselbe Kurzform kuerzen — ein Hotfix im
         #   Live-Kanal erzeugt genau das: 4.10.0-live.12519617 und

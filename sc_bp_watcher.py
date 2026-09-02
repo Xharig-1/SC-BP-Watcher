@@ -59,7 +59,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.9.2-rc10'
+__version__ = '3.9.2-rc11'
 
 
 def _mitgeliefert(name):
@@ -2204,11 +2204,51 @@ class Overlay:
             return 260
         return max(260, noetig)
 
+    def _verankert(self):
+        """Welche Fensterkanten liegen fest — `(unten, rechts)`.
+
+        In einer Ecke klebt das Overlay an zwei Raendern des Bildschirms. Diese
+        beiden Kanten duerfen sich beim Ziehen NICHT bewegen; waechst das
+        Fenster, muss es in die freie Richtung wachsen. Ohne gewaehlte Ecke
+        (`frei`) gilt das Uebliche: oben und links liegen fest.
+        """
+        try:
+            ecke = pfade.einstellung('overlay_ecke') or 'frei'
+        except Exception:
+            ecke = 'frei'
+        return (ecke.startswith('unten'), ecke.endswith('rechts'))
+
     def _resize(self, e):
-        w = max(self._mindestbreite(),
-                self.root.winfo_pointerx() - self.root.winfo_x())
-        h = max(160, self.root.winfo_pointery() - self.root.winfo_y())
-        self.root.geometry(f'{w}x{h}')
+        """Das Fenster am Griff groesser ziehen — von der freien Ecke aus.
+
+        ⚠⚠ **Diese Rechnung ging von „oben links steht fest" aus** und war
+        damit falsch, sobald das Overlay in einer unteren oder rechten Ecke
+        klebt: Gezogen wurde gegen den Bildschirmrand, an dem das Fenster
+        haengt. Gemeldet am 02.09.2026 zu rc10: *„Fenstergroesse ist auch nicht
+        mehr anpassbar, da ich sie nur nach unten ziehen koennte."*
+
+        Jetzt bleibt jede verankerte Kante stehen, und die Groesse waechst in
+        die Richtung, in die ueberhaupt Platz ist.
+        """
+        unten, rechts = self._verankert()
+        x0, y0 = self.root.winfo_x(), self.root.winfo_y()
+        rechte_kante = x0 + self.root.winfo_width()
+        untere_kante = y0 + self.root.winfo_height()
+        zeiger_x, zeiger_y = (self.root.winfo_pointerx(),
+                              self.root.winfo_pointery())
+        if rechts:
+            breite = max(self._mindestbreite(), rechte_kante - zeiger_x)
+            neu_x = rechte_kante - breite
+        else:
+            breite = max(self._mindestbreite(), zeiger_x - x0)
+            neu_x = x0
+        if unten:
+            hoehe = max(160, untere_kante - zeiger_y)
+            neu_y = untere_kante - hoehe
+        else:
+            hoehe = max(160, zeiger_y - y0)
+            neu_y = y0
+        self.root.geometry('%dx%d+%d+%d' % (breite, hoehe, neu_x, neu_y))
 
     # ---- Liste ----
     def _fit_width(self, e=None):
@@ -2884,15 +2924,21 @@ class Overlay:
             # Gefragt werden muss nach der **Platzierung**, nicht nach der
             # Sichtbarkeit.
             ist_platziert = bool(self.grip.place_info())
-            # ⚠⚠ Der Griff gehoert an die Ecke, die von der LEISTE weg zeigt.
-            # Haengt sie unten (untere Bildschirmecke, seit 02.09.2026), liegt
-            # „unten rechts" mitten auf ihren Symbolen — der Griff deckte dann
-            # das ✕ zu, und das Werkzeug liesse sich nur noch mit Zielen
-            # schliessen. Dasselbe Problem gab es im eingeklappten Zustand
-            # schon einmal; dort wird er ganz weggenommen.
-            unten = getattr(self, '_leiste_seite', 'top') == 'bottom'
-            lage = dict(relx=1.0, rely=0.0, anchor='ne') if unten \
-                else dict(relx=1.0, rely=1.0, anchor='se')
+            # ⚠⚠ **Der Griff gehoert an die FREIE Ecke des Fensters** — die,
+            # die von den verankerten Bildschirmraendern wegzeigt. Nur von dort
+            # laesst sich in eine Richtung ziehen, in der ueberhaupt Platz ist.
+            #
+            # Zwei Fliegen mit einer Klappe: Bei unten haengender Leiste liegt
+            # „unten rechts" mitten auf ihren Symbolen, der Griff deckte dort
+            # das ✕ zu. Die freie Ecke ist immer auch die leistenfreie.
+            #
+            # Gemeldet am 02.09.2026 zu rc10: „Fenstergroesse ist auch nicht
+            # mehr anpassbar, da ich sie nur nach unten ziehen koennte."
+            unten, rechts = self._verankert()
+            lage = dict(relx=0.0 if rechts else 1.0,
+                        rely=0.0 if unten else 1.0,
+                        anchor=('n' if unten else 's')
+                               + ('w' if rechts else 'e'))
             if ist_platziert == soll_sichtbar:
                 if soll_sichtbar:
                     self.grip.place(**lage)   # Seite kann gewechselt haben
@@ -3259,7 +3305,16 @@ class Overlay:
                         x = streifen - self.SCHLOSS_KANTE - 4
                     else:
                         x = streifen + self.ANFASSER_BREITE + 4
-                    y = oben
+                    # ⚠ Auch hier die Ecke fragen: Bei einer unteren gehoert
+                    # das Schloss neben den Streifen an der UNTERkante, nicht
+                    # an die Oberkante des gemerkten Fensters. Sonst stehen
+                    # die beiden wieder an verschiedenen Stellen.
+                    y = self._anfasser_y(oben, _h)
+                    # Das Schloss ist hoeher als der duenne Streifen — es wird
+                    # an ihm ausgerichtet, statt darunter hinauszuragen.
+                    if ecke.startswith('unten'):
+                        y = max(oben, y - self.SCHLOSS_KANTE
+                                + self.ANFASSER_HOEHE)
                 else:
                     x = (self.root.winfo_rootx()
                          + max(0, self.root.winfo_width()
@@ -3434,6 +3489,27 @@ class Overlay:
             return links + max(0, ov_breite - self.ANFASSER_BREITE)
         return links + max(0, (ov_breite - self.ANFASSER_BREITE) // 2)
 
+    def _anfasser_y(self, oben, ov_hoehe):
+        """Auf welcher Hoehe der Streifen sitzt — Ober- oder Unterkante.
+
+        ⚠⚠ **Dieselbe Falle wie bei der Breite, nur eine Achse weiter.** Am
+        02.09.2026 wurde `_anfasser_x` an die Ecke angepasst, `y` blieb dagegen
+        stur die **Oberkante** der gemerkten Lage. Bei einer unteren Ecke
+        waechst das Overlay nach oben — seine Oberkante liegt dann fast am
+        oberen Bildrand, und der Streifen sass mitten im Bild statt unten.
+        Gemeldet noch am selben Tag mit einem Bildschirmfoto.
+
+        Bei einer unteren Ecke gehoert er also an die **Unterkante** der
+        gemerkten Lage; oben und ohne Ecke bleibt es die Oberkante.
+        """
+        try:
+            ecke = pfade.einstellung('overlay_ecke') or 'frei'
+        except Exception:
+            ecke = 'frei'
+        if ecke.startswith('unten'):
+            return oben + max(0, ov_hoehe - self.ANFASSER_HOEHE)
+        return oben
+
     def _anfasser_zeigen(self):
         """Den Streifen an die letzte Position des Overlays legen."""
         if self.anzeigeart != 'popup':
@@ -3455,7 +3531,10 @@ class Overlay:
         # `max(0, …)` klemmt sie auf die Oberkante des Hauptmonitors — Streifen
         # und Schloss sprangen dadurch auf den falschen Bildschirm. Aufgefallen
         # am 28.08.2026 an einem Aufbau mit zwei Monitoren übereinander.
-        y = oben
+        #
+        # ⚠ Die Ecke entscheidet, ob Ober- oder Unterkante gilt — siehe
+        # `_anfasser_y`. `_hoehe` ist die gemerkte Fensterhoehe.
+        y = self._anfasser_y(oben, _hoehe)
         try:
             if self._anfasser is None or not self._anfasser.winfo_exists():
                 self._anfasser = tk.Toplevel(self.root)

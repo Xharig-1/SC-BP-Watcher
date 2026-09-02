@@ -6,6 +6,28 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc11 - 2026-09-02
+
+Das Overlay lässt sich in jeder Ecke wieder größer ziehen, und der grüne Griff
+im Aufblend-Betrieb sitzt endlich dort, wo das Overlay steht — auch senkrecht.
+Beides waren Folgen davon, dass eine Ecke zwei Richtungen hat und bisher nur
+eine davon beachtet wurde.
+
+### Behoben
+
+- ⭐ **Die Fenstergröße lässt sich in jeder Ecke wieder ändern.** Klebt das
+  Overlay unten oder rechts am Bildschirm, wurde beim Ziehen gegen genau diesen
+  Rand gearbeitet — es ließ sich nur in eine Richtung ziehen, in der kein Platz
+  ist. Jetzt bleiben die Kanten, die am Bildschirmrand liegen, stehen, und das
+  Fenster wächst dorthin, wo Platz ist: bei einer unteren Ecke nach oben, bei
+  einer rechten nach links. Der Ziehgriff sitzt dazu passend an der freien Ecke
+  des Fensters — dort verdeckt er auch die Symbole der Titelleiste nicht.
+- ⭐ **Der grüne Griff im Aufblend-Betrieb sitzt auch senkrecht richtig.** Er
+  wurde an die Oberkante des zuletzt gemerkten Fensters gesetzt. Weil ein
+  Overlay in einer unteren Ecke nach oben wächst, lag diese Oberkante fast am
+  oberen Bildrand — der Griff saß dann auf halber Höhe statt unten. Das Schloss
+  daneben ging denselben falschen Weg und wird jetzt am Griff ausgerichtet.
+
 ## v3.9.2-rc10 - 2026-09-02
 
 Liegt das Overlay unten am Bildschirm, sitzt die Titelleiste jetzt auch unten
