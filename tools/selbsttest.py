@@ -3273,31 +3273,28 @@ def main():
             _teil44 = _teil44[:_teil44.index('    def ', 10)]
             pruefe('_schloss_nachziehen()' in _teil44,
                    'das Schloss zieht %s mit' % _was44)
-        # ⚠ Gemeldet von Haldjas (pr0) am 02.09.2026: Das Fenster sprang in die
-        #   gewaehlte Ecke, die Titelleiste blieb aber am oberen Fensterrand —
-        #   bei einer unteren Ecke sass sie damit eine Fensterhoehe ueber dem
-        #   Bildschirmrand. Sie muss die Seite wechseln, und zwar an beiden
-        #   Stellen, an denen die Ecke wirkt: beim Uebernehmen und beim Start.
-        for _wo45, _was45 in (('def ecke_anwenden', 'beim Eckenwechsel'),
-                              ('def verhalten_anwenden', 'beim Start')):
-            _teil45 = _q44[_q44.index(_wo45):]
-            _teil45 = _teil45[:_teil45.index('    def ', 10)]
-            pruefe('_leiste_ausrichten()' in _teil45,
-                   'die Leiste richtet sich %s aus' % _was45)
-        # ⚠ Erst nachsehen, ob es die Methode ueberhaupt gibt. Ein `.index()`
-        #   auf einen fehlenden Text wirft ValueError und reisst den GANZEN
-        #   Selbsttest ab — dann sagt er gar nichts mehr, statt einen Fehler zu
-        #   melden. Gemessen 02.09.2026 bei der Gegenprobe zu genau dieser
-        #   Pruefung: Zwei Faelle wurden rot, die restlichen liefen nie.
+        # ⚠⚠ **Die Titelleiste bleibt oben — und das muss so bleiben.**
+        #   Gemeldet von Haldjas (pr0) am 02.09.2026: Bei einer unteren Ecke
+        #   sitzt die Leiste eine Fensterhoehe ueber dem Bildschirmrand. Der
+        #   Versuch, sie nach unten zu haengen (v3.9.2-rc3 bis rc6), ist an Tk
+        #   gescheitert: Das noetige Neupacken laesst die Fenstergroesse neu
+        #   rechnen, ein EINGEKLAPPTES Fenster wuchs von 22 auf 120 px und
+        #   ragte 86 px unter den Bildschirmrand — mitsamt der Leiste.
+        #
+        #   Und die Leiste ist im eingeklappten Zustand der EINZIGE Bedienweg.
+        #   Ist sie weg, kommt niemand mehr an das Werkzeug heran, auch nicht
+        #   an die Einstellung, mit der man es zuruecknehmen wuerde.
+        #
+        #   Diese Pruefung haelt den Rueckbau fest: Wer die Leiste erneut
+        #   umhaengen will, muss zuerst hier vorbei — und dabei den
+        #   eingeklappten Zustand messen, nicht nur den offenen.
+        pruefe("side='top'" in _q44 or 'side="top"' in _q44,
+               'die Titelleiste bleibt fest oben verankert (Rueckbau rc7)')
         if 'def _leiste_ausrichten' in _q44:
             _teil45 = _q44[_q44.index('def _leiste_ausrichten'):]
             _teil45 = _teil45[:_teil45.index('    def ', 10)]
-            pruefe("startswith('unten')" in _teil45,
-                   'und haengt sich bei einer unteren Ecke nach unten')
-            pruefe('pack_forget()' in _teil45,
-                   'dafuer wird neu gepackt — `side` laesst sich nicht umstellen')
-        else:
-            pruefe(False, 'die Methode _leiste_ausrichten ist vorhanden')
+            pruefe('ZURUECKGENOMMEN' in _teil45,
+                   'und der gescheiterte Versuch ist als solcher vermerkt')
 
         # ⚠⚠ Zwei Patches koennen auf dieselbe Kurzform kuerzen — ein Hotfix im
         #   Live-Kanal erzeugt genau das: 4.10.0-live.12519617 und

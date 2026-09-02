@@ -59,7 +59,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.9.2-rc6'
+__version__ = '3.9.2-rc7'
 
 
 def _mitgeliefert(name):
@@ -2728,26 +2728,28 @@ class Overlay:
         ganze Fensterhoehe ueber dem Bildschirmrand. Hier wechselt sie die
         Seite: oben bleibt oben, unten wandert nach unten.
 
-        ⚠ `pack_forget()` und neu packen ist noetig — `side` laesst sich
-        nachtraeglich nicht umstellen. Und die Leiste muss **zuerst** wieder
-        gepackt werden, damit der Inhalt darunter (bzw. darueber) seinen Platz
-        bekommt; deshalb `before`/`after` ueber die Geschwister.
+        ⚠⚠⚠ **ZURUECKGENOMMEN am 02.09.2026 — diese Methode tut derzeit
+        nichts.** Der Umbau ist an Tk gescheitert, und zwar folgenreich:
+
+        `side` laesst sich nachtraeglich nicht umstellen, die Leiste muss also
+        neu gepackt werden. Genau das laesst Tk die Fenstergroesse neu rechnen
+        — ein **eingeklapptes** Fenster wuchs dadurch von 22 auf 120 px und
+        ragte 86 px unter den Bildschirmrand. Die Leiste lag dann ausserhalb.
+
+        Das ist der schlimmste denkbare Fall: Im eingeklappten Zustand ist die
+        Leiste der EINZIGE Bedienweg. Ist sie weg, kommt man an gar nichts mehr
+        — nicht einmal an die Einstellung, mit der man es zuruecknehmen wuerde.
+
+        Vier Anlaeufe, alle gemessen und alle gescheitert: `before=` beim
+        Packen · die Geschwister nach der Leiste neu packen ·
+        `update_idletasks()` dazwischen · den Klappzustand per `after()`
+        wiederherstellen. Danach abgebrochen, statt einen fuenften zu starten.
+
+        **Der Wunsch bleibt berechtigt** und gehoert an den Rechner, an dem das
+        Overlay im Einsatz zu sehen ist. Der Versuch steht vollstaendig in der
+        Git-Historie (v3.9.2-rc3 bis rc6).
         """
-        try:
-            ecke = pfade.einstellung('overlay_ecke') or 'frei'
-            seite = 'bottom' if str(ecke).startswith('unten') else 'top'
-            if seite == self._leisten_seite:
-                return
-            self.bar.pack_forget()
-            self.bar.pack(fill='x', side=seite)
-            # ⚠ Der Ziehgriff sitzt am unteren Fensterrand. Liegt die Leiste
-            # jetzt auch dort, ueberdecken sie sich — dann greift dieselbe
-            # Ueberlegung wie beim eingeklappten Fenster.
-            self._leisten_seite = seite
-            self._grip_nachziehen()
-            self._schloss_nachziehen()
-        except Exception as ausnahme:
-            fehler.merken('overlay.leiste_ausrichten', ausnahme)
+        return
 
     def _klapp_ecke(self, breite, hoehe):
         """Wohin das Fenster gehoert — Ecke oder da, wo es steht.
@@ -2779,10 +2781,6 @@ class Overlay:
     def ecke_anwenden(self):
         """Von der Einstellungsseite gerufen: die Ecke sofort uebernehmen."""
         try:
-            # Erst die Leiste an den richtigen Rand, dann messen: Das Umhaengen
-            # aendert nichts an der Fenstergroesse, aber die Reihenfolge haelt
-            # den Ablauf verstaendlich — Aussehen, dann Lage.
-            self._leiste_ausrichten()
             self.root.update_idletasks()
             b, h = self.root.winfo_width(), self.root.winfo_height()
             x, y = self._klapp_ecke(b, h)
@@ -2909,9 +2907,39 @@ class Overlay:
         ⚠ Erst hier, nicht im Aufbau: Beides fasst das fertige Fenster an. Vorher
         hat es unter X11 noch keine Kennung, die man einer Maske geben könnte.
         """
-        # Beim Start die Leiste an den Rand haengen, der zur gespeicherten Ecke
-        # passt — sonst sitzt sie bis zum ersten Eckenwechsel wieder oben.
-        self._leiste_ausrichten()
+        # ⚠ Hier stand bis 02.09.2026 ein Versuch, die Titelleiste bei den
+        # unteren Ecken an den unteren Fensterrand zu haengen (gewuenscht von
+        # Haldjas/pr0). Er ist zurueckgenommen: Das Umpacken liess Tk die
+        # Fenstergroesse neu rechnen, ein eingeklapptes Fenster wuchs von 22
+        # auf 120 px und ragte 86 px unter den Bildschirmrand — samt Leiste.
+        # Und die Leiste ist im eingeklappten Zustand der EINZIGE Bedienweg.
+        # Vier Anlaeufe (before=, Geschwister neu packen, Klappzustand
+        # wiederherstellen, after()) haben es nicht geloest. Der Umbau gehoert
+        # an den Rechner, an dem man das Overlay im Einsatz sieht.
+        # ⚠⚠ **Und das Fenster in die Ecke setzen.** Die gewaehlte Ecke wirkte
+        # bisher nur beim Ein- und Ausklappen (`_klappen` ruft `_klapp_ecke`).
+        # Wer sie einstellt und das Werkzeug neu startet, fand es deshalb dort
+        # wieder, wo es zuletzt STAND — nicht in der Ecke. Am 02.09.2026 am
+        # Bildschirm gesehen: „unten links" eingestellt, Overlay saß oben
+        # links. Ein aelterer Fehler, der erst auffiel, als die Leiste
+        # mitwanderte.
+        # ⚠⚠ Ueber `_klappen()`, NICHT mit selbst gemessener Hoehe. Am
+        # 02.09.2026 stand hier `winfo_height()` — im eingeklappten Zustand
+        # meldet Tk dort die Hoehe des INHALTS (gemessen: 120 px statt 22).
+        # Damit gesetzt, ragte das Fenster 86 px unter den Bildschirmrand, und
+        # die Leiste lag genau dort. `_klappen()` rechnet die richtige Hoehe
+        # selbst aus und setzt Lage und Groesse in einem Zug.
+        # ⚠ Per `after()`, nicht sofort: Beim Start steht der Klappzustand hier
+        # noch nicht endgueltig fest, und Tk hat die Groesse noch nicht
+        # gerechnet. Sofort gesetzt, wird die Hoehe gleich wieder ueberschrieben
+        # — gemessen am 02.09.2026: 120 px statt 22, das Fenster ragte 86 px
+        # unter den Bildschirmrand und nahm die Leiste mit.
+        try:
+            if (pfade.einstellung('overlay_ecke') or 'frei') != 'frei':
+                self.root.after(
+                    120, lambda: self._klappen(self.eingeklappt, merken=False))
+        except Exception as ausnahme:
+            fehler.merken('overlay.ecke_beim_start', ausnahme)
         self.anzeigeart = pfade.einstellung('overlay_modus') or 'immer'
         if self.anzeigeart == 'popup':
             # ⚠ Die Lage merken, **bevor** versteckt wird. Ein Fenster, das noch

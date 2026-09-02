@@ -6,6 +6,28 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc7 - 2026-09-02
+
+### Behoben
+
+- **Die gewählte Ecke wird jetzt beim Start angewandt.** Bisher wirkte sie nur
+  beim Ein- und Ausklappen — wer eine Ecke einstellte und das Werkzeug neu
+  startete, fand das Overlay dort wieder, wo es zuletzt *stand*.
+
+### Zurückgenommen
+
+- **Der Versuch, die Titelleiste bei den unteren Ecken an den unteren
+  Fensterrand zu hängen (rc3–rc6), ist rückgängig gemacht.** Er ist an Tk
+  gescheitert: Das nötige Neupacken lässt die Fenstergröße neu rechnen, ein
+  **eingeklapptes** Fenster wuchs dadurch von 22 auf 120 Pixel und ragte unter
+  den Bildschirmrand — mitsamt der Leiste. Und die Leiste ist im eingeklappten
+  Zustand der einzige Bedienweg: Ist sie weg, kommt man an gar nichts mehr,
+  auch nicht an die Einstellung, mit der man es zurücknehmen würde.
+  Vier Anläufe, alle gemessen, alle gescheitert. Der Wunsch bleibt berechtigt
+  und wird an einem Rechner umgesetzt, an dem sich das Overlay im Einsatz
+  beobachten lässt. Eine Prüfung im Selbsttest hält den Rückbau fest, damit der
+  nächste Anlauf den eingeklappten Zustand mitmisst.
+
 ## v3.9.2-rc6 - 2026-09-02
 
 ### Behoben

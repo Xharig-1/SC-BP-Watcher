@@ -6,6 +6,27 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc7 - 2026-09-02
+
+### Fixed
+
+- **The chosen corner is now applied at startup.** Until now it only took
+  effect when collapsing or expanding — set a corner, restart the tool, and the
+  overlay reappeared wherever it last *stood*.
+
+### Reverted
+
+- **The attempt to move the title bar to the bottom edge for the bottom
+  corners (rc3–rc6) has been rolled back.** It failed against Tk: the required
+  repacking makes the window size recalculate, so a **collapsed** window grew
+  from 22 to 120 pixels and hung below the screen edge — taking the bar with
+  it. And while collapsed, the bar is the only way to operate the tool: once
+  it's gone, nothing is reachable, not even the setting you would need to undo
+  it. Four attempts, all measured, all failed. The request stays valid and will
+  be done on a machine where the overlay can be watched in real use. A
+  self-test check pins the rollback down so the next attempt measures the
+  collapsed state too.
+
 ## v3.9.2-rc6 - 2026-09-02
 
 ### Fixed
