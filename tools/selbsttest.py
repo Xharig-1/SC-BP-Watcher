@@ -8610,6 +8610,100 @@ def main():
     pruefe('DPS: 157' in _zurueck102,
            'aber laesst den fremden Anhang stehen')
 
+    # -----------------------------------------------------------------------
+    print()
+    print('103. Kein Symbol wird erzeugt und dann nicht benutzt')
+    # ⚠ Anlass (02.09.2026): In `symbole_bauen.py` stand seit langem
+    # `'ziehgriff': 'grip'`. Die Bilder wurden brav in allen Groessen und
+    # Farben erzeugt — eingebaut war das Symbol nie, der Ziehgriff blieb ein
+    # Schriftzeichen. **Ein vorbereitetes Symbol sieht in der Zuordnungstabelle
+    # aus wie erledigt.** Genau das faellt sonst niemandem auf.
+    #
+    # Gesucht wird der Name als Zeichenkette im Quelltext — in einem Aufruf,
+    # einem Woerterbuch oder einer Liste. Die Dateien, in denen die Namen
+    # DEFINIERT werden, zaehlen dabei nicht als Verwendung.
+    from scbp import zeichen as _z103
+
+    # Bekannte Ausnahmen. ⚠ Diese Liste ist zum LEEREN da, nicht zum Wachsen:
+    # Jeder Eintrag ist ein Symbol, das erzeugt wird, ohne dass es jemand
+    # sieht. Wer eines ergaenzt, sollte den Grund danebenschreiben.
+    _AUSNAHMEN103 = {
+        # ⚠ **Bewusste Ausnahme, kein Versehen** (entschieden 02.09.2026).
+        # Der Ko-fi-Knopf malt seine Tasse selbst (`kaffee_zeichen` in
+        # `hauptfenster.py`), obwohl `coffee.svg` im Satz liegt und 24 fertige
+        # Bilder daraus erzeugt werden.
+        #
+        # Grund: Direkt daneben sitzt der Discord-Knopf, und **Discord gibt es
+        # bei Lucide nicht** — der Satz fuehrt grundsaetzlich keine
+        # Markenlogos. Dieses Zeichen muss also gemalt bleiben. Eine gemalte
+        # Tasse daneben ist stimmiger als ein Bildsymbol neben einem
+        # gezeichneten Logo. Die beiden sind damit die EINZIGE Ausnahme von
+        # der Regel „Symbole kommen aus dem Satz".
+        'kaffee',
+        # Gegenstueck zu 'aufklappen'/'einklappen', die beide benutzt werden.
+        # Dieses dritte Motiv wurde nie gebraucht.
+        'ausklappen',
+        # Der alte Ziehgriff (Punktraster ohne Richtung). Seit 02.09.2026
+        # ersetzt durch 'ziehen_ol/or/ul/ur'.
+        'ziehgriff',
+        # Angelegt, aber nie eingebaut — der Update-Knopf traegt Text.
+        'herunterladen',
+        # Der gelbe Zustand „vorlaeufig" ist mit v3.0.0-rc95 abgeschafft
+        # worden: Ein Fund aus dem Log gilt seither sofort als sicher. Das
+        # Symbol ist der Rest davon.
+        'vorlaeufig',
+    }
+
+    _wurzel103 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    _nicht103 = {
+        os.path.join(_wurzel103, 'scbp', 'zeichen.py'),
+        os.path.join(_wurzel103, 'tools', 'symbole_bauen.py'),
+        # ⚠⚠ **Diese Datei selbst gehoert dazu** — sonst findet die Pruefung
+        # ihre eigene Ausnahmeliste und haelt jedes Symbol darin fuer benutzt.
+        # Genau so ist sie beim ersten Lauf hereingefallen. Nebenbei richtig:
+        # Ein Symbol, das nur im Selbsttest vorkommt, sieht kein Nutzer.
+        os.path.abspath(__file__),
+    }
+    _quellen103 = []
+    for _ordner103, _unter103, _namen103 in os.walk(_wurzel103):
+        _unter103[:] = [u for u in _unter103
+                        if u not in ('.git', '__pycache__', 'assets', 'daten')]
+        for _n103 in _namen103:
+            if not _n103.endswith('.py'):
+                continue
+            # ⚠ `entwurf_*` ist per `.gitignore` ausgenommen und damit kein
+            # Teil des Programms. Ein Symbol, das nur in einem Entwurf
+            # vorkommt, sieht kein Nutzer — und ausgerechnet das Werkzeug,
+            # das die toten Symbole SUCHT, nennt sie alle beim Namen.
+            if _n103.startswith('entwurf_'):
+                continue
+            _p103 = os.path.join(_ordner103, _n103)
+            if _p103 in _nicht103:
+                continue
+            try:
+                with open(_p103, encoding='utf-8') as _f103:
+                    _quellen103.append(_f103.read())
+            except Exception:
+                pass
+
+    pruefe(len(_quellen103) > 5,
+           'die Quelldateien wurden gefunden (%d)' % len(_quellen103))
+    _tot103 = []
+    for _name103 in _z103.ALLE:
+        _m103 = re.compile(r'["\']%s["\']' % re.escape(_name103))
+        if not any(_m103.search(q) for q in _quellen103):
+            _tot103.append(_name103)
+    _neu103 = [n for n in _tot103 if n not in _AUSNAHMEN103]
+    pruefe(not _neu103,
+           'kein neues unbenutztes Symbol (%s)'
+           % (', '.join(_neu103) if _neu103 else 'keines'))
+    # ⚠ Und andersherum: Steht eine Ausnahme wieder in Benutzung, gehoert sie
+    # aus der Liste. Sonst waechst dort eine Sammlung von Unwahrheiten.
+    _wieder103 = [n for n in _AUSNAHMEN103 if n not in _tot103]
+    pruefe(not _wieder103,
+           'keine Ausnahme ist ueberholt (%s)'
+           % (', '.join(_wieder103) if _wieder103 else 'keine'))
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

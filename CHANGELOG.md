@@ -6,6 +6,89 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2 - 2026-09-02
+
+Das Overlay bleibt da, wo man es hinlegt — und meldet wieder, wofür es da ist.
+Wer es in eine Ecke legt und zuklappt, hatte bisher je nach Ecke gar nichts mehr
+davon: Es stand außerhalb des Bildschirms, meldete neue Baupläne nicht und ließ
+sich nicht mehr in der Größe ändern. Das ist behoben, und die Titelleiste sitzt
+jetzt an der Seite, die zur gewählten Ecke passt.
+
+Dazu ein Fund, der nichts mit dem Overlay zu tun hat, aber jeden trifft, der ein
+zweites Werkzeug benutzt: Der Bauplan-Block in den Auftragstexten überlebt jetzt
+die Läufe von **Smart Citizen**, statt jedes Mal verworfen zu werden.
+
+> [!important]
+> **Wer in einer älteren Fassung nicht mehr an sein Overlay kam, ist nicht
+> ausgesperrt.** Standen „Mausklicks durchreichen" und eine der Ecken oben
+> rechts, unten links oder unten rechts gemeinsam an, rutschte das eingeklappte
+> Overlay aus dem Bild — **mitsamt dem Schloss, das der einzige Rückweg ist.**
+> Diese Fassung installieren und neu starten genügt: Die Ecke wird dann richtig
+> berechnet, und das Schloss ist wieder da.
+
+### Neu
+
+- **Ein eingeklapptes Overlay meldet neue Baupläne.** Es klappt bei einem Fund
+  von selbst auf und nach der eingestellten Zeit wieder zu, ohne dass der
+  gewählte Zustand überschrieben wird. Vorher gab es nur den Signalton — mit
+  durchgereichten Mausklicks hieß das: Schloss treffen, aufklappen, und das
+  mitten im Kampf.
+- **Die Titelleiste hängt an der Seite, die zur Ecke passt.** Liegt das Overlay
+  unten, sitzt sie unten; der Ziehgriff weicht auf die freie Ecke aus und zeigt
+  mit einem Pfeil dorthin, wohin sich das Fenster ziehen lässt.
+
+### Behoben
+
+- ⭐ **Das eingeklappte Overlay bleibt in allen vier Ecken im Bild.** In drei von
+  vier Ecken stand es teilweise oder ganz außerhalb — je nach Ecke fehlten 252
+  Pixel zur Seite oder 86 nach unten. Ursache war die Mindestgröße des Fensters,
+  die beim Einklappen stehenblieb, während die Position schon für den schmalen
+  Streifen gerechnet war.
+- ⭐ **Der Bauplan-Block überlebt andere Werkzeuge.** Wer neben dem Watcher
+  **Smart Citizen** benutzt, verlor bei jedem dessen Läufe die eingetragenen
+  Baupläne — nachgemessen **398 von 398** betroffenen Auftragstexten. Unser
+  Block wird jetzt davor eingesetzt und bleibt stehen.
+- ⭐ **Die Fenstergröße lässt sich in jeder Ecke ändern.** Klebt das Overlay
+  unten oder rechts, wurde beim Ziehen gegen genau diesen Rand gearbeitet. Jetzt
+  bleiben die Kanten am Bildschirmrand stehen und das Fenster wächst dorthin, wo
+  Platz ist.
+- **Der grüne Griff im Aufblend-Betrieb sitzt an der gewählten Ecke** — vorher
+  klebte er unabhängig von der Einstellung in der Bildmitte. Ein Eckenwechsel
+  wirkt sofort, ohne dass man erst mit der Maus darüberfahren muss.
+- **Zurücksetzen ohne Merkdatei funktioniert wieder.** Wer die Injektion auf
+  einem Rechner einspielte und die Merkdatei verlor, bekam den Bauplan-Block nie
+  wieder aus der Übersetzungsdatei heraus. Der Fehler steckte seit der ersten
+  Fassung darin.
+- **Der Schalter „Mausklicks durchreichen" geht mit dem Schloss mit** — vorher
+  zeigte er bei offener Seite den alten Zustand.
+- **Die gewählte Ecke wird beim Start angewandt**, nicht erst beim Klappen.
+- **Im Suchfeld der Bauplan-Liste ließ sich nichts eintippen**, und das Fenster
+  nahm Klicks beim ersten Öffnen einer Seite nicht sofort an.
+- **Zwei Patches hießen im Filter beide „4.10.0"** und ließen sich nicht
+  auseinanderhalten.
+- **Der Hinweis auf eine Testfassung führte zur falschen Datei** — verlinkt war
+  immer die neueste fertige Version.
+- Kleinigkeiten: Einzahl im Fehlerbericht („1 Bauplan" statt „1 Baupläne"),
+  fehlende Leerzeichen auf der Danke-Seite, klarere Bezeichnungen im Filter und
+  auf der Update-Seite.
+
+### Dank
+
+- **Haldjas (pr0)** — für den Hinweis, dass Balken und Schloss bei einer unteren
+  Ecke am oberen Fensterrand hängen bleiben, und fürs hartnäckige Nachfassen, als
+  die erste Antwort am Punkt vorbeiging. Sein Wunsch galt vier Anläufe lang als
+  technisch unmöglich; er war es nie.
+
+### Für Entwickler
+
+- Vier neue Prüfläufe messen das Overlay unsichtbar aus: Ecken, Leistenlage,
+  Ziehgriff und der Streifen im Aufblend-Betrieb — jeweils gegen den echten
+  Bildschirmrand. Dazu prüft der Selbsttest jetzt, dass kein Symbol erzeugt
+  wird, das nirgends angezeigt wird.
+- `tools/smartcitizen_pruefen.py` prüft die Verträglichkeit mit Smart Citizen in
+  beide Richtungen — die dritte Prüfung dieser Art neben StarStrings und dem
+  Launcher.
+
 ## v3.9.2-rc12 - 2026-09-02
 
 Der Griff zum Größerziehen zeigt jetzt dorthin, wo Platz ist, verdeckt keinen

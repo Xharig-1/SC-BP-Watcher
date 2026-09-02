@@ -6,6 +6,86 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2 - 2026-09-02
+
+The overlay stays where you put it — and reports what it is there for again.
+Put it in a corner and collapse it, and depending on the corner you got nothing
+at all out of it so far: it sat off-screen, did not report new blueprints and
+could no longer be resized. That is fixed, and the title bar now sits on the
+side that matches the chosen corner.
+
+On top of that, a find unrelated to the overlay that affects everyone running a
+second tool: the blueprint block in the mission texts now survives runs of
+**Smart Citizen** instead of being discarded every time.
+
+> [!important]
+> **If an older release left you unable to reach your overlay, you are not
+> locked out.** With "pass mouse clicks through" enabled together with the top
+> right, bottom left or bottom right corner, the collapsed overlay slid off the
+> screen — **taking the lock with it, which is the only way back.** Installing
+> this release and restarting is enough: the corner is then calculated correctly
+> and the lock is back.
+
+### New
+
+- **A collapsed overlay reports new blueprints.** It expands on its own when a
+  find comes in and collapses again after the configured time, without
+  overwriting the state you chose. Before there was only the signal tone — with
+  click-through enabled that meant: hit the lock, expand, and all that mid-fight.
+- **The title bar attaches to the side matching the corner.** With the overlay at
+  the bottom it sits at the bottom; the resize handle moves to the free corner
+  and points with an arrow to where the window can be dragged.
+
+### Fixed
+
+- ⭐ **The collapsed overlay stays on screen in all four corners.** In three
+  corners out of four it sat partly or entirely outside — 252 pixels off to the
+  side or 86 off the bottom, depending on the corner. The cause was the window's
+  minimum size staying put while collapsing, with the position already worked out
+  for the narrow strip.
+- ⭐ **The blueprint block survives other tools.** Anyone running **Smart
+  Citizen** alongside the watcher lost the marked blueprints on every run of it —
+  measured at **398 out of 398** affected mission texts. Our block is now placed
+  before theirs and stays.
+- ⭐ **Window resizing works in every corner.** With the overlay stuck to the
+  bottom or right edge, dragging worked against that very edge. The edges on the
+  screen border now stay put and the window grows where there is space.
+- **The green handle in fade mode sits at the chosen corner** — previously it
+  clung to the middle regardless of the setting. Switching corners now takes
+  effect at once, without having to move the mouse over it first.
+- **Resetting without the marker file works again.** Anyone who applied the
+  injection on one machine and lost the marker file could never get the blueprint
+  block out of the translation file again. That bug had been in there since the
+  first release.
+- **The "pass mouse clicks through" switch keeps up with the lock** — it used to
+  show the old state while the page was open.
+- **The chosen corner is applied at startup**, not only when collapsing.
+- **The blueprint list's search field would not accept typing**, and the window
+  did not take clicks immediately when a page was first opened.
+- **Two patches both showed as "4.10.0"** in the filter and could not be told
+  apart.
+- **The test release notice linked to the wrong file** — it always pointed at the
+  latest stable version.
+- Smaller things: singular in the error report ("1 blueprint" instead of "1
+  blueprints"), missing spaces on the thanks page, clearer labels in the filter
+  and on the update page.
+
+### Thanks
+
+- **Haldjas (pr0)** — for pointing out that bar and lock stay at the top edge of
+  the window when the overlay sits in a bottom corner, and for insisting after
+  the first answer missed the point. His request was considered technically
+  impossible for four attempts; it never was.
+
+### For developers
+
+- Four new check tools measure the overlay invisibly: corners, title bar
+  position, resize handle and the strip in fade mode — each against the real
+  screen edge. The self-test also verifies that no icon is generated that is
+  never displayed anywhere.
+- `tools/smartcitizen_pruefen.py` checks compatibility with Smart Citizen in both
+  directions — the third check of its kind alongside StarStrings and the launcher.
+
 ## v3.9.2-rc12 - 2026-09-02
 
 The resize handle now points where there is room, no longer covers any text, and
