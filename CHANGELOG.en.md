@@ -6,6 +6,46 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc9 - 2026-09-02
+
+Put the overlay in a corner and you will find it there again — collapsed just as
+much as expanded. Until now the narrow strip slid off the screen edge in three
+corners out of four, leaving a green sliver that was of no use to anyone. The
+handle and the lock now move to the side the chosen corner belongs to as well.
+
+### Fixed
+
+- ⭐ **A collapsed overlay reports new blueprints again.** With "always visible"
+  selected and the bar collapsed, a find produced nothing but the signal tone —
+  the window stayed put and the blueprint sat unseen in the list. With
+  click-through enabled this was doubly annoying: first hit the lock, then
+  expand, and all that mid-fight. The overlay now expands on its own when a find
+  comes in and collapses again after the configured time. Anyone who prefers to
+  work collapsed stays that way — the state is not overwritten, and it stays
+  open as long as the mouse pointer rests on it.
+- ⭐ **The collapsed overlay stays on screen in all four corners.** In the top
+  right, bottom left and bottom right corners it sat partly or entirely outside
+  the screen — 252 pixels off to the side or 86 off the bottom, depending on the
+  corner. The cause was not the corner calculation but the window's minimum
+  size: it held the window at full width and height while the position had
+  already been worked out for the narrow strip. The two now move together.
+  Reported by Haldjas (pr0)
+- **The fade-mode handle sits on the chosen side.** The green strip that brings
+  a hidden overlay back was always stuck in the middle regardless of the
+  setting — with a bottom left corner it therefore sat in the middle of the
+  screen. It now follows the corner, and the lock goes the same way: with a
+  right-hand corner it sits to the left of the strip so it does not slide off
+  the edge itself. Reported by Haldjas (pr0)
+- **Missing spaces on the thanks page** — it read "setup andupdating" instead of
+  "setup and updating".
+
+### Changed
+
+- **A check for the corners** is included: it builds the overlay invisibly,
+  collapses and expands it in every corner and compares the actual position with
+  the screen edge. This very bug would have surfaced on the first attempt
+  instead of surviving several releases.
+
 ## v3.9.2-rc8 - 2026-09-02
 
 ### Fixed

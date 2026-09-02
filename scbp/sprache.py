@@ -1146,13 +1146,16 @@ TEXTE = {
     's_dk_beitraege':  ('%d Beiträge', '%d contributions'),
     's_dk_aufklappen': ('Klick auf einen Namen zeigt, was daraus geworden ist.',
                         'Click a name to see what came of it.'),
-    's_dk_haldjas_idee':     ('**Aufblend-Betrieb und durchgereichte Mausklicks** — damit ein'
+    's_dk_haldjas_idee':     ('**Aufblend-Betrieb und durchgereichte Mausklicks** — damit ein '
                               'Overlay im Kampf hilft statt zu stören.',
-                              '**Fade mode and click-through** — so an overlay helps in a'
+                              '**Fade mode and click-through** — so an overlay helps in a '
                               'fight instead of getting in the way.'),
-    's_dk_haldjas_bugs':     ('Dazu ein Dutzend Funde rund um Overlay, Einrichtung und'
-                              'Update.',
-                              'Plus a dozen finds around the overlay, setup and updating.'),
+    's_dk_haldjas_bugs':     ('Dazu ein Dutzend Funde rund um Overlay, Einrichtung und '
+                              'Update — darunter das eingeklappte Overlay, das in drei '
+                              'von vier Ecken über den Bildschirmrand hinausstand.',
+                              'Plus a dozen finds around the overlay, setup and updating — '
+                              'among them the collapsed overlay hanging off the screen '
+                              'edge in three corners out of four.'),
     # ⚠ **Diese Seite mitziehen, nicht nur den CHANGELOG.** Am 27.08.2026 hat
     # Bomb20 an einem Vormittag vier Fehler gefunden, die alle am Samstag jeden
     # Nutzer getroffen hätten — und hier stand weiter nur sein Fund vom 25.08.

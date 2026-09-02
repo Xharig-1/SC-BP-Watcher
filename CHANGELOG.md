@@ -6,6 +6,47 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc9 - 2026-09-02
+
+Wer das Overlay in eine Ecke legt, findet es dort jetzt auch wieder — und zwar
+eingeklappt genauso wie ausgeklappt. Bisher rutschte der schmale Streifen in
+drei von vier Ecken über den Bildschirmrand hinaus; sichtbar blieb ein grüner
+Strich, mit dem sich nichts mehr anfangen ließ. Dazu wandern Griff und Schloss
+mit an die Seite, zu der die gewählte Ecke gehört.
+
+### Behoben
+
+- ⭐ **Ein eingeklapptes Overlay meldet neue Baupläne wieder.** Wer „Immer
+  sichtbar" gewählt und die Leiste zugeklappt hatte, bekam bei einem Fund nur
+  den Signalton — das Fenster rührte sich nicht, der Bauplan stand ungesehen in
+  der Liste. Mit durchgereichten Mausklicks war das doppelt ärgerlich: Erst das
+  Schloss treffen, dann aufklappen, und das mitten im Kampf. Das Overlay klappt
+  jetzt bei einem Fund von selbst auf und nach der eingestellten Zeit wieder zu.
+  Wer zugeklappt arbeiten will, bleibt dabei — der Zustand wird nicht
+  überschrieben, und solange der Mauszeiger darauf steht, bleibt es offen.
+- ⭐ **Das eingeklappte Overlay bleibt in allen vier Ecken im Bild.** In den
+  Ecken oben rechts, unten links und unten rechts stand es teilweise oder ganz
+  außerhalb des Bildschirms — je nach Ecke fehlten 252 Pixel zur Seite oder 86
+  nach unten. Die Ursache lag nicht bei der Ecken-Rechnung, sondern bei der
+  Mindestgröße des Fensters: Sie hielt es auf voller Breite und Höhe fest,
+  während die Position bereits für den schmalen Streifen berechnet war. Beide
+  ziehen jetzt gemeinsam um. Gemeldet von Haldjas (pr0)
+- **Der Griff im Aufblend-Betrieb sitzt an der gewählten Seite.** Der grüne
+  Streifen, mit dem sich das versteckte Overlay wieder hervorholen lässt, klebte
+  unabhängig von der Einstellung immer in der Mitte — bei einer Ecke unten links
+  saß er also mitten im Bild. Er folgt jetzt der Ecke, und das Schloss geht
+  denselben Weg: bei einer rechten Ecke liegt es links neben dem Streifen, damit
+  es nicht seinerseits über den Rand rutscht. Gemeldet von Haldjas (pr0)
+- **Auf der Danke-Seite fehlten Leerzeichen** — dort stand „Einrichtung
+  undUpdate" statt „Einrichtung und Update".
+
+### Geändert
+
+- **Eine Prüfung für die Ecken** liegt bei: Sie baut das Overlay unsichtbar auf,
+  klappt es in jeder Ecke zu und wieder auf und vergleicht die tatsächliche
+  Lage mit dem Bildschirmrand. Genau dieser Fehler wäre damit beim ersten Anlauf
+  aufgefallen, statt über mehrere Fassungen zu überleben.
+
 ## v3.9.2-rc8 - 2026-09-02
 
 ### Behoben

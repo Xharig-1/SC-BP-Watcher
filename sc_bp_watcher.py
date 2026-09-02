@@ -59,7 +59,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.9.2-rc8'
+__version__ = '3.9.2-rc9'
 
 
 def _mitgeliefert(name):
@@ -2283,7 +2283,10 @@ class Overlay:
         self._trim()
         self.canvas.yview_moveto(0)
         signalton()
-        self._popup_zeigen()
+        # ⚠ Nicht mehr direkt `_popup_zeigen()`: Das half nur im
+        # Aufblend-Betrieb. Ein eingeklapptes Overlay bei „Immer sichtbar"
+        # meldete gar nichts — siehe `bei_fund_zeigen`.
+        self.bei_fund_zeigen()
 
     def auftraege_zeigen(self, paare):
         """Die laufenden Auftraege setzen — die Leiste zeigt immer den Stand.
@@ -2677,6 +2680,22 @@ class Overlay:
                 # bei anderer Schriftgröße daneben.
                 hoehe = leistenhoehe
 
+            # ⚠⚠ **Die Mindestgroesse muss mit.** `_mindestgroesse_setzen()`
+            # haelt das Fenster auf 520x120, damit im offenen Zustand keine
+            # Symbole abgeschnitten werden. Beim Einklappen wirkt genau diese
+            # Grenze gegen uns: `geometry('260x26')` wird gesetzt, das Fenster
+            # bleibt aber 520x120 — und die Ecke ist fuer die kleinere Groesse
+            # gerechnet. In einer rechten Ecke standen dadurch 252 px, in einer
+            # unteren 86 px ausserhalb des Bildschirms; sichtbar blieb ein
+            # gruener Strich. Gemeldet von Haldjas (pr0) am 01./02.09.2026.
+            #
+            # Gemessen statt geraten: `tools/entwurf_ecken_messen.py` baut das
+            # Fenster unter Xvfb und vergleicht die **tatsaechliche** Geometrie
+            # mit dem Bildschirmrand.
+            if zu:
+                self.root.minsize(breite, hoehe)
+            else:
+                self.root.minsize(self._mindestbreite(), 120)
             x, y = self._klapp_ecke(breite, hoehe)
             self.root.geometry('%dx%d+%d+%d' % (breite, hoehe, x, y))
             self.klapp_lbl.symbol_tauschen('aufklappen' if zu
@@ -2706,11 +2725,19 @@ class Overlay:
         Sprache daneben: „SC BP Watcher" ist kuerzer als sein englisches
         Gegenstueck, und die Symbolreihe waechst mit der Schrift mit. Also
         fragen wir die Leiste selbst, was sie braucht.
+
+        ⚠⚠ **NICHT `winfo_reqwidth()` der Leiste nehmen** — genau daran ist
+        diese Methode bis zum 02.09.2026 gescheitert. Die Kopfleiste laeuft
+        mit `pack_propagate(False)` und meldet deshalb `1`; die Rechnung fiel
+        jedes Mal auf den Mindestwert 260 zurueck, waehrend die Leiste in
+        Wirklichkeit 520 breit ist. In einer rechten Ecke wurde die Position
+        fuer 260 gerechnet und das Fenster stand mit 252 px ausserhalb des
+        Bildschirms. Dieselbe Falle war in `_mindestbreite()` laengst behoben —
+        also wird sie hier benutzt statt ein zweites Mal hineinzutappen.
         """
         try:
-            leiste = self.root.winfo_children()[0]
             self.root.update_idletasks()
-            return max(leiste.winfo_reqwidth() + 16, 260)
+            return max(self._mindestbreite(), 260)
         except Exception:
             return max(self.root.winfo_width(), 260)
 
@@ -2773,6 +2800,14 @@ class Overlay:
             rand = 8
             x = sx + rand if ecke.endswith('links') else sx + sb - breite - rand
             y = sy + rand if ecke.startswith('oben') else sy + sh - hoehe - rand
+            # ⚠ Ist das Overlay so gross wie der Bildschirm, zieht der Rand von
+            # 8 px es ueber die obere bzw. linke Kante — und dort sitzen
+            # Titelleiste und Schloss, also genau die Bedienung. Lieber den
+            # Rand aufgeben als den Zugriff. Geklemmt wird auf **diesen**
+            # Schirm (`sx`/`sy`), nicht auf null: Bei mehreren Monitoren ist
+            # ein negatives Y eine gueltige Angabe.
+            x = max(sx, x)
+            y = max(sy, y)
             return int(x), int(y)
         except Exception as ausnahme:
             fehler.merken('overlay.klapp_ecke', ausnahme)
@@ -3148,9 +3183,22 @@ class Overlay:
                 lage = GEOM_RE.match(self._letzte_lage or '')
                 if lage is not None and lage.group(3) is not None:
                     ov_breite, _h, links, oben = (int(z) for z in lage.groups())
-                    streifen = links + max(0, (ov_breite
-                                               - self.ANFASSER_BREITE) // 2)
-                    x = streifen + self.ANFASSER_BREITE + 4
+                    # ⚠ Dieselbe Rechnung wie der Streifen selbst — sonst
+                    # laufen die beiden auseinander, sobald sich eine von
+                    # ihnen aendert. Sie gehoeren zusammen.
+                    streifen = self._anfasser_x(links, ov_breite)
+                    # ⚠ In einer RECHTEN Ecke gehoert das Schloss **links**
+                    # neben den Streifen. Rechts daneben waere es das erste,
+                    # was ueber den Bildschirmrand rutscht — der Streifen
+                    # klebt dort ja schon an der Kante.
+                    try:
+                        ecke = pfade.einstellung('overlay_ecke') or 'frei'
+                    except Exception:
+                        ecke = 'frei'
+                    if ecke.endswith('rechts'):
+                        x = streifen - self.SCHLOSS_KANTE - 4
+                    else:
+                        x = streifen + self.ANFASSER_BREITE + 4
                     y = oben
                 else:
                     x = (self.root.winfo_rootx()
@@ -3304,6 +3352,28 @@ class Overlay:
     ANFASSER_BREITE = 54
     ANFASSER_HOEHE = 5
 
+    def _anfasser_x(self, links, ov_breite):
+        """Wo der Streifen sitzt — an der Seite, die zur gewaehlten Ecke passt.
+
+        ⚠ Bis zum 02.09.2026 sass er **immer mittig**. In einer Ecke sieht das
+        falsch aus: Wer das Overlay nach links unten legt, erwartet den Griff
+        dort und nicht in der Bildmitte. Der Autor am 02.09.2026: *„Links als
+        Auswahl, links an die Leiste statt mittig; rechts ausgewaehlt, pack das
+        Schloss und den Strich rechts an das Fenster."*
+
+        Ohne gewaehlte Ecke (`frei`) bleibt es mittig — dort gibt es keine
+        Seite, an die er gehoeren wuerde.
+        """
+        try:
+            ecke = pfade.einstellung('overlay_ecke') or 'frei'
+        except Exception:
+            ecke = 'frei'
+        if ecke.endswith('links'):
+            return links
+        if ecke.endswith('rechts'):
+            return links + max(0, ov_breite - self.ANFASSER_BREITE)
+        return links + max(0, (ov_breite - self.ANFASSER_BREITE) // 2)
+
     def _anfasser_zeigen(self):
         """Den Streifen an die letzte Position des Overlays legen."""
         if self.anzeigeart != 'popup':
@@ -3313,7 +3383,7 @@ class Overlay:
         if not m or m.group(3) is None:
             return
         breite, _hoehe, links, oben = (int(z) for z in m.groups())
-        x = links + max(0, (breite - self.ANFASSER_BREITE) // 2)
+        x = self._anfasser_x(links, breite)
         # ⚠ **Kein `max(0, …)` auf der Höhe.** Hier stand es, und damit
         # widersprach diese Zeile dem, was `_current_geom()` zwei Funktionen
         # weiter oben ausdrücklich bewahrt: „so bleibt negatives Y als absolute
@@ -3354,6 +3424,67 @@ class Overlay:
         try:
             if self._anfasser is not None and self._anfasser.winfo_exists():
                 self._anfasser.withdraw()
+        except tk.TclError:
+            pass
+
+    def bei_fund_zeigen(self):
+        """Nach einem Fund sichtbar machen — je nach Betriebsart auf ihrem Weg.
+
+        ⚠⚠ **Ein eingeklapptes Overlay meldete bisher gar nichts.** Im
+        Aufblend-Betrieb kam es bei jedem Bauplan zurueck; wer dagegen „Immer
+        sichtbar" gewaehlt und die Leiste zugeklappt hatte, bekam nur den
+        Signalton. Der Fund stand in der Liste, sichtbar wurde er erst, wenn
+        jemand von Hand aufklappte.
+
+        Mit **durchgereichten Mausklicks** war das doppelt aergerlich: Man hoert
+        den Ton, kann aber nichts anklicken — erst das Schloss treffen, dann den
+        Klapp-Knopf. Zwei Handgriffe mitten im Kampf, fuer eine Meldung, die man
+        nur kurz sehen wollte. Ein zugeklapptes Overlay schaltete damit genau
+        die Funktion ab, fuer die es da ist.
+
+        Also klappt es jetzt selbst auf und nach derselben Zeit wieder zu, die
+        auch der Aufblend-Betrieb benutzt. ⚠ **Ohne `merken`** — der Wunsch des
+        Spielers, zugeklappt zu arbeiten, bleibt bestehen; das hier ist nur ein
+        Blick, kein neuer Zustand.
+        """
+        if self.anzeigeart == 'popup':
+            return self._popup_zeigen()
+        if not self.eingeklappt:
+            return                       # steht ohnehin offen, nichts zu tun
+        try:
+            self.klappzustand_setzen(False, merken=False)
+        except tk.TclError:
+            return
+        # ⚠ Bei mehreren Bauplaenen kurz hintereinander die Uhr neu stellen,
+        # nicht mehrere laufen lassen — sonst klappt es mitten im naechsten
+        # Fund wieder zu.
+        if self._zuklapp_uhr is not None:
+            try:
+                self.root.after_cancel(self._zuklapp_uhr)
+            except (tk.TclError, ValueError):
+                pass
+        sekunden = pfade.einstellung_zahl('popup_sekunden', 6, 2, 60)
+        self._zuklapp_uhr = self.root.after(sekunden * 1000,
+                                            self._wieder_zuklappen)
+
+    _zuklapp_uhr = None
+
+    def _wieder_zuklappen(self):
+        """Nach dem Blick auf einen Fund zurueck in die Leiste.
+
+        ⚠ Steht die Maus darauf, wird gewartet — dieselbe Ruecksicht wie im
+        Aufblend-Betrieb. Ein Fenster, das unter dem Zeiger zuklappt, waehrend
+        man es liest, aergert mehr als eines, das zu lange bleibt.
+        """
+        self._zuklapp_uhr = None
+        if self.anzeigeart == 'popup' or self.eingeklappt:
+            return
+        try:
+            if getattr(self, '_maus_drauf', False):
+                self._zuklapp_uhr = self.root.after(800,
+                                                    self._wieder_zuklappen)
+                return
+            self.klappzustand_setzen(True, merken=False)
         except tk.TclError:
             pass
 
