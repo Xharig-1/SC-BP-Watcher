@@ -30,6 +30,8 @@ sys.path.insert(0, os.path.join(WURZEL, '.github', 'scripts'))
 GRENZE = 2000            # Discord nimmt nicht mehr je Nachricht
 PUNKTE = 6               # mehr liest im Vorbeiscrollen niemand
 REPO = 'https://github.com/Xharig/SC-BP-Watcher'
+# Eine Vorabfassung erkennt man am Anhängsel: v3.9.2-rc7, auch -beta / -alpha.
+_VORAB = re.compile(r'-(?:rc|beta|alpha)', re.I)
 
 
 def punkte_aus(block):
@@ -126,6 +128,22 @@ def vorspann_aus(block):
     return text
 
 
+def herunterladen_link(tag):
+    """Die Adresse, die im Post unter „Herunterladen" steht.
+
+    ⚠ **Nicht immer `/releases/latest`.** GitHub überspringt dort jede
+    Vorabfassung — wer den Post zu `v3.9.2-rc7` liest und darauf klickt, landet
+    bei der letzten **stabilen** Version und bekommt die Testfassung nie zu
+    sehen. Gemessen am 02.09.2026: sieben Testfassungen in einer Nacht,
+    **ein** Download über alle zusammen.
+
+    Bei einer Vorabfassung zeigt der Link deshalb direkt auf ihren Tag.
+    """
+    if _VORAB.search(tag):
+        return '%s/releases/tag/%s' % (REPO, tag)
+    return '%s/releases/latest' % REPO
+
+
 def bauen(tag, sprache='de'):
     import release_text
 
@@ -133,20 +151,21 @@ def bauen(tag, sprache='de'):
     block = release_text.abschnitt(os.path.join(WURZEL, datei), tag)
     if not block:
         return ''
+    holen = herunterladen_link(tag)
 
     # ⭐ Der handgeschriebene Kurztext hat Vorrang — siehe `vorspann_aus`.
     vorspann = vorspann_aus(block)
     if vorspann:
         if sprache == 'de':
             return ('## SC BP Watcher %s ist da\n\n%s\n\n'
-                    '**Herunterladen:** <%s/releases/latest>\n'
+                    '**Herunterladen:** <%s>\n'
                     'Alle Änderungen im Einzelnen: '
                     '<%s/blob/main/CHANGELOG.md>'
-                    % (tag, vorspann, REPO, REPO))
+                    % (tag, vorspann, holen, REPO))
         return ('## SC BP Watcher %s is out\n\n%s\n\n'
-                '**Download:** <%s/releases/latest>\n'
+                '**Download:** <%s>\n'
                 'Every change in detail: <%s/blob/main/CHANGELOG.en.md>'
-                % (tag, vorspann, REPO, REPO))
+                % (tag, vorspann, holen, REPO))
 
     punkte = punkte_aus(block)[:PUNKTE]
     # ⚠ Eine reine Fehlerbehebung anzukündigen mit „Was diese Version bringt"
@@ -159,16 +178,16 @@ def bauen(tag, sprache='de'):
         kopf = '## SC BP Watcher %s ist da' % tag
         rest = (('Behoben in dieser Fassung:' if nur_behoben
                  else 'Was diese Version bringt:') if punkte else '')
-        fuss = ('\n**Herunterladen:** <%s/releases/latest>\n'
+        fuss = ('\n**Herunterladen:** <%s>\n'
                 'Fehler gefunden oder eine Frage? Ab damit in die passenden Kanäle — '
-                'hier bleibt es bei den Versionsmeldungen.' % REPO)
+                'hier bleibt es bei den Versionsmeldungen.' % holen)
     else:
         kopf = '## SC BP Watcher %s is out' % tag
         rest = (('Fixed in this build:' if nur_behoben
                  else 'What this version brings:') if punkte else '')
-        fuss = ('\n**Download:** <%s/releases/latest>\n'
+        fuss = ('\n**Download:** <%s>\n'
                 'Found a bug or have a question? Please use the matching channels — '
-                'this one stays version announcements only.' % REPO)
+                'this one stays version announcements only.' % holen)
 
     text = kopf + '\n\n' + (rest + '\n' if rest else '')
     for p in punkte:
