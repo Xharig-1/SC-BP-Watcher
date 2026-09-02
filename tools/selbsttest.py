@@ -8263,6 +8263,209 @@ def main():
         except Exception:
             pass
 
+    # ⭐⭐ Der Merker steht ERST nach dem Erfolg (Fund vom 02.09.2026)
+    #
+    # Bis dahin setzte `_einmal` ihn eine Zeile zu frueh — vor dem Versuch.
+    # Lieferte `GetParent` in diesem Moment noch 0, galt das Fenster trotzdem
+    # als erledigt und bekam **nie wieder** einen Versuch: dauerhaft helle
+    # Leiste. Weil es ein Wettlauf war, traf es mal das eine Fenster und mal
+    # keines — am laufenden Programm gemessen: drei Fenster mit gesetztem
+    # Attribut, das sichtbare Hauptfenster mit 0.
+    #
+    # ⚠ Bewusst OHNE echtes Fenster und ohne Windows: Der Fehler steckt in der
+    # Reihenfolge, nicht in der Systemschnittstelle. So greift die Pruefung
+    # auch unter Linux, wo der Rueckfall sonst niemandem auffiele — genau die
+    # Sorte Pruefung, die sich sonst selbst ueberspringt.
+    print()
+    print('98b. Ein misslungener Faerbe-Versuch sperrt das Fenster nicht aus')
+
+    class _Attrappe98:
+        """Nur so viel Fenster, wie `_einmal` anfasst."""
+
+        def __init__(self):
+            self.geplant = []
+
+        def after(self, ms, rueckruf):
+            self.geplant.append((ms, rueckruf))
+
+    _dunkel98, _rahmen98 = _tl98.dunkel, _tl98.rahmen_neu
+    try:
+        _tl98.dunkel = lambda _f: False
+        _a98 = _Attrappe98()
+        _tl98._einmal(_a98)
+        pruefe(getattr(_a98, '_scbp_leiste_gesetzt', False) is False,
+               'scheitert das Faerben, gilt das Fenster NICHT als erledigt')
+        pruefe(len(_a98.geplant) == 1,
+               'stattdessen wird nachgefasst (%d geplant)' % len(_a98.geplant))
+
+        # Und das Nachfassen laeuft nicht ewig: nach NACHFASSEN Versuchen ist
+        # Ruhe, bis das naechste <Map> kommt.
+        _b98 = _Attrappe98()
+        _tl98._einmal(_b98, _tl98.NACHFASSEN - 1)
+        pruefe(not _b98.geplant,
+               'beim letzten Versuch wird nicht weiter nachgefasst')
+
+        # Klappt es, wird gemerkt — sonst liefe das Neuzeichnen bei jedem
+        # Wiederherstellen aus der Taskleiste erneut.
+        _tl98.dunkel = lambda _f: True
+        _tl98.rahmen_neu = lambda _f: True
+        _c98 = _Attrappe98()
+        _tl98._einmal(_c98)
+        pruefe(getattr(_c98, '_scbp_leiste_gesetzt', False) is True,
+               'klappt es, wird es gemerkt')
+        pruefe(not _c98.geplant, 'und nicht weiter nachgefasst')
+    finally:
+        _tl98.dunkel, _tl98.rahmen_neu = _dunkel98, _rahmen98
+
+
+    # 98c. Das Fenster baut NUR die gewuenschte Seite — und zeigt sich fertig
+    #
+    # ⚠⚠ Gemeldet von Haldjas (pr0): „Er braucht eben recht lang, um die Icons
+    # und co zu laden, wenn man die Einstellungen oeffnet." Zwei Ursachen, beide
+    # am 02.09.2026 gefunden — und beide standen laengst im Fehlerbericht:
+    #
+    #   Seite liste: steht (205 ms)     <- gar nicht angefordert
+    #   Seite allgemein: steht (7 ms)   <- das war der Wunsch
+    #
+    # 1. Der Konstruktor baute fest `oeffnen('liste')`, der Aufrufer oeffnete
+    #    die gewollte Seite erst danach. Wer die Einstellungen aufmachte,
+    #    wartete auf den Aufbau der ganzen Bauplan-Liste.
+    # 2. Ein `Toplevel` steht ab der Erzeugung auf dem Bildschirm — man sah dem
+    #    Fenster beim Bauen zu. Deshalb `withdraw()` am Anfang, `deiconify()`
+    #    als letzte Zeile.
+    #
+    # ⚠ Die Zeit war nie das Problem: 20 Symbolbilder brauchen 8 ms. Wer hier
+    # etwas „optimiert", sucht an der falschen Stelle — es ging um eine Seite
+    # zu viel und um den Zeitpunkt des Anzeigens.
+    print()
+    print('98c. Das Fenster baut nur die gewuenschte Seite')
+
+    from scbp import hauptfenster as _hf98c
+    _wz98c = _wurzel()
+    _f98c = _hf98c.Hauptfenster(_wz98c, version='pruefung',
+                                startseite='allgemein')
+    pruefe('allgemein' in _f98c.seiten,
+           'die gewuenschte Seite ist da')
+    pruefe('liste' not in _f98c.seiten,
+           'und die Bauplan-Liste wurde NICHT nebenbei mitgebaut '
+           '(gebaut: %s)' % ', '.join(sorted(_f98c.seiten)))
+
+    # Der Standard bleibt die Liste — sonst aendert sich das Verhalten fuer
+    # alle anderen Aufrufer (Werkzeuge unter tools/, Bilder, Randpruefung).
+    _f98d = _hf98c.Hauptfenster(_wz98c, version='pruefung')
+    pruefe('liste' in _f98d.seiten,
+           'ohne Angabe bleibt es bei der Liste')
+
+    _q98c = open(os.path.join(WURZEL, 'scbp', 'hauptfenster.py'),
+                 encoding='utf-8').read()
+    _init98c = _q98c.split('def __init__')[1].split(chr(10) + '    def ')[0]
+    _code98c = chr(10).join(_z for _z in _init98c.split(chr(10))
+                            if not _z.strip().startswith('#'))
+    pruefe('withdraw()' in _code98c,
+           'das Fenster wird beim Bauen versteckt')
+    pruefe('deiconify()' in _code98c,
+           'und am Ende wieder gezeigt')
+    # ⚠ Die Reihenfolge ist der ganze Punkt: zeigen NACH dem Bauen.
+    pruefe(_code98c.index('withdraw()') < _code98c.index('oeffnen(startseite)')
+           < _code98c.index('deiconify()'),
+           'und zwar in dieser Reihenfolge: verstecken, bauen, zeigen')
+
+    for _f in (_f98c, _f98d):
+        try:
+            _f.root.destroy()
+        except Exception:
+            pass
+    try:
+        _wz98c.destroy()
+    except Exception:
+        pass
+
+
+    # 98d. Ein Rezept-Nachschlag fragt nicht jedes Mal das Dateisystem
+    #
+    # ⚠⚠ **Der groesste Einzelposten beim Oeffnen der Bauplan-Liste.**
+    # `rezept_roh()` rief bei JEDEM Nachschlag `laden()`, und das macht ein
+    # `os.stat`. Einzeln belanglos, ueber den Katalog toedlich: am 02.09.2026
+    # gemessen **738 Nachschlaege = 51 ms, davon 50 ms allein `laden()`** —
+    # der reine Verzeichnis-Zugriff kostete 0,1 ms. Nach der Drosselung
+    # (`_ROH_FRISCH_S`) waren es 0,7 ms.
+    #
+    # ⚠ Gezaehlt wird, nicht gestoppt: Eine Zeitmessung im Selbsttest haengt
+    # von der Tagesform des Rechners ab und wird frueher oder spaeter zur
+    # Zufallspruefung. Die Zahl der `laden()`-Aufrufe ist dagegen eindeutig.
+    #
+    # ⚠ Und die Gegenrichtung gehoert dazu: Eine Drosselung, die eine echte
+    # Aenderung verschluckt, waere schlimmer als die Langsamkeit. Deshalb
+    # prueft der zweite Teil, dass `_sichern()` sofort durchschlaegt.
+    print()
+    print('98d. Rezept-Nachschlaege fragen das Dateisystem nur einmal')
+
+    from scbp import herstellung as _hs98d
+
+    # ⚠ Eigene Daten hinlegen — im Wegwerf-Ordner gibt es keine Rezepte, und
+    # eine Pruefung, die sich mangels Daten selbst ueberspringt, prueft nichts.
+    _daten98d = {'format': _hs98d.FORMAT, 'blueprints': [
+        {'productName': 'Pruefteil A', 'tag': 'BP_TEST_A', 'type': 'weapons'},
+        {'productName': 'Pruefteil B', 'tag': 'BP_TEST_B', 'type': 'cooler'},
+    ]}
+    pruefe(_hs98d._sichern(_daten98d) is True, 'Pruefdaten liegen bereit')
+
+    _echt_laden98d = _hs98d.laden
+    _zaehler98d = [0]
+
+    def _laden_gezaehlt98d():
+        _zaehler98d[0] += 1
+        return _echt_laden98d()
+
+    _hs98d.laden = _laden_gezaehlt98d
+    try:
+        for _ in range(50):
+            _hs98d.rezept_roh('Pruefteil A')
+        pruefe(_zaehler98d[0] == 1,
+               '50 Nachschlaege = 1 Dateisystem-Abfrage (gemessen: %d)'
+               % _zaehler98d[0])
+        pruefe(_hs98d.rezept_roh('Pruefteil B') is not None,
+               'und gefunden wird trotzdem alles')
+
+        # Jetzt die Gegenrichtung: Aenderung muss SOFORT sichtbar sein.
+        _daten98d['blueprints'][0]['tag'] = 'BP_TEST_A_NEU'
+        _hs98d._sichern(_daten98d)
+        _neu98d = _hs98d.rezept_roh('Pruefteil A') or {}
+        pruefe(_neu98d.get('tag') == 'BP_TEST_A_NEU',
+               'nach dem Speichern gilt sofort der neue Stand (%s)'
+               % _neu98d.get('tag'))
+    finally:
+        _hs98d.laden = _echt_laden98d
+
+
+    # 98e. Der Seiten-Vorbau bleibt abgeschaltet
+    #
+    # ⚠ Er baute alle Seiten im Hintergrund vor und hielt Tk dabei **1,7 s**
+    # am Stueck fest (17 Seiten; `wasistneu` 181 ms, `diagnose` 162 ms).
+    # Getroffen wurde jeweils das, was der Nutzer gerade anfasste — gemeldet
+    # mal als traege Seitenleiste, mal als traege Bauplan-Liste. Beschleunigt
+    # hat er nie etwas, er verlagerte nur (steht so in seiner eigenen
+    # Beschreibung). Abgeschaltet am 02.09.2026 auf Ansage.
+    #
+    # ⚠ Diese Pruefung verbietet ihn NICHT — sie sorgt dafuer, dass ein
+    # Wiedereinschalten eine bewusste Entscheidung ist und nicht aus Versehen
+    # passiert. Wer ihn zurueckholt, muss zuerst das Zeichnen der angeklickten
+    # Seite sicherstellen und diese Pruefung mit anfassen.
+    print()
+    print('98e. Der Seiten-Vorbau ist abgeschaltet')
+    _q98e = open(os.path.join(WURZEL, 'scbp', 'hauptfenster.py'),
+                 encoding='utf-8').read()
+    pruefe('VORBAU_AN = False' in _q98e,
+           'die Abschaltung steht als eigene Konstante da')
+    _code98e = chr(10).join(_z for _z in _q98e.split(chr(10))
+                            if not _z.strip().startswith('#'))
+    pruefe('if VORBAU_AN:' in _code98e,
+           'und der Start haengt wirklich daran')
+    _start98e = _code98e.index('after(400, self._seiten_vorbauen)')
+    _schalter98e = _code98e.index('if VORBAU_AN:')
+    pruefe(_schalter98e < _start98e,
+           'der Schalter steht VOR dem Start, nicht daneben')
+
 
     # 99. Man sieht, welcher Bauplan in der Herstellung aufgeklappt ist
     #

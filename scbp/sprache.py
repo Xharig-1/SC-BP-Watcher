@@ -1154,12 +1154,14 @@ TEXTE = {
                               'Update — darunter das eingeklappte Overlay, das in drei '
                               'von vier Ecken über den Bildschirmrand hinausstand, und '
                               'die Titelleiste, die in einer unteren Ecke nach unten '
-                              'gehört.',
+                              'gehört — und der träge Fensteraufbau beim Öffnen der '
+                              'Einstellungen.',
                               'Plus a dozen finds around the overlay, setup and updating — '
                               'among them the collapsed overlay hanging off the screen '
                               'edge in three corners out of four, and the title bar that '
                               'belongs at the bottom when the overlay sits in a bottom '
-                              'corner.'),
+                              'corner — and the sluggish window build when opening '
+                              'the settings.'),
     # ⚠ **Diese Seite mitziehen, nicht nur den CHANGELOG.** Am 27.08.2026 hat
     # Bomb20 an einem Vormittag vier Fehler gefunden, die alle am Samstag jeden
     # Nutzer getroffen hätten — und hier stand weiter nur sein Fund vom 25.08.

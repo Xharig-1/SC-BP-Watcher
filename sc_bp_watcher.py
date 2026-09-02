@@ -59,7 +59,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.9.4'
+__version__ = '3.9.5'
 
 
 def _mitgeliefert(name):
@@ -3066,10 +3066,13 @@ class Overlay:
                 return
             except Exception:
                 pass                       # war schon zu
+        # ⚠ `startseite` durchreichen, NICHT hinterher oeffnen: Sonst baut das
+        # Fenster erst die Bauplan-Liste und danach die eigentlich gewollte
+        # Seite — zwei Aufbauten fuer einen Wunsch.
         self._fenster = Hauptfenster(self.root, beim_schliessen=self._liste_zu,
                                      version=__version__,
-                                     beim_schriftwechsel=self.schriftgroesse_anwenden)
-        self._fenster.oeffnen(seite)
+                                     beim_schriftwechsel=self.schriftgroesse_anwenden,
+                                     startseite=seite)
         self.liste_lbl.faerben(zeichen.GRUEN)
 
     def _liste_zu(self):

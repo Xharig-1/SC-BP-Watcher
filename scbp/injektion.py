@@ -864,7 +864,17 @@ def einspielen_scdl(ini_pfad, sprachkuerzel, bestand=None):
         neu.append('%s%s=%s' % (schluessel, zusatz, sauber))
 
     try:
-        with open(ini_pfad + '.tmp', 'w', encoding='utf-8') as f:
+        # ⚠⚠ **`newline=''` ist Pflicht — sonst wird die ganze Datei umgeschrieben.**
+        # Der Code setzt hier bewusst `\n`, weil das Spiel seine `global.ini` mit
+        # Unix-Zeilenenden ausliefert. Ohne diesen Parameter uebersetzt Python
+        # unter **Windows** jedes `\n` still in `\r\n` — und damit aendert sich
+        # JEDE der 90.363 Zeilen einer 10-MB-Fremddatei, obwohl inhaltlich nichts
+        # anders ist. Gemessen am 02.09.2026: +90.363 Bytes, genau ein Byte je
+        # Zeile. Unter Linux passiert das nicht, deshalb ist es dort nie
+        # aufgefallen — `tools/starstrings_pruefen.py` schlug unter Windows
+        # trotzdem fehl („Nach dem Zuruecksetzen weicht der Wortlaut ab"), und
+        # zwar schon in v3.9.4.
+        with open(ini_pfad + '.tmp', 'w', encoding='utf-8', newline='') as f:
             f.write('\n'.join(neu) + '\n')
         os.replace(ini_pfad + '.tmp', ini_pfad)
     except OSError as e:
@@ -982,7 +992,17 @@ def einspielen(ini_pfad, sprache, katalog=None, bestand=None,
         neu.append('%s%s=%s' % (schluessel, zusatz, sauber))
 
     try:
-        with open(ini_pfad + '.tmp', 'w', encoding='utf-8') as f:
+        # ⚠⚠ **`newline=''` ist Pflicht — sonst wird die ganze Datei umgeschrieben.**
+        # Der Code setzt hier bewusst `\n`, weil das Spiel seine `global.ini` mit
+        # Unix-Zeilenenden ausliefert. Ohne diesen Parameter uebersetzt Python
+        # unter **Windows** jedes `\n` still in `\r\n` — und damit aendert sich
+        # JEDE der 90.363 Zeilen einer 10-MB-Fremddatei, obwohl inhaltlich nichts
+        # anders ist. Gemessen am 02.09.2026: +90.363 Bytes, genau ein Byte je
+        # Zeile. Unter Linux passiert das nicht, deshalb ist es dort nie
+        # aufgefallen — `tools/starstrings_pruefen.py` schlug unter Windows
+        # trotzdem fehl („Nach dem Zuruecksetzen weicht der Wortlaut ab"), und
+        # zwar schon in v3.9.4.
+        with open(ini_pfad + '.tmp', 'w', encoding='utf-8', newline='') as f:
             f.write('\n'.join(neu) + '\n')
         os.replace(ini_pfad + '.tmp', ini_pfad)
     except OSError as e:

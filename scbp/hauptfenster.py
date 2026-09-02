@@ -94,6 +94,31 @@ ROT     = '#e05252'
 # nichts verloren, wenn das Fenster kürzer ist: Was nicht hinpasst, rollt.
 MIN_BREITE, MIN_HOEHE = 1160, 380
 
+# ⚠⚠ **Der Seiten-Vorbau ist ABGESCHALTET (02.09.2026).**
+#
+# Er baute alle uebrigen Seiten im Hintergrund vor, damit sie beim Anklicken
+# sofort dastehen. Die Absicht war richtig, die Wirkung nicht: Tk zeichnet
+# einstraengig, und der Vorbau hielt die Oberflaeche **1,7 Sekunden** am Stueck
+# fest (gemessen ueber 17 Seiten: `wasistneu` 181 ms, `diagnose` 162 ms,
+# `liste` 87 ms). Getroffen wurde jeweils das, was der Nutzer gerade anfasste —
+# gemeldet mal als „linke leiste laed langsamer", mal als „bauplan liste
+# weiterhin langsam". **Wechselnde Symptome, eine Ursache.**
+#
+# Zwei Anlaeufe, ihn zu baendigen, reichten nicht: erst nach Ruhe bauen, dann
+# auch den Seitenwechsel als Aktion zaehlen. Er lief weiter, waehrend die
+# frisch geoeffnete Seite noch gezeichnet wurde — sie meldete `steht (3 ms)`
+# und war trotzdem nicht zu sehen.
+#
+# ⚠ **Er hat nie etwas beschleunigt.** Das stand von Anfang an in seiner
+# eigenen Beschreibung: „Das macht nichts schneller — dieselbe Arbeit faellt
+# weiter an, nur eben bevor jemand darauf wartet." Ohne ihn kostet die erste
+# Anzeige einer Seite genau ihre Bauzeit, und die ist gemessen vertretbar:
+# Bauplan-Liste 87 ms, teuerste Seite 178 ms, alle uebrigen unter 40 ms.
+#
+# Wer ihn wieder einschaltet, muss zuerst das Zeichnen der angeklickten Seite
+# sicherstellen — sonst kehrt genau dieses Bild zurueck.
+VORBAU_AN = False
+
 # Die zuletzt eingestellte Fenstergroesse. Nur die **Groesse**, keine Lage:
 # Eine gemerkte Position zeigt auf einem anderen Rechner ins Nichts (siehe die
 # Regel dazu in der Projekt-CLAUDE.md und `geometrie_pruefen` beim Overlay) —
@@ -1341,6 +1366,24 @@ def rundwahl(eltern, eintraege, gewaehlt, beim_waehlen, schrift, grund=None,
             pass
 
         fenster.geometry('%dx%d+%d+%d' % (gebraucht_breite, sicht + 2, x, y))
+        # ⚠⚠ **Ohne das landet die Liste links oben am Bildschirmrand.**
+        # Ein `overrideredirect`-Fenster wird angezeigt, sobald Tk dazu kommt —
+        # und wenn das VOR dem Verarbeiten der Geometrie geschieht, sitzt es auf
+        # der Voreinstellung (0,0) statt unter dem Feld. Ein `update_idletasks()`
+        # laesst Tk die Anweisung erst anwenden.
+        #
+        # Am 02.09.2026 gemeldet, mit Bild: „Alle Klassen" klappte ganz links
+        # oben auf. Die Rechnung war dabei die ganze Zeit richtig — die Spur
+        # zeigte `Feld bei (2160,347) gemappt=1 -> Liste bei (2160,380)`. Genau
+        # deshalb war es so schwer zu finden: Es sah nach einem Rechenfehler
+        # aus und war ein Zeitpunktfehler. Gefunden wurde es, weil ein
+        # Messpunkt mit `update_idletasks()` den Fehler versehentlich behob.
+        #
+        # ⚠ `rundwahl` selbst ist seit v3.9.1 unveraendert (344 Zeilen,
+        # geprueft). Ausgeloest hat es vermutlich der Seiten-Vorbau, der die
+        # Ereignisschleife staerker belegt und damit das Zeitfenster
+        # verschiebt — das erklaert, warum derselbe Code vorher richtig lag.
+        fenster.update_idletasks()
         fenster.lift()
         fenster.focus_set()
 
@@ -1457,10 +1500,18 @@ class Hauptfenster:
     """Der Rahmen mit der Reiterleiste. Die Seiten liefern andere Module."""
 
     def __init__(self, eltern=None, beim_schliessen=None, version='',
-                 beim_schriftwechsel=None):
+                 beim_schriftwechsel=None, startseite='liste'):
         self.beim_schliessen = beim_schliessen
         self.version = version
         self.root = tk.Toplevel(eltern) if eltern else tk.Tk()
+        # ⚠⚠ **Erst bauen, dann zeigen.** Ein `Toplevel` steht ab der Erzeugung
+        # auf dem Bildschirm — Reiterleiste, Fusszeile und die erste Seite
+        # entstehen also VOR den Augen des Nutzers. Gemeldet als „braucht eine
+        # Weile, bis Symbole und Text links geladen werden" (Haldjas, pr0, und
+        # am 02.09.2026 erneut). Die Zeit war dabei nie das eigentliche Problem
+        # — man sah nur beim Bauen zu. Das `deiconify()` am Ende von `__init__`
+        # gehoert untrennbar hierher.
+        self.root.withdraw()
         self.root.title(fenstertitel(t('hf_titel')))
         self.root.configure(bg=BG)
         # Start = die zuletzt eingestellte Groesse, sonst die Mindestgroesse —
@@ -1495,11 +1546,23 @@ class Hauptfenster:
         self._fusszeile()         # ⚠ vor dem Inhalt — sonst rutscht sie hinaus
         self._korpus()
 
-        self.oeffnen('liste')
+        # ⚠⚠ **Die gewuenschte Seite, nicht fest die Liste.** Bis zum 02.09.2026
+        # stand hier `self.oeffnen('liste')`, und der Aufrufer oeffnete die
+        # eigentlich gewollte Seite erst DANACH. Wer die Einstellungen aufmachte,
+        # wartete damit auf den Aufbau der kompletten Bauplan-Liste, die sofort
+        # wieder ausgeblendet wurde. Im Fehlerbericht stand es zweimal woertlich
+        # untereinander: `Seite liste: steht (205 ms)` gefolgt von
+        # `Seite allgemein: steht (7 ms)` — 205 der 212 ms waren fuer nichts.
+        self.oeffnen(startseite)
         # Die Mindesthöhe hängt an Schriftgröße und Skalierung — einmal messen,
         # sobald Tk die Seitenleiste gezeichnet hat.
         self.root.after(50, self._mindesthoehe_nachziehen)
         self.root.protocol('WM_DELETE_WINDOW', self.schliessen)
+        # ⚠ Jetzt ist alles gebaut — ab hier darf es gesehen werden. Steht
+        # bewusst als letzte Zeile: Was danach noch dazukaeme, saehe der Nutzer
+        # wieder entstehen. (Im Pruefbetrieb legt `tools/unsichtbar.py`
+        # `deiconify` stumm, dort bleibt das Fenster also verborgen.)
+        self.root.deiconify()
 
     # ------------------------------------------------------------- Schriften
     def _schriften_anlegen(self):
@@ -2284,6 +2347,13 @@ class Hauptfenster:
 
     def oeffnen(self, kennung):
         """Eine Seite zeigen — und beim ersten Mal ihren Inhalt bauen."""
+        # ⚠⚠ **Ein Seitenwechsel ist die deutlichste Nutzeraktion überhaupt.**
+        # Ohne diese Zeile lief der Vorbau munter weiter, während die gerade
+        # angeklickte Seite noch gezeichnet wurde: Sie meldete `steht (3 ms)`,
+        # war aber sekundenlang nicht zu sehen, weil Tk mit dem Vorbau der
+        # nächsten Seite beschäftigt war. Gemeldet am 02.09.2026 als „bauplan
+        # langsam", nachdem die linke Leiste bereits schnell war.
+        self._aktion_merken()
         # ⚠ **Die Gruppe des Reiters muss offen sein.** Sonst steht man auf
         # einer Seite, deren Eintrag in der Leiste gar nicht zu sehen ist — das
         # sieht nach einem Fehler aus, und der Weg zurück ist nicht zu finden.
@@ -2357,7 +2427,18 @@ class Hauptfenster:
         # Ketten parallel erzeugt.
         if not getattr(self, '_vorbau_laeuft', False):
             self._vorbau_laeuft = True
-            self.root.after(400, self._seiten_vorbauen)
+            if VORBAU_AN:
+                self._letzte_aktion = time.monotonic()
+                # ⚠ Jede Eingabe verschiebt den Vorbau nach hinten — siehe
+                # `_seiten_vorbauen`. `add='+'` ist Pflicht, sonst verdraengt
+                # das die Haken, die andere Bausteine global gesetzt haben.
+                for ereignis in ('<Button>', '<Key>', '<MouseWheel>'):
+                    try:
+                        self.root.bind_all(ereignis, self._aktion_merken,
+                                           add='+')
+                    except Exception:
+                        pass
+                self.root.after(400, self._seiten_vorbauen)
         self._reiter_faerben()
         # Der aktive Reiter wird fett — und fett ist breiter. Die Leiste muss
         # deshalb bei jedem Wechsel nachmessen, sonst wird der längste Eintrag
@@ -2468,6 +2549,20 @@ class Hauptfenster:
         from . import seiten
         seiten.bauen(self, kennung, rahmen)
 
+    # ⚠⚠ **So lange muss Ruhe sein, bevor im Hintergrund gebaut wird.**
+    # Tk zeichnet einstraengig: Jede vorgebaute Seite haelt die Oberflaeche
+    # fest. Am 02.09.2026 gemessen, waehrend jemand das Fenster bediente —
+    # `wasistneu` 181 ms, `diagnose` 153 ms, in Summe **1,7 Sekunden** ueber
+    # 17 Seiten. Gemeldet wurde das als „linke leiste laed langsamer" bzw.
+    # „bauplan liste weiterhin langsam", je nachdem, was gerade angefasst
+    # wurde — dasselbe Stocken, nur an wechselnder Stelle.
+    VORBAU_RUHE_S = 1.2
+    VORBAU_NACHFRAGE_MS = 400
+
+    def _aktion_merken(self, _ereignis=None):
+        """Zeitpunkt der letzten Eingabe — der Vorbau richtet sich danach."""
+        self._letzte_aktion = time.monotonic()
+
     def _seiten_vorbauen(self, rest=None):
         """Die noch leeren Seiten nacheinander im Leerlauf bauen.
 
@@ -2503,6 +2598,16 @@ class Hauptfenster:
                         if k not in self.gezeichnet]
             if not rest:
                 return
+            # ⚠⚠ **Erst bauen, wenn der Nutzer eine Weile nichts getan hat.**
+            # Ohne das lief der Vorbau mitten in die Bedienung hinein und hielt
+            # bei jeder Seite die Oberflaeche fest. Er hat es nicht eilig — die
+            # Seiten werden gebraucht, wenn jemand sie anklickt, und bis dahin
+            # ist meistens laengst Ruhe gewesen.
+            still = time.monotonic() - getattr(self, '_letzte_aktion', 0.0)
+            if still < self.VORBAU_RUHE_S:
+                self.root.after(self.VORBAU_NACHFRAGE_MS,
+                                lambda r=rest: self._seiten_vorbauen(r))
+                return
             kennung, rest = rest[0], rest[1:]
             if kennung not in self.gezeichnet:
                 self.gezeichnet.add(kennung)
@@ -2524,8 +2629,18 @@ class Hauptfenster:
                     vorher = self.root.focus_get()
                 except Exception:
                     pass
+                _t_vor = time.perf_counter()
                 try:
                     self._seite_fuellen(kennung, self.seiten[kennung])
+                    # ⚠ Diagnose (02.09.2026): Der Vorbau laeuft 400 ms nach
+                    # dem Oeffnen los und haelt Tk je Seite fest — waehrend
+                    # dieser Zeit reagiert das Fenster traege. Gemeldet als
+                    # „bauplan liste weiterhin langsam", obwohl der Aufbau
+                    # selbst nur noch 88 ms braucht. Ohne Zahlen bleibt es
+                    # beim Raten, welche Seite wie lange blockiert.
+                    fehler.spur('Vorbau %s: %d ms'
+                                % (kennung,
+                                   round((time.perf_counter() - _t_vor) * 1000)))
                 except Exception as ausnahme:
                     # Eine Seite, die sich nicht bauen laesst, darf die
                     # anderen nicht aufhalten — beim Anklicken zeigt

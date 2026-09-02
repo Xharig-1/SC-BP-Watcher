@@ -65,6 +65,7 @@ gibt es `norm_rohstoff()`.
 import json
 import os
 import re
+import time
 
 from . import fehler, pfade
 from .katalog import AUS, hole_datei, _norm
@@ -133,6 +134,14 @@ def _sichern(daten):
         # ⚠ Zwischenspeicher verwerfen: Zeitstempel und Groesse koennen sich
         # binnen derselben Sekunde wiederholen, dann bliebe der alte Stand.
         _gemerkt['stand'] = None
+        # ⚠⚠ **Und das Roh-Verzeichnis mit.** Seit `rezept_roh()` den
+        # Frisch-Check drosselt (`_ROH_FRISCH_S`), wuerde es sonst bis zu eine
+        # halbe Sekunde lang die alten Rezepte weiterreichen — genau nach dem
+        # Schreiben, wo die neuen gebraucht werden. Hier zurueckgesetzt,
+        # schlaegt jede Aenderung sofort durch.
+        _roh_gemerkt['stand'] = None
+        _roh_gemerkt['daten'] = None
+        _roh_gemerkt['geprueft'] = 0.0
         return True
     except Exception as ausnahme:
         fehler.merken('herstellung._sichern', ausnahme)
@@ -382,7 +391,21 @@ def unterartname(wert):
     return _uebersetzt('sub', wert)
 
 
-_roh_gemerkt = {'stand': None, 'daten': None}
+_roh_gemerkt = {'stand': None, 'daten': None, 'geprueft': 0.0}
+
+# ⚠⚠ **Wie lange ein einmal geprueftes Verzeichnis als frisch gilt.**
+# `laden()` fragt bei JEDEM Aufruf das Dateisystem (`os.stat`), um zu sehen,
+# ob sich der Zwischenspeicher geaendert hat. Einzeln ist das nichts — in einer
+# Schleife ueber den ganzen Katalog aber alles: Am 02.09.2026 gemessen,
+# **738 Nachschlaege = 51 ms, davon 50 ms allein `laden()`**; der eigentliche
+# Verzeichnis-Zugriff kostete 0,1 ms. Das war der groesste Einzelposten beim
+# Oeffnen der Bauplan-Liste (gemeldet als „bis Symbole und Text links geladen
+# sind" — Haldjas, pr0, und am selben Tag erneut).
+#
+# Ein halbe Sekunde Nachlauf ist unbedenklich: Die Rezeptdaten aendern sich nur,
+# wenn der Katalog neu geschrieben wird — und `_sichern()` setzt den Merker
+# dann selbst zurueck, sodass die Aenderung SOFORT durchschlaegt.
+_ROH_FRISCH_S = 0.5
 
 
 def rezept_roh(name):
@@ -396,9 +419,21 @@ def rezept_roh(name):
     1607 Einträgen zu suchen wäre bei jedem Filterklick eine halbe Million
     Vergleiche.
     """
+    # ⚠ Steht ein Verzeichnis und ist der Frisch-Check keine halbe Sekunde her,
+    # geht es ohne `laden()` weiter — siehe `_ROH_FRISCH_S`. Ohne diese Abkuerzung
+    # kostet ein Durchlauf ueber den Katalog 738 Dateisystem-Abfragen.
+    jetzt = time.monotonic()
+    if _roh_gemerkt['daten'] is not None \
+            and jetzt - _roh_gemerkt['geprueft'] < _ROH_FRISCH_S:
+        return _roh_gemerkt['daten'].get(_schluessel(name))
+
     daten = laden()
     kennung = id(daten)
-    if _roh_gemerkt['stand'] != kennung:
+    # ⚠ `daten is None` gehoert mit in die Bedingung: Sonst genuegt ein
+    # geleertes Verzeichnis bei gleich gebliebener Kennung, und die letzte
+    # Zeile laeuft in ein `None.get(...)`. Beim Bau der Gegenprobe zu dieser
+    # Drosselung genau so passiert (02.09.2026).
+    if _roh_gemerkt['stand'] != kennung or _roh_gemerkt['daten'] is None:
         verzeichnis = {}
         for b in daten.get('blueprints') or []:
             n_ = b.get('productName') or _name_aus_tag(b.get('tag'))
@@ -406,6 +441,7 @@ def rezept_roh(name):
                 verzeichnis.setdefault(_schluessel(n_), b)
         _roh_gemerkt['stand'] = kennung
         _roh_gemerkt['daten'] = verzeichnis
+    _roh_gemerkt['geprueft'] = jetzt
     return _roh_gemerkt['daten'].get(_schluessel(name))
 
 

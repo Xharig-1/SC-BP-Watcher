@@ -35,6 +35,7 @@ Bedienung: tippen filtert, Klick auf eine Zeile setzt oder entfernt das Häkchen
 Klick auf ⓘ klappt die Bezugsquellen aus.
 """
 import os
+import time
 import tkinter as tk
 
 from . import fehler
@@ -291,7 +292,18 @@ class Bestandsfenster:
             self.root.configure(bg=BG)
             self.root.geometry('720x780')
 
+        # ⚠⚠ **Die Lücke, die der Bericht bisher nicht kannte.** Zwischen
+        # „Seite liste: bauen beginnt" und „Liste: zeichnen beginnt" lag alles
+        # hier — Bestand lesen, Katalog stempeln, Katalog laden, Kopf und
+        # Werkzeugleiste bauen — ohne eine einzige Zahl. Am 02.09.2026 gemeldet:
+        # „nur beim ersten Laden ist es langsam". Drei Erklärungen ließen sich
+        # am Entwicklungsrechner widerlegen (JSON-Parsen 49 ms für 8,4 MB,
+        # Stempeln 12 ms, Zeichnen 30 ms) — nur stehen dort 3 Bestandseinträge
+        # statt 405. Ohne Zahlen vom echten Rechner bliebe es beim Raten, und
+        # genau daran sind hier schon mehrere Anläufe gescheitert.
+        _t_bau = time.perf_counter()
         self.bestand = bestand_datei.laden()
+        _ms_bestand = (time.perf_counter() - _t_bau) * 1000
         # ⚠ Erst stempeln, dann laden. Das Nachziehen hing bisher allein am
         # Netz-Takt (`katalog.aktualisieren()`), und der läuft irgendwann nach
         # dem Start in einem eigenen Faden. Am 28.08.2026 war das Fenster um
@@ -303,8 +315,17 @@ class Bestandsfenster:
         # Genau das trifft **jeden** Nutzer beim ersten Start nach einer
         # Fassung, die neue Historie mitbringt. Hier kostet es nichts: gelesen
         # wird ohnehin, geschrieben nur, wenn sich wirklich etwas ändert.
+        _t_stempel = time.perf_counter()
         katalog_modul.stempel_nachziehen()
+        _ms_stempel = (time.perf_counter() - _t_stempel) * 1000
+        _t_kat = time.perf_counter()
         self.katalog = katalog_modul.laden()
+        _ms_katalog = (time.perf_counter() - _t_kat) * 1000
+        fehler.spur('Liste: Daten gelesen (Bestand %d ms, Stempel %d ms, '
+                    'Katalog %d ms, %d Bauplaene)'
+                    % (round(_ms_bestand), round(_ms_stempel),
+                       round(_ms_katalog),
+                       len(self.katalog.get('bauplaene') or {})))
         self.filter = 'alle'
         self.suche = tk.StringVar()
         self.suche.trace_add('write', lambda *_: self._zeichnen(nach_oben=True))
@@ -319,6 +340,10 @@ class Bestandsfenster:
         self._herkunftsbereich()
         self._liste()
         self._zeichnen()
+        # ⚠ Der Schlussstrich unter den ganzen Aufbau: Diese Zahl ist die, die
+        # der Nutzer als Wartezeit erlebt. Alles davor sind Teilstücke.
+        fehler.spur('Liste: Fenster fertig (%d ms gesamt)'
+                    % round((time.perf_counter() - _t_bau) * 1000))
 
     # ------------------------------------------------------------------ Aufbau
     def _kopf(self):
@@ -1420,8 +1445,19 @@ class Bestandsfenster:
                      font=schrift(10), justify='left', anchor='w',
                      wraplength=620).pack(fill='x', padx=24, pady=(12, 4))
 
+        # ⚠⚠ **Messpunkte, weil der Bericht hier bisher blind war.** Am
+        # 02.09.2026 gemeldet: „beim Aufruf von Bauplan Liste dauert es bissl,
+        # bis alles geladen ist." Der Bericht kannte nur „zeichnen beginnt" und
+        # „steht" — dazwischen lagen Auswahl, Gruppierung und das Packen der
+        # Zeilen ununterscheidbar beieinander. Genau diese Blindheit hat schon
+        # beim Seitenaufbau zwei falsche Erklaerungen gekostet (Schriftgroesse,
+        # Zahl der Symbolbilder), bis die Millisekunden im Bericht standen.
+        # Deshalb hier drei Zahlen statt einer: Auswahl, Zeilen, gesamt.
+        _t_start = time.perf_counter()
         fehler.spur('Liste: zeichnen beginnt')
+        _t_auswahl = time.perf_counter()
         gruppen = self._auswahl()
+        _ms_auswahl = (time.perf_counter() - _t_auswahl) * 1000
         habe = bestand_datei.schluessel(self.bestand)
         gesamt = len(self.katalog['bauplaene'])
         meine = sum(1 for k in self.katalog['bauplaene'] if k in habe)
@@ -1487,6 +1523,13 @@ class Bestandsfenster:
                     else t('nichts_gefunden'))
             tk.Label(self.inhalt, text=leer, bg=BG, fg=SUB, font=schrift(11),
                      pady=20, wraplength=520, justify='center').pack()
+
+        # ⚠ Der Gegenwert zu `_t_start` oben. Steht bewusst VOR den
+        # `after_idle`-Sprüngen: Was danach kommt, läuft erst im Leerlauf und
+        # gehört nicht mehr zum Zeichnen.
+        fehler.spur('Liste: gezeichnet (%d Zeilen, Auswahl %d ms, gesamt %d ms)'
+                    % (gezeichnet, round(_ms_auswahl),
+                       round((time.perf_counter() - _t_start) * 1000)))
 
         # Die Zeilenhöhe einmal nachmessen — sie bestimmt, wie viele Zeilen in eine
         # Ansicht passen (siehe `_zeilen_deckel`).

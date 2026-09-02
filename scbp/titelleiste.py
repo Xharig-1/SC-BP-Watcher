@@ -163,18 +163,44 @@ def einrichten():
     return True
 
 
-def _einmal(fenster):
+NACHFASSEN = 10                  # Versuche, danach bis zum naechsten <Map> ruhen
+NACHFASSEN_MS = 50               # Abstand dazwischen
+
+
+def _einmal(fenster, versuch=0):
     """Beim ersten Anzeigen faerben — danach nie wieder.
 
     ⚠ `<Map>` feuert bei jedem Wiederherstellen aus der Taskleiste. Ohne
     Merker liefe das Neuzeichnen dutzendfach — jedes Mal, wenn jemand das
     Fenster aus der Taskleiste holt.
+
+    ⚠⚠ **Der Merker wird erst gesetzt, wenn es GEKLAPPT hat.** Bis zum
+    02.09.2026 stand er eine Zeile zu frueh — vor dem Versuch. Lieferte
+    `GetParent` in diesem Moment noch 0 (das Fenster war gemappt, der Rahmen
+    aber noch nicht fertig), gab `dunkel()` False zurueck, und das Fenster galt
+    trotzdem als erledigt: **fuer immer helle Leiste, ohne einen zweiten
+    Versuch.** Es war ein Wettlauf, deshalb sah es zufaellig aus — Overlay und
+    versteckte Fenster gewannen ihn, das jedes Mal neu gebaute Hauptfenster
+    verlor ihn. Gemessen am laufenden Programm: drei Fenster mit gesetztem
+    Attribut, das sichtbare Hauptfenster mit `DWMWA_USE_IMMERSIVE_DARK_MODE`
+    auf **0**. Setzen von Hand liess die Leiste sofort umschlagen — das Setzen
+    genuegt also, es wurde nur nie ausgefuehrt.
+
+    ⚠ **Und bei Misserfolg wird der Merker NICHT gesetzt.** Dann versucht es
+    das naechste `<Map>` erneut (Wiederherstellen aus der Taskleiste). Ein
+    Fenster, das nie faerbbar ist, kostet dadurch `NACHFASSEN` erfolglose
+    Aufrufe pro Anzeigen — ein paar Millisekunden, und dafuer heilt sich der
+    Fall selbst, statt dauerhaft hell zu bleiben.
     """
     try:
         if getattr(fenster, '_scbp_leiste_gesetzt', False):
             return
-        fenster._scbp_leiste_gesetzt = True
         if dunkel(fenster):
+            fenster._scbp_leiste_gesetzt = True
             rahmen_neu(fenster)
+            return
+        if versuch + 1 < NACHFASSEN:
+            fenster.after(NACHFASSEN_MS,
+                          lambda: _einmal(fenster, versuch + 1))
     except Exception:
         pass

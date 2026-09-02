@@ -6,6 +6,33 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.5 - 2026-09-02
+
+> **Less waiting, and the dropdowns are back where they belong.** The window
+> opens noticeably faster — it only builds the page you asked for, and shows
+> itself once that page is ready. Plus three fewer bugs: white title bars,
+> dropdowns at the screen edge, and a blueprint list that took its time on
+> first open.
+
+### Improved
+
+- **Settings open noticeably faster.** The window always built the blueprint
+  list first and hid it again right away — even when a different page was
+  wanted. Now only the requested page is built. Reported by Haldjas (pr0)
+- **The window appears finished** instead of assembling itself in front of you.
+  Reported by Haldjas (pr0)
+
+### Fixed
+
+- **Windows: the watcher wrote the game's text file back with different line endings.** Every line of the file changed even though nothing differed in content — other tools' markers were affected too. The content itself was never altered.
+- **Dropdowns opened at the left screen edge** instead of below their field.
+- **The blueprint list was slow to open the first time.** It asked the file
+  system about every single blueprint instead of looking once.
+  Reported by Haldjas (pr0)
+- **The main window kept a white title bar** while other windows got a dark
+  one. Which window it hit depended on timing, and once light it stayed light
+  until the program restarted.
+
 ## v3.9.4 - 2026-09-02
 
 > **Two follow-ups on the corners.** The chosen corner now takes effect at

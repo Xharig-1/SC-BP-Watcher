@@ -6,6 +6,34 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.5 - 2026-09-02
+
+> **Weniger Warten, und die Auswahlfelder sitzen wieder.** Das Fenster öffnet
+> sich spürbar schneller — es baut nur noch die Seite, die du angefordert
+> hast, und zeigt sich erst, wenn sie fertig ist. Dazu drei Fehler weniger:
+> weisse Titelleisten, Auswahllisten am Bildschirmrand und eine Bauplan-Liste,
+> die sich beim ersten Öffnen Zeit liess.
+
+### Verbessert
+
+- **Die Einstellungen gehen spürbar schneller auf.** Das Fenster baute bisher
+  immer zuerst die Bauplan-Liste auf und blendete sie sofort wieder aus — auch
+  wenn eine ganz andere Seite gewollt war. Jetzt entsteht nur noch die Seite,
+  die man angefordert hat. Gemeldet von Haldjas (pr0)
+- **Das Fenster erscheint fertig**, statt sich vor den Augen aufzubauen.
+  Gemeldet von Haldjas (pr0)
+
+### Behoben
+
+- **Windows: Der Watcher schrieb die Textdatei des Spiels mit anderen Zeilenenden zurück.** Dadurch änderte sich jede Zeile der Datei, obwohl inhaltlich nichts anders war — auch Kennzeichnungen anderer Werkzeuge waren davon betroffen. Der Inhalt selbst blieb immer unangetastet.
+- **Auswahllisten klappten am linken Bildschirmrand auf** statt unter dem Feld.
+- **Die Bauplan-Liste liess sich beim ersten Öffnen Zeit.** Sie fragte für
+  jeden Bauplan einzeln beim Dateisystem nach, statt einmal nachzusehen.
+  Gemeldet von Haldjas (pr0)
+- **Die Titelleiste des Hauptfensters blieb weiss**, waehrend andere Fenster
+  eine dunkle bekamen. Betroffen war je nach Zeitpunkt mal das eine, mal ein
+  anderes Fenster; einmal hell, blieb es hell, bis das Programm neu startete.
+
 ## v3.9.4 - 2026-09-02
 
 > **Zwei Nachbesserungen an den Ecken.** Die gewählte Ecke wirkt jetzt auch beim
