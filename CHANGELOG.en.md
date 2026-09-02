@@ -6,6 +6,34 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc8 - 2026-09-02
+
+### Fixed
+
+- ⭐ **The blueprint block now survives other tools.** If you also run
+  **Smart Citizen** alongside the watcher, every run of it wiped the blueprint
+  entries — measured against the real translation file: **398 out of 398**
+  affected contract texts. The cause is not that tool: before each run it
+  clears its own text block by locating where it starts and discarding
+  everything from there on — and our block sat behind it. It is now inserted
+  **in front** and therefore stays. What gets recognised is the **shape** of
+  such blocks, not their name, so a rename on the other side breaks nothing.
+- **Restoring without the memo file works again.** Anyone who applied the
+  injection on one machine and lost the memo file (fresh install, tidied
+  folder) could never get the blueprint block back out of the translation file
+  — the fallback detection did not match it at all. This bug had been in from
+  the very first release and only surfaced through the new check.
+- **The link for a test build pointed at the wrong file.** The version
+  announcement always linked to the newest *stable* release — with a
+  pre-release you ended up at the stable one before it and never saw the test
+  build at all.
+
+### Changed
+
+- **A third compatibility check** ships with the source
+  (`tools/smartcitizen_pruefen.py`). It plays both tools against each other, in
+  both directions, and speaks up when the other side's format changes.
+
 ## v3.9.2-rc7 - 2026-09-02
 
 ### Fixed

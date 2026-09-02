@@ -6,6 +6,36 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc8 - 2026-09-02
+
+### Behoben
+
+- ⭐ **Der Bauplan-Block überlebt jetzt andere Werkzeuge.** Wer neben dem
+  Watcher noch **Smart Citizen** benutzt, verlor bei jedem dessen Läufe die
+  eingetragenen Baupläne — nachgemessen an der echten Übersetzungsdatei:
+  **398 von 398** betroffenen Auftragstexten. Der Grund liegt nicht bei jenem
+  Werkzeug: Es räumt vor jedem Lauf seinen eigenen Textblock ab, indem es
+  dessen Beginn sucht und ab dort alles verwirft — und unser Block stand
+  dahinter. Er wird jetzt **davor** eingesetzt und bleibt damit stehen.
+  Erkannt wird dabei die **Form** solcher Blöcke, nicht ihr Name, damit eine
+  Umbenennung auf der anderen Seite nichts kaputtmacht.
+- **Zurücksetzen ohne Merkdatei funktioniert wieder.** Wer die Injektion auf
+  einem Rechner einspielte und die Merkdatei verlor (Neuinstallation,
+  aufgeräumter Ordner), bekam den Bauplan-Block nie wieder aus der
+  Übersetzungsdatei heraus — die Notfall-Erkennung griff an ihm gar nicht.
+  Dieser Fehler steckte seit der ersten Fassung darin und ist erst durch die
+  neue Prüfung aufgefallen.
+- **Der Hinweis auf eine Testfassung führte zur falschen Datei.** Die
+  Versionsmeldung verlinkte immer auf die *neueste fertige* Version — bei einer
+  Vorabfassung landete man damit bei der stabilen davor und bekam die
+  Testfassung gar nicht zu sehen.
+
+### Geändert
+
+- **Eine dritte Verträglichkeitsprüfung** liegt bei (`tools/smartcitizen_pruefen.py`).
+  Sie spielt beide Werkzeuge gegeneinander aus, in beide Richtungen, und meldet
+  sich, wenn sich das Format der anderen Seite ändert.
+
 ## v3.9.2-rc7 - 2026-09-02
 
 ### Behoben
