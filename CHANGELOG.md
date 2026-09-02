@@ -6,6 +6,32 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc12 - 2026-09-02
+
+Der Griff zum Größerziehen zeigt jetzt dorthin, wo Platz ist, verdeckt keinen
+Text mehr und ist ein richtiges Symbol statt eines Schriftzeichens. Und wer im
+Aufblend-Betrieb die Ecke wechselt, sieht den grünen Streifen sofort umziehen.
+
+### Behoben
+
+- ⭐ **Ein Eckenwechsel wirkt sofort, auch im Aufblend-Betrieb.** Dort ist das
+  Overlay versteckt und nur der grüne Streifen zu sehen — der blieb aber an der
+  alten Stelle stehen, bis man einmal mit der Maus darüberfuhr. Er zieht jetzt
+  im selben Moment mit, in allen vier Ecken.
+- **Der Ziehgriff zeigt in die Richtung, in die man zieht.** Er stand fest auf
+  einem Dreieck nach unten rechts und wies damit in drei von vier Ecken gegen
+  den Bildschirmrand — also dorthin, wo es nichts zu ziehen gibt.
+- **Der Ziehgriff verdeckt keinen Text mehr.** In einer unteren Ecke sitzt er
+  oben und lag damit auf der Statuszeile: Aus „405 Baupläne" wurde „5
+  Baupläne". Die Zeile rückt jetzt auf der Seite ein, an der er sitzt.
+
+### Geändert
+
+- **Der Ziehgriff ist ein Symbol aus dem Icon-Satz**, kein Schriftzeichen mehr.
+  Getippte Zeichen sehen auf jedem System anders aus und ignorieren teils die
+  eingestellte Farbe; im Programm gilt dafür längst dieselbe Regel wie für alle
+  anderen Symbole. Es sind vier Pfeile, einer je Zugrichtung.
+
 ## v3.9.2-rc11 - 2026-09-02
 
 Das Overlay lässt sich in jeder Ecke wieder größer ziehen, und der grüne Griff

@@ -3340,6 +3340,24 @@ def main():
             pruefe('_anfasser_y(' in _teil49,
                    'der Anfasser-Streifen richtet sich auch senkrecht '
                    'nach der Ecke')
+        # ⚠ Beim Eckenwechsel ist im Aufblend-Betrieb NUR der Streifen zu
+        #   sehen — das Overlay ist versteckt. Wird er nicht mitgezogen,
+        #   bleibt er stehen, bis einmal auf- und zugeblendet wurde.
+        if 'def ecke_anwenden' in _q44:
+            _teil50 = _q44[_q44.index('def ecke_anwenden'):]
+            _teil50 = _teil50[:_teil50.index('    def ', 10)]
+            pruefe('_anfasser_zeigen()' in _teil50,
+                   'ein Eckenwechsel zieht den Streifen sofort mit')
+            # ⚠ Und mit den BERECHNETEN Werten, nicht mit `_current_geom()`:
+            #   Tk liefert nach `geometry()` noch die alte Lage zurueck.
+            #
+            # ⚠⚠ Auf die ZUWEISUNG pruefen, nicht auf den blossen Namen — der
+            #   steht als Warnung im Kommentar daneben, und die erste Fassung
+            #   dieser Pruefung ist genau darueber gestolpert.
+            pruefe('_letzte_lage = self._current_geom()' not in _teil50,
+                   'und rechnet dabei nicht mit der noch alten Geometrie')
+            pruefe("_letzte_lage = '%dx%d+%d+%d'" in _teil50,
+                   'sondern mit den eben gesetzten Werten')
 
         # ⚠⚠ Zwei Patches koennen auf dieselbe Kurzform kuerzen — ein Hotfix im
         #   Live-Kanal erzeugt genau das: 4.10.0-live.12519617 und

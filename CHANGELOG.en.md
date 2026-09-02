@@ -6,6 +6,32 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc12 - 2026-09-02
+
+The resize handle now points where there is room, no longer covers any text, and
+is a proper icon instead of a typed character. And switching corners in fade mode
+moves the green strip right away.
+
+### Fixed
+
+- ⭐ **Switching corners takes effect immediately, in fade mode too.** There the
+  overlay is hidden and only the green strip is visible — but it stayed at the
+  old spot until you moved the mouse over it once. It now moves along at the
+  same moment, in all four corners.
+- **The resize handle points the way you drag.** It was fixed on a triangle
+  pointing down-right and therefore aimed at the screen edge in three corners
+  out of four — where there is nothing to drag towards.
+- **The resize handle no longer covers text.** In a bottom corner it sits at the
+  top and lay on the status line: "405 blueprints" became "5 blueprints". That
+  line now indents on the side where the handle sits.
+
+### Changed
+
+- **The resize handle is an icon from the icon set**, no longer a typed
+  character. Typed characters look different on every system and sometimes
+  ignore the configured colour; the same rule has long applied to every other
+  icon in the program. There are four arrows, one per drag direction.
+
 ## v3.9.2-rc11 - 2026-09-02
 
 The overlay can be resized again in every corner, and the green handle in fade

@@ -59,7 +59,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.9.2-rc11'
+__version__ = '3.9.2-rc12'
 
 
 def _mitgeliefert(name):
@@ -1896,10 +1896,16 @@ class Overlay:
         # oder nicht mehr zu sehen" (29.08.2026). Er ist der einzige Weg, das
         # Overlay in der Größe zu ändern; wer ihn nicht sieht, hält die Größe
         # für fest.
-        self.grip = tk.Label(self.root, text='◢', bg=BG, fg=ACCENT,
-                             font=(self.f_sub.actual('family'),
-                                   self.f_sub.actual('size') + 4),
-                             cursor=sicherer_cursor(CURSOR_GROESSE))
+        # ⚠ **Symbol aus dem Satz, kein Schriftzeichen.** Bis zum 02.09.2026
+        # stand hier das Zeichen „◢" — es zeigte in drei von vier Ecken in die
+        # falsche Richtung, und Schriftzeichen als Symbole sind ohnehin
+        # ausgeschlossen (sie sind auf jedem System anders gross). Jetzt sind
+        # es vier Lucide-Pfeile, einer je Richtung; `_grip_nachziehen()`
+        # tauscht den passenden ein.
+        self.grip = zeichen.knopf(self.root,
+                                  self.GRIFF_SYMBOLE[(False, False)],
+                                  farbe=zeichen.GRUEN, grund=BG)
+        self.grip.configure(cursor=sicherer_cursor(CURSOR_GROESSE))
         self.grip.place(relx=1.0, rely=1.0, anchor='se')
         self.grip.bind('<B1-Motion>', self._resize)
         # ⚠ Den Zustand **durchsetzen**, nicht einmal setzen. Zweimal wurde der
@@ -2203,6 +2209,22 @@ class Overlay:
         except Exception:
             return 260
         return max(260, noetig)
+
+    # Welches Dreieck zu welcher Verankerung gehoert: `(unten, rechts)` → das
+    # Zeichen, dessen Spitze in die FREIE Richtung zeigt — dorthin, wohin sich
+    # das Fenster ziehen laesst.
+    #
+    # ⚠ Schriftzeichen statt Bildsymbol ist hier eine Altlast (die Projektregel
+    # verlangt Symbole aus dem Satz). Solange es eines ist, bleiben wenigstens
+    # alle vier aus derselben Zeichenfamilie — gleiche Groesse, gleiche
+    # Strichstaerke. Ein Wechsel auf gedrehte Lucide-Symbole waere der saubere
+    # Weg und ist als eigener Schritt vorgemerkt.
+    GRIFF_SYMBOLE = {
+        (False, False): 'ziehen_ur',   # frei → Griff unten rechts, zieht dorthin
+        (False, True):  'ziehen_ul',   # rechts verankert → Griff links
+        (True,  False): 'ziehen_or',   # unten verankert → Griff oben
+        (True,  True):  'ziehen_ol',   # beides → nach oben links
+    }
 
     def _verankert(self):
         """Welche Fensterkanten liegen fest — `(unten, rechts)`.
@@ -2899,6 +2921,26 @@ class Overlay:
             # Fenster (siehe `_schloss_anwenden`) und folgt nicht von selbst.
             self._schloss_nachziehen()
             self._save_geo()
+            # ⚠⚠ **Im Aufblend-Betrieb ist das Overlay versteckt** — sichtbar
+            # ist dann nur der gruene Streifen, und der wandert hier nicht von
+            # allein mit. Er rechnet aus `_letzte_lage`, also muss die zuerst
+            # auf die neue Ecke gebracht werden; sonst zeigt er weiter auf die
+            # alte Stelle, bis das Overlay einmal auf- und zugeblendet hat.
+            #
+            # Gemeldet am 02.09.2026 zu rc11: „wenn ich die Fensterposition von
+            # oben links nach rechts wechsle im Nur-bei-Neuzugang-Modus, muss
+            # ich erst mit der Maus ueber den Strich fahren, eh es die Position
+            # wechselt." Gilt fuer alle vier Ecken.
+            #
+            # ⚠ Und zwar mit den eben BERECHNETEN Werten, nicht mit
+            # `_current_geom()`: Tk uebernimmt eine frisch gesetzte Geometrie
+            # erst im naechsten Durchlauf der Ereignisschleife, gefragt kommt
+            # also noch die alte zurueck. Der Streifen sass dann eine Ecke
+            # hinterher — beim Wechsel auf „oben rechts" landete er mittig,
+            # weil er die neue Richtung auf die alte Lage rechnete.
+            if self.anzeigeart == 'popup':
+                self._letzte_lage = '%dx%d+%d+%d' % (b, h, x, y)
+                self._anfasser_zeigen()
         except Exception as ausnahme:
             fehler.merken('overlay.ecke_anwenden', ausnahme)
 
@@ -2939,6 +2981,26 @@ class Overlay:
                         rely=0.0 if unten else 1.0,
                         anchor=('n' if unten else 's')
                                + ('w' if rechts else 'e'))
+            # ⚠ **Das Dreieck muss dorthin zeigen, wohin man zieht.** Es stand
+            # fest auf ◢ (unten rechts) und wies damit in drei von vier Ecken
+            # gegen den Bildschirmrand — also genau in die Richtung, in der
+            # kein Platz ist. Ein Griff, der in die Irre zeigt, ist schlechter
+            # als gar keiner. Gemeldet am 02.09.2026 zu rc11.
+            self.grip.symbol_tauschen(self.GRIFF_SYMBOLE[(unten, rechts)])
+            # ⚠ **Und er darf keinen Text verdecken.** Sitzt der Griff oben
+            # (also bei einer unteren Ecke), liegt er auf der Statuszeile:
+            # „405 Baupläne" wurde zu „5 Baupläne", weil das Dreieck die
+            # ersten Zeichen verdeckte. Gemeldet am 02.09.2026 zu rc11. Die
+            # Zeile rueckt deshalb auf der Seite ein, an der er sitzt.
+            try:
+                platz = self.grip.winfo_reqwidth() + 6
+                if unten:
+                    self.status.pack_configure(
+                        padx=((platz, 8) if rechts else (8, platz)))
+                else:
+                    self.status.pack_configure(padx=8)
+            except tk.TclError:
+                pass
             if ist_platziert == soll_sichtbar:
                 if soll_sichtbar:
                     self.grip.place(**lage)   # Seite kann gewechselt haben

@@ -250,6 +250,9 @@ KNOPF_NAMEN = (
     'auftragstexte', 'bestand', 'wasistneu', 'ueber', 'serverstatus', 'ordner',
     'erkennung', 'diagnose', 'einrichtung', 'neustart', 'herunterladen',
     'zurueck', 'ausblenden',
+    # Der Ziehgriff in vier Richtungen — er zeigt dorthin, wohin sich das
+    # Fenster ziehen laesst (siehe `Overlay.GRIFF_SYMBOLE`).
+    'ziehen_ol', 'ziehen_or', 'ziehen_ul', 'ziehen_ur',
 )
 ZEILEN_NAMEN = (
     'bestaetigt', 'vorlaeufig', 'punkt', 'gemerkt', 'haken', 'offen',

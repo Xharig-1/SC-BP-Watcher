@@ -155,6 +155,15 @@ KNOPF_SYMBOLE = {
     'schloss_zu':   'lock',
     'schloss_auf':  'lock-open',
     'ziehgriff':    'grip',              # die Ecke zum Größerziehen
+    # ⚠ Vier Richtungen statt einer. Der Griff sitzt an der FREIEN Ecke des
+    # Fensters — bei einer unteren Bildschirmecke also oben, bei einer rechten
+    # links. Der Pfeil zeigt dorthin, wohin sich das Fenster ziehen laesst.
+    # Vorher stand dort fest das Schriftzeichen „◢" und wies in drei von vier
+    # Ecken gegen den Bildschirmrand, wo kein Platz ist. Gemeldet 02.09.2026.
+    'ziehen_ol':    'arrow-up-left',
+    'ziehen_or':    'arrow-up-right',
+    'ziehen_ul':    'arrow-down-left',
+    'ziehen_ur':    'arrow-down-right',
     # --- Seitenleiste und Titelknöpfe des großen Fensters ---
     'fortschritt':  'chart-column',
     'anzeige':      'monitor',
