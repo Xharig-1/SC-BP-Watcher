@@ -8488,8 +8488,16 @@ def main():
         root = _Wurzel101()
         _klapp_ecke = _w101.Overlay._klapp_ecke
 
-    _echt101 = _bs101.schirm_fuer
-    _bs101.schirm_fuer = lambda *_a, **_k: (0, 0, 1920, 1080)
+    # ⚠⚠ **`arbeitsflaeche` vortaeuschen, nicht `schirm_fuer`.** Seit
+    # v3.9.4 rechnet `_klapp_ecke` mit der nutzbaren Flaeche (ohne
+    # Taskleiste) statt mit der ganzen. Wer hier weiter `schirm_fuer`
+    # ersetzt, taeuscht eine Funktion vor, die gar nicht mehr gefragt wird —
+    # und bekommt die echten Werte des Rechners. Auf dem Windows-Bauserver
+    # sind das andere als 1920x1080, und drei Pruefungen fielen um
+    # (gemessen 02.09.2026 beim Bau von v3.9.4). Der Fehlschlag war richtig:
+    # Der Aufrufweg hatte sich geaendert.
+    _echt101 = _bs101.arbeitsflaeche
+    _bs101.arbeitsflaeche = lambda *_a, **_k: (0, 0, 1920, 1080)
     _o101 = _Ov101()
     try:
         _pf101.einstellung_setzen('overlay_ecke', 'frei')
@@ -8509,7 +8517,7 @@ def main():
 
         # ⚠ Auf DEM Schirm, auf dem es steht — nicht auf dem ersten. Bei drei
         # Monitoren nebeneinander waere „oben rechts" sonst immer der linke.
-        _bs101.schirm_fuer = lambda *_a, **_k: (1920, 0, 2560, 1440)
+        _bs101.arbeitsflaeche = lambda *_a, **_k: (1920, 0, 2560, 1440)
         _pf101.einstellung_setzen('overlay_ecke', 'oben-rechts')
         pruefe(_o101._klapp_ecke(300, 30) == (1920 + 2560 - 300 - 8, 8),
                'und auf dem zweiten Bildschirm genauso')
@@ -8520,7 +8528,7 @@ def main():
         pruefe(_o101._klapp_ecke(300, 30) == (500, 400),
                'eine unbekannte Ecke laesst alles, wie es ist')
     finally:
-        _bs101.schirm_fuer = _echt101
+        _bs101.arbeitsflaeche = _echt101
         _pf101.einstellung_setzen('overlay_ecke', 'frei')
 
     # Und das Einklappen nimmt die Breite mit.
