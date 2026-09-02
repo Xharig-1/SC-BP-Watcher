@@ -79,16 +79,6 @@ die Läufe von **Smart Citizen**, statt jedes Mal verworfen zu werden.
   die erste Antwort am Punkt vorbeiging. Sein Wunsch galt vier Anläufe lang als
   technisch unmöglich; er war es nie.
 
-### Für Entwickler
-
-- Vier neue Prüfläufe messen das Overlay unsichtbar aus: Ecken, Leistenlage,
-  Ziehgriff und der Streifen im Aufblend-Betrieb — jeweils gegen den echten
-  Bildschirmrand. Dazu prüft der Selbsttest jetzt, dass kein Symbol erzeugt
-  wird, das nirgends angezeigt wird.
-- `tools/smartcitizen_pruefen.py` prüft die Verträglichkeit mit Smart Citizen in
-  beide Richtungen — die dritte Prüfung dieser Art neben StarStrings und dem
-  Launcher.
-
 ## v3.9.2-rc12 - 2026-09-02
 
 Der Griff zum Größerziehen zeigt jetzt dorthin, wo Platz ist, verdeckt keinen
@@ -243,12 +233,6 @@ mit an die Seite, zu der die gewählte Ecke gehört.
   Versionsmeldung verlinkte immer auf die *neueste fertige* Version — bei einer
   Vorabfassung landete man damit bei der stabilen davor und bekam die
   Testfassung gar nicht zu sehen.
-
-### Geändert
-
-- **Eine dritte Verträglichkeitsprüfung** liegt bei (`tools/smartcitizen_pruefen.py`).
-  Sie spielt beide Werkzeuge gegeneinander aus, in beide Richtungen, und meldet
-  sich, wenn sich das Format der anderen Seite ändert.
 
 ## v3.9.2-rc7 - 2026-09-02
 

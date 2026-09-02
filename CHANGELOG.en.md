@@ -77,15 +77,6 @@ second tool: the blueprint block in the mission texts now survives runs of
   the first answer missed the point. His request was considered technically
   impossible for four attempts; it never was.
 
-### For developers
-
-- Four new check tools measure the overlay invisibly: corners, title bar
-  position, resize handle and the strip in fade mode — each against the real
-  screen edge. The self-test also verifies that no icon is generated that is
-  never displayed anywhere.
-- `tools/smartcitizen_pruefen.py` checks compatibility with Smart Citizen in both
-  directions — the third check of its kind alongside StarStrings and the launcher.
-
 ## v3.9.2-rc12 - 2026-09-02
 
 The resize handle now points where there is room, no longer covers any text, and
@@ -235,12 +226,6 @@ handle and the lock now move to the side the chosen corner belongs to as well.
   announcement always linked to the newest *stable* release — with a
   pre-release you ended up at the stable one before it and never saw the test
   build at all.
-
-### Changed
-
-- **A third compatibility check** ships with the source
-  (`tools/smartcitizen_pruefen.py`). It plays both tools against each other, in
-  both directions, and speaks up when the other side's format changes.
 
 ## v3.9.2-rc7 - 2026-09-02
 
