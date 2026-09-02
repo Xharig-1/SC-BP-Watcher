@@ -8489,6 +8489,64 @@ def main():
     except Exception:
         pass
 
+    # -----------------------------------------------------------------------
+    print()
+    print('102. Unser Block sitzt VOR einem fremden Anhang')
+    # ⚠ Warum das geprueft wird: Werkzeuge, die ihren eigenen Anhang abraeumen
+    # (Smart Citizen), schneiden "ab dem eigenen Marker bis zum Ende". Alles
+    # davor ueberlebt, alles dahinter nicht. Gemessen am 02.09.2026 verlor
+    # unser Block dadurch 398 von 398 gemeinsamen Eintraegen.
+    from scbp import injektion as _in102
+
+    # ⚠ Die **echte** Ueberschrift nehmen, nicht eine ausgedachte: Der Notnagel
+    # beim Zuruecksetzen erkennt den eigenen Block an genau diesen Woertern
+    # (`_UEBERSCHRIFTEN`). Mit einer erfundenen Ueberschrift prueft der Test
+    # das Zuruecksetzen gar nicht — beim ersten Anlauf am 02.09.2026 genau so
+    # passiert, und die Pruefung meldete einen Fehler, der keiner war.
+    # ⚠ Das Kaestchen muss mit. Ein Block mit unserer Ueberschrift, aber **ohne**
+    # Kaestchen, gilt absichtlich als fremder Block des SC Deutsch Launchers und
+    # bleibt beim Zuruecksetzen stehen (siehe `_saeubern`). Ohne das Kaestchen
+    # prueft der Test also das Gegenteil dessen, was er soll — am 02.09.2026
+    # genau so passiert, zweimal hintereinander.
+    _UNSER = ('\\n\\n' + ('-' * 57) + '\\n\\n<EM4>%s</EM4>\\n\\n%s Atzkav'
+              % (_in102._UEBERSCHRIFTEN[0], _in102.KASTEN_HAB))
+
+    # -- Richtung 1: erkennen, was erkannt werden MUSS ----------------------
+    for _marke102 in ('\\n\\n--- STATS ---', '\\n\\n<EM3>MISSION DETAILS</EM3>',
+                      '\\n\\n<EM3>STATS</EM3>', '\\n\\n== Stats ==',
+                      '\\n\\n<EM3>== Mission Details ==</EM3>'):
+        pruefe(bool(_in102.FREMDER_ANHANG.search('CIG-Text' + _marke102
+                                                 + '\\nWert: 5')),
+               'ein fremder Anhang %s wird erkannt' % _marke102.strip())
+
+    # -- Richtung 2: NICHT erkennen, was uns gehoert ------------------------
+    pruefe(not _in102.FREMDER_ANHANG.search('CIG-Text' + _UNSER),
+           'die eigene Linie gilt nicht als fremder Anhang')
+    pruefe(not _in102.FREMDER_ANHANG.search(
+        'Ein Satz.\\n\\nEin zweiter Absatz ohne jede Ueberschrift.'),
+        'ein gewoehnlicher Absatz von CIG gilt nicht als fremder Anhang')
+
+    # -- Die Wirkung: wo landet der Block? ----------------------------------
+    _mit102 = 'CIG-Text\\n\\n--- STATS ---\\nDPS: 157'
+    _erg102 = _in102._anhaengen(_mit102, _UNSER)
+    pruefe(_erg102.index('AUFTRAG') < _erg102.index('--- STATS ---'),
+           'bei fremdem Anhang steht unser Block davor')
+    pruefe('DPS: 157' in _erg102,
+           'und der fremde Anhang bleibt vollstaendig erhalten')
+
+    _ohne102 = _in102._anhaengen('Nur CIG-Text', _UNSER)
+    pruefe(_ohne102 == 'Nur CIG-Text' + _UNSER,
+           'ohne fremden Anhang bleibt es schlichtes Anhaengen')
+
+    # -- Und das Zuruecksetzen darf den Fremdtext nicht mitnehmen -----------
+    # ⚠ Der Notnagel schnitt frueher "ab unserer Linie bis zum Ende". Seit
+    # unser Block davor sitzt, laege der fremde Text mit im Schnitt.
+    _zurueck102 = _in102._saeubern(_erg102)
+    pruefe('AUFTRAG' not in _zurueck102,
+           'das Zuruecksetzen entfernt unseren Block')
+    pruefe('DPS: 157' in _zurueck102,
+           'aber laesst den fremden Anhang stehen')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

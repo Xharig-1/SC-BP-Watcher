@@ -181,7 +181,8 @@ EIGENER_NACHWEIS = re.compile(
 # Titelzusatz, also gibt es dort auch keinen von ihm zu entfernen; was am Titel
 # steht, gehört MrKraken. Der Block darunter dagegen ist unserer und muss weg.
 OHNE_MARKE_BLOCK = re.compile(
-    r'(?:\\n){1,2}?\s*-{20,}(?:\\n|\s)*(?:%s).*$'
+    # ⚠ `<EM\d>` wie bei OHNE_MARKE — siehe die Begründung dort.
+    r'(?:\\n){1,2}?\s*-{20,}(?:\\n|\s|<EM\d>)*(?:%s).*$'
     % '|'.join(re.escape(u) for u in _UEBERSCHRIFTEN), re.S)
 
 OHNE_MARKE = re.compile(
@@ -197,7 +198,14 @@ OHNE_MARKE = re.compile(
     # Merkdatei stellt den Wortlaut **auf das Zeichen genau** wieder her (geprüft).
     # Zwei fehlende Umbrüche in zwei Auftragstexten sind der Preis dafür, dass
     # Aufräumen auch ohne Merkdatei funktioniert.
-    r'|(?:\\n){1,2}?\s*-{20,}(?:\\n|\s)*(?:%s).*$)'
+    # ⚠ `<EM\d>` muss mit: Unser Block schreibt die Überschrift als
+    # `<EM4>MÖGLICHE BAUPLÄNE …</EM4>`, also steht das Tag ZWISCHEN Linie und
+    # Überschrift. Ohne diese Alternative greift der Notnagel am eigenen Block
+    # gar nicht — gemessen am 02.09.2026, und zwar seit jeher. Folge: Wem die
+    # Merkdatei fehlt (anderer Rechner, aufgeräumt), der bekam den Block beim
+    # Zurücksetzen nicht mehr aus seiner `global.ini` heraus. Gefunden erst,
+    # als Prüfung 102 den Notnagel zum ersten Mal ohne Merkdatei ansprach.
+    r'|(?:\\n){1,2}?\s*-{20,}(?:\\n|\s|<EM\d>)*(?:%s).*$)'
     % '|'.join(re.escape(u) for u in _UEBERSCHRIFTEN), re.S)
 
 # Aufbau nach dem Vorbild des SC Deutsch Launchers — die **Gliederung** ist die
@@ -257,6 +265,62 @@ TEXTE = {
 
 # Kästchen wie beim Launcher: leer, wenn der Bauplan fehlt — hervorgehoben,
 # wenn man ihn hat. Das Auge findet dadurch sofort, was noch offen ist.
+# ---------------------------------------------------------------------------
+# Wo ein **fremder** Anhang beginnt — damit unserer davor landet, nicht dahinter
+# ---------------------------------------------------------------------------
+#
+# ⚠ Warum es das gibt (gemessen 02.09.2026, `tools/smartcitizen_pruefen.py`):
+# Smart Citizen (Osiris-DevWorks) hängt eigene Blöcke an dieselben
+# Beschreibungen und räumt vor jedem Lauf seinen alten Block ab — indem es den
+# **ersten** eigenen Marker sucht und ab dort ALLES wegwirft:
+#
+#     for marker in ("\\n\\n--- STATS ---", "\\n\\n<EM3>MISSION DETAILS</EM3>", …):
+#         if marker in existing_value:
+#             existing_value = existing_value[:existing_value.index(marker)]
+#
+# Auf ihrer Seite ist das richtig. Nur stand unser Block dahinter — und war
+# damit bei jedem ihrer Läufe still verschwunden: **398 von 398** gemeinsamen
+# Einträgen. Der Nutzer merkt nur, dass „die Baupläne weg sind".
+#
+# ⚠ **Ein Muster, keine Namensliste.** Eine Liste ihrer Marker wäre beim ersten
+# Umbenennen tot, ohne dass es auffällt. Erkannt wird deshalb die **Form**, in
+# der solche Blöcke überall geschrieben werden: eine Leerzeile, dann eine
+# Überschrift zwischen Bindestrichen, Gleichheitszeichen oder `<EMn>`-Klammern.
+# Das deckt alle sieben heutigen Marken Smart Citizens ab und überlebt eine
+# Umbenennung innerhalb derselben Form.
+#
+# ⚠ Und es bleibt eine Annahme über fremden Code. Deshalb ist die dritte
+# Sicherung Pflicht: `tools/smartcitizen_pruefen.py` lädt deren Generator und
+# schlägt fehl, wenn sich die Form ändert. Die Prüfung gehört vor jedes Release.
+#
+# Absichtlich NICHT erfasst: unsere eigene Linie (57 Bindestriche, dahinter
+# `<EM4>`) und die des SC Deutsch Launchers — die werden schon von
+# `_fremdblock_trennen` behandelt. `{3,20}` schließt sie aus.
+FREMDER_ANHANG = re.compile(
+    r'(?:\\n\s*){2}(?:'
+    r'-{3,20}\s*[A-Za-z][A-Za-z ]{1,30}\s*-{3,20}'      # --- STATS ---
+    r'|={2,20}\s*[A-Za-z][A-Za-z ]{1,30}\s*={2,20}'     # == Stats ==
+    r'|<EM\d>\s*(?:={2,20}\s*)?[A-Za-z][A-Za-z ]{1,30}'  # <EM3>MISSION DETAILS…
+    r'(?:\s*={2,20})?\s*</EM\d>'
+    r')')
+
+
+def _anhaengen(grundlage, block):
+    """Unseren Block anhängen — aber **vor** einem fremden Anhang, wenn da einer ist.
+
+    Ohne Fremdanhang ist das schlichtes `grundlage + block`, wie bisher.
+    Steht dahinter fremder Text im Blockformat, schiebt sich unserer davor.
+
+    ⚠ Der Unterschied ist nicht kosmetisch: Werkzeuge, die ihren eigenen Block
+    abräumen, schneiden „ab dem eigenen Marker bis zum Ende". Alles davor
+    überlebt, alles dahinter nicht.
+    """
+    treffer = FREMDER_ANHANG.search(grundlage)
+    if not treffer:
+        return grundlage + block
+    return grundlage[:treffer.start()] + block + grundlage[treffer.start():]
+
+
 KASTEN_HAB = '<EM4>[x]</EM4>'
 KASTEN_FEHLT = '[  ]'
 LINIE = '-' * 57
@@ -398,7 +462,14 @@ def _saeubern(text, schluessel='', urtext=None, notnagel=OHNE_MARKE):
         # Launcher. Der bleibt stehen; er gehört dem Spieler.
         if EIGENER_NACHWEIS.search(weg) and not _hat_kaestchen(weg):
             return text
-        return text[:treffer.start()].rstrip()
+        # ⚠ Der Notnagel schneidet „ab hier bis zum Ende" — seit unser Block
+        # **vor** einem fremden Anhang sitzt (`_anhaengen`), läge der fremde
+        # Text mit im Schnitt. Also nur bis dorthin schneiden und den Rest
+        # wieder anfügen. Ohne das nähme das Zurücksetzen Smart Citizens
+        # Stats-Blöcke mit — genau der Schaden, den wir gerade verhindern.
+        fremd = FREMDER_ANHANG.search(weg)
+        rest = weg[fremd.start():] if fremd else ''
+        return text[:treffer.start()].rstrip() + rest
     return text
 
 
@@ -775,13 +846,13 @@ def einspielen_scdl(ini_pfad, sprachkuerzel, bestand=None):
             if not _hat_titelmarke(grundlage):
                 sauber, angefasst = grundlage + titel_an[schluessel], True
         elif schluessel in text_an:
-            sauber, angefasst = grundlage + text_an[schluessel], True
+            sauber, angefasst = _anhaengen(grundlage, text_an[schluessel]), True
         elif '_desc' in schluessel.lower():
             # Keine eigene Angabe — aber vielleicht gehört die Beschreibung zu
             # einem Auftrag, für den wir welche haben.
             block = stamm_an.get(_stamm(schluessel))
             if block:
-                sauber, angefasst = grundlage + block, True
+                sauber, angefasst = _anhaengen(grundlage, block), True
         if angefasst:
             # Den Wortlaut VOR der Einfügung merken, nicht danach — und **mit**
             # dem fremden Block, damit das Zurücksetzen ihn wiederbringt.
@@ -892,14 +963,16 @@ def einspielen(ini_pfad, sprache, katalog=None, bestand=None,
                                                        habe, worte)
                     angefasst = True
             elif schluessel in text_keys:
-                sauber = grundlage + _block(text_keys[schluessel], habe, worte)
+                sauber = _anhaengen(grundlage,
+                                    _block(text_keys[schluessel], habe, worte))
                 angefasst = True
             elif '_desc' in schluessel.lower():
                 # Keine eigene Angabe — aber vielleicht gehört die Beschreibung
                 # zu einem Auftrag, für den wir welche haben (siehe oben).
                 eintrag = stamm_block.get(_stamm(schluessel))
                 if eintrag:
-                    sauber = grundlage + _block(eintrag, habe, worte)
+                    sauber = _anhaengen(grundlage,
+                                        _block(eintrag, habe, worte))
                     angefasst = True
             if angefasst:
                 urtext_neu[schluessel] = ur

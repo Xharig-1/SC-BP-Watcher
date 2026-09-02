@@ -113,6 +113,29 @@ print('0) Nachbildung: %d von %d Markern im Original wiedergefunden'
       % (len(SC_MARKER) - len(abweichend), len(SC_MARKER)))
 if abweichend:
     print('   nicht gefunden:', ', '.join(repr(m) for m in abweichend))
+    # ⚠ Das ist die dritte Sicherung und muss **fehlschlagen**, nicht nur
+    # melden. `FREMDER_ANHANG` in `scbp/injektion.py` setzt darauf, dass deren
+    # Marker in der Form `--- WORT ---` / `== Wort ==` / `<EMn>Wort</EMn>`
+    # bleiben. Verschwindet einer aus deren Quelle, ist entweder die Form
+    # gewandert oder unsere Nachbildung veraltet — beides heißt: hinsehen,
+    # bevor das nächste Release rausgeht.
+    fehler.append('%d Marker stehen nicht mehr in Smart Citizens Quelle: %s. '
+                  'Entweder haben sie umbenannt (dann FREMDER_ANHANG in '
+                  'scbp/injektion.py gegenprüfen) oder diese Nachbildung ist '
+                  'veraltet.'
+                  % (len(abweichend), ', '.join(repr(m) for m in abweichend)))
+
+# Und die Gegenprobe: greift unser Muster auf **jeden** ihrer Marker?
+nicht_erkannt = [m for m in SC_MARKER
+                 if not injektion.FREMDER_ANHANG.search('Text' + m + '\\nWert')]
+print('   unser Muster erkennt: %d von %d ihrer Marken'
+      % (len(SC_MARKER) - len(nicht_erkannt), len(SC_MARKER)))
+if nicht_erkannt:
+    fehler.append('FREMDER_ANHANG erkennt %d ihrer Marken nicht: %s. '
+                  'Bei genau diesen landet unser Block wieder dahinter und '
+                  'wird bei deren nächstem Lauf weggeschnitten.'
+                  % (len(nicht_erkannt), ', '.join(repr(m)
+                                                   for m in nicht_erkannt)))
 
 # ---------------------------------------------------------------------------
 # Deren Stand nachbauen: an jede 30. Beschreibung ein Stats-Block
