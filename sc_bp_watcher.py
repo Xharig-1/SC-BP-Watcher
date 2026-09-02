@@ -59,7 +59,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.9.2-rc9'
+__version__ = '3.9.2-rc10'
 
 
 def _mitgeliefert(name):
@@ -2696,6 +2696,9 @@ class Overlay:
                 self.root.minsize(breite, hoehe)
             else:
                 self.root.minsize(self._mindestbreite(), 120)
+            # ⚠ Die Seite der Leiste VOR der Geometrie festlegen: Umpacken
+            # laesst Tk neu rechnen, und was danach gesetzt wird, gilt.
+            self._leiste_ausrichten()
             x, y = self._klapp_ecke(breite, hoehe)
             self.root.geometry('%dx%d+%d+%d' % (breite, hoehe, x, y))
             self.klapp_lbl.symbol_tauschen('aufklappen' if zu
@@ -2755,28 +2758,55 @@ class Overlay:
         ganze Fensterhoehe ueber dem Bildschirmrand. Hier wechselt sie die
         Seite: oben bleibt oben, unten wandert nach unten.
 
-        ⚠⚠⚠ **ZURUECKGENOMMEN am 02.09.2026 — diese Methode tut derzeit
-        nichts.** Der Umbau ist an Tk gescheitert, und zwar folgenreich:
+        ⚠⚠ **Warum das vier Anlaeufe gekostet hat — und woran es WIRKLICH lag.**
+        Am 02.09.2026 wurde dieser Umbau zurueckgenommen, mit der Begruendung,
+        Tk rechne beim Umpacken die Fenstergroesse neu: Ein eingeklapptes
+        Fenster wuchs „von 22 auf 120 px und ragte 86 px unter den
+        Bildschirmrand". Beide Zahlen waren der Schluessel, nur hat sie damals
+        niemand gelesen: **120 ist die Mindesthoehe** aus
+        `_mindestgroesse_setzen()`, und **86 der Ueberstand**, den dieselbe
+        Mindestgroesse in einer unteren Ecke erzeugte.
 
-        `side` laesst sich nachtraeglich nicht umstellen, die Leiste muss also
-        neu gepackt werden. Genau das laesst Tk die Fenstergroesse neu rechnen
-        — ein **eingeklapptes** Fenster wuchs dadurch von 22 auf 120 px und
-        ragte 86 px unter den Bildschirmrand. Die Leiste lag dann ausserhalb.
+        Es lag also nie am Umpacken. Es lag daran, dass `minsize` beim
+        Einklappen stehenblieb — derselbe Fehler, der das eingeklappte Overlay
+        in drei von vier Ecken aus dem Bild geschoben hat. Seit er behoben ist,
+        bleibt das Fenster beim Umpacken exakt so gross, wie es war (gemessen
+        mit `tools/entwurf_leiste_unten.py`: 520x26 vorher wie nachher).
 
-        Das ist der schlimmste denkbare Fall: Im eingeklappten Zustand ist die
-        Leiste der EINZIGE Bedienweg. Ist sie weg, kommt man an gar nichts mehr
-        — nicht einmal an die Einstellung, mit der man es zuruecknehmen wuerde.
-
-        Vier Anlaeufe, alle gemessen und alle gescheitert: `before=` beim
-        Packen · die Geschwister nach der Leiste neu packen ·
-        `update_idletasks()` dazwischen · den Klappzustand per `after()`
-        wiederherstellen. Danach abgebrochen, statt einen fuenften zu starten.
-
-        **Der Wunsch bleibt berechtigt** und gehoert an den Rechner, an dem das
-        Overlay im Einsatz zu sehen ist. Der Versuch steht vollstaendig in der
-        Git-Historie (v3.9.2-rc3 bis rc6).
+        Die Lehre steht ueber der Technik: Vier Anlaeufe haben ein Symptom
+        bekaempft, das eine Ursache zwei Funktionen weiter hatte. Die Zahlen
+        aus der ersten Messung hatten sie benannt.
         """
-        return
+        try:
+            ecke = pfade.einstellung('overlay_ecke') or 'frei'
+        except Exception:
+            ecke = 'frei'
+        seite = 'bottom' if ecke.startswith('unten') else 'top'
+        # ⚠ Nur anfassen, wenn sich wirklich etwas aendert. Ein Umpacken bei
+        # jedem Klappen liesse die Oberflaeche sichtbar zucken.
+        if seite == getattr(self, '_leiste_seite', 'top'):
+            return
+        try:
+            teile = []
+            for kind in self.root.pack_slaves():
+                teile.append((kind, dict(kind.pack_info())))
+            if not teile:
+                return
+            leiste = teile[0][0]
+            for kind, _info in teile:
+                kind.pack_forget()
+            # ⚠ Die Leiste ZUERST packen — in Tk bekommt das zuerst gepackte
+            # Bauteil seinen Rand zuerst. Kaeme sie nach der rollenden Flaeche
+            # (`expand=True`), draengte diese sie aus dem Fenster; genau die
+            # Falle, die in den Projektregeln unter „Fensteraufbau" steht.
+            for kind, info in teile:
+                info.pop('in', None)
+                if kind is leiste:
+                    info['side'] = seite
+                kind.pack(**info)
+            self._leiste_seite = seite
+        except (tk.TclError, IndexError) as ausnahme:
+            fehler.merken('overlay.leiste_ausrichten', ausnahme)
 
     def _klapp_ecke(self, breite, hoehe):
         """Wohin das Fenster gehoert — Ecke oder da, wo es steht.
@@ -2816,6 +2846,10 @@ class Overlay:
     def ecke_anwenden(self):
         """Von der Einstellungsseite gerufen: die Ecke sofort uebernehmen."""
         try:
+            # ⚠ Zuerst die Leiste an die passende Seite haengen — bei einer
+            # unteren Ecke gehoert sie nach unten. Danach erst messen und
+            # setzen, sonst gilt die Groesse von vor dem Umpacken.
+            self._leiste_ausrichten()
             self.root.update_idletasks()
             b, h = self.root.winfo_width(), self.root.winfo_height()
             x, y = self._klapp_ecke(b, h)
@@ -2850,10 +2884,21 @@ class Overlay:
             # Gefragt werden muss nach der **Platzierung**, nicht nach der
             # Sichtbarkeit.
             ist_platziert = bool(self.grip.place_info())
+            # ⚠⚠ Der Griff gehoert an die Ecke, die von der LEISTE weg zeigt.
+            # Haengt sie unten (untere Bildschirmecke, seit 02.09.2026), liegt
+            # „unten rechts" mitten auf ihren Symbolen — der Griff deckte dann
+            # das ✕ zu, und das Werkzeug liesse sich nur noch mit Zielen
+            # schliessen. Dasselbe Problem gab es im eingeklappten Zustand
+            # schon einmal; dort wird er ganz weggenommen.
+            unten = getattr(self, '_leiste_seite', 'top') == 'bottom'
+            lage = dict(relx=1.0, rely=0.0, anchor='ne') if unten \
+                else dict(relx=1.0, rely=1.0, anchor='se')
             if ist_platziert == soll_sichtbar:
-                return                      # schon richtig, nichts anfassen
+                if soll_sichtbar:
+                    self.grip.place(**lage)   # Seite kann gewechselt haben
+                return
             if soll_sichtbar:
-                self.grip.place(relx=1.0, rely=1.0, anchor='se')
+                self.grip.place(**lage)
             else:
                 self.grip.place_forget()
             if os.environ.get('SC_BP_GRIFF_PROTOKOLL'):

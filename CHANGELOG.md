@@ -6,6 +6,30 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc10 - 2026-09-02
+
+Liegt das Overlay unten am Bildschirm, sitzt die Titelleiste jetzt auch unten
+an seinem Rand — dort, wo man sie erwartet, statt eine ganze Fensterhöhe
+darüber. Damit ist der letzte Punkt aus Haldjas' Rückmeldung erledigt.
+
+### Geändert
+
+- ⭐ **Die Titelleiste hängt an der Seite, die zur gewählten Ecke passt.** Bei
+  einer unteren Ecke sitzt sie am unteren Fensterrand, bei einer oberen wie
+  bisher oben. Vorher klebte sie immer oben: Wer das Overlay unten platzierte,
+  fand Balken und Schloss eine Fensterhöhe über dem Bildschirmrand — sichtbar,
+  aber an der falschen Stelle. Der Ziehgriff weicht dabei auf die Gegenseite
+  aus, damit er nicht auf dem Schließen-Knopf liegt. Gemeldet von Haldjas (pr0)
+
+### Behoben
+
+- **Der Umbau der Titelleiste galt vier Anläufe lang als unmöglich** — er war es
+  nie. Beim Umhängen wuchs ein eingeklapptes Fenster „von 22 auf 120 Pixel" und
+  ragte „86 Pixel unter den Bildschirmrand"; beide Zahlen stammten aus der
+  Mindestgröße des Fensters, die beim Einklappen stehenblieb. Mit deren
+  Behebung in der vorigen Fassung ließ sich der Umbau auf Anhieb durchführen.
+  Sechs neue Prüfungen halten die Stellen fest, an denen es kippen kann.
+
 ## v3.9.2-rc9 - 2026-09-02
 
 Wer das Overlay in eine Ecke legt, findet es dort jetzt auch wieder — und zwar

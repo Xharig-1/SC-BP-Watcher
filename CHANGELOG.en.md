@@ -6,6 +6,30 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.2-rc10 - 2026-09-02
+
+With the overlay at the bottom of the screen, the title bar now sits at its
+bottom edge too — where you expect it, instead of a whole window height above.
+That settles the last point from Haldjas' feedback.
+
+### Changed
+
+- ⭐ **The title bar attaches to the side that matches the chosen corner.** With
+  a bottom corner it sits at the bottom edge of the window, with a top corner it
+  stays on top as before. Previously it always clung to the top: place the
+  overlay at the bottom and bar and lock ended up a window height above the
+  screen edge — visible, but in the wrong place. The resize handle moves to the
+  opposite side so it does not cover the close button. Reported by Haldjas (pr0)
+
+### Fixed
+
+- **For four attempts the title bar rebuild was considered impossible** — it
+  never was. While repacking, a collapsed window grew "from 22 to 120 pixels"
+  and hung "86 pixels below the screen edge"; both numbers came from the
+  window's minimum size, which stayed put when collapsing. With that fixed in
+  the previous release, the rebuild worked on the first try. Six new checks
+  guard the places where it could tip over.
+
 ## v3.9.2-rc9 - 2026-09-02
 
 Put the overlay in a corner and you will find it there again — collapsed just as

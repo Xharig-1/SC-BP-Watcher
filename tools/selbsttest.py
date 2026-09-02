@@ -3273,28 +3273,55 @@ def main():
             _teil44 = _teil44[:_teil44.index('    def ', 10)]
             pruefe('_schloss_nachziehen()' in _teil44,
                    'das Schloss zieht %s mit' % _was44)
-        # ⚠⚠ **Die Titelleiste bleibt oben — und das muss so bleiben.**
+        # ⚠⚠ **Die Titelleiste haengt an der Seite, die zur Ecke passt.**
         #   Gemeldet von Haldjas (pr0) am 02.09.2026: Bei einer unteren Ecke
-        #   sitzt die Leiste eine Fensterhoehe ueber dem Bildschirmrand. Der
-        #   Versuch, sie nach unten zu haengen (v3.9.2-rc3 bis rc6), ist an Tk
-        #   gescheitert: Das noetige Neupacken laesst die Fenstergroesse neu
-        #   rechnen, ein EINGEKLAPPTES Fenster wuchs von 22 auf 120 px und
-        #   ragte 86 px unter den Bildschirmrand — mitsamt der Leiste.
+        #   sass die Leiste eine Fensterhoehe ueber dem Bildschirmrand.
         #
-        #   Und die Leiste ist im eingeklappten Zustand der EINZIGE Bedienweg.
-        #   Ist sie weg, kommt niemand mehr an das Werkzeug heran, auch nicht
-        #   an die Einstellung, mit der man es zuruecknehmen wuerde.
+        #   Vier Anlaeufe (v3.9.2-rc3 bis rc6) sind daran gescheitert, dass ein
+        #   EINGEKLAPPTES Fenster beim Neupacken „von 22 auf 120 px" wuchs und
+        #   „86 px unter den Bildschirmrand" ragte. Beide Zahlen waren die
+        #   Loesung, nur hat sie niemand gelesen: 120 ist die Mindesthoehe aus
+        #   `_mindestgroesse_setzen()`, 86 ihr Ueberstand in einer unteren
+        #   Ecke. Es lag nie am Neupacken — `minsize` blieb beim Einklappen
+        #   stehen. Seit rc9 zieht sie mit, seither funktioniert der Umbau
+        #   (gemessen in `tools/entwurf_leiste_pruefen.py`).
         #
-        #   Diese Pruefung haelt den Rueckbau fest: Wer die Leiste erneut
-        #   umhaengen will, muss zuerst hier vorbei — und dabei den
-        #   eingeklappten Zustand messen, nicht nur den offenen.
-        pruefe("side='top'" in _q44 or 'side="top"' in _q44,
-               'die Titelleiste bleibt fest oben verankert (Rueckbau rc7)')
+        #   Diese Pruefung bewacht die drei Stellen, an denen es kippen kann.
+        #   Die Leiste ist im eingeklappten Zustand der EINZIGE Bedienweg —
+        #   ist sie ausserhalb des Bildes, kommt niemand mehr an das Werkzeug.
         if 'def _leiste_ausrichten' in _q44:
             _teil45 = _q44[_q44.index('def _leiste_ausrichten'):]
             _teil45 = _teil45[:_teil45.index('    def ', 10)]
-            pruefe('ZURUECKGENOMMEN' in _teil45,
-                   'und der gescheiterte Versuch ist als solcher vermerkt')
+            pruefe("'bottom'" in _teil45,
+                   'die Titelleiste kann nach unten wechseln')
+            pruefe('startswith' in _teil45 and 'unten' in _teil45,
+                   'und zwar abhaengig von der gewaehlten Ecke')
+            pruefe('_leiste_seite' in _teil45,
+                   'ein Wechsel wird gemerkt, statt bei jedem Klappen '
+                   'umzupacken')
+        # ⚠ Die Reihenfolge ist der Kern: erst umpacken, dann die Geometrie.
+        #   Andersherum rechnet Tk nach dem Setzen neu, und die eben gesetzte
+        #   Ecke gilt nicht mehr.
+        if 'def klappzustand_setzen' in _q44:
+            _teil46 = _q44[_q44.index('def klappzustand_setzen'):]
+            _teil46 = _teil46[:_teil46.index('    def ', 10)]
+            pruefe('_leiste_ausrichten()' in _teil46,
+                   'beim Klappen wird die Leistenseite gesetzt')
+            if ('_leiste_ausrichten()' in _teil46
+                    and 'self.root.geometry(' in _teil46):
+                pruefe(_teil46.index('_leiste_ausrichten()')
+                       < _teil46.index('self.root.geometry('),
+                       'und zwar VOR der Geometrie, nicht danach')
+            pruefe('minsize' in _teil46,
+                   'die Mindestgroesse zieht beim Klappen mit '
+                   '(der Fehler hinter rc3-rc6)')
+        # ⚠ Und der Ziehgriff darf nicht auf der Leiste landen: Bei unten
+        #   haengender Leiste sitzt dort das ✕.
+        if 'def _grip_nachziehen' in _q44:
+            _teil47 = _q44[_q44.index('def _grip_nachziehen'):]
+            _teil47 = _teil47[:_teil47.index('    def ', 10)]
+            pruefe('_leiste_seite' in _teil47,
+                   'der Ziehgriff weicht der Leiste aus')
 
         # ⚠⚠ Zwei Patches koennen auf dieselbe Kurzform kuerzen — ein Hotfix im
         #   Live-Kanal erzeugt genau das: 4.10.0-live.12519617 und
