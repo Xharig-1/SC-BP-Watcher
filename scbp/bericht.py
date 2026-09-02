@@ -312,7 +312,22 @@ def _system():
 
 
 def _tk_fassung():
+    """Die Tk-Fassung — so genau, wie sie zu bekommen ist.
+
+    ⚠ `tkinter.TkVersion` ist eine Fliesskommazahl und meldet nur „9.0", auch
+    bei 9.0.3. Zwischen Tk 8.6 und 9.0 liegt ein Hauptversionssprung, und
+    Unterschiede im Aufbau der Oberflaeche sind genau dort zu erwarten: Am
+    02.09.2026 kam eine Meldung ueber traegen Fensteraufbau von einem Rechner
+    mit Tk 9.0, waehrend dieselbe Fassung unter 8.6 zuegig lief. Ohne die
+    genaue Nummer im Bericht laesst sich so etwas nicht zuordnen.
+    """
     import tkinter
+    try:
+        wurzel = tkinter._default_root
+        if wurzel is not None:
+            return str(wurzel.tk.call('info', 'patchlevel'))
+    except Exception:
+        pass
     return str(tkinter.TkVersion)
 
 

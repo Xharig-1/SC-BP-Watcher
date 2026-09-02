@@ -169,6 +169,79 @@ def alle_schirme(root):
     return gefunden or [_ganze_flaeche(root)]
 
 
+def _windows_arbeitsflaeche():
+    """Der nutzbare Bereich des Hauptschirms — **ohne Taskleiste**.
+
+    ⚠⚠ Warum das noetig ist (gemeldet 02.09.2026 von Haldjas, pr0): Wer das
+    Overlay in eine untere Ecke legt, bekam es an den echten Bildschirmrand
+    gesetzt — und dort liegt unter Windows die Taskleiste. Der schmale
+    Anfasser-Streifen (5 px hoch) verschwand dahinter: „hovern geht nicht mehr,
+    nur ein Klick auf eine bestimmte Stelle klappt ihn aus." Getroffen wurde
+    genau das Stueck, das oberhalb der Leiste herausschaute.
+
+    `SPI_GETWORKAREA` (48) liefert das Rechteck, das Windows selbst fuer
+    Fenster vorsieht. Schlaegt der Aufruf fehl, geben wir `None` zurueck und
+    der Aufrufer bleibt bei der vollen Flaeche — lieber die alte Lage als gar
+    keine.
+    """
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        rechteck = wintypes.RECT()
+        ok = ctypes.windll.user32.SystemParametersInfoW(
+            48, 0, ctypes.byref(rechteck), 0)
+        if ok and rechteck.right > rechteck.left \
+                and rechteck.bottom > rechteck.top:
+            return (int(rechteck.left), int(rechteck.top),
+                    int(rechteck.right - rechteck.left),
+                    int(rechteck.bottom - rechteck.top))
+    except Exception:
+        pass
+    return None
+
+
+def _linux_arbeitsflaeche():
+    """Dasselbe unter Linux: `_NET_WORKAREA` des Fensterverwalters.
+
+    ⚠ Nicht jede Umgebung setzt die Eigenschaft, und unter Wayland gibt es sie
+    haeufig gar nicht. Dann `None` — der Aufrufer nimmt die volle Flaeche.
+    """
+    try:
+        umgebung = dict(os.environ)
+        umgebung['LC_ALL'] = 'C'
+        ausgabe = subprocess.run(
+            ['xprop', '-root', '_NET_WORKAREA'],
+            capture_output=True, text=True, timeout=3, env=umgebung).stdout
+        zahlen = [int(z) for z in re.findall(r'\d+', ausgabe.split('=')[-1])]
+        if len(zahlen) >= 4 and zahlen[2] > 0 and zahlen[3] > 0:
+            return zahlen[0], zahlen[1], zahlen[2], zahlen[3]
+    except Exception:
+        pass
+    return None
+
+
+def arbeitsflaeche(root, x, y):
+    """Wo ein Fenster wirklich hindarf — Schirm unter (x, y) ohne Taskleiste.
+
+    ⚠ Der Arbeitsbereich wird nur fuer den **Hauptschirm** gemeldet; beide
+    Systeme kennen dafuer keine Angabe je Monitor. Liegt der Punkt auf einem
+    anderen Schirm, gilt deshalb weiter dessen volle Flaeche — besser als eine
+    Zahl, die vom falschen Bildschirm stammt.
+    """
+    schirm = schirm_fuer(root, x, y)
+    arbeit = _windows_arbeitsflaeche() if WINDOWS else _linux_arbeitsflaeche()
+    if not arbeit:
+        return schirm
+    ax, ay, ab, ah = arbeit
+    sx, sy, sb, sh = schirm
+    # Nur uebernehmen, wenn der Arbeitsbereich wirklich auf DIESEM Schirm
+    # liegt - sonst waere es die Angabe eines fremden Monitors.
+    if sx <= ax < sx + sb and sy <= ay < sy + sh:
+        return ax, ay, ab, ah
+    return schirm
+
+
 def schirm_fuer(root, x, y):
     """Auf welchem Bildschirm liegt dieser Punkt? (x, y, breite, hoehe)
 

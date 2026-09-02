@@ -2305,6 +2305,15 @@ class Hauptfenster:
         # Deshalb auch hier eine Zeile, aber eine eigene: „zeigen" statt
         # „bauen beginnt". Wer den Bericht liest, sieht damit den Unterschied
         # zwischen „beim Aufbauen gestorben" und „beim Einblenden gestorben".
+        # ⚠⚠ **Millisekunden, nicht nur Sekunden.** Gemeldet am 02.09.2026
+        # (Haldjas, pr0): „Er braucht eben recht lang, um die Icons und co zu
+        # laden, wenn man die Einstellungen oeffnet." Im Bericht standen nur
+        # sekundengenaue Zeitstempel — damit liess sich nicht unterscheiden,
+        # ob eine Seite 50 ms oder 900 ms braucht. Zwei Erklaerungen wurden
+        # dadurch gejagt und beide widerlegt (Schriftgroesse, Zahl der
+        # Symbolbilder: gemessen 36 Bilder in 4 ms). Ohne Zahl im Bericht
+        # bleibt es beim Raten.
+        _beginn = time.perf_counter()
         if kennung in self.gezeichnet:
             fehler.spur('Seite %s: zeigen' % kennung)
             # ⚠ Eine Seite wird **einmal** gebaut und danach nur noch ein- und
@@ -2338,7 +2347,8 @@ class Hauptfenster:
             self.seiten[self.aktuell].pack_forget()
         self.seiten[kennung].pack(fill='both', expand=True)
         self.aktuell = kennung
-        fehler.spur('Seite %s: steht' % kennung)
+        fehler.spur('Seite %s: steht (%.0f ms)'
+                    % (kennung, (time.perf_counter() - _beginn) * 1000))
         # ⚠ Erst JETZT die restlichen Seiten im Leerlauf vorbauen — nachdem die
         # angeklickte steht. Vorher gestartet, wuerde der Vorbau genau die
         # Seite verzoegern, die der Mensch gerade sehen will.

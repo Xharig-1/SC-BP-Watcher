@@ -59,7 +59,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.9.2'
+__version__ = '3.9.4'
 
 
 def _mitgeliefert(name):
@@ -2888,7 +2888,15 @@ class Overlay:
             ecke = pfade.einstellung('overlay_ecke') or 'frei'
             if ecke not in self.ECKEN or ecke == 'frei':
                 return x, y
-            sx, sy, sb, sh = bildschirm.schirm_fuer(self.root, x, y)
+            # ⚠⚠ **Arbeitsflaeche, nicht die volle Bildschirmflaeche.** Unten
+            # liegt unter Windows die Taskleiste. Wurde das Overlay an den
+            # echten Bildschirmrand gesetzt, verschwand der 5 px hohe
+            # Anfasser-Streifen dahinter: „hovern geht nicht mehr, nur ein
+            # Klick auf eine bestimmte Stelle klappt ihn aus" (Haldjas, pr0,
+            # 02.09.2026) — getroffen wurde das Stueck, das oberhalb der
+            # Leiste herausschaute. `arbeitsflaeche()` faellt auf die volle
+            # Flaeche zurueck, wenn das System keine Angabe liefert.
+            sx, sy, sb, sh = bildschirm.arbeitsflaeche(self.root, x, y)
             rand = 8
             x = sx + rand if ecke.endswith('links') else sx + sb - breite - rand
             y = sy + rand if ecke.startswith('oben') else sy + sh - hoehe - rand
@@ -3124,8 +3132,17 @@ class Overlay:
         # unter den Bildschirmrand und nahm die Leiste mit.
         try:
             if (pfade.einstellung('overlay_ecke') or 'frei') != 'frei':
+                # ⚠⚠ Die Methode heisst `klappzustand_setzen`. Hier stand bis
+                # v3.9.2 `self._klappen(...)` — ein Name, den es nie gab. Der
+                # Aufruf starb bei JEDEM Start mit AttributeError, das
+                # `except` darunter fing ihn, und die gewaehlte Ecke wurde
+                # deshalb beim Start nie angewandt. Gemeldet von Haldjas (pr0)
+                # am 02.09.2026: „nach dem Start sitzt der Header wieder oben,
+                # obwohl das Fenster auf links unten eingestellt ist."
                 self.root.after(
-                    120, lambda: self._klappen(self.eingeklappt, merken=False))
+                    120,
+                    lambda: self.klappzustand_setzen(self.eingeklappt,
+                                                     merken=False))
         except Exception as ausnahme:
             fehler.merken('overlay.ecke_beim_start', ausnahme)
         self.anzeigeart = pfade.einstellung('overlay_modus') or 'immer'

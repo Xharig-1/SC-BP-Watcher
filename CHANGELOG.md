@@ -6,6 +6,28 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.4 - 2026-09-02
+
+> **Zwei Nachbesserungen an den Ecken.** Die gewählte Ecke wirkt jetzt auch beim
+> Start, und das Overlay legt sich nicht mehr hinter die Taskleiste.
+
+### Behoben
+
+- **Die gewählte Ecke wurde beim Start übergangen.** Das Overlay stand nach
+  jedem Start wieder dort, wo es zuletzt war; die Einstellung griff erst, wenn
+  man einmal ein- und ausklappte. Gemeldet von Haldjas (pr0)
+- **Das Overlay legte sich in einer unteren Ecke hinter die Taskleiste.** Damit
+  war der schmale grüne Streifen kaum zu treffen, und das Aufblenden bei
+  Mausberührung ging ins Leere. Gerechnet wird jetzt mit der nutzbaren
+  Bildschirmfläche statt mit der gesamten. Gemeldet von Haldjas (pr0)
+
+### Verbessert
+
+- **Der Fehlerbericht zeigt, wie lange jede Seite zum Aufbauen braucht** — und
+  nennt die genaue Tk-Fassung statt nur der Hauptversion. Wer einen trägen
+  Fensteraufbau meldet, liefert damit gleich die Zahlen mit, an denen sich die
+  Ursache festmachen lässt.
+
 ## v3.9.2 - 2026-09-02
 
 > **Das Overlay bleibt da, wo du es hinlegst.** Wer es in eine Ecke legte und

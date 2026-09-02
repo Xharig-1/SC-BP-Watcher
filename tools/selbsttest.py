@@ -8704,6 +8704,97 @@ def main():
            'keine Ausnahme ist ueberholt (%s)'
            % (', '.join(_wieder103) if _wieder103 else 'keine'))
 
+    # -----------------------------------------------------------------------
+    print()
+    print('104. Kein Aufruf `self.xyz(...)`, den es gar nicht gibt')
+    # ⚠⚠ **Der teuerste Fehler des 02.09.2026.** In `verhalten_anwenden` stand
+    # `self._klappen(...)` — einen solchen Namen gab es nie, die Methode heisst
+    # `klappzustand_setzen`. Der Aufruf starb bei JEDEM Programmstart mit
+    # AttributeError, das `except Exception` darunter fing ihn und schrieb ihn
+    # stumm ins Protokoll. Folge: Die gewaehlte Ecke wurde beim Start nie
+    # angewandt. Aufgefallen ist es erst durch einen Fehlerbericht von aussen
+    # (Haldjas, pr0) — mit einer ausgelieferten Version.
+    #
+    # Python selbst merkt so etwas nie: Attributzugriffe loesen sich zur
+    # Laufzeit auf, und wo ein `except` drumherum steht, faellt gar nichts auf.
+    import ast as _ast104
+
+    def _bekannte_namen(klasse):
+        """Alles, was die Klasse selbst mitbringt."""
+        # ⚠ Von aussen angehaengte Namen (`w.faerben = ...` in `zeichen.py`)
+        # kann diese Pruefung nicht sehen — sie stehen hier.
+        namen = {'faerben', 'symbol_tauschen', 'groesse_nachziehen',
+                 'zeichnen', 'setzen'}
+        for k in _ast104.walk(klasse):
+            if isinstance(k, (_ast104.FunctionDef, _ast104.AsyncFunctionDef)):
+                namen.add(k.name)
+            elif isinstance(k, _ast104.Assign):
+                for ziel in _ast104.walk(k):
+                    if (isinstance(ziel, _ast104.Attribute)
+                            and isinstance(ziel.value, _ast104.Name)
+                            and ziel.value.id == 'self'):
+                        namen.add(ziel.attr)
+            elif isinstance(k, _ast104.AnnAssign):
+                if (isinstance(k.target, _ast104.Attribute)
+                        and isinstance(k.target.value, _ast104.Name)
+                        and k.target.value.id == 'self'):
+                    namen.add(k.target.attr)
+            # ⚠ `getattr(self, 'melder', None)` heisst: Der Name wird von
+            # AUSSEN gesetzt und ist absichtlich optional. Wer so fragt, hat
+            # den Fall bedacht — das ist ein Rueckruf, kein toter Aufruf.
+            elif (isinstance(k, _ast104.Call)
+                    and isinstance(k.func, _ast104.Name)
+                    and k.func.id == 'getattr'
+                    and len(k.args) >= 2
+                    and isinstance(k.args[0], _ast104.Name)
+                    and k.args[0].id == 'self'
+                    and isinstance(k.args[1], _ast104.Constant)):
+                namen.add(k.args[1].value)
+        return namen
+
+    _wurzel104 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    _tot104 = []
+    _dateien104 = 0
+    for _ordner104, _unter104, _namen104 in os.walk(_wurzel104):
+        _unter104[:] = [u for u in _unter104
+                        if u not in ('.git', '__pycache__', 'assets', 'daten')]
+        for _n104 in sorted(_namen104):
+            if not _n104.endswith('.py') or _n104.startswith('entwurf_'):
+                continue
+            _p104 = os.path.join(_ordner104, _n104)
+            try:
+                with open(_p104, encoding='utf-8') as _f104:
+                    _baum104 = _ast104.parse(_f104.read(), _p104)
+            except (SyntaxError, OSError):
+                continue
+            _dateien104 += 1
+            for _kl104 in _ast104.walk(_baum104):
+                if not isinstance(_kl104, _ast104.ClassDef):
+                    continue
+                # ⚠ Erbt die Klasse von etwas anderem als `object`, koennen
+                # Namen aus der Oberklasse kommen — dann ist nichts zu holen.
+                if [b for b in _kl104.bases
+                        if not (isinstance(b, _ast104.Name)
+                                and b.id == 'object')]:
+                    continue
+                _hat104 = _bekannte_namen(_kl104)
+                for _k104 in _ast104.walk(_kl104):
+                    if not isinstance(_k104, _ast104.Call):
+                        continue
+                    _f = _k104.func
+                    if (isinstance(_f, _ast104.Attribute)
+                            and isinstance(_f.value, _ast104.Name)
+                            and _f.value.id == 'self'
+                            and _f.attr not in _hat104):
+                        _tot104.append('%s:%d %s.%s'
+                                       % (_n104, _f.lineno, _kl104.name,
+                                          _f.attr))
+
+    pruefe(_dateien104 > 5, 'die Quelldateien wurden gelesen (%d)' % _dateien104)
+    pruefe(not _tot104,
+           'kein Aufruf ins Leere (%s)'
+           % ('; '.join(_tot104) if _tot104 else 'keiner'))
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

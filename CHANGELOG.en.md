@@ -6,6 +6,26 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.4 - 2026-09-02
+
+> **Two follow-ups on the corners.** The chosen corner now takes effect at
+> startup too, and the overlay no longer hides behind the taskbar.
+
+### Fixed
+
+- **The chosen corner was ignored at startup.** The overlay came back where it
+  last was after every start; the setting only applied once you collapsed and
+  expanded it. Reported by Haldjas (pr0)
+- **In a bottom corner the overlay slipped behind the taskbar.** The narrow
+  green strip was then hard to hit and hovering did nothing. The usable screen
+  area is now used instead of the full one. Reported by Haldjas (pr0)
+
+### Improved
+
+- **The error report shows how long each page takes to build** — and names the
+  exact Tk release instead of just the major version. Anyone reporting a sluggish
+  window now supplies the numbers the cause can be pinned down with.
+
 ## v3.9.2 - 2026-09-02
 
 > **The overlay stays where you put it.** Put it in a corner and collapse it and
