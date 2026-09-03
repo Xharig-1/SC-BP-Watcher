@@ -686,6 +686,25 @@ TEXTE = {
                           'Star Citizen not found.'),
     's_sc_weg_h':      ('Trag den Ordner unten ein — der LIVE-Ordner reicht, auch der darüber oder das Wine-Präfix.',
                           'Enter the folder below — the LIVE folder is enough, as is the one above it or the Wine prefix.'),
+    # ⚠ Der Spielordner ist weg, ein Nachbarkanal steht daneben — siehe
+    # `pfade.kanal_abweichung()`. Wer LIVE in HOTFIX umbenennt (der uebliche Weg
+    # zu einer ausgebesserten Fassung), soll das nicht selbst nachtragen muessen.
+    's_kn_titel':      ('Spielordner hat sich geändert',
+                          'Game folder has changed'),
+    's_kn_weg':        ('Der eingetragene Ordner „%s" ist nicht mehr da.',
+                          'The folder you set, "%s", is gone.'),
+    's_kn_da':         ('Daneben liegt „%s" — dort wurde zuletzt gespielt.',
+                          'Next to it sits "%s" — that is where you played last.'),
+    's_kn_frage':      ('Soll ich von jetzt an dort mitlesen?',
+                          'Shall I read from there from now on?'),
+    's_kn_mehrere':    ('Es liegen mehrere Spielordner nebeneinander. Welchen soll ich mitlesen?',
+                          'Several game folders sit side by side. Which one shall I read?'),
+    's_kn_zuletzt':    ('zuletzt gespielt: %s',
+                          'last played: %s'),
+    's_kn_umgestellt': ('Ab jetzt wird „%s" mitgelesen.',
+                          'Reading from "%s" from now on.'),
+    's_kn_spaeter':    ('Jetzt nicht',
+                          'Not now'),
     # ⚠⚠ **„Eigene Dateien" sagte niemandem etwas.** Am 31.08.2026 gemeldet:
     # „da fehlt auch die Beschreibung, für was der Ordner ist, der Name sagt
     # nichts aus." Und der zweite Teil fehlte ganz: Dieser eine Ordner ist
@@ -1156,14 +1175,19 @@ TEXTE = {
                               'Titelleiste, die in einer unteren Ecke nach unten '
                               'gehört, der träge Fensteraufbau beim Öffnen der '
                               'Einstellungen — und der grüne Streifen, der nach dem '
-                              'Start in der alten Ecke zurückblieb.',
+                              'Start in der alten Ecke zurückblieb. Später dazu die '
+                              'nackten Schlüsselnamen im Einrichtungsassistenten und '
+                              'der umbenannte Spielordner, dem HOTFIX seine Erkennung '
+                              'verdankt.',
                               'Plus a dozen finds around the overlay, setup and updating — '
                               'among them the collapsed overlay hanging off the screen '
                               'edge in three corners out of four, the title bar that '
                               'belongs at the bottom when the overlay sits in a bottom '
                               'corner, the sluggish window build when opening '
                               'the settings — and the green strip left behind in the old '
-                              'corner after a restart.'),
+                              'corner after a restart. Later also the raw key names in '
+                              'the setup wizard, and the renamed game folder that led to '
+                              'HOTFIX being recognised at all.'),
     # ⚠ **Diese Seite mitziehen, nicht nur den CHANGELOG.** Am 27.08.2026 hat
     # Bomb20 an einem Vormittag vier Fehler gefunden, die alle am Samstag jeden
     # Nutzer getroffen hätten — und hier stand weiter nur sein Fund vom 25.08.
@@ -2507,6 +2531,20 @@ TEXTE = {
                           'This modifies the game\'s text file (global.ini). '
                           'Nothing else about the game changes, and it can be '
                           'undone at any time.'),
+    # ⚠⚠ **Diese drei stehen NICHT direkt in einem `t(...)`-Aufruf.** Sie werden
+    # im Assistenten und auf der Einstellungsseite über eine Schleifenvariable
+    # geholt (`for schluessel, quelle in (('inj_quelle_de', …), …): t(schluessel)`).
+    # Wer nach `t('inj_quelle_de')` sucht, findet nichts und hält sie für tot —
+    # genau so sind sie am 26.08.2026 beim Aufräumen mitgegangen. Im Setup
+    # standen danach acht Tage lang die nackten Schlüsselnamen als Knopfbeschriftung
+    # (Schritt 4 von 5). Gemeldet von Haldjas, 03.09.2026: „setup ist ein klein
+    # wenig kaputt". Prüfung 49 wacht seitdem auch über Schleifenvariablen.
+    'inj_quelle_de':     ('Deutsch — Übersetzung von rjcncpt laden',
+                          'German — fetch the rjcncpt translation'),
+    'inj_quelle_ss':     ('Englisch — StarStrings von MrKraken laden',
+                          'English — fetch StarStrings by MrKraken'),
+    'inj_quelle_orig':   ('Englisch — Originaltexte aus dem Spiel',
+                          'English — original texts from the game'),
     'inj_fremd':         ('Übersetzung und StarStrings sind fremde Projekte. Sie '
                           'werden beim Klick von deren eigener Adresse geladen, '
                           'nicht mitgeliefert.',

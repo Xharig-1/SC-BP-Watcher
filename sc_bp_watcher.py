@@ -59,7 +59,7 @@ try:
 except ImportError:
     winsound = None
 
-__version__ = '3.10.0'
+__version__ = '3.11.0'
 
 
 def _mitgeliefert(name):
@@ -1945,6 +1945,44 @@ class Overlay:
         self.root.after(200, self._poll_queue)
         # ⚠ **Und danach stündlich wieder** — siehe `_nach_version_sehen`.
         self.root.after(2000, self._nach_version_sehen)   # nicht beim Start drängeln
+        # Kurz nach dem Start fragen, falls der Spielordner umgezogen ist.
+        # Vor der Versionsprüfung: Ohne Spielordner nützt die neueste Fassung
+        # nichts, und zwei Fenster hintereinander will niemand.
+        self.root.after(1200, self._kanal_pruefen)
+
+    def _kanal_pruefen(self):
+        """Ist der eingetragene Spielordner weg, aber ein Nachbarkanal da?
+
+        ⚠⚠ Der Fall aus der Praxis: Kommt eine ausgebesserte Fassung neben LIVE,
+        laedt kaum jemand 100 GB neu — man benennt LIVE in HOTFIX um, damit der
+        Launcher nur die Unterschiede holt. Der eingetragene Ordner ist damit
+        weg. Bis v3.10.0 stand der Watcher dann ohne Erklaerung da: „Star Citizen
+        nicht gefunden", obwohl in den Einstellungen ein Pfad steht.
+
+        ⚠ Nur **einmal je Programmstart** fragen. Wer „jetzt nicht" sagt, will
+        Ruhe — und ein Fenster, das immer wiederkommt, klickt man ungelesen weg.
+        """
+        if getattr(self, '_kanal_gefragt', False):
+            return
+        self._kanal_gefragt = True
+        try:
+            lage = pfade.kanal_abweichung()
+            if not lage:
+                return
+            # ⚠ Lokal importiert wie überall in dieser Datei — `hauptfenster`
+            # zieht selbst wieder Bausteine nach, auf Modulebene wäre das ein
+            # Zirkelbezug.
+            from scbp import hauptfenster as _hf
+            eingetragen, _benutzt, kanaele = lage
+            gewaehlt = _hf.kanal_waehlen(self.root, eingetragen, kanaele)
+            if not gewaehlt:
+                return
+            pfade.einstellung_setzen('spiel_ordner', gewaehlt)
+            _hf.bescheid_geben(
+                self.root, sprache.t('s_kn_titel'),
+                sprache.t('s_kn_umgestellt') % os.path.basename(gewaehlt))
+        except Exception as ausnahme:
+            fehler.merken('watcher.kanal_pruefen', ausnahme)
 
     # ---- Drag & Resize ----
     # ---- Schalter „mit dem Rechner starten" ----

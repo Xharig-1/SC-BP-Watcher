@@ -2889,6 +2889,124 @@ def frage_stellen(eltern, titel, text, ja=None, nein=None,
         return bool(messagebox.askyesno(titel, text, parent=eltern))
 
 
+def kanal_waehlen(eltern, eingetragen, kanaele):
+    """Fragen, aus welchem Spielordner ab jetzt gelesen wird. Gibt ihn zurueck.
+
+    ⚠⚠ **Wofuer das da ist.** Legt CIG eine ausgebesserte Fassung neben LIVE,
+    laedt kaum jemand 100 GB neu — man benennt den LIVE-Ordner in HOTFIX um,
+    damit der Launcher nur die Unterschiede holt. Der eingetragene Ordner ist
+    damit weg, und der Watcher las entweder stillschweigend woanders oder meldete
+    „Star Citizen nicht gefunden", obwohl in den Einstellungen ein Pfad steht.
+    Beides sieht nach einem kaputten Programm aus. Gemeldet von Haldjas am
+    03.09.2026, dem genau das passiert war.
+
+    ⚠ **Gefragt wird, nicht stillschweigend umgestellt.** Welcher Kanal gemeint
+    ist, weiss nur der Spieler — wer PTU testet und daneben LIVE liegen hat,
+    haette sonst ploetzlich die falschen Baupläne gezaehlt.
+
+    `kanaele` sind Tupel `(Name, Ordner, Zeitstempel)` aus
+    `pfade.kanaele_vorhanden()`, neueste zuerst. Rueckgabe: der gewaehlte Ordner
+    oder None, wenn der Spieler es beim Alten lassen will.
+    """
+    if not kanaele:
+        return None
+
+    # Der Normalfall ist genau ein Nachbarkanal (LIVE wurde zu HOTFIX). Dafuer
+    # braucht es keine Liste — eine Frage mit Ja und Nein ist kuerzer und
+    # beantwortet sich schneller.
+    if len(kanaele) == 1:
+        name, ordner, _stempel = kanaele[0]
+        text = '%s\n%s\n\n%s' % (t('s_kn_weg') % os.path.basename(eingetragen),
+                                 t('s_kn_da') % name,
+                                 t('s_kn_frage'))
+        if frage_stellen(eltern, t('s_kn_titel'), text,
+                         nein=t('s_kn_spaeter')):
+            return ordner
+        return None
+
+    try:
+        top = tk.Toplevel(eltern)
+        top.title(t('s_kn_titel'))
+        top.configure(bg=BG, highlightthickness=1, highlightbackground=LINIE,
+                      highlightcolor=LINIE)
+        top.resizable(False, False)
+        top.transient(eltern)
+
+        schrift_titel = tkfont.Font(family='Segoe UI', size=12, weight='bold')
+        schrift_text = tkfont.Font(family='Segoe UI', size=10)
+        schrift_knopf = tkfont.Font(family='Segoe UI', size=9)
+
+        rahmen = tk.Frame(top, bg=BG, padx=26, pady=22)
+        rahmen.pack(fill='both', expand=True)
+        tk.Label(rahmen, text=t('s_kn_titel'), bg=BG, fg=ACCENT,
+                 font=schrift_titel, anchor='w', justify='left').pack(fill='x')
+        tk.Label(rahmen,
+                 text='%s\n\n%s' % (t('s_kn_weg') % os.path.basename(eingetragen),
+                                    t('s_kn_mehrere')),
+                 bg=BG, fg=FG, font=schrift_text, anchor='w', justify='left',
+                 wraplength=FRAGE_BREITE - 52).pack(fill='x', pady=(10, 0))
+
+        gewaehlt = {'wert': None}
+
+        def schliessen(wert):
+            gewaehlt['wert'] = wert
+            try:
+                top.grab_release()
+            except tk.TclError:
+                pass
+            top.destroy()
+
+        for name, ordner, stempel in kanaele:
+            wann = time.strftime('%d.%m.%Y %H:%M', time.localtime(stempel))
+            kasten = tk.Frame(rahmen, bg=FLAECHE, cursor='hand2',
+                              highlightthickness=1, highlightbackground=LINIE)
+            kasten.pack(fill='x', pady=(10, 0))
+            tk.Label(kasten, text=name, bg=FLAECHE, fg=FG, font=schrift_text,
+                     anchor='w', padx=12, pady=(8)).pack(fill='x')
+            tk.Label(kasten, text=t('s_kn_zuletzt') % wann, bg=FLAECHE, fg=SUB,
+                     font=schrift_knopf, anchor='w',
+                     padx=12).pack(fill='x', pady=(0, 8))
+            # Auch auf den Beschriftungen — ein Klick daneben darf nicht ins
+            # Leere gehen, sonst haelt man den Kasten fuer nicht anklickbar.
+            for teil in (kasten,) + tuple(kasten.winfo_children()):
+                teil.bind('<Button-1>',
+                          lambda _e, o=ordner: schliessen(o))
+
+        reihe = tk.Frame(rahmen, bg=BG)
+        reihe.pack(anchor='e', pady=(20, 0))
+        _dialog_knopf(reihe, t('s_kn_spaeter'), lambda: schliessen(None),
+                      schrift_knopf).pack(side='right')
+
+        top.bind('<Escape>', lambda _=None: schliessen(None))
+        top.protocol('WM_DELETE_WINDOW', lambda: schliessen(None))
+
+        top.update_idletasks()
+        breite = max(FRAGE_BREITE, top.winfo_reqwidth())
+        hoehe = top.winfo_reqheight()
+        try:
+            x = eltern.winfo_rootx() + (eltern.winfo_width() - breite) // 2
+            y = eltern.winfo_rooty() + (eltern.winfo_height() - hoehe) // 3
+        except tk.TclError:
+            x = y = 200
+        top.geometry('%dx%d+%d+%d' % (breite, hoehe, max(0, x), max(0, y)))
+
+        top.grab_set()
+        top.focus_set()
+        eltern.wait_window(top)
+        return gewaehlt['wert']
+    except Exception as ausnahme:
+        fehler.merken('hauptfenster.kanal_waehlen', ausnahme)
+        # Lieber die kurze Frage auf den neuesten Kanal als gar keine.
+        name, ordner, _s = kanaele[0]
+        if frage_stellen(eltern, t('s_kn_titel'),
+                         '%s\n%s\n\n%s' % (
+                             t('s_kn_weg') % os.path.basename(eingetragen),
+                             t('s_kn_da') % name, t('s_kn_frage')),
+                         nein=t('s_kn_spaeter')):
+            return ordner
+        return None
+
+
 def bescheid_geben(eltern, titel, text):
     """Ein Ergebnis zeigen, das nicht uebersehen werden darf.
 

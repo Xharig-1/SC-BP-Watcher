@@ -3659,6 +3659,73 @@ def main():
                 _baum49 = _ast49.parse(open(_pfad49, encoding='utf-8').read())
             except Exception:
                 continue
+
+            # ⚠⚠ Ein Schluessel muss NICHT direkt im Aufruf stehen. Assistent
+            # und Einstellungsseite holen ihre drei Knopftexte ueber eine
+            # Schleifenvariable:
+            #
+            #     for schluessel, quelle in (('inj_quelle_de', 'deutsch'), …):
+            #         tk.Label(text='  %s  ' % t(schluessel))
+            #
+            # Bis 03.09.2026 sah diese Pruefung nur `t('literal')` und ging
+            # daran vorbei. Folge: Beim Aufraeumen am 26.08.2026 galten
+            # `inj_quelle_de/_ss/_orig` als tot und flogen raus — acht Tage lang
+            # standen im Setup (Schritt 4 von 5) die nackten Schluesselnamen als
+            # Knopfbeschriftung. Gemeldet von Haldjas, 03.09.2026.
+            #
+            # Deshalb werden Schleifen ueber feste Listen mit aufgeloest: Was die
+            # Variable annehmen KANN, wird geprueft. Steht ein Tupel als Ziel
+            # (`for a, b in …`), zaehlt nur die Stelle, die auch wirklich in den
+            # Aufruf geht — sonst laege hier gleich `'deutsch'` mit im Netz.
+            #
+            # ⚠ **Gemerkt wird der AUFRUF, nicht der Variablenname.** Der erste
+            # Entwurf ordnete die Werte dem Namen zu und galt damit fuer die
+            # ganze Datei. In `seiten.py` heisst ein Funktionsparameter ebenfalls
+            # `schluessel` (`def form(anzahl, schluessel)`) — der bekam prompt die
+            # Werte einer ganz anderen Schleife untergeschoben und wurde dreimal
+            # grundlos angemahnt. Eine Pruefung, die falsch anschlaegt, schaltet
+            # man ab; deshalb zaehlt nur, was im Koerper DIESER Schleife steht.
+            _ausschleife49 = {}
+            for _kn in _ast49.walk(_baum49):
+                if not isinstance(_kn, _ast49.For):
+                    continue
+                _elts49 = getattr(_kn.iter, 'elts', None)
+                if not _elts49:
+                    continue
+                _ziel49 = _kn.target
+                if isinstance(_ziel49, _ast49.Name):
+                    _stellen49 = [(_ziel49.id, None)]
+                elif isinstance(_ziel49, _ast49.Tuple):
+                    _stellen49 = [(_e.id, _i)
+                                  for _i, _e in enumerate(_ziel49.elts)
+                                  if isinstance(_e, _ast49.Name)]
+                else:
+                    continue
+                for _nam49, _pos49 in _stellen49:
+                    _werte49 = set()
+                    for _w49 in _elts49:
+                        if _pos49 is None:
+                            _kand49 = [_w49]
+                        elif (isinstance(_w49, (_ast49.Tuple, _ast49.List))
+                              and len(_w49.elts) > _pos49):
+                            _kand49 = [_w49.elts[_pos49]]
+                        else:
+                            _kand49 = []
+                        for _k49 in _kand49:
+                            if (isinstance(_k49, _ast49.Constant)
+                                    and isinstance(_k49.value, str)
+                                    and _k49.value):
+                                _werte49.add(_k49.value)
+                    if not _werte49:
+                        continue
+                    for _rumpf49 in _kn.body:
+                        for _c49 in _ast49.walk(_rumpf49):
+                            if (isinstance(_c49, _ast49.Call) and _c49.args
+                                    and isinstance(_c49.args[0], _ast49.Name)
+                                    and _c49.args[0].id == _nam49):
+                                _ausschleife49.setdefault(
+                                    id(_c49), set()).update(_werte49)
+
             for _kn49 in _ast49.walk(_baum49):
                 if not isinstance(_kn49, _ast49.Call) or not _kn49.args:
                     continue
@@ -3668,14 +3735,20 @@ def main():
                 if _ruf49 not in _RUFER49:
                     continue
                 _erst49 = _kn49.args[0]
-                if not isinstance(_erst49, _ast49.Constant):
-                    continue
-                if not isinstance(_erst49.value, str) or not _erst49.value:
-                    continue
-                if _erst49.value not in _sp49.TEXTE:
-                    _fehlend49.append('%s:%d  %s(%r)' % (
-                        os.path.relpath(_pfad49, WURZEL), _kn49.lineno,
-                        _ruf49, _erst49.value))
+                if isinstance(_erst49, _ast49.Constant):
+                    _moeglich49 = ([_erst49.value]
+                                   if isinstance(_erst49.value, str)
+                                   and _erst49.value else [])
+                elif isinstance(_erst49, _ast49.Name):
+                    # Der Schluessel kommt aus einer Schleife (siehe oben).
+                    _moeglich49 = sorted(_ausschleife49.get(id(_kn49), ()))
+                else:
+                    _moeglich49 = []
+                for _wert49 in _moeglich49:
+                    if _wert49 not in _sp49.TEXTE:
+                        _fehlend49.append('%s:%d  %s(%r)' % (
+                            os.path.relpath(_pfad49, WURZEL), _kn49.lineno,
+                            _ruf49, _wert49))
     for _z49 in sorted(set(_fehlend49)):
         print('         ' + _z49)
     pruefe(not _fehlend49,
@@ -9551,6 +9624,80 @@ def main():
         _block110 = _rt110.abschnitt(_datei110, _aktuell110)
         pruefe(bool(_dp110.vorspann_aus(_block110)),
                '%s hat einen Vorspann in %s' % (_aktuell110, _sprache110))
+
+    print()
+    print('111. Wird LIVE in HOTFIX umbenannt, faellt das auf')
+    # ⚠⚠ **Gemeldet von Haldjas am 03.09.2026.** Kommt eine ausgebesserte
+    # Fassung neben LIVE auf denselben Server, laedt kaum jemand 100 GB neu —
+    # man benennt den LIVE-Ordner in HOTFIX um, damit der Launcher nur die
+    # Unterschiede holt. Der eingetragene Spielordner ist damit weg.
+    #
+    # In seinem Bericht stand `spiel_ordner=…\StarCitizen\LIVE`, dazu „Spiel
+    # nicht gefunden", keine Game.log und 0 gelesene Protokolle — der Watcher
+    # stand ohne Erklaerung da, obwohl in den Einstellungen ein Pfad steht.
+    # Zwei Ursachen, beide hier abgedeckt:
+    #   a) `HOTFIX` fehlte in `KANAELE`.
+    #   b) Gesucht wurde **im** eingetragenen Ordner und darunter, nie
+    #      **daneben** — wer sein Spiel nicht am Standardort hat, fand seinen
+    #      Nachbarkanal auch mit (a) nicht.
+    import shutil as _sh111
+    from scbp import pfade as _pf111
+
+    pruefe('HOTFIX' in _pf111.KANAELE,
+           'HOTFIX steht in der Kanalliste')
+
+    _wiese111 = tempfile.mkdtemp(prefix='sc-bp-kanal-')
+    _altordner111 = _pf111.einstellung('spiel_ordner')
+    try:
+        def _kanal111(name):
+            _o = os.path.join(_wiese111, 'Roberts Space Industries',
+                              'StarCitizen', name)
+            os.makedirs(_o, exist_ok=True)
+            open(os.path.join(_o, 'Game.log'), 'w', encoding='utf-8').write(
+                'Added notification "Blueprint Received: Test: " [1]' + chr(10))
+            return _o
+
+        _live111 = _kanal111('LIVE')
+        _pf111.einstellung_setzen('spiel_ordner', _live111)
+
+        # a) Solange LIVE steht, darf nichts gemeldet werden — eine Wache, die
+        #    im Normalfall anschlaegt, wird weggeklickt.
+        pruefe(_pf111.kanal_abweichung() is None,
+               'ein vorhandener Spielordner loest keine Frage aus')
+
+        # b) Jetzt der echte Fall.
+        _hotfix111 = os.path.join(os.path.dirname(_live111), 'HOTFIX')
+        _sh111.move(_live111, _hotfix111)
+        _lage111 = _pf111.kanal_abweichung()
+        pruefe(_lage111 is not None,
+               'LIVE ist weg, HOTFIX daneben -> es wird gefragt')
+        if _lage111:
+            _eingetragen111, _benutzt111, _kanaele111 = _lage111
+            pruefe(_benutzt111 == _hotfix111,
+                   'und zwar mit HOTFIX als Vorschlag')
+            pruefe([k for k, _o, _s in _kanaele111] == ['HOTFIX'],
+                   'die Auswahl zeigt genau die Kanaele, die es gibt')
+
+        # c) ⚠ Gegenprobe mit dem ALTEN Stand: ohne HOTFIX in der Liste findet
+        #    derselbe Aufbau gar nichts. Ohne diesen Lauf wuerde (b) nur zeigen,
+        #    dass der neue Code laeuft — nicht, dass er etwas repariert.
+        _merk111 = _pf111.KANAELE
+        _pf111.KANAELE = tuple(k for k in _merk111 if k != 'HOTFIX')
+        try:
+            pruefe(not _pf111.kanaele_vorhanden(),
+                   'Gegenprobe: ohne HOTFIX in der Liste war der Ordner unsichtbar')
+        finally:
+            _pf111.KANAELE = _merk111
+
+        # d) Und der zuletzt bespielte Kanal gewinnt — gemessen, nicht geraten.
+        _ptu111 = _kanal111('PTU')
+        os.utime(os.path.join(_hotfix111, 'Game.log'), (2000000, 2000000))
+        _neu111 = _pf111.kanaele_vorhanden()
+        pruefe(_neu111 and _neu111[0][0] == 'PTU',
+               'der zuletzt bespielte Kanal steht oben (PTU vor altem HOTFIX)')
+    finally:
+        _pf111.einstellung_setzen('spiel_ordner', _altordner111 or '')
+        _sh111.rmtree(_wiese111, ignore_errors=True)
 
     print()
     if fehler:

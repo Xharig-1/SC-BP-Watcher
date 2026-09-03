@@ -64,7 +64,17 @@ WINDOWS = sys.platform.startswith('win')
 
 # Spielkanäle in der Reihenfolge, in der gesucht wird. LIVE zuerst — wer PTU
 # spielt, hat meist beides installiert, gemeint ist aber fast immer LIVE.
-KANAELE = ('LIVE', 'PTU', 'EPTU', 'TECH-PREVIEW')
+#
+# ⚠⚠ **HOTFIX gehört dazu.** Legt CIG neben LIVE eine ausgebesserte Fassung auf
+# denselben Server, ist das eine eigene Installation daneben. Und der übliche
+# Weg dorthin ist nicht „nochmal 100 GB laden", sondern: **den vorhandenen
+# LIVE-Ordner in HOTFIX umbenennen**, damit der Launcher nur die Unterschiede
+# holt. Damit ist der eingetragene Spielordner von einem Tag auf den anderen
+# **weg** — und der Watcher fand gar nichts mehr, weil HOTFIX in dieser Liste
+# fehlte. Genau so gesehen am 03.09.2026 bei Haldjas: eingetragen war
+# `…\StarCitizen\LIVE`, im Bericht standen „Spiel nicht gefunden", keine
+# Game.log und 0 gelesene Protokolle.
+KANAELE = ('LIVE', 'HOTFIX', 'PTU', 'EPTU', 'TECH-PREVIEW')
 
 # Unterpfad ab dem Wurzelverzeichnis eines Laufwerks bis zum Spielkanal.
 SC_UNTERPFAD = os.path.join('Roberts Space Industries', 'StarCitizen')
@@ -584,6 +594,27 @@ def spiel_ordner():
             p = os.path.join(eigen, k)
             if os.path.isfile(os.path.join(p, 'Game.log')):
                 return p
+        # ⚠ Und **neben** ihm. Wird LIVE in HOTFIX umbenannt (der uebliche Weg
+        # zu einer ausgebesserten Fassung, siehe KANAELE), zeigt der eingetragene
+        # Pfad ins Leere, waehrend der Nachbarordner danebensteht. Ohne diesen
+        # Zweig fand nur derjenige sein Spiel wieder, der es am Standardort
+        # installiert hat — wer es auf einer zweiten Platte liegen hat, stand
+        # ohne Grund vor „Star Citizen nicht gefunden".
+        eltern = os.path.dirname(eigen.rstrip(os.sep))
+        if eltern and os.path.isdir(eltern):
+            geschwister = []
+            for k in KANAELE:
+                p = os.path.join(eltern, k)
+                log = os.path.join(p, 'Game.log')
+                if not os.path.isfile(log):
+                    continue
+                try:
+                    geschwister.append((os.path.getmtime(log), p))
+                except OSError:
+                    geschwister.append((0.0, p))
+            if geschwister:
+                # Der zuletzt bespielte Kanal gewinnt — gemessen, nicht geraten.
+                return max(geschwister)[1]
     for wurzel in _spiel_wurzeln():
         basis = os.path.join(wurzel, SC_UNTERPFAD)
         if not os.path.isdir(basis):
@@ -593,6 +624,91 @@ def spiel_ordner():
             if os.path.isfile(os.path.join(p, 'Game.log')):
                 return p
     return None
+
+
+def _kanal_basen():
+    """Ordner, in denen die Kanäle nebeneinander liegen können.
+
+    Der eingetragene Spielordner zuerst: Wer sein Spiel auf einer anderen Platte
+    hat, findet sich in den Standardorten nicht wieder — sein Nachbarkanal liegt
+    aber genau eine Ebene über dem, was er eingetragen hat.
+    """
+    basen = []
+    for eigen in (os.environ.get('SC_INSTALL_DIR'), einstellung('spiel_ordner')):
+        if not eigen:
+            continue
+        eigen = os.path.expanduser(eigen).rstrip(os.sep)
+        # Der eingetragene Pfad kann der Kanal selbst sein oder der Ordner
+        # darüber — beide Deutungen kommen mit hinein, doppelt schadet nicht.
+        for kandidat in (os.path.dirname(eigen), eigen):
+            if kandidat and kandidat not in basen:
+                basen.append(kandidat)
+    for wurzel in _spiel_wurzeln():
+        basis = os.path.join(wurzel, SC_UNTERPFAD)
+        if basis not in basen:
+            basen.append(basis)
+    return basen
+
+
+def kanaele_vorhanden():
+    """Jeder Spielkanal, in dem wirklich eine Game.log liegt — neueste zuerst.
+
+    Liefert Tupel `(Kanalname, Ordner, Zeitstempel der Game.log)`.
+
+    ⚠ Sortiert wird nach dem **Alter der Game.log**, nicht nach der Reihenfolge
+    in `KANAELE`. Wer zuletzt gespielt hat, hat dort die frischeste Datei — das
+    ist eine gemessene Tatsache und keine Annahme darüber, was jemand „meint".
+    """
+    gefunden = {}
+    for basis in _kanal_basen():
+        if not os.path.isdir(basis):
+            continue
+        for k in KANAELE:
+            ordner = os.path.join(basis, k)
+            log = os.path.join(ordner, 'Game.log')
+            if not os.path.isfile(log):
+                continue
+            if ordner in gefunden:
+                continue
+            try:
+                stempel = os.path.getmtime(log)
+            except OSError:
+                stempel = 0.0
+            gefunden[ordner] = (k, ordner, stempel)
+    return sorted(gefunden.values(), key=lambda e: e[2], reverse=True)
+
+
+def kanal_abweichung():
+    r"""Es wird aus einem anderen Kanal gelesen als eingetragen ist — oder None.
+
+    ⚠⚠ **Der Fall, für den es das gibt.** Legt CIG eine ausgebesserte Fassung
+    neben LIVE, ist der übliche Weg dorthin nicht ein zweiter 100-GB-Download,
+    sondern: den vorhandenen LIVE-Ordner in HOTFIX umbenennen, damit der
+    Launcher nur die Unterschiede holt. Von einem Moment auf den anderen gibt es
+    den eingetragenen Ordner also nicht mehr.
+
+    Ohne diese Meldung merkt das niemand: Der Watcher findet den Nachbarkanal
+    zwar von allein, liest dann aber stillschweigend woanders — oder er meldet
+    „Star Citizen nicht gefunden", obwohl in den Einstellungen ein Pfad steht.
+    Beides sieht für den Spieler nach einem kaputten Programm aus. Gemeldet von
+    Haldjas am 03.09.2026, der genau das getan und es danach vergessen hatte.
+
+    Gibt `(eingetragen, benutzt, alle_kanaele)` zurück; `benutzt` kann None
+    sein, wenn gar nichts mehr gefunden wird.
+    """
+    eingetragen = einstellung('spiel_ordner')
+    if not eingetragen:
+        return None                       # nie etwas eingetragen: nichts zu melden
+    eingetragen = os.path.expanduser(eingetragen).rstrip(os.sep)
+    if os.path.isfile(os.path.join(eingetragen, 'Game.log')):
+        return None                       # der eingetragene Ordner trägt noch
+    kanaele = kanaele_vorhanden()
+    if not kanaele:
+        return None                       # gar kein Kanal da — das ist die
+                                          # bekannte Meldung „nicht gefunden",
+                                          # dafür braucht es keine Auswahl
+    benutzt = spiel_ordner()
+    return (eingetragen, benutzt, kanaele)
 
 
 def spielordner_deuten(gewaehlt):

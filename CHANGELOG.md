@@ -6,6 +6,58 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.11.0 - 2026-09-03
+
+> **Wer seinen LIVE-Ordner in HOTFIX umbenennt, wird nicht mehr im Stich
+> gelassen.** Kommt eine ausgebesserte Fassung neben LIVE, lädt kaum jemand das
+> Spiel neu — man benennt den vorhandenen Ordner um, damit der Launcher nur die
+> Unterschiede holt. Damit war der eingetragene Spielordner weg, und der Watcher
+> meldete „Star Citizen nicht gefunden", obwohl in den Einstellungen ein Pfad
+> steht. Jetzt fällt ihm das auf und er fragt kurz nach.
+
+### Neu
+
+- **Der Watcher merkt, wenn dein Spielordner umgezogen ist.** Ist der
+  eingetragene Ordner weg und liegt ein anderer Spielkanal daneben, kommt kurz
+  nach dem Start eine Frage: umstellen oder beim Alten lassen. Bei mehreren
+  Kanälen siehst du sie alle mit dem Zeitpunkt, an dem dort zuletzt gespielt
+  wurde — der zuletzt bespielte steht oben. Gefragt wird **einmal je
+  Programmstart**; wer „Jetzt nicht" wählt, hat Ruhe.
+  Gemeldet von Haldjas
+
+### Behoben
+
+- **`HOTFIX` wurde als Spielkanal gar nicht erkannt.** Gesucht wurde nur nach
+  `LIVE`, `PTU`, `EPTU` und `TECH-PREVIEW`. Wer auf einer ausgebesserten Fassung
+  spielte, bei dem fand der Watcher von allein nichts mehr — weder die
+  `Game.log` noch die Protokoll-Sicherungen. Von Hand ausgewählt hat der Ordner
+  immer funktioniert, nur die automatische Suche war blind.
+  Gemeldet von Haldjas
+- **Der Nachbarordner wurde übersehen.** Gesucht wurde **im** eingetragenen
+  Ordner und darunter, nie **daneben**. Wer sein Spiel nicht am Standardort
+  installiert hat, fand seinen Kanal deshalb auch dann nicht wieder, wenn er
+  direkt nebenan lag.
+- **Im Einrichtungsassistenten standen nackte Schlüsselnamen.** In Schritt 4 von
+  5 hießen die drei Knöpfe `inj_quelle_de`, `inj_quelle_ss` und
+  `inj_quelle_orig` statt „Deutsch — Übersetzung von rjcncpt laden" und so
+  weiter. Dieselben drei Knöpfe waren auch in den Einstellungen unter „Angaben
+  im Spiel" betroffen. Ursache war ein Aufräumen vom 26. August, bei dem die
+  Texte fälschlich für unbenutzt gehalten wurden.
+  Gemeldet von Haldjas
+
+### Unter der Haube
+
+- **Die Wache über die Sprachtexte sieht mehr.** Sie prüfte bisher nur Texte,
+  deren Schlüssel direkt im Aufruf steht. Wird der Schlüssel aus einer Liste
+  geholt — wie bei den drei Knöpfen oben —, ging sie daran vorbei. Genau
+  deshalb ist der Fehler acht Tage lang niemandem aufgefallen.
+
+### Dank
+
+- **Haldjas** — für den Fund der falschen Beschriftungen im
+  Einrichtungsassistenten und dafür, dass er den umbenannten Spielordner so
+  genau geschildert hat, dass daraus zwei Fehler und eine neue Funktion wurden.
+
 ## v3.10.0 - 2026-09-03
 
 > **Die Raffinerie verrät dir vorher, welche Methode sich lohnt.** Neun
