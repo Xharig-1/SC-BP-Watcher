@@ -9732,13 +9732,17 @@ def main():
         # Und nach der ersten Mausberuehrung muessen sie da sein, sonst bliebe
         # ein Erklaertext stehen, wenn die Maus weiterzieht.
         #
-        # ⚠ `when='now'` ist Pflicht, dazu `x_root`/`y_root`. Ohne das erste
-        # wandert das Ereignis in die Warteschlange und wird verworfen, weil
-        # dieses Widget nie sichtbar wird — die Pruefung meldete dann „haengt
-        # nur <Enter> dran" und sah aus wie ein echter Fund, obwohl schlicht
-        # nichts ausgeloest worden war. Das zweite braucht der Erklaertext, um
-        # sich zu positionieren.
-        _w112.event_generate('<Enter>', x=1, y=1, x_root=1, y_root=1,
+        # ⚠ `when='now'` ist Pflicht: Ohne das wandert das Ereignis in die
+        # Warteschlange und wird verworfen, weil dieses Widget nie sichtbar
+        # wird — die Pruefung meldete dann „haengt nur <Enter> dran" und sah
+        # aus wie ein echter Fund, obwohl schlicht nichts ausgeloest worden war.
+        #
+        # ⚠ Und die Wurzelkoordinaten heissen hier `rootx`/`rooty`, NICHT
+        # `x_root`/`y_root`. So heisst das Attribut am fertigen Ereignis, nicht
+        # die Option beim Erzeugen — mit dem falschen Namen wirft Tk
+        # `bad option "-x_root"`. Der Erklaertext braucht sie, um sich zu
+        # positionieren.
+        _w112.event_generate('<Enter>', x=1, y=1, rootx=1, rooty=1,
                              when='now')
         _root112.update_idletasks()
         _nachher112 = set(_w112.bind())
