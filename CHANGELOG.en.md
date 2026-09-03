@@ -6,6 +6,18 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.11.1-rc1 - 2026-09-03
+
+> **Test build.** The blueprint list should open faster — that is not verified
+> yet. If you open it: do you notice a difference? Feedback is welcome through
+> the error report inside the program.
+
+### Fixed
+
+- **The blueprint list opens faster.** Affects everyone for whom opening it felt
+  sluggish.
+  Reported by Haldjas
+
 ## v3.11.0 - 2026-09-03
 
 > **Renaming your LIVE folder to HOTFIX no longer leaves you stranded.** When a

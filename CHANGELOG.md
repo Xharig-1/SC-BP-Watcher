@@ -6,6 +6,18 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.11.1-rc1 - 2026-09-03
+
+> **Testfassung.** Die Bauplan-Liste soll schneller aufgehen — geprüft ist das
+> noch nicht. Wer sie öffnet: Fällt dir ein Unterschied auf? Rückmeldung gern
+> über den Fehlerbericht im Programm.
+
+### Behoben
+
+- **Die Bauplan-Liste geht schneller auf.** Betrifft alle, bei denen es beim
+  Öffnen spürbar gehakt hat.
+  Gemeldet von Haldjas
+
 ## v3.11.0 - 2026-09-03
 
 > **Wer seinen LIVE-Ordner in HOTFIX umbenennt, wird nicht mehr im Stich
