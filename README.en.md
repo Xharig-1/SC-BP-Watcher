@@ -215,12 +215,6 @@ On top of that: class, size and grade are right there in the line (`M/1/A`), the
 
 Nothing else. No Python, no account — and whether you install is your call (see below).
 
-**Optional:** the **[SC Deutsch Launcher](https://www.sc-deutsch-launcher.de/)** (Windows only). With it, names come in German and anything the log missed is filled in.
-
-> ⚠️ **Both write into the same game text file.** That is not a problem, but worth knowing: where the launcher has already put a blueprint list into a contract, the watcher **replaces** it with the same list **plus checkboxes** — it does not add a second one. Undo the notes and the launcher's state is back, character for character.
->
-> If the launcher runs **afterwards**, it writes its own version back and the checkboxes are gone. The watcher notices by itself and puts them back — at the next check at the latest (every six hours), immediately via *In-game text → Refresh*.
-
 ## Getting started
 
 1. Download the file for your system from the **[releases page](../../releases)**:
