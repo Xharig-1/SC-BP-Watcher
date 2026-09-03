@@ -6,7 +6,13 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## Unreleased
+## v3.9.7 - 2026-09-03
+
+> **Contracts give up their blueprints more reliably.** Multi-step contract
+> chains only showed the blueprint note on the first step — open a later one in
+> game and you found nothing, even though there was something to be had. Every
+> step now carries its list. And crafting finally explains why its headline
+> number is sometimes smaller than your own collection.
 
 ### Fixed
 

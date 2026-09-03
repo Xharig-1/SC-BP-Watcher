@@ -6,7 +6,13 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## Unveröffentlicht
+## v3.9.7 - 2026-09-03
+
+> **Aufträge verraten ihre Baupläne zuverlässiger.** Mehrteilige Auftragsreihen
+> zeigten die Bauplan-Angabe bisher nur am ersten Schritt — wer im Spiel einen
+> späteren aufschlug, fand dort nichts, obwohl es etwas zu holen gab. Jetzt
+> trägt jeder Schritt seine Liste. Und die Herstellung sagt endlich, warum ihre
+> Kopfzahl manchmal kleiner ist als der eigene Bestand.
 
 ### Behoben
 
