@@ -6,7 +6,7 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.11.1-rc1 - 2026-09-03
+## v3.11.1-rc2 - 2026-09-03
 
 > **Test build.** The blueprint list should open faster — that is not verified
 > yet. If you open it: do you notice a difference? Feedback is welcome through

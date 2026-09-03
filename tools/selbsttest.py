@@ -9731,7 +9731,15 @@ def main():
 
         # Und nach der ersten Mausberuehrung muessen sie da sein, sonst bliebe
         # ein Erklaertext stehen, wenn die Maus weiterzieht.
-        _w112.event_generate('<Enter>', x=1, y=1)
+        #
+        # ⚠ `when='now'` ist Pflicht, dazu `x_root`/`y_root`. Ohne das erste
+        # wandert das Ereignis in die Warteschlange und wird verworfen, weil
+        # dieses Widget nie sichtbar wird — die Pruefung meldete dann „haengt
+        # nur <Enter> dran" und sah aus wie ein echter Fund, obwohl schlicht
+        # nichts ausgeloest worden war. Das zweite braucht der Erklaertext, um
+        # sich zu positionieren.
+        _w112.event_generate('<Enter>', x=1, y=1, x_root=1, y_root=1,
+                             when='now')
         _root112.update_idletasks()
         _nachher112 = set(_w112.bind())
         pruefe({'<Enter>', '<Leave>', '<Button-1>', '<Destroy>'} <= _nachher112,

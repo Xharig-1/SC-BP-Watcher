@@ -6,7 +6,7 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
-## v3.11.1-rc1 - 2026-09-03
+## v3.11.1-rc2 - 2026-09-03
 
 > **Testfassung.** Die Bauplan-Liste soll schneller aufgehen — geprüft ist das
 > noch nicht. Wer sie öffnet: Fällt dir ein Unterschied auf? Rückmeldung gern
