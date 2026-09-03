@@ -9156,15 +9156,29 @@ def main():
     # ⚠⚠ **Erst pruefen, dass der unklare Fall ueberhaupt entsteht.** Ohne
     # diesen Waechter wuerde die Pruefung auch dann gruen, wenn die
     # Mehrdeutigkeits-Erkennung ausfaellt und alles als „sicher" durchgeht.
-    pruefe(_unklar105 == 2,
-           'zwei gleichnamige Gegenstaende gelten als unklar (%d)' % _unklar105)
     pruefe(_sicher105 == 1,
            'der eindeutige Bauplan zaehlt als sicher (%d)' % _sicher105)
-    # ⭐ Und damit die Luecke, die den Spieler stutzig macht: Er hat zwei
-    # Bauplaene, oben stuende ohne den Zusatz eine 1.
+
+    # ⚠⚠ **EIN Bauplan, nicht zwei Eintraege.** Der Spieler hat einen einzigen
+    # Bauplan „Main Powerplant"; dass zwei Gegenstaende so heissen, ist SEIN
+    # Problem nicht. Bis zum 03.09.2026 zaehlte `zaehlung()` hier die
+    # Listeneintraege — an den echten Daten kamen so `404 · 2 unklar` bei 405
+    # Bauplaenen heraus, und die Rechnung ging wieder nicht auf. Genau der
+    # Fehler, den der Zusatz eigentlich beheben sollte, nur eine Stelle
+    # weiter.
+    pruefe(_unklar105 == 1,
+           'ein mehrdeutiger Bauplan zaehlt EINMAL, nicht je Eintrag (%d)'
+           % _unklar105)
+
+    # ⭐ Die Probe, auf die es ankommt: Kopfzahl plus unklare ergibt genau
+    # den eigenen Bestand. Solange das stimmt, bleibt keine Luecke offen.
+    pruefe(_sicher105 + _unklar105 == len(_bestand105),
+           'sicher + unklar = Bestand (%d + %d = %d)'
+           % (_sicher105, _unklar105, len(_bestand105)))
     pruefe(_sicher105 < len(_bestand105),
-           'die Kopfzahl ist kleiner als der Bestand (%d < %d) — genau darum '
-           'braucht sie den Zusatz' % (_sicher105, len(_bestand105)))
+           'und die Kopfzahl allein ist kleiner als der Bestand (%d < %d) — '
+           'genau darum braucht sie den Zusatz'
+           % (_sicher105, len(_bestand105)))
 
     # Der Zusatz muss es in beiden Sprachen geben …
     _txt105 = _sp105.TEXTE.get('s_he_dazu_unklar') or ('', '')

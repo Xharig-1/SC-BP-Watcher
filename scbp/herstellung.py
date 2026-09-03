@@ -565,10 +565,18 @@ def zaehlung(bestand_schluessel):
     Produktnamen kommen doppelt vor und meinen verschiedene Gegenstände
     („Main Powerplant" für Idris und Reclaimer, „BroadSpec" in zwei Größen).
     Wer über die Liste zählt, zählt so einen Bauplan zweimal — beim Messen am
-    29.08.2026 kamen 405 heraus, obwohl der Bestand 404 hatte."""
+    29.08.2026 kamen 405 heraus, obwohl der Bestand 404 hatte.
+
+    ⚠⚠ **Das gilt für `unklar` genauso** (03.09.2026). Bis dahin zählte es die
+    Listen*einträge*: Ein einziger Bauplan „BroadSpec" ergab **zwei** unklare,
+    weil zwei Gegenstände so heißen. Solange die Zahl niemand sah, fiel das
+    nicht auf — sobald sie neben der Kopfzahl steht, rechnet der Spieler
+    `404 + 2 = 406` und hat 405 Baupläne. Gezählt werden deshalb die
+    betroffenen **Namen**, nicht die Einträge; dann geht die Rechnung auf:
+    404 sicher + 1 unklar = 405 im Bestand."""
     liste = mit_bestand(bestand_schluessel)
     sicher = sum(1 for e in liste if e['habe'] is True)
-    unklar = sum(1 for e in liste if e['habe'] is None)
+    unklar = len({_norm(e['basis']) for e in liste if e['habe'] is None})
     return sicher, len(liste), unklar
 
 
