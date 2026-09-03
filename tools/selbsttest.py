@@ -9729,26 +9729,35 @@ def main():
         pruefe('<Leave>' not in _vorher112 and '<Destroy>' not in _vorher112,
                'die Abraeumer haengen vorher noch nicht dran')
 
-        # Und nach der ersten Mausberuehrung muessen sie da sein, sonst bliebe
-        # ein Erklaertext stehen, wenn die Maus weiterzieht.
+        # Und die Abraeumer muessen beim ersten `<Enter>` nachgezogen werden —
+        # sonst bliebe ein Erklaertext stehen, wenn die Maus weiterzieht.
         #
-        # ⚠ `when='now'` ist Pflicht: Ohne das wandert das Ereignis in die
-        # Warteschlange und wird verworfen, weil dieses Widget nie sichtbar
-        # wird — die Pruefung meldete dann „haengt nur <Enter> dran" und sah
-        # aus wie ein echter Fund, obwohl schlicht nichts ausgeloest worden war.
+        # ⚠⚠ **Das wird am Quelltext geprueft, nicht am laufenden Fenster.**
+        # Zwei Anlaeufe ueber `event_generate` sind daran gescheitert, dass Tk
+        # einem nie sichtbar gemachten Widget kein `<Enter>` zustellt — auch
+        # mit `when='now'` nicht. Die Pruefung meldete dann „haengt nur <Enter>
+        # dran" und sah aus wie ein echter Fund, obwohl gar nichts ausgeloest
+        # worden war. Ein Fenster dafuer wirklich sichtbar zu machen ist keine
+        # Option: Auf dem Rechner des Autors reisst das den Tastaturfokus aus
+        # dem laufenden Spiel.
         #
-        # ⚠ Und die Wurzelkoordinaten heissen hier `rootx`/`rooty`, NICHT
-        # `x_root`/`y_root`. So heisst das Attribut am fertigen Ereignis, nicht
-        # die Option beim Erzeugen — mit dem falschen Namen wirft Tk
-        # `bad option "-x_root"`. Der Erklaertext braucht sie, um sich zu
-        # positionieren.
-        _w112.event_generate('<Enter>', x=1, y=1, rootx=1, rooty=1,
-                             when='now')
-        _root112.update_idletasks()
-        _nachher112 = set(_w112.bind())
-        pruefe({'<Enter>', '<Leave>', '<Button-1>', '<Destroy>'} <= _nachher112,
-               'nach dem ersten <Enter> haengen alle vier dran (%s)'
-               % ', '.join(sorted(_nachher112)))
+        # Statisch ist schwaecher — es beweist nicht, dass Tk die Bindings
+        # tatsaechlich setzt. Es faengt aber genau den Rueckbau ab, um den es
+        # geht: dass jemand die drei Abraeumer wieder nach oben zieht (dann
+        # sind sie wieder sofort da) oder ganz streicht (dann fehlen sie).
+        _quelle112 = open(os.path.join(WURZEL, 'scbp', 'hinweis.py'),
+                          encoding='utf-8').read()
+        _fn112 = _quelle112.split('def anhaengen')[1]
+        _imenter112 = _fn112.split('def betreten')[1].split('def abbrechen')[0]
+        for _ev112 in ('<Leave>', '<Button-1>', '<Destroy>'):
+            pruefe("bind('%s'" % _ev112 in _imenter112,
+                   '%s wird beim ersten <Enter> nachgezogen' % _ev112)
+        # Gegenprobe: ausserhalb von `betreten` darf nur noch <Enter> stehen.
+        _ausserhalb112 = (_fn112.split('def betreten')[0]
+                          + _fn112.split('def abbrechen')[1])
+        pruefe(_ausserhalb112.count('widget.bind') == 1,
+               'beim Anhaengen selbst steht genau ein bind (%d)'
+               % _ausserhalb112.count('widget.bind'))
     finally:
         try:
             _root112.destroy()
