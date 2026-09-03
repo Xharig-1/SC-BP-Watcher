@@ -27,21 +27,17 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
-- **`HOTFIX` was not recognised as a game channel at all.** Only `LIVE`, `PTU`,
-  `EPTU` and `TECH-PREVIEW` were searched. Anyone playing a patched build was
-  left with a watcher that found nothing on its own — neither the `Game.log` nor
-  the kept log backups. Picking the folder by hand always worked; only the
-  automatic search was blind.
+- **A HOTFIX game folder was not found.** If you had renamed your folder to
+  download only the differences, the watcher no longer found the game on its own
+  — no blueprints, no logs. Picking the folder by hand always worked.
+  Affects everyone playing a patched build.
   Reported by Haldjas
-- **The folder next door was overlooked.** The search looked **inside** the
-  folder you set and below it, never **beside** it. If your game is not at the
-  default location, you would not find your channel again even when it sat right
-  next to the old one.
-- **The setup wizard showed raw key names.** In step 4 of 5 the three buttons
-  read `inj_quelle_de`, `inj_quelle_ss` and `inj_quelle_orig` instead of "German
-  — fetch the rjcncpt translation" and so on. The same three buttons were
-  affected in the settings under "Notes in game". The cause was a cleanup on
-  26 August that wrongly treated those texts as unused.
+- **A game folder sitting right next to the one you set was overlooked.**
+  Affects everyone who did not install Star Citizen at the default location.
+- **The setup wizard showed unreadable button labels.** In step 4 of 5, and in
+  the settings under "Notes in game", the three text-source buttons were not
+  labelled but showed internal names instead.
+  Affects everyone since 26 August.
   Reported by Haldjas
 
 ### Thanks

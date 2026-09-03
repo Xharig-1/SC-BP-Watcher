@@ -27,22 +27,18 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ### Behoben
 
-- **`HOTFIX` wurde als Spielkanal gar nicht erkannt.** Gesucht wurde nur nach
-  `LIVE`, `PTU`, `EPTU` und `TECH-PREVIEW`. Wer auf einer ausgebesserten Fassung
-  spielte, bei dem fand der Watcher von allein nichts mehr — weder die
-  `Game.log` noch die Protokoll-Sicherungen. Von Hand ausgewählt hat der Ordner
-  immer funktioniert, nur die automatische Suche war blind.
+- **Ein HOTFIX-Spielordner wurde nicht gefunden.** Wer seinen Ordner umbenannt
+  hatte, um nur die Unterschiede zu laden, bei dem fand der Watcher das Spiel
+  von allein nicht mehr — keine Baupläne, keine Protokolle. Von Hand ausgewählt
+  hat der Ordner immer funktioniert.
+  Betrifft alle, die auf einer ausgebesserten Fassung spielen.
   Gemeldet von Haldjas
-- **Der Nachbarordner wurde übersehen.** Gesucht wurde **im** eingetragenen
-  Ordner und darunter, nie **daneben**. Wer sein Spiel nicht am Standardort
-  installiert hat, fand seinen Kanal deshalb auch dann nicht wieder, wenn er
-  direkt nebenan lag.
-- **Im Einrichtungsassistenten standen nackte Schlüsselnamen.** In Schritt 4 von
-  5 hießen die drei Knöpfe `inj_quelle_de`, `inj_quelle_ss` und
-  `inj_quelle_orig` statt „Deutsch — Übersetzung von rjcncpt laden" und so
-  weiter. Dieselben drei Knöpfe waren auch in den Einstellungen unter „Angaben
-  im Spiel" betroffen. Ursache war ein Aufräumen vom 26. August, bei dem die
-  Texte fälschlich für unbenutzt gehalten wurden.
+- **Ein Spielordner direkt neben dem eingetragenen wurde übersehen.** Betrifft
+  alle, die Star Citizen nicht am Standardort installiert haben.
+- **Im Einrichtungsassistenten standen unlesbare Knopfbeschriftungen.** In
+  Schritt 4 von 5 und in den Einstellungen unter „Angaben im Spiel" waren die
+  drei Knöpfe zur Textquelle nicht beschriftet, sondern zeigten interne Namen.
+  Betrifft alle seit dem 26. August.
   Gemeldet von Haldjas
 
 ### Dank
