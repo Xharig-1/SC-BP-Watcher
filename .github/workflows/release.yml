@@ -113,8 +113,22 @@ jobs:
             choco install innosetup --no-progress -y
           }
           if (-not (Test-Path $iscc)) { $iscc = "ISCC.exe" }
-          & $iscc "/DAppVersion=${{ env.TAG }}".Replace('/DAppVersion=v', '/DAppVersion=') `
-                  packaging\installer.iss
+          # ⚠⚠ Die Version kommt aus __version__, NICHT aus dem Tag. Bei einem
+          # Lauf von Hand gibt es keinen Tag — dann steht in github.ref_name der
+          # Zweigname, und Inno Setup bricht mit "Value of [Setup] section
+          # directive VersionInfoVersion is invalid" ab, weil aus "in-arbeit"
+          # keine Dateiversion wird. Genau daran ist der im Projekt
+          # beschriebene Weg "bauen ohne Release" bei JEDEM Versuch gescheitert
+          # (vier von vier, gemessen am 03.09.2026) — und es fiel nie auf, weil
+          # der Linux-Teil durchlief und alle echten Bauten ueber einen Tag
+          # kamen. Bei einem Tag-Lauf ist beides ohnehin dasselbe: Der Schritt
+          # "Version pruefen" laesst den Bau gar nicht erst weiterlaufen, wenn
+          # Tag und __version__ auseinandergehen.
+          $roh = Get-Content sc_bp_watcher.py -Raw
+          $version = [regex]::Match($roh, "__version__\s*=\s*'([^']+)'").Groups[1].Value
+          if (-not $version) { throw "__version__ nicht gefunden" }
+          Write-Host "Installer-Version: $version"
+          & $iscc "/DAppVersion=$version" packaging\installer.iss
           Get-ChildItem dist
 
       - uses: actions/upload-artifact@v4
