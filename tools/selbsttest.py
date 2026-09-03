@@ -9492,6 +9492,67 @@ def main():
            'nach der Gegenprobe steht das Raster wieder')
 
     print()
+    print('110. Die Ankuendigung nimmt den handgeschriebenen Vorspann')
+    # ⚠⚠ **Bis zum 03.09.2026 ist das NIE passiert** — bei keiner einzigen
+    # Version. Zwei Zeilen in `vorspann_aus` haben zusammengewirkt:
+    #   * `> `-Zeilen wurden uebersprungen, und im CHANGELOG ist der Vorspann
+    #     immer ein Blockzitat;
+    #   * was uebrig blieb, fiel unter „faengt mit `*` an, also ein verirrter
+    #     Aufzaehlungspunkt" — denn ein Vorspann beginnt mit `**fett**`.
+    # Der Fehler war unsichtbar: Es kam ja ein Text heraus, nur eben die
+    # Stichpunktliste statt der Ankuendigung.
+    import importlib.util as _il110
+
+    _spec110 = _il110.spec_from_file_location(
+        'discord_post110', os.path.join(WURZEL, 'tools', 'discord_post.py'))
+    _dp110 = _il110.module_from_spec(_spec110)
+    _spec110.loader.exec_module(_dp110)
+
+    # 1) Echter Block mit Blockzitat-Vorspann -> muss gefunden werden.
+    _echt110 = ('> **Etwas Wichtiges.** Und ein zweiter Satz, der\n'
+                '> ueber zwei Zeilen laeuft.\n'
+                '\n'
+                '### Neu\n'
+                '\n'
+                '- ein Punkt\n')
+    _gefunden110 = _dp110.vorspann_aus(_echt110)
+    pruefe(_gefunden110.startswith('**Etwas Wichtiges.**')
+           and 'zweiter Satz' in _gefunden110,
+           'ein Vorspann als Blockzitat wird gefunden')
+
+    # 2) Ein Hinweiskasten davor darf ihn nicht verdecken.
+    _kasten110 = ('> [!important]\n'
+                  '> Betrifft alle Fassungen seit v1.0.\n'
+                  '\n'
+                  '> **Die Ankuendigung.** Steht hinter dem Kasten.\n'
+                  '\n'
+                  '### Neu\n')
+    pruefe(_dp110.vorspann_aus(_kasten110).startswith('**Die Ankuendigung.**'),
+           'ein Hinweiskasten davor verdeckt den Vorspann nicht')
+
+    # 3) Gegenprobe: kein Vorspann da -> leer, damit die Stichpunkte greifen.
+    pruefe(_dp110.vorspann_aus('### Behoben\n\n- nur ein Punkt\n') == '',
+           'ohne Vorspann bleibt es leer (die Aufzaehlung springt ein)')
+    pruefe(_dp110.vorspann_aus('- ein verirrter Punkt\n\n### Neu\n') == '',
+           'ein verirrter Aufzaehlungspunkt gilt nicht als Vorspann')
+
+    # 4) Und die echte, aktuelle Version — die Wache soll am scharfen Fall
+    #    haengen, nicht nur an Kunstbeispielen.
+    sys.path.insert(0, os.path.join(WURZEL, '.github', 'scripts'))
+    import release_text as _rt110
+
+    # Die Version aus der Quelldatei lesen statt sie zu importieren — der
+    # Import zoege die ganze Oberflaeche nach.
+    _quelle110 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
+                      encoding='utf-8').read()
+    _treffer110 = re.search(r"__version__\s*=\s*'([^']+)'", _quelle110)
+    _aktuell110 = 'v' + (_treffer110.group(1) if _treffer110 else '')
+    for _sprache110, _datei110 in _rt110.DATEIEN.items():
+        _block110 = _rt110.abschnitt(_datei110, _aktuell110)
+        pruefe(bool(_dp110.vorspann_aus(_block110)),
+               '%s hat einen Vorspann in %s' % (_aktuell110, _sprache110))
+
+    print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
         for f in fehler:

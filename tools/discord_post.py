@@ -112,18 +112,61 @@ def vorspann_aus(block):
 
     So bleibt der Text, was er sein muss: von einem Menschen geschrieben, für
     Menschen.
+
+    ⚠⚠ **Der Vorspann ist im CHANGELOG ein Blockzitat** (`> …`) — so steht er
+    dort seit jeher, in jeder Version. Diese Funktion hat `> `-Zeilen früher
+    übersprungen und damit **nie einen Vorspann gefunden**: Jede Ankündigung
+    fiel auf die Aufzählung der Überschriften zurück, obwohl der Text
+    danebenstand. Aufgefallen am 03.09.2026, betroffen war jede bisherige
+    Version.
+
+    Ausgenommen bleiben die Hinweiskästen (`> [!important]`, `> [!warning]`):
+    Die richten sich an Umsteiger und sind keine Ankündigung.
     """
-    zeilen = []
+    # Erst den Bereich vor dem ersten `###` nehmen — nur dort steht ein
+    # Vorspann.
+    kopf = []
     for zeile in block.splitlines():
         if zeile.startswith('### '):
             break
-        if zeile.startswith('> ') or zeile.startswith('#'):
+        if zeile.startswith('#'):
             continue
-        zeilen.append(zeile)
-    text = '\n'.join(zeilen).strip()
+        kopf.append(zeile)
+
+    # Dann die erste zusammenhängende Gruppe, die kein Hinweiskasten ist.
+    gruppen, laufend = [], []
+    for zeile in kopf:
+        blank = not zeile.strip()
+        if blank:
+            if laufend:
+                gruppen.append(laufend)
+                laufend = []
+            continue
+        laufend.append(zeile)
+    if laufend:
+        gruppen.append(laufend)
+
+    text = ''
+    for gruppe in gruppen:
+        erste = gruppe[0].strip()
+        if erste.startswith('> [!'):
+            continue
+        sauber = [z[2:] if z.startswith('> ') else z.lstrip('>').strip()
+                  for z in gruppe]
+        kandidat = ' '.join(x.strip() for x in sauber).strip()
+        if kandidat:
+            text = kandidat
+            break
     # Ein einzelner Aufzählungspunkt ist kein Vorspann, sondern ein verirrter
     # Protokolleintrag.
-    if text.startswith('-') or text.startswith('*'):
+    #
+    # ⚠ **Auf das Leerzeichen achten.** Geprüft wird `- ` und `* `, nicht `*`:
+    # Ein Vorspann fängt fast immer mit einem fetten Satz an (`**Die Raffinerie
+    # verrät …`), und der beginnt ebenfalls mit einem Stern. Ohne das
+    # Leerzeichen verwarf diese Zeile genau die Texte, die sie schützen sollte
+    # — zusammen mit der Blockzitat-Blindheit oben der Grund, warum bis zum
+    # 03.09.2026 nie ein Vorspann im Discord landete.
+    if text.startswith('- ') or text.startswith('* '):
         return ''
     return text
 
