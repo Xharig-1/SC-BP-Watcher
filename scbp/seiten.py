@@ -5005,6 +5005,12 @@ def _bergbau(fenster, rahmen):
         fehler.merken('seiten.bergbau', ausnahme)
         orte, erze = [], []
 
+    # ⚠⚠ **Vor der Abbruchbedingung.** Die Methodenempfehlung braucht KEINE
+    # Bergbaudaten — sie steht fest im Programm. Stünde sie weiter unten, wäre
+    # sie ausgerechnet für den weg, der ohne Netz unterwegs ist: Der Abbruch
+    # darunter beendet die Seite, sobald die Daten fehlen.
+    _methodenblock(fenster, innen)
+
     if not orte:
         _fliesstext(innen, t('s_bg_keine_daten'), fenster.f_klein, fill='x')
         return
@@ -5233,6 +5239,86 @@ def _berg_erz(fenster, eltern, erz, offen, neu_zeichnen):
                              side='right', padx=12)
             _fliesstext(block, t('s_bg_raff_spanne') % spanne,
                         fenster.f_klein, fill='x')
+
+
+def _methodenblock(fenster, eltern):
+    """„Welche Verarbeitungsmethode?" — die dritte Frage der Kette.
+
+    Wo baue ich ab → wohin bringe ich es → **wie lasse ich es verarbeiten.**
+    Die ersten beiden beantwortet die Liste darunter je Erz; diese hier ist
+    erz-unabhängig und steht deshalb darüber, nicht neunmal in jeder
+    Aufklappung.
+
+    ⚠ Die Auswahl steht in derselben `_filterleiste` wie überall sonst — ein
+    Bedienkonzept fürs ganze Programm, kein Sonderweg für eine Seite.
+    """
+    from . import raffinerie as raff
+    block = tk.Frame(eltern, bg=BG)
+    block.pack(fill='x', pady=(0, 12))
+    tk.Label(block, text=t('s_rm_kopf'), bg=BG, fg=FG, font=fenster.f_grund,
+             anchor='w').pack(fill='x')
+    _fliesstext(block, t('s_rm_lead'), fenster.f_klein, fill='x')
+
+    achsentext = {'ertrag': t('s_rm_ertrag'), 'kosten': t('s_rm_kosten'),
+                  'tempo': t('s_rm_tempo')}
+    auswahl = [(a, achsentext[a]) for a in raff.ACHSEN]
+    wahl = {'erste': '', 'zweite': ''}
+    ergebnis = tk.Frame(block, bg=BG)
+
+    def stufentext(kennung):
+        ertrag = {1: 's_rm_s_gering', 2: 's_rm_s_moderat',
+                  3: 's_rm_s_hoch'}[raff.stufe(kennung, 'ertrag')]
+        tempo = {0: 's_rm_t_sehr', 1: 's_rm_t_langsam', 2: 's_rm_t_mittel',
+                 3: 's_rm_t_schnell'}[raff.stufe(kennung, 'tempo')]
+        # ⚠ Umdrehen: Im Modul ist 3 der **Kostenvorteil**, auf dem Bildschirm
+        # steht „geringe Kosten". Ohne diese Zeile stünde dort das Gegenteil.
+        kosten = {3: 's_rm_s_gering', 2: 's_rm_s_moderat',
+                  1: 's_rm_s_hoch'}[raff.stufe(kennung, 'kosten')]
+        return t('s_rm_zeile') % (t(ertrag), t(tempo), t(kosten))
+
+    def zeichnen():
+        for w in ergebnis.winfo_children():
+            w.destroy()
+        beste, alle = raff.empfehlung(wahl['erste'] or None,
+                                      wahl['zweite'] or None)
+        tk.Label(ergebnis, text=t('s_rm_nimm') % raff.NAMEN[beste], bg=BG,
+                 fg=ACCENT, font=fenster.f_grund, anchor='w').pack(
+                     fill='x', pady=(6, 0))
+        _fliesstext(ergebnis, stufentext(beste), fenster.f_klein, fill='x')
+        # Der Satz gehört genau dann dazu, wenn die Empfehlung mit Zeit
+        # bezahlt wird — sonst wäre er ein Allgemeinplatz.
+        if raff.stufe(beste, 'tempo') <= 1:
+            _fliesstext(ergebnis, t('s_rm_zeit_laeuft'), fenster.f_klein,
+                        fill='x')
+
+        tk.Label(ergebnis, text=t('s_rm_alle'), bg=BG, fg=SUB,
+                 font=fenster.f_klein, anchor='w').pack(fill='x', pady=(10, 2))
+        for kennung in alle:
+            z = tk.Frame(ergebnis, bg=BG)
+            z.pack(fill='x', pady=1)
+            tk.Label(z, text=raff.NAMEN[kennung], bg=BG,
+                     fg=(ACCENT if kennung == beste else FG),
+                     font=fenster.f_grund, anchor='w').pack(side='left',
+                                                            padx=(4, 0))
+            tk.Label(z, text=stufentext(kennung), bg=BG, fg=SUB,
+                     font=fenster.f_klein, anchor='e').pack(side='right',
+                                                            padx=(8, 4))
+
+        # Methoden, die nichts können, was eine andere nicht besser kann.
+        for schlecht, besser in sorted(raff.unterlegen().items()):
+            _fliesstext(ergebnis,
+                        t('s_rm_unterlegen') % (raff.NAMEN[schlecht],
+                                                raff.NAMEN[besser]),
+                        fenster.f_klein, fill='x')
+        _fliesstext(ergebnis, t('s_rm_stand') % (raff.PATCH, raff.ABGELESEN),
+                    fenster.f_klein, fill='x')
+
+    _filterleiste(fenster, block,
+                  [('erste', t('s_rm_erste'), auswahl),
+                   ('zweite', t('s_rm_zweite'), auswahl)],
+                  zeichnen, wahl)
+    ergebnis.pack(fill='x')
+    zeichnen()
 
 
 def _berg_ort(fenster, eltern, ort, offen, neu_zeichnen):

@@ -2140,6 +2140,47 @@ TEXTE = {
     's_bg_raff_spanne':  ('%d Prozentpunkte zwischen bester und '
                           'schlechtester Wahl',
                           '%d percentage points between best and worst'),
+
+    # -- Welche Verarbeitungsmethode? (`scbp/raffinerie.py`) --
+    # Die dritte Frage der Kette: wo abbauen -> wohin bringen -> wie verarbeiten.
+    's_rm_kopf':         ('Welche Verarbeitungsmethode?',
+                          'Which refining method?'),
+    's_rm_lead':         ('Das Terminal bietet neun Methoden an und zeigt zu '
+                          'jeder nur eine Zeile. Sag, was dir wichtig ist.',
+                          'The terminal offers nine methods and shows a single '
+                          'line for each. Say what matters to you.'),
+    's_rm_erste':        ('Am wichtigsten', 'Matters most'),
+    's_rm_zweite':       ('Danach', 'Then'),
+    's_rm_ertrag':       ('Ertrag', 'Yield'),
+    's_rm_kosten':       ('Kosten', 'Cost'),
+    's_rm_tempo':        ('Geschwindigkeit', 'Speed'),
+    's_rm_nimm':         ('Nimm %s', 'Take %s'),
+    # Ertrag · Tempo · Kosten in Worten, so wie das Spiel sie zeigt.
+    's_rm_zeile':        ('Ertrag %s · %s · Kosten %s',
+                          'Yield %s · %s · cost %s'),
+    's_rm_s_gering':     ('gering', 'low'),
+    's_rm_s_moderat':    ('moderat', 'moderate'),
+    's_rm_s_hoch':       ('hoch', 'high'),
+    's_rm_t_sehr':       ('sehr langsam', 'very slow'),
+    's_rm_t_langsam':    ('langsam', 'slow'),
+    's_rm_t_mittel':     ('mittleres Tempo', 'moderate speed'),
+    's_rm_t_schnell':    ('schnell', 'fast'),
+    's_rm_alle':         ('Alle neun im Vergleich', 'All nine compared'),
+    # Der handfesteste Rat, den das Werkzeug geben kann.
+    's_rm_unterlegen':   ('%s lohnt sich nie: %s bringt mehr und kostet '
+                          'nicht mehr.',
+                          '%s is never worth it: %s gives more and costs no '
+                          'more.'),
+    's_rm_zeit_laeuft':  ('Die Verarbeitungszeit läuft in Echtzeit weiter, '
+                          'auch ausgeloggt — wer den Auftrag vor dem '
+                          'Feierabend abschickt, zahlt sie mit nichts.',
+                          'Processing time keeps running in real time, even '
+                          'when logged out — submit the order before you quit '
+                          'and it costs you nothing.'),
+    's_rm_stand':        ('Im Spiel abgelesen, Alpha %s (%s). Nach einem '
+                          'grösseren Patch prüfen.',
+                          'Read in game, Alpha %s (%s). Check again after a '
+                          'major patch.'),
     # Prozent neben dem Faktor — die Zahl, die man wirklich liest.
     's_he_prozent':      ('%+.2f %%', '%+.2f %%'),
     # Was mit diesem Material ueberhaupt erreichbar waere.

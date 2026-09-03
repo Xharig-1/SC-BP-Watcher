@@ -6,6 +6,30 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.10.0 - 2026-09-03
+
+> **Die Raffinerie verrät dir vorher, welche Methode sich lohnt.** Neun
+> Verarbeitungsmethoden stehen im Terminal zur Auswahl, und zu jeder zeigt das
+> Spiel eine einzige dürre Zeile — vergleichen kann man nur durch Durchklicken.
+> Der Bergbau-Bereich fragt dich stattdessen, was dir wichtig ist, und nennt
+> die Methode. Zwei der neun lohnen sich übrigens nie.
+
+### Neu
+
+- **Welche Verarbeitungsmethode?** Im Bereich Bergbau: Wähle, was dir am
+  wichtigsten ist — Ertrag, Kosten oder Geschwindigkeit — und was danach
+  kommt. Du bekommst eine der neun Methoden genannt, dazu alle neun im
+  Vergleich.
+- **Zwei Methoden werden ausdrücklich abgeraten.** `Dinyx Solventation` und
+  `XCR Reaction` werden von einer anderen in jeder Hinsicht geschlagen. Das
+  rechnet das Werkzeug selbst aus.
+- Die Empfehlung braucht **kein Netz** und keine geladenen Bergbaudaten.
+
+### Verbessert
+
+- Der Raffinerie-Vergleich je Erz ist jetzt richtig beschrieben: Er vergleicht
+  die **Stationen**, nicht die Methoden.
+
 ## v3.9.8 - 2026-09-03
 
 > **Mein Lager zeigt wieder alles an.** Wer den Bereich „Raffinerie-Ausbeute

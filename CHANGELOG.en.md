@@ -6,6 +6,29 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.10.0 - 2026-09-03
+
+> **The refinery now tells you up front which method pays off.** Nine refining
+> methods sit in the terminal, and the game shows a single thin line for each —
+> the only way to compare them is to click through all nine. The mining section
+> asks what matters to you instead, and names the method. Two of the nine are
+> never worth taking.
+
+### New
+
+- **Which refining method?** In the mining section: pick what matters most —
+  yield, cost or speed — and what comes second. You get one of the nine
+  methods, plus all nine side by side.
+- **Two methods now come with a warning.** `Dinyx Solventation` and
+  `XCR Reaction` are beaten by another method on every count. The tool works
+  that out on its own.
+- The recommendation needs **no network** and no downloaded mining data.
+
+### Improved
+
+- The per-ore refinery comparison is described correctly now: it compares
+  **stations**, not methods.
+
 ## v3.9.8 - 2026-09-03
 
 > **My Stock shows everything again.** If you had expanded the „Enter refinery
