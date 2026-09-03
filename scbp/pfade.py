@@ -379,8 +379,26 @@ def einstellungen():
 
 
 def einstellung(name):
-    """Ein einzelner selbst gesetzter Pfad — oder None, wenn nichts eingetragen ist."""
-    wert = (einstellungen().get(name) or '').strip()
+    """Ein einzelner selbst gesetzter Pfad — oder None, wenn nichts eingetragen ist.
+
+    ⚠⚠ **Alles, was kein Text ist, gilt als „nicht gesetzt".** Vorher stand
+    hier `(… or '').strip()`. Bei einem Ja/Nein-Wert überlebt `True` das
+    `or ''` und `.strip()` fliegt mit einem AttributeError — und zwar nicht
+    leise: Am 03.09.2026 hat ein einziger falscher Aufruf
+    (`einstellung('lager_raffinerie_offen')` statt `einstellung_wahrheit`) den
+    Aufbau der ganzen Lager-Seite abgerissen. Die Liste der Posten fehlte,
+    die Daten waren unversehrt, und weil eine Seite nur einmal gebaut wird,
+    half auch Zuklappen nicht mehr.
+
+    Ein Pfad ist immer Text. Kommt etwas anderes, ist das ein Aufruf an der
+    falschen Adresse — dann `None` zurückzugeben ist richtig und kostet
+    niemanden eine Seite. Für Ja/Nein gibt es `einstellung_wahrheit`, für
+    Zahlen `einstellung_zahl`.
+    """
+    wert = einstellungen().get(name)
+    if not isinstance(wert, str):
+        return None
+    wert = wert.strip()
     return os.path.expanduser(wert) if wert else None
 
 

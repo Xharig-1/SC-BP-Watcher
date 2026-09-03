@@ -5468,7 +5468,17 @@ def _raffinerie_block(fenster, eltern, lager, ort_var, neu_zeichnen, meldung):
     # Pfeil von zwoelf Pixeln ist kein Ziel, das man treffen will.
     for teil in (kopf, pfeil) + tuple(kopf.winfo_children()):
         teil.bind('<Button-1>', _umschalten)
-    if pfade.einstellung('lager_raffinerie_offen'):
+    # ⚠⚠ **`einstellung_wahrheit`, nicht `einstellung`.** Letztere liefert
+    # einen PFAD und ruft dafür `.strip()` auf dem Wert auf. Hier steht aber
+    # ein Ja/Nein: Sobald der Block einmal aufgeklappt war, lag `True` in der
+    # Datei — und `True.strip()` warf einen AttributeError. Der traf nicht nur
+    # diesen Block, sondern riss den Aufbau der GANZEN Lager-Seite ab: Die
+    # Liste der eingetragenen Posten fehlte danach völlig, obwohl die Daten
+    # unversehrt waren. Gemeldet am 03.09.2026, drin seit v3.4.1.
+    #
+    # ⚠ Und es blieb kaputt, bis das Programm neu startete — eine Seite wird
+    # nur EINMAL gebaut (siehe `oeffnen()`). Zuklappen half also nicht.
+    if pfade.einstellung_wahrheit('lager_raffinerie_offen', False):
         _umschalten()
     return feld
 

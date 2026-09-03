@@ -6,6 +6,25 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.8 - 2026-09-03
+
+> **My Stock shows everything again.** If you had expanded the „Enter refinery
+> yield" section, the page only came up half-built the next time you opened it —
+> the list of entered items was missing. The data was never affected, only the
+> display.
+
+> [!important]
+> Affects every release since v3.4.1. If your stock list looked empty although
+> you had items entered: they were always there. After updating they are
+> visible again, with nothing for you to do.
+
+### Fixed
+
+- **The stock page broke off while building when the refinery section was
+  expanded.** A yes/no setting was read as a file path; that threw an error and
+  took the rest of the page with it. Collapsing the section did not help,
+  because a page is only built once — only a restart brought it back.
+
 ## v3.9.7 - 2026-09-03
 
 > **Contracts give up their blueprints more reliably.** Multi-step contract

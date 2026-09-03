@@ -7389,9 +7389,21 @@ def main():
     pruefe("symbol_tauschen('zuklappen')" in _raffblock86
            and "symbol_tauschen('aufklappen')" in _raffblock86,
            'die Raffinerie-Ausbeute laesst sich ein- und ausklappen')
+    # ⚠⚠ **Diese Pruefung hat den Fehler bis zum 03.09.2026 FESTGESCHRIEBEN.**
+    # Sie verlangte woertlich `einstellung('lager_raffinerie_offen')` — also
+    # genau den falschen Aufruf: Die Funktion liefert einen PFAD und ruft
+    # `.strip()` auf dem Wert. Bei `True` warf das einen AttributeError und
+    # riss den Aufbau der ganzen Lager-Seite ab.
+    #
+    # Eine Pruefung, die eine Schreibweise vorschreibt, statt eine Wirkung zu
+    # pruefen, haelt einen Fehler fest, sobald er einmal drin ist. Hier steht
+    # deshalb jetzt, WAS gelten muss: ein Ja/Nein wird mit dem Ja/Nein-Leser
+    # gelesen, nie mit dem Pfad-Leser.
     pruefe(_raffblock86.count("einstellung_setzen('lager_raffinerie_offen'") >= 2
-           and "einstellung('lager_raffinerie_offen')" in _raffblock86,
+           and "einstellung_wahrheit('lager_raffinerie_offen'" in _raffblock86,
            'und die Lage ueberlebt den Neustart — in BEIDE Richtungen')
+    pruefe("einstellung('lager_raffinerie_offen')" not in _raffblock86,
+           'gelesen wird sie als Ja/Nein, nicht als Pfad')
 
     # 87. Das Fenster behaelt die eingestellte Groesse
     #
@@ -9328,6 +9340,93 @@ def main():
         _zeile107 = _text107[_stelle107:_text107.find('\n', _stelle107)]
         pruefe('_current_geom' not in _zeile107 and '%d' in _zeile107,
                '%s merkt die berechnete Lage, nicht die abgefragte' % _weg107)
+
+    # -----------------------------------------------------------------------
+    print()
+    print('108. Ja/Nein-Einstellungen killen keine Seite mehr')
+    # ⚠⚠ **Der Fehler, der eine ganze Seite gefressen hat (03.09.2026).**
+    # `_raffinerie_block` rief `pfade.einstellung('lager_raffinerie_offen')`.
+    # Diese Funktion liefert einen PFAD und ruft dafuer `.strip()` auf dem
+    # Wert. Sobald der Block einmal aufgeklappt war, stand `True` in der
+    # Datei — `True.strip()` warf einen AttributeError, und der riss den
+    # Aufbau der GANZEN Lager-Seite ab. Die Posten waren unversehrt, man sah
+    # sie nur nicht mehr. Drin seit v3.4.1, aufgefallen erst in v3.9.7.
+    #
+    # Zwei Wachen, weil beide Ebenen falsch waren:
+    from scbp import pfade as _pf108
+
+    # 1) `einstellung()` darf an KEINEM Werttyp mehr sterben. Ein Pfad ist
+    #    immer Text; alles andere ist ein Aufruf an der falschen Adresse.
+    _echt108 = _pf108.einstellungen
+    try:
+        for _wert108 in (True, False, 0, 1, 42, 3.5, None, [], {}, ['a']):
+            _pf108.einstellungen = lambda w=_wert108: {'probe': w}
+            try:
+                _ist108 = _pf108.einstellung('probe')
+                _ok108 = _ist108 is None
+            except Exception as _a108:
+                _ok108 = False
+                _ist108 = '%s: %s' % (type(_a108).__name__, _a108)
+            pruefe(_ok108,
+                   'einstellung() vertraegt %-14r -> %r'
+                   % (_wert108, _ist108))
+        # Und Text funktioniert weiterhin wie bisher.
+        _pf108.einstellungen = lambda: {'probe': '  /tmp/pfad  '}
+        pruefe(_pf108.einstellung('probe') == '/tmp/pfad',
+               'ein echter Pfad kommt weiter sauber zurueck')
+        _pf108.einstellungen = lambda: {'probe': '   '}
+        pruefe(_pf108.einstellung('probe') is None,
+               'nur Leerzeichen gelten als nicht gesetzt')
+    finally:
+        _pf108.einstellungen = _echt108
+
+    # 2) ⭐ Und niemand darf `einstellung()` mehr fuer ein Ja/Nein benutzen.
+    #    Diese Wache findet den naechsten Fall von selbst — sie sucht jeden
+    #    Schluessel, der irgendwo mit einem bool GESETZT wird, und prueft, ob
+    #    er anderswo als Pfad GELESEN wird.
+    # ⚠⚠ **Über `ast`, nicht über Suchmuster.** Die erste Fassung suchte per
+    # Regex — und meldete prompt einen Treffer in `pfade.py`, wo der
+    # Schlüsselname nur im KOMMENTAR steht, der den Fehler erklärt. Dieselbe
+    # Falle wie beim Riegel und bei `tee`: Ein Wort im Text ist kein Aufruf.
+    # Der Syntaxbaum kennt den Unterschied.
+    import ast as _ast108
+    import glob as _glob108
+
+    _bool_schluessel108 = set()
+    _gelesen108 = {}
+    for _datei108 in sorted(_glob108.glob(os.path.join(WURZEL, 'scbp', '*.py'))
+                            + [os.path.join(WURZEL, 'sc_bp_watcher.py')]):
+        try:
+            _baum108 = _ast108.parse(open(_datei108, encoding='utf-8').read())
+        except SyntaxError:
+            continue
+        for _k108 in _ast108.walk(_baum108):
+            if not isinstance(_k108, _ast108.Call):
+                continue
+            _f108 = _k108.func
+            _name108 = getattr(_f108, 'attr', None) or getattr(_f108, 'id', None)
+            _erstes108 = _k108.args[0] if _k108.args else None
+            if not (isinstance(_erstes108, _ast108.Constant)
+                    and isinstance(_erstes108.value, str)):
+                continue
+            _schluessel108 = _erstes108.value
+            if _name108 == 'einstellung_setzen' and len(_k108.args) > 1:
+                _zweites108 = _k108.args[1]
+                if (isinstance(_zweites108, _ast108.Constant)
+                        and isinstance(_zweites108.value, bool)):
+                    _bool_schluessel108.add(_schluessel108)
+            elif _name108 == 'einstellung':
+                _gelesen108.setdefault(_schluessel108,
+                                       os.path.basename(_datei108))
+
+    _falsch108 = sorted(set(_gelesen108) & _bool_schluessel108)
+    pruefe(bool(_bool_schluessel108),
+           'die Wache findet ueberhaupt Ja/Nein-Schluessel (%d)'
+           % len(_bool_schluessel108))
+    pruefe(not _falsch108,
+           'kein Ja/Nein wird als Pfad gelesen (%s)'
+           % (', '.join('%s in %s' % (k, _gelesen108[k]) for k in _falsch108)
+              if _falsch108 else 'keiner'))
 
     print()
     if fehler:

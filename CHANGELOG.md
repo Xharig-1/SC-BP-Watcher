@@ -6,6 +6,25 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.8 - 2026-09-03
+
+> **Mein Lager zeigt wieder alles an.** Wer den Bereich „Raffinerie-Ausbeute
+> eintragen" aufgeklappt hatte, bekam die Seite beim nächsten Öffnen nur noch
+> halb zu sehen — die Liste der eingetragenen Posten fehlte. Die Daten waren
+> nie betroffen, nur die Anzeige.
+
+> [!important]
+> Betrifft alle Fassungen seit v3.4.1. Wenn deine Lager-Liste leer aussah,
+> obwohl Posten eingetragen sind: Sie waren immer da. Nach dem Update sind sie
+> wieder sichtbar, ohne dass du etwas tun musst.
+
+### Behoben
+
+- **Die Lager-Seite brach beim Aufbau ab, wenn der Raffinerie-Bereich
+  aufgeklappt war.** Ein Ja/Nein-Wert wurde als Dateipfad gelesen; das warf
+  einen Fehler und riss den Rest der Seite mit. Zuklappen half nicht, weil eine
+  Seite nur einmal gebaut wird — erst ein Neustart brachte sie zurück.
+
 ## v3.9.7 - 2026-09-03
 
 > **Aufträge verraten ihre Baupläne zuverlässiger.** Mehrteilige Auftragsreihen
