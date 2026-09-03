@@ -6,6 +6,18 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.6 - 2026-09-03
+
+> **The window listens again.** Once you had pulled it wider, you could not
+> make it shorter afterwards — whatever height it happened to have became its
+> floor. Width and height can now be adjusted independently again.
+
+### Fixed
+
+- **The window could no longer be made shorter once it had grown wider.**
+  Opening a page whose button row needed more room turned the window's current
+  height into its minimum height from then on.
+
 ## v3.9.5 - 2026-09-02
 
 > **Less waiting, and the dropdowns are back where they belong.** The window

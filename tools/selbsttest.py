@@ -7202,6 +7202,105 @@ def main():
     pruefe("t('b_fenstermass')" in _q85b and "t('b_fenster_zu_hoch')" in _q85b,
            'der Bericht nennt Fenstermass und Mindestmass')
 
+    # ------------------------------------------------------------------
+    # 85b. Eine breite Knopfreihe macht das Fenster BREITER, nicht hoeher
+    # ------------------------------------------------------------------
+    # ⚠⚠ **Der Fehler, den diese Pruefung bewacht.** `_knopfreihe` in
+    # `seiten.py` fordert Breite an, wenn die Knoepfe nebeneinander nicht
+    # hineinpassen — und setzte dabei bis 3.9.5
+    # `minsize(noetig, oben.winfo_height())`. Die zweite Zahl ist die GERADE
+    # AKTUELLE Fensterhoehe. Wer sein Fenster hoch gezogen hatte und danach
+    # eine Seite mit breiter Knopfreihe oeffnete, konnte es nie wieder
+    # niedriger ziehen.
+    #
+    # Gemeldet als `Fenster 1770x899, mindestens 1770x899` — beide Masse
+    # gleich, das Fenster sass in seiner eigenen Groesse fest, obwohl
+    # `MIN_HOEHE` 380 ist.
+    #
+    # ⚠ Die vorhandene Warnung `b_fenster_zu_hoch` schlaegt dabei NICHT an:
+    # Sie greift erst, wenn die Mindesthoehe den BILDSCHIRM ueberschreitet.
+    # 899 von 2880 ist weit davon entfernt — der Fehler blieb unter der
+    # Schwelle und trotzdem spuerbar.
+    #
+    # ⚠⚠ **Und Pruefung 87 lief daran vorbei**, weil sie
+    # `minsize(MIN_BREITE, MIN_HOEHE)` im QUELLTEXT sucht. Die Zeile stand da
+    # und stimmte — sie wurde nur zwei Dateien weiter wieder ueberschrieben.
+    # Deshalb misst diese Pruefung den WERT am fertigen Fenster.
+    #
+    # ⚠ Bewusst ein EIGENES Toplevel statt des Hauptfensters: Dort haengt
+    # `_mindesthoehe_nachziehen` am `<Configure>` und setzt `minsize` gleich
+    # wieder auf `MIN_HOEHE` zurueck. Die Pruefung waere gruen geworden, ohne
+    # dass der Fehler behoben ist — genau die Falle aus Pruefung 83.
+    print()
+    print('85b. Die Knopfreihe hebt die Mindesthoehe nicht an')
+    import tkinter as tk85k
+    from scbp import seiten as _st85k
+
+    _fenster85k = tk85k.Toplevel(_wurzel85)
+    # Definierte Ausgangslage: eine Mindesthoehe, die klein genug ist, dass
+    # das Fenster deutlich darueber liegen kann.
+    _MIN_HOCH85k = 380
+    _fenster85k.minsize(400, _MIN_HOCH85k)
+    # Schmal genug, dass die geforderte Breite unter der Bildschirmgrenze
+    # bleibt (`grenze = screenwidth - 40`), sonst laeuft der Zweig gar nicht.
+    _breit85k = max(400, _fenster85k.winfo_screenwidth() // 2)
+    _hoch85k = _MIN_HOCH85k + 260
+    _fenster85k.geometry('%dx%d' % (_breit85k, _hoch85k))
+    _fenster85k.deiconify()
+    for _ in range(8):
+        _wurzel85.update()
+        _wurzel85.update_idletasks()
+
+    # Ein schmaler Rahmen mit Knoepfen, die nebeneinander nicht hineinpassen —
+    # genau die Lage, die `_knopfreihe` zum Verbreitern bringt.
+    _rahmen85k = tk85k.Frame(_fenster85k, width=200, height=40)
+    _rahmen85k.pack_propagate(False)
+    _rahmen85k.pack(side='top', anchor='w')
+    _knoepfe85k = [tk85k.Button(_rahmen85k,
+                                text='Einrichtung wiederholen %d' % _n)
+                   for _n in range(3)]
+    for _k85k in _knoepfe85k:
+        _k85k.pack(side='left')
+    for _ in range(4):
+        _wurzel85.update()
+        _wurzel85.update_idletasks()
+
+    _st85k._knopfreihe(_rahmen85k, _knoepfe85k)
+    for _ in range(8):
+        _wurzel85.update()
+        _wurzel85.update_idletasks()
+
+    _mb85k, _mh85k = _fenster85k.minsize()
+
+    # ⚠⚠ **Erst pruefen, ob ueberhaupt etwas passiert ist.** Bleibt die
+    # Mindestbreite auf ihrem Ausgangswert, hat `_knopfreihe` den kritischen
+    # Zweig nie betreten (zu wenig Ueberstand, oder die Bildschirmgrenze hat
+    # ihn abgeschnitten) — dann prueft alles Weitere nichts. Ohne diesen
+    # Waechter waere die Pruefung immer gruen.
+    pruefe(_mb85k > 400,
+           'die Knopfreihe hat wirklich Breite angefordert (400 -> %d px)'
+           % _mb85k)
+
+    # ⭐ Der eigentliche Punkt: die Hoehe wurde NICHT angefasst.
+    pruefe(_mh85k == _MIN_HOCH85k,
+           'die Mindesthoehe bleibt bei %d (ist %d, Fenster war %d hoch)'
+           % (_MIN_HOCH85k, _mh85k, _hoch85k))
+
+    # Und die Folge davon, in der Sprache des Nutzers: Das Fenster laesst sich
+    # wieder auf seine Mindesthoehe zusammenziehen.
+    _fenster85k.geometry('%dx%d' % (_mb85k, _MIN_HOCH85k))
+    for _ in range(8):
+        _wurzel85.update()
+        _wurzel85.update_idletasks()
+    pruefe(_fenster85k.winfo_height() <= _MIN_HOCH85k + 4,
+           'das Fenster laesst sich wieder verkleinern (%d px)'
+           % _fenster85k.winfo_height())
+
+    try:
+        _fenster85k.destroy()
+    except Exception:
+        pass
+
     try:
         _wurzel85.destroy()
     except Exception:

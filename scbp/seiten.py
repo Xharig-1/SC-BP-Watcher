@@ -619,7 +619,25 @@ def _knopfreihe(eltern, knoepfe, abstand=8):
                 # Fenster aus dem Bild, und das ist schlimmer als ein Umbruch.
                 grenze = oben.winfo_screenwidth() - 40
                 if noetig <= grenze:
-                    oben.minsize(noetig, oben.winfo_height())
+                    # ⚠⚠ **Die Mindesthöhe bleibt, wie sie ist.**
+                    #
+                    # `minsize()` setzt immer beide Werte. Hier geht es aber nur
+                    # um die BREITE — wie hoch das Fenster sein muss, hat mit
+                    # der Knopfreihe nichts zu tun. Bis 3.9.5 stand an dieser
+                    # Stelle `oben.winfo_height()`, also die gerade aktuelle
+                    # Höhe: Wer sein Fenster einmal hoch gezogen hatte und dann
+                    # eine Seite mit breiter Knopfreihe öffnete, konnte es nie
+                    # wieder niedriger ziehen. Gemeldet mit `Fenster 1770×899,
+                    # mindestens 1770×899` — beide Maße gleich, das Fenster saß
+                    # in seiner eigenen Größe fest, obwohl `MIN_HOEHE` 380 ist.
+                    #
+                    # Es ist derselbe Fehler wie in Falle 4 der Projektnotiz,
+                    # nur andersherum: Dort blieb `minsize` beim Verkleinern
+                    # stehen, hier wächst es beim Vergrößern mit. Beide Male
+                    # gilt: Wer die Fenstergröße anfasst, fasst genau die
+                    # Maße an, um die es geht — und keine weiteren.
+                    _, min_hoch = oben.minsize()
+                    oben.minsize(noetig, min_hoch)
                     if oben.winfo_width() < noetig:
                         oben.geometry('%dx%d' % (noetig, oben.winfo_height()))
                     return          # `<Configure>` kommt gleich mit mehr Platz

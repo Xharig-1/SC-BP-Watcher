@@ -6,6 +6,19 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## v3.9.6 - 2026-09-03
+
+> **Das Fenster gehorcht wieder.** Wer es einmal in die Breite gezogen hatte,
+> bekam es hinterher nicht mehr niedriger — die Höhe von gerade eben galt ab
+> da als Untergrenze. Breite und Höhe lassen sich jetzt wieder unabhängig
+> voneinander einstellen.
+
+### Behoben
+
+- **Das Fenster liess sich nicht mehr niedriger ziehen, nachdem es einmal
+  breiter geworden war.** Öffnete man eine Seite, deren Knopfreihe mehr Platz
+  brauchte, galt ab da die aktuelle Fensterhöhe als Mindesthöhe.
+
 ## v3.9.5 - 2026-09-02
 
 > **Weniger Warten, und die Auswahlfelder sitzen wieder.** Das Fenster öffnet
