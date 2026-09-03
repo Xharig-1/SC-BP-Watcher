@@ -2776,6 +2776,28 @@ class Overlay:
             # der Grüne Balken im eingeklappten Zustand sitzt weiter am
             # selben Ort."
             self._schloss_nachziehen()
+            # ⚠⚠ **Und der Streifen genauso — er ist das dritte eigene Fenster.**
+            #
+            # Dieselbe Zeile steht in `ecke_anwenden()`, hier fehlte sie. Der
+            # Unterschied fiel nicht auf, weil beide Wege dasselbe tun sollen,
+            # aber verschieden gerufen werden: `ecke_anwenden` beim Wechsel auf
+            # der Einstellungsseite, DIESE Methode beim **Programmstart**
+            # (`verhalten_anwenden` ruft sie per `after(120, …)`).
+            #
+            # Beim Start wird `_letzte_lage` vorher aus der gespeicherten Lage
+            # gesetzt und der Streifen sofort dorthin gezeichnet. Wanderte das
+            # Fenster danach in die Ecke, blieb er stehen — und mit ihm das
+            # Schloss, das aus derselben Lage rechnet.
+            #
+            # Gemeldet von Haldjas (pr0) am 02.09.2026: „Overlay war auf links
+            # unten eingestellt, balken war rechts unten und hat den watcher
+            # aber links unten geöffnet." Nicht reproduzierbar war es, weil der
+            # Fall nur beim ERSTEN Start nach einem Eckenwechsel eintritt:
+            # Danach ist die gespeicherte Lage die Ecke selbst, und es stimmt
+            # wieder. Im Protokoll stand nichts, weil nichts scheiterte.
+            if self.anzeigeart == 'popup':
+                self._letzte_lage = '%dx%d+%d+%d' % (breite, hoehe, x, y)
+                self._anfasser_zeigen()
             if merken:
                 pfade.einstellung_setzen('eingeklappt', zu)
         except tk.TclError:

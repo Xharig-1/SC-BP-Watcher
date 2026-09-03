@@ -9267,6 +9267,68 @@ def main():
     pruefe('titel_stamm_an[stamm] = zusatz' in _q106,
            'und die Stamm-Tabelle fuer Titel wird ueberhaupt gefuellt')
 
+    # -----------------------------------------------------------------------
+    print()
+    print('107. Wer das Overlay verschiebt, nimmt Schloss UND Streifen mit')
+    # ⚠⚠ **Der Anlass (Haldjas, pr0, 02.09.2026).** „Overlay war auf links
+    # unten eingestellt, balken war rechts unten und hat den watcher aber
+    # links unten geoeffnet."
+    #
+    # Das Overlay hat DREI eigene Fenster: die Hauptflaeche, das Schloss und
+    # den Anfasser-Streifen. Die beiden letzten folgen nicht von allein — jede
+    # Stelle, die das Overlay bewegt, muss sie mitnehmen.
+    #
+    # Es gab zwei solche Stellen, und nur eine tat es vollstaendig:
+    #   `ecke_anwenden()`        Eckenwechsel auf der Einstellungsseite  ✓
+    #   `klappzustand_setzen()`  beim PROGRAMMSTART                      ✗
+    #
+    # Der Streifen blieb dort auf der gespeicherten alten Lage stehen. Nicht
+    # reproduzierbar war es, weil der Fall nur beim ersten Start nach einem
+    # Eckenwechsel eintritt und sich danach selbst wegraeumt.
+    #
+    # ⚠ Diese Pruefung liest den Quelltext, statt ein Overlay zu bauen: Der
+    # Fehler ist ein FEHLENDER Aufruf, und genau den findet man am
+    # zuverlaessigsten dort, wo er fehlen wuerde. Sie haelt die beiden Wege
+    # gegeneinander — laeuft einer auseinander, faellt es auf.
+    import ast as _ast107
+
+    _quelle107 = open(os.path.join(WURZEL, 'sc_bp_watcher.py'),
+                      encoding='utf-8').read()
+    _baum107 = _ast107.parse(_quelle107)
+
+    def _rumpf107(name):
+        """Der Quelltext einer Methode, ueber ihren Namen gefunden."""
+        for knoten in _ast107.walk(_baum107):
+            if (isinstance(knoten, _ast107.FunctionDef)
+                    and knoten.name == name):
+                return _ast107.get_source_segment(_quelle107, knoten) or ''
+        return ''
+
+    # Beide Wege, die das Overlay an eine Ecke setzen.
+    for _weg107 in ('ecke_anwenden', 'klappzustand_setzen'):
+        _text107 = _rumpf107(_weg107)
+        pruefe(bool(_text107), '%s gefunden' % _weg107)
+        pruefe('_klapp_ecke(' in _text107,
+               '%s setzt das Fenster in die Ecke' % _weg107)
+        pruefe('_schloss_nachziehen()' in _text107,
+               '%s nimmt das Schloss mit' % _weg107)
+        # ⭐ Der eigentliche Fund: DAS hier fehlte in `klappzustand_setzen`.
+        pruefe('_anfasser_zeigen()' in _text107,
+               '%s nimmt den Streifen mit' % _weg107)
+        pruefe('self._letzte_lage =' in _text107,
+               '%s zieht die gemerkte Lage nach' % _weg107)
+
+    # ⚠ Und die gemerkte Lage muss aus den EBEN BERECHNETEN Werten kommen,
+    # nicht aus `_current_geom()`: Tk uebernimmt eine frisch gesetzte
+    # Geometrie erst im naechsten Durchlauf der Ereignisschleife, gefragt
+    # kaeme also die alte zurueck — der Streifen saesse eine Ecke hinterher.
+    for _weg107 in ('ecke_anwenden', 'klappzustand_setzen'):
+        _text107 = _rumpf107(_weg107)
+        _stelle107 = _text107.find('self._letzte_lage =')
+        _zeile107 = _text107[_stelle107:_text107.find('\n', _stelle107)]
+        pruefe('_current_geom' not in _zeile107 and '%d' in _zeile107,
+               '%s merkt die berechnete Lage, nicht die abgefragte' % _weg107)
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

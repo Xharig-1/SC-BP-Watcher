@@ -11,11 +11,16 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 > **Contracts give up their blueprints more reliably.** Multi-step contract
 > chains only showed the blueprint note on the first step — open a later one in
 > game and you found nothing, even though there was something to be had. Every
-> step now carries its list. And crafting finally explains why its headline
+> step now carries its list. The green strip also stays where the overlay
+> actually sits after a restart, and crafting finally explains why its headline
 > number is sometimes smaller than your own collection.
 
 ### Fixed
 
+- **The green strip stayed behind in the old corner after a restart.** The
+  overlay moved to its place, the strip did not — it sat where nothing was any
+  more and opened the window somewhere else. Only happened on the first start
+  after changing corners. Reported by Haldjas (pr0)
 - **In multi-step contract chains, the blueprint note only appeared on the
   first step.** Opening a later step in game showed nothing about it, even
   though the overlay reported the blueprint. Affects the Battaglia chains; the

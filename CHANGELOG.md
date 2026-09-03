@@ -11,11 +11,16 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 > **Aufträge verraten ihre Baupläne zuverlässiger.** Mehrteilige Auftragsreihen
 > zeigten die Bauplan-Angabe bisher nur am ersten Schritt — wer im Spiel einen
 > späteren aufschlug, fand dort nichts, obwohl es etwas zu holen gab. Jetzt
-> trägt jeder Schritt seine Liste. Und die Herstellung sagt endlich, warum ihre
-> Kopfzahl manchmal kleiner ist als der eigene Bestand.
+> trägt jeder Schritt seine Liste. Dazu bleibt der grüne Streifen nach dem
+> Start dort, wo das Overlay wirklich sitzt, und die Herstellung sagt endlich,
+> warum ihre Kopfzahl manchmal kleiner ist als der eigene Bestand.
 
 ### Behoben
 
+- **Der grüne Streifen blieb nach dem Start in der alten Ecke zurück.** Das
+  Overlay wanderte an seinen Platz, der Streifen nicht — er stand dann an einer
+  Stelle, an der nichts mehr war, und öffnete das Fenster anderswo. Trat nur
+  beim ersten Start nach einem Eckenwechsel auf. Gemeldet von Haldjas (pr0)
 - **Bei mehrteiligen Auftragsreihen stand die Bauplan-Angabe nur am ersten
   Schritt.** Wer im Spiel einen späteren Schritt aufschlug, sah dort nichts
   davon — obwohl das Overlay den Bauplan meldete. Betrifft die
