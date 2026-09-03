@@ -8,6 +8,13 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Fixed
+
+- **In multi-step contract chains, the blueprint note only appeared on the
+  first step.** Opening a later step in game showed nothing about it, even
+  though the overlay reported the blueprint. Affects the Battaglia chains; the
+  note now appears on every step.
+
 ### Improved
 
 - **Crafting now says when blueprints are unclear.** A blueprint whose name is

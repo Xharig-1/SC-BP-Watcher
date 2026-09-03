@@ -9192,6 +9192,81 @@ def main():
     pruefe("t('s_he_dazu_unklar') % unklar" in _q105 and 'if unklar:' in _q105,
            'die Kopfzeile zeigt ihn, sobald es unklare gibt')
 
+    # -----------------------------------------------------------------------
+    print()
+    print('106. Schritte einer Auftragsreihe finden ihre Bauplan-Angabe')
+    # ⚠⚠ **Der Anlass (03.09.2026).** Das Overlay meldete „Willkommen im System
+    # → 1 Bauplan, dir fehlt: Clearcut Module". Im aufgeschlagenen Auftrag
+    # („Bergbau-Gelegenheit") stand davon nichts. Es fehlten KEINE Daten — die
+    # Marke sass am Nachbarschluessel:
+    #
+    #     Battaglia_Story01_title  = Willkommen im System <EM4>[BP!]</EM4>
+    #     Battaglia_Story01B_title = Bergbau-Gelegenheit      ← das sieht man
+    #
+    # Die Quelle kennt nur den Schluessel der REIHE; im Spiel sieht man den
+    # SCHRITT. `_reihen_stamm` schlaegt die Bruecke.
+    #
+    # ⚠⚠ **Und die Gegenrichtung ist der teurere Teil der Pruefung.** Eine
+    # erste Fassung erlaubte auch einen Unterstrich im Kuerzel und traf damit
+    # `headhunters_defend_xt_h` und `…_m` — das sind Schwierigkeitsstufen,
+    # keine Reihenschritte, und sie geben andere Bauplaene. Gefunden wurde das
+    # nur, weil die Wirkung VOR dem scharfen Lauf an den echten Daten
+    # gemessen wurde. Diese Faelle stehen hier, damit die Grenze nicht wieder
+    # aufweicht.
+    from scbp import injektion as _inj106
+
+    # Die bekannten Hauptauftraege, wie sie `einspielen_scdl` aufbaut.
+    _bekannt106 = {
+        'battaglia_story01', 'battaglia_story02', 'battaglia_story03',
+        'headhunters_defend_xt', 'headhunters_defend_xt_vh',
+        'covalex_haulcargo_atob',
+    }
+
+    # (Stamm, erwarteter Hauptauftrag oder None, Beschreibung)
+    FAELLE106 = [
+        ('battaglia_story01b', 'battaglia_story01',
+         'DER ANLASS: Schritt B gehoert zur Reihe'),
+        ('battaglia_story01c', 'battaglia_story01', 'Schritt C ebenso'),
+        ('battaglia_story02b', 'battaglia_story02', 'andere Reihe, Schritt B'),
+        ('battaglia_story03b', 'battaglia_story03', 'dritte Reihe'),
+
+        # --- Die Grenze: was NICHT zusammengehoert -----------------------
+        ('headhunters_defend_xt_h', None,
+         'DIE FEHLZUORDNUNG: _h ist eine Schwierigkeitsstufe'),
+        ('headhunters_defend_xt_m', None, 'dasselbe fuer _m'),
+        ('headhunters_defend_xt_vh', None,
+         'und _vh hat ohnehin eigene Daten'),
+        ('battaglia_story01_zusatzauftrag', None,
+         'ein langer Rest ist ein eigener Auftrag'),
+        ('battaglia_story01', None,
+         'wer selbst bekannt ist, braucht keine Bruecke'),
+        ('voelligandererauftrag', None, 'ohne gemeinsamen Anfang: nichts'),
+        ('', None, 'leerer Stamm faellt nicht auf die Nase'),
+    ]
+
+    for _stamm106, _soll106, _was106 in FAELLE106:
+        _ist106 = _inj106._reihen_stamm(_stamm106, _bekannt106)
+        pruefe(_ist106 == _soll106,
+               '%s (%r -> %r)' % (_was106, _stamm106, _ist106))
+
+    # ⭐ Der laengste passende Stamm gewinnt — sonst landet ein Schritt bei der
+    # falschen Reihe, sobald es `…story0` und `…story01` nebeneinander gibt.
+    pruefe(_inj106._reihen_stamm('battaglia_story01b',
+                                 {'battaglia_story0', 'battaglia_story01'})
+           == 'battaglia_story01',
+           'der laengste passende Stamm gewinnt')
+
+    # Und der Weg von der Funktion in die Injektion muss auch gegangen werden:
+    # eine Funktion, die niemand aufruft, behebt nichts.
+    _q106 = open(os.path.join(WURZEL, 'scbp', 'injektion.py'),
+                 encoding='utf-8').read()
+    pruefe('_reihen_stamm(_stamm(schluessel), titel_stamm_an)' in _q106,
+           'die Titel benutzen die Reihen-Zuordnung')
+    pruefe('_reihen_stamm(_stamm(schluessel), stamm_an)' in _q106,
+           'die Beschreibungen ebenso — sonst Marke ohne Liste darunter')
+    pruefe('titel_stamm_an[stamm] = zusatz' in _q106,
+           'und die Stamm-Tabelle fuer Titel wird ueberhaupt gefuellt')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))

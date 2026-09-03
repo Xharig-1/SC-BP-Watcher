@@ -747,6 +747,55 @@ def _stamm(schluessel):
     return ''
 
 
+# Ein Teilauftrag heißt wie seine Reihe plus ein **direkt angehängtes** Kürzel:
+# aus `battaglia_story01` wird `battaglia_story01b`, `…01c`.
+#
+# ⚠⚠ **Der Unterstrich ist die Grenze, und zwar aus einem gemessenen Grund.**
+# Eine erste Fassung erlaubte auch `_h`, `_m` — und traf damit prompt
+# `headhunters_defend_xt_h` und `…_m`. Das sind aber keine Schritte einer
+# Reihe, sondern **Schwierigkeitsstufen** (VE/E/M/H/VH/S), und die geben
+# unterschiedliche Baupläne. Dass die Quelle für `…_VH` einen **eigenen**
+# Eintrag führt, beweist es: Sie behandelt Stufen als eigenständige Aufträge.
+# Fehlen `_H` und `_M` dort, ist das eine Lücke in der Quelle — sie mit den
+# Daten der Grundstufe zu füllen wäre geraten, nicht gewusst.
+#
+# Damit bleibt die Linie des Werkzeugs gewahrt: Was wir nicht wissen,
+# behaupten wir nicht.
+REIHEN_SUFFIX = re.compile(r'^[A-Za-z0-9]{1,2}$')
+
+
+def _reihen_stamm(stamm, bekannte):
+    """Zu einem Teilauftrag den Stamm seiner Reihe — oder `None`.
+
+    ⚠⚠ **Warum es das braucht** (03.09.2026): Mehrteilige Auftragsreihen
+    tragen ihre Bauplan-Angabe nur am Schlüssel der *Reihe*. Im Spiel sieht
+    der Spieler aber den *Schritt*, an dem er gerade steht:
+
+        Battaglia_Story01_title  = Willkommen im System <EM4>[BP!]</EM4>
+        Battaglia_Story01B_title = Bergbau-Gelegenheit      ← das steht im Log
+        Battaglia_Story01C_title = Notruf
+
+    Das Overlay meldete „Willkommen im System → 1 Bauplan, dir fehlt: Clearcut
+    Module", und im aufgeschlagenen Auftrag stand nichts davon. Es fehlten
+    keine Daten — die Marke saß am Nachbarschlüssel.
+
+    Der längste passende Stamm gewinnt: Gäbe es `battaglia_story0` und
+    `battaglia_story01`, gehört `battaglia_story01b` zum zweiten.
+    """
+    if not stamm or stamm in bekannte:
+        return None
+    beste = None
+    for kandidat in bekannte:
+        if kandidat == stamm or not stamm.startswith(kandidat):
+            continue
+        rest = stamm[len(kandidat):]
+        if not rest or not REIHEN_SUFFIX.match(rest):
+            continue
+        if beste is None or len(kandidat) > len(beste):
+            beste = kandidat
+    return beste
+
+
 def einspielen_scdl(ini_pfad, sprachkuerzel, bestand=None):
     """Injektion aus den SCDL-Vertragsdaten — der vollständigere Weg.
 
@@ -817,6 +866,15 @@ def einspielen_scdl(ini_pfad, sprachkuerzel, bestand=None):
         if block and stamm and stamm not in stamm_an:
             stamm_an[stamm] = block
 
+    # Dasselbe für die TITEL — die Voraussetzung für mehrteilige Reihen.
+    # Ohne diese Tabelle gäbe es nur den exakten Schlüsselvergleich, und ein
+    # Teilauftrag (`…Story01B_title`) findet den Zusatz seiner Reihe nie.
+    titel_stamm_an = {}
+    for schluessel, zusatz in titel_an.items():
+        stamm = _stamm(schluessel)
+        if stamm and stamm not in titel_stamm_an:
+            titel_stamm_an[stamm] = zusatz
+
     # ⚠ Ohne Marken im Text: Was hier angefasst wird, kommt vorher in die
     # Merkdatei. Siehe `URTEXT_DATEI` — die Marken waren im Spiel sichtbar.
     urtext_alt = urtext_laden()
@@ -847,10 +905,24 @@ def einspielen_scdl(ini_pfad, sprachkuerzel, bestand=None):
                 sauber, angefasst = grundlage + titel_an[schluessel], True
         elif schluessel in text_an:
             sauber, angefasst = _anhaengen(grundlage, text_an[schluessel]), True
+        elif schluessel.lower().endswith('_title'):
+            # Keine eigene Angabe — aber vielleicht ist es ein SCHRITT einer
+            # Reihe, deren Hauptauftrag Baupläne bringt (siehe
+            # `_reihen_stamm`). Der Spieler sieht im Auftragsfenster genau
+            # diesen Schritt; ohne den Zusatz erfährt er dort nichts.
+            haupt = _reihen_stamm(_stamm(schluessel), titel_stamm_an)
+            if haupt and not _hat_titelmarke(grundlage):
+                sauber, angefasst = grundlage + titel_stamm_an[haupt], True
         elif '_desc' in schluessel.lower():
             # Keine eigene Angabe — aber vielleicht gehört die Beschreibung zu
             # einem Auftrag, für den wir welche haben.
             block = stamm_an.get(_stamm(schluessel))
+            if not block:
+                # Wie beim Titel: auch Schritte einer Reihe versorgen, sonst
+                # steht im Schritt `[BP!]` und darunter keine Bauplan-Liste.
+                haupt = _reihen_stamm(_stamm(schluessel), stamm_an)
+                if haupt:
+                    block = stamm_an[haupt]
             if block:
                 sauber, angefasst = _anhaengen(grundlage, block), True
         if angefasst:

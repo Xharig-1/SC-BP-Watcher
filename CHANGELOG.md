@@ -8,6 +8,13 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
 ## Unveröffentlicht
 
+### Behoben
+
+- **Bei mehrteiligen Auftragsreihen stand die Bauplan-Angabe nur am ersten
+  Schritt.** Wer im Spiel einen späteren Schritt aufschlug, sah dort nichts
+  davon — obwohl das Overlay den Bauplan meldete. Betrifft die
+  Battaglia-Reihen; die Angabe steht jetzt an jedem Schritt.
+
 ### Verbessert
 
 - **Die Herstellung sagt jetzt, wenn Baupläne unklar sind.** Trägt ein Bauplan

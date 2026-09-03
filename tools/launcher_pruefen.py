@@ -147,9 +147,50 @@ if doppelblock:
     fehler.append('%d Beschreibungen tragen die Liste doppelt.' % doppelblock)
 if doppelmarke:
     fehler.append('%d Titel tragen die Marke doppelt.' % doppelmarke)
-if marken > marken_vorher:
-    fehler.append('Es sind %d Titelmarken dazugekommen, wo schon eine stand.'
-                  % (marken - marken_vorher))
+# ⚠⚠ **Nicht mehr „gar keine neue Marke", sondern „keine UNERKLÄRTE".**
+#
+# Bis zum 03.09.2026 stand hier `if marken > marken_vorher`. Die Regel dahinter
+# war richtig — der Watcher darf keine zweite Marke setzen, wo der Launcher
+# schon eine hat (297 Doppelungen waren hier schon einmal der Schaden). Sie war
+# nur zu grob formuliert: Sie verbot **jeden** eigenen Titel-Beitrag.
+#
+# Seit `_reihen_stamm` markiert der Watcher auch die SCHRITTE einer Reihe.
+# Der Launcher tut das nicht, weil die Quelle nur den Schlüssel der Reihe
+# kennt — im Spiel steht man aber im Schritt: `Battaglia_Story01B_title`
+# („Bergbau-Gelegenheit") blieb unmarkiert, während der Bauplan an
+# `Battaglia_Story01_title` hing. Genau diese vier Marken sind gewollt.
+#
+# Die schärfere Fassung prüft deshalb **welche** Marken dazugekommen sind:
+# erlaubt ist nur, was sich als Schritt eines bereits markierten Auftrags
+# ausweist. Alles andere bleibt ein Fehler — die Doppelungs-Wache
+# (`doppelmarke`) darüber gilt ohnehin unverändert.
+def marken_schluessel(text):
+    """Alle Schlüssel, deren Wert eine Titelmarke trägt."""
+    raus = set()
+    for z in text.splitlines():
+        k, _, v = z.partition('=')
+        if k and injektion.TITELMARKE.search(v):
+            raus.add(k.strip())
+    return raus
+
+
+alte_marken = marken_schluessel(vorher)
+neue_marken = marken_schluessel(nachher) - alte_marken
+bekannte_staemme = {injektion._stamm(k) for k in alte_marken}
+bekannte_staemme.discard('')
+
+unerklaert = [k for k in neue_marken
+              if not injektion._reihen_stamm(injektion._stamm(k),
+                                             bekannte_staemme)]
+print('   neue Marken        : %d (davon unerklärt: %d)'
+      % (len(neue_marken), len(unerklaert)))
+for k in sorted(neue_marken)[:8]:
+    grund = injektion._reihen_stamm(injektion._stamm(k), bekannte_staemme)
+    print('     %-42s %s' % (k, ('Schritt von ' + grund) if grund
+                             else '⚠ OHNE GRUND'))
+if unerklaert:
+    fehler.append('%d Titelmarken sind ohne erkennbaren Grund dazugekommen: %s'
+                  % (len(unerklaert), ', '.join(sorted(unerklaert)[:5])))
 if not kaestchen:
     fehler.append('Keine Kästchen — der eigene Beitrag fehlt.')
 if ohne_kasten:
