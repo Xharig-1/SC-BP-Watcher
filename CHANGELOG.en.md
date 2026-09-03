@@ -44,13 +44,6 @@ The project follows SemVer: `MAJOR.MINOR.PATCH`.
   26 August that wrongly treated those texts as unused.
   Reported by Haldjas
 
-### Under the hood
-
-- **The guard over the interface texts sees more.** Until now it only checked
-  texts whose key is written directly into the call. When the key comes out of a
-  list — as with the three buttons above — it walked straight past. That is
-  exactly why the fault went unnoticed for eight days.
-
 ### Thanks
 
 - **Haldjas** — for spotting the wrong button labels in the setup wizard, and

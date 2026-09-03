@@ -45,13 +45,6 @@ Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
   Texte fälschlich für unbenutzt gehalten wurden.
   Gemeldet von Haldjas
 
-### Unter der Haube
-
-- **Die Wache über die Sprachtexte sieht mehr.** Sie prüfte bisher nur Texte,
-  deren Schlüssel direkt im Aufruf steht. Wird der Schlüssel aus einer Liste
-  geholt — wie bei den drei Knöpfen oben —, ging sie daran vorbei. Genau
-  deshalb ist der Fehler acht Tage lang niemandem aufgefallen.
-
 ### Dank
 
 - **Haldjas** — für den Fund der falschen Beschriftungen im
