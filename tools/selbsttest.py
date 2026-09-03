@@ -9700,6 +9700,50 @@ def main():
         _sh111.rmtree(_wiese111, ignore_errors=True)
 
     print()
+    print('112. Ein Erklaertext kostet beim Anhaengen nur EIN Binding')
+    # ⚠⚠ **Warum das eine Pruefung wert ist.** Eine Zeile der Bauplan-Liste
+    # haengt bis zu vier Erklaertexte an. Mit vier Bindings je Text waren das 16
+    # pro Zeile — bei 40 Zeilen ueber 600, alle gesetzt, bevor das Fenster
+    # steht. In Haldjas' Bericht vom 03.09.2026 kosteten die Zeilen 55 der 112
+    # ms. Drei der vier Bindings raeumen einen Anzeige-Auftrag ab, den es vor
+    # der ersten Mausberuehrung gar nicht geben kann — die kommen jetzt erst
+    # beim ersten `<Enter>`.
+    #
+    # ⚠ Ohne Wache faellt ein Rueckbau auf „alle vier sofort" niemandem auf:
+    # Das Programm funktioniert weiter, es wird nur wieder langsam. Genau die
+    # Sorte Verschlechterung, die man erst Monate spaeter bemerkt.
+    import tkinter as _tk112
+    from scbp import hinweis as _hw112
+
+    _root112 = _wurzel()
+    try:
+        _w112 = _tk112.Label(_root112, text='x')
+        _hw112.anhaengen(_w112, 'Erklaertext')
+        _vorher112 = set(_w112.bind())
+        pruefe(_vorher112 == {'<Enter>'},
+               'beim Anhaengen wird nur <Enter> gesetzt (%s)'
+               % (', '.join(sorted(_vorher112)) or 'nichts'))
+
+        # Gegenprobe: Die Abraeumer duerfen jetzt noch NICHT da sein — sonst
+        # prueft der Satz oben nur, dass ueberhaupt etwas gebunden wurde.
+        pruefe('<Leave>' not in _vorher112 and '<Destroy>' not in _vorher112,
+               'die Abraeumer haengen vorher noch nicht dran')
+
+        # Und nach der ersten Mausberuehrung muessen sie da sein, sonst bliebe
+        # ein Erklaertext stehen, wenn die Maus weiterzieht.
+        _w112.event_generate('<Enter>', x=1, y=1)
+        _root112.update_idletasks()
+        _nachher112 = set(_w112.bind())
+        pruefe({'<Enter>', '<Leave>', '<Button-1>', '<Destroy>'} <= _nachher112,
+               'nach dem ersten <Enter> haengen alle vier dran (%s)'
+               % ', '.join(sorted(_nachher112)))
+    finally:
+        try:
+            _root112.destroy()
+        except Exception:
+            pass
+
+    print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
         for f in fehler:

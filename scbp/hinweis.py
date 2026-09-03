@@ -99,13 +99,33 @@ _fenster = _Fenster()
 
 
 def anhaengen(widget, text):
-    """Einem Element einen Erklärtext geben. `text` ist Zeichenkette oder Funktion."""
-    daten = {'job': None}
+    """Einem Element einen Erklärtext geben. `text` ist Zeichenkette oder Funktion.
+
+    ⚠⚠ **Nur EIN Binding beim Anhängen — die anderen drei kommen erst, wenn die
+    Maus das Element zum ersten Mal berührt.** Das ist keine Spielerei, sondern
+    der Grund, warum die Bauplan-Liste zäh aufging: Eine Zeile hängt bis zu vier
+    Erklärtexte an, und mit vier Bindings je Text waren das **16 Bindings pro
+    Zeile** — bei 40 Zeilen über 600 Stück, die alle gesetzt werden mussten,
+    bevor das Fenster stand. Gemessen wurden 55 ms für die Zeilen, rund 1,4 ms
+    je Stück.
+
+    ⚠ **Und es geht nichts verloren.** Die drei nachgezogenen Bindings räumen
+    einen laufenden Anzeige-Auftrag ab — den es vor dem ersten `<Enter>` gar
+    nicht geben kann. Wer nie mit der Maus hinfährt, braucht sie also nie; wer
+    hinfährt, hat sie ab dem ersten Mal. Der Nutzer merkt keinen Unterschied.
+    """
+    daten = {'job': None, 'rest': False}
 
     def hole_text():
         return text() if callable(text) else text
 
     def betreten(ereignis):
+        if not daten['rest']:
+            # Ab jetzt kann ein Auftrag laufen — also jetzt die Abräumer setzen.
+            daten['rest'] = True
+            widget.bind('<Leave>', abbrechen, add='+')
+            widget.bind('<Button-1>', abbrechen, add='+')
+            widget.bind('<Destroy>', abbrechen, add='+')
         abbrechen()
         daten['job'] = widget.after(
             VERZOEGERUNG_MS,
@@ -123,6 +143,3 @@ def anhaengen(widget, text):
         _fenster.verstecken()
 
     widget.bind('<Enter>', betreten, add='+')
-    widget.bind('<Leave>', abbrechen, add='+')
-    widget.bind('<Button-1>', abbrechen, add='+')
-    widget.bind('<Destroy>', abbrechen, add='+')

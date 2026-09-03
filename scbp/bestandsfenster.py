@@ -333,12 +333,29 @@ class Bestandsfenster:
         self.alle_zeigen = False
         self.bereiche_aus = set()   # ausgeblendete Bereiche (Schiff, FPS, …)
 
+        # ⚠ **Die letzte blinde Stelle.** In Haldjas' Bericht vom 03.09.2026
+        # standen 29 ms Daten und 58 ms Zeichnen — bei 112 ms gesamt. Die
+        # fehlenden 25 ms lagen genau hier: vier Bauschritte ohne eine einzige
+        # Zahl. Wer nicht weiss, wohin ein Viertel der Zeit geht, kann sie auch
+        # nicht kuerzen.
+        _t_rahmen = time.perf_counter()
         self._kopf()
+        _ms_kopf = (time.perf_counter() - _t_rahmen) * 1000
+        _t_wz = time.perf_counter()
         self._werkzeugleiste()
+        _ms_wz = (time.perf_counter() - _t_wz) * 1000
         # ⚠ Reihenfolge: erst der feste Block unten, dann die rollende Liste.
         # Wer die Liste zuerst packt, schiebt den Block aus dem Fenster.
+        _t_hk = time.perf_counter()
         self._herkunftsbereich()
+        _ms_hk = (time.perf_counter() - _t_hk) * 1000
+        _t_li = time.perf_counter()
         self._liste()
+        _ms_li = (time.perf_counter() - _t_li) * 1000
+        fehler.spur('Liste: Rahmen gebaut (Kopf %d ms, Leiste %d ms, '
+                    'Herkunft %d ms, Rollflaeche %d ms)'
+                    % (round(_ms_kopf), round(_ms_wz), round(_ms_hk),
+                       round(_ms_li)))
         self._zeichnen()
         # ⚠ Der Schlussstrich unter den ganzen Aufbau: Diese Zahl ist die, die
         # der Nutzer als Wartezeit erlebt. Alles davor sind Teilstücke.
@@ -1478,6 +1495,9 @@ class Bestandsfenster:
         #   platzieren kann — siehe „Lange Liste in Blöcken".
         gesamt_zeilen = sum(len(paare) for _, paare in gruppen)
         in_bloecken = self.alle_zeigen and gesamt_zeilen > self._zeilen_deckel()
+        # Bleibt None, wenn in Bloecken gebaut wird — dort laufen die Zeilen
+        # erst im Leerlauf und gehoeren nicht in diese Messung.
+        _ms_zeilen = None
 
         if in_bloecken:
             reihen = []
@@ -1497,6 +1517,10 @@ class Bestandsfenster:
             self._auftragsuebersicht()
             deckel = self._zeilen_deckel() if self.alle_zeigen else ZEILEN_ZUERST
             gezeichnet = 0
+            # ⚠ Die Zeilen getrennt messen. „gesamt" allein sagt nicht, ob die
+            # Zeit in den Zeilen steckt oder in dem, was drumherum passiert —
+            # und genau diese Unterscheidung entscheidet, wo man ansetzt.
+            _t_zeilen = time.perf_counter()
             for art, treffer in gruppen:
                 if gezeichnet >= deckel:
                     break
@@ -1506,6 +1530,7 @@ class Bestandsfenster:
                         break
                     self._zeile(eintrag, drin)
                     gezeichnet += 1
+            _ms_zeilen = (time.perf_counter() - _t_zeilen) * 1000
 
             rest = gesamt_zeilen - gezeichnet
             if rest > 0:
@@ -1527,8 +1552,11 @@ class Bestandsfenster:
         # ⚠ Der Gegenwert zu `_t_start` oben. Steht bewusst VOR den
         # `after_idle`-Sprüngen: Was danach kommt, läuft erst im Leerlauf und
         # gehört nicht mehr zum Zeichnen.
-        fehler.spur('Liste: gezeichnet (%d Zeilen, Auswahl %d ms, gesamt %d ms)'
+        fehler.spur('Liste: gezeichnet (%d Zeilen, Auswahl %d ms, Zeilen %s, '
+                    'gesamt %d ms)'
                     % (gezeichnet, round(_ms_auswahl),
+                       ('%d ms' % round(_ms_zeilen)) if _ms_zeilen is not None
+                       else 'in Bloecken',
                        round((time.perf_counter() - _t_start) * 1000)))
 
         # Die Zeilenhöhe einmal nachmessen — sie bestimmt, wie viele Zeilen in eine
