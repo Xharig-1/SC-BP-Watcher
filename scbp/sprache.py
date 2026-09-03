@@ -1766,6 +1766,12 @@ TEXTE = {
                           'Blueprint or resource …'),
     's_he_von':          (' von %d herstellbar — davon hast du den Bauplan',
                           ' of %d craftable — you have the blueprint for these'),
+    # ⚠ Der Zusatz hinter der Kopfzahl, wenn Bauplaene wegen mehrdeutiger
+    # Namen NICHT mitgezaehlt werden. Ohne ihn steht dort eine Zahl, die
+    # kleiner ist als der eigene Bestand, und nichts erklaert die Luecke —
+    # genau daran ist ein „404 von 1597" bei 405 Bauplaenen aufgefallen.
+    's_he_dazu_unklar':  (' · %d weitere unklar',
+                          ' · %d more unclear'),
     's_he_zeit':         ('Herstellzeit', 'Craft time'),
     # ⚠ Lesbar statt roh: 960 Sekunden sind 16 Minuten, und niemand rechnet
     # das im Kopf um. Unter einer Minute bleibt es bei Sekunden.

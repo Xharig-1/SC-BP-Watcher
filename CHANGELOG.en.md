@@ -6,6 +6,15 @@ All notable changes to this project are documented here.
 
 The project follows SemVer: `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Improved
+
+- **Crafting now says when blueprints are unclear.** A blueprint whose name is
+  shared by several items deliberately does not count as craftable — which made
+  the headline number smaller than your own collection, with nothing to explain
+  the gap. It now names the unclear ones alongside.
+
 ## v3.9.6 - 2026-09-03
 
 > **The window listens again.** Once you had pulled it wider, you could not

@@ -6,6 +6,15 @@ Alle wichtigen Änderungen an diesem Projekt werden hier dokumentiert.
 
 Das Projekt nutzt SemVer: `MAJOR.MINOR.PATCH`.
 
+## Unveröffentlicht
+
+### Verbessert
+
+- **Die Herstellung sagt jetzt, wenn Baupläne unklar sind.** Trägt ein Bauplan
+  einen Namen, den mehrere Gegenstände führen, zählt er bewusst nicht als
+  herstellbar — die Kopfzahl war dadurch kleiner als der eigene Bestand, ohne
+  dass etwas darauf hinwies. Sie nennt die unklaren jetzt daneben.
+
 ## v3.9.6 - 2026-09-03
 
 > **Das Fenster gehorcht wieder.** Wer es einmal in die Breite gezogen hatte,

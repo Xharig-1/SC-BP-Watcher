@@ -4049,6 +4049,20 @@ def _herstellung(fenster, rahmen):
              font=fenster.f_titel).pack(side='left')
     tk.Label(kopf, text=t('s_he_von') % gesamt, bg=BG, fg=SUB,
              font=fenster.f_klein).pack(side='left')
+    # ⚠⚠ **Die unklaren gehören dazu, sonst fehlt eine Zahl ohne Erklärung.**
+    # `zaehlung()` gibt sie längst zurück, angezeigt wurden sie nie: Ein
+    # Bauplan, dessen Name mehrere Gegenstände meint (Idris- und
+    # Reclaimer-Kraftwerk, BroadSpec in zwei Größen), zählt bewusst nicht als
+    # „sicher" — richtig so, ein falsch zugeordneter Bauplan wäre schlimmer.
+    #
+    # Nur stand oben dann eine Zahl, die **kleiner ist als der eigene
+    # Bestand**, und nichts sagte warum. Gemeldet als „404 von 1597" bei 405
+    # Bauplänen; der Hinweis dazu (`s_he_unklar`) steht bisher erst am
+    # aufgeklappten Eintrag — also genau dort, wo man ihn nur findet, wenn man
+    # schon weiß, wonach man sucht.
+    if unklar:
+        tk.Label(kopf, text=t('s_he_dazu_unklar') % unklar, bg=BG, fg=SUB,
+                 font=fenster.f_klein).pack(side='left')
 
     from .hauptfenster import rundbalken, rundes_feld
     rundbalken(innen, 9, sicher / float(gesamt or 1), BG, '#222b3b',

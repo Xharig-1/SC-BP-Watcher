@@ -9105,6 +9105,79 @@ def main():
            'kein Aufruf ins Leere (%s)'
            % ('; '.join(_tot104) if _tot104 else 'keiner'))
 
+    # -----------------------------------------------------------------------
+    print()
+    print('105. Die Kopfzahl der Herstellung verschweigt die unklaren nicht')
+    # ⚠⚠ **Der Anlass (03.09.2026).** Ueber der Liste stand „404 von 1597
+    # herstellbar", der Bestand hatte zeitgleich 405 Bauplaene. Einer fehlte
+    # scheinbar — tatsaechlich war er nur als *unklar* eingestuft: Traegt ein
+    # Bauplan einen Namen, den mehrere Gegenstaende fuehren (Idris- und
+    # Reclaimer-Kraftwerk, BroadSpec in zwei Groessen), zaehlt er bewusst
+    # nicht als „sicher". Das ist richtig so.
+    #
+    # Falsch war die ANZEIGE: `zaehlung()` gibt `unklar` seit jeher zurueck,
+    # die Kopfzeile warf den Wert weg. Oben stand also eine Zahl kleiner als
+    # der eigene Bestand, und der Hinweis dazu (`s_he_unklar`) stand erst am
+    # AUFGEKLAPPTEN Eintrag — dort findet ihn nur, wer schon weiss, wonach er
+    # sucht.
+    #
+    # ⚠ Diese Pruefung legt sich ihre Daten SELBST hin (Regel aus Pruefung
+    # 67): Die Rezeptdaten sind ein heruntergeladener Zwischenspeicher und
+    # liegen im Wegwerf-Ordner nie. Eine Pruefung, die sich deshalb
+    # ueberspringt, prueft nichts.
+    from scbp import herstellung as _he105
+    from scbp import sprache as _sp105
+
+    _echt_alle105 = _he105.alle
+
+    def _vorrat105():
+        """Zwei Gegenstaende mit demselben Namen, dazu ein eindeutiger."""
+        return [
+            {'basis': 'Main Powerplant', 'name': 'Main Powerplant (Idris)',
+             'hersteller': '', 'art': '', 'unterart': '', 'stufen': 1,
+             'tag': 'idris_pp', 'tags': ['idris_pp'], 'entity': ''},
+            {'basis': 'Main Powerplant', 'name': 'Main Powerplant (Reclaimer)',
+             'hersteller': '', 'art': '', 'unterart': '', 'stufen': 1,
+             'tag': 'recl_pp', 'tags': ['recl_pp'], 'entity': ''},
+            {'basis': 'Testlampe', 'name': 'Testlampe',
+             'hersteller': '', 'art': '', 'unterart': '', 'stufen': 1,
+             'tag': 'lampe', 'tags': ['lampe'], 'entity': ''},
+        ]
+
+    try:
+        _he105.alle = _vorrat105
+        # Der Spieler hat BEIDE Bauplaene — den mehrdeutigen und den klaren.
+        _bestand105 = {_he105._norm('Main Powerplant'),
+                       _he105._norm('Testlampe')}
+        _sicher105, _gesamt105, _unklar105 = _he105.zaehlung(_bestand105)
+    finally:
+        _he105.alle = _echt_alle105
+
+    # ⚠⚠ **Erst pruefen, dass der unklare Fall ueberhaupt entsteht.** Ohne
+    # diesen Waechter wuerde die Pruefung auch dann gruen, wenn die
+    # Mehrdeutigkeits-Erkennung ausfaellt und alles als „sicher" durchgeht.
+    pruefe(_unklar105 == 2,
+           'zwei gleichnamige Gegenstaende gelten als unklar (%d)' % _unklar105)
+    pruefe(_sicher105 == 1,
+           'der eindeutige Bauplan zaehlt als sicher (%d)' % _sicher105)
+    # ⭐ Und damit die Luecke, die den Spieler stutzig macht: Er hat zwei
+    # Bauplaene, oben stuende ohne den Zusatz eine 1.
+    pruefe(_sicher105 < len(_bestand105),
+           'die Kopfzahl ist kleiner als der Bestand (%d < %d) — genau darum '
+           'braucht sie den Zusatz' % (_sicher105, len(_bestand105)))
+
+    # Der Zusatz muss es in beiden Sprachen geben …
+    _txt105 = _sp105.TEXTE.get('s_he_dazu_unklar') or ('', '')
+    pruefe(all(_txt105) and '%d' in _txt105[0] and '%d' in _txt105[1],
+           'der Zusatztext steht deutsch und englisch bereit (%r)'
+           % (_txt105[0],))
+
+    # … und die Kopfzeile muss ihn auch benutzen, abhaengig von `unklar`.
+    _q105 = open(os.path.join(WURZEL, 'scbp', 'seiten.py'),
+                 encoding='utf-8').read()
+    pruefe("t('s_he_dazu_unklar') % unklar" in _q105 and 'if unklar:' in _q105,
+           'die Kopfzeile zeigt ihn, sobald es unklare gibt')
+
     print()
     if fehler:
         print('%d von %d Prüfungen fehlgeschlagen:' % (len(fehler), geprueft[0]))
